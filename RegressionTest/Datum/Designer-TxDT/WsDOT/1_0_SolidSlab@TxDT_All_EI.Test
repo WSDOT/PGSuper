@@ -9,6 +9,7 @@ Tensile stress check failed for Service I for the Temporary Strand Removal.
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone checks failed.
 Slab Offset ("A" Dimension) check failed
 
@@ -23,6 +24,7 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Temporary Strand Removal.
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone checks failed.
 
 
@@ -36,6 +38,7 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Temporary Strand Removal.
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone checks failed.
 Slab Offset ("A" Dimension) check failed
 

@@ -652,14 +652,8 @@ public:
    void GetMinZoneLength(Uint32* pSpacings, Float64* pLength) const;
    void SetMinZoneLength(Uint32 Spacings, Float64 Length);
 
-   bool GetIsTopFlangeRoughened() const;
-   void SetIsTopFlangeRoughened(bool isRough);
-
    bool GetExtendBarsIntoDeck() const;
    void SetExtendBarsIntoDeck(bool isTrue);
-
-   bool GetBarsProvideSplittingCapacity() const;
-   void SetBarsProvideSplittingCapacity(bool isTrue);
 
    bool GetBarsActAsConfinement() const;
    void SetBarsActAsConfinement(bool isTrue);
@@ -916,9 +910,7 @@ private:
    Float64 m_MaxShearCapacityChangeInZone;
    Uint32 m_MinZoneLengthSpacings;
    Float64 m_MinZoneLengthLength;
-   bool m_IsTopFlangeRoughened;
    bool m_DoExtendBarsIntoDeck;
-   bool m_DoBarsProvideSplittingCapacity;
    bool m_DoBarsActAsConfinement;
    LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
 

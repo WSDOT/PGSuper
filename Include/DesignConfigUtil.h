@@ -722,6 +722,28 @@ inline void WriteShearDataToStirrupConfig(const CShearData& rShearData, STIRRUPC
    rConfig.ConfinementBarSpacing = rShearData.ConfinementBarSpacing;
    rConfig.ConfinementZoneLength = rShearData.ConfinementZoneLength;
 }
+
+inline bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
+{
+   if (config.ShearZones.empty())
+   {
+      return false;
+   }
+   else
+   {
+      for(STIRRUPCONFIG::ShearZoneConstIterator itl = config.ShearZones.begin(); itl != config.ShearZones.end(); itl++)
+      {
+         const STIRRUPCONFIG::SHEARZONEDATA& zd = *itl;
+
+         if (zd.VertBarSize==matRebar::bsNone  ||
+             zd.nVertBars <= 0                ||
+             zd.nHorzInterfaceBars < zd.nVertBars)
+            return false;
+      }
+   }
+
+   return true;
+}
 // NOTE: The method below could be useful to a design algorithm sometime in the future.
 /*
 inline void  WriteLongitudinalRebarDataToConfig(const CLongitudinalRebarData& rRebarData, LONGITUDINALREBARCONFIG& rConfig)

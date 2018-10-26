@@ -1385,7 +1385,9 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
    // horizontal shear
    pgsHorizontalShearArtifact h_artifact;
    if ( pBridge->IsCompositeDeck() )
+   {
       CheckHorizontalShear(poi,vu,fcSlab,fcGdr,fy, pConfig,&h_artifact);
+   }
 
    // stirrup detail check
    const STIRRUPCONFIG* pStirrupConfig = (pConfig==NULL) ? NULL : &(pConfig->StirrupConfig);
@@ -1435,11 +1437,13 @@ void pgsDesigner2::CheckStirrupRequirement( const pgsPointOfInterest& poi, const
 
 void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact )
 {
+   Float64 poi_loc = poi.GetDistFromStart();
+
    bool bCheck = true;
-   if ( m_bSkipShearCheckBeforeLeftCS && poi.GetDistFromStart() < m_LeftCS.GetDistFromStart() )
+   if ( poi_loc < m_LeftCS.GetDistFromStart() )
       bCheck = false;
 
-   if ( m_bSkipShearCheckAfterRightCS && m_RightCS.GetDistFromStart() < poi.GetDistFromStart() )
+   if ( m_RightCS.GetDistFromStart() < poi_loc )
       bCheck = false;
 
    if ( bCheck )
@@ -1448,15 +1452,23 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       pArtifact->SetCapacity( scd.pVn );
       pArtifact->SetDemand( vu );
 
+      // Make strut and tie check at CS
+      if ( poi.HasAttribute(pgsTypes::BridgeSite3, POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2) )
+      {
+         if ( IsEqual(poi_loc, m_LeftCS.GetDistFromStart()) )
+         {
+            pArtifact->IsStrutAndTieRequired(pgsTypes::metStart,m_bLeftCS_StrutAndTieRequired);
+         }
+         else
+         {
+            pArtifact->IsStrutAndTieRequired(pgsTypes::metEnd,  m_bRightCS_StrutAndTieRequired);
+         }
+      }
    }
    else
    {
       // strength check is not applicable for this poi
       pArtifact->IsApplicable(false);
-
-      // note if strut and tie analysis is required
-      pArtifact->IsStrutAndTieRequired(pgsTypes::metStart,m_bLeftCS_StrutAndTieRequired);
-      pArtifact->IsStrutAndTieRequired(pgsTypes::metEnd,  m_bRightCS_StrutAndTieRequired);
 
       GET_IFACE(IStirrupGeometry,pStirrupGeom);
       SpanIndexType span  = poi.GetSpan();
@@ -1466,9 +1478,9 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       // See LRFD C5.8.3.2 (since the stress in the stirrups doesn't change between
       // the support and the critical section, there should be at least as much 
       // reinforcement between the end and the CS as there is at the CS)
-      Float64 AvS_provided = scd.Av/scd.S;
+      Float64 AvS_provided = scd.S > 0.0 ? scd.Av/scd.S : 0.0;
       Float64 AvS_at_CS;
-      if ( !m_bLeftCS_StrutAndTieRequired && poi.GetDistFromStart() < m_LeftCS.GetDistFromStart() )
+      if ( poi.GetDistFromStart() < m_LeftCS.GetDistFromStart() )
       {
          Float64 s;
          matRebar::Size size;
@@ -1493,7 +1505,7 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
 
          pArtifact->SetEndSpacing(pgsTypes::metStart,AvS_provided,AvS_at_CS);
       }
-      else if ( !m_bRightCS_StrutAndTieRequired && m_RightCS.GetDistFromStart() < poi.GetDistFromStart() )
+      else if ( m_RightCS.GetDistFromStart() < poi.GetDistFromStart() )
       {
          Float64 s;
          matRebar::Size size;
@@ -1523,6 +1535,62 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
 }
 
 void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi, 
+                                       Float64 vu, 
+                                       Float64 fcSlab,Float64 fcGdr, Float64 fy,
+                                       const GDRCONFIG* pConfig,
+                                       pgsHorizontalShearArtifact* pArtifact )
+{
+
+   if ( poi.GetDistFromStart() < m_LeftCS.GetDistFromStart() )
+   {
+      // Poi is at left end of girder
+      pArtifact->SetApplicability(false);
+      
+      // only need to compare Av/S at our location with that of left CSS
+      bool is_roughened;
+      bool do_all_stirrups_engage_deck;
+      ComputeHorizAvs(poi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  pArtifact);
+
+      Float64 avs = pArtifact->GetAvOverS();
+
+      // get avs at css
+      pgsHorizontalShearArtifact css_Artifact;
+      ComputeHorizAvs(m_LeftCS, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  &css_Artifact);
+
+      Float64 avs_css = css_Artifact.GetAvOverS();
+
+      pArtifact->SetEndSpacing(pgsTypes::metStart, avs, avs_css);
+   }
+   else if( m_RightCS.GetDistFromStart() < poi.GetDistFromStart() )
+   {
+      // Poi is at right end of girder
+      pArtifact->SetApplicability(false);
+
+      // only need to compare Av/S at our location with that of left CSS
+      bool is_roughened;
+      bool do_all_stirrups_engage_deck;
+      ComputeHorizAvs(poi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  pArtifact);
+
+      Float64 avs = pArtifact->GetAvOverS();
+
+      // get avs at css
+      pgsHorizontalShearArtifact css_Artifact;
+      ComputeHorizAvs(m_RightCS, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  &css_Artifact);
+
+      Float64 avs_css = css_Artifact.GetAvOverS();
+
+      pArtifact->SetEndSpacing(pgsTypes::metEnd, avs, avs_css);
+   }
+   else
+   {
+      // Poi is within CSS's. Do full check
+      pArtifact->SetApplicability(true);
+
+      CheckHorizontalShearMidZone(poi, vu, fcSlab, fcGdr,  fy, pConfig, pArtifact );
+   }
+}
+
+void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi, 
                                        Float64 vu, 
                                        Float64 fcSlab,Float64 fcGdr, Float64 fy,
                                        const GDRCONFIG* pConfig,
@@ -1592,70 +1660,15 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
 
    // area of reinforcement crossing shear plane
    // girder stirrups
-   if (pConfig!=NULL)
-   {
-      // Use design config
-      SpanIndexType span  = poi.GetSpan();
-      GirderIndexType gdr = poi.GetGirder();
+   bool is_roughened;
+   bool do_all_stirrups_engage_deck;
 
-      GET_IFACE(IBridge, pBridge);
-      Float64 gdr_length = pBridge->GetGirderLength(span,gdr);
-      Float64 location = poi.GetDistFromStart();
-      Float64 lft_supp_loc = pBridge->GetGirderStartConnectionLength(span,gdr);
-      Float64 rgt_sup_loc = gdr_length - pBridge->GetGirderEndConnectionLength(span,gdr);
+   ComputeHorizAvs(poi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  pArtifact);
 
-      Float64 Sg;
-      matRebar::Size size;
-      Float64 abar, nPrimaryLegs;
-      Float64 Avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getHorizShearStirrup, poi.GetDistFromStart(),
-                                 gdr_length, lft_supp_loc,rgt_sup_loc,
-                                 &size, &abar, &nPrimaryLegs, &Sg);
-
-      pArtifact->SetAvfGirder(abar*nPrimaryLegs);
-      pArtifact->SetSGirder(Sg);
-
-      // additional hi stirrups
-      Float64 nAdditionalLegs;
-      Float64 Avftf = GetAdditionalHorizInterfaceAvs(pConfig->StirrupConfig, poi.GetDistFromStart(),
-                                 gdr_length, lft_supp_loc,rgt_sup_loc,
-                                 &size, &abar, &nAdditionalLegs, &Sg);
-
-      pArtifact->SetAvfAdditional(abar*nAdditionalLegs);
-      pArtifact->SetSAdditional(Sg);
-
-      // legs per stirrup
-      Float64 num_legs = nPrimaryLegs + nAdditionalLegs;
-
-      pArtifact->SetNumLegs(num_legs);
-   }
-   else
-   {
-      // Use current girder model data
-      GET_IFACE(IStirrupGeometry, pStirrupGeometry);
-      Float64 Sg;
-      matRebar::Size size;
-      Float64 abar, nl;
-      Float64 Avs = pStirrupGeometry->GetPrimaryHorizInterfaceAvs(poi, &size, &abar, &nl, &Sg);
-
-      pArtifact->SetAvfGirder(abar*nl);
-      pArtifact->SetSGirder(Sg);
-
-      // addtional hi stirrups
-      Float64 Avftf = pStirrupGeometry->GetAdditionalHorizInterfaceAvs(poi, &size, &abar, &nl, &Sg);
-
-      pArtifact->SetAvfAdditional(abar*nl);
-      pArtifact->SetSAdditional(Sg);
-
-      // legs per stirrup
-      Float64 num_legs = pStirrupGeometry->GetPrimaryHorizInterfaceBarCount(poi);
-
-      num_legs += pStirrupGeometry->GetAdditionalHorizInterfaceBarCount(poi);
-
-      pArtifact->SetNumLegs(num_legs);
-   }
+   pArtifact->SetIsTopFlangeRoughened(is_roughened);
+   pArtifact->SetDoAllPrimaryStirrupsEngageDeck(do_all_stirrups_engage_deck);
 
    // friction and cohesion factors
-   bool is_roughened = pBridge->AreGirderTopFlangesRoughened(poi.GetSpan(),poi.GetGirder());
    lrfdConcreteUtil::DensityType girderDensityType = (lrfdConcreteUtil::DensityType)pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
    lrfdConcreteUtil::DensityType slabDensityType   = (lrfdConcreteUtil::DensityType)pMaterial->GetSlabConcreteType();
    Float64 c  = lrfdConcreteUtil::ShearCohesionFactor(is_roughened,girderDensityType,slabDensityType);
@@ -1704,13 +1717,86 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    pArtifact->SetVsAvg(Vsavg);
 
    // Shear strength so that equation 5.8.4.1-4 is not applicable
-   Float64 vs_limit = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened);
+   Float64 vs_limit = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened,do_all_stirrups_engage_deck);
    pArtifact->SetVsLimit(vs_limit);
 
    // Get Av/S required for design algorithm
    Float64 avs_reqd = lrfdConcreteUtil::AvfRequiredForHoriz(Vuh, phi, avfmin, c, u, K1, K2,
                                                             bv, Acv, pArtifact->GetAvOverS(), Pc, fc, fy);
    pArtifact->SetAvOverSReqd(avs_reqd);
+}
+
+void pgsDesigner2::ComputeHorizAvs(const pgsPointOfInterest& poi,bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, 
+                                   const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact)
+{
+   if (pConfig!=NULL)
+   {
+      // Use design config
+      SpanIndexType span  = poi.GetSpan();
+      GirderIndexType gdr = poi.GetGirder();
+
+      *pIsRoughened = pConfig->StirrupConfig.bIsRoughenedSurface;
+      *pDoAllStirrupsEngageDeck = DoAllStirrupsEngageDeck(pConfig->StirrupConfig);
+
+      GET_IFACE(IBridge, pBridge);
+      Float64 gdr_length = pBridge->GetGirderLength(span,gdr);
+      Float64 location = poi.GetDistFromStart();
+      Float64 lft_supp_loc = pBridge->GetGirderStartConnectionLength(span,gdr);
+      Float64 rgt_sup_loc = gdr_length - pBridge->GetGirderEndConnectionLength(span,gdr);
+
+      Float64 Sg;
+      matRebar::Size size;
+      Float64 abar, nPrimaryLegs;
+      Float64 Avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getHorizShearStirrup, poi.GetDistFromStart(),
+                                 gdr_length, lft_supp_loc,rgt_sup_loc,
+                                 &size, &abar, &nPrimaryLegs, &Sg);
+
+      pArtifact->SetAvfGirder(abar*nPrimaryLegs);
+      pArtifact->SetSGirder(Sg);
+
+      // additional hi stirrups
+      Float64 nAdditionalLegs;
+      Float64 Avftf = GetAdditionalHorizInterfaceAvs(pConfig->StirrupConfig, poi.GetDistFromStart(),
+                                 gdr_length, lft_supp_loc,rgt_sup_loc,
+                                 &size, &abar, &nAdditionalLegs, &Sg);
+
+      pArtifact->SetAvfAdditional(abar*nAdditionalLegs);
+      pArtifact->SetSAdditional(Sg);
+
+      // legs per stirrup
+      Float64 num_legs = nPrimaryLegs + nAdditionalLegs;
+
+      pArtifact->SetNumLegs(num_legs);
+   }
+   else
+   {
+      // Use current girder model data
+      GET_IFACE(IBridge,pBridge);
+      GET_IFACE(IStirrupGeometry, pStirrupGeometry);
+      *pIsRoughened = pBridge->AreGirderTopFlangesRoughened(poi.GetSpan(),poi.GetGirder());
+      *pDoAllStirrupsEngageDeck = pStirrupGeometry->DoAllPrimaryStirrupsEngageDeck(poi.GetSpan(),poi.GetGirder());
+
+      Float64 Sg;
+      matRebar::Size size;
+      Float64 abar, nl;
+      Float64 Avs = pStirrupGeometry->GetPrimaryHorizInterfaceAvs(poi, &size, &abar, &nl, &Sg);
+
+      pArtifact->SetAvfGirder(abar*nl);
+      pArtifact->SetSGirder(Sg);
+
+      // addtional hi stirrups
+      Float64 Avftf = pStirrupGeometry->GetAdditionalHorizInterfaceAvs(poi, &size, &abar, &nl, &Sg);
+
+      pArtifact->SetAvfAdditional(abar*nl);
+      pArtifact->SetSAdditional(Sg);
+
+      // legs per stirrup
+      Float64 num_legs = pStirrupGeometry->GetPrimaryHorizInterfaceBarCount(poi);
+
+      num_legs += pStirrupGeometry->GetAdditionalHorizInterfaceBarCount(poi);
+
+      pArtifact->SetNumLegs(num_legs);
+   }
 }
 
 Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
@@ -1852,6 +1938,10 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    // see if we even need to have stirrups
    bool is_app = vertArtifact.GetAreStirrupsReqd();
    pArtifact->SetApplicability(is_app);
+
+   // Set flag to indicate if we are in end region (outside of css) for reporting 
+   bool is_end = vertArtifact.IsInEndRegion();
+   pArtifact->SetInEndRegion(is_end);
 
    // Minimum transverse reinforcement 5.8.2.5
    // Set to zero if not applicable
@@ -2334,43 +2424,6 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsType
    PierIndexType prev_pier = PierIndexType(span);
    PierIndexType next_pier = prev_pier+1;
 
-   GET_IFACE(ILimitStateForces,pForces);
-   Float64 Rmin, Rmax;
-   if ( analysisType == pgsTypes::Envelope )
-   {
-      Float64 min,max;
-
-      pForces->GetReaction(ls,pgsTypes::BridgeSite3,prev_pier,gdr,MaxSimpleContinuousEnvelope,true,&min,&max);
-      Rmax = max;
-
-      // we don't need the min reaction
-      //pForces->GetReaction(ls,pgsTypes::BridgeSite3,prev_pier,gdr,MinSimpleContinuousEnvelope,&min,&max);
-      //Rmin = min;
-   }
-   else
-   {
-      pForces->GetReaction(ls,pgsTypes::BridgeSite3,prev_pier,gdr,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,&Rmin,&Rmax);
-   }
-
-   m_bSkipShearCheckBeforeLeftCS = (0 < Rmax ? true : false);
-
-   if ( analysisType == pgsTypes::Envelope )
-   {
-      Float64 min,max;
-
-      pForces->GetReaction(ls,pgsTypes::BridgeSite3,next_pier,gdr,MaxSimpleContinuousEnvelope,true,&min,&max);
-      Rmax = max;
-
-      // we don't need the min reaction
-      //pForces->GetReaction(ls,pgsTypes::BridgeSite3,next_pier,gdr,MinSimpleContinuousEnvelope,&min,&max);
-      //Rmin = min;
-   }
-   else
-   {
-      pForces->GetReaction(ls,pgsTypes::BridgeSite3,next_pier,gdr,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,&Rmin,&Rmax);
-   }
-
-   m_bSkipShearCheckAfterRightCS = (0 < Rmax ? true : false);
 
    // cache CS locations as they are very expensive to get
    GET_IFACE(IPointOfInterest,pPOI);
@@ -2470,20 +2523,36 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,const std::
    for ( ; poiIter != poiIterEnd; poiIter++)
    {
       const pgsPointOfInterest& poi = *poiIter;
-      sysSectionValue Vmin, Vmax;
+      Float64 poi_loc = poi.GetDistFromStart();
 
+      // Take demand at CSS if poi is in end region
+      pgsPointOfInterest poi_4demand;
+      if (poi_loc < m_LeftCS.GetDistFromStart())
+      {
+         poi_4demand = m_LeftCS;
+      }
+      else if (poi_loc > m_RightCS.GetDistFromStart())
+      {
+         poi_4demand = m_RightCS;
+      }
+      else
+      {
+         poi_4demand = poi;
+      }
+
+      sysSectionValue Vmin, Vmax;
       if ( analysisType == pgsTypes::Envelope )
       {
          sysSectionValue min,max;
-         pLimitStateForces->GetShear(ls,stage,poi,MaxSimpleContinuousEnvelope,&min,&max);
+         pLimitStateForces->GetShear(ls,stage,poi_4demand,MaxSimpleContinuousEnvelope,&min,&max);
          Vmax = max;
 
-         pLimitStateForces->GetShear(ls,stage,poi,MinSimpleContinuousEnvelope,&min,&max);
+         pLimitStateForces->GetShear(ls,stage,poi_4demand,MinSimpleContinuousEnvelope,&min,&max);
          Vmin = min;
       }
       else
       {
-         pLimitStateForces->GetShear(ls,stage,poi,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&Vmin,&Vmax);
+         pLimitStateForces->GetShear(ls,stage,poi_4demand,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&Vmin,&Vmax);
       }
 
       // Take max absolute value for demand
@@ -6555,6 +6624,9 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
       shear_data.ShearZones.front().BarSpacing  = 24.0 * one_inch;
       shear_data.ShearZones.front().nVertBars   = 2;
       shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
+
+      shear_data.bIsRoughenedSurface = m_ShearDesignTool.GetIsTopFlangeRoughened();
+      shear_data.bUsePrimaryForSplitting = m_ShearDesignTool.GetDoPrimaryBarsProvideSplittingCapacity();
    }
 
    pArtifact->SetShearData(shear_data);

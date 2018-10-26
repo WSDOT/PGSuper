@@ -461,6 +461,7 @@ interface IStirrupGeometry : IUnknown
 
    // Horizontal interface shear
    virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual bool DoAllPrimaryStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr)=0;
    virtual Float64 GetPrimaryHorizInterfaceS(const pgsPointOfInterest& poi)=0;
    virtual Float64 GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing)=0;
    virtual Float64 GetPrimaryHorizInterfaceBarCount(const pgsPointOfInterest& poi)=0;

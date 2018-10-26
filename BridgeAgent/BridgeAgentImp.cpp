@@ -8119,6 +8119,30 @@ bool CBridgeAgentImp::DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gd
    return false;
 }
 
+bool CBridgeAgentImp::DoAllPrimaryStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr)
+{
+   // Check if all vertical stirrups engage deck
+   const CShearData& rShearData = GetShearData(span, gdr);
+
+   if (rShearData.ShearZones.empty())
+   {
+      return false;
+   }
+   else
+   {
+      for (CShearData::ShearZoneConstIterator its = rShearData.ShearZones.begin(); its != rShearData.ShearZones.end(); its++)
+      {
+         // Make sure there are vertical bars, and at least as many horiz int bars
+         if (its->VertBarSize==matRebar::bsNone ||
+             its->nVertBars <= 0                ||
+             its->nHorzInterfaceBars < its->nVertBars)
+            return false;
+      }
+   }
+
+   return true;
+}
+
 Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceS(const pgsPointOfInterest& poi)
 {
    Float64 spacing = 0.0;
@@ -8167,10 +8191,10 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceS(const pgsPointOfInterest& 
    const CShearData& rShearData = GetShearData(span, gdr);
 
    // Additional horizontal bars
-   const CHorizontalInterfaceZoneData& rhdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rShearData);
-   if ( rhdata.BarSize!=matRebar::bsNone )
+   const CHorizontalInterfaceZoneData* phdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rShearData);
+   if ( phdata!=NULL && phdata->BarSize!=matRebar::bsNone )
    {
-      spacing = rhdata.BarSpacing;
+      spacing = phdata->BarSpacing;
    }
 
    return spacing;
@@ -8186,10 +8210,10 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceBarCount(const pgsPointOfInt
    const CShearData& rShearData = GetShearData(span, gdr);
 
    // Additional horizontal bars
-   const CHorizontalInterfaceZoneData& rhdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rShearData);
-   if ( rhdata.BarSize!=matRebar::bsNone )
+   const CHorizontalInterfaceZoneData* phdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rShearData);
+   if ( phdata!=NULL && phdata->BarSize!=matRebar::bsNone )   
    {
-      cnt = rhdata.nBars;
+      cnt = phdata->nBars;
    }
 
    return cnt;
@@ -8239,27 +8263,30 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest
    Float64 Abar(0.0);
    Float64 nBars(0.0);
    Float64 spacing(0.0);
+   matRebar::Size barSize(matRebar::bsNone);
 
    SpanIndexType span = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
    const CShearData& rsheardata = GetShearData(span, gdr);
-   
-   const CHorizontalInterfaceZoneData& rhdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rsheardata);
-
-   matRebar::Size barSize = rhdata.BarSize;
-
-   if ( barSize!=matRebar::bsNone && !IsZero(rhdata.BarSpacing) && rhdata.nBars>0.0 )
+   const CHorizontalInterfaceZoneData* phdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rsheardata);
+  
+   if (phdata!=NULL)
    {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pbar = prp->GetRebar(rsheardata.ShearBarType,rsheardata.ShearBarGrade,barSize);
+      barSize = phdata->BarSize;
 
-      Abar   = pbar->GetNominalArea();
-      nBars = rhdata.nBars;
-      spacing = rhdata.BarSpacing;
+      if ( barSize!=matRebar::bsNone && !IsZero(phdata->BarSpacing) && phdata->nBars>0.0 )
+      {
+         lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+         const matRebar* pbar = prp->GetRebar(rsheardata.ShearBarType,rsheardata.ShearBarGrade,barSize);
 
-      if (spacing > 0.0)
-         avs =  nBars * Abar / spacing;
+         Abar    = pbar->GetNominalArea();
+         nBars   = phdata->nBars;
+         spacing = phdata->BarSpacing;
+
+         if (spacing > 0.0)
+            avs =  nBars * Abar / spacing;
+      }
    }
 
    *pSize          = barSize;
@@ -8651,7 +8678,7 @@ ZoneIndexType CBridgeAgentImp::GetHorizInterfaceShearZoneIndexAtPoi(const pgsPoi
 
    ZoneIndexType nz = GetNumHorizInterfaceZones(span, gdr);
    if (nz==0)
-      return -1;
+      return INVALID_INDEX;
 
    Float64 glen = GetGirderLength(span,gdr);
    Float64 location = poi.GetDistFromStart();
@@ -8667,12 +8694,17 @@ ZoneIndexType CBridgeAgentImp::GetHorizInterfaceShearZoneIndexAtPoi(const pgsPoi
       return zone;
 }
 
-const CHorizontalInterfaceZoneData& CBridgeAgentImp::GetHorizInterfaceShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData)
+const CHorizontalInterfaceZoneData* CBridgeAgentImp::GetHorizInterfaceShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData)
 {
    ZoneIndexType idx = GetHorizInterfaceShearZoneIndexAtPoi(poi,rShearData);
-   const CHorizontalInterfaceZoneData& rzonedata = rShearData.HorizontalInterfaceZones[idx];
-
-   return rzonedata;
+   if (idx!=INVALID_INDEX)
+   {
+      return &rShearData.HorizontalInterfaceZones[idx];
+   }
+   else
+   {
+      return NULL;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////

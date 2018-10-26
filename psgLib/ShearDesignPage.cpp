@@ -21,9 +21,7 @@ IMPLEMENT_DYNAMIC(CShearDesignPage, CPropertyPage)
 
 CShearDesignPage::CShearDesignPage()
 	: CPropertyPage(CShearDesignPage::IDD)
-   , m_bTopFlangeRoughened(FALSE)
    , m_bExtendDeckBars(FALSE)
-   , m_bBarsProvideSplitting(FALSE)
    , m_bBarsProvideConfinement(FALSE)
    , m_LongReinfShearMethod(0)
 {
@@ -94,9 +92,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_MIN_ZONELEN_DIST, IDC_MIN_ZONELEN_DIST_UNIT, m_MinZoneLengthDist, pDisplayUnits->ComponentDim );
    DDV_UnitValueGreaterThanZero(pDX, IDC_MIN_ZONELEN_DIST, m_MinZoneLengthDist, pDisplayUnits->ComponentDim);
 
-   DDX_Check(pDX, IDC_TOP_FLANGE_ROUGHENED, m_bTopFlangeRoughened);
    DDX_Check(pDX, IDC_EXTEND_DECK_BARS, m_bExtendDeckBars);
-   DDX_Check(pDX, IDC_BARS_PROVIDE_SPLITTING, m_bBarsProvideSplitting);
    DDX_Check(pDX, IDC_BARS_PROVIDE_CONFINEMENT, m_bBarsProvideConfinement);
 
    DDX_CBIndex(pDX, IDC_LONG_REINF_SHEAR_METHOD, m_LongReinfShearMethod);

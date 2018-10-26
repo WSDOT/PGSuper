@@ -71,8 +71,16 @@ public:
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                              IEAFDisplayUnits* pDisplayUnits,
                              pgsTypes::Stage stage,
-                             pgsTypes::LimitState ls,
-                             bool& bStrutAndTieRequired) const;
+                             pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const;
+
+   //------------------------------------------------------------------------
+   // Builds the notes after the  table.
+   void BuildNotes(rptChapter* pChapter, 
+                   IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   pgsTypes::Stage stage,
+                   pgsTypes::LimitState ls, bool bStrutAndTieRequired) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

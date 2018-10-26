@@ -95,18 +95,8 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    *pChapter << p;
    bool bStrutAndTieRequired;
    *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
-   if ( bStrutAndTieRequired )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      *p << STRUT_AND_TIE_REQUIRED << rptNewLine << rptNewLine;
-   }
-   else
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      *p << SUPPORT_COMPRESSION << rptNewLine << rptNewLine;
-   }
+
+    CShearCheckTable().BuildNotes(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired);
 
    if ( bPermit )
    {
@@ -114,18 +104,7 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       *pChapter << p;
       *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
 
-      if ( bStrutAndTieRequired )
-      {
-         p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-         *pChapter << p;
-         *p << STRUT_AND_TIE_REQUIRED << rptNewLine << rptNewLine;
-      }
-      else
-      {
-         p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-         *pChapter << p;
-         *p << SUPPORT_COMPRESSION << rptNewLine << rptNewLine;
-      }
+      CShearCheckTable().BuildNotes(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired);
    }
 
    // Interface Shear check

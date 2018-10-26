@@ -20,8 +20,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1504>
-<meta name=layout-width content=618>
+<meta name=layout-height content=1330>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -42,8 +42,12 @@
 							x-value="Shear Design Tab">}}-->Shear Design 
  Tab<!--kadov_tag{{</variable>}}--></h1>
 
-<p>Parameters on this tab control the outcome of the automated shear design 
- algorithm for this girder type.</p>
+<p>Parameter settings on this tab control the outcome of the automated 
+ shear design algorithm for this girder type.</p>
+
+<p class=Tip>Note there are also settings on the girder library Transverse 
+ Reinforcement tab that control design outcomes. See the bottom of this 
+ page for more information.</p>
 
 <h2>Available Bar Sizes/Legs</h2>
 
@@ -89,22 +93,11 @@
 
 <h2>Design Control Options</h2>
 
-<h4>Top flange intentionally roughened for horizontal interface shear capacity</h4>
-
-<p>Select this check box if the top flange of the girder is to be intentionally 
- roughened to provide horizontal interface shear capacity (LRFD 5.8.4)</p>
-
 <h4>Extend primary shear bars into deck for horizontal interface shear 
  capacity</h4>
 
 <p>Select this check box to extend primary shear bars into the deck to 
  provide horizontal interface shear capacity (LRFD 5.8.4)</p>
-
-<h4>Primary shear bars provide splitting capacity</h4>
-
-<p>Select this check box if primary shear stirrups are to provide splitting 
- capacity <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->(LRFD 
- 5.10.10.1)</p>
 
 <h4>Primary shear bars act as confinement reinforcement</h4>
 
@@ -130,6 +123,24 @@
  can only be done if a flexural design is being run in addition to shear 
  design and will restart the flexural design algorithm.</p></li>
 </ol>
+
+<p>&nbsp;</p>
+
+<h2>Control Options on Transverse Reinforcement Tab</h2>
+
+<p>The following options on the <a href="PsglibTransverse_Reinforcement_Tab.htm">Transverse 
+ Reinforcement Tab</a> also affect the outcome of the shear design algorithm. 
+ Refer to the documentation on that tab using the hyperlink in the previous 
+ sentence for more information.</p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-P><p>Top flange intentionally roughened for horizontal 
+ interface shear capacity</p></li>
+	
+	<li class=kadov-P><p>Primary shear bars provide splitting capacity</p></li>
+</ul>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

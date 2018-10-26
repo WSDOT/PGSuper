@@ -161,10 +161,22 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
       const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
 
+      if (!pArtifact->IsApplicable())
+         continue;
+
       ColumnIndexType col = 0;
 
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
-      (*table)(row,col++) << dim.SetValue( pArtifact->GetSMax() );
+      Float64 smax = pArtifact->GetSMax();
+      if (smax>0.0)
+      {
+         (*table)(row,col++) << dim.SetValue( smax );
+      }
+      else
+      {
+         (*table)(row,col++) << symbol(INFINITY);
+      }
+
       (*table)(row,col++) << dim.SetValue( pArtifact->GetSall() );
 
       if ( pArtifact->SpacingPassed() )
@@ -224,6 +236,27 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
        pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
        *pChapter << pPara;
        *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: b")<<Sub(_T("v"))<<_T(" exceeds ")<<dimu.SetValue(bvmax)<<_T(" and number of legs < ")<< scalar.SetValue(minlegs)<<rptNewLine;
+   }
+
+    pPara = new rptParagraph();
+    *pChapter << pPara;
+   // Check that avs at end pois are at least that at CSS
+   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   {
+      const pgsPointOfInterest& poi = *i;
+
+      const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
+      if ( psArtifact == NULL )
+         continue;
+
+      const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
+
+      if ( pArtifact->DidAvsDecreaseAtEnd() )
+      {
+         *pPara << RPT_FAIL << _T(" - Horizontal ") << Sub2(_T("a"),_T("vf")) << _T(" at ") << location.SetValue(stage, poi, end_size)
+                << _T(" is less than at the design section (CS). Revise stirrup details to increase horizontal ") << Sub2(_T("a"),_T("vf"))
+                << _T(" at this location.") << rptNewLine;
+      }
    }
 }
 

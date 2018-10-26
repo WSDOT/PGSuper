@@ -299,10 +299,11 @@ void CGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType
    m_AllowEndAdjustment = allowEndAdjustment;
    m_AllowHpAdjustment  = allowHpAdjustment;
 
-   m_HsoEndMeasurement = rPrestressData.HsoEndMeasurement;
-   m_HsoHpMeasurement =  rPrestressData.HsoHpMeasurement;
-
    // Get current offset input values - we will force in bounds if needed
+   // Make sure legacy values can't sneak in
+   m_HsoEndMeasurement = rPrestressData.HsoEndMeasurement==hsoLEGACY ? hsoCGFROMTOP    : rPrestressData.HsoEndMeasurement;
+   m_HsoHpMeasurement =  rPrestressData.HsoHpMeasurement==hsoLEGACY  ? hsoCGFROMBOTTOM : rPrestressData.HsoHpMeasurement;
+
    m_HpOffsetAtEnd = hpOffsetAtEnd;
    m_HpOffsetAtHp  = hpOffsetAtHp;
 

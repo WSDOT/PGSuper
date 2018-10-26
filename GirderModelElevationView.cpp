@@ -1264,9 +1264,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
 
          std::_tostringstream os;
          os << _T("Point Load\r\n");
-         os << _T("P = ") << strMagnitude;
+         os << _T("P = ") << (LPCTSTR)strMagnitude;
          os << _T("   ");
-         os << _T("L = ") << strLocation << _T(" from left end of girder");
+         os << _T("L = ") << (LPCTSTR)strLocation << _T(" from left end of girder");
          os << _T("\r\n");
          os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
 
@@ -1394,13 +1394,13 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
 
          std::_tostringstream os;
          os << _T("Distributed Load\r\n");
-         os << _T("Wstart = ") << strStartMagnitude;
+         os << _T("Wstart = ") << (LPCTSTR)strStartMagnitude;
          os << _T("   ");
-         os << _T("Wend = ") << strEndMagnitude;
+         os << _T("Wend = ") << (LPCTSTR)strEndMagnitude;
          os << _T("\r\n");
-         os << _T("Lstart = ") << strStartLocation;
+         os << _T("Lstart = ") << (LPCTSTR)strStartLocation;
          os << _T("   ");
-         os << _T("Lend = ") << strEndLocation << _T(" from left end of girder");
+         os << _T("Lend = ") << (LPCTSTR)strEndLocation << _T(" from left end of girder");
          os << _T("\r\n");
          os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
 
@@ -1504,9 +1504,9 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
 
          std::_tostringstream os;
          os << _T("Moment Load\r\n");
-         os << _T("M = ") << strMagnitude;
+         os << _T("M = ") << (LPCTSTR)strMagnitude;
          os << _T("   ");
-         os << _T("L = ") << strLocation << _T(" from left end of girder");
+         os << _T("L = ") << (LPCTSTR)strLocation << _T(" from left end of girder");
          os << _T("\r\n");
          os << GetLoadGroupNameForUserLoad(load.m_LoadCase) << _T(" Load Case");
 

@@ -167,9 +167,7 @@ m_MaxDebondLengthByHardDistance(-1.0)
    m_MaxShearCapacityChangeInZone    = 0.50;
    m_MinZoneLengthSpacings           = 3;
    m_MinZoneLengthLength             = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
-   m_IsTopFlangeRoughened            = true;
    m_DoExtendBarsIntoDeck            = true;
-   m_DoBarsProvideSplittingCapacity  = true;
    m_DoBarsActAsConfinement          = true;
    m_LongShearCapacityIncreaseMethod   = isAddingRebar;
 }
@@ -455,9 +453,9 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("MaxShearCapacityChangeInZone"), m_MaxShearCapacityChangeInZone);
       pSave->Property(_T("MinZoneLengthSpacings"), m_MinZoneLengthSpacings);
       pSave->Property(_T("MinZoneLengthLength"), m_MinZoneLengthLength);
-      pSave->Property(_T("IsTopFlangeRoughened"), m_IsTopFlangeRoughened);
+      pSave->Property(_T("IsTopFlangeRoughened"), true); // NOTE: This value was removed after beta testing was started. Keep value for reverse compatibility
       pSave->Property(_T("DoExtendBarsIntoDeck"), m_DoExtendBarsIntoDeck);
-      pSave->Property(_T("DoBarsProvideSplittingCapacity"), m_DoBarsProvideSplittingCapacity);
+      pSave->Property(_T("DoBarsProvideSplittingCapacity"), true); // Same note as IsTopFlangeRoughened above
       pSave->Property(_T("DoBarsActAsConfinement"), m_DoBarsActAsConfinement);
       pSave->Property(_T("LongShearCapacityIncreaseMethod"), (long)m_LongShearCapacityIncreaseMethod);
    }
@@ -1735,13 +1733,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-         if ( !pLoad->Property(_T("IsTopFlangeRoughened"),&m_IsTopFlangeRoughened) )
+         bool bogus_bool; // Load these values even though they are no longer used.
+         if ( !pLoad->Property(_T("IsTopFlangeRoughened"),&bogus_bool) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->Property(_T("DoExtendBarsIntoDeck"),&m_DoExtendBarsIntoDeck) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("DoBarsProvideSplittingCapacity"),&m_DoBarsProvideSplittingCapacity) )
+         if ( !pLoad->Property(_T("DoBarsProvideSplittingCapacity"),&bogus_bool) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->Property(_T("DoBarsActAsConfinement"),&m_DoBarsActAsConfinement) )
@@ -1958,9 +1957,7 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= ::IsEqual(m_MaxShearCapacityChangeInZone, rOther.m_MaxShearCapacityChangeInZone);
    test &= m_MinZoneLengthSpacings == rOther.m_MinZoneLengthSpacings;
    test &= ::IsEqual(m_MinZoneLengthLength, rOther.m_MinZoneLengthLength);
-   test &= m_IsTopFlangeRoughened == rOther.m_IsTopFlangeRoughened;
    test &= m_DoExtendBarsIntoDeck == rOther.m_DoExtendBarsIntoDeck;
-   test &= m_DoBarsProvideSplittingCapacity == rOther.m_DoBarsProvideSplittingCapacity;
    test &= m_DoBarsActAsConfinement == rOther.m_DoBarsActAsConfinement;
    test &= m_LongShearCapacityIncreaseMethod == rOther.m_LongShearCapacityIncreaseMethod;
 
@@ -3210,9 +3207,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_MaxShearCapacityChangeInZone    = rOther.m_MaxShearCapacityChangeInZone;
    m_MinZoneLengthSpacings           = rOther.m_MinZoneLengthSpacings;
    m_MinZoneLengthLength             = rOther.m_MinZoneLengthLength;
-   m_IsTopFlangeRoughened            = rOther.m_IsTopFlangeRoughened;
    m_DoExtendBarsIntoDeck            = rOther.m_DoExtendBarsIntoDeck;
-   m_DoBarsProvideSplittingCapacity  = rOther.m_DoBarsProvideSplittingCapacity;
    m_DoBarsActAsConfinement          = rOther.m_DoBarsActAsConfinement;
    m_LongShearCapacityIncreaseMethod = rOther.m_LongShearCapacityIncreaseMethod;
 }
@@ -3657,17 +3652,6 @@ void GirderLibraryEntry::SetMinZoneLength(Uint32 Spacings, Float64 Length)
    m_MinZoneLengthLength = Length;
 }
 
-bool GirderLibraryEntry::GetIsTopFlangeRoughened() const
-{
-   return m_IsTopFlangeRoughened;
-}
-
-void GirderLibraryEntry::SetIsTopFlangeRoughened(bool isRough)
-{
-   m_IsTopFlangeRoughened = isRough;
-}
-
-
 bool GirderLibraryEntry::GetExtendBarsIntoDeck() const
 {
    return m_DoExtendBarsIntoDeck;
@@ -3677,18 +3661,6 @@ void GirderLibraryEntry::SetExtendBarsIntoDeck(bool isTrue)
 {
    m_DoExtendBarsIntoDeck = isTrue;
 }
-
-
-bool GirderLibraryEntry::GetBarsProvideSplittingCapacity() const
-{
-   return m_DoBarsProvideSplittingCapacity;
-}
-
-void GirderLibraryEntry::SetBarsProvideSplittingCapacity(bool isTrue)
-{
-   m_DoBarsProvideSplittingCapacity = isTrue;
-}
-
 
 bool GirderLibraryEntry::GetBarsActAsConfinement() const
 {

@@ -58,7 +58,7 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, std::ve
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData& rsdata);
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData& rsdata);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData& rsdata);
-void write_design_notes(rptChapter* pChapter, const std::vector<pgsDesignArtifact::DesignNote>& notes);
+void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsDesignArtifact::DesignNote>& notes);
 
 // Function to compute columns in table that attempts to group all girders in a span per table
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
@@ -211,7 +211,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
       }
    }
 
-   if (!list.empty())
+   if (list.size()>1)
    {
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       (*pChapter) << pPara;
@@ -266,6 +266,19 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
    arDesignOptions options = pArtifact->GetDesignOptions();
 
+   // Start report with design notes. Notes will be written at end of this function
+   bool doNotes = (pArtifact->GetDoDesignFlexure()!=dtNoDesign && pArtifact->GetOutcome()==pgsDesignArtifact::Success) ||
+                   pArtifact->DoDesignNotesExist();
+
+   rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
+   if ( doNotes )
+   {
+      rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pParagraph;
+      *pParagraph << _T("Design Notes:");
+      *pChapter << pNotesParagraph;
+   }
+
    if (pArtifact->GetDoDesignFlexure()!=dtNoDesign)
    {
       GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
@@ -275,6 +288,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       *pChapter << pParagraph;
+      *pParagraph << _T("Flexure Design:");
 
       // Make note if original strands were filled using direct input
       if (pgirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
@@ -685,19 +699,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    }
 
    // End up with some notes about Design
-   if ( (pArtifact->GetDoDesignFlexure()!=dtNoDesign && pArtifact->GetOutcome()==pgsDesignArtifact::Success) ||
-        pArtifact->DoDesignNotesExist())
+   if ( doNotes )
    {
-      rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-      *pChapter << pParagraph;
-      *pParagraph << _T("Design Notes:") << rptNewLine;
-
-      pParagraph = new rptParagraph();
-
       // Explicit notes created during design
       if (pArtifact->DoDesignNotesExist())
       {
-         write_design_notes(pChapter, design_notes);
+         write_design_notes(pNotesParagraph, design_notes);
       }
 
       if (pArtifact->GetDoDesignFlexure()!=dtNoDesign && pArtifact->GetOutcome()==pgsDesignArtifact::Success)
@@ -710,12 +717,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          Float64 max_girder_fc = pLimits->GetMaxGirderFc(concType);
          if (pArtifact->GetReleaseStrength() > max_girder_fci)
          {
-            *pParagraph <<color(Red)<< _T("Warning: The designed girder release strength exceeds the normal value of ")<<stress.SetValue(max_girder_fci)<<color(Black)<< rptNewLine;
+            *pNotesParagraph <<color(Red)<< _T("Warning: The designed girder release strength exceeds the normal value of ")<<stress.SetValue(max_girder_fci)<<color(Black)<< rptNewLine;
          }
 
          if (pArtifact->GetConcreteStrength() > max_girder_fc)
          {
-            *pParagraph <<color(Red)<< _T("Warning: The designed girder final concrete strength exceeds the normal value of ")<<stress.SetValue(max_girder_fc)<<color(Black)<< rptNewLine;
+            *pNotesParagraph <<color(Red)<< _T("Warning: The designed girder final concrete strength exceeds the normal value of ")<<stress.SetValue(max_girder_fc)<<color(Black)<< rptNewLine;
          }
 
          // Negative camber is not technically a spec check, but a warning
@@ -730,27 +737,25 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          double excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
          if ( excess_camber < 0 )
          {
-            *pParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
+            *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
          }
 
-         *pParagraph << _T("Concrete release strength was controlled by ")<<pArtifact->GetReleaseDesignState().AsString() << rptNewLine;
-         *pParagraph << _T("Concrete final strength was controlled by ")<<pArtifact->GetFinalDesignState().AsString() << rptNewLine;
-         *pParagraph << rptNewLine;
+         *pNotesParagraph << _T("Concrete release strength was controlled by ")<<pArtifact->GetReleaseDesignState().AsString() << rptNewLine;
+         *pNotesParagraph << _T("Concrete final strength was controlled by ")<<pArtifact->GetFinalDesignState().AsString() << rptNewLine;
+         *pNotesParagraph << rptNewLine;
 
          if ( options.doDesignSlabOffset && (pBridge->GetDeckType()!=pgsTypes::sdtNone) )
          {
             if ( pIBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
             {
-               *pParagraph << _T("Slab Offset will be applied to the bridge") << rptNewLine;
+               *pNotesParagraph << _T("Slab Offset will be applied to the bridge") << rptNewLine;
             }
             else
             {
-               *pParagraph << _T("Slab Offset will be applied to this girder") << rptNewLine;
+               *pNotesParagraph << _T("Slab Offset will be applied to this girder") << rptNewLine;
             }
          }
       }
-
-      *pChapter << pParagraph;
    }
 }
 
@@ -851,6 +856,14 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
          *pParagraph << _T("Additional strands are required to meet longitudinal reinforcement for shear requirements. However, this can only be performed if flexural design is enabled.") << rptNewLine;
          break;
 
+      case pgsDesignArtifact::NoDevelopmentLengthForLongReinfShear:
+         *pParagraph << _T("Additional longitudinal MS bars are required to meet longitudinal reinforcement for shear requirements. However, the face of support is at the end of the girder, so there is no room for rebar development. Consider changing the connection to allow for development.") << rptNewLine;
+         break;
+
+      case pgsDesignArtifact::NoStrandDevelopmentLengthForLongReinfShear:
+         *pParagraph << _T("Additional strands are required to meet longitudinal reinforcement for shear requirements. However, the face of support is at the end of the girder, so there is no room for prestress development. Consider changing the connection to allow for development.") << rptNewLine;
+         break;
+
       case pgsDesignArtifact::TooMuchStrandsForLongReinfShear:
          *pParagraph << _T("Could not add enough strands to meet longitudinal reinforcement for shear requirements.") << rptNewLine;
          break;
@@ -915,12 +928,8 @@ std::wstring GetDesignNoteString(pgsDesignArtifact::DesignNote note)
    return std::wstring();
 }
 
-void write_design_notes(rptChapter* pChapter, const std::vector<pgsDesignArtifact::DesignNote>& notes)
+void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsDesignArtifact::DesignNote>& notes)
 {
-   rptParagraph* pParagraph;
-   pParagraph = new rptParagraph();
-   *pChapter << pParagraph;
-
    for(std::vector<pgsDesignArtifact::DesignNote>::const_iterator it = notes.begin(); it!=notes.end(); it++)
    {
       if (*it != pgsDesignArtifact::dnExistingShearDesignPassedSpecCheck) // this is written elsewhere

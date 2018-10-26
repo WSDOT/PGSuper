@@ -123,39 +123,27 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       if ( psArtifact == NULL )
          continue;
 
-      (*table)(row,0) << location.SetValue( stage, poi, end_size );
-
       const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
 
-      (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? _T("Yes") : _T("No"));
-      (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? _T("Yes") : _T("No"));
+      bool needs_strut_tie = pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd);
 
-      Float64 Vu;
-      Float64 Vr;
       if ( pArtifact->IsApplicable() )
       {
+         (*table)(row,0) << location.SetValue( stage, poi, end_size );
+         (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? _T("Yes") : _T("No"));
+         (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? _T("Yes") : _T("No"));
+
+         Float64 Vu;
+         Float64 Vr;
          Vu = pArtifact->GetDemand();
          Vr = pArtifact->GetCapacity();
 
          (*table)(row,3) << shear.SetValue( Vu );
          (*table)(row,4) << shear.SetValue( Vr );
-      }
-      else
-      {
-         if ( pArtifact->IsStrutAndTieRequired( poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd ) )
-         {
-            (*table)(row,3) << _T("*");
-            (*table)(row,4) << _T("*");
-         }
-         else
-         {
-            (*table)(row,3) << _T("$");
-            (*table)(row,4) << _T("$");
-         }
-      }
 
-      if ( pArtifact->IsApplicable() )
-      {
+         if(needs_strut_tie)
+            (*table)(row,5) << _T("*");
+
          bool bPassed = pArtifact->Passed();
          if ( bPassed )
             (*table)(row,5) << RPT_PASS;
@@ -163,28 +151,70 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
             (*table)(row,5) << RPT_FAIL;
 
          (*table)(row,5) << rptNewLine << _T("(") << cap_demand.SetValue(Vr,Vu,bPassed) << _T(")");
-      }
-      else
-      {
-         if ( pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd) )
-         {
-            (*table)(row,5) << RPT_FAIL << _T(" (*)");
-         }
-         else
-         {
-            if ( pArtifact->Passed() )
-               (*table)(row,5) << RPT_PASS;
-            else
-               (*table)(row,5) << RPT_FAIL;
-         }
+
+         row++;
       }
 
-      if ( pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd) )
+      if (needs_strut_tie)
          bStrutAndTieRequired = true;
-
-      row++;
    }
+
    return table;
+}
+
+void CShearCheckTable::BuildNotes(rptChapter* pChapter, 
+                           IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                           IEAFDisplayUnits* pDisplayUnits,
+                           pgsTypes::Stage stage, pgsTypes::LimitState ls, bool bStrutAndTieRequired) const
+{
+   if ( bStrutAndTieRequired )
+   {
+      rptParagraph* p = new rptParagraph();
+      *pChapter << p;
+      *p << STRUT_AND_TIE_REQUIRED << rptNewLine << rptNewLine;
+   }
+   else
+   {
+      rptParagraph* p = new rptParagraph();
+      *pChapter << p;
+
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+
+      const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
+      const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
+      CHECK(pstirrup_artifact);
+
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
+
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+
+      INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   true );
+
+      *p << SUPPORT_COMPRESSION << rptNewLine << rptNewLine;
+
+      // Cycle through artifacts to see if av/s decreases past CSS - generate a FAIL if so
+      std::vector<pgsPointOfInterest>::const_iterator i;
+      for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+      {
+         const pgsPointOfInterest& poi = *i;
+         const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
+         if ( psArtifact == NULL )
+            continue;
+
+         const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
+
+         if ( pArtifact->DidAvsDecreaseAtEnd() )
+         {
+
+            *p << RPT_FAIL << _T(" - The shear capacity, V")<< Sub(_T("s")) << _T(" at ") << location.SetValue(stage, poi, end_size)
+               << _T(" is less than the capacity at the design section (CS). Revise stirrup details to increase ") << Sub2(_T("A"),_T("v")) << _T("/S")
+               << _T(" at this location.") << rptNewLine;
+         }
+      }
+   }
+
 }
 
 //======================== ACCESS     =======================================

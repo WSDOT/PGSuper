@@ -216,21 +216,12 @@ void CAnalysisResultsView::DrawBeam(CDC* pDC)
    else
       m_SupportSize = CSize(5,5);
 
+   arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
+
    double x,y;
-   double x_start = 0;
+   double x_start = pcx->Convert(m_LeftEnd);
+
    SpanIndexType spanIdx;
-   for ( spanIdx = 0; spanIdx < startSpan; spanIdx++ )
-   {
-      // deal with girder index when there are different number of girders in each span
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = min(girder,nGirders-1);
-
-      double span_length = (stage == pgsTypes::CastingYard ? pBridge->GetGirderLength(spanIdx,gdrIdx) : pBridge->GetSpanLength(spanIdx,gdrIdx));
-      arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
-      span_length = pcx->Convert(span_length);
-      x_start += span_length;
-   }
-
    for ( spanIdx = startSpan; spanIdx < startSpan+nSpans; spanIdx++ )
    {
       // deal with girder index when there are different number of girders in each span
@@ -239,7 +230,6 @@ void CAnalysisResultsView::DrawBeam(CDC* pDC)
 
       // draw beam
       double span_length = (stage == pgsTypes::CastingYard ? pBridge->GetGirderLength(spanIdx,gdrIdx) : pBridge->GetSpanLength(spanIdx,gdrIdx));
-      arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
       span_length = pcx->Convert(span_length);
 
       CPoint points[4];
@@ -462,12 +452,104 @@ void CAnalysisResultsView::DoUpdateNow()
    GirderIndexType girder = m_pFrame->GetGirderIdx();
    SpanIndexType   span   = m_pFrame->GetSpanIdx();
 
-   // Get the points of interest we need.
-   GET_IFACE2(m_pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_GRAPHICAL );
+   bool all_spans = span==ALL_SPANS;
 
    // response action - moment, shear, displacement, or stress
    ActionType action = m_pFrame->GetAction();
+
+   // Get POI's and compute X locations for graphing
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IPointOfInterest,pIPoi);
+
+   Float64 end_dist;
+   if (stage==pgsTypes::CastingYard || all_spans)
+   {
+      end_dist = 0.0;
+   }
+   else
+   {
+      end_dist = pBridge->GetGirderStartConnectionLength(span, girder);
+   }
+
+   std::vector<pgsPointOfInterest> vPoi;
+   std::vector<Float64> xVals;
+
+   // Treat final shear differently - use response at CSS in end regions
+   if (action==actionShear && stage==pgsTypes::BridgeSite3)
+   {
+      std::vector<pgsPointOfInterest> vec2;
+
+      SpanIndexType startSpan = all_spans ? 0 : span;
+      SpanIndexType endSpan = all_spans ? pBridge->GetSpanCount() : span+1;
+
+      for(SpanIndexType ispan=startSpan; ispan<endSpan; ispan++)
+      {
+         pgsPointOfInterest leftCS, rightCS;
+         pIPoi->GetCriticalSection(pgsTypes::StrengthI,ispan,girder,&leftCS,&rightCS);
+         Float64 leftCSLoc  = leftCS.GetDistFromStart();
+         Float64 rightCSLoc = rightCS.GetDistFromStart();
+
+         std::vector<pgsPointOfInterest> vPoi2 = pIPoi->GetPointsOfInterest( ispan, girder, stage, POI_GRAPHICAL );
+
+         std::vector<pgsPointOfInterest>::const_iterator i;
+         for ( i = vPoi2.begin(); i != vPoi2.end(); i++ )
+         {
+            const pgsPointOfInterest& poi = *i;
+
+            // Use css pois for end locations
+            Float64 loc = poi.GetDistFromStart();
+            if (loc<leftCSLoc)
+            {
+               vec2.push_back(leftCS);
+            }
+            else if ( loc>rightCSLoc)
+            {
+               vec2.push_back(leftCS);
+            }
+            else
+            {
+               vec2.push_back(poi);
+            }
+
+            // x locations
+            if (all_spans)
+               loc = pIPoi->GetDistanceFromFirstPier(poi,stage);
+
+            loc -= end_dist;
+
+            xVals.push_back(loc);
+
+         }
+      }
+
+      vPoi = vec2;
+   }
+   else
+   {
+      vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_GRAPHICAL );
+
+      std::vector<pgsPointOfInterest>::const_iterator i;
+      for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+      {
+         const pgsPointOfInterest& poi = *i;
+
+         Float64 loc;
+         if ( !all_spans )
+         {
+            loc = poi.GetDistFromStart();
+         }
+         else
+         {
+            loc = pIPoi->GetDistanceFromFirstPier(poi,stage);
+         }
+
+         loc -= end_dist;
+
+         xVals.push_back(loc);
+      }
+   }
+
+   m_LeftEnd = xVals.front();
 
    // Set up the graph
    UpdateUnits(action);
@@ -482,23 +564,23 @@ void CAnalysisResultsView::DoUpdateNow()
       switch( graph_type )
       {
       case graphCombined:
-         CombinedLoadGraph(graphIdx,stage,action,vPoi);
+         CombinedLoadGraph(graphIdx,stage,action,vPoi,xVals);
          break;
 
       case graphLiveLoad:
-         LiveLoadGraph(graphIdx,stage,action,vPoi);
+         LiveLoadGraph(graphIdx,stage,action,vPoi,xVals);
          break;
 
       case graphVehicularLiveLoad:
-         VehicularLiveLoadGraph(graphIdx,stage,action,vPoi);
+         VehicularLiveLoadGraph(graphIdx,stage,action,vPoi,xVals);
          break;
 
       case graphProduct:
-         ProductLoadGraph(graphIdx,stage,action,vPoi);
+         ProductLoadGraph(graphIdx,stage,action,vPoi,xVals);
          break;
 
       case graphPrestress:
-         PrestressLoadGraph(graphIdx,stage,action,vPoi);
+         PrestressLoadGraph(graphIdx,stage,action,vPoi,xVals);
          break;
 
       case graphLimitState:
@@ -506,7 +588,7 @@ void CAnalysisResultsView::DoUpdateNow()
       case graphAllowable:
       case graphCapacity:
       case graphMinCapacity:
-         LimitStateLoadGraph(graphIdx,stage,action,vPoi);
+         LimitStateLoadGraph(graphIdx,stage,action,vPoi,xVals);
          break;
 
       default:
@@ -523,7 +605,8 @@ void CAnalysisResultsView::DoUpdateNow()
    UpdateWindow();
 }
 
-void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPoi)
+void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                               const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    pgsTypes::LimitState limit_state = m_pFrame->GetLimitState(graphIdx);
    GraphType graph_type = m_pFrame->GetGraphType(graphIdx);
@@ -550,20 +633,6 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
    IndexType stress_top_min = m_Graph.CreateDataSeries(_T(""),                       PS_STRESS_TOP,   1,c);
    IndexType stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" -  Bottom"),PS_STRESS_BOTTOM,1,c);
    IndexType stress_bot_min = m_Graph.CreateDataSeries(_T(""),                       PS_STRESS_BOTTOM,1,c);
-
-   std::vector<Float64> xVals;
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-      Float64 loc;
-      if ( stage == pgsTypes::CastingYard )
-         loc = poi.GetDistFromStart();
-      else
-         loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
-
-      xVals.push_back(loc);
-   }
 
    switch(action)
    {
@@ -773,7 +842,8 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
    }
 }
 
-void CAnalysisResultsView::CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPoi)
+void CAnalysisResultsView::CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                             const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    // Combined forces
    GET_IFACE(IPointOfInterest,pIPOI);
@@ -786,19 +856,6 @@ void CAnalysisResultsView::CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,
    BridgeAnalysisType bat[4];
    Uint16 nAnalysisTypes;
    InitializeGraph(graphIdx,action,data_series_id,bat,&nAnalysisTypes);
-
-   std::vector<Float64> xVals;
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-      Float64 loc;
-      if ( stage == pgsTypes::CastingYard )
-         loc = poi.GetDistFromStart();
-      else
-         loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
-      xVals.push_back(loc);
-   }
 
    for ( Uint16 analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -834,7 +891,8 @@ void CAnalysisResultsView::CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,
    }
 }
 
-void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPoi)
+void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                         const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    // Live Load
    GET_IFACE(ICombinedForces2,pForces);
@@ -863,19 +921,6 @@ void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,Acti
    IndexType stress_top_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_TOP,   1,c);
    IndexType stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
    IndexType stress_bot_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_BOTTOM,1,c);
-
-   std::vector<Float64> xVals;
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-      Float64 loc;
-      if ( stage == pgsTypes::CastingYard )
-         loc = poi.GetDistFromStart();
-      else
-         loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
-      xVals.push_back(loc);
-   }
 
    switch(action)
    {
@@ -961,7 +1006,8 @@ void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,Acti
    }
 }
 
-void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPoi)
+void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                                  const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    // Live Load
    GET_IFACE(IProductForces2,pForces);
@@ -988,19 +1034,6 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
    IndexType stress_top_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_TOP,   1,c);
    IndexType stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
    IndexType stress_bot_min = m_Graph.CreateDataSeries(_T(""),                      PS_STRESS_BOTTOM,1,c);
-
-   std::vector<Float64> xVals;
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-      Float64 loc;
-      if ( stage == pgsTypes::CastingYard )
-         loc = poi.GetDistFromStart();
-      else
-         loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
-      xVals.push_back(loc);
-   }
 
    switch(action)
    {
@@ -1130,7 +1163,8 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
    }
 }
 
-void CAnalysisResultsView::ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPoi)
+void CAnalysisResultsView::ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                            const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    ProductForceType prod_type = m_pFrame->GetProductLoadCase(graphIdx);
    
@@ -1148,19 +1182,6 @@ void CAnalysisResultsView::ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,A
    COLORREF c = m_pFrame->GetGraphColor(graphIdx);
 
    pgsTypes::AnalysisType analysis_type = m_pFrame->GetAnalysisType();
-
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   std::vector<Float64> xVals;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-      Float64 loc;
-      if ( stage == pgsTypes::CastingYard )
-         loc = poi.GetDistFromStart();
-      else
-         loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
-      xVals.push_back(loc);
-   }
 
    for ( Uint16 analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -1196,7 +1217,8 @@ void CAnalysisResultsView::ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,A
    }
 }
 
-void CAnalysisResultsView::PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPoi)
+void CAnalysisResultsView::PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                              const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
 {
    // Prestress
    GET_IFACE(IPointOfInterest,pIPOI);

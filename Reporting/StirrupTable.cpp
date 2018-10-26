@@ -124,7 +124,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       else
       {
          (*p_table)(row,3) << _T("(None)");
-         (*p_table)(row,4) << _T("(N/A)");
+         (*p_table)(row,4) << RPT_NA;
          (*p_table)(row,5) << _T("(None)");
          (*p_table)(row,6) << _T("(None)");
       }
@@ -181,7 +181,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       else
       {
          (*p_table)(row,3) << _T("(None)");
-         (*p_table)(row,4) << _T("(N/A)");
+         (*p_table)(row,4) << RPT_NA;
          (*p_table)(row,5) << _T("(None)");
       }
 

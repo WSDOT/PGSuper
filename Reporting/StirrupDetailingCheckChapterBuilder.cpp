@@ -198,6 +198,10 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
       const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
+      // Don't report values in end regions
+      if (pArtifact->IsInEndRegion())
+         continue;
+
       (*table)(row,0) << location.SetValue( stage, poi, end_size );
 
       (*table)(row,1) << dim.SetValue(pArtifact->GetBv());
@@ -311,6 +315,10 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
          continue;
 
       const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
+
+      // Don't report values in end regions
+      if (pArtifact->IsInEndRegion())
+         continue;
 
       (*table)(row,0) << location.SetValue( stage, poi, end_size );
       (*table)(row,1) << shear.SetValue(pArtifact->GetVu());

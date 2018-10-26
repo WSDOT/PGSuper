@@ -468,22 +468,38 @@ void pgsVerticalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,double*
    *pAvS_at_CS    = m_AvSatCS[end];
 }
 
-bool pgsVerticalShearArtifact::Passed() const
+bool pgsVerticalShearArtifact::IsInEndRegion() const
+{
+   return m_bEndSpacingApplicable[0] || m_bEndSpacingApplicable[1];
+}
+
+bool pgsVerticalShearArtifact::DidAvsDecreaseAtEnd() const
 {
    for ( int i = 0; i < 2; i++ )
    {
       if ( m_bEndSpacingApplicable[i] && m_AvSprovided[i] < m_AvSatCS[i] )
-         return false;
-
-      if ( m_bIsStrutAndTieRequired[i] )
-         return false;
+         return true;
    }
 
-   if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)
+   return false;
+}
+
+bool pgsVerticalShearArtifact::Passed() const
+{
+   if (DidAvsDecreaseAtEnd())
       return false;
 
    if ( m_bIsApplicable )
    {
+      for ( int i = 0; i < 2; i++ )
+      {
+         if ( m_bIsStrutAndTieRequired[i] )
+            return false;
+      }
+
+      if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)
+         return false;
+
       if (m_Demand > m_Capacity)
          return false;
    }
@@ -581,8 +597,17 @@ m_Dv(0),
 m_I(0),
 m_Q(0),
 m_UltimateHorizontalShear(0),
-m_AvsReqd(0.0)
+m_AvsReqd(0.0),
+m_bDoAllPrimaryStirrupsEngageDeck(false),
+m_bIsTopFlangeRoughened(false),
+m_IsApplicable(false)
 {
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_bEndSpacingApplicable[i] = false;
+      m_AvSprovided[i] = 0.0;
+      m_AvSatCS[i] = 0.0;
+   }
 }
 
 pgsHorizontalShearArtifact::pgsHorizontalShearArtifact(const pgsHorizontalShearArtifact& rOther)
@@ -606,33 +631,75 @@ pgsHorizontalShearArtifact& pgsHorizontalShearArtifact::operator= (const pgsHori
 }
 
 //======================== OPERATIONS =======================================
+bool pgsHorizontalShearArtifact::IsApplicable() const
+{
+   return m_IsApplicable;
+}
+
+void pgsHorizontalShearArtifact::SetApplicability(bool isApplicable)
+{
+   m_IsApplicable = isApplicable;
+}
+
 bool pgsHorizontalShearArtifact::SpacingPassed() const
 {
-   return GetSMax() <= m_Sall;
+   if (m_IsApplicable && GetAvOverS() > 0.0)
+   {
+      return GetSMax() <= m_Sall;
+   }
+   else
+   {
+      // No bars to space
+      return false;
+   }
 }
 
 int pgsHorizontalShearArtifact::MinReinforcementPassed() const
 {
-   return Is5_8_4_1_4Applicable() ? (GetAvOverS() >= m_AvOverSMin) : -1; // -1 = not applicable
+   if (m_IsApplicable)
+   {
+      return Is5_8_4_1_4Applicable() ? (GetAvOverS() >= m_AvOverSMin) : -1; // -1 = not applicable
+   }
+   else
+   {
+      return true;
+   }
 }
 
 bool pgsHorizontalShearArtifact::StrengthPassed() const
 {
-   Float64 demand = abs(GetDemand());
-   bool cap = demand <= GetCapacity();
-   return cap;
+   if (m_IsApplicable)
+   {
+      Float64 demand = abs(GetDemand());
+      bool cap = demand <= GetCapacity();
+      return cap;
+   }
+   else
+   {
+      return true;
+   }
 }
 
 bool pgsHorizontalShearArtifact::Passed() const
 {
-   bool cap = StrengthPassed();
-   bool spc = SpacingPassed();
-   int  avf = MinReinforcementPassed();
+   if (DidAvsDecreaseAtEnd())
+      return false;
 
-   if ( avf < 0 )
-      return cap && spc;
+   if (m_IsApplicable)
+   {
+      bool cap = StrengthPassed();
+      bool spc = SpacingPassed();
+      int  avf = MinReinforcementPassed();
+
+      if ( avf < 0 )
+         return cap && spc;
+      else
+         return cap && avf && spc;
+   }
    else
-      return cap && avf && spc;
+   {
+      return true;
+   }
 }
 
 Float64 pgsHorizontalShearArtifact::GetCapacity() const
@@ -781,6 +848,26 @@ void pgsHorizontalShearArtifact::SetNumLegsReqd(Float64 legs)
    m_NumLegsReqd = legs;
 }
 
+bool pgsHorizontalShearArtifact::DoAllPrimaryStirrupsEngageDeck() const
+{
+   return m_bDoAllPrimaryStirrupsEngageDeck;
+}
+
+void pgsHorizontalShearArtifact::SetDoAllPrimaryStirrupsEngageDeck(bool doEngage)
+{
+   m_bDoAllPrimaryStirrupsEngageDeck = doEngage;
+}
+
+bool pgsHorizontalShearArtifact::IsTopFlangeRoughened() const
+{
+   return m_bIsTopFlangeRoughened;
+}
+
+void pgsHorizontalShearArtifact::SetIsTopFlangeRoughened(bool doIsRough)
+{
+   m_bIsTopFlangeRoughened = doIsRough;
+}
+
 Float64 pgsHorizontalShearArtifact::GetVsAvg() const
 {
    return m_VsAvg;
@@ -871,6 +958,30 @@ void pgsHorizontalShearArtifact::SetAvOverSReqd(const Float64& vu)
    m_AvsReqd = vu;
 }
 
+void pgsHorizontalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS)
+{
+   m_bEndSpacingApplicable[end] = true;
+   m_AvSprovided[end] = AvS_provided;
+   m_AvSatCS[end]     = AvS_at_CS;
+}
+
+void pgsHorizontalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS)
+{
+   *pAvS_provided = m_AvSprovided[end];
+   *pAvS_at_CS    = m_AvSatCS[end];
+}
+
+bool pgsHorizontalShearArtifact::DidAvsDecreaseAtEnd() const
+{
+   for ( int i = 0; i < 2; i++ )
+   {
+      if ( m_bEndSpacingApplicable[i] && m_AvSprovided[i] < m_AvSatCS[i] )
+         return true;
+   }
+
+   return false;
+}
+
 //======================== INQUIRY    =======================================
 //======================== DEBUG      =======================================
 #if defined _DEBUG
@@ -901,6 +1012,7 @@ void pgsHorizontalShearArtifact::Dump(dbgDumpContext& os) const
 //======================== OPERATIONS =======================================
 void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOther)
 {
+   m_IsApplicable            = rOther.m_IsApplicable;
    m_UltimateHorizontalShear = rOther.m_UltimateHorizontalShear;
    m_NormalCompressionForce  = rOther.m_NormalCompressionForce;
    m_Acv                     = rOther.m_Acv;
@@ -927,12 +1039,22 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_VsAvg        = rOther.m_VsAvg;
    m_VsLimit      = rOther.m_VsLimit;
 
+   m_bDoAllPrimaryStirrupsEngageDeck = rOther.m_bDoAllPrimaryStirrupsEngageDeck;
+   m_bIsTopFlangeRoughened = rOther.m_bIsTopFlangeRoughened;
+
    m_Dv = rOther.m_Dv;
    m_I = rOther.m_I;
    m_Q = rOther.m_Q;
    m_Vu = rOther.m_Vu;
 
    m_AvsReqd = rOther.m_AvsReqd;
+
+   for (int i = 0; i < 2; i++ )
+   {
+      m_AvSprovided[i]            = rOther.m_AvSprovided[i];
+      m_AvSatCS [i]               = rOther.m_AvSatCS[i];
+      m_bEndSpacingApplicable[i]  = rOther.m_bEndSpacingApplicable[i];
+   }
 }
 
 void pgsHorizontalShearArtifact::MakeAssignment(const pgsHorizontalShearArtifact& rOther)
@@ -1039,6 +1161,7 @@ void pgsStirrupDetailArtifact::MakeCopy(const pgsStirrupDetailArtifact& rOther)
    m_Vu = rOther.m_Vu;
    m_VuLimit = rOther.m_VuLimit;
    m_IsApplicable = rOther.m_IsApplicable;
+   m_IsInEndRegion = rOther.m_IsInEndRegion;
 }
 
 void pgsStirrupDetailArtifact::MakeAssignment(const pgsStirrupDetailArtifact& rOther)

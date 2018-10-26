@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,2
- PRODUCTVERSION 2,7,0,2
+ FILEVERSION 2,7,0,3
+ PRODUCTVERSION 2,7,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.7.0.2"
+            VALUE "FileVersion", "2.7.0.3"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.2"
+            VALUE "ProductVersion", "2.7.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -1441,7 +1441,7 @@ BEGIN
     CONTROL         "Delete",IDC_DELETE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,187,10
 END
 
-IDD_SHEAR_DESIGN DIALOGEX 0, 0, 365, 385
+IDD_SHEAR_DESIGN DIALOGEX 0, 0, 365, 364
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Shear Design"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
@@ -1462,22 +1462,19 @@ BEGIN
     EDITTEXT        IDC_MAX_SHEARCAP_CHG,183,212,40,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_MAX_SHEARCAP_CHG_UNIT,228,217,8,8
     LTEXT           "Minimum zone length is",IDC_STATIC,18,236,74,8
-    EDITTEXT        IDC_MIN_ZONELEN_BARS,98,232,26,14,ES_AUTOHSCROLL
-    LTEXT           "bar spacings or",IDC_STATIC,127,236,50,8
-    EDITTEXT        IDC_MIN_ZONELEN_DIST,178,231,40,14,ES_AUTOHSCROLL
-    LTEXT           "unit",IDC_MIN_ZONELEN_DIST_UNIT,222,236,13,8
-    GROUPBOX        "Rules for Layout of Transverse Reinforcement Zones",IDC_STATIC,7,176,351,87,0,WS_EX_TRANSPARENT
-    CONTROL         "Top flange intentionally roughened for horizontal interface shear capacity",IDC_TOP_FLANGE_ROUGHENED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,282,251,10
+    EDITTEXT        IDC_MIN_ZONELEN_BARS,96,232,26,14,ES_AUTOHSCROLL
+    LTEXT           "bar spacings, not to be less than",IDC_STATIC,127,236,106,8
+    EDITTEXT        IDC_MIN_ZONELEN_DIST,234,231,40,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_MIN_ZONELEN_DIST_UNIT,278,236,13,8
+    GROUPBOX        "Rules for Layout of Transverse Reinforcement Zones",IDC_STATIC,7,176,351,77,0,WS_EX_TRANSPARENT
     CONTROL         "Extend primary shear bars into deck for horizontal interface shear capacity",IDC_EXTEND_DECK_BARS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,295,255,10
-    CONTROL         "Primary shear bars provide splitting capacity",IDC_BARS_PROVIDE_SPLITTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,310,157,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,277,255,10
     CONTROL         "Primary shear bars act as confinement reinforcement",IDC_BARS_PROVIDE_CONFINEMENT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,325,185,10
-    LTEXT           "When designing for longitudinal reinforcement for shear, increase capacity by:",IDC_STATIC,20,342,252,8
-    COMBOBOX        IDC_LONG_REINF_SHEAR_METHOD,132,357,201,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Design Control Options",IDC_STATIC,7,269,351,110,0,WS_EX_TRANSPARENT
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,294,185,10
+    LTEXT           "When designing for longitudinal reinforcement for shear, increase capacity by:",IDC_STATIC,20,311,252,8
+    COMBOBOX        IDC_LONG_REINF_SHEAR_METHOD,132,326,201,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "* Design Control Options",IDC_STATIC,7,261,351,96,0,WS_EX_TRANSPARENT
+    LTEXT           "*Note: More options to control design are on the Trans. Reinforcement tab. View help for more info.",IDC_STATIC,12,345,322,8
 END
 
 
@@ -1797,7 +1794,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 358
         TOPMARGIN, 7
-        BOTTOMMARGIN, 378
+        BOTTOMMARGIN, 357
     END
 END
 #endif    // APSTUDIO_INVOKED

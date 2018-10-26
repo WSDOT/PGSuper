@@ -276,6 +276,10 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    RowIndexType av_row  = av_table->GetNumberOfHeaderRows();
    RowIndexType row     = table->GetNumberOfHeaderRows();
 
+   // these are needed later
+   bool is_roughened (false);
+   bool do_all_stirrups_engage_deck(false);
+
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
    {
@@ -287,54 +291,78 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
 
-      // vui table
-      col = 0;
-      Float64 Vui = pArtifact->GetDemand();
-      (*vui_table)(vui_row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      // Don't report values in vui and capacity table for poi's in end zone outside of CSS
+      bool is_app = pArtifact->IsApplicable();
 
-      if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
+      is_roughened |= pArtifact->IsTopFlangeRoughened();
+      do_all_stirrups_engage_deck |= pArtifact->DoAllPrimaryStirrupsEngageDeck();
+
+
+      if (is_app)
       {
-         (*vui_table)(vui_row,col++) << dim.SetValue( pArtifact->GetDv() );
+         // vui table
+         col = 0;
+         Float64 Vui = pArtifact->GetDemand();
+         (*vui_table)(vui_row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+
+         if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
+         {
+            (*vui_table)(vui_row,col++) << dim.SetValue( pArtifact->GetDv() );
+         }
+         else
+         {
+            (*vui_table)(vui_row,col++) << l4.SetValue( pArtifact->GetI() );
+            (*vui_table)(vui_row,col++) << l3.SetValue( pArtifact->GetQ() );
+         }
+
+         (*vui_table)(vui_row,col++) << shear.SetValue( pArtifact->GetVu() );
+         (*vui_table)(vui_row,col++) << shear_per_length.SetValue(Vui);
+         (*vui_table)(vui_row,col++) << dim.SetValue(pArtifact->GetBv());
+         (*vui_table)(vui_row,col++) << stress.SetValue(Vui/pArtifact->GetBv());
+
+         vui_row++;
       }
-      else
-      {
-         (*vui_table)(vui_row,col++) << l4.SetValue( pArtifact->GetI() );
-         (*vui_table)(vui_row,col++) << l3.SetValue( pArtifact->GetQ() );
-      }
-
-      (*vui_table)(vui_row,col++) << shear.SetValue( pArtifact->GetVu() );
-      (*vui_table)(vui_row,col++) << shear_per_length.SetValue(Vui);
-      (*vui_table)(vui_row,col++) << dim.SetValue(pArtifact->GetBv());
-      (*vui_table)(vui_row,col++) << stress.SetValue(Vui/pArtifact->GetBv());
-
-      vui_row++;
-
 
       // av/s table
       (*av_table)(av_row,0)  <<  location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*av_table)(av_row,1)  <<  area.SetValue(pArtifact->GetAvfGirder());
-      (*av_table)(av_row,2)  <<  dim.SetValue(pArtifact->GetSGirder());
+
+      Float64 sv = pArtifact->GetSGirder();
+      if (sv>0.0)
+         (*av_table)(av_row,2)  <<  dim.SetValue(sv);
+      else
+         (*av_table)(av_row,2)  <<  symbol(INFINITY);
+
       (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfAdditional());
-      (*av_table)(av_row,4)  <<  dim.SetValue(pArtifact->GetSAdditional());
+
+      sv = pArtifact->GetSAdditional();
+      if (sv>0.0)
+         (*av_table)(av_row,4)  <<  dim.SetValue(sv);
+      else
+         (*av_table)(av_row,4)  <<  symbol(INFINITY);
+
       (*av_table)(av_row,5)  <<  AvS.SetValue(pArtifact->GetAvOverS());
 
       av_row++;
 
-      // capacity table
-      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
-      (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());
-      (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
-      (*table)(row,3) << shear_per_length.SetValue( pArtifact->GetNormalCompressionForce() );
+      if (is_app)
+      {
+         // capacity table
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+         (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());
+         (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
+         (*table)(row,3) << shear_per_length.SetValue( pArtifact->GetNormalCompressionForce() );
 
-      Float64 Vn1, Vn2, Vn3; 
-      pArtifact->GetVn(&Vn1, &Vn2, &Vn3);
+         Float64 Vn1, Vn2, Vn3; 
+         pArtifact->GetVn(&Vn1, &Vn2, &Vn3);
 
-      (*table)(row,4) << shear_per_length.SetValue( Vn1 );
-      (*table)(row,5) << shear_per_length.SetValue( Vn2 );
-      (*table)(row,6) << shear_per_length.SetValue( Vn3 ); 
-      (*table)(row,7) << shear_per_length.SetValue( pArtifact->GetCapacity() );
+         (*table)(row,4) << shear_per_length.SetValue( Vn1 );
+         (*table)(row,5) << shear_per_length.SetValue( Vn2 );
+         (*table)(row,6) << shear_per_length.SetValue( Vn3 ); 
+         (*table)(row,7) << shear_per_length.SetValue( pArtifact->GetCapacity() );
 
-      row++;
+         row++;
+      }
    }
 
    // Next, fill table for min Avf
@@ -345,11 +373,11 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph();
    *pChapter << pPara;
 
-   bool is_roughened = pBridge->AreGirderTopFlangesRoughened(span,girder);
-   Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened);
+   Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened,do_all_stirrups_engage_deck);
    if ( 0 < llss )
    {
-      *pPara << _T("The minimum reinforcement requirement of ") 
+      *pPara << _T("Girder/slab interfaces are intentionally roughened and all primary vertical shear reinforcement is extended across the interface. ")
+             << _T("Hence, the minimum reinforcement requirement of ") 
              << Sub2(_T("a"),_T("vf")) << _T(" may be waived if ") 
              << Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")) 
              << _T(" is less than ") << stress_with_tag.SetValue(llss) << rptNewLine;
@@ -403,6 +431,10 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          continue;
 
       const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
+
+      // Don't report values in vui and capacity table for poi's in end zone outside of CSS
+      if( !pArtifact->IsApplicable() )
+         continue;
 
       (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());

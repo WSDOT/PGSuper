@@ -277,8 +277,14 @@ public:
    void SetCapacity(Float64 cap);
    Float64 GetCapacity() const;
 
+   // Use this function for locations outside of the CSS. This allows checking
+   // whether Av/S is decreasing in the end regions
    void SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS);
    void GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS);
+   // Returns true if location is outboard of CSS
+   bool IsInEndRegion() const;
+   // returns true if this is an end region poi and Av/s is less that at CSS
+   bool DidAvsDecreaseAtEnd() const;
 
    bool   Passed() const;
 
@@ -406,6 +412,10 @@ public:
 
    // GROUP: OPERATIONS
 
+   // Not applicable if there is no composite slab
+   bool IsApplicable() const;
+   void SetApplicability(bool isApplicable);
+
    // additional stirrups in top flange
    Float64 GetAvfAdditional() const {return m_AvfAdditional;}
    void SetAvfAdditional(Float64 avf) {m_AvfAdditional = avf;}
@@ -465,6 +475,11 @@ public:
    void SetVsAvg(Float64 vsavg);
    Float64 GetVsLimit() const; // max shear strength at which 5.8.4.1-4 is not applicable
    void SetVsLimit(Float64 vs);
+   bool DoAllPrimaryStirrupsEngageDeck() const;
+   void SetDoAllPrimaryStirrupsEngageDeck(bool doEngage);
+   bool IsTopFlangeRoughened() const;
+   void SetIsTopFlangeRoughened(bool doIsRough);
+
 
    // data for computing shear stress
    Float64 GetVu() const;
@@ -475,6 +490,14 @@ public:
    void SetI(double i);
    Float64 GetQ() const;
    void SetQ(double q);
+
+   // Use this function for locations outside of the CSS. This allows checking
+   // whether Av/S is decreasing in the end zones
+   void SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS);
+   void GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS);
+
+   // Returns true if this is an end region poi and Av/s is less than at CSS
+   bool DidAvsDecreaseAtEnd() const;
 
    // Data for design algorithm, if needed
    Float64 GetAvOverSReqd() const;
@@ -516,6 +539,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool    m_IsApplicable;
    Float64 m_AvfAdditional;
    Float64 m_SAdditional;
    Float64 m_AvfGirder;
@@ -531,6 +555,8 @@ private:
    Float64 m_Vn2;
    Float64 m_Vn3;
    Float64 m_Fc; // F'c used to compute in Eqn 5.8.4.1-2
+   bool m_bDoAllPrimaryStirrupsEngageDeck;
+   bool m_bIsTopFlangeRoughened;
 
    Float64 m_Bv;
    Float64 m_Sall;
@@ -540,6 +566,12 @@ private:
    Float64 m_NumLegsReqd;
    Float64 m_VsAvg;   // average shear strength
    Float64 m_VsLimit; // max shear strength at which 5.8.4.1-4 is not applicable
+
+   // parameters for checking end zone locations
+   bool m_bEndSpacingApplicable[2];
+   Float64 m_AvSprovided[2];
+   Float64 m_AvSatCS[2];
+
 
    // parameters used to compute horizonal shear from vertical shear
    Float64 m_Dv;
@@ -632,6 +664,8 @@ public:
    Float64 GetVuLimit() const {return m_VuLimit;}
    void SetApplicability(bool isApp) {m_IsApplicable=isApp;}
    bool IsApplicable() const {return m_IsApplicable;};
+   void SetInEndRegion(bool isApp) {m_IsInEndRegion=isApp;}
+   bool IsInEndRegion() const {return m_IsInEndRegion;};
    bool   Passed() const;
 
    // GROUP: ACCESS
@@ -675,6 +709,7 @@ private:
    Float64 m_Vu;
    Float64 m_VuLimit;
    bool m_IsApplicable;
+   bool m_IsInEndRegion;
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -43,6 +43,19 @@
 
 #include <algorithm>
 
+
+// Static data and function for determining if poi is outside of CSS's
+   // Locations of CSS's
+   static Float64 S_LeftCs;
+   static Float64 S_RightCs;
+
+   static bool IsPoiInEndRegion(const pgsPointOfInterest& rPoi)
+   {
+      Float64 loc = rPoi.GetDistFromStart();
+      return loc < S_LeftCs || loc > S_RightCs;
+   }
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -286,6 +299,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
    pgsTypes::Stage stage(pgsTypes::BridgeSite3);
    const std::_tstring stage_name(_T("Bridge Site Stage III"));
 
+   GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
@@ -344,6 +358,10 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
          for ( iter = vLimitStates.begin(); iter != vLimitStates.end(); iter++ )
          {
             pgsTypes::LimitState ls = *iter;
+
+            // Store css location for later use
+            pShearCapacity->GetCriticalSection(ls, spanIdx, gdrIdx, &S_LeftCs, &S_RightCs);
+
             write_shear_dimensions_table(pBroker,pDisplayUnits, spanIdx, gdrIdx, vPoi,  pChapter, stage, stage_name, ls);
 
             if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
@@ -516,6 +534,11 @@ void write_shear_dimensions_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -730,6 +753,11 @@ void write_fpc_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       FPCDETAILS fpcd;
       pShearCap->GetFpcDetails(poi, &fpcd);
 
@@ -808,6 +836,11 @@ void write_fpce_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -941,6 +974,11 @@ void write_fpo_table(IBroker* pBroker,
       for ( i = pois.begin(); i != pois.end(); i++ )
       {
          const pgsPointOfInterest& poi = *i;
+
+         // Don't print pois outside of CSS's
+         if (IsPoiInEndRegion(poi))
+            continue;
+
          SHEARCAPACITYDETAILS scd;
          pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -1034,6 +1072,11 @@ void write_Fe_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -1234,6 +1277,11 @@ void write_ex_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -1449,6 +1497,11 @@ void write_btsummary_table(IBroker* pBroker,
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -1566,7 +1619,7 @@ void write_Vs_table(IBroker* pBroker,
    *pParagraph << rptNewLine;
    
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
 
    if ( span == ALL_SPANS )
    {
@@ -1581,13 +1634,14 @@ void write_Vs_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1) << COLHDR( Sub2(_T("A"),_T("v")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,2) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,1) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << COLHDR( Sub2(_T("A"),_T("v")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,3) << COLHDR( _T("s"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-   (*table)(0,6) << COLHDR( symbol(alpha), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-   (*table)(0,7) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,4) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,5) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,6) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+   (*table)(0,7) << COLHDR( symbol(alpha), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+   (*table)(0,8) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
@@ -1596,6 +1650,7 @@ void write_Vs_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, avs, pDisplayUnits->GetAvOverSUnit(), false );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
@@ -1611,26 +1666,48 @@ void write_Vs_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      bool is_end_rgn = IsPoiInEndRegion(poi);
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
       (*table)(row,0) << location.SetValue( stage, poi, end_size );
-      (*table)(row,1) << area.SetValue( scd.Av );
-      (*table)(row,2) << stress.SetValue( scd.fy );
+      (*table)(row,1) << stress.SetValue( scd.fy );
+      (*table)(row,2) << area.SetValue( scd.Av );
       (*table)(row,3) << dim.SetValue( scd.S );
-      (*table)(row,4) << dim.SetValue( scd.dv );
-      if (scd.ShearInRange)
+      if (scd.S > 0.0)
       {
-         (*table)(row,5) << angle.SetValue( scd.Theta );
-         (*table)(row,6) << angle.SetValue( scd.Alpha );
-         (*table)(row,7) << shear.SetValue( scd.Vs );
+         (*table)(row,4) << avs.SetValue( scd.Av/scd.S );
       }
       else
       {
-         print_footnote=true;
-         (*table)(row,5) << _T("*");
-         (*table)(row,6) << _T("*");
-         (*table)(row,7) << _T("*");
+         ATLASSERT(scd.Av == 0.0);
+         (*table)(row,4) << avs.SetValue( 0.0 );
+      }
+      (*table)(row,5) << dim.SetValue( scd.dv );
+
+      if (!is_end_rgn)
+      {
+         if (scd.ShearInRange)
+         {
+            (*table)(row,6) << angle.SetValue( scd.Theta );
+            (*table)(row,7) << angle.SetValue( scd.Alpha );
+            (*table)(row,8) << shear.SetValue( scd.Vs );
+         }
+         else
+         {
+            print_footnote=true;
+            (*table)(row,6) << _T("*");
+            (*table)(row,7) << _T("*");
+            (*table)(row,8) << _T("*");
+         }
+      }
+      else
+      {
+         (*table)(row,6) << RPT_NA;
+         (*table)(row,7) << RPT_NA;
+         (*table)(row,8) << RPT_NA;
       }
 
       row++;
@@ -1749,6 +1826,11 @@ void write_Vc_table(IBroker* pBroker,
    {
       colIdx = 0;
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -1888,6 +1970,11 @@ void write_Vci_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -1996,6 +2083,11 @@ void write_Vcw_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -2105,6 +2197,11 @@ void write_theta_table(IBroker* pBroker,
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -2207,6 +2304,11 @@ void write_Vn_table(IBroker* pBroker,
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -2308,7 +2410,7 @@ void write_Avs_table(IBroker* pBroker,
 
    int nCol = (shear_capacity_method == scmVciVcw ? 8 : 9);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,std::_tstring(strLabel));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol, _T(""));
 
    if ( span == ALL_SPANS )
    {
@@ -2359,6 +2461,11 @@ void write_Avs_table(IBroker* pBroker,
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
@@ -2489,6 +2596,11 @@ void write_bar_spacing_table(IBroker* pBroker,
       col = 0;
 
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print pois outside of CSS's
+      if (IsPoiInEndRegion(poi))
+         continue;
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 

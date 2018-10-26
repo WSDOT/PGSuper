@@ -96,12 +96,12 @@ private:
    void UpdateXAxisTitle(pgsTypes::Stage stage);
    void UpdateGraphTitle(SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,ActionType action);
 
-   void CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
-   void LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
-   void VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
-   void LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
-   void ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
-   void PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI);
+   void CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
 
    void InitializeGraph(int graphIdx,ActionType action,IndexType* pDataSeriesID,BridgeAnalysisType* pBAT,Uint16* pAnalysisTypeCount);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
@@ -133,6 +133,7 @@ private:
    arvPhysicalConverter* m_pYFormat;
 
    grGraphXY m_Graph;
+   Float64   m_LeftEnd; // X value of left-most poi
    CRect m_PrintRect;
    bool m_IsPrinting;
 

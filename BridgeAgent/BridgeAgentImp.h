@@ -375,6 +375,7 @@ public:
    virtual Float64 GetAlpha(const pgsPointOfInterest& poi); // stirrup angle=90 for vertical
 
    virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr);
+   virtual bool DoAllPrimaryStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetPrimaryHorizInterfaceS(const pgsPointOfInterest& poi);
    virtual Float64 GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing);
    virtual Float64 GetPrimaryHorizInterfaceBarCount(const pgsPointOfInterest& poi);
@@ -393,7 +394,7 @@ private:
    ZoneIndexType GetPrimaryZoneIndex(SpanIndexType span,GirderIndexType gdr, const CShearData& rshear_data, ZoneIndexType zone);
 
    ZoneIndexType GetHorizInterfaceShearZoneIndexAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
-   const CHorizontalInterfaceZoneData& GetHorizInterfaceShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
+   const CHorizontalInterfaceZoneData* GetHorizInterfaceShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
    ZoneIndexType GetHorizInterfaceZoneIndex(SpanIndexType span,GirderIndexType gdr, const CShearData& rShearData, ZoneIndexType zone);
 
    bool IsPoiInEndRegion(const pgsPointOfInterest& poi, Float64 distFromEnds);

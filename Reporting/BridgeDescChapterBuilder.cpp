@@ -787,7 +787,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
 
          if (pgirderData->Material.bUserEc )
          {
-            (*pTable)(row,col++) << _T("n/a");
+            (*pTable)(row,col++) << RPT_NA;
          }
          else
          {
@@ -799,7 +799,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
          if ( pMaterial->DoesGdrConcreteHaveAggSplittingStrength(spanIdx,gdrIdx) )
             (*pTable)(row,col++) << stress.SetValue( pMaterial->GetGdrConcreteAggSplittingStrength(spanIdx,gdrIdx) );
          else
-            (*pTable)(row,col++) << _T("n/a");
+            (*pTable)(row,col++) << RPT_NA;
 
 
          if (bK1)
@@ -831,7 +831,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
 
       if (pBridgeDesc->GetDeckDescription()->SlabUserEc)
       {
-         (*pTable)(row,col++) << _T("n/a");
+         (*pTable)(row,col++) << RPT_NA;
       }
       else
       {
@@ -843,7 +843,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       if ( pMaterial->DoesSlabConcreteHaveAggSplittingStrength() )
          (*pTable)(row,col++) << stress.SetValue( pMaterial->GetSlabConcreteAggSplittingStrength() );
       else
-         (*pTable)(row,col++) << _T("n/a");
+         (*pTable)(row,col++) << RPT_NA;
 
       if (bK1)
       {

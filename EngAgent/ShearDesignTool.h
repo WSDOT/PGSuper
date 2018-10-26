@@ -108,6 +108,7 @@ public:
    ShearDesignOutcome DesignStirrups(Float64 leftCSS, Float64 rightCSS);
 
    // Area of steel required for long reinf shear if outcome requires design restart
+   // Note that this can be area of strands, or area of #5 bars adjusted for development
    Float64 GetRequiredAsForLongReinfShear() const;
 
    // Pois for spec check and design
@@ -122,7 +123,7 @@ private:
 
    // Design by Modifying existing stirrup layout 
    bool ModifyPreExistingStirrupDesign();
-   bool DesignPreExistingStirrups(StirrupZoneIter& rIter,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool);
+   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool);
 
    // Design additional horizontal shear bars if needed
    bool DetailHorizontalInterfaceShear();
@@ -160,12 +161,14 @@ private:
    IndexType GetNumAvailableBarSpacings() const;
    Float64 GetAvailableBarSpacing(IndexType index) const;
    void GetMinZoneLength(Uint32* pSpacings, Float64* pLength) const;
+public:
+   bool GetIsCompositeDeck() const;
    bool GetIsTopFlangeRoughened() const;
    bool GetExtendBarsIntoDeck() const;
    bool GetDoPrimaryBarsProvideSplittingCapacity() const;
    bool GetBarsActAsConfinement() const;
    GirderLibraryEntry::LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
-
+private:
    // GROUP: INQUIRY
    void DumpDesignParameters();
 
@@ -206,6 +209,8 @@ private:
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;
    Float64 m_EndConnectionLength;
+   Float64 m_LeftFosLocation; // face of support from start of girder
+   Float64 m_RightFosLocation;
 
    bool m_bIsCurrentStirrupLayoutSymmetrical;
 
@@ -248,6 +253,7 @@ private:
    Float64 m_MaxShearCapacityChangeInZone;
    Uint32 m_MinZoneLengthSpacings;
    Float64 m_MinZoneLengthLength;
+   bool m_IsCompositeDeck;
    bool m_IsTopFlangeRoughened;
    bool m_DoExtendBarsIntoDeck;
    bool m_DoBarsProvideSplittingCapacity;

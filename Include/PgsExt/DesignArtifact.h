@@ -98,6 +98,8 @@ public:
       ConflictWithLongReinforcementShearSpec,
       TooMuchStrandsForLongReinfShear,
       StrandsReqdForLongReinfShearAndFlexureTurnedOff,
+      NoDevelopmentLengthForLongReinfShear,
+      NoStrandDevelopmentLengthForLongReinfShear,
       MaxIterExceeded,
       GirderLiftingConcreteStrength,
       GirderLiftingStability,

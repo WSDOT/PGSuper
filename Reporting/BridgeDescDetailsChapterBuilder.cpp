@@ -349,7 +349,7 @@ void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
             else if(ltype==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
                (*pTable)(6,2) << xdim.SetValue( pEntry->GetDiaphragmLoadLocation())<<_T(" from CL Pier");
             else if(ltype==ConnectionLibraryEntry::DontApply)
-               (*pTable)(6,2) << _T("N/A");
+               (*pTable)(6,2) << RPT_NA;
          }
 
          used_connections.insert( strConnection );

@@ -84,9 +84,7 @@ public:
    int m_MinZoneLengthBars;
    Float64 m_MinZoneLengthDist;
 
-   BOOL m_bTopFlangeRoughened;
    BOOL m_bExtendDeckBars;
-   BOOL m_bBarsProvideSplitting;
    BOOL m_bBarsProvideConfinement;
 
    int m_LongReinfShearMethod;

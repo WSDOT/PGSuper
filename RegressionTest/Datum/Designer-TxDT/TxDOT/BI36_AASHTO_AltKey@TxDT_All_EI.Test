@@ -17,6 +17,7 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone checks failed.
 Slab Offset ("A" Dimension) check failed
 
@@ -27,6 +28,7 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone checks failed.
 Slab Offset ("A" Dimension) check failed
 

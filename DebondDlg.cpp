@@ -134,7 +134,6 @@ BOOL CGirderDescDebondPage::OnSetActive()
    m_Grid.CanDebond(bCanDebond);
    GetDlgItem(IDC_SYMMETRIC_DEBOND)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_NUM_DEBONDED)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_NOTE)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -147,8 +146,8 @@ BOOL CGirderDescDebondPage::OnSetActive()
    {
       note += _T("\n- Strands shown in light grey cannot be debonded");
    }
-
    GetDlgItem(IDC_NOTE2)->SetWindowText(note);
+   GetDlgItem(IDC_NOTE)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
 
    StrandIndexType nStrands = pParent->GetStraightStrandCount();
    ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);

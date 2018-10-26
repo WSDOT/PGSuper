@@ -541,7 +541,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
       DebondRowDataSet row_data = debond_comparison.GetDebondRowDataSet(ig);
       if (row_data.empty())
       {
-         (*p_table)(row,1) << _T("N/A"); // no debonding in this girder
+         (*p_table)(row,1) << RPT_NA; // no debonding in this girder
       }
       else
       {

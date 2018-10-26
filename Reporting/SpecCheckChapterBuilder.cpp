@@ -261,22 +261,11 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Vertical Shear check
    p = new rptParagraph;
    p->SetName(_T("Shear"));
-   bool bStrutAndTieRequired;
    *pChapter << p;
-   *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
+   bool bStrutAndTieRequired;
+   *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired);
 
-   if ( bStrutAndTieRequired )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      *p << STRUT_AND_TIE_REQUIRED << rptNewLine << rptNewLine;
-   }
-   else
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      *p << SUPPORT_COMPRESSION << rptNewLine << rptNewLine;
-   }
+   CShearCheckTable().BuildNotes(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired);
 
    if ( bPermit )
    {
@@ -284,18 +273,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *pChapter << p;
       *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
 
-      if ( bStrutAndTieRequired )
-      {
-         p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-         *pChapter << p;
-         *p << STRUT_AND_TIE_REQUIRED << rptNewLine << rptNewLine;
-      }
-      else
-      {
-         p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-         *pChapter << p;
-         *p << SUPPORT_COMPRESSION << rptNewLine << rptNewLine;
-      }
+      CShearCheckTable().BuildNotes(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired);
    }
 
    // Interface Shear check
@@ -306,9 +284,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       if ( bPermit )
          CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII);
    }
-
-   // Optional live load deflection
-   COptionalDeflectionCheck().Build(pChapter,pArtifact,span,girder,pDisplayUnits);
 
    if (pSpecEntry->IsSplittingCheckEnabled())
    {
@@ -326,6 +301,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthI,pDisplayUnits);
    if ( bPermit )
       CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthII,pDisplayUnits);
+
+   // Optional live load deflection
+   COptionalDeflectionCheck().Build(pChapter,pArtifact,span,girder,pDisplayUnits);
 
    // Lifting
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);

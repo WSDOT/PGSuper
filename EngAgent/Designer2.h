@@ -157,8 +157,6 @@ private:
    pgsShearDesignTool  m_ShearDesignTool;
    pgsDesignCodes      m_DesignerOutcome;
 
-   bool m_bSkipShearCheckBeforeLeftCS;
-   bool m_bSkipShearCheckAfterRightCS;
    pgsPointOfInterest m_LeftCS;
    pgsPointOfInterest m_RightCS;
    bool m_bLeftCS_StrutAndTieRequired;
@@ -239,6 +237,13 @@ private:
                               Float64 fcSlab,Float64 fcGdr, Float64 fy,
                               const GDRCONFIG* pConfig,
                               pgsHorizontalShearArtifact* pArtifact );
+   void CheckHorizontalShearMidZone( const pgsPointOfInterest& poi, Float64 vu,
+                                     Float64 fcSlab,Float64 fcGdr, Float64 fy,
+                                     const GDRCONFIG* pConfig,
+                                     pgsHorizontalShearArtifact* pArtifact );
+
+   void ComputeHorizAvs(const pgsPointOfInterest& poi, bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact );
+
    void CheckFullStirrupDetailing( const pgsPointOfInterest& poi, const pgsVerticalShearArtifact& vertArtifact, 
                                    const SHEARCAPACITYDETAILS& scd, Float64 vu, 
                                    Float64 fcGdr, Float64 fy,
