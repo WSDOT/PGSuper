@@ -1567,9 +1567,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          CString strText;
          if ( pierIdx == 0 || pierIdx == nPiers-1 )
-            strText.Format(_T("Abutment %d"),pierIdx+1);
+            strText.Format(_T("Abutment %d"),LABEL_PIER(pierIdx));
          else
-            strText.Format(_T("Pier %d"),pierIdx+1);
+            strText.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
 
          doPierName->SetPosition(ahead_point);
          doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
