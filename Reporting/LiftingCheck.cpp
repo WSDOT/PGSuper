@@ -247,8 +247,6 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          p_table->SetColumnSpan(0,i,SKIP_CELL);
       }
 
-      Float64 overhang = pLiftArtifact->GetLeftOverhang();
-
       RowIndexType row = p_table->GetNumberOfHeaderRows();
 
       const std::vector<pgsPointOfInterest>& vPoi( pLiftArtifact->GetLiftingPointsOfInterest() );
@@ -266,7 +264,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
             ATLASSERT(false); // this should not happen
             continue;
          }
-         (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, overhang );
+         (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi );
 
          // Tension
          Float64 fTensTop, fTensBottom, tensCapacityTop, tensCapacityBottom;

@@ -387,7 +387,7 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
 
    CComPtr<IPoint2d> hook;
    hook.CoCreateInstance(CLSID_Point2d);
-   hook->Move(0, depth/2.0);
+   hook->Move(0, -depth/2.0);
 
    harp_rect->putref_HookPoint(hook);
 
@@ -405,6 +405,7 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

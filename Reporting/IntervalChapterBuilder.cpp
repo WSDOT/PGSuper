@@ -84,10 +84,10 @@ rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    (*pIntervalTable)(0,col++) << _T("Description");
    (*pIntervalTable)(0,col++) << _T("Start") << rptNewLine << _T("Event");
    (*pIntervalTable)(0,col++) << _T("End") << rptNewLine << _T("Event");
-   (*pIntervalTable)(0,col++) << COLHDR(_T("Start"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
-   (*pIntervalTable)(0,col++) << COLHDR(_T("Middle"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
-   (*pIntervalTable)(0,col++) << COLHDR(_T("End"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
-   (*pIntervalTable)(0,col++) << COLHDR(_T("Duration"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
+   (*pIntervalTable)(0,col++) << COLHDR(_T("Start"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
+   (*pIntervalTable)(0,col++) << COLHDR(_T("Middle"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
+   (*pIntervalTable)(0,col++) << COLHDR(_T("End"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
+   (*pIntervalTable)(0,col++) << COLHDR(_T("Duration"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
 
    
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);

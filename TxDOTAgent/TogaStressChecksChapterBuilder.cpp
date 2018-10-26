@@ -351,11 +351,6 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       p_table->SetColumnSpan(0,i,-1);
 
    // Fill up the table
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(fabrSegmentKey);
-   if ( intervalIdx == releaseIntervalIdx )
-      end_size = 0; // don't adjust if CY stage
-
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    CollectionIndexType nArtifacts = pFactoredGdrArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,stressType);
    for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
@@ -379,7 +374,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       }
 
       const pgsPointOfInterest& poi(pFactoredStressArtifact->GetPointOfInterest());
-      (*p_table)(row,col) << location.SetValue( (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT), poi, end_size );
+      (*p_table)(row,col) << location.SetValue( (intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT), poi);
 
       Float64 fTop, fBot;
       // prestress

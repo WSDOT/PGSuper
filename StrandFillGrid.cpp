@@ -338,7 +338,7 @@ void CStrandFillGrid::FillGrid()
          m_pGdrEntry->GetStraightStrandCoordinates(localIdx, &xs, &ys, &xe, &ye, &canDebond);
          oneOrTwo = (xs==0.0 && xe==0.0) ? 1 : 2;
       }
-      else if (strandType==GirderLibraryEntry::stHarped)
+      else if (strandType==GirderLibraryEntry::stAdjustable)
       {
          Float64 xs, ys, xh, yh, xe, ye;
          m_pGdrEntry->GetHarpedStrandCoordinates(localIdx, &xs, &ys, &xh, &yh, &xe, &ye);
@@ -378,11 +378,11 @@ void CStrandFillGrid::FillGrid()
             strType = _T("S");
          }
       }
-      else if (strandType==GirderLibraryEntry::stHarped)
+      else if (strandType == GirderLibraryEntry::stAdjustable)
       {
-         if(m_pGdrEntry->IsForceHarpedStrandsStraight())
+         if(m_pParent->m_AdjustableStrandType == pgsTypes::asStraight)
          {
-            strType = _T("S-W");
+            strType = _T("A-S");
          }
          else
          {
@@ -996,7 +996,7 @@ bool CStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType strand
    {
       return m_pParent->m_pStrands->GetDirectStrandFillStraight()->IsStrandFilled(idxStrandGrid);
    }
-   if (strandType==GirderLibraryEntry::stHarped)
+   if (strandType==GirderLibraryEntry::stAdjustable)
    {
       return m_pParent->m_pStrands->GetDirectStrandFillHarped()->IsStrandFilled(idxStrandGrid);
    }

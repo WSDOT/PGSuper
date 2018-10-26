@@ -327,14 +327,18 @@ void CTOGAStrandFillGrid::FillGrid()
          else
             strType = _T("S");
       }
-      else if (strandType==GirderLibraryEntry::stHarped)
+      else if (strandType==GirderLibraryEntry::stAdjustable)
       {
          ATLASSERT(false); // should never happen in toga
 
-         if(m_pGdrEntry->IsForceHarpedStrandsStraight())
+         if(m_pGdrEntry->GetAdjustableStrandType() == pgsTypes::asStraight)
+         {
             strType = _T("S-W");
+         }
          else
+         {
             strType = _T("H");
+         }
       }
 
 

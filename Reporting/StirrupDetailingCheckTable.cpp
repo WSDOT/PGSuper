@@ -89,30 +89,26 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    (*table)(0,6)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S")<<Sub(_T("min")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(0,7)  << _T("Status");
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDisplayUnits->GetAvOverSUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, AvS,      pDisplayUnits->GetAvOverSUnit(),      false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    // Fill up the table
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
    ATLASSERT(pool != NULL);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pStirrupArtifact != NULL);
-
 
       CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
@@ -127,7 +123,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*table)(row,1) << lrfdRebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
 
          Float64 s = pArtifact->GetS();

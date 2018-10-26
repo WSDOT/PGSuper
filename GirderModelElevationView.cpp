@@ -41,6 +41,9 @@
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+/*
+#include <IFace\PrestressForce.h>
+*/
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
@@ -982,6 +985,7 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSuperDocBase* pDoc
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -1069,7 +1073,7 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSuperDocBase* p
          if ( p1 != NULL && p2 != NULL )
          {
             CComPtr<iDisplayObject> line;
-            BuildLine(pDL,p1,p2,color,&line);
+            BuildLine(pDL,p1,p2,color,1,&line);
 
             line->Visible(FALSE);
 
@@ -1505,6 +1509,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
    GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
    GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   //GET_IFACE2(pBroker,IPrestressForce,pPrestressForce);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -1589,6 +1594,17 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
                Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, false, &nEff);
                from_y = Ybg - (Hg+ecc);
 
+/*
+//////////////////////////////////////////////////////////////////
+      // Eccentricity envelope - for experimental purposes only
+//////////////////////////////////////////////////////////////////
+               GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
+               Float64 lbEcc, ubEcc;
+               pPrestressForce->GetEccentricityEnvelope(prev_poi,config, &lbEcc, &ubEcc);
+               Float64 from_envlby = ybg - hg - lbEcc;
+               Float64 from_envuby = ybg - hg - ubEcc;
+*/
+
                std::vector<pgsPointOfInterest>::iterator end( vPOI.end() );
                for ( ; iter != end; iter++ )
                {
@@ -1606,10 +1622,28 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
                   to_point->put_X(group_offset + X);
                   to_point->put_Y(to_y);
 
-                  BuildLine(pDL, from_point, to_point, RED, WHITE);
+                  BuildDashLine(pDL, from_point, to_point, RED, WHITE);
+/*
+                  // ecc envelop lines
+                  pPrestressForce->GetEccentricityEnvelope(poi,config, &lbEcc, &ubEcc);
+                  Float64 to_envlby = ybg - hg - lbEcc;
+                  Float64 to_envuby = ybg - hg - ubEcc;
+         
+                  from_point->put_Y(from_envlby);
+                  to_point->put_Y(to_envlby);
+                  BuildLine(pDL, from_point, to_point, GREEN, 2);
+         
+                  from_point->put_Y(from_envuby);
+                  to_point->put_Y(to_envuby);
+                  BuildLine(pDL, from_point, to_point, BLUE, 2);
+*/
 
                   prev_poi = poi;
                   from_y = to_y;
+/*
+                  from_envlby = to_envlby;
+                  from_envuby = to_envuby;
+*/
                }
             }
          }
@@ -1706,7 +1740,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
             }
             else
             {
-               BuildLine(pDL, from_point, to_point, DUCT_LINE_COLOR1, DUCT_LINE_COLOR2);
+               BuildDashLine(pDL, from_point, to_point, DUCT_LINE_COLOR1, DUCT_LINE_COLOR2);
             }
 
             from_point = to_point;
@@ -1747,6 +1781,8 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+
+#pragma Reminder("UPDATE: need to include closure joint rebar")
 
          // if segment isn't constructed, don't display it
          if ( m_pFrame->GetEvent() < pIBridgeDesc->GetSegmentConstructionEventIndex(segmentKey) )
@@ -2908,7 +2944,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
    }
 }
 
-void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color,iDisplayObject** ppDO)
+void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color,UINT nWidth,iDisplayObject** ppDO)
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;
@@ -2950,6 +2986,7 @@ void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint
    if (pSimple)
    {
       pSimple->SetColor(color);
+      pSimple->SetWidth(nWidth);
    }
    else
    {
@@ -2974,7 +3011,7 @@ void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint
    pDL->AddDisplayObject(line);
 }
 
-void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color1, COLORREF color2,iDisplayObject** ppDO)
+void CGirderModelElevationView::BuildDashLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color1, COLORREF color2,iDisplayObject** ppDO)
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;

@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <EAF\EAFDocTemplate.h>
+#include <PGSuperDocTemplateBase.h>
 
-class CPGSuperDocTemplate : public CEAFDocTemplate
+class CPGSuperDocTemplate : public CPGSuperDocTemplateBase
 {
 public:
    CPGSuperDocTemplate(UINT nIDResource,
@@ -35,17 +35,10 @@ public:
                        HMENU hSharedMenu = NULL,
                        int maxViewCount = -1);
 
-   virtual void SetPlugin(IEAFAppPlugin* pPlugin);
-
-   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
-
-   void LoadTemplateInformation();
-
-   void SetDocStrings(const CString& str);
-
    DECLARE_DYNAMIC(CPGSuperDocTemplate)
 
 protected:
-   void FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon);
-   void FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon);
+   virtual CString GetAppName() const;
+   virtual UINT GetTemplateIconResourceID() const;
+   virtual CString GetTemplateSuffix();
 };

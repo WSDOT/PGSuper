@@ -137,9 +137,6 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    INIT_UV_PROTOTYPE( rptLengthSectionValue, ecc,    pDisplayUnits->GetComponentDimUnit(),  false );
 
    GET_IFACE2( pBroker, IPointOfInterest, pPoi );
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    StrandIndexType Ns, Nh, Nt;
    Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
@@ -149,6 +146,8 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT));
    std::vector<pgsPointOfInterest> vPoi2(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT));
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::vector<pgsPointOfInterest> vPoi3(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL));
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
@@ -163,7 +162,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
       col = 0;
 
       (*p_table)(row,col++) << rptReleasePoi.SetValue(POI_RELEASED_SEGMENT,poi);
-      (*p_table)(row,col++) << rptErectedPoi.SetValue(POI_ERECTED_SEGMENT, poi,end_size);
+      (*p_table)(row,col++) << rptErectedPoi.SetValue(POI_ERECTED_SEGMENT, poi);
 
       Float64 nEff;
       if ( 0 < Ns )

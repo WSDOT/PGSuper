@@ -202,7 +202,6 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
 
    locationp.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -268,23 +267,13 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       RowIndexType row = ptable->GetNumberOfHeaderRows();
       bool all_in_range = true;
 
-      Float64 end_size;
-      if ( csDetails.bAtFaceOfSupport )
-      {
-         end_size = pBridge->GetSegmentStartEndDistance(csDetails.poiFaceOfSupport.GetSegmentKey());
-      }
-      else
-      {
-         end_size = pBridge->GetSegmentStartEndDistance(csDetails.pCriticalSection->Poi.GetSegmentKey());
-      }
-
       std::vector<CRITSECTIONDETAILSATPOI>::const_iterator iter(csDetails.PoiData.begin());
       std::vector<CRITSECTIONDETAILSATPOI>::const_iterator iterEnd(csDetails.PoiData.end());
       for ( ; iter != iterEnd; iter++ )
       {
          const CRITSECTIONDETAILSATPOI& csDetailsAtPoi = *iter;
 
-         (*ptable)(row,0) << locationp.SetValue( POI_ERECTED_SEGMENT, csDetailsAtPoi.Poi, end_size );
+         (*ptable)(row,0) << locationp.SetValue( POI_ERECTED_SEGMENT, csDetailsAtPoi.Poi );
 
          (*ptable)(row,1) << dim.SetValue(csDetailsAtPoi.DistFromFOS);
          (*ptable)(row,2) << dim.SetValue(csDetailsAtPoi.Dv);

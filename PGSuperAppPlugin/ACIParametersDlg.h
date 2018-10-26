@@ -34,7 +34,6 @@ public:
 	virtual ~CACIParametersDlg();
 
    Float64 m_t1;
-   Float64 m_t2;
    Float64 m_fc1;
    Float64 m_fc2;
    Float64 m_A;
@@ -45,6 +44,8 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+
+   Float64 m_t2; // must be 28 days
 
    afx_msg void UpdateParameters();
 

@@ -290,6 +290,8 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
 
+   (*pTable)(0,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + factory->GetImage());
+
    std::vector<const unitLength*> units = factory->GetDimensionUnits(bUnitsSI);
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
    GirderLibraryEntry::Dimensions::iterator dim_iter;
@@ -315,10 +317,6 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       }
    }
 
-
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
-   (*pTable)(0,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + pFactory->GetImage());
 
       // Write out strand pattern data and all other data in the girder library entry
 #pragma Reminder("Implement")
@@ -423,8 +421,6 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       (*pTable1)(0,col++) << COLHDR(_T("Overlay")<<rptNewLine<<_T("Toe-Toe")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
    std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_SPAN) );
    std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
    std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
@@ -437,7 +433,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       pBridge->GetStationAndOffset(poi,&station,&offset);
       Float64 dist_from_start = pBridge->GetDistanceFromStartOfBridge(station);
 
-      (*pTable1)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+      (*pTable1)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*pTable1)(row,col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat() );
 
        Float64 lft_off = pBridge->GetLeftSlabEdgeOffset(dist_from_start);

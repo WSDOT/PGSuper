@@ -138,7 +138,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pPara) << pTable << rptNewLine;
 
       (*pTable)(0,col++) << _T("Interval");
-      (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
+      (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
       (*pTable)(0,col++) << COLHDR(_T("f'c"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
       (*pTable)(0,col++) << COLHDR(_T("Ec"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
       (*pTable)(0,col++) << symbol(psi);
@@ -215,7 +215,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pPara) << pTable << rptNewLine;
 
          (*pTable)(0,col++) << _T("Interval");
-         (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
+         (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
          (*pTable)(0,col++) << COLHDR(_T("f'c"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
          (*pTable)(0,col++) << COLHDR(_T("Ec"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
          (*pTable)(0,col++) << symbol(psi);
@@ -290,7 +290,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    (*pPara) << pTable << rptNewLine;
 
    (*pTable)(0,col++) << _T("Interval");
-   (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
    (*pTable)(0,col++) << COLHDR(_T("f'c"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pTable)(0,col++) << COLHDR(_T("Ec"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pTable)(0,col++) << symbol(psi);
@@ -365,7 +365,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       pgsPointOfInterest& poi = *iter;
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-      *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
+      *pPara << location.SetValue(POI_SPAN,poi) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
 
       CComPtr<IRebarSection> rebar_section;
       pRebarGeom->GetRebars(poi,&rebar_section);
@@ -1213,7 +1213,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       pgsPointOfInterest& poi = *iter;
       const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
 
-      (*pTable3)(row3,col3++) << location.SetValue(POI_SPAN,poi,0.0);
+      (*pTable3)(row3,col3++) << location.SetValue(POI_SPAN,poi);
 
       for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
       {

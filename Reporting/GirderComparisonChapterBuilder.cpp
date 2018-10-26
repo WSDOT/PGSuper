@@ -216,7 +216,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    p_table->SetColumnSpan(1,6,SKIP_CELL);
    p_table->SetColumnSpan(1,7,SKIP_CELL);
    p_table->SetColumnSpan(1,8,SKIP_CELL);
-   (*p_table)(1,4) << _T("Web Strands");
+   (*p_table)(1,4) << _T("Adjustable Strands");
    (*p_table)(2,4) << _T("Type");
    (*p_table)(2,5) << _T("#");
    (*p_table)(2,6) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());

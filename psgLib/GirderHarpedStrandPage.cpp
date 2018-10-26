@@ -36,6 +36,24 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Names are slightly different in library than rest of program
+inline LPCTSTR LOCAL_LABEL_HARP_TYPE(pgsTypes::AdjustableStrandType type)
+{
+   if (pgsTypes::asHarped == type)
+   {
+      return _T("Harped");
+   }
+   else  if (pgsTypes::asStraight == type)
+   {
+      return _T("Adj. Straight");
+   }
+   else
+   {
+      return _T("Adjustable");
+   }
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderHarpedStrandPage property page
 
@@ -87,6 +105,7 @@ BEGIN_MESSAGE_MAP(CGirderHarpedStrandPage, CPropertyPage)
    ON_BN_CLICKED(IDC_REVERSE_HARPED_STRAND_ORDER,OnReverseHarpedStrandOrder)
    ON_BN_CLICKED(IDC_GENERATE,OnGenerateStrandPositions)
    ON_CBN_SELCHANGE(IDC_WEB_STRAND_TYPE_COMBO, &CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo)
+   ON_BN_CLICKED(IDC_ALLOW_STR_ADJUST, &CGirderHarpedStrandPage::OnClickStraightAdjust)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -111,6 +130,7 @@ BOOL CGirderHarpedStrandPage::OnInitDialog()
    // vertical adjustment controls
    UpdateHpAdjust();
    UpdateEndAdjust();
+   UpdateStraightAdjust();
 
    // set data in grids - would be nice to be able to do this in DoDataExchange,
    // but mfc sucks.
@@ -169,9 +189,10 @@ void CGirderHarpedStrandPage::OnClickHarpedBox()
 
 bool CGirderHarpedStrandPage::DoUseHarpedGrid()
 {
-   if (!DoUseHarpedWebStrands())
+   if (pgsTypes::asStraight        == GetAdjustableStrandType() ||
+      pgsTypes::asStraightOrHarped == GetAdjustableStrandType())
    {
-      // never need harped grid if web strands are straight
+      // never need harped grid if web strands can be straight
       return false;
    }
    else
@@ -219,26 +240,55 @@ void CGirderHarpedStrandPage::OnClickEndAdjust()
    UpdateEndAdjust();
 }
 
+void CGirderHarpedStrandPage::OnClickStraightAdjust()
+{
+   UpdateStraightAdjust();
+}
+
 void CGirderHarpedStrandPage::UpdateHpAdjust()
 {
-   CButton* pbut = (CButton*)GetDlgItem(IDC_ALLOW_HP_ADJUST);
-   ASSERT(pbut);
-
-   if(DoUseHarpedWebStrands())
-   {
-      pbut->SetWindowText(_T("At Harping Points"));
-   }
-   else
-   {
-      pbut->SetWindowText(_T("Along Girder"));
-   }
-
-   BOOL enable = pbut->GetCheck()==0 ? FALSE : TRUE;
+   BOOL enable = pgsTypes::asStraight!=GetAdjustableStrandType() ? TRUE : FALSE;
 
    int ctrls[] = {IDC_HP_INCREMENT, IDC_HP_INCREMENT_T, 
                   IDC_HP_LSL, IDC_HP_LSL_T, IDC_HP_LSL_S, IDC_COMBO_HP_LSL,
                   IDC_HP_USL, IDC_HP_USL_T, IDC_HP_USL_S, IDC_COMBO_HP_USL,
                   -1};
+
+   UpdateAdjustCtls(enable, IDC_ALLOW_HP_ADJUST, ctrls);
+}
+
+void CGirderHarpedStrandPage::UpdateEndAdjust()
+{
+   BOOL enable = pgsTypes::asStraight!=GetAdjustableStrandType() ? TRUE : FALSE;
+
+   int ctrls[] = {IDC_END_INCREMENT, IDC_END_INCREMENT_T, 
+                  IDC_END_LSL, IDC_END_LSL_T, IDC_END_LSL_S, IDC_COMBO_END_LSL,
+                  IDC_END_USL, IDC_END_USL_T, IDC_END_USL_S, IDC_COMBO_END_USL,
+                  -1};
+
+   UpdateAdjustCtls(enable, IDC_ALLOW_END_ADJUST, ctrls);
+}
+
+void CGirderHarpedStrandPage::UpdateStraightAdjust()
+{
+   BOOL enable = pgsTypes::asHarped!=GetAdjustableStrandType() ? TRUE : FALSE;
+
+   int ctrls[] = {IDC_STR_INCREMENT, IDC_STR_INCREMENT_T, 
+                  IDC_STR_LSL, IDC_STR_LSL_T, IDC_STR_LSL_S, IDC_COMBO_STR_LSL,
+                  IDC_STR_USL, IDC_STR_USL_T, IDC_STR_USL_S, IDC_COMBO_STR_USL,
+                  -1};
+
+   UpdateAdjustCtls(enable, IDC_ALLOW_STR_ADJUST, ctrls);
+}
+
+void CGirderHarpedStrandPage::UpdateAdjustCtls(BOOL enableGroup, int checkCtrl, int ctrls[])
+{
+   CButton* pbut = (CButton*)GetDlgItem(checkCtrl);
+   ASSERT(pbut);
+
+   pbut->EnableWindow(enableGroup);
+
+   BOOL enable = enableGroup & (pbut->GetCheck()==0 ? FALSE : TRUE);
 
    int idx=0;
    while (ctrls[idx] != -1)
@@ -248,43 +298,6 @@ void CGirderHarpedStrandPage::UpdateHpAdjust()
       pdel->EnableWindow(enable);
 
       idx++;
-   }
-}
-
-void CGirderHarpedStrandPage::UpdateEndAdjust()
-{
-   CButton* pbut = (CButton*)GetDlgItem(IDC_ALLOW_END_ADJUST);
-   ASSERT(pbut);
-   BOOL enable = pbut->GetCheck()==0 ? FALSE : TRUE;
-
-   int ctrls[] = {IDC_ALLOW_END_ADJUST, IDC_END_INCREMENT, IDC_END_INCREMENT_T, 
-                  IDC_END_LSL, IDC_END_LSL_T, IDC_END_LSL_S, IDC_COMBO_END_LSL,
-                  IDC_END_USL, IDC_END_USL_T, IDC_END_USL_S, IDC_COMBO_END_USL,
-                  -1};
-
-   int show = DoUseHarpedWebStrands() ? SW_SHOW : SW_HIDE;
-
-   int idx=0;
-   while (ctrls[idx] != -1)
-   {
-      CWnd* pdel = GetDlgItem(ctrls[idx]);
-      ASSERT(pdel);
-      pdel->ShowWindow(show);
-
-      idx++;
-   }
-
-   if (show==SW_SHOW)
-   {
-      idx=1;
-      while (ctrls[idx] != -1)
-      {
-         CWnd* pdel = GetDlgItem(ctrls[idx]);
-         ASSERT(pdel);
-         pdel->EnableWindow(enable);
-
-         idx++;
-      }
    }
 }
 
@@ -306,10 +319,10 @@ void CGirderHarpedStrandPage::OnMidview()
    pDad->m_GirderDimensionsPage.ViewSection(false);
 }
 
-bool CGirderHarpedStrandPage::DoUseHarpedWebStrands()
+pgsTypes::AdjustableStrandType CGirderHarpedStrandPage::GetAdjustableStrandType()
 {
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_WEB_STRAND_TYPE_COMBO);
-   return pcb->GetCurSel()==0 ? TRUE : FALSE;
+   return (pgsTypes::AdjustableStrandType)pcb->GetCurSel();
 }
 
 void CGirderHarpedStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)
@@ -327,10 +340,7 @@ void CGirderHarpedStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 n
    ASSERT(pw);
    pw->SetWindowText(str);
 
-   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_WEB_STRAND_TYPE_COMBO);
-   BOOL use_harped = pcb->GetCurSel()==0 ? TRUE : FALSE;
-
-   str.Format(_T("# %s Strands = %d"), LABEL_HARP_TYPE(!use_harped), nh);
+   str.Format(_T("# %s Strands = %d"), LOCAL_LABEL_HARP_TYPE(GetAdjustableStrandType()), nh);
 
    pw = (CWnd*)GetDlgItem(IDC_HS_STATUS);
    ASSERT(pw);
@@ -355,15 +365,18 @@ void CGirderHarpedStrandPage::OnGenerateStrandPositions()
 
 void CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo()
 {
-   BOOL use_harped = DoUseHarpedWebStrands();
+   pgsTypes::AdjustableStrandType adj_type = GetAdjustableStrandType();
+   BOOL use_diffgrid = pgsTypes::asHarped == adj_type;
 
    CWnd* pw = (CWnd*)GetDlgItem(IDC_USE_DIFF_GRID);
-   pw->EnableWindow(use_harped);
+   pw->EnableWindow(use_diffgrid);
 
    CString msg;
-   msg.Format(_T("Coerce Odd Number of %s Strands"),LABEL_HARP_TYPE(!use_harped));
+   msg.Format(_T("Coerce Odd Number of %s Strands"),LOCAL_LABEL_HARP_TYPE(adj_type));
    pw = (CWnd*)GetDlgItem(IDC_ODD_STRANDS);
    pw->SetWindowText(msg);
+
+   BOOL use_harped = pgsTypes::asHarped == adj_type;
 
    pw = (CWnd*)GetDlgItem(IDC_STATIC_HP);
    if (use_harped)
@@ -372,23 +385,37 @@ void CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo()
    }
    else
    {
-      pw->SetWindowText(_T("Strand Locations Along Girder Measured from Bottom C.L. of Girder"));
+      pw->SetWindowText(_T("Strand Locations Measured from Bottom C.L. of Girder"));
    }
    
    pw = (CWnd*)GetDlgItem(IDC_STATIC_END);
    pw->ShowWindow(use_harped ? SW_SHOW : SW_HIDE);
 
-   pw = (CWnd*)GetDlgItem(IDC_REVERSE_HARPED_STRAND_ORDER);
-   pw->EnableWindow(use_harped);
+   pw = (CWnd*)GetDlgItem(IDC_ADJUSTABLE_NOTE);
+   pw->ShowWindow(pgsTypes::asStraightOrHarped == adj_type ? SW_SHOW : SW_HIDE);
 
-   msg.Format(_T("Vertical Adjustment of %s Strands"),LABEL_HARP_TYPE(!use_harped));
+   pw = (CWnd*)GetDlgItem(IDC_REVERSE_HARPED_STRAND_ORDER);
+   pw->EnableWindow(pgsTypes::asStraight != adj_type);
+
+   if (use_harped)
+   {
+      msg = _T("Vertical Adjustment of Harped Strands");
+   }
+   else
+   {
+      msg = _T("Vertical Adjustment of Adjustable Strands");
+   }
+
    pw = (CWnd*)GetDlgItem(IDC_VERT_ADJUST_GROUP);
    pw->SetWindowText(msg);
 
    UpdateHpAdjust();
    UpdateEndAdjust();
+   UpdateStraightAdjust();
 
 
    m_MainGrid.OnChangeWebStrandType();
    
 }
+
+

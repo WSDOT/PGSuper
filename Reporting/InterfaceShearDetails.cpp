@@ -218,6 +218,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       *pPara << symbol(phi) << _T(" = ") << p_first_artifact[segIdx]->GetPhi() << rptTab
              << RPT_FC << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFc()) << rptTab
              << RPT_FY << _T(" = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetFy());
+
       if ( p_first_artifact[segIdx]->WasFyLimited() )
       {
          *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)");
@@ -268,9 +269,13 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
                                        <<_T("0.2 ") << RPT_FC <<_T("a")<<Sub(_T("cv"))<<_T(", ");
 
       if ( IS_SI_UNITS(pDisplayUnits) )
+      {
          *pPara<<_T(" 5.5 a")<<Sub(_T("cv"))<<_T(" )")<<rptNewLine;
+      }
       else
+      {
          *pPara<<_T(" 0.8 a")<<Sub(_T("cv"))<<_T(" )")<<rptNewLine;
+      }
    }
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
@@ -298,16 +303,18 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       (*table)(0,5)  << COLHDR(_T("0.2 f'")<<Sub(_T("c"))<<_T("a")<<Sub(_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
       if ( IS_SI_UNITS(pDisplayUnits) )
+      {
          (*table)(0,6)  << COLHDR(_T("5.5 a")<<Sub(_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      }
       else
+      {
          (*table)(0,6)  << COLHDR(_T("0.8 a")<<Sub(_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      }
    }
 
    (*table)(0,7)  << COLHDR(symbol(phi) << Sub2(_T("v"),_T("ni")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
    // Fill up the tables
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
    RowIndexType vui_row = vui_table->GetNumberOfHeaderRows();
    RowIndexType av_row  = av_table->GetNumberOfHeaderRows();
    RowIndexType row     = table->GetNumberOfHeaderRows();
@@ -345,7 +352,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
             // vui table
             col = 0;
             Float64 Vui = pArtifact->GetDemand();
-            (*vui_table)(vui_row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*vui_table)(vui_row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
             if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
             {
@@ -366,14 +373,18 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          }
 
          // av/s table
-         (*av_table)(av_row,0)  <<  location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*av_table)(av_row,0)  <<  location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*av_table)(av_row,1)  <<  area.SetValue(pArtifact->GetAvfGirder());
 
          Float64 sv = pArtifact->GetSGirder();
-         if (sv>0.0)
+         if (0.0 < sv)
+         {
             (*av_table)(av_row,2)  <<  dim.SetValue(sv);
+         }
          else
+         {
             (*av_table)(av_row,2)  <<  symbol(INFINITY);
+         }
 
          (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfAdditional());
 
@@ -390,7 +401,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          if (is_app)
          {
             // capacity table
-            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
             (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());
             (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
             (*table)(row,3) << shear_per_length.SetValue( pArtifact->GetNormalCompressionForce() );
@@ -464,18 +475,26 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
       if ( IS_SI_UNITS(pDisplayUnits) )
+      {
          *pParaEqn << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_SI.png")) << rptNewLine;
+      }
       else
+      {
          *pParaEqn << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_US.png")) << rptNewLine;
+      }
    }
    else
    {
       (*table)(0,col++)  << COLHDR(Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( IS_SI_UNITS(pDisplayUnits) )
+      {
          (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")) << _T(" = ") << Sub2(_T("0.35a"),_T("cv")) <<_T("/") << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+      }
       else
+      {
          (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")) << _T(" = ") << Sub2(_T("0.05a"),_T("cv")) <<_T("/") << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+      }
    }
 
    (*table)(0,col)  << _T("Min Reinforcement") << rptNewLine << _T("Requirement") << rptNewLine << _T("Waived?");
@@ -495,7 +514,9 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          col = 0;
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( intervalIdx, ls, idx );
          if ( psArtifact == NULL )
+         {
             continue;
+         }
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
          ATLASSERT(poi.GetSegmentKey() == segmentKey);
@@ -504,9 +525,11 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
          // Don't report values in vui and capacity table for poi's in end zone outside of CSS
          if( !pArtifact->IsApplicable() )
+         {
             continue;
+         }
 
-         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*table)(row,col++) << AvS.SetValue(pArtifact->GetAcv());
          (*table)(row,col++) << stress.SetValue( pArtifact->GetVsAvg() );
 

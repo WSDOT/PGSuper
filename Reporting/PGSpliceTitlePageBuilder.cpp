@@ -311,6 +311,15 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
       (*pTable)(row,0) << _T("PSXFR");
       (*pTable)(row++,1) << _T("Point of prestress transfer");
 
+      (*pTable)(row,0) << _T("Diaphragm");
+      (*pTable)(row++,1) << _T("Location of a precast or cast in place diaphragm");
+
+      (*pTable)(row,0) << _T("Bar Cutoff");
+      (*pTable)(row++,1) << _T("End of a reinforcing bar in the girder");
+
+      (*pTable)(row,0) << _T("Deck Bar Cutoff");
+      (*pTable)(row++,1) << _T("End of a reinforcing bar in the deck");
+
       if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
       {
          (*pTable)(row,0) << _T("CS");

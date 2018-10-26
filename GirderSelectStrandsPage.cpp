@@ -243,13 +243,15 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
    m_SegmentKey = segmentKey;
    m_pStrands   = pStrands;
 
+   m_AdjustableStrandType = m_pStrands->GetAdjustableStrandType();
+
    m_bAllowEndAdjustment = allowEndAdjustment;
    m_bAllowHpAdjustment  = allowHpAdjustment;
 
    // Get current offset input values - we will force in bounds if needed
    // Make sure legacy values can't sneak in
-   m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : m_pStrands->GetHarpStrandOffsetMeasurementAtEnd());
-   m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : m_pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint());
+   m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : endMeasureType);
+   m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : hpMeasureType);
 
    m_HpOffsetAtEnd = hpOffsetAtEnd;
    m_HpOffsetAtHp  = hpOffsetAtHp;
@@ -434,7 +436,9 @@ void CGirderSelectStrandsPage::OnPaint()
 
    world_size.Dy() = strand_bounds.Height();
    if ( IsZero(world_size.Dy()) )
+   {
       world_size.Dy() = world_size.Dx()/2;
+   }
 
    CSize client_size = rClient.Size();
    client_size -= CSize(10,10); // make client size slightly smaller so there 
@@ -614,7 +618,7 @@ void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, I
 
          total_strand_cnt = DrawStrand(pDC, Mapper, xStart, yStart, total_strand_cnt, is_filled, grid_row);
       }
-      else if (strand_type==GirderLibraryEntry::stHarped)
+      else if (strand_type == GirderLibraryEntry::stAdjustable)
       {
          Float64 xs, ys, xe, ye, xhp, yhp;
          m_pGdrEntry->GetHarpedStrandCoordinates(strand_idx, &xs, &ys, &xhp, &yhp, &xe, &ye);
@@ -856,7 +860,9 @@ void CGirderSelectStrandsPage::UpdateStrandInfo()
 
    Float64 percent = 0.0;
    if ( 0 < nStraight )
+   {
       percent = 100.0*((Float64)nDebonded/(Float64)nStraight);
+   }
 
    CString msg;
    msg.Format(_T("Debonded (S-DB)=%d (%.1f%%)"), nDebonded, percent);
@@ -865,10 +871,9 @@ void CGirderSelectStrandsPage::UpdateStrandInfo()
    msg.Format(_T("Straight (S)=%d"), nStraight);
    GetDlgItem(IDC_STRAIGHT)->SetWindowText(msg);
 
-   bool areHarpedStraight = m_pGdrEntry->IsForceHarpedStrandsStraight();
-   if (areHarpedStraight)
+   if (m_AdjustableStrandType == pgsTypes::asStraight)
    {
-      msg.Format(_T("Straight-Web (S-W)=%d"), nHarped);
+      msg.Format(_T("Adjustable-Straight (A-S)=%d"), nHarped);
    }
    else
    {
@@ -964,10 +969,10 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // adjustment of harped strands at ends
-   Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str());
-   Float64 hpt_incr = pStrandGeometry->GetHarpedHpOffsetIncrement(m_pGdrEntry->GetName().c_str());
+   Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str(),m_AdjustableStrandType);
+   Float64 hpt_incr = pStrandGeometry->GetHarpedHpOffsetIncrement(m_pGdrEntry->GetName().c_str(),m_AdjustableStrandType);
 
-   bool areHarpedStraight = m_pGdrEntry->IsForceHarpedStrandsStraight();
+   bool areHarpedStraight = (m_AdjustableStrandType == pgsTypes::asStraight ? true : false);
 
    if (IsLE(end_incr,0.0) && IsLE(hpt_incr,0.0))
    {
@@ -1014,10 +1019,14 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
             Float64 high = Max(lowRange, highRange);
 
             // Force current offset into allowable range - we could warn user?
-            if(m_HpOffsetAtEnd<low)
+            if(m_HpOffsetAtEnd < low)
+            {
                m_HpOffsetAtEnd = low;
-            else if (m_HpOffsetAtEnd>high)
+            }
+            else if (high < m_HpOffsetAtEnd)
+            {
                m_HpOffsetAtEnd = high;
+            }
 
             FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr,
                                         pctrl, 2, measUnit.UnitOfMeasure);
@@ -1031,7 +1040,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
       }
 
       // Hpt Control
-      if (IsLE(hpt_incr,0.0))
+      if (IsLE(hpt_incr,0.0) || m_AdjustableStrandType == pgsTypes::asStraight)
       {
          ShowHarpedHpAdjustmentControls(FALSE);
       }
@@ -1041,7 +1050,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
          pctrl->ResetContent();
 
          StrandIndexType nh = m_pStrands->GetDirectStrandFillHarped()->GetFilledStrandCount();
-         if ( nh > 0)
+         if ( 0 < nh )
          {
             EnableHarpedHpAdjustmentControls(TRUE);
 

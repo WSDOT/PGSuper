@@ -34,6 +34,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\GirderHandling.h>
 
 #include <EAF\EAFDisplayUnits.h>
 

@@ -290,7 +290,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
-   p->SetName(_T("Stresses due to Prestress"));
+   p->SetName(_T("Stress due to Prestress"));
    *p << p->GetName() << rptNewLine;
    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {

@@ -79,8 +79,9 @@ static char THIS_FILE[] = __FILE__;
 // from 19.0 to 20.0 added shear design parameters
 // from 20.0 to 21.0 Web strands can be harped or straight e.g.,  ForceHarpedStrandsStraight
 // from 21.0 to 22.0 Added layout options for longitudinal rebar
-// from 22.0 to 23.0 Added option for variable depth girders
-#define CURRENT_VERSION 23.0
+// from 22   to 23   Changed ForceHarpedStrandsStraight to AdjustableStrandType for more flexibility
+// from 23.0 to 24.0 Added option for variable depth girders
+#define CURRENT_VERSION 24.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) {
@@ -122,7 +123,7 @@ m_HarpPointReference(mlBearing),
 m_LongitudinalBarType(matRebar::A615),
 m_LongitudinalBarGrade(matRebar::Grade60),
 m_bOddNumberOfHarpedStrands(true),
-m_bForceHarpedStrandsStraight(false),
+m_AdjustableStrandType(pgsTypes::asHarped),
 // debonding criteria - use aashto defaults
 m_MaxDebondStrands(0.25),
 m_MaxDebondStrandsPerRow(0.40),
@@ -272,7 +273,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
    pSave->Property(_T("SectionName"),CString(pszUserType));
 
-
+   // added in version 24
    pSave->BeginUnit(_T("SectionDimensions"),1.0);
       if ( m_bSupportsVariableDepthSection )
       {
@@ -299,6 +300,14 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("HPBottomLimit"),           m_HPAdjustment.m_BottomLimit);
    pSave->Property(_T("HPTopFace"),               (long)m_HPAdjustment.m_TopFace);
    pSave->Property(_T("HPTopLimit"),              m_HPAdjustment.m_TopLimit);
+
+   // added in version 23
+   pSave->Property(_T("StraightAllowVertAdjustment"),   m_StraightAdjustment.m_AllowVertAdjustment);
+   pSave->Property(_T("StraightStrandIncrement"),       m_StraightAdjustment.m_StrandIncrement);
+   pSave->Property(_T("StraightBottomFace"),            (long)m_StraightAdjustment.m_BottomFace);
+   pSave->Property(_T("StraightBottomLimit"),           m_StraightAdjustment.m_BottomLimit);
+   pSave->Property(_T("StraightTopFace"),               (long)m_StraightAdjustment.m_TopFace);
+   pSave->Property(_T("StraightTopLimit"),              m_StraightAdjustment.m_TopLimit);
 
    //  Removed below in version 19
    // pSave->Property(_T("ConfinementBarSize"),        (long)m_ConfinementBarSize); // data type and property name changed in version 18
@@ -373,7 +382,8 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    pSave->Property(_T("OddNumberOfHarpedStrands"),m_bOddNumberOfHarpedStrands);
 
-   pSave->Property(_T("ForceHarpedStrandsStraight"),m_bForceHarpedStrandsStraight);
+   //pSave->Property(_T("ForceHarpedStrandsStraight"),m_bForceHarpedStrandsStraight); // removed in version 23
+   pSave->Property(_T("AdjustableStrandType"),(Int32)m_AdjustableStrandType); // added in version 23
 
    // Temporary strands
    // Added start and end strand grids in version 15 of parent unit
@@ -412,7 +422,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       {
         pSave->Property(_T("StrandType"), _T("Straight"));
       }
-      else if (type == stHarped)
+      else if (type == stAdjustable)
       {
         pSave->Property(_T("StrandType"), _T("Harped"));
       }
@@ -622,23 +632,62 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_bSupportsVariableDepthSection = false;
          }
 
-
+         // this data block is "officially" added in version 24 however, this was originally part
+         // of the version 23 data block during pgsplice development. PGSuper version 2.9
+         // was updated and used version 23. This creates a problem. When loading a PGSuper
+         // file from version 2.9 we are going to encounter version 23 of this datablock however
+         // it wont have the expected data. To work around this problem, let it fail
+         // and move on.
          if ( 22 < version )
          {
-            if ( !pLoad->BeginUnit(_T("SectionDimensions")) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
-
-            if ( m_bSupportsVariableDepthSection ) 
+            bool bOkToFail = false;
+            if ( version == 23 )
             {
-               if ( !pLoad->Property(_T("VariableDepthSection"),&m_bIsVariableDepthSectionEnabled) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               bOkToFail = true; // it is OK of version 23 datablock fails
             }
 
-            m_Dimensions.clear();
-            m_Dimensions = m_pBeamFactory->LoadSectionDimensions(pLoad);
+            bool bDidBeginUnit = true;
+            if ( !pLoad->BeginUnit(_T("SectionDimensions")) )
+            {
+               bDidBeginUnit = false;
+            }
 
-            if ( !pLoad->EndUnit() )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+            if ( bDidBeginUnit )
+            {
+               // BeginUnit succeeded so read the rest of the data block
+               if ( m_bSupportsVariableDepthSection ) 
+               {
+                  if ( !pLoad->Property(_T("VariableDepthSection"),&m_bIsVariableDepthSectionEnabled) )
+                  {
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+               }
+
+               m_Dimensions.clear();
+               m_Dimensions = m_pBeamFactory->LoadSectionDimensions(pLoad);
+
+               if ( !pLoad->EndUnit() )
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+               }
+            }
+            else
+            {
+               // BeginUnit failed...
+               if ( !bOkToFail )
+               {
+                  // not ok to fail so throw an error exceptoin
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+               }
+               else
+               {
+                  // ok to fail... this means we have a PGSuper file with version 23 datablock
+                  // the SectionDimensions datablock isn't valid so we want to just load
+                  // the section dimensions (as is done in the else block below)
+                  m_Dimensions.clear();
+                  m_Dimensions = m_pBeamFactory->LoadSectionDimensions(pLoad);
+               }
+            }
           }
          else
          {
@@ -759,6 +808,62 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("HPTopLimit"), &m_HPAdjustment.m_TopLimit))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
+            // Added separate adjustment for adj straight strands in version 23.0
+            if (23.0 <= version)
+            {
+               // PGSuper V2.9 and PGSuper/PGSplice V3.0 both used version 23 for different data
+               // If the version number is exactly 23, it is ok for the load to fail. Failing
+               // indicates the expected data is missing. This happens when a PGSplice version 23
+               // data block is being loaded.
+               bool bOkToFail = false;
+               if ( version == 23 )
+               {
+                  bOkToFail = true;
+               }
+
+               if( pLoad->Property(_T("StraightAllowVertAdjustment"), &m_StraightAdjustment.m_AllowVertAdjustment) )
+               {
+                  // load succeeded so carry on normally
+                  if(!pLoad->Property(_T("StraightStrandIncrement"), &m_StraightAdjustment.m_StrandIncrement))
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if(!pLoad->Property(_T("StraightBottomFace"), &lface))
+                     THROW_LOAD(InvalidFileFormat,pLoad); 
+
+                  m_StraightAdjustment.m_BottomFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
+
+                  if(!pLoad->Property(_T("StraightBottomLimit"), &m_StraightAdjustment.m_BottomLimit))
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+
+                  if(!pLoad->Property(_T("StraightTopFace"), &lface))
+                     THROW_LOAD(InvalidFileFormat,pLoad); 
+
+                  m_StraightAdjustment.m_TopFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
+
+                  if(!pLoad->Property(_T("StraightTopLimit"), &m_StraightAdjustment.m_TopLimit))
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+               }
+               else
+               {
+                  // load StraightAllowVertAdjustment failed
+                  if ( bOkToFail )
+                  {
+                     // it is ok to fail which means we have a file with a different version 23
+                     // datablock. set the strand adjustment as would have been done if version was < 23
+                     m_StraightAdjustment = m_HPAdjustment; // see else block below
+                  }
+                  else
+                  {
+                     // it is not ok to fail so throw the error
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+               }
+            }
+            else
+            {
+               // Versions before 23 used harp locations for all straight adjustable
+               m_StraightAdjustment = m_HPAdjustment;
+            }
          }
       }
 
@@ -1371,9 +1476,49 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          pLoad->Property(_T("OddNumberOfHarpedStrands"),&m_bOddNumberOfHarpedStrands);
 
-         if ( 21.0 <= version )
+         // Adjustable strand type - harp was only option before 21
+         m_AdjustableStrandType = pgsTypes::asHarped;
+         if ( 21.0 == version || 22.0 == version )
          {
-            pLoad->Property(_T("ForceHarpedStrandsStraight"),&m_bForceHarpedStrandsStraight);
+            bool forceStr;
+            if ( !pLoad->Property(_T("ForceHarpedStrandsStraight"),&forceStr) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if (forceStr)
+            {
+               m_AdjustableStrandType = pgsTypes::asStraight;
+            }
+         }
+         else if ( 23.0 <= version)
+         {
+            Int32 val;
+            bool bOkToFail = (version == 23 ? true : false);
+            if ( pLoad->Property(_T("AdjustableStrandType"),&val) )
+            {
+               m_AdjustableStrandType = (pgsTypes::AdjustableStrandType)val;
+            }
+            else
+            {
+               if ( bOkToFail )
+               {
+                  bool forceStr;
+                  if ( !pLoad->Property(_T("ForceHarpedStrandsStraight"),&forceStr) )
+                  {
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+
+                  if (forceStr)
+                  {
+                     m_AdjustableStrandType = pgsTypes::asStraight;
+                  }
+               }
+               else
+               {
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+               }
+            }
          }
       }
 
@@ -1459,7 +1604,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          nGridEntries = m_HarpedStrands.size();
          for ( gridIdx = 0; gridIdx < nGridEntries; gridIdx++ )
          {
-            m_PermanentStrands.push_back( PermanentStrand(stHarped, gridIdx) );
+            m_PermanentStrands.push_back( PermanentStrand(stAdjustable, gridIdx) );
          }
 
       }
@@ -1482,7 +1627,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
             else if (name == _T("Harped"))
             {
-               permStrand.m_StrandType = stHarped;
+               permStrand.m_StrandType = stAdjustable;
             }
             else
             {
@@ -2035,10 +2180,11 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
 
    test &= (m_bUseDifferentHarpedGridAtEnds       == rOther.m_bUseDifferentHarpedGridAtEnds);
    test &= (m_bOddNumberOfHarpedStrands           == rOther.m_bOddNumberOfHarpedStrands);
-   test &= (m_bForceHarpedStrandsStraight         == rOther.m_bForceHarpedStrandsStraight);
+   test &= (m_AdjustableStrandType                == rOther.m_AdjustableStrandType);
 
    test &= (m_HPAdjustment             == rOther.m_HPAdjustment);
    test &= (m_EndAdjustment            == rOther.m_EndAdjustment);
+   test &= (m_StraightAdjustment       == rOther.m_StraightAdjustment);
 //   test &= (m_StirrupBarType           == rOther.m_StirrupBarType);
 //   test &= (m_StirrupBarGrade          == rOther.m_StirrupBarGrade);
 //   test &= (m_LastConfinementZone      == rOther.m_LastConfinementZone);
@@ -2141,6 +2287,28 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                                      htf, hpTopLimit,  hbf, hpBottomLimit,
                                      end_increment, hp_increment, &strand_mover);
 
+
+   // Need separate strand mover for all-straight adjustable strand case
+   CComPtr<IStrandMover> straight_strand_mover;
+   bool do_all_straight = this->IsVerticalAdjustmentAllowedStraight();
+   if (do_all_straight)
+   {
+      Float64 straight_increment = this->GetStraightStrandIncrement();
+
+      pgsTypes::FaceType straightTopFace, straightBottomFace;
+      Float64 straightTopLimit, straightBottomLimit;
+      this->GetStraightAdjustmentLimits(&straightTopFace, &straightTopLimit, &straightBottomFace, &straightBottomLimit);
+
+      IBeamFactory::BeamFace strtf = straightTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      IBeamFactory::BeamFace strbf = straightBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+
+      m_pBeamFactory->CreateStrandMover(m_Dimensions, 
+                                        strtf, straightTopLimit, strbf, straightBottomLimit,
+                                        strtf, straightTopLimit, strbf, straightBottomLimit,
+                                        straight_increment, straight_increment, &straight_strand_mover);
+   }
+
+
    Float64 height;
    gdrSection->get_GirderHeight(&height);
 
@@ -2209,12 +2377,12 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
          total_num += (0 < strandLocation.m_Xstart || 0 < strandLocation.m_Xend ? 2 : 1);
       }
-      else if (permStrand.m_StrandType==stHarped)
+      else if (permStrand.m_StrandType==stAdjustable)
       {
          // harped strands at HP
          const HarpedStrandLocation& strandLocation = m_HarpedStrands[permStrand.m_GridIdx];
 
-         bool areHarpedStraight = this->m_bForceHarpedStrandsStraight;
+         bool cantBeHarped = this->m_AdjustableStrandType!=pgsTypes::asHarped;
 
          point->Move(strandLocation.m_Xhp, strandLocation.m_Yhp);
 
@@ -2223,13 +2391,13 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          if ( bPointInShape == VARIANT_FALSE )
          {
             std::_tostringstream os;
-            if (areHarpedStraight)
+            if (cantBeHarped)
             {
-               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at is outside of the girder section");
+               os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at is outside of the girder section");
             }
             else
             {
-               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point is outside of the girder section");
+               os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at harping point is outside of the girder section");
             }
 
             pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
@@ -2237,20 +2405,33 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
 
          VARIANT_BOOL is_within;
-         strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp, 0.0, &is_within);
+         strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp-height, 0.0, &is_within);
          if (is_within!=VARIANT_TRUE)
          {
             std::_tostringstream os;
-            if (areHarpedStraight)
+            if (cantBeHarped)
             {
-               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" must be within vertical adjustment bounds and lie within the thinnest portion of a web");
+               os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" must be located within vertical adjustment bounds and lie within the thinnest portion of a web");
             }
             else
             {
-               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point must be within vertical adjustment bounds and lie within the thinnest portion of a web");
+               os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at harping point must be located within vertical adjustment bounds and lie within the thinnest portion of a web");
             }
 
             pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
+         }
+
+         // All straight case, if pertinant
+         if (do_all_straight)
+         {
+            straight_strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp, 0.0, &is_within);
+            if (is_within!=VARIANT_TRUE)
+            {
+               std::_tostringstream os;
+               os << LABEL_HARP_TYPE(true)<<_T(" strand #")<<total_num<<_T(" must be located within vertical straight strand adjustment bounds and lie within the thinnest portion of a web");
+
+               pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
+            }
          }
 
          // next check zero value if odd number of strands is allowed
@@ -2260,13 +2441,13 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if ( IsZero(strandLocation.m_Xhp) && IsZero(strandLocation.m_Xstart) && IsZero(strandLocation.m_Xend) )
             {
                std::_tostringstream os;
-               if (areHarpedStraight)
+               if (cantBeHarped)
                {
-                  os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" has a zero X value. This is cannot be if odd number of harped strands is allowed.");
+                  os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" has a zero X value. This is cannot be if odd number of harped strands is allowed.");
                }
                else
                {
-                  os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" has zero X value at HP and End. This cannot be if odd number of harped strands is allowed.");
+                  os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" has zero X value at HP and End. This cannot be if odd number of harped strands is allowed.");
                }
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
@@ -2278,29 +2459,29 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if ( bPointInShape == VARIANT_FALSE )
             {
                std::_tostringstream os;
-               if (areHarpedStraight)
+               if (cantBeHarped)
                {
-                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" is outside of the girder section. Disable odd strands");
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" is outside of the girder section. Disable odd strands");
                }
                else
                {
-                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point is outside of the girder section. Disable odd strands");
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at harping point is outside of the girder section. Disable odd strands");
                }
 
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
-            strand_mover->TestHpStrandLocation(0.0, strandLocation.m_Yhp, 0.0, &is_within);
+            strand_mover->TestHpStrandLocation(0.0, strandLocation.m_Yhp-height, 0.0, &is_within);
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
-               if (areHarpedStraight)
+               if (cantBeHarped)
                {
-                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
                }
                else
                {
-                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at harping point must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
                }
 
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
@@ -2308,7 +2489,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          }
 
          // Harped strands at ends
-         if (m_bUseDifferentHarpedGridAtEnds)
+         if (m_bUseDifferentHarpedGridAtEnds && !cantBeHarped)
          {
             // start
             point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart);
@@ -2318,7 +2499,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if ( bPointInShape == VARIANT_FALSE )
             {
                std::_tostringstream os;
-               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section");
+               os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section");
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
@@ -2327,7 +2508,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
-               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web");
+               os << LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web");
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
@@ -2340,7 +2521,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                if ( bPointInShape == VARIANT_FALSE )
                {
                   std::_tostringstream os;
-                  os << _T("Odd")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section. Disable odd strands");
+                  os << _T("Odd")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section. Disable odd strands");
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
                }
 
@@ -2348,7 +2529,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                if (is_within!=VARIANT_TRUE)
                {
                   std::_tostringstream os;
-                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
                }
             }
@@ -2423,8 +2604,18 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       }
    }
 
+   // bundle adjustments
+   if (this->m_AdjustableStrandType!=pgsTypes::asStraight)
+   {
+      if(!this->IsVerticalAdjustmentAllowedEnd() && 
+         !this->IsVerticalAdjustmentAllowedHP() &&
+         !m_bUseDifferentHarpedGridAtEnds)
+      {
+         pvec->push_back(GirderEntryDataError(BundleAdjustmentGtIncrement,
+            _T("Harp bundle vertical adjustment is disabled both at girder ends and harping points. This means that the strands cannot be harped. You must enable an adjustment.")));
+      }
+   }
 
-   // bundle adjustment
    if (end_increment>height/2.0)
    {
       pvec->push_back(GirderEntryDataError(BundleAdjustmentGtIncrement,
@@ -2437,6 +2628,17 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       pvec->push_back(GirderEntryDataError(EndAdjustmentGtIncrement,
          _T("Upward adjustment increment value at end of girder cannot be greater than half of the girder depth")));
    }
+
+   if (this->m_AdjustableStrandType!=pgsTypes::asHarped)
+   {
+      Float64 straight_increment = this->GetStraightStrandIncrement();
+      if (straight_increment > height/2.0)
+      {
+         pvec->push_back(GirderEntryDataError(EndAdjustmentGtIncrement,
+            _T("Adjustment increment value at for straight adjustable strands cannot be greater than half of the girder depth")));
+      }
+   }
+
 
    // stirrups and shear zones
    ZoneIndexType num=1;
@@ -2523,16 +2725,15 @@ void GirderLibraryEntry::EnableOddNumberOfHarpedStrands(bool bEnable)
    m_bOddNumberOfHarpedStrands = bEnable;
 }
 
-bool GirderLibraryEntry::IsForceHarpedStrandsStraight() const
+pgsTypes::AdjustableStrandType GirderLibraryEntry::GetAdjustableStrandType() const
 {
-   return m_bForceHarpedStrandsStraight;
+   return m_AdjustableStrandType;
 }
 
-void GirderLibraryEntry::ForceHarpedStrandsStraight(bool bEnable)
+void GirderLibraryEntry::SetAdjustableStrandType(pgsTypes::AdjustableStrandType type)
 {
-   m_bForceHarpedStrandsStraight = bEnable;
+   m_AdjustableStrandType = type;
 }
-
 
 //======================== ACCESS     =======================================
 void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
@@ -2703,7 +2904,7 @@ std::vector<GirderLibraryEntry::StrandDefinitionType> GirderLibraryEntry::GetPer
       GirderLibraryEntry::psStrandType type;
       GridIndexType localGridIdx;
       GetGridPositionFromPermStrandGrid(permStrandGridIdx, &type, &localGridIdx);
-      if (type == GirderLibraryEntry::stHarped)
+      if (type == GirderLibraryEntry::stAdjustable)
       {
          Float64 startx, starty, hpx, hpy, endx, endy;
          GetHarpedStrandCoordinates(localGridIdx, &startx, &starty, &hpx, &hpy, &endx, &endy);
@@ -2962,7 +3163,7 @@ bool GirderLibraryEntry::GetPermStrandDistribution(StrandIndexType totalNumStran
 
             ns += (0.0 < strandLocation.m_Xstart ? 2 : 1);
          }
-         else if (type == stHarped)
+         else if (type == stAdjustable)
          {
             const HarpedStrandLocation& strandLocation = m_HarpedStrands[gridIdx];
             if (0.0 < strandLocation.m_Xhp)
@@ -3148,6 +3349,16 @@ bool GirderLibraryEntry::IsVerticalAdjustmentAllowedHP() const
    return m_HPAdjustment.m_AllowVertAdjustment;
 }
 
+void GirderLibraryEntry::AllowVerticalAdjustmentStraight(bool d)
+{
+   m_StraightAdjustment.m_AllowVertAdjustment = d;
+}
+
+bool GirderLibraryEntry::IsVerticalAdjustmentAllowedStraight() const
+{
+   return m_StraightAdjustment.m_AllowVertAdjustment;
+}
+
 void GirderLibraryEntry::SetEndStrandIncrement(Float64 d)
 {
    m_EndAdjustment.m_StrandIncrement = d;
@@ -3168,6 +3379,15 @@ Float64 GirderLibraryEntry::GetHPStrandIncrement() const
    return m_HPAdjustment.m_AllowVertAdjustment ? m_HPAdjustment.m_StrandIncrement : -1.0;
 }
 
+void GirderLibraryEntry::SetStraightStrandIncrement(Float64 d)
+{
+   m_StraightAdjustment.m_StrandIncrement = d;
+}
+
+Float64 GirderLibraryEntry::GetStraightStrandIncrement() const
+{
+   return m_StraightAdjustment.m_AllowVertAdjustment ? m_StraightAdjustment.m_StrandIncrement : -1.0;
+}
 
 void GirderLibraryEntry::SetEndAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit)
 {
@@ -3195,10 +3415,26 @@ void GirderLibraryEntry::SetHPAdjustmentLimits(pgsTypes::FaceType  topFace, Floa
 
 void GirderLibraryEntry::GetHPAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const
 {
-   *topFace = m_HPAdjustment.m_TopFace;
-   *topLimit = m_HPAdjustment.m_TopLimit;
-   *bottomFace = m_HPAdjustment.m_BottomFace;
+   *topFace     = m_HPAdjustment.m_TopFace;
+   *topLimit    = m_HPAdjustment.m_TopLimit;
+   *bottomFace  = m_HPAdjustment.m_BottomFace;
    *bottomLimit = m_HPAdjustment.m_BottomLimit;
+}
+
+void GirderLibraryEntry::SetStraightAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit)
+{
+   m_StraightAdjustment.m_TopFace     = topFace;
+   m_StraightAdjustment.m_TopLimit    = topLimit;
+   m_StraightAdjustment.m_BottomFace  = bottomFace;
+   m_StraightAdjustment.m_BottomLimit = bottomLimit;
+}
+
+void GirderLibraryEntry::GetStraightAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const
+{
+   *topFace     = m_StraightAdjustment.m_TopFace;
+   *topLimit    = m_StraightAdjustment.m_TopLimit;
+   *bottomFace  = m_StraightAdjustment.m_BottomFace;
+   *bottomLimit = m_StraightAdjustment.m_BottomLimit;
 }
 
 void GirderLibraryEntry::SetShearData(const CShearData2& cdata)
@@ -3348,6 +3584,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
 
    m_HPAdjustment             = rOther.m_HPAdjustment;
    m_EndAdjustment            = rOther.m_EndAdjustment;
+   m_StraightAdjustment       = rOther.m_StraightAdjustment;
 
    m_MaxDebondStrands                       = rOther.m_MaxDebondStrands;
    m_MaxDebondStrandsPerRow                 = rOther.m_MaxDebondStrandsPerRow;
@@ -3382,8 +3619,8 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_pBeamFactory.Release();
    m_pBeamFactory = rOther.m_pBeamFactory;
 
-   m_bOddNumberOfHarpedStrands = rOther.m_bOddNumberOfHarpedStrands;
-   m_bForceHarpedStrandsStraight = rOther.m_bForceHarpedStrandsStraight;
+   m_bOddNumberOfHarpedStrands     = rOther.m_bOddNumberOfHarpedStrands;
+   m_AdjustableStrandType          = rOther.m_AdjustableStrandType;
    m_bUseDifferentHarpedGridAtEnds = rOther.m_bUseDifferentHarpedGridAtEnds;
 
    m_DiaphragmLayoutRules = rOther.m_DiaphragmLayoutRules;
@@ -3479,7 +3716,7 @@ void GirderLibraryEntry::ConfigureHarpedStrandGrids(Float64 HgStart,Float64 HgHP
       hp1_pts->Add(hp1_point);
       hp2_pts->Add(hp2_point);
 
-      if (m_bUseDifferentHarpedGridAtEnds)
+      if (m_AdjustableStrandType==pgsTypes::asHarped && m_bUseDifferentHarpedGridAtEnds)
       {
          // different points are used at the end of the girder
          start_point->Move(strandLocation.m_Xstart,strandLocation.m_Ystart-HgStart);

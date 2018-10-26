@@ -126,8 +126,8 @@ void CBasicCamberChapterBuilder::Build_CIP_TempStrands(rptChapter* pChapter,CRep
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetWholeDaysUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -216,8 +216,8 @@ void CBasicCamberChapterBuilder::Build_CIP(rptChapter* pChapter,CReportSpecifica
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetWholeDaysUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -296,8 +296,8 @@ void CBasicCamberChapterBuilder::Build_SIP_TempStrands(rptChapter* pChapter,CRep
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetWholeDaysUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -387,8 +387,8 @@ void CBasicCamberChapterBuilder::Build_SIP(rptChapter* pChapter,CReportSpecifica
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetWholeDaysUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -465,8 +465,8 @@ void CBasicCamberChapterBuilder::Build_NoDeck_TempStrands(rptChapter* pChapter,C
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetWholeDaysUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -562,8 +562,8 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetWholeDaysUnit(), false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);

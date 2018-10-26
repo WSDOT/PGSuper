@@ -138,8 +138,6 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    (*pTable2)(0,7)<< COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation") << Super(_T("**")),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
    (*pTable2)(0,8)<< COLHDR(_T("Actual") << rptNewLine << _T("Depth") << Super(_T("***")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
    RowIndexType row1 = pTable1->GetNumberOfHeaderRows();
    RowIndexType row2 = pTable2->GetNumberOfHeaderRows();
    std::vector<SECTIONHAUNCH>::iterator haunchIter(haunch_details.Haunch.begin());
@@ -148,7 +146,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    {
       SECTIONHAUNCH& haunch = *haunchIter;
 
-      (*pTable1)(row1,0) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest, end_size );
+      (*pTable1)(row1,0) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest );
       (*pTable1)(row1,1) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
       (*pTable1)(row2,2) << RPT_OFFSET(haunch.Offset,dim);
 
@@ -162,7 +160,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       row1++;
 
-      (*pTable2)(row2,0) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest, end_size );
+      (*pTable2)(row2,0) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest );
       (*pTable2)(row2,1) << haunch.CrownSlope;
       (*pTable2)(row2,2) << haunch.GirderOrientation;
       (*pTable2)(row2,3) << comp.SetValue( haunch.Wtop );

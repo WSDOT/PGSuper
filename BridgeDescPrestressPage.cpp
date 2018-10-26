@@ -298,7 +298,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    UpdateStrandControls();
 
    // adjustment of harped strands at ends
-   m_AllowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(pParent->m_strGirderName.c_str());
+   //m_AllowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(pParent->m_strGirderName.c_str());
+   pgsTypes::AdjustableStrandType adjType = pParent->m_pSegment->Strands.GetAdjustableStrandType();
+
+   m_AllowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(pParent->m_strGirderName.c_str(), adjType);
 
    if (m_AllowEndAdjustment)
    {
@@ -310,13 +313,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
-                                                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                   adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                    harpFill,
                                                                                    pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
                                                                                    pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd());
 
             Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(pParent->m_strGirderName.c_str(), 
-                                                                                       m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                       adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                        harpFill,
                                                                                        hsoCGFROMTOP, 
                                                                                        absol_offset);
@@ -340,17 +343,31 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if ( nh <=0)
       {
-         HideEndOffsetControls(TRUE);
+         DisableEndOffsetControls(TRUE);
       }
    }
    else
    {
-      HideEndOffsetControls(TRUE);
+      DisableEndOffsetControls(TRUE);
    }
 
+/*
    m_AllowHpAdjustment = 0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(pParent->m_strGirderName.c_str());
 
    if (m_AllowHpAdjustment)
+*/
+   m_AllowHpAdjustment = false;
+   bool might_allow_hp_adjustment = false;
+   if (m_LibraryAdjustableStrandType!=pgsTypes::asStraight)
+   {
+      m_AllowHpAdjustment = 0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(pParent->m_strGirderName.c_str(), adjType);
+
+      // Set variables for harping point adjustment up front if we might need them, not just if we need them now
+      might_allow_hp_adjustment = m_AllowHpAdjustment || 
+                                 (0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(pParent->m_strGirderName.c_str(), pgsTypes::asHarped));
+   }
+
+   if (might_allow_hp_adjustment)
    {
       // must convert data from legacy data files
       if (!pDX->m_bSaveAndValidate)
@@ -360,13 +377,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(),
-                                                                                  m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                  adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                   harpFill,
                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
 
             Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(pParent->m_strGirderName.c_str(), 
-                                                                                      m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                      adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                       harpFill, 
                                                                                       hsoCGFROMBOTTOM, absol_offset);
 
@@ -387,14 +404,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(offsetType);
       }
 
-      if ( nh <= 0)
-      {
-         HideHpOffsetControls(TRUE);
-      }
+//      if ( nh <= 0)
+//      {
+//         HideHpOffsetControls(TRUE);
+//      }
    }
    else
    {
-      HideHpOffsetControls(TRUE);
+      DisableHpOffsetControls(TRUE);
    }
 
    if (pDX->m_bSaveAndValidate)
@@ -402,11 +419,19 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       // determine if offset strands are within girder bounds
       if (0 < nh)
       {
+/*
 
          // But first, for straight-web strands, make adjustment at hp the same as at ends
          if( m_bAreHarpedStrandsForcedStraight && m_AllowEndAdjustment)
          {
             ATLASSERT(m_AllowHpAdjustment); // should always be true because we must be able to adjust both locations
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd() );
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() );
+         }
+*/
+         // But first, for Adj.-Straight strands, make adjustment at hp the same as at ends
+         if( adjType==pgsTypes::asStraight && m_AllowEndAdjustment)
+         {
             pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd() );
             pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() );
          }
@@ -419,13 +444,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
-                                                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                   adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                                    harpFill,
                                                                                    pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
                                                                                    pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd());
 
             Float64 max_end_offset, min_end_offset;
-            pStrandGeometry->GetHarpedEndOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
+            pStrandGeometry->GetHarpedEndOffsetBoundsEx(pParent->m_strGirderName.c_str(), adjType,
                                                         m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                         harpFill, &min_end_offset, &max_end_offset);
 
@@ -450,14 +475,14 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
             absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
-                                                                          m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                          adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                           harpFill,
                                                                           pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
                                                                           pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
 
             Float64 max_hp_offset, min_hp_offset;
             pStrandGeometry->GetHarpedHpOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
-                                                       m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                       adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                        harpFill,
                                                        &min_hp_offset, &max_hp_offset);
 
@@ -531,6 +556,7 @@ BEGIN_MESSAGE_MAP(CGirderDescPrestressPage, CPropertyPage)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_EDIT_STRAND_FILL, &CGirderDescPrestressPage::OnBnClickedEditStrandFill)
+   ON_CBN_SELCHANGE(IDC_ADJUSTABLE_COMBO, &CGirderDescPrestressPage::OnCbnSelchangeAdjustableCombo)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -542,7 +568,6 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
@@ -579,8 +604,10 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    }
 
 
-   // This value is used throughout
-   m_bAreHarpedStrandsForcedStraight = pStrandGeom->GetAreHarpedStrandsForcedStraightEx(pParent->m_strGirderName.c_str());
+   // Deal with adjustable strands 
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
+   m_LibraryAdjustableStrandType = pGdrEntry->GetAdjustableStrandType();
 
    // Fill the strand size combo box.
    UpdateStrandList(IDC_STRAND_SIZE);
@@ -640,22 +667,28 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    idx = pCB->AddString(_T("Total Number of Permanent Strands"));
    pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtTotal);
-   if(m_bAreHarpedStrandsForcedStraight)
-   {
-      idx = pCB->AddString(_T("Number of Straight and Number of Straight-Web"));
-      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtStraightHarped);
-
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Straight-Web Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder"));
-
-      DisappearHpOffsetControls();
-   }
-   else
+   if( m_LibraryAdjustableStrandType == pgsTypes::asHarped )
    {
       idx = pCB->AddString(_T("Number of Straight and Number of Harped"));
       pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtStraightHarped);
-
       GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Harped Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends:"));
+   }
+   else if( m_LibraryAdjustableStrandType == pgsTypes::asStraight )
+   {    
+      idx = pCB->AddString(_T("Number of Straight and Number of Adjustable Straight"));
+      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtStraightHarped);
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Adjustable Straight Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder:"));
+
+      ShowHpOffsetControls(FALSE);
+   }
+   else
+   {
+      idx = pCB->AddString(_T("Number of Straight and Number of Adjustable"));
+      pCB->SetItemData(idx,(DWORD_PTR)CStrandData::sdtStraightHarped);
+
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Adjustable Strands"));
       GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends"));
    }
 
@@ -670,12 +703,24 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    OnDropdownHpComboHp();
    OnDropdownHpComboEnd();
 
+   // adjustable strand controls
+   CComboBox* pAdjList = (CComboBox*)GetDlgItem( IDC_ADJUSTABLE_COMBO );
+   pAdjList->SetCurSel((int)pParent->m_pSegment->Strands.GetAdjustableStrandType());
+   if (m_LibraryAdjustableStrandType != pgsTypes::asStraightOrHarped)
+   {
+      pAdjList->EnableWindow(FALSE); // User can't choose if library doesn't allow
+   }
+   else
+   {
+      UpdateAdjustableStrandControls();
+   }
+
    EnableToolTips(TRUE);
 
    if ( m_CurrStrandDefinitionType == CStrandData::sdtDirectInput )
    {
-      DisappearEndOffsetControls();
-      DisappearHpOffsetControls();
+      ShowEndOffsetControls(FALSE);
+      ShowHpOffsetControls(FALSE);
       GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_HIDE);
    }
 
@@ -688,46 +733,23 @@ void CGirderDescPrestressPage::InitHarpStrandOffsetMeasureComboBox(CComboBox* pC
    pCB->Clear();
    int idx;
 
-   if(!m_bAreHarpedStrandsForcedStraight)
-   {
-      idx = pCB->AddString(_T("Distance between CG of Harped Group and Girder Top"));
-      pCB->SetItemData(idx,hsoCGFROMTOP);
+   idx = pCB->AddString(_T("Distance between CG of Adjustable Group and Girder Top")); 
+   pCB->SetItemData(idx,hsoCGFROMTOP);
 
-      idx = pCB->AddString(_T("Distance between CG of Harped Group and Girder Bottom"));
-      pCB->SetItemData(idx,hsoCGFROMBOTTOM);
+   idx = pCB->AddString(_T("Distance between CG of Adjustable Group and Girder Bottom"));
+   pCB->SetItemData(idx,hsoCGFROMBOTTOM);
 
-      idx = pCB->AddString(_T("Distance between Top-Most Harped Strand and Girder Top"));
-      pCB->SetItemData(idx,hsoTOP2TOP);
+   idx = pCB->AddString(_T("Distance between Top-Most Adjustable Strand and Girder Top"));
+   pCB->SetItemData(idx,hsoTOP2TOP);
 
-      idx = pCB->AddString(_T("Distance between Top-Most Harped Strand and Girder Bottom"));
-      pCB->SetItemData(idx,hsoTOP2BOTTOM);
+   idx = pCB->AddString(_T("Distance between Top-Most Adjustable Strand and Girder Bottom"));
+   pCB->SetItemData(idx,hsoTOP2BOTTOM);
 
-      idx = pCB->AddString(_T("Distance between Bottom-Most Harped Strand and Girder Bottom"));
-      pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
+   idx = pCB->AddString(_T("Distance between Bottom-Most Adjustable Strand and Girder Bottom"));
+   pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
 
-      idx = pCB->AddString(_T("Eccentricity of Harped Strand Group (Non-Composite Section)"));
-      pCB->SetItemData(idx,hsoECCENTRICITY);
-   }
-   else
-   {
-      idx = pCB->AddString(_T("Distance between CG of Straight-Web Group and Girder Top"));
-      pCB->SetItemData(idx,hsoCGFROMTOP);
-
-      idx = pCB->AddString(_T("Distance between CG of Straight-Web Group and Girder Bottom"));
-      pCB->SetItemData(idx,hsoCGFROMBOTTOM);
-
-      idx = pCB->AddString(_T("Distance between Top-Most Straight-Web Strand and Girder Top"));
-      pCB->SetItemData(idx,hsoTOP2TOP);
-
-      idx = pCB->AddString(_T("Distance between Top-Most Straight-Web Strand and Girder Bottom"));
-      pCB->SetItemData(idx,hsoTOP2BOTTOM);
-
-      idx = pCB->AddString(_T("Distance between Bottom-Most Straight-Web Strand and Girder Bottom"));
-      pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
-
-      idx = pCB->AddString(_T("Eccentricity of Straight-Web Strand Group (Non-Composite Section)"));
-      pCB->SetItemData(idx,hsoECCENTRICITY);
-   }
+   idx = pCB->AddString(_T("Eccentricity of Adjustable Strand Group (Non-Composite Section)"));
+   pCB->SetItemData(idx,hsoECCENTRICITY);
 }
 
 StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd )
@@ -867,7 +889,7 @@ void CGirderDescPrestressPage::UpdateHarpedOffsets(StrandIndexType numHarped)
 
       UpdateEndRangeLength(measureType, numHarped);
 
-      HideEndOffsetControls(numHarped<=0);
+      DisableEndOffsetControls(numHarped<=0);
    }
 
    if (m_AllowHpAdjustment)
@@ -878,7 +900,7 @@ void CGirderDescPrestressPage::UpdateHarpedOffsets(StrandIndexType numHarped)
 
       UpdateHpRangeLength(measureType, numHarped);
 
-      HideHpOffsetControls(numHarped<=0);
+      DisableHpOffsetControls(numHarped<=0);
    }
 }
 
@@ -1313,7 +1335,7 @@ void CGirderDescPrestressPage::HideControls(int key, CStrandData::StrandDefiniti
    }
 }
 
-void CGirderDescPrestressPage::HideEndOffsetControls(BOOL hide)
+void CGirderDescPrestressPage::DisableEndOffsetControls(BOOL hide)
 {
    CWnd* pWnd = 0;
 
@@ -1341,7 +1363,7 @@ void CGirderDescPrestressPage::HideEndOffsetControls(BOOL hide)
    pWnd->EnableWindow( show );
 }
 
-void CGirderDescPrestressPage::HideHpOffsetControls(BOOL hide)
+void CGirderDescPrestressPage::DisableHpOffsetControls(BOOL hide)
 {
    CWnd* pWnd = 0;
    BOOL show = hide==TRUE ? FALSE : TRUE;
@@ -1368,58 +1390,61 @@ void CGirderDescPrestressPage::HideHpOffsetControls(BOOL hide)
    pWnd->EnableWindow( show );
 }
 
-void CGirderDescPrestressPage::DisappearHpOffsetControls(int show)
+void CGirderDescPrestressPage::ShowHpOffsetControls(BOOL show)
 {
    CWnd* pWnd;
+
+   int sShow = show ? SW_SHOW : SW_HIDE;
 
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_TITLE );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HP_COMBO_HP );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_UNIT );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_NOTE );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 }
 
-void CGirderDescPrestressPage::DisappearEndOffsetControls(int show)
+void CGirderDescPrestressPage::ShowEndOffsetControls(BOOL show)
 {
    CWnd* pWnd;
+
+   int sShow = show ? SW_SHOW : SW_HIDE;
 
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_END_TITLE );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HP_COMBO_END );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_END );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_END_UNIT );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 
    pWnd = GetDlgItem( IDC_HPOFFSET_END_NOTE );
    ASSERT( pWnd );
-   pWnd->ShowWindow( show );
+   pWnd->ShowWindow( sShow );
 }
-
 
 void CGirderDescPrestressPage::OnHelp() 
 {
@@ -1538,6 +1563,7 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
 
       Float64 lowRange, highRange;
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_strGirderName.c_str(),
+                                                                 pParent->m_pSegment->Strands.GetAdjustableStrandType(),
                                                                  m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                                  harpFill, measureType, &lowRange, &highRange);
 
@@ -1579,7 +1605,7 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
       Float64 lowRange, highRange;
-      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, harpFill, measureType, &lowRange, &highRange);
+      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), pParent->m_pSegment->Strands.GetAdjustableStrandType(), m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, harpFill, measureType, &lowRange, &highRange);
 
 
       lowRange = ::ConvertFromSysUnits(lowRange,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -1605,9 +1631,10 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
 void CGirderDescPrestressPage::UpdateStraightHarped(StrandIndexType Ns, StrandIndexType Nh)
 {
    CString val_as_text;
-   if (m_bAreHarpedStrandsForcedStraight)
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   if (pParent->m_pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight)
    {
-      val_as_text.Format(_T("Number of Straight: %d, Straight-Web: %d"),Ns, Nh);
+      val_as_text.Format(_T("Number of Straight: %d, Adjustable Straight: %d"),Ns, Nh);
    }
    else
    {
@@ -1645,6 +1672,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
       ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
       offset = pStrandGeom->ConvertHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
+                                                  pParent->m_pSegment->Strands.GetAdjustableStrandType(),
                                                   m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                   harpFill,  m_OldHpMeasureType, offset, measureType);
       
@@ -1682,6 +1710,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
       offset = pStrandGeom->ConvertHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
+                                                   pParent->m_pSegment->Strands.GetAdjustableStrandType(),
                                                    m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
                                                    harpFill,  m_OldEndMeasureType, offset, measureType);
       
@@ -1750,9 +1779,9 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::StrandDefi
       CWnd* pWnd = GetDlgItem( IDC_SS_TITLE );
       pWnd->SetWindowText( msg);
 
-      if (m_bAreHarpedStrandsForcedStraight)
+      if (pParent->m_pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight)
       {
-         msg.Format(_T("Number of Straight-Web Strands = %d"), (int)pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
+         msg.Format(_T("Number of Adj. Straight Strands = %d"), (int)pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
       }
       else
       {
@@ -1805,9 +1834,9 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(CStrandData::StrandDefi
       }
       else
       {
-         if (m_bAreHarpedStrandsForcedStraight)
+         if (pParent->m_pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight)
          {
-            msg = _T("Number of Straight-Web Strands");
+            msg = _T("Number of Adjustable Straight Strands");
          }
          else
          {
@@ -1874,8 +1903,8 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
    }
 
    // show hidden controls
-   DisappearEndOffsetControls(SW_SHOW);
-   DisappearHpOffsetControls(SW_SHOW);
+   ShowEndOffsetControls(TRUE);
+   ShowHpOffsetControls(TRUE);
    GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_SHOW);
 
 #pragma Reminder("IMPLEMENT: if converting from direct input to a library strand fill type, ask user if it is ok to throw away all strands")
@@ -2096,8 +2125,8 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
 #pragma Reminder("IMPLEMENT - need to convert library strands into user defined strands")
          HideControls(0, newStrandDefinitionType); 
          HideControls(1, newStrandDefinitionType); 
-         DisappearEndOffsetControls();
-         DisappearHpOffsetControls();
+         ShowEndOffsetControls(FALSE);
+         ShowHpOffsetControls(FALSE);
          GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_HIDE);
       }
       else
@@ -2568,4 +2597,47 @@ ConfigStrandFillVector CGirderDescPrestressPage::ComputeHarpedStrandFillVector()
    }
 }
 
+void CGirderDescPrestressPage::OnCbnSelchangeAdjustableCombo()
+{
+   // AdjustableStrandType is kept up to date here
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   CComboBox* pAdjList = (CComboBox*)GetDlgItem( IDC_ADJUSTABLE_COMBO );
+   pParent->m_pSegment->Strands.SetAdjustableStrandType((pgsTypes::AdjustableStrandType)pAdjList->GetCurSel());
+
+   UpdateAdjustableStrandControls();
+}
+
+void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
+{
+   ATLASSERT(m_LibraryAdjustableStrandType == pgsTypes::asStraightOrHarped);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   pgsTypes::AdjustableStrandType adjType = pParent->m_pSegment->Strands.GetAdjustableStrandType();
+   m_AllowHpAdjustment = 0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(pParent->m_strGirderName.c_str(), adjType);
+
+   if (adjType == pgsTypes::asHarped)
+   {
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends:"));
+      ShowHpOffsetControls(TRUE);
+
+      DisableHpOffsetControls(m_AllowHpAdjustment ? FALSE : TRUE);
+
+      if (m_AllowHpAdjustment)
+      {
+         OnSelchangeHpComboHp(); // Update allowable range message
+      }
+   }
+   else
+   {
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder:"));
+      ShowHpOffsetControls(FALSE);
+   }
+
+   m_AllowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(pParent->m_strGirderName.c_str(), adjType);
+   OnSelchangeHpComboEnd(); // Update allowable range message
+}
 

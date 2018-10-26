@@ -267,7 +267,6 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    (*table)(0,2)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S")<<Sub(_T("min")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // Fill up the table
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -293,7 +292,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
             continue;
          }
 
-         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*table)(row,1) << dim.SetValue(pArtifact->GetBv());
 
          if (pArtifact->IsApplicable())
@@ -427,7 +426,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
             continue;
          }
 
-         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          if ( bAfter1999 )
          {
             Float64 bvdv = pArtifact->GetBv()*pArtifact->GetDv();

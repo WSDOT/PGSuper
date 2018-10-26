@@ -226,6 +226,9 @@ typedef struct pgsTypes
    typedef enum StrandType { Straight, Harped, Temporary, Permanent } StrandType;
    typedef enum AnalysisType { Simple, Continuous, Envelope } AnalysisType;
 
+   // Adjustable strands can be straight or harped. In library only; they can be either
+   typedef enum AdjustableStrandType {asHarped=0, asStraight=1, asStraightOrHarped = 2} AdjustableStrandType;
+
    // temporary top strand usage
    typedef enum TTSUsage
    {

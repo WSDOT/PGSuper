@@ -83,7 +83,7 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
    if ( pcbGirder )
    {
       pcbGirder->SetCurSel(selection.GirderIdx == ALL_GIRDERS ? 0 : (int)selection.GirderIdx);
-      m_GirderIdx = (GirderIndexType)(pcbGirder->GetItemData(pcbGirder->GetCurSel()));
+      m_GirderIdx = (GirderIndexType)pcbGirder->GetCurSel();
    }
 
    return TRUE;

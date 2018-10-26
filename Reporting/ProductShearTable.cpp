@@ -270,13 +270,9 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          const pgsPointOfInterest& poi = *i;
 
-         const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
-
          ColumnIndexType col = 0;
 
-         Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*p_table)(row,col++) << shear.SetValue( girder[index] );
          (*p_table)(row,col++) << shear.SetValue( diaphragm[index] );
 

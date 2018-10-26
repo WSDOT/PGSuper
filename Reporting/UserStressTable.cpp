@@ -114,8 +114,6 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
 
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
-
       std::vector<Float64> dummy;
       std::vector<Float64> fTopMaxDC, fBotMaxDC;
       std::vector<Float64> fTopMinDC, fBotMinDC;
@@ -142,7 +140,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
 
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
          if ( analysisType == pgsTypes::Envelope )
          {

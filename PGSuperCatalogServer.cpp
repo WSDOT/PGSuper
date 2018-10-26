@@ -1005,21 +1005,21 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
 
       if(pProgress!=NULL)
       {
-         pProgress->put_Message(0,CComBSTR("Downloading Compressed Library/Template file"));
+         pProgress->put_Message(0,CComBSTR("Downloading Configuration"));
       }
 
       if ( file_find.FindFile(strObject) && pFTP->GetFile(strObject,pgzCachedFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_BINARY | INTERNET_FLAG_RELOAD) )
       {
          if(pProgress!=NULL)
          {
-            pProgress->put_Message(0,CComBSTR("Compressed Library/Template file downloaded successfully"));
+            pProgress->put_Message(0,CComBSTR("Configuration downloaded successfully"));
          }
       }
       else
       {
          if(pProgress!=NULL)
          {
-            pProgress->put_Message(0,CComBSTR("Error downloading the Compressed Library/Template File"));
+            pProgress->put_Message(0,CComBSTR("Error downloading the Configuration"));
          }
 
          AfxThrowInternetException(0);
@@ -1037,7 +1037,7 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
       }
 
       CString strMessage;
-      strMessage.Format(_T("Error opening the Compressed Library/Template file from %s."),strPgzFile);
+      strMessage.Format(_T("Error opening the Configuration from %s."),strPgzFile);
 
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, strMessage);
    }
@@ -1335,7 +1335,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
 
    if(pProgress!=NULL)
    {
-      pProgress->put_Message(0,CComBSTR("Downloading Compressed Library/Template file"));
+      pProgress->put_Message(0,CComBSTR("Downloading Configuration"));
    }
 
    bool st = gwOk == this->GetWebFile(strPgzFile, pgzCachedFile);
@@ -1343,13 +1343,13 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
    {
       if(pProgress!=NULL)
       {
-         pProgress->put_Message(0,CComBSTR("Compressed Library/Template file downloaded successfully"));
+         pProgress->put_Message(0,CComBSTR("Configuration downloaded successfully"));
       }
    }
    else
    {
       CString msg;
-      msg.Format(_T("Error downloading the Compressed Library/Template File %s"),strPgzFile);
+      msg.Format(_T("Error downloading the Configuration %s"),strPgzFile);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
 

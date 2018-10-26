@@ -127,14 +127,14 @@ STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/Float64 originalX, /
    // if strands are not adjustable, use entire height
    if (m_HpIncrement < 0.0)
    {
-      if (newy > m_TopElevation+TOLERANCE || newy < 0.0)
+      if ( newy < 0.0 || m_TopElevation+TOLERANCE < newy)
       {
          *isWithin = VARIANT_FALSE;
       }
    }
    else
    {
-      if (newy > m_HpTopElevationBoundary+TOLERANCE || newy < m_HpBotElevationBoundary-TOLERANCE)
+      if ( newy < m_HpBotElevationBoundary-TOLERANCE || m_HpTopElevationBoundary+TOLERANCE < newy )
       {
          *isWithin = VARIANT_FALSE;
       }
@@ -156,14 +156,14 @@ STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/Float64 originalX, 
    // if strands are not adjustable, use entire height
    if (m_EndIncrement < 0.0)
    {
-      if (newy > m_TopElevation+TOLERANCE || newy < 0.0)
+      if ( newy < 0.0 || m_TopElevation+TOLERANCE < newy )
       {
          *isWithin = VARIANT_FALSE;
       }
    }
    else
    {
-      if (newy > m_EndTopElevationBoundary+TOLERANCE || newy < m_EndBotElevationBoundary-TOLERANCE)
+      if ( newy < m_EndBotElevationBoundary-TOLERANCE || m_EndTopElevationBoundary+TOLERANCE < newy)
       {
          *isWithin = VARIANT_FALSE;
       }

@@ -196,9 +196,6 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
    GET_IFACE2(pBroker,IProductForces,pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -292,7 +289,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
       col = 0;
       pgsPointOfInterest& poi(*poiIter);
 
-      (*pTable)(row,col++) << location.SetValue( poiReference, poi, end_size );
+      (*pTable)(row,col++) << location.SetValue( poiReference, poi );
 
       std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
       std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
@@ -413,7 +410,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
       col = 0;
       pgsPointOfInterest& poi(*poiIter);
 
-      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       Float64 D = 0;
       std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
@@ -572,7 +569,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
       col = 0;
       pgsPointOfInterest& poi(*poiIter);
 
-      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       Float64 C = 0;
       std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
@@ -646,7 +643,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
       col = 0;
       pgsPointOfInterest& poi(*poiIter);
 
-      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       (*pTable)(row,col++) << deflection.SetValue( vDmax[i] );
       (*pTable)(row,col++) << deflection.SetValue( vC[i] );
       (*pTable)(row,col++) << deflection.SetValue( vExcessMax[i] );
@@ -783,7 +780,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
       col = 0;
       pgsPointOfInterest& poi(*poiIter);
 
-      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
       std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());

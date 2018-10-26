@@ -233,7 +233,6 @@ void write_moment_data_table(IBroker* pBroker,
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IBridge,            pBridge);
    GET_IFACE2(pBroker, ITendonGeometry,    pTendonGeometry);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -404,13 +403,6 @@ void write_moment_data_table(IBroker* pBroker,
    strain.SetWidth(6);
    strain.SetPrecision(3);
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
-   if ( intervalIdx < compositeDeckIntervalIdx )
-   {
-      end_size = 0; // don't adjust if CY stage
-   }
-
    Int16 count = 0;
    RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -425,7 +417,7 @@ void write_moment_data_table(IBroker* pBroker,
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       (*table)(row,col++) << dim.SetValue( mcd.c );
       (*table)(row,col++) << dim.SetValue( mcd.dc );
       (*table)(row,col++) << dim.SetValue( mcd.de );
@@ -625,7 +617,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
          }
       }
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       (*table)(row,1) << stress.SetValue( cmd.fr );
       (*table)(row,2) << stress.SetValue( cmd.fcpe);
       (*table)(row,3) << sect_mod.SetValue( cmd.Sb );
@@ -767,7 +759,7 @@ void write_min_moment_data_table(IBroker* pBroker,
       MINMOMENTCAPDETAILS mmcd;
       pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mmcd);
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       if ( bBefore2012 )
       {
          (*table)(row,col++) << moment.SetValue( mmcd.Mcr );
@@ -906,7 +898,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
       if ( mcd.bOverReinforced )
       {
-         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*table)(row,1) << scalar.SetValue( mcd.Beta1Slab );
          (*table)(row,2) << stress.SetValue( mcd.FcSlab );
          (*table)(row,3) << dim.SetValue( mcd.b );

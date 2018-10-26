@@ -156,10 +156,8 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    for ( ; iter != end; iter++ )
    {
       pgsPointOfInterest& poi( *iter );
-      const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-      (*pTable)(row,0) << location.SetValue( POI_SPAN, poi, end_size );
+      (*pTable)(row,0) << location.SetValue( POI_SPAN, poi );
 
       Float64 pM, nM, V;
       pDistFact->GetDistributionFactors(poi,pgsTypes::StrengthI,&pM,&nM,&V);

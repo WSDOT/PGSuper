@@ -56,7 +56,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bHasOverlay = (pBridge->IsFutureOverlay() == true ? false : true); // only include overlay if it is NOT a future overlay
+   bool bHasOverlay = pBridge->HasOverlay();
 
    GET_IFACE2(pBroker,IProductLoads,pLoad);
    bool bHasSidewalk = pLoad->HasSidewalkLoad(segmentKey);
@@ -64,13 +64,19 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    ColumnIndexType numColumns = 9;
 
    if ( bHasUserLoads )
+   {
       numColumns += 2;
+   }
 
    if ( bHasSidewalk )
+   {
       numColumns++;
+   }
 
    if ( bHasOverlay )
+   {
       numColumns++;
+   }
 
    CElasticGainDueToSIDLTable* table = new CElasticGainDueToSIDLTable( numColumns, pDisplayUnits);
    pgsReportStyleHolder::ConfigureTable(table);
@@ -106,17 +112,27 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    *pParagraph << rptNewLine;
    *pParagraph << rptRcImage(strImagePath + _T("Msidl.png"));
    if ( bHasSidewalk )
+   {
       *pParagraph << rptRcImage(strImagePath + _T("Msw.png"));
+   }
    if ( bHasOverlay )
+   {
       *pParagraph << rptRcImage(strImagePath + _T("Mo.png"));
+   }
    if ( bHasUserLoads )
+   {
       *pParagraph << rptRcImage(strImagePath + _T("Muser.png"));
+   }
    *pParagraph << rptNewLine;
 
    if ( spMode == pgsTypes::spmGross )
+   {
       *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Gross.png")) << rptNewLine;
+   }
    else
+   {
       *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Transformed.png")) << rptNewLine;
+   }
 
    *pParagraph << rptRcImage(strImagePath + _T("ElasticGain2.png")) << rptNewLine;
 

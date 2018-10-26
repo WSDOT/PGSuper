@@ -1767,6 +1767,19 @@ Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest
    return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,NULL);
 }
 
+void CEngAgentImp::GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound)
+{
+   // Strip context data for IPrestressForce interface version
+   pgsEccEnvelope env = GetEccentricityEnvelope(rpoi, config);
+   *pLowerBound = env.m_LbEcc;
+   *pUpperBound = env.m_UbEcc;
+}
+
+pgsEccEnvelope CEngAgentImp::GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config)
+{
+   return m_Designer.GetEccentricityEnvelope(rpoi, config);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // IPosttensionForce
 Float64 CEngAgentImp::GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands)

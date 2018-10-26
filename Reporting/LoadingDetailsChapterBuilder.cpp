@@ -1003,8 +1003,9 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    INIT_UV_PROTOTYPE( rptMomentUnitValue,  moment, pDisplayUnits->GetMomentUnit(),       false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,    pDisplayUnits->GetComponentDimUnit(), false );
 
-   std::vector<DiaphragmLoad> diap_loads;
+   std::vector<DiaphragmLoad> diap_loads; // these are the actual loads that have been generated from the user input/diaphragm rules
    pProdLoads->GetIntermediateDiaphragmLoads(spanKey, &diap_loads);
+   std::sort(diap_loads.begin(),diap_loads.end());
 
    if (0 < diap_loads.size() )
    {
@@ -1024,7 +1025,9 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
       (*p_table)(0,3) << COLHDR(_T("T"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
       (*p_table)(0,4) << COLHDR(_T("Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
-      std::vector<IntermedateDiaphragm> diaphragms   = pBridge->GetCastInPlaceDiaphragms(spanKey);
+      // this is the raw input from the bridge model
+      std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey);
+      std::sort(diaphragms.begin(),diaphragms.end());
       std::vector<IntermedateDiaphragm>::iterator iter = diaphragms.begin();
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -1032,6 +1035,8 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
       {
          DiaphragmLoad& rload = *id;
          IntermedateDiaphragm& dia = *iter;
+
+         ATLASSERT(IsEqual(rload.Loc,dia.Location));
 
          (*p_table)(row,0) << loc.SetValue(rload.Loc);
 
@@ -2093,7 +2098,17 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
             vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Harped);
             if ( 0 < vEquivLoad.size() )
             {
-               *pPara << Bold(_T("Harped Strands")) << rptNewLine;
+               GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+               const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+               pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
+               if (pgsTypes::asHarped == adj_type)
+               {
+                  *pPara << Bold(_T("Harped Strands")) << rptNewLine;
+               }
+               else
+               {
+                  *pPara << Bold(_T("Adjustable Straight Strands")) << rptNewLine;
+               }
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
                loadIter    = vEquivLoad.begin();
                loadIterEnd = vEquivLoad.end();

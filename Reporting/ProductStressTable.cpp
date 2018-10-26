@@ -412,13 +412,10 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    for ( ; i != end; i++, index++ )
    {
       const pgsPointOfInterest& poi = *i;
-      const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
    
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-
       ColumnIndexType col = 0;
 
-      (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder[index]) << rptNewLine;
       (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder[index]);

@@ -85,8 +85,8 @@ private:
    typedef std::set< std::pair<pgsPointOfInterest,IntervalIndexType> > PoiSet;
    typedef std::vector<pgsPointOfInterest> PoiVector;
 
-   void ReportLocation( rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
-   void ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation( rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
 
    void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const lrfdLosses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
@@ -155,7 +155,6 @@ private:
                            Float64* pEcSlab,
                            Float64* pGirderLength,
                            Float64* pSpanLength,
-                           Float64* pEndSize,
                            Float64* pAslab,
                            Float64* pPslab,
                            lrfdLosses::TempStrandUsage* pUsage,

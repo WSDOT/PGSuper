@@ -103,7 +103,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
       GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
       if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey))
       {
-         *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
+         *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes straight adjustable strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
       }
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);

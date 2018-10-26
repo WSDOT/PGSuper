@@ -769,6 +769,7 @@
 #define IDC_DIAPHRAGM_LOAD              1407
 #define IDC_SUPPORTS                    1407
 #define IDC_BACK_DIAPHRAGM_LOAD         1407
+#define IDC_ADJUSTABLE_COMBO            1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_AHEAD_DIAPHRAGM_LOAD        1408

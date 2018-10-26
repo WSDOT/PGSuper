@@ -332,7 +332,7 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
       return false;
    }
 
-   if (pGdrEntry->IsForceHarpedStrandsStraight())
+   if (pGdrEntry->GetAdjustableStrandType() == pgsTypes::asStraight)
    {
       // Entry must have harped strands
       ASSERT(0);

@@ -232,6 +232,15 @@ library PGSuperBeamFactory
 	};
 
    [
+		uuid(42D8D32D-7A4E-4d07-A5B1-220DFCB99EE6)
+	]
+	coclass SplicedNUBeamFactory
+	{
+		[default] interface IDummyInterface;
+	};
+
+   // Distribution Factor Engineers
+   [
       uuid(3AC40380-8764-4087-BD7C-47A50A369AE6)
    ]
    coclass IBeamDistFactorEngineer

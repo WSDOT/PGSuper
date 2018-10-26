@@ -893,8 +893,6 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    (*p_table)(0,4) << COLHDR(_T("Moment") << rptNewLine << _T("No Impact"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*p_table)(0,5) << COLHDR(_T("Moment") << rptNewLine << _T("Impact Down"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
-   Float64 overhang = this->GetTrailingOverhang();
-
    RowIndexType row = 1;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
@@ -904,7 +902,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 
       const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
-      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
+      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
       (*p_table)(row,1) << force.SetValue( pStressArtifact->GetEffectiveHorizPsForce());
       (*p_table)(row,2) << dim.SetValue( pStressArtifact->GetEccentricityPsForce());
 
@@ -969,7 +967,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 
       const pgsWsdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
-      (*p_table)(row1,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
+      (*p_table)(row1,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
       
       Float64 ps, up, down, no;
       pStressArtifact->GetTopFiberStress(&ps, &up,&no,&down);
@@ -984,7 +982,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
       (*p_table)(row1,7) << stress.SetValue( no );
       (*p_table)(row1,8) << stress.SetValue( down );
 
-      (*p_table2)(row2,0) << location.SetValue(POI_HAUL_SEGMENT, poi, overhang);
+      (*p_table2)(row2,0) << location.SetValue(POI_HAUL_SEGMENT, poi);
 
       Float64 Mu,Mn,Md;
       pStressArtifact->GetMomentImpact(&Mu,&Mn,&Md);
@@ -1034,7 +1032,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 
       const pgsWsdotHaulingCrackingAnalysisArtifact* pCrackArtifact = GetHaulingCrackingAnalysisArtifact(poi);
  
-      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang);
+      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi);
       (*p_table)(row,1) << stress.SetValue( pCrackArtifact->GetLateralMomentStress() );
 
       if (pCrackArtifact->GetCrackedFlange()==BottomFlange)
@@ -1848,7 +1846,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
          ATLASSERT(false); // this should not happen
          continue;
       }
-      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
+      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
 
       // Tension
       Float64 fTensTop, fTensBottom, tensCapacityTop, tensCapacityBottom;
@@ -2015,7 +2013,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(const CSegmentKey
          continue;
       }
  
-      (*p_table)(row,0) << location.SetValue(POI_HAUL_SEGMENT, poi, overhang);
+      (*p_table)(row,0) << location.SetValue(POI_HAUL_SEGMENT, poi);
 
       Float64 ftu, ftd, fbu, fbd;
       pStressArtifact->GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
@@ -2260,7 +2258,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
       Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
       pStressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
 
-      (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
+      (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
 
       if (Yna < 0 )
       {

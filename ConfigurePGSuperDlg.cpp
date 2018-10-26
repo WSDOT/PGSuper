@@ -353,7 +353,7 @@ void CConfigurePGSuperDlg::PublisherList()
       wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
-      wndProgress->Show(CComBSTR("Fetching package names from server..."),GetSafeHwnd());
+      wndProgress->Show(CComBSTR("Fetching configuration names from server..."),GetSafeHwnd());
 
       // fill up the list box
       const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);

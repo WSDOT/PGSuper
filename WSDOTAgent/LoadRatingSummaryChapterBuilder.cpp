@@ -411,10 +411,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,2) << scalar.SetValue(pPositiveMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi( pPositiveMoment->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Positive Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
@@ -432,10 +429,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,2) << scalar.SetValue(pNegativeMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi( pNegativeMoment->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Negative Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
@@ -453,10 +447,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,2) << scalar.SetValue(pShear->GetLiveLoadFactor());
 
       pgsPointOfInterest poi( pShear->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Shear)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Shear)");
    }
    else if ( pStress )
    {
@@ -474,10 +465,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,2) << scalar.SetValue(pStress->GetLiveLoadFactor());
 
       pgsPointOfInterest poi(  pStress->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Stress)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Stress)");
    }
    else if ( pYieldStressPositiveMoment )
    {
@@ -497,10 +485,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,2) << scalar.SetValue(pYieldStressPositiveMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi(  pYieldStressPositiveMoment->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Yield Stress - Positive Moment)");
 
       if ( 0 < pYieldStressPositiveMoment->GetCrackingStressIncrement() )
       {
@@ -525,10 +510,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       (*pTable)(row,2) << scalar.SetValue(pYieldStressNegativeMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi(  pYieldStressNegativeMoment->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
+      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Yield Stress - Negative Moment)");
 
       if ( 0 < pYieldStressNegativeMoment->GetCrackingStressIncrement() )
       {
@@ -571,10 +553,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
 
       pgsPointOfInterest poi(  pPositiveMoment->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Positive Moment)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
@@ -591,10 +570,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
 
       pgsPointOfInterest poi( pNegativeMoment->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Negative Moment)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
@@ -611,10 +587,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
 
       pgsPointOfInterest poi( pShear->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Shear)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi) << _T(" (Shear)");
    }
    else if ( pStress )
    {
@@ -631,9 +604,6 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
 
       pgsPointOfInterest poi( pStress->GetPointOfInterest() );
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi,endSize) << _T(" (Stress)");
+      (*pTable)(row,2) << location.SetValue(POI_SPAN,poi) << _T(" (Stress)");
    }
 }

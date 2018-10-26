@@ -74,6 +74,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    GET_IFACE2( pBroker, ILossParameters, pLossParams);
    pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
 
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -95,8 +96,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisSegmentKey);
-            IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisSegmentKey);
+            IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisSegmentKey);
             IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
 
             if ( lossMethod == pgsTypes::TIME_STEP )
@@ -109,8 +109,22 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             }
             else
             {
-               CStrandEccTable ecc_table;
-               *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
+               std::vector<IntervalIndexType> vIntervals;
+               if ( pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
+               {
+                  vIntervals.push_back(releaseIntervalIdx);
+                  vIntervals.push_back(compositeDeckIntervalIdx);
+               }
+               else
+               {
+                  vIntervals.push_back(releaseIntervalIdx);
+               }
+
+               BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+               {
+                  CStrandEccTable ecc_table;
+                  *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
+               }
             }
 
             p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());

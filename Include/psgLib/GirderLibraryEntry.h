@@ -159,7 +159,7 @@ public:
    // the dialog is our friend.
    friend CGirderMainSheet;
 
-   enum psStrandType { stStraight, stHarped };
+   enum psStrandType { stStraight, stAdjustable };
 
    // describes from where something is location is measured
    enum MeasurementLocation { mlEndOfGirder        = 0, 
@@ -523,12 +523,20 @@ public:
    bool IsVerticalAdjustmentAllowedHP() const;
 
    //------------------------------------------------------------------------
+   // Allow adjustment of adjustable straight strands
+   void AllowVerticalAdjustmentStraight(bool d);
+   bool IsVerticalAdjustmentAllowedStraight() const;
+
+   //------------------------------------------------------------------------
    // Set/get the harped strand adjustment limits at ends and harping points
    void SetHPAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit);
    void GetHPAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const;
 
    void SetEndAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit);
    void GetEndAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const;
+
+   void SetStraightAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit);
+   void GetStraightAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const;
 
    //------------------------------------------------------------------------
    // Set the max downward strand increment for design at girder end
@@ -545,6 +553,9 @@ public:
    //------------------------------------------------------------------------
    // Get the max Upward strand increment at harping point
    Float64 GetHPStrandIncrement() const;
+
+   void SetStraightStrandIncrement(Float64 d);
+   Float64 GetStraightStrandIncrement() const;
 
    //------------------------------------------------------------------------
    // Set/Get shear data struct
@@ -591,8 +602,8 @@ public:
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
 
-   bool IsForceHarpedStrandsStraight() const;
-   void ForceHarpedStrandsStraight(bool bEnable);
+   pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
+   void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
 
    void ConfigureStraightStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
    void ConfigureHarpedStrandGrids(Float64 HgStart,Float64 HgHP1,Float64 HgHP2,Float64 HgEnd,IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
@@ -696,7 +707,7 @@ private:
    MeasurementLocation m_HarpPointReference;
    MeasurementType   m_HarpPointMeasure;
    bool m_bOddNumberOfHarpedStrands;
-   bool m_bForceHarpedStrandsStraight;
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
 
    // version 13
    // debond limits
@@ -836,6 +847,7 @@ private:
 
 	HarpedStrandAdjustment m_HPAdjustment;
 	HarpedStrandAdjustment m_EndAdjustment;
+	HarpedStrandAdjustment m_StraightAdjustment; // straight adjustable strands
 
    //------------------------------------------------------------------------
    // Our main shear reinforcement data

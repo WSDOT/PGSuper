@@ -234,10 +234,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             {
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
                const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
-               const CSegmentKey& segmentKey = poi.GetSegmentKey();
-               Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-               
-               (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+               (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
             }
             else
             {
@@ -263,10 +260,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
 
                   const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
-                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-                  
-                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                }
                else
                {
@@ -294,10 +288,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
 
                   const pgsPointOfInterest& poi = pShearArtifact->GetPointOfInterest();
-                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                }
                else
                {
@@ -333,10 +324,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             {
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
                const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
-               const CSegmentKey& segmentKey = poi.GetSegmentKey();
-               Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-               
-               (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+               (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
             }
             else
             {
@@ -362,10 +350,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
 
                   const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
-                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-                  
-                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                }
                else
                {
@@ -393,10 +378,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
 
                   const pgsPointOfInterest& poi = pShearArtifact->GetPointOfInterest();
-                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                }
                else
                {
@@ -437,10 +419,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
 
                      pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
-                     const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                     Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-                     
-                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                   }
                   else
                   {
@@ -464,10 +443,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
 
                      pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
-                     const CSegmentKey& otherSegmentKey = poi.GetSegmentKey();
-                     Float64 end_size = pBridge->GetSegmentStartEndDistance(otherSegmentKey);
-                     
-                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                   }
                   else
                   {
@@ -494,10 +470,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
 
                      const pgsPointOfInterest& poi = pYieldStressArtifact->GetPointOfInterest();
-                     const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                     Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-                     
-                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                   }
                   else
                   {
@@ -559,10 +532,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   (*table)(row,col+1) << scalar.SetValue(pStressArtifact->GetLiveLoadFactor());
 
                   const pgsPointOfInterest& poi = pStressArtifact->GetPointOfInterest();
-                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
-                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-                  
-                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_SPAN, poi);
                }
                else
                {
@@ -818,7 +788,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
      }
 
      (*pTable)(row,2) << scalar.SetValue(gLL);
-     (*pTable)(row,3) << location.SetValue( POI_SPAN, poi,end_size );
+     (*pTable)(row,3) << location.SetValue( POI_SPAN, poi );
      (*pTable)(row,4) << strControlling;
 
      row++;

@@ -45,7 +45,7 @@ interface IEAFDisplayUnits;
 #define LABEL_ROW(_r_) (RowIndexType)(_r_ + 1)
 
 // Return string describing type of harped strands
-inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Straight-Web") : _T("Harped"); }
+inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adjustable Straight") : _T("Harped"); }
 
 class PGSEXTCLASS pgsGirderLabel
 {

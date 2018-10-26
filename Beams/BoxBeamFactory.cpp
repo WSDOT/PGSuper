@@ -632,8 +632,8 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    lft_hook.CoCreateInstance(CLSID_Point2d);
    rgt_hook.CoCreateInstance(CLSID_Point2d);
 
-   lft_hook->Move(-hook_offset, depth/2.0);
-   rgt_hook->Move( hook_offset, depth/2.0);
+   lft_hook->Move(-hook_offset, -depth/2.0);
+   rgt_hook->Move( hook_offset, -depth/2.0);
 
    lft_harp_rect->putref_HookPoint(lft_hook);
    rgt_harp_rect->putref_HookPoint(rgt_hook);
@@ -654,7 +654,7 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

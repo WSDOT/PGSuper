@@ -184,17 +184,9 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       col = 0;
       const pgsPointOfInterest& poi = *i;
 
-      const CSegmentKey& segKey = poi.GetSegmentKey();
-
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segKey);
-      if ( intervalIdx < erectionIntervalIdx )
-      {
-         end_size = 0;
-      }
-
       Float64 depth = pSectProp->GetHg(intervalIdx,poi);
 
-      (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+      (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetAg(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(depth);
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIx(intervalIdx,poi));

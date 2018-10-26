@@ -83,6 +83,7 @@ protected:
 	afx_msg void OnClickHarpedBox();
 	afx_msg void OnClickHpAdjust();
 	afx_msg void OnClickEndAdjust();
+   afx_msg void OnClickStraightAdjust();
    afx_msg void OnMoveUpGlobalStrand();
    afx_msg void OnMoveDownGlobalStrand();
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
@@ -96,13 +97,15 @@ protected:
 
 public:
    // capture event fired from grid that allows deletion of rows
-   void OnEnableDelete(bool canDelete);
-   bool DoUseHarpedGrid();
-   bool DoUseHarpedWebStrands();
-   void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
+   virtual void OnEnableDelete(bool canDelete);
+   virtual bool DoUseHarpedGrid();
+   virtual pgsTypes::AdjustableStrandType GetAdjustableStrandType();
+   virtual void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
 
 	void UpdateHpAdjust();
 	void UpdateEndAdjust();
+	void UpdateStraightAdjust();
+   void UpdateAdjustCtls(BOOL enableGroup, int checkCtrl, int otherCtrls[]);
 
    afx_msg void OnCbnSelchangeWebStrandTypeCombo();
 };

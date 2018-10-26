@@ -869,6 +869,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SplicedNUBeamFactoryImpl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\SplicedUBeamFactory.h"
 				>
 			</File>
@@ -1135,6 +1139,18 @@
 			</File>
 			<File
 				RelativePath=".\SplicedIBeamFamily.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\SplicedNUBeam.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\SplicedNUBeam.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedNUBeamFactory.rgs"
 				>
 			</File>
 			<File
@@ -3362,6 +3378,10 @@
 			</File>
 			<File
 				RelativePath=".\SplicedIBeamFactoryImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedNUBeamFactoryImpl.cpp"
 				>
 			</File>
 			<File

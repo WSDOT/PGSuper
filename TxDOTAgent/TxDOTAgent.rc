@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,20
- PRODUCTVERSION 3,0,0,20
+ FILEVERSION 3,0,0,21
+ PRODUCTVERSION 3,0,0,21
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.20"
+            VALUE "FileVersion", "3.0.0.21"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.20"
+            VALUE "ProductVersion", "3.0.0.21"
         END
     END
     BLOCK "VarFileInfo"
@@ -657,7 +657,7 @@ BEGIN
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
     IDS_GDR_ERROR           "The girder: ""%s"" does not exist in the master library.\nAnalysis cannot continue.\n\nIs PGSuper configured to use the TxDOT libraries and templates package?\nTOGA is a TxDOT-specific program and requires the TxDOT Master Library. If necessary, close this project and go to the Configure PGSuper menu to fix the problem."
     IDS_CONN_ERROR          "The connection: ""%s"" does not exist in the master library.\nAnalysis cannot continue.\n\nIs PGSuper configured to use the TxDOT libraries and templates package?\nTOGA is a TxDOT-specific program and requires the TxDOT Master Library. If necessary, close project and go to the Configure PGSuper menu to fix the problem."
-    IDS_GDR_ERROR3          "The girder: ""%s"" has Straight-Web strands in the web. TOGA only allows Harped strands.\nAnalyis cannot continue."
+    IDS_GDR_ERROR3          "The girder: ""%s"" has Adjustable Straight strands in the web. TOGA only allows Harped strands.\nAnalyis cannot continue."
 END
 
 STRINGTABLE 

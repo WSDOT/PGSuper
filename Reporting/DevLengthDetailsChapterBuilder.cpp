@@ -232,9 +232,6 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          (*pTable)(1,11)<< COLHDR(Sub2(_T("l"),_T("px")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*pTable)(1,12)<< RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
 
-         GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(thisGirderKey,0));
-
          stress.ShowUnitTag(false);
          length.ShowUnitTag(false);
 
@@ -278,7 +275,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
             bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
-            (*pTable)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*pTable)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
             (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
             (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
             (*pTable)(row,3) << length.SetValue(bonded_details.db);
@@ -330,6 +327,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
             pParagraph = new rptParagraph;
             *pChapter << pParagraph;
+
+#pragma Reminder("UPDATE: need to report this for closure joint rebar also")
 
             CComPtr<IRebarLayout> rebarLayout;
             pLongRebarGeometry->GetRebarLayout(thisSegmentKey, &rebarLayout);

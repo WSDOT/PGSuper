@@ -412,7 +412,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
-      ATLASSERT( intervalIdx != releaseIntervalIdx ); // segments should be jointed into a continuous girder
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
@@ -553,12 +552,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    SegmentIndexType lastSegIdx  = (segIdx == ALL_SEGMENTS ? nSegments-1 : firstSegIdx);
 
    // Fill up the table
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-   if ( intervalIdx == releaseIntervalIdx )
-   {
-      end_size = 0; // don't adjust if CY stage
-   }
-
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    for ( SegmentIndexType sIdx = firstSegIdx; sIdx <= lastSegIdx; sIdx++ )
@@ -603,10 +596,10 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
          if ( segIdx == ALL_SEGMENTS )
          {
-            (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+            (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
          }
 
-         (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi );
 
          if ( pTensionArtifact )
          {

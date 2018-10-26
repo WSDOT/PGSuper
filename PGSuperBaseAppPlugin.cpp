@@ -861,12 +861,12 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
       {
          POSITION templatePos = pos;
          CDocTemplate* pDocTemplate = pDocMgr->GetNextDocTemplate(pos);
-         if ( pDocTemplate->IsKindOf(RUNTIME_CLASS(CPGSuperDocTemplate)) )
+         if ( pDocTemplate->IsKindOf(RUNTIME_CLASS(CPGSuperDocTemplateBase)) )
          {
             pDocMgr->RemoveDocTemplate(templatePos);
 
-            CPGSuperDocTemplate* pPGSuperDocTemplate = dynamic_cast<CPGSuperDocTemplate*>(pDocTemplate);
-            pPGSuperDocTemplate->LoadTemplateInformation();
+            CPGSuperDocTemplateBase* pTemplate = dynamic_cast<CPGSuperDocTemplateBase*>(pDocTemplate);
+            pTemplate->LoadTemplateInformation();
 
             pDocMgr->AddDocTemplate(pDocTemplate);
             break;

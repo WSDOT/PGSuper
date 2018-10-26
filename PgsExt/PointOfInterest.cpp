@@ -826,6 +826,17 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       }
    }
 
+   if ( HasAttribute(POI_DIAPHRAGM) )
+   {
+      if ( 0 < nAttributes )
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("Diaphragm");
+      nAttributes++;
+   }
+
    if ( HasAttribute(POI_PSXFER) )
    {
       if ( 0 < nAttributes )
@@ -866,7 +877,7 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
          strAttrib += _T(", ");
       }
 
-      strAttrib += _T("Bar Cutoff");
+      strAttrib += _T("Deck Bar Cutoff");
       nAttributes++;
    }
 
@@ -974,18 +985,6 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
    }
 
    // for the sake of efficiency, dont use a stringstream
-   LPCTSTR release_label_markup[]={_T("err"),_T("0.0L<sub>s</sub>"),_T("0.1L<sub>s</sub>"),_T("0.2L<sub>s</sub>"),_T("0.3L<sub>s</sub>"),_T("0.4L<sub>s</sub>"),
-      _T("0.5L<sub>s</sub>"),_T("0.6L<sub>s</sub>"),_T("0.7L<sub>s</sub>"),_T("0.8L<sub>s</sub>"),_T("0.9L<sub>s</sub>"),_T("1.0L<sub>s</sub>")};
-
-   LPCTSTR release_label[]={_T("err"),_T("0.0Ls"),_T("0.1Ls"),_T("0.2Ls"),_T("0.3Ls"),_T("0.4Ls"),
-      _T("0.5Ls"),_T("0.6Ls"),_T("0.7Ls"),_T("0.8Ls"),_T("0.9Ls"),_T("1.0Ls")};
-
-   LPCTSTR girder_label_markup[]={_T("err"),_T("0.0L<sub>g</sub>"),_T("0.1L<sub>g</sub>"),_T("0.2L<sub>g</sub>"),_T("0.3L<sub>g</sub>"),_T("0.4L<sub>g</sub>"),
-      _T("0.5L<sub>g</sub>"),_T("0.6L<sub>g</sub>"),_T("0.7L<sub>g</sub>"),_T("0.8L<sub>g</sub>"),_T("0.9L<sub>g</sub>"),_T("1.0L<sub>g</sub>")};
-
-   LPCTSTR girder_label[]={_T("err"),_T("0.0Lg"),_T("0.1Lg"),_T("0.2Lg"),_T("0.3Lg"),_T("0.4Lg"),
-      _T("0.5Lg"),_T("0.6Lg"),_T("0.7Lg"),_T("0.8Lg"),_T("0.9Lg"),_T("1.0Lg")};
-
    std::vector<PoiAttributeType>::iterator iter(references.begin());
    std::vector<PoiAttributeType>::iterator end(references.end());
    for ( ; iter != end; iter++ )
@@ -1155,6 +1154,11 @@ void pgsPointOfInterest::UpdateAttributeString()
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_CONCLOAD) )
    {
       os << _T("POI_CONCLOAD | ");
+   }
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_DIAPHRAGM) )
+   {
+      os << _T("POI_DIAPHRAGM | ");
    }
 
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PSXFER) )

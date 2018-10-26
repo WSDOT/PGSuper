@@ -2274,7 +2274,7 @@ Float64 g_Day;
 bool SearchMe(CTimelineEvent* pEvent)
 { 
    // returns true when the trial event occurs on or after g_Day
-   // searching fo the first event after the event that is being validated
+   // searching for the first event after the event that is being validated
    return g_Day <= pEvent->GetDay(); 
 }
 
@@ -2295,6 +2295,11 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    {
       // all the previously defined events come after this event
       pNextEvent = *found;
+      if ( pNextEvent == pTimelineEvent )
+      {
+         found++;
+         pNextEvent = *found;
+      }
    }
    else
    {

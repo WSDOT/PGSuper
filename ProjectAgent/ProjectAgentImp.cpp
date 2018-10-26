@@ -4938,8 +4938,6 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
       return;
    }
 
-   const GirderLibraryEntry* pGirderEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
-
    GET_IFACE(IDocumentType,pDocType);
    std::_tostringstream str;
    if ( pDocType->IsPGSuperDocument() )
@@ -4952,23 +4950,32 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
    }
    std::_tstring segmentLabel(str.str());
 
-   if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && pSegment->Strands.GetHarpStrandOffsetAtEnd()!=0.0 
-                                                       && pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()!=hsoLEGACY)
+   const GirderLibraryEntry* pGirderEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
+   // If library entry forbids offset, reset vertical adjustment of harped strands to zero (default). This will partially avoid getting
+   // bad data into input when adjustment is turned back on. No need to tell user
+   // Bug: This however, does not handle the case when tighter offsets limits are input into library than are set in project data.
+   //      Catching this would be considerably more work.
+   if (pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asHarped)
    {
-      pSegment->Strands.SetHarpStrandOffsetAtEnd(0.0);
-      pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoLEGACY);
+      if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() != hsoLEGACY)
+      {
+         pSegment->Strands.SetHarpStrandOffsetAtEnd(0.0);
+         pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoLEGACY);
+      }
 
-      std::_tstring msg(_T("Vertical adjustment of harped strands at girder end reset to zero. Library entry forbids offset"));
-      AddSegmentStatusItem(segmentKey, msg);
+      if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() != hsoLEGACY)
+      {
+         pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(0.0);
+         pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoLEGACY);
+      }
    }
-
-   if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && pSegment->Strands.GetHarpStrandOffsetAtHarpPoint()!=0.0 && pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint()!=hsoLEGACY)
+   else
    {
-      pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(0.0);
-      pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoLEGACY);
-
-      std::_tstring msg(_T("Vertical adjustment of harped strands at harping points reset to zero. Library entry forbids offset"));
-      AddSegmentStatusItem(segmentKey, msg);
+      if (!pGirderEntry->IsVerticalAdjustmentAllowedStraight() && pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() != hsoLEGACY)
+      {
+         pSegment->Strands.SetHarpStrandOffsetAtEnd(0.0);
+         pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoLEGACY);
+      }
    }
 
    // There are many, many ways that strand data can get hosed if a library entry is changed for an existing project. 
@@ -7311,13 +7318,15 @@ bool CProjectAgentImp::IsSlabOffsetDesignEnabled()
 arDesignOptions CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey)
 {
    const CSplicedGirderData* pGirder = GetGirder(girderKey);
+#pragma Reminder("UPDATE: assuming segment 0 for precast girder") // this may be ok since this method is only for PGSuper
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
    arDesignOptions options;
 
    // determine flexural design from girder attributes
    StrandIndexType nHarped = pGirderEntry->GetNumHarpedStrandCoordinates();
-   if ( 0 < nHarped && !pGirderEntry->IsForceHarpedStrandsStraight())
+   if ( 0 < nHarped && pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asHarped)
    {
       options.doDesignForFlexure = dtDesignForHarping;
    }
@@ -7353,7 +7362,7 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey)
       options.doDesignSlope    = false;
    }
 
-   options.doForceHarpedStrandsStraight = pGirderEntry->IsForceHarpedStrandsStraight();
+   options.doForceHarpedStrandsStraight = pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight ? true : false;
 
    if (!options.doForceHarpedStrandsStraight)
    {
@@ -7859,6 +7868,13 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    if ( m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && m_AnalysisType != pgsTypes::Continuous )
    {
       m_AnalysisType = pgsTypes::Continuous;
+   }
+
+   GET_IFACE(IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      // the timeline is based on settings in the project criteria for PGSuper documents (using the Creep and Camber timing parameters)
+      CreatePrecastGirderBridgeTimelineEvents();
    }
 
    if ( bFireEvent )
@@ -9404,6 +9420,21 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             ConvertLegacyDebondData(pSegment, pGdrEntry);
             ConvertLegacyExtendedStrandData(pSegment, pGdrEntry);
 
+            // rdp - 11/1/2014 - Mantis 421
+            // Added capability to change adjustable strand type from straight to harped in project data. Previously,
+            // this was set in library entry only. This is the earliest possible location to intercept discrepancy 
+            // between library entry and project data and to set project data correctly for a given library
+            // setting.
+            pgsTypes::AdjustableStrandType asType    = pSegment->Strands.GetAdjustableStrandType();
+            pgsTypes::AdjustableStrandType asLibType = pGdrEntry->GetAdjustableStrandType();
+            
+            if(asLibType==pgsTypes::asStraight && asType==pgsTypes::asHarped)
+            {
+               // Library and project are out of sync - this is probably due to 421 version update
+               // change project data to match library
+               pSegment->Strands.SetAdjustableStrandType(pgsTypes::asStraight);
+            }
+
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
             Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Permanent);
@@ -9716,8 +9747,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
 
    CTimelineManager* pTimelineManager = m_BridgeDescription.GetTimelineManager();
+   pTimelineManager->Clear();
 
-   // get a list off all the segment IDs. it is needed in a couple locations below
+   // get a list of all the segment IDs. it is needed in a couple locations below
    std::set<SegmentIDType> segmentIDs;
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -9738,17 +9770,20 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       }
    }
 
+   // NOTE: The actual timing doesn't matter since we aren't doing a true time-step analysis
+   // We will just use reasonable times so the sequence is correct
 
    // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
    CTimelineEvent* pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay(1);
+   pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
    pTimelineEvent->GetConstructSegmentsActivity().SetAgeAtRelease(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
+   // assume piers are erected at the same time girders are being constructed
    pTimelineEvent->GetErectPiersActivity().Enable();
    PierIndexType nPiers = m_BridgeDescription.GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
@@ -9793,7 +9828,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // live load
    pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay(::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 2.0);
+   pTimelineEvent->SetDay(::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day));
    pTimelineEvent->SetDescription(_T("Open to Traffic (Bridge Site 3)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(true);

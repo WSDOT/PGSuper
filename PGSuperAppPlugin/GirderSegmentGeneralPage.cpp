@@ -745,6 +745,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
       pSegment->Material.Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
       pSegment->Material.Concrete.Fci                = dlg.m_ACI.m_fci;
+      pSegment->Material.Concrete.Fc                 = dlg.m_ACI.m_fc28;
 
       pSegment->Material.Concrete.CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
 

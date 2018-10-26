@@ -121,13 +121,14 @@ protected:
    void InitHarpStrandOffsetMeasureComboBox(CComboBox* pCB);
 
    void HideControls(int key, CStrandData::StrandDefinitionType numPermStrandsType);
-   void HideEndOffsetControls(BOOL hide);
-   void HideHpOffsetControls(BOOL hide);
-   void DisappearEndOffsetControls(int show = SW_HIDE);
-   void DisappearHpOffsetControls(int show = SW_HIDE);
+   void DisableEndOffsetControls(BOOL disable);
+   void DisableHpOffsetControls(BOOL disable);
+   void ShowHpOffsetControls(BOOL show);
+   void ShowEndOffsetControls(BOOL show);
    void ShowHideNumStrandControls(CStrandData::StrandDefinitionType numPermStrandsType);
-   void UpdateStrandControls();
 
+   void UpdateStrandControls();
+   void UpdateAdjustableStrandControls();
 
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
@@ -143,7 +144,7 @@ protected:
    bool m_AllowHpAdjustment;
    bool m_AllowEndAdjustment;
 
-   bool m_bAreHarpedStrandsForcedStraight;
+   pgsTypes::AdjustableStrandType m_LibraryAdjustableStrandType; // in girder library
    CStrandData::StrandDefinitionType m_CurrStrandDefinitionType; 
 
    void UpdateStrandList(UINT nIDC);
@@ -156,6 +157,7 @@ public:
 
    ConfigStrandFillVector ComputeStraightStrandFillVector(StrandIndexType Ns);
    ConfigStrandFillVector ComputeHarpedStrandFillVector();
+   afx_msg void OnCbnSelchangeAdjustableCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

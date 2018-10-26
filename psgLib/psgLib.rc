@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,20
- PRODUCTVERSION 3,0,0,20
+ FILEVERSION 3,0,0,21
+ PRODUCTVERSION 3,0,0,21
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.20"
+            VALUE "FileVersion", "3.0.0.21"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.20"
+            VALUE "ProductVersion", "3.0.0.21"
         END
     END
     BLOCK "VarFileInfo"
@@ -740,63 +740,78 @@ BEGIN
     LTEXT           "Tension",IDC_STATIC,13,232,26,8
 END
 
-IDD_HARP_STRAND DIALOGEX 0, 0, 453, 340
+IDD_HARP_STRAND DIALOGEX 0, 0, 484, 365
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Permanent Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Strand Grid (Potential Strand Locations)",IDC_STATIC,6,33,322,199,0,WS_EX_TRANSPARENT
-    CTEXT           "Strand Locations at Harping Points Measured from Bottom C.L. of Girder",IDC_STATIC_HP,68,44,120,16
-    CONTROL         "Use Different Harped Locations at Girder Ends",IDC_USE_DIFF_GRID,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,165,12,120,20
-    CTEXT           "Strand Locations at Girder Ends Measured from Top C.L. of Girder",IDC_STATIC_END,194,44,120,16
-    CONTROL         "Custom1",IDC_HARP_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,13,65,306,124
-    PUSHBUTTON      "&Insert",IDC_ADD_HARPED_STRAND,10,193,46,14
-    PUSHBUTTON      "Append",IDC_APPEND_HARPED_STRAND,62,193,46,14
-    PUSHBUTTON      "Edit",IDC_EDIT_STRAND,114,193,46,14
-    PUSHBUTTON      "Delete",IDC_DEL_HARPED_STRAND,166,193,46,14
-    PUSHBUTTON      "Move Up",IDC_MOVEUP_HARPED_STRAND,225,193,46,14
-    PUSHBUTTON      "Move Down",IDC_MOVEDOWN_HARPED_STRAND,277,193,46,14
-    CONTROL         "Coerce Odd Number of Harped Strands",IDC_ODD_STRANDS,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,300,12,86,20
-    GROUPBOX        "Grid Status",IDC_STATIC,335,33,111,199
-    RTEXT           "# Debondable Strands = ",IDC_DB_STATUS,345,63,94,8
-    RTEXT           "# of Straight Strands =  ",IDC_SS_STATUS,345,82,94,8
-    RTEXT           "# Harped Strands = ",IDC_HS_STATUS,345,101,94,8
-    RTEXT           "Total # of Strands =",IDC_TT_STATUS,345,120,94,9,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "View at Ends",IDC_ENDVIEW,352,155,82,14
-    PUSHBUTTON      "View at Mid-Girder",IDC_MIDVIEW,352,181,82,14
-    GROUPBOX        "Vertical Adjustment of Harped Grid ",IDC_VERT_ADJUST_GROUP,7,241,439,62,0,WS_EX_TRANSPARENT
-    LTEXT           "Allow",IDC_STATIC,31,253,18,8
-    LTEXT           "Design Increment",IDC_HP_INCREMENT_S,97,253,55,8
-    CONTROL         "At Harping Points",IDC_ALLOW_HP_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,267,71,10
-    EDITTEXT        IDC_HP_INCREMENT,99,267,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_HP_INCREMENT_T,136,267,18,8
-    CONTROL         "At Girder Ends",IDC_ALLOW_END_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,288,65,10
-    EDITTEXT        IDC_END_INCREMENT,99,284,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_END_INCREMENT_T,136,290,18,8
-    LTEXT           "Lower Strand Limit",IDC_END_INCREMENT_S,206,253,66,8
-    EDITTEXT        IDC_HP_LSL,182,267,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_HP_LSL_T,218,267,16,8
-    LTEXT           "From",IDC_HP_LSL_S,237,267,16,8
-    COMBOBOX        IDC_COMBO_HP_LSL,256,267,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_END_LSL,182,284,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_END_LSL_T,218,290,16,8
-    LTEXT           "From",IDC_END_LSL_S,237,290,16,8
-    COMBOBOX        IDC_COMBO_END_LSL,256,286,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Upper Strand Limit",IDC_STATIC,344,253,66,8
-    EDITTEXT        IDC_HP_USL,320,267,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_HP_USL_T,356,267,16,8
-    LTEXT           "From",IDC_HP_USL_S,374,267,16,8
-    COMBOBOX        IDC_COMBO_HP_USL,394,267,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_END_USL,320,284,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_END_USL_T,356,290,16,8
-    LTEXT           "From",IDC_END_USL_S,374,290,16,8
-    COMBOBOX        IDC_COMBO_END_USL,394,286,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Reverse Harp Strand Sequence",IDC_REVERSE_HARPED_STRAND_ORDER,10,211,115,14
-    PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,129,211,90,14
-    LTEXT           "Web Strands Are:",IDC_STATIC,9,15,57,8
-    COMBOBOX        IDC_WEB_STRAND_TYPE_COMBO,70,11,80,33,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Strand Grid (Potential Strand Locations)",IDC_STATIC,6,68,322,196,0,WS_EX_TRANSPARENT
+    CTEXT           "Strand Locations at Harping Points Measured from Bottom C.L. of Girder",IDC_STATIC_HP,68,79,120,16
+    CONTROL         "Use Different Harped Strand Locations at Girder Ends",IDC_USE_DIFF_GRID,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,182,34,242,14
+    CTEXT           "Strand Locations at Girder Ends Measured from Top C.L. of Girder",IDC_STATIC_END,194,79,120,16
+    CONTROL         "Custom1",IDC_HARP_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,13,100,306,124
+    PUSHBUTTON      "&Insert",IDC_ADD_HARPED_STRAND,10,228,46,14
+    PUSHBUTTON      "Append",IDC_APPEND_HARPED_STRAND,62,228,46,14
+    PUSHBUTTON      "Edit",IDC_EDIT_STRAND,114,228,46,14
+    PUSHBUTTON      "Delete",IDC_DEL_HARPED_STRAND,166,228,46,14
+    PUSHBUTTON      "Move Up",IDC_MOVEUP_HARPED_STRAND,225,228,46,14
+    PUSHBUTTON      "Move Down",IDC_MOVEDOWN_HARPED_STRAND,277,228,46,14
+    CONTROL         "Coerce Odd Number of Adjustable Strands",IDC_ODD_STRANDS,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,181,20,222,13
+    GROUPBOX        "Grid Status",IDC_STATIC,335,68,139,196
+    RTEXT           "# Debondable Strands = ",IDC_DB_STATUS,353,98,94,8
+    RTEXT           "# of Straight Strands =  ",IDC_SS_STATUS,353,117,94,8
+    RTEXT           "# Harped Strands = ",IDC_HS_STATUS,353,136,94,8
+    RTEXT           "Total # of Strands =",IDC_TT_STATUS,353,155,94,9,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "View at Ends",IDC_ENDVIEW,360,190,82,14
+    PUSHBUTTON      "View at Mid-Girder",IDC_MIDVIEW,360,216,82,14
+    GROUPBOX        "Vertical Adjustment of Adjustable Strands",IDC_VERT_ADJUST_GROUP,7,270,467,85,0,WS_EX_TRANSPARENT
+    LTEXT           "Allow",IDC_STATIC,31,286,18,8
+    LTEXT           "Design Increment",IDC_HP_INCREMENT_S,132,286,55,8
+    CONTROL         "Harped Strands at Harping Points",IDC_ALLOW_HP_ADJUST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,300,118,10
+    EDITTEXT        IDC_HP_INCREMENT,134,300,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_HP_INCREMENT_T,171,300,18,8
+    CONTROL         "Harped Strands at Girder Ends",IDC_ALLOW_END_ADJUST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,321,112,10
+    EDITTEXT        IDC_END_INCREMENT,134,317,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_END_INCREMENT_T,171,323,18,8
+    LTEXT           "Lower Strand Limit",IDC_END_INCREMENT_S,238,286,66,8
+    EDITTEXT        IDC_HP_LSL,214,300,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_HP_LSL_T,250,300,16,8
+    LTEXT           "From",IDC_HP_LSL_S,269,300,16,8
+    COMBOBOX        IDC_COMBO_HP_LSL,288,300,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_END_LSL,214,317,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_END_LSL_T,250,323,16,8
+    LTEXT           "From",IDC_END_LSL_S,269,323,16,8
+    COMBOBOX        IDC_COMBO_END_LSL,288,319,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Upper Strand Limit",IDC_STATIC,376,286,66,8
+    EDITTEXT        IDC_HP_USL,352,300,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_HP_USL_T,388,300,16,8
+    LTEXT           "From",IDC_HP_USL_S,406,300,16,8
+    COMBOBOX        IDC_COMBO_HP_USL,426,300,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_END_USL,352,317,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_END_USL_T,388,323,16,8
+    LTEXT           "From",IDC_END_USL_S,406,323,16,8
+    COMBOBOX        IDC_COMBO_END_USL,426,319,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Reverse Adjustable Strand Sequence",IDC_REVERSE_HARPED_STRAND_ORDER,10,246,125,14
+    PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,141,246,90,14
+    COMBOBOX        IDC_WEB_STRAND_TYPE_COMBO,17,19,133,33,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Adjustable Strand Settings",IDC_STATIC,7,7,467,55
+    LTEXT           "Note: User can select adjustable strand type at design time. Harping point strand locations will be used for straight strands",IDC_ADJUSTABLE_NOTE,19,48,368,8
+    CONTROL         "Straight Strands along Girder",IDC_ALLOW_STR_ADJUST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,340,106,10
+    EDITTEXT        IDC_STR_INCREMENT,134,336,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_STR_INCREMENT_T,172,341,18,8
+    EDITTEXT        IDC_STR_LSL,215,336,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_STR_LSL_T,251,341,16,8
+    LTEXT           "From",IDC_STR_LSL_S,269,341,16,8
+    COMBOBOX        IDC_COMBO_STR_LSL,289,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_STR_USL,353,336,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_STR_USL_T,389,341,16,8
+    LTEXT           "From",IDC_STR_USL_S,407,341,16,8
+    COMBOBOX        IDC_COMBO_STR_USL,427,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_RENAME_LIBRARY_ENTRY DIALOG  0, 0, 187, 95
@@ -1819,9 +1834,9 @@ BEGIN
     IDD_HARP_STRAND, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 446
+        RIGHTMARGIN, 477
         TOPMARGIN, 7
-        BOTTOMMARGIN, 333
+        BOTTOMMARGIN, 358
     END
 
     IDD_SECTIONVIEW, DIALOG
@@ -2079,10 +2094,24 @@ BEGIN
 0x6f54, 0x0070, 
     IDC_COMBO_END_USL, 0x403, 7, 0
 0x6f42, 0x7474, 0x6d6f, "\000" 
-    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 7, 0
-0x6148, 0x7072, 0x6465, "\000" 
-    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 9, 0
-0x7453, 0x6172, 0x6769, 0x7468, "\000" 
+    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 30, 0
+0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x5320, 0x7274, 0x6e61, 0x7364, 
+0x6120, 0x6572, 0x4820, 0x7261, 0x6570, 0x0064, 
+    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 32, 0
+0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x5320, 0x7274, 0x6e61, 0x7364, 
+0x6120, 0x6572, 0x5320, 0x7274, 0x6961, 0x6867, 0x0074, 
+    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 37, 0
+0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x6320, 0x6e61, 0x6220, 0x2065, 
+0x6148, 0x7072, 0x6465, 0x6f20, 0x2072, 0x7453, 0x6172, 0x6769, 0x7468, 
+"\000" 
+    IDC_COMBO_STR_LSL, 0x403, 4, 0
+0x6f54, 0x0070, 
+    IDC_COMBO_STR_LSL, 0x403, 7, 0
+0x6f42, 0x7474, 0x6d6f, "\000" 
+    IDC_COMBO_STR_USL, 0x403, 4, 0
+0x6f54, 0x0070, 
+    IDC_COMBO_STR_USL, 0x403, 7, 0
+0x6f42, 0x7474, 0x6d6f, "\000" 
     0
 END
 
@@ -2417,6 +2446,7 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

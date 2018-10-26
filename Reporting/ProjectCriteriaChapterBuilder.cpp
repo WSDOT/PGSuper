@@ -927,7 +927,7 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
       ATLASSERT(false); // new method?
    }
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
 
    *pPara<< _T("# of hours from stressing to prestress transfer : ")<<::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Hour)<<rptNewLine;
    *pPara<< _T("# of days from prestress transfer until removal of temporary strands / diaphram casting : ")<<::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(),unitMeasure::Day) << _T(" Min");
@@ -955,7 +955,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
    *pChapter << pPara;
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();

@@ -46,11 +46,11 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
    DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetLongTimeUnit(),        false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   scalar.SetWidth(7);
+   scalar.SetPrecision(3);
 }
 
 CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
@@ -76,9 +76,13 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    if ( 0 < NtMax )
    {
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
+      {
          numColumns++;
+      }
       else
+      {
          numColumns+=2;
+      }
    }
 
    CCreepAtFinalTable* table = new CCreepAtFinalTable( numColumns, pDisplayUnits );
@@ -106,24 +110,36 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
          if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
          {
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_Gross.png")) << rptNewLine;
+            }
             else
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PT_Gross.png")) << rptNewLine;
+            }
          }
          else
          {
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS_Gross.png")) << rptNewLine;
+            }
             else
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PS_Gross.png")) << rptNewLine;
+            }
          }
       }
       else
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+         {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_Gross.png")) << rptNewLine;
+         }
          else
+         {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_Gross.png")) << rptNewLine;
+         }
       }
    }
    else
@@ -133,24 +149,36 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
          if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
          {
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_Transformed.png")) << rptNewLine;
+            }
             else
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PT_Transformed.png")) << rptNewLine;
+            }
          }
          else
          {
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS_Transformed.png")) << rptNewLine;
+            }
             else
+            {
                *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PS_Transformed.png")) << rptNewLine;
+            }
          }
       }
       else
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+         {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_Transformed.png")) << rptNewLine;
+         }
          else
+         {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_Transformed.png")) << rptNewLine;
+         }
       }
    }
 
@@ -185,13 +213,13 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR(Sub2(_T("t"),_T("i")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
-   (*pParamTable)(0,1) << COLHDR(Sub2(_T("t"),_T("d")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
-   (*pParamTable)(0,2) << COLHDR(Sub2(_T("t"),_T("f")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
+   (*pParamTable)(0,0) << COLHDR(Sub2(_T("t"),_T("i")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
+   (*pParamTable)(0,1) << COLHDR(Sub2(_T("t"),_T("d")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
+   (*pParamTable)(0,2) << COLHDR(Sub2(_T("t"),_T("f")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetAdjustedInitialAge());
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Deck Placement to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepDeckToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
    (*pParamTable)(1,0) << table->time.SetValue( ptl->GetAdjustedInitialAge() );
@@ -251,10 +279,14 @@ void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsP
    (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
 
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
+   {
       (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFpp() );
+   }
 
    if ( 0 < m_NtMax )
+   {
       (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFptr() );
+   }
 
    (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFcd() );
    (*this)(row,col++) << stress.SetValue( ptl->CreepLossAfterDeckPlacement() );

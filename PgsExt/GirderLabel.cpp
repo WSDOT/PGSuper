@@ -203,7 +203,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
 
             strLabel.Format(_T("%s, ACI 209R-92, A=%s, B=%4.2f"),
                matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
-               ::FormatDimension(concrete.A,pDisplayUnits->GetLongTimeUnit()),
+               ::FormatDimension(concrete.A,pDisplayUnits->GetWholeDaysUnit()),
                concrete.B);
          }
          else

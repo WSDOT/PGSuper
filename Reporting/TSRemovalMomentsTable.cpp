@@ -256,9 +256,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
             ColumnIndexType col = 0;
 
-            Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-
-            (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
             (*p_table)(row,col++) << moment.SetValue( girder[index] );
             (*p_table)(row,col++) << moment.SetValue( diaphragm[index] );
 

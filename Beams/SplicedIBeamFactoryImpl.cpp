@@ -466,7 +466,7 @@ void CSplicedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
 
    CComPtr<IPoint2d> hook;
    hook.CoCreateInstance(CLSID_Point2d);
-   hook->Move(0, height/2.0);
+   hook->Move(0, -height/2.0);
 
    harp_rect->putref_HookPoint(hook);
 
@@ -483,7 +483,7 @@ void CSplicedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(height, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

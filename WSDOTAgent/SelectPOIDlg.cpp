@@ -187,11 +187,8 @@ void CSelectPOIDlg::UpdateSliderLabel()
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
    rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   rptPoi.SetValue(POI_ERECTED_SEGMENT,poi,end_size);
+   rptPoi.SetValue(POI_SPAN,poi);
    rptPoi.PrefixAttributes(false); // put the attributes after the location
 
    strLabel.Format(_T("Distance from Left Support = %s"),rptPoi.AsString().c_str());

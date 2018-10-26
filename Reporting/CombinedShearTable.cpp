@@ -127,8 +127,6 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -139,8 +137,11 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
    rptRcTable* p_table = 0;
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
    GroupIndexType startGroupIdx = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
-   GroupIndexType endGroupIdx   = girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx;
+   GroupIndexType endGroupIdx   = girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx;
    EventIndexType continuityEventIndex = MAX_INDEX;
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
@@ -327,13 +328,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
          ColumnIndexType col = 0;
 
-         Float64 end_size = 0 ;
-         if ( intervalIdx != releaseIntervalIdx )
-         {
-            end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-         }
-
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( analysisType == pgsTypes::Envelope )
          {
@@ -450,11 +445,13 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
  
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
@@ -578,9 +575,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          const pgsPointOfInterest& poi = *i;
          col = 0;
 
-         Float64 end_size = pBridge->GetSegmentStartEndDistance(poi.GetSegmentKey());
-         
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( bDesign )
          {
@@ -733,13 +728,14 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
  
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -881,11 +877,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
 
-         Float64 end_size = 0 ;
-         if ( intervalIdx != releaseIntervalIdx )
-            end_size = pBridge->GetSegmentStartEndDistance(poi.GetSegmentKey());
-
-         (*p_table2)(row2,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table2)(row2,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( analysisType == pgsTypes::Envelope )
          {

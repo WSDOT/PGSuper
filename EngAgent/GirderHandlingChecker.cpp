@@ -198,7 +198,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
 void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const pgsPointOfInterest& poi,Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd,Float64* pY,Float64* pA,Float64* pT,Float64* pAs)
 {
     GET_IFACE(IGirder,pGirder);
-    GET_IFACE(ISectProp2,pSectProp2);
+    GET_IFACE(ISectProp2,pSectProps);
     GET_IFACE(IBridgeMaterial,pMaterial);
 
     GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -233,7 +233,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
     else if ( IsLE(0.,fTop) && IsLE(0.,fBot) )
     {
        // tension over entire cross section
-       At = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+       At = pSectProps->GetAg(pgsTypes::CastingYard,poi);
        Float64 fAvg = (fTop + fBot)/2;
        T = fAvg * At;
     }
@@ -243,7 +243,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
 //       Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
 
        CComPtr<IShape> shape;
-       pSectProp2->GetGirderShape(poi,false,&shape);
+       pSectProps->GetGirderShape(poi,false,&shape);
 
        CComQIPtr<IXYPosition> position(shape);
        CComPtr<IPoint2d> tc,bc;

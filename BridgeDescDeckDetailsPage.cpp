@@ -692,6 +692,8 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bPGSuperDoc = true;
    }
 
+   CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+
    pgsTypes::WearingSurfaceType ws = (pgsTypes::WearingSurfaceType)(pCB->GetItemData(idx));
    if ( ws == pgsTypes::wstSacrificialDepth )
    {
@@ -700,6 +702,9 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayLabel           = FALSE;
       bOverlayWeight          = FALSE;
       bOverlayDepthAndDensity = FALSE;
+
+      // no overlay so remove the overlay loading event from the time line
+      pTimelineMgr->RemoveOverlayLoadEvent();
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
@@ -709,6 +714,9 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
+
+      // create a loading event in the timeline for the overlay load
+      pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetLiveLoadEventIndex());
    }
    else
    {
@@ -717,6 +725,13 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
+
+      if ( bPGSuperDoc )
+      {
+         // create a loading event in the timeline for the overlay load... only do this for PGSuper documents.
+         // The user has to explicitly select the event for the overlay load for PGSplice documents
+         pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetRailingSystemLoadEventIndex());
+      }
    }
 
    GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow( bOverlayEvent );

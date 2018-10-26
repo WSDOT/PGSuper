@@ -273,7 +273,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    {
       bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
 
-      std::_tstring label( (areHarpedStraight ? _T("Straight-Web Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
+      std::_tstring label( (areHarpedStraight ? _T("Adjustable Straight Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
 
       rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),label.c_str());
       *pPara << p_table;

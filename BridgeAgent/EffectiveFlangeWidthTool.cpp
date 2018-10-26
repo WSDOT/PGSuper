@@ -974,8 +974,6 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
    RowIndexType row = table->GetNumberOfHeaderRows();
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
@@ -987,7 +985,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
       EffFlangeWidth efw;
       EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,poi.GetDistFromStart(),leftGdrID,rightGdrID,&efw);
 
-      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       if ( efw.m_Details )
       {
          ReportEffectiveFlangeWidth_InteriorGirderRow(efw.m_Details,row,table,pDisplayUnits);
@@ -1324,7 +1322,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,&efw);
 
       ColumnIndexType col = 0;
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       if ( !use_tributary_width )
       {
          ATLASSERT(efw.m_Details);
@@ -1599,7 +1597,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       CComPtr<IEffectiveFlangeWidthDetails> details;
       EffectiveFlangeWidthBySegmentEx(bridge,gdrID,segmentKey.segmentIndex,poi.GetDistFromStart(),leftGdrID,rightGdrID,&details);
 
-      (*table)(row,0) << location.SetValue( POI_SPAN, poi, end_size );
+      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
 
       Float64 effSpanLength;
       details->get_EffectiveSpanLength(&effSpanLength);

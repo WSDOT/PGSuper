@@ -66,7 +66,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    *pChapter << pParagraph;
    if (fcgpMethod == lrfdElasticShortening::fcgpIterative)
    {
-      *pParagraph << _T("Prestress loss due to Elastic Shortening - LRFD [5.9.5.2.3a]") << rptNewLine;
+      *pParagraph << _T("Prestress loss due to Elastic Shortening - LRFD 5.9.5.2.3a") << rptNewLine;
    }
    else if (fcgpMethod == lrfdElasticShortening::fcgp07Fpu)
    {
@@ -203,22 +203,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       {
          (*table)(0,col++) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
       }
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
+
       if ( !bIsPrismatic )
       {
          if ( spMode == pgsTypes::spmGross )
@@ -234,16 +219,17 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       }
    
       if ( spMode == pgsTypes::spmGross )
+      {
          (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      }
       else
+      {
          (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pst")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   
-   
+      }
    
    
       (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("g")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   
-   
+      
    
       if ( bTemporaryStrands )
       {
@@ -289,21 +275,26 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
          // perm
          col -= 2;
          if ( spMode == pgsTypes::spmGross )
+         {
             (*table)(1,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         }
          else
+         {
             (*table)(1,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         }
    
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
          // temp
          if ( spMode == pgsTypes::spmGross )
+         {
             (*table)(1,col++) << COLHDR(Sub2(_T("e"),_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   
-   
-   
+         }
          else
+         {
             (*table)(1,col++) << COLHDR(Sub2(_T("e"),_T("tt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         }
    
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -311,9 +302,13 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       else
       {
          if ( spMode == pgsTypes::spmGross )
+         {
             (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         }
          else
+         {
             (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         }
    
    
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -378,13 +373,6 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
                *pParagraph << _T("P is the prestressing force after transfer") << _T(" : ")
                            << _T("P = ") << Sub2(_T("A"),_T("ps")) << _T("(") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(")") << rptNewLine;
             }
-   
-   
-   
-   
-   
-   
-   
          }
          else
          {

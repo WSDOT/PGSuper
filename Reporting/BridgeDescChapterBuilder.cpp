@@ -942,7 +942,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    (*pTable)(row,col++) << COLHDR(_T("(") << RPT_EC << _T(")") << Sub(_T("28")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row,col++) << _T("Cure Method");
    (*pTable)(row,col++) << _T("Cement Type");
-   (*pTable)(row,col++) << COLHDR(_T("a"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit() );
+   (*pTable)(row,col++) << COLHDR(_T("a"), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit() );
    (*pTable)(row,col++) << symbol(beta);
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("s")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
@@ -1028,7 +1028,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetLongTimeUnit(),     false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetWholeDaysUnit(),     false );
 
    ColumnIndexType col = 1;
    (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)concrete.Type, true );
@@ -1171,7 +1171,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetLongTimeUnit(),     false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetWholeDaysUnit(),     false );
 
    ColumnIndexType col = 1;
    (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)concrete.Type, true );
@@ -2035,7 +2035,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,1) << strFillType;
             row++;
 
-            (*pTable)(row,0) << _T("Type of Web Strands");
+            (*pTable)(row,0) << _T("Type of Adjustable Web Strands");
             (*pTable)(row,1) << LABEL_HARP_TYPE(harpedAreStraight);
             row++;
 

@@ -273,13 +273,10 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       for ( ; i != end; i++, index++ )
       {
          const pgsPointOfInterest& poi = *i;
-         const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
          ColumnIndexType col = 0;
 
-         Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*p_table)(row,col++) << deflection.SetValue( girder[index] );
          (*p_table)(row,col++) << deflection.SetValue( diaphragm[index] );
 
@@ -577,12 +574,9 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const 
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT ) );
 
    GET_IFACE2(pBroker,IProductForces,pForces);
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::BridgeAnalysisType bat = (pSpec->GetAnalysisType() == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
-
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -593,7 +587,7 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const 
    {
       const pgsPointOfInterest& poi = *i;
 
-      (*p_table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*p_table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       Float64 min, max;
       pForces->GetDeflLiveLoadDeflection( IProductForces::DesignTruckAlone, poi, bat, &min, &max );

@@ -57,6 +57,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimNames.push_back(_T("D4"));
    m_DimNames.push_back(_T("D5"));
    m_DimNames.push_back(_T("D6"));
+   m_DimNames.push_back(_T("EndBlockLength"));
    m_DimNames.push_back(_T("W1"));
    m_DimNames.push_back(_T("W2"));
    m_DimNames.push_back(_T("W3"));
@@ -64,9 +65,6 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimNames.push_back(_T("W5"));
    m_DimNames.push_back(_T("W6"));
    m_DimNames.push_back(_T("W7"));
-   m_DimNames.push_back(_T("EndBlockLength"));
-
-   std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a TXDOT U40
    m_DefaultDims.push_back(::ConvertToSysUnits(0.750,unitMeasure::Inch)); // C1
@@ -76,6 +74,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DefaultDims.push_back(::ConvertToSysUnits(0.875,unitMeasure::Inch)); // D4
    m_DefaultDims.push_back(::ConvertToSysUnits(5.875,unitMeasure::Inch)); // D5
    m_DefaultDims.push_back(::ConvertToSysUnits(21.625,unitMeasure::Inch)); // D6
+   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // End Block Length
    m_DefaultDims.push_back(::ConvertToSysUnits(55.00,unitMeasure::Inch)); // W1
    m_DefaultDims.push_back(::ConvertToSysUnits(89.00,unitMeasure::Inch)); // W2
    m_DefaultDims.push_back(::ConvertToSysUnits( 3.00,unitMeasure::Inch)); // W3
@@ -83,7 +82,6 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DefaultDims.push_back(::ConvertToSysUnits( 8.25,unitMeasure::Inch)); // W5
    m_DefaultDims.push_back(::ConvertToSysUnits(15.75,unitMeasure::Inch)); // W6
    m_DefaultDims.push_back(::ConvertToSysUnits( 1.75,unitMeasure::Inch)); // W7
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // End Block Length
 
    // SI Units
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
@@ -93,6 +91,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D4
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D5
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D6
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // End Block Length
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W2
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W3
@@ -100,7 +99,6 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W5
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W6
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W7
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // End Block Length
 
    // US Units
    m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
@@ -110,6 +108,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D4
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D5
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D6
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // End Block Length
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W2
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W3
@@ -117,7 +116,6 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W5
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W6
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W7
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // End Block Length
 
    return S_OK;
 }
@@ -317,16 +315,16 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
 
    // travel counter clockwise around right web;
    Float64 x1 = w1/2.0;
-   Float64 y1 = 0.0;
+   Float64 y1 = -height;
 
    Float64 x2 = x1 + height * arc_slope;
-   Float64 y2 = height;
+   Float64 y2 = 0;
 
    Float64 x3 = x2 - t_x_project;
    Float64 y3 = y2;
 
    Float64 x4 = x1 - t_x_project;
-   Float64 y4 = 0.0;
+   Float64 y4 = y1;
 
    rgt_harp_poly->AddPoint(x1,y1);
    rgt_harp_poly->AddPoint(x2,y2);
@@ -365,7 +363,7 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(height, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

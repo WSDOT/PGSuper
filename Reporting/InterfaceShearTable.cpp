@@ -129,8 +129,6 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    table->SetColumnSpan(0,9,SKIP_CELL);
 
    // Fill up the table
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
    Float64 bvmax = lrfdConcreteUtil::UpperLimitForBv();
    Float64 minlegs;
    bool do_note=false;
@@ -150,7 +148,9 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == NULL )
+         {
             continue;
+         }
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
@@ -169,7 +169,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
          ColumnIndexType col = 0;
 
-         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          Float64 smax = pArtifact->GetSmax();
          if (0.0 < smax)
          {
@@ -257,7 +257,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    // Check that avs at end pois are at least that at CSS
    if ( bDidAvsDecreaseAtEnd )
    {
-      *pPara << RPT_FAIL << _T(" - Horizontal ") << Sub2(_T("a"),_T("vf")) << _T(" at ") << location.SetValue(POI_ERECTED_SEGMENT, poiAtEnd, end_size)
+      *pPara << RPT_FAIL << _T(" - Horizontal ") << Sub2(_T("a"),_T("vf")) << _T(" at ") << location.SetValue(POI_ERECTED_SEGMENT, poiAtEnd)
              << _T(" is less than at the design section (CS). Revise stirrup details to increase horizontal ") << Sub2(_T("a"),_T("vf"))
              << _T(" at this location.") << rptNewLine;
    }

@@ -402,47 +402,14 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          row++;
       }
 
-      if (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Harped))
+      if (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Harped) && !options.doForceHarpedStrandsStraight)
       {
          HarpedStrandOffsetType HsoEnd = pStrands->GetHarpStrandOffsetMeasurementAtEnd();
-         if(options.doForceHarpedStrandsStraight)
-         {
-         switch( HsoEnd )
-         {
-            case hsoCGFROMTOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
-               break;
 
-            case hsoCGFROMBOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
-               break;
+#pragma Reminder("Designer will drive adjustable strand type here - may need to add strand type and library entry name")
+         bool doAdjust = (0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(segmentKey) ? true : false);
 
-            case hsoLEGACY:
-               // convert legacy to display TOP 2 TOP
-
-               HsoEnd = hsoTOP2TOP;
-
-            case hsoTOP2TOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
-               break;
-
-            case hsoTOP2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top of harped strand group at ends of girder");
-               break;
-
-            case hsoBOTTOM2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to bottom of harped strand group at ends of girder");
-               break;
-
-            case hsoECCENTRICITY:
-               (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ends of girder");
-               break;
-
-            default:
-               ATLASSERT(false); // should never get here
-            }
-         }
-         else
+         if (doAdjust)
          {
             switch( HsoEnd )
             {
@@ -478,26 +445,29 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             default:
                ATLASSERT(false); // should never get here
             }
+
+            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey,
+                                                                                confvec_design, 
+                                                                                HsoEnd, 
+                                                                                pArtifact->GetHarpStrandOffsetEnd());
+            (*pTable)(row,1) << length.SetValue(offset);
+
+            ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+
+            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, confvec_current, 
+                                                                         HsoEnd, abs_offset_end);
+
+            (*pTable)(row,2) << length.SetValue(offset);
+
+            row++;
          }
 
-         const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+         // At harping points
+         doAdjust = (0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(segmentKey) ? true : false);
 
-         Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey,
-                                                                             confvec_design, 
-                                                                             HsoEnd, 
-                                                                             pArtifact->GetHarpStrandOffsetEnd());
-         (*pTable)(row,1) << length.SetValue(offset);
-
-         ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
-
-         offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, confvec_current, 
-                                                                      HsoEnd, abs_offset_end);
-
-         (*pTable)(row,2) << length.SetValue(offset);
-
-         row++;
-
-         if(!options.doForceHarpedStrandsStraight)
+         if (doAdjust)
          {
             HarpedStrandOffsetType HsoHp = pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint();
             switch( HsoHp )
@@ -535,18 +505,20 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
                ATLASSERT(false); // should never get here
             }
 
+            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
-                                                                        confvec_design, 
-                                                                        HsoHp, 
-                                                                        pArtifact->GetHarpStrandOffsetHp());
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
+                                                                                confvec_design, 
+                                                                                HsoHp, 
+                                                                                pArtifact->GetHarpStrandOffsetHp());
 
             (*pTable)(row,1) << length.SetValue(offset);
+
+            ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
             offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
                                                                         confvec_current, 
                                                                         HsoHp, abs_offset_hp);
-
             (*pTable)(row,2) << length.SetValue(offset);
 
             row++;

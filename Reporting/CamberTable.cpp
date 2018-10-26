@@ -170,7 +170,6 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    IntervalIndexType overlayIntervalIdx           = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
@@ -315,7 +314,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
                          + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
       Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
       // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
       ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
@@ -323,14 +322,14 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       // Table 1a
       col = 0;
-      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
       row1a++;
 
       // Table 1b
       col = 0;
-      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi );
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
@@ -338,7 +337,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
       (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Dtpsr );
@@ -380,7 +379,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       Float64 D5 = D4 + Ddeck + Duser1;
       Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -453,7 +452,6 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
@@ -584,18 +582,18 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
                            + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
       Float64 Dbarrier     = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk    = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay     = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Doverlay     = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
       // Table 1a
       col = 0;
-      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
       row1a++;
 
       // Table 1b
       col = 0;
-      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi );
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep );
@@ -603,7 +601,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi, end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
       (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
@@ -643,7 +641,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
       Float64 D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
 
-      (*table3)(row3,col++) << location.SetValue(POI_ERECTED_SEGMENT, erectedPoi, end_size );
+      (*table3)(row3,col++) << location.SetValue(POI_ERECTED_SEGMENT, erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -714,7 +712,6 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -862,19 +859,19 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
                          + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
       Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
 
       // Table 1a
       col = 0;
-      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
       row1a++;
 
       // Table 1b
       col = 0;
-      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi );
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
@@ -882,7 +879,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
       (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Dtpsr );
@@ -927,7 +924,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       Float64 D5 = D4 + Ddeck + Duser1;
       Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -1000,7 +997,6 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -1138,19 +1134,19 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
                          + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
       Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
 
       // Table 1a
       col = 0;
-      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
       row1a++;
 
       // Table 1b
       col = 0;
-      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi );
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep );
@@ -1158,7 +1154,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
       (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
@@ -1199,7 +1195,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
       Float64 D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -1269,7 +1265,6 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -1416,19 +1411,19 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
                          + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
       Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
       Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate );
 
       // Table 1a
       col = 0;
-      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
       row1a++;
 
       // Table 1b
       col = 0;
-      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi );
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
@@ -1436,7 +1431,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
       (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Dtpsr );
@@ -1479,7 +1474,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
       Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       Float64 D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );
@@ -1549,7 +1544,6 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -1684,19 +1678,19 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
                          + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
       Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false));
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
       Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate );
 
       // Table 1a
       col = 0;
-      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi, 0 );
+      (*table1a)(row1a,col++) << location.SetValue( POI_RELEASED_SEGMENT, releasePoi );
       (*table1a)(row1a,col++) << deflection.SetValue( DgdrRelease );
       (*table1a)(row1a,col++) << deflection.SetValue( DpsRelease );
       row1a++;
 
       // Table 1b
       col = 0;
-      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi, end_size );
+      (*table1b)(row1b,col++) << location.SetValue( POI_STORAGE_SEGMENT, storagePoi );
       (*table1b)(row1b,col++) << deflection.SetValue( DgdrStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( DpsStorage );
       (*table1b)(row1b,col++) << deflection.SetValue( Dcreep1 );
@@ -1704,7 +1698,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table2)(row2,col++) << deflection.SetValue( DgdrErected );
       (*table2)(row2,col++) << deflection.SetValue( DpsErected );
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
@@ -1747,7 +1741,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       Float64 D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
       (*table3)(row3,col++) << deflection.SetValue( D2 );
       (*table3)(row3,col++) << deflection.SetValue( D3 );

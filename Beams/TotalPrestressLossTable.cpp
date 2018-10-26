@@ -124,10 +124,12 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
-   //
-   *pParagraph << _T("% Loss Final = (");
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" - ");
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
+   *pParagraph << _T("% Loss Final (Time dependent losses only) = (");
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
+
+   *pParagraph << _T("% Net Loss (Time dependent losses and elastic gains) = (");
+   *pParagraph << RPT_STRESS(_T("pj")) << _T(" - ");
+   *pParagraph << RPT_STRESS(_T("pe")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
@@ -153,10 +155,10 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    }
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Final");
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << _T("% Net") << rptNewLine << _T("Loss");
 
    table->m_NtMax = NtMax;
    table->m_pStrands = pStrands;
@@ -178,15 +180,8 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    (*this)(row,col++) << stress.SetValue(dfpES);
 
    Float64 fpj = pDetails->pLosses->GetFpjPermanent();
-   Float64 fpi = pDetails->pLosses->PermanentStrand_AfterTransfer(); 
 
-   if ( !m_bUseGrossProperties )
-   {
-      fpi += dfpES;
-   }
-
-   Float64 fpe  = fpj - fpi;
-   (*this)(row,col++) << scalar.SetValue( -1*PercentChange(fpj,fpe) );
+   (*this)(row,col++) << scalar.SetValue( 100*dfpES/fpj );
    
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
@@ -202,25 +197,19 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    (*this)(row,col++) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
 
-   (*this)(row,col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToDeckPlacement());
-   (*this)(row,col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToSIDL());
-
-   Float64 fpt = pDetails->pLosses->PermanentStrand_Final(); 
-
-   if ( !m_bUseGrossProperties )
-   {
-      fpt += dfpES;
-   }
+   Float64 fpT = pDetails->pLosses->PermanentStrand_Final(); 
 
    Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
-   if ( m_bUseGrossProperties )
-   {
-      fpt += fpED+fpSIDL;
-   }
 
-   fpe  = fpj - fpt + fpED + fpSIDL;
+   // fpT includes elastic gains due to permanent loads
+   fpT += fpED+fpSIDL;
 
-   (*this)(row,col++) << stress.SetValue(fpt);
-   (*this)(row,col++) << scalar.SetValue( -1*PercentChange(fpj,fpe) );
+   (*this)(row,col++) << stress.SetValue(fpT);
+   (*this)(row,col++) << scalar.SetValue( 100*fpT/fpj );
+
+   Float64 fpe = fpj - fpT + fpED + fpSIDL;
+   (*this)(row,col++) << stress.SetValue(fpe);
+
+   (*this)(row,col++) << scalar.SetValue( 100*(fpj-fpe)/fpj );
 }

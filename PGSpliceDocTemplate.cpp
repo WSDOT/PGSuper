@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 ////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_DYNAMIC(CPGSpliceDocTemplate,CEAFDocTemplate)
+IMPLEMENT_DYNAMIC(CPGSpliceDocTemplate,CPGSuperDocTemplateBase)
 
 CPGSpliceDocTemplate::CPGSpliceDocTemplate(UINT nIDResource,
                                          IEAFCommandCallback* pCallback,
@@ -46,121 +46,24 @@ CPGSpliceDocTemplate::CPGSpliceDocTemplate(UINT nIDResource,
                                          CRuntimeClass* pViewClass,
                                          HMENU hSharedMenu,
                                          int maxViewCount)
-: CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
+: CPGSuperDocTemplateBase(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
 }
 
-void CPGSpliceDocTemplate::SetPlugin(IEAFAppPlugin* pPlugin)
+CString CPGSpliceDocTemplate::GetAppName() const
 {
-   CEAFDocTemplate::SetPlugin(pPlugin);
-   LoadTemplateInformation();
+   return CString(_T("PGSplice"));
 }
 
-CString CPGSpliceDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const
+UINT CPGSpliceDocTemplate::GetTemplateIconResourceID() const
 {
-   CString strDescription;
-   strDescription.Format(_T("Create a new PGSplice project using the %s template"),pItem->GetName());
-   return strDescription;
+   return IDR_PGSPLICE_TEMPLATE_ICON;
 }
 
-void CPGSpliceDocTemplate::LoadTemplateInformation()
+CString CPGSpliceDocTemplate::GetTemplateSuffix()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   HICON defaultIcon = pApp->LoadIcon(IDR_PGSPLICE_TEMPLATE_ICON);
-
-   CPGSuperBaseAppPlugin* pAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(m_pPlugin);
-   CString strWorkgroupFolderName;
-   pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
-
-   m_TemplateGroup.Clear();
-
-   if ( strWorkgroupFolderName.GetLength() != 0 )
-   {
-      FindInFolder(strWorkgroupFolderName,&m_TemplateGroup,defaultIcon);
-
-      CEAFSplashScreen::SetText(_T(""));
-   }
-
-   HICON hAppIcon = pApp->LoadIcon(IDR_PGSPLICE);
-   m_TemplateGroup.SetIcon(hAppIcon);
-}
-
-void CPGSpliceDocTemplate::SetDocStrings(const CString& str)
-{
-   m_strDocStrings = str;
-}
-
-void CPGSpliceDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon)
-{
-   HICON folderIcon = defaultIcon;
-
-   CString strMsg;
-   strMsg.Format(_T("Searching for PGSplice Project Templates in %s"),strPath);
-   CEAFSplashScreen::SetText(strMsg);
-
-   CString strIconFile = strPath;
-   int i = strIconFile.ReverseFind('\\');
-
-   CString strIconRootName = strIconFile.Mid(i);
-   if ( strIconRootName == _T("\\") )
-      strIconRootName = _T("Default"); // there isn't foldername to generate the icon file name with, just use "Default"
-
-   strIconFile += strIconRootName;
-
-   strIconFile += _T(".ico");
-   HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
-   if ( hIcon )
-      folderIcon = hIcon;
-
-   pGroup->SetIcon(folderIcon);
-
-   FindTemplateFiles(strPath,pGroup,folderIcon); // find template files in this folder
-
-   // Drill down into sub-folders
-   CString strDirectoryName = strPath + CString(_T("\\*.*"));
-   CFileFind finder;
-   BOOL bHasFiles = finder.FindFile(strDirectoryName);
-   while ( bHasFiles )
-   {
-      bHasFiles = finder.FindNextFile();
-      if (finder.IsDirectory() && !finder.IsDots())
-      {
-         // sub-directory found
-         CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup();
-         pNewGroup->SetGroupName(finder.GetFileTitle());
-
-         FindInFolder(finder.GetFilePath(),pNewGroup,folderIcon);
-         if ( pNewGroup->GetItemCount() != 0 || pNewGroup->GetGroupCount() != 0)
-            pGroup->AddGroup(pNewGroup);
-         else
-            delete pNewGroup;
-      }
-   }
-}
-
-void CPGSpliceDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CString strTemplateSuffix(_T("spt"));
-
-   CFileFind finder;
-   CString strTemplateFileSpec = strPath + CString(_T("\\*.")) + strTemplateSuffix;
-   BOOL bHasTemplateFiles = finder.FindFile(strTemplateFileSpec);
-   while ( bHasTemplateFiles )
-   {
-      bHasTemplateFiles = finder.FindNextFile();
-
-      HICON fileIcon = folderIcon;
-
-      CString strIconFile = finder.GetFilePath();
-      strIconFile.Replace(strTemplateSuffix,_T("ico"));
-      HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
-      if ( hIcon )
-         fileIcon = hIcon;
-
-      CEAFTemplateItem* pItem = new CEAFTemplateItem(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
-      pGroup->AddItem(pItem);
-   }
+   CString strTemplateSuffix;
+   VERIFY(strTemplateSuffix.LoadString(IDS_PGSPLICE_TEMPLATE_FILE_SUFFIX));
+   ASSERT(!strTemplateSuffix.IsEmpty());
+   return strTemplateSuffix;
 }

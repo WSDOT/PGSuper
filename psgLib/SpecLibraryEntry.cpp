@@ -3440,13 +3440,24 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // Fixed misspelling in version 2 of the Shear data block
          if ( shear_version < 2 )
          {
+            // before version 2 it was named ReductionFactor
             if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+         else if ( shear_version == 2)
+         {
+            // for version 2, because of the overlap, it can be ReductionFactor or ResistanceFactor
+            if ( !pLoad->BeginUnit(_T("ReductionFactor")) && !pLoad->BeginUnit(_T("ResistanceFactor")) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
          }
          else
          {
+            ATLASSERT(2 < shear_version);
+            // greater than version 2, ResistanceFactor
             if ( !pLoad->BeginUnit(_T("ResistanceFactor")) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);

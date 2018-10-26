@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=777>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=639>
+<meta name=layout-width content=801>
 
 
 <!--(Links)=========================================================-->
@@ -43,21 +43,35 @@
 							x-value="Limits and Warnings Tab">}}-->Limits 
  and Warnings Tab<!--kadov_tag{{</variable>}}--></h1>
 
-<h2>Concrete Properties</h2>
+<h2>Concrete Limits</h2>
 
 <p>Here you can specify certain limits on various concrete properties. 
  If the limits are exceeded, warnings are posted in the <a href="../StatusCenter/Status_Center.htm">Status 
  Center</a>. These limits do not affect specification checking or girder 
  design.</p>
 
-<h2>Stirrup Zone Length and Stirrup Spacing Compatibility Warning</h2>
+<h2>General Warnings</h2>
 
-<p>Select the check box if you want PGSuper to issue a warning if input 
- stirrup spacings do not fit exactly within stirrup zones (i.e., if the 
- number of stirrups within a zone is not an integer value). Note that a 
- failure of this check is only a warning, not a spec check failure. The 
- warning is issued at the top of the Spec Check report in the Spec Check 
- Summary section.</p>
+<h4>Warn if stirrup zone length are incompatibility with stirrup spacings</h4>
+
+<p>Check this box if you want PGSuper to issue a warning if input stirrup 
+ spacings do not fit exactly within stirrup zones (i.e., if the number 
+ of stirrups within a zone is not an integer value). Note that a failure 
+ of this check is only a warning, not a spec check failure. The warning 
+ is issued at the top of the Spec Check report in the Spec Check Summary 
+ section.</p>
+
+<h4>Warn if there is a potential for girders to sag under dead load effects</h4>
+
+<p>Check this box if you want PGSuper to evaluate the camber immediately 
+ before of deck casting to the deflection caused by the weight of the deck 
+ and superimposed dead loads and issue a warning if the girder may sag. 
+ The girder may sag if the camber for the fast construction scenario (using 
+ minimum timing for creep) is less than the deflection due to the deck 
+ and superimposed loads.</p>
+
+<p>The camber for sag detection can be based on the lower bound camber, 
+ average camber, or upper bound camber. Select the appropriate setting.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

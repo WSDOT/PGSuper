@@ -111,8 +111,6 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
 
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
 
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
-
       std::vector<sysSectionValue> minDC, maxDC;
       std::vector<sysSectionValue> minDW, maxDW;
       std::vector<sysSectionValue> minLLIM, maxLLIM;
@@ -136,7 +134,7 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
          ColumnIndexType col = 0;
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
          if ( analysisType == pgsTypes::Envelope )
          {

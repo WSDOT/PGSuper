@@ -159,9 +159,6 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    rptCapacityToDemand cdRatio;
 
    // Fill up the p_table
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    // report all the artifacts there were created.
@@ -183,7 +180,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
 
-      (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+      (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
 
       if ( c_over_de )

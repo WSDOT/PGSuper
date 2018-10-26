@@ -41,7 +41,7 @@ static const int ENDBOX_CTRLS[] = {IDC_HS_BOX, IDC_HS_TXT, IDC_HS_XT, IDC_HS_YT,
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGridLocation dialog
 
-void CStrandGridLocation::SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid, bool UseHarpedWebStrands)
+void CStrandGridLocation::SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid, pgsTypes::AdjustableStrandType adjustableStrandType)
 {
    // we don't store an actual entry, just the data
    m_StrandType = (int)Entry.m_Type;
@@ -49,9 +49,9 @@ void CStrandGridLocation::SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGr
    m_HpY = Entry.m_Y;
 
    m_UseHarpedGrid = UseHarpedGrid;
-   m_UseHarpedWebStrands = UseHarpedWebStrands;
+   m_AdjustableStrandType = adjustableStrandType;
 
-   if (Entry.m_Type == GirderLibraryEntry::stHarped && m_UseHarpedGrid)
+   if (Entry.m_Type == GirderLibraryEntry::stAdjustable && m_UseHarpedGrid)
    {
       m_EndX = Entry.m_Hend_X;
       m_EndY = Entry.m_Hend_Y;
@@ -82,14 +82,14 @@ CGirderGlobalStrandGrid::GlobalStrandGridEntry CStrandGridLocation::GetEntry()
       entry.m_CanDebond = m_AllowDebonding==0 ? false : true;
    }
    else if (m_StrandType==1)
-      entry.m_Type = GirderLibraryEntry::stHarped;
+      entry.m_Type = GirderLibraryEntry::stAdjustable;
    else
       ATLASSERT(false);
 
    entry.m_X = m_HpX;
    entry.m_Y = m_HpY;
 
-   if (entry.m_Type == GirderLibraryEntry::stHarped && m_UseHarpedGrid)
+   if (entry.m_Type == GirderLibraryEntry::stAdjustable && m_UseHarpedGrid)
    {
       entry.m_Hend_X = m_EndX;
       entry.m_Hend_Y = m_EndY;
@@ -165,14 +165,22 @@ BOOL CStrandGridLocation::OnInitDialog()
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_STRAND_TYPE);
    ASSERT(pcb);
    pcb->AddString(_T("Straight"));
-   if (m_UseHarpedWebStrands)
+   if (m_AdjustableStrandType==pgsTypes::asHarped)
    {
       pcb->AddString(_T("Harped"));
       pbox->SetWindowText(_T("Location at Harping Points"));
    }
-   else
+   else if (m_AdjustableStrandType==pgsTypes::asStraight || m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
    {
-      pcb->AddString(_T("Straight-Web"));
+      if (m_AdjustableStrandType==pgsTypes::asStraight)
+      {
+         pcb->AddString(_T("Adj. Straight"));
+      }
+      else if( m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
+      {
+         pcb->AddString(_T("Adjustable"));
+      }
+
       pbox->SetWindowText(_T("Location along Girder"));
 
       HideEndBox();

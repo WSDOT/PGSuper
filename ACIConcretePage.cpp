@@ -58,7 +58,7 @@ void CACIConcretePage::DoDataExchange(CDataExchange* pDX)
    DDX_Check_Bool(pDX,IDC_USER,m_bUseACIParameters);
    DDX_CBItemData(pDX,IDC_CURE_METHOD,m_CureMethod);
    DDX_CBItemData(pDX,IDC_CEMENT_TYPE,m_CementType);
-   DDX_UnitValueAndTag(pDX,IDC_ALPHA,IDC_ALPHA_UNIT,m_A,pDisplayUnits->Time2);
+   DDX_UnitValueAndTag(pDX,IDC_ALPHA,IDC_ALPHA_UNIT,m_A,pDisplayUnits->Time3);
    DDX_Text(pDX,IDC_BETA,m_B);
 
    if ( pDX->m_bSaveAndValidate )
@@ -149,7 +149,6 @@ void CACIConcretePage::OnCompute()
 
    CACIParametersDlg dlg;
    dlg.m_t1 = m_TimeAtInitialStrength;
-   dlg.m_t2 = ::ConvertToSysUnits(28.0,unitMeasure::Day);
    dlg.m_fc1 = m_fci;
    dlg.m_fc2 = m_fc28;
    if ( dlg.DoModal() )

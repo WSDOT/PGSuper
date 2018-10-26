@@ -95,23 +95,23 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 // unused non-referenced poi
 // **** NOTE ****
 // If a new POI is defined, don't forget to update pgsPoiMgr::AndFind and pgsPoiMgr::OrFind
-//#define POI_NONREF10               0x80000000
-//#define POI_NONREF9                0x40000000
-//#define POI_NONREF8                0x20000000
-//#define POI_NONREF7                0x10000000
-//#define POI_NONREF6                0x08000000
-//#define POI_NONREF5                0x04000000
-//#define POI_NONREF4                0x02000000
-//#define POI_NONREF3                0x01000000
-//#define POI_NONREF2                0x00800000
-//#define POI_NONREF1                0x00400000
+//#define POI_NONREF9                0x80000000
+//#define POI_NONREF8                0x40000000
+//#define POI_NONREF7                0x20000000
+//#define POI_NONREF6                0x10000000
+//#define POI_NONREF5                0x08000000
+//#define POI_NONREF4                0x04000000
+//#define POI_NONREF3                0x02000000
+//#define POI_NONREF2                0x01000000
+//#define POI_NONREF1                0x00800000
 
 // Special Points
-#define POI_STIRRUP_ZONE             0x00200000 // Stirrup Zone Boundary
-#define POI_CRITSECTSHEAR1           0x00100000 // critical section for shear, for strength I limit state
-#define POI_CRITSECTSHEAR2           0x00080000 // critical section for shear, for strength II limit state
-#define POI_HARPINGPOINT             0x00040000 // harping point
-#define POI_CONCLOAD                 0x00020000 // point of application of a concentrated load
+#define POI_STIRRUP_ZONE             0x00400000 // Stirrup Zone Boundary
+#define POI_CRITSECTSHEAR1           0x00200000 // critical section for shear, for strength I limit state
+#define POI_CRITSECTSHEAR2           0x00100000 // critical section for shear, for strength II limit state
+#define POI_HARPINGPOINT             0x00080000 // harping point
+#define POI_CONCLOAD                 0x00040000 // point of application of a concentrated load
+#define POI_DIAPHRAGM                0x00020000 // point of application of a diaphragm load
 #define POI_PSXFER                   0x00010000 // POI at end of prestress transfer length
 #define POI_PSDEV                    0x00008000 // POI at end of prestress development length
 #define POI_DEBOND                   0x00004000 // POI at debond location

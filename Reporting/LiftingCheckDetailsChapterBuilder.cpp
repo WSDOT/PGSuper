@@ -208,7 +208,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
                   continue;
                }
           
-               (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH );
+               (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi );
                (*p_table)(row,1) << force.SetValue( pStressArtifact->GetEffectiveHorizPsForce());
                (*p_table)(row,2) << dim.SetValue( pStressArtifact->GetEccentricityPsForce());
 
@@ -264,7 +264,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
                   continue;
                }
           
-               (*p_table)(row1,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH );
+               (*p_table)(row1,0) << location.SetValue( POI_LIFT_SEGMENT, poi );
 
                Float64 ps, up, down, no;
                pStressArtifact->GetTopFiberStress(&ps,&up,&no,&down);
@@ -328,7 +328,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
                   continue;
                }
           
-               (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH);
+               (*p_table)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi);
                (*p_table)(row,1) << stress.SetValue( pCrackArtifact->GetLateralMomentStress() );
 
                if (pCrackArtifact->GetCrackedFlange() == BottomFlange)
@@ -447,7 +447,7 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
       Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
       pStressArtifact->GetAlternativeTensileStressParameters(dir, &Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
 
-      (*pTable)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi, leftOH );
+      (*pTable)(row,0) << location.SetValue( POI_LIFT_SEGMENT, poi );
 
       if (Yna < 0 )
       {

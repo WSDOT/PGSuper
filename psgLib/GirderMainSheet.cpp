@@ -358,26 +358,37 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
    DDV_UnitValueZeroOrMore(pDX, IDC_END_USL,m_Entry.m_EndAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
    DDX_CBIndex(pDX,IDC_COMBO_END_USL, (int&)m_Entry.m_EndAdjustment.m_TopFace);
 
+   DDX_Check_Bool(pDX,IDC_ALLOW_STR_ADJUST, m_Entry.m_StraightAdjustment.m_AllowVertAdjustment );
+   DDX_UnitValueAndTag(pDX, IDC_STR_INCREMENT, IDC_STR_INCREMENT_T, m_Entry.m_StraightAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_STR_INCREMENT,m_Entry.m_StraightAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_STR_LSL, IDC_STR_LSL_T, m_Entry.m_StraightAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_STR_LSL,m_Entry.m_StraightAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
+   DDX_CBIndex(pDX,IDC_COMBO_STR_LSL, (int&)m_Entry.m_StraightAdjustment.m_BottomFace);
+   DDX_UnitValueAndTag(pDX, IDC_STR_USL, IDC_STR_USL_T, m_Entry.m_StraightAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_STR_USL,m_Entry.m_StraightAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
+   DDX_CBIndex(pDX,IDC_COMBO_STR_USL, (int&)m_Entry.m_StraightAdjustment.m_TopFace);
+   
+
    DDX_Check_Bool(pDX,IDC_ODD_STRANDS, m_Entry.m_bOddNumberOfHarpedStrands );
    DDX_Check_Bool(pDX,IDC_USE_DIFF_GRID, m_Entry.m_bUseDifferentHarpedGridAtEnds);
 
    int idx;
    if (!pDX->m_bSaveAndValidate)
    {
-      idx = m_Entry.IsForceHarpedStrandsStraight() ? 1 : 0;
+      idx = m_Entry.GetAdjustableStrandType();
    }
 
    DDX_CBIndex(pDX,IDC_WEB_STRAND_TYPE_COMBO, idx);
 
    if (pDX->m_bSaveAndValidate)
    {
-      bool do_force_straight = idx!=0;
-      m_Entry.ForceHarpedStrandsStraight(do_force_straight);
+      pgsTypes::AdjustableStrandType as_type = (pgsTypes::AdjustableStrandType)idx;
+      m_Entry.SetAdjustableStrandType(as_type);
 
-      if(do_force_straight)
+      // Different grid at ends option is only available for pure harped strands
+      if(as_type != pgsTypes::asHarped)
       {
-         // set adjustment limits for end same as hp
-         m_Entry.m_EndAdjustment = m_Entry.m_HPAdjustment;
+         m_Entry.m_bUseDifferentHarpedGridAtEnds = false;
       }
    }
 
@@ -417,7 +428,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
             m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stStraight, num_straight++));
          }
-         else if (entry.m_Type == GirderLibraryEntry::stHarped)
+         else if (entry.m_Type == GirderLibraryEntry::stAdjustable)
          {
             // harped at HP
             Float64 x = ::ConvertToSysUnits(entry.m_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
@@ -440,7 +451,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
             
             m_Entry.m_HarpedStrands.push_back(GirderLibraryEntry::HarpedStrandLocation(start_x,start_y,x,y,end_x,end_y));
 
-            m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stHarped, num_harped++));
+            m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stAdjustable, num_harped++));
          }
          else
             ATLASSERT(false);
@@ -474,7 +485,7 @@ void CGirderMainSheet::UploadStrandData()
          x = start_x;
          y = start_y;
       }
-      else if (strand_type == GirderLibraryEntry::stHarped)
+      else if (strand_type == GirderLibraryEntry::stAdjustable)
       {
          m_Entry.GetHarpedStrandCoordinates(strand_idx, &start_x, &start_y, &x, &y, &end_x, &end_y);
       }

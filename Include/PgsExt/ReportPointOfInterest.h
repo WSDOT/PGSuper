@@ -63,7 +63,7 @@ public:
    virtual rptReportContent* CreateClone() const;
 
    //------------------------------------------------------------------------
-   virtual rptReportContent& SetValue(PoiAttributeType reference,const pgsPointOfInterest& poi,Float64 endOffset = 0.0);
+   virtual rptReportContent& SetValue(PoiAttributeType reference,const pgsPointOfInterest& poi);
 
    //------------------------------------------------------------------------
    std::_tstring AsString() const;
@@ -87,6 +87,8 @@ protected:
 
 private:
    pgsPointOfInterest m_POI;
+   CSpanKey m_SpanKey;
+   Float64 m_Xspan;
    PoiAttributeType m_Reference;
    bool m_bPrefixAttributes;
    bool m_bIncludeSpanAndGirder;

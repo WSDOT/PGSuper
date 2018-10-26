@@ -303,7 +303,7 @@ void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
    }
 }
 
-static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, IShape** shape)
+static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset, IShape** shape)
 {
    CComPtr<IRectangle> harp_rect;
    HRESULT hr = harp_rect.CoCreateInstance(CLSID_Rect);
@@ -312,11 +312,11 @@ static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, IShape*
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
 
-   Float64 hook_offset = 0.0;
+   Float64 hook_offset = 0.0; 
 
    CComPtr<IPoint2d> hook;
    hook.CoCreateInstance(CLSID_Point2d);
-   hook->Move(xOffset, depth/2.0);
+   hook->Move(xOffset, yOffset - depth/2.0);
 
    harp_rect->putref_HookPoint(hook);
 
@@ -352,7 +352,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
       Float64 hook_offset = 0.0;
 
       CComPtr<IShape> shape;
-      MakeRectangle(width, depth, hook_offset, &shape);
+      MakeRectangle(width, depth, hook_offset, 0.00, &shape);
 
       hr = configurer->AddRegion(shape, 0.0);
       ATLASSERT (SUCCEEDED(hr));
@@ -401,8 +401,8 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
 
       // rectangles at ends
       CComPtr<IShape> shapel, shaper;
-      MakeRectangle(t_ext, depth - C1 - C2, -end_loc, &shapel);
-      MakeRectangle(t_ext, depth - C1 - C2,  end_loc, &shaper);
+      MakeRectangle(t_ext, depth - C1 - C2, -end_loc, -(C1+C2), &shapel);
+      MakeRectangle(t_ext, depth - C1 - C2,  end_loc, -(C1+C2), &shaper);
 
       hr = configurer->AddRegion(shapel, 0.0);
       ATLASSERT (SUCCEEDED(hr));
@@ -413,7 +413,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
       if ( nIntVoids == 0 && nExtVoids == 2 )
       {
          CComPtr<IShape> shape;
-         MakeRectangle(t_ext_int, depth, 0.00, &shape);
+         MakeRectangle(t_ext_int, depth, 0.00, 0.00, &shape);
          hr = configurer->AddRegion(shape, 0.0);
          ATLASSERT (SUCCEEDED(hr));
       }
@@ -424,8 +424,8 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
          shapel.Release();
          shaper.Release();
 
-         MakeRectangle(t_ext_int, depth, -loc, &shapel);
-         MakeRectangle(t_ext_int, depth,  loc, &shaper);
+         MakeRectangle(t_ext_int, depth, -loc, 0.00, &shapel);
+         MakeRectangle(t_ext_int, depth,  loc, 0.00, &shaper);
 
          hr = configurer->AddRegion(shapel, 0.0);
          ATLASSERT (SUCCEEDED(hr));
@@ -439,7 +439,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
          for ( Uint16 i = 1; i < nIntVoids; i++ )
          {
             CComPtr<IShape> shape;
-            MakeRectangle(t_int,depth,loc,&shape);
+            MakeRectangle(t_int,depth,loc,0.00,&shape);
             hr = configurer->AddRegion(shape, 0.0);
             ATLASSERT (SUCCEEDED(hr));
 
@@ -454,7 +454,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

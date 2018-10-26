@@ -127,6 +127,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    rptRcTable* p_table;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
@@ -140,7 +141,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
    GroupIndexType startGroupIdx = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
-   GroupIndexType endGroupIdx   = girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx;
+   GroupIndexType endGroupIdx   = girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx;
    EventIndexType continuityEventIndex = MAX_INDEX;
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
@@ -261,13 +262,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
 
          ColumnIndexType col = 0;
 
-         Float64 end_size = 0 ;
-         if ( intervalIdx != releaseIntervalIdx )
-         {
-            end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-         }
-         
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( analysisType == pgsTypes::Envelope )
          {
@@ -385,14 +380,16 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
  
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
@@ -524,9 +521,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
          const pgsPointOfInterest& poi = *i;
          col = 0;
 
-         Float64 end_size = pBridge->GetSegmentStartEndDistance(poi.GetSegmentKey());
-         
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( bDesign )
          {
@@ -685,6 +680,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -692,7 +688,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
 
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
  
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
@@ -927,11 +923,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
 
-         Float64 end_size = 0 ;
-         if ( intervalIdx != releaseIntervalIdx )
-            end_size = pBridge->GetSegmentStartEndDistance(poi.GetSegmentKey());
-
-         (*p_table2)(row2,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table2)(row2,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( analysisType == pgsTypes::Envelope )
          {

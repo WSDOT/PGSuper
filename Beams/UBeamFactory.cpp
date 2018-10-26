@@ -65,8 +65,6 @@ HRESULT CUBeamFactory::FinalConstruct()
    m_DimNames.push_back(_T("W4"));
    m_DimNames.push_back(_T("W5"));
 
-   std::sort(m_DimNames.begin(),m_DimNames.end());
-
    // Default beam is a U54G4
    m_DefaultDims.push_back(::ConvertToSysUnits(54.00,unitMeasure::Inch)); // D1
    m_DefaultDims.push_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // D2
@@ -267,16 +265,16 @@ void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
 
    // travel counter clockwise around right web;
    Float64 x1 = w1/2.0;
-   Float64 y1 = 0.0;
+   Float64 y1 = -height;
 
    Float64 x2 = x1 + height * arc_slope;
-   Float64 y2 = height;
+   Float64 y2 = 0;
 
    Float64 x3 = x2 - t_x_project;
    Float64 y3 = y2;
 
    Float64 x4 = x1 - t_x_project;
-   Float64 y4 = 0.0;
+   Float64 y4 = y1;
 
    rgt_harp_poly->AddPoint(x1,y1);
    rgt_harp_poly->AddPoint(x2,y2);
@@ -317,7 +315,7 @@ void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(height, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

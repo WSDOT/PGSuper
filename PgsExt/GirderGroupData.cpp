@@ -1230,8 +1230,6 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
       hr = pStrLoad->EndUnit(); // GirderTypeGroups
 
-      hr = pStrLoad->EndUnit(); // GirderTypeGroup
-
       if ( ::IsBridgeSpacing(m_pBridge->GetGirderSpacingType()) )
       {
          // If the girder spacing type is a bridge spacing then individual girder spaces aren't loaded by
@@ -1363,6 +1361,8 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             vSlabOffsets.resize(nGirders);
          }
       }
+
+      hr = pStrLoad->EndUnit(); // GirderGroup
    }
    catch (HRESULT)
    {

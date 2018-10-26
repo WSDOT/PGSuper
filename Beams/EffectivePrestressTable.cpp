@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
    DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetLongTimeUnit(),        false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Fixed );
    scalar.SetWidth(5); // -99.9
@@ -66,7 +66,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
 
    // Create and configure the table
-   ColumnIndexType numColumns = 8;
+   ColumnIndexType numColumns = 10;
 
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
@@ -92,6 +92,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    *pChapter << pParagraph;
    if (  loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED  )
    {
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pLT")) << rptNewLine;
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << rptNewLine;
@@ -109,6 +110,8 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    *pParagraph << table << rptNewLine;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -125,22 +128,20 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    ColumnIndexType col = 1;
    Float64 fpj = pDetails->pLosses->GetFpjPermanent();
 
-   Float64 fpT  = pDetails->pLosses->PermanentStrand_Final(); // includes elastic gains due to permanent loads
    Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
-   if ( !m_bUseGrossProperties )
-      fpT += fpES;
+   Float64 fpLT = pDetails->pLosses->TimeDependentLosses();
+   Float64 fpT  = pDetails->pLosses->PermanentStrand_Final(); // includes elastic gains due to permanent loads
 
    Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
    Float64 fpLL   = pDetails->pLosses->ElasticGainDueToLiveLoad();
 
-   if (m_bUseGrossProperties)
-   {
-      // fpT includes elastic gains due to permanent loads
-      fpT += fpED+fpSIDL;
-   }
+   // fpT includes elastic gains due to permanent loads
+   fpT += fpED+fpSIDL;
 
    (*this)(row,col++) << stress.SetValue(fpj);
+   (*this)(row,col++) << stress.SetValue(fpES);
+   (*this)(row,col++) << stress.SetValue(fpLT);
    (*this)(row,col++) << stress.SetValue(fpT);
    (*this)(row,col++) << stress.SetValue(fpED);
    (*this)(row,col++) << stress.SetValue(fpSIDL);

@@ -76,6 +76,8 @@ private:
    int m_Row1Offset;   // distance from bottom of picture to top of first row of strand data
    int m_Row2Offset;   // distance from bottom of picture to top of second row of strand data
 
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
+
    bool m_bAllowHpAdjustment;
    bool m_bAllowEndAdjustment;
    HarpedStrandOffsetType m_HsoEndMeasurement;

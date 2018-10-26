@@ -270,9 +270,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
 
             ColumnIndexType col = 0;
 
-            Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-
-            (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder[index]) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder[index]);

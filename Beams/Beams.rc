@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,20
- PRODUCTVERSION 3,0,0,20
+ FILEVERSION 3,0,0,21
+ PRODUCTVERSION 3,0,0,21
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "Beams Module for PGSuper"
-            VALUE "FileVersion", "3.0.0.20"
+            VALUE "FileVersion", "3.0.0.21"
             VALUE "InternalName", "Beams"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "Beams.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.20"
+            VALUE "ProductVersion", "3.0.0.21"
         END
     END
     BLOCK "VarFileInfo"
@@ -114,6 +114,7 @@ MULTIWEB2               METAFILE                "res\\MultiWeb2.emf"
 TXDOTDOUBLET            METAFILE                "res\\txdotdou.emf"
 TAPEREDIBEAM            METAFILE                "res\\TaperedIBeam.emf"
 DECKEDSLABBEAM          METAFILE                "res\\DeckedSlabBeam.emf"
+SPLICEDNUBEAM           METAFILE                "res\\SplicedNUBeam.emf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -146,10 +147,6 @@ IDR_SLABBEAMFAMILY      REGISTRY                "VoidedSlabFamily.rgs"
 IDR_DECKEDSLABBEAMFAMILY REGISTRY                "DeckedSlabBeamFamily.rgs"
 IDR_PSBEAMLOSSENGINEER  REGISTRY                "PsBeamLossEngineer.rgs"
 IDR_TIMESTEPLOSSENGINEER  REGISTRY                "TimeStepLossEngineer.rgs"
-IDR_SPLICEDIBEAMFACTORY REGISTRY                "SplicedIBeamFactory.rgs"
-IDR_SPLICEDUBEAMFACTORY REGISTRY                "SplicedUBeamFactory.rgs"
-IDR_SPLICEDIBEAMFAMILY  REGISTRY                "SplicedIBeamFamily.rgs"
-IDR_SPLICEDUBEAMFAMILY  REGISTRY                "SplicedUBeamFamily.rgs"
 IDR_IBEAMDISTFACTORENGINEER REGISTRY           "IBeamDistFactorEngineer.rgs"
 IDR_BOXBEAMDISTFACTORENGINEER REGISTRY          "BoxBeamDistFactorEngineer.rgs"
 IDR_BULBTEEDISTFACTORENGINEER REGISTRY          "BulbTeeDistFactorEngineer.rgs"
@@ -157,6 +154,13 @@ IDR_MULTIWEBDISTFACTORENGINEER REGISTRY          "MultiWebDistFactorEngineer.rgs
 IDR_UBEAMDISTFACTORENGINEER REGISTRY           "UBeamDistFactorEngineer.rgs"
 IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY           "VoidedSlabDistFactorEngineer.rgs"
 IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY           "VoidedSlab2DistFactorEngineer.rgs"
+
+IDR_SPLICEDIBEAMFAMILY  REGISTRY                "SplicedIBeamFamily.rgs"
+IDR_SPLICEDUBEAMFAMILY  REGISTRY                "SplicedUBeamFamily.rgs"
+
+IDR_SPLICEDIBEAMFACTORY REGISTRY                "SplicedIBeamFactory.rgs"
+IDR_SPLICEDUBEAMFACTORY REGISTRY                "SplicedUBeamFactory.rgs"
+IDR_SPLICEDNUBEAMFACTORY REGISTRY                "SplicedNUBeamFactory.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -181,6 +185,7 @@ IDI_DECKEDSLAB          ICON                    "res\\DeckedSlab.ico"
 IDI_BOXBEAM2            ICON                    "res\\boxbeam2.ico"
 IDI_SPLICED_IBEAM       ICON                    "Res\\SplicedIBeam.ico"
 IDI_SPLICED_UBEAM       ICON                    "Res\\SplicedUBeam.ico"
+IDI_SPLICED_NUBEAM       ICON                    "Res\\SplicedNUBeam.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

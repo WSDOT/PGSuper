@@ -6027,7 +6027,6 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
 bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation)
 {
    ATLASSERT(IsDeckStressLocation(stressLocation));
-   ATLASSERT(IsServiceIIILimitState(limitState)); // must be one of the Service III limit states
 
    GET_IFACE(IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
@@ -6069,7 +6068,6 @@ bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
 bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig)
 {
    ATLASSERT(IsGirderStressLocation(stressLocation));
-   ATLASSERT(IsServiceIIILimitState(limitState)); // must be one of the Service III limit states
 
    // The specified location is in a precompressed tensile zone if the following requirements are true
    // 1) The location is in tension in the Service III limit state for the final interval with the

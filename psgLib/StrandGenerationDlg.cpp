@@ -94,13 +94,21 @@ BOOL CStrandGenerationDlg::OnInitDialog()
 {
    CComboBox* pcbStrandType = (CComboBox*)GetDlgItem(IDC_STRAND_TYPE);
    int idx = pcbStrandType->AddString(_T("Straight"));
-   if (m_DoUseHarpedWebStrands)
+   if (m_AdjustableStrandType==pgsTypes::asHarped)
    {
       idx = pcbStrandType->AddString(_T("Harped"));
    }
+   else if (m_AdjustableStrandType==pgsTypes::asStraight)
+   {
+      idx = pcbStrandType->AddString(_T("Adj. Straight"));
+   }
+   else if (m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
+   {
+      idx = pcbStrandType->AddString(_T("Adjustable"));
+   }
    else
    {
-      idx = pcbStrandType->AddString(_T("Straight-Web"));
+      ATLASSERT(0);
    }
 
    pcbStrandType->SetCurSel(0);
@@ -183,17 +191,23 @@ void CStrandGenerationDlg::OnStrandTypeChanged()
       // Harped
       bEnableHarped = TRUE;
 
-      if(m_DoUseHarpedWebStrands)
+      if(m_AdjustableStrandType==pgsTypes::asHarped)
       {
          GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Harped Strands at Harping Point"));
          GetDlgItem(IDC_GROUP2)->SetWindowText(_T("Harped Strands at End"));
          GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined harped strands"));
       }
-      else
+      else if(m_AdjustableStrandType==pgsTypes::asStraight)
       {
-         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Straight-Web Strands"));
+         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Adj. Straight Strands"));
          GetDlgItem(IDC_GROUP2)->SetWindowText(_T(""));
-         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Straight-Web strands"));
+         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Adjustable Straight strands"));
+      }
+      else if(m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
+      {
+         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Adjustable Strands"));
+         GetDlgItem(IDC_GROUP2)->SetWindowText(_T(""));
+         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Adjustable strands"));
       }
    }
 

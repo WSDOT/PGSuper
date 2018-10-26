@@ -31,6 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\PrestressForce.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -78,16 +79,21 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
 
    //gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
    //spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   // for transformed section analysis, stresses are computed with prestress force P at the start of the interval because elastic effects are intrinsic to the stress analysis
+   // for gross section analysis, stresses are computed with prestress force P at the end of the interval because the elastic effects during the interval must be included in the prestress force
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
+   pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed ? pgsTypes::Start : pgsTypes::End);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
    IntervalIndexType nIntervals = vIntervals.size();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
 
    ColumnIndexType nColumns;
@@ -128,13 +134,13 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       for ( ; iter != end; iter++ )
       {
          IntervalIndexType intervalIdx = *iter;
-         (*p_table)(0,col++) << COLHDR(_T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(segmentKey,intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(segmentKey,intervalIdx);
       }
    }
    else
    {
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR(_T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(segmentKey,loadRatingIntervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(segmentKey,loadRatingIntervalIdx);
    }
 
    // Get the interface pointers we need
@@ -147,6 +153,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
+   GET_IFACE2(pBroker,IPretensionForce,pForce);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -158,16 +165,13 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       col = 0;
 
       const pgsPointOfInterest& poi = *iter;
-      const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
       if ( bDesign )
       {
          (*p_table)(row,col++) << rptReleasePoi.SetValue( POI_RELEASED_SEGMENT, poi );
       }
-      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_SPAN, poi, end_size  );
+      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_SPAN, poi  );
 
-      Float64 fTop, fBot;
       if ( bDesign )
       {
          std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
@@ -176,8 +180,13 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
          {
             IntervalIndexType intervalIdx = *iter;
 
-            fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
+            Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime);
+            Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime);
+            (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
+            (*p_table)(row,col) << _T("P (temporary) = ") << force.SetValue(Ft) << rptNewLine;
+
+            Float64 fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
+            Float64 fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
@@ -186,8 +195,11 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       else
       {
          // Rating
-         fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
-         fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
+         Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime);
+         (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
+
+         Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
+         Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
          col++;

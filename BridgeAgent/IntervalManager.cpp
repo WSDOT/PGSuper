@@ -1321,7 +1321,7 @@ IntervalIndexType CIntervalManager::GetCompositeDeckInterval(const CGirderKey& g
    }
    else
    {
-      return GetInstallRailingSystemInterval(girderKey);
+      return GetInstallRailingSystemInterval(girderKey) - 1;
    }
 }
 

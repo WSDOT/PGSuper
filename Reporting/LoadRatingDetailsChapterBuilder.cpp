@@ -290,22 +290,19 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
       {
          continue;
       }
 
       pgsMomentRatingArtifact& artifact = iter->second;
 
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
-      (*table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetCapacityReductionFactor());
@@ -429,22 +426,19 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
       {
          continue;
       }
 
       pgsShearRatingArtifact& artifact = iter->second;
 
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
       Float64 gpM, gnM, gV;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&gpM,&gnM,&gV);
 
-      (*table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetCapacityReductionFactor());
@@ -577,22 +571,19 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
       {
          continue;
       }
 
       pgsStressRatingArtifact& artifact = iter->second;
 
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
-      (*table)(row,col++) << location.SetValue( POI_SPAN,  poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_SPAN,  poi );
       (*table)(row,col++) << stressLocation[artifact.GetStressLocation()];
       (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
       (*table)(row,col++) << stress.SetValue(artifact.GetPrestressStress());
@@ -752,22 +743,19 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && poi != controllingPoi )
+      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
       {
          continue;
       }
 
       pgsYieldStressRatioArtifact& artifact = iter->second;
 
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
-      (*table)(row,col++) << location.SetValue( POI_SPAN,  poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_SPAN,  poi );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
       if ( bSplicedGirder )

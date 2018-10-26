@@ -38,6 +38,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\PrestressForce.h>
 
 #include "StrandDesignTool.h"
 #include "ShearDesignTool.h"
@@ -65,6 +66,59 @@ struct ShearDesignAvs
 
 #define NUM_LEGS  2
 #define MAX_ZONES 4
+
+// Structure and function for computing eccentricity envelope. 
+//////////////////////////////////////////////////////////////
+struct pgsEccEnvelope
+{
+   // Upper bound (ub) and Lower bound eccentricities
+   Float64 m_UbEcc;
+   pgsTypes::StressType     m_UbStressType; // stress type (tension or compression) 
+   IntervalIndexType        m_UbInterval;   // controlling interval
+   pgsTypes::LimitState     m_UbLimitState; // ""          ls
+   Float64 m_LbEcc;
+   pgsTypes::StressType     m_LbStressType; // stress type (tension or compression) 
+   IntervalIndexType        m_LbInterval;   // controlling interval
+   pgsTypes::LimitState     m_LbLimitState; // ""          ls
+
+   pgsEccEnvelope():
+   m_UbEcc(Float64_Max),
+   m_LbEcc(-Float64_Max)
+   {;}
+
+   // Functions to save controlling Lb or Ub
+   bool SaveControllingUpperBound(Float64 ecc, pgsTypes::StressType type, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
+   {
+      if (ecc < m_UbEcc)
+      {
+         m_UbEcc        = ecc;
+         m_UbStressType = type;
+         m_UbInterval   = intervalIdx;
+         m_UbLimitState = ls;
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   bool SaveControllingLowerBound(Float64 ecc, pgsTypes::StressType type, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
+   {
+      if (m_LbEcc < ecc)
+      {
+         m_LbEcc        = ecc;
+         m_LbStressType = type;
+         m_LbInterval   = intervalIdx;
+         m_LbLimitState = ls;
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+};
 
 /*****************************************************************************
 CLASS 
@@ -127,6 +181,8 @@ public:
 
    void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pHaunchDetails);
    void GetHaunchDetails(const CGirderKey& girderKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+
+   pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
 
    // Returns a girder check artifact if the girder was already checked, otherwise returns NULL
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);

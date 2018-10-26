@@ -363,7 +363,7 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
       Float64 required = artifact.GetRequiredSegmentConcreteStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required != -99999);
+         ATLASSERT(required == -99999);
          return required;
       }
 

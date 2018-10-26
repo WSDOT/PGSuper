@@ -64,6 +64,7 @@
 #include "TimeStepLossEngineer.h"
 
 #include "SplicedIBeamFactoryImpl.h"
+#include "SplicedNUBeamFactoryImpl.h"
 #include "SplicedUBeamFactory.h"
 
 #include <Plugins\Beams.h>
@@ -120,6 +121,7 @@ BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory,CDeckedSlabBeamFactory)
 
    OBJECT_ENTRY(CLSID_SplicedIBeamFactory,   CSplicedIBeamFactory)
+   OBJECT_ENTRY(CLSID_SplicedNUBeamFactory,   CSplicedNUBeamFactory)
    OBJECT_ENTRY(CLSID_SplicedUBeamFactory,   CSplicedUBeamFactory)
 
    OBJECT_ENTRY(CLSID_WFBeamFamily,          CIBeamFamily)
@@ -299,6 +301,7 @@ void Register(bool bRegister)
 
    // I-beam factories
    sysComCatMgr::RegWithCategory(CLSID_SplicedIBeamFactory, CATID_SplicedIBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_SplicedNUBeamFactory, CATID_SplicedIBeamFactory, bRegister);
 
    // U-beam factories
    sysComCatMgr::RegWithCategory(CLSID_SplicedUBeamFactory, CATID_SplicedUBeamFactory, bRegister);

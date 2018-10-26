@@ -1038,7 +1038,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
             else
             {
                // TRICKY: Just finding the point where eccentricity is postitive turns out not to be enough.
-               //         The design algorithm will likely get stuck. So we Float64 it.
+               //         The design algorithm will likely get stuck. So we double it.
                m_MinPermanentStrands = GetNextNumPermanentStrands(2*ns_prev);
                LOG(_T("Found m_MinPermanentStrands = ") << ns_prev << _T("Success"));
             }
@@ -1686,7 +1686,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
 
    Float64 fc_min = (intervalIdx == releaseIntervalIdx) ? GetMinimumReleaseStrength() : GetMinimumConcreteStrength();
 
-   Float64 fc_max = GetMaximumConcreteStrength();
+   Float64 fc_max = (intervalIdx == releaseIntervalIdx) ? GetMaximumReleaseStrength() : GetMaximumConcreteStrength();
    if ( fc_reqd < fc_min )
    {
       fc_reqd = fc_min;
@@ -2677,9 +2677,7 @@ Float64 pgsStrandDesignTool::GetMinimumConcreteStrength() const
 
 Float64 pgsStrandDesignTool::GetMaximumConcreteStrength() const
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105.0,unitMeasure::MPa) 
-                                     : ::ConvertToSysUnits( 15.0,unitMeasure::KSI);
+   return ::ConvertToSysUnits( 15.0 ,unitMeasure::KSI);
 }
 
 arDesignStrandFillType pgsStrandDesignTool::GetOriginalStrandFillType() const

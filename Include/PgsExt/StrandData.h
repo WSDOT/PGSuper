@@ -203,6 +203,10 @@ public:
    void SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands);
    StrandIndexType GetStrandCount(pgsTypes::StrandType strandType) const;
 
+   // Adjustable strands can be straight or harped depending on girder library and project settings
+   pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
+   void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
+
    // Strand extension paramaters (not used if using CStrandData::sdtDirectInput)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
@@ -293,6 +297,8 @@ protected:
    CDirectStrandFillCollection m_StraightStrandFill;
    CDirectStrandFillCollection m_HarpedStrandFill;
    CDirectStrandFillCollection m_TemporaryStrandFill;
+
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
 
    // Strand information when user defined strands (sdtDirectInput) is used
    CStrandRowCollection m_StrandRows;

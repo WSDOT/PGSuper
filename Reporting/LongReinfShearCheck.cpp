@@ -122,15 +122,11 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    (*table)(0,4)  << _T("Status") << rptNewLine << _T("(C/D)");
 
    // Fill up the table
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
    bool bAddFootnote = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -153,7 +149,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
          if ( pArtifact->IsApplicable() )
          {
-            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
             Float64 C = pArtifact->GetCapacityForce();
             Float64 D = pArtifact->GetDemandForce();
@@ -267,7 +263,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( POI_SPAN, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_SPAN, poi );
 
          Float64 C = artifact.GetCapacityForce();
          Float64 D = artifact.GetDemandForce();

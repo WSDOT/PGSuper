@@ -75,7 +75,7 @@ BOOL CACIParametersDlg::OnInitDialog()
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
-   strLabel.Format(_T("Concrete Strength at t = %s, Time of Initial Loading"),::FormatDimension(m_t1,pDisplayUnits->GetLongTimeUnit()));
+   strLabel.Format(_T("Concrete Strength at t = %s, Time of Initial Loading"),::FormatDimension(m_t1,pDisplayUnits->GetWholeDaysUnit()));
    GetDlgItem(IDC_T1)->SetWindowText(strLabel);
 
    UpdateParameters();
@@ -96,6 +96,6 @@ void CACIParametersDlg::UpdateParameters()
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strResult;
-   strResult.Format(_T("A = %s, B = %4.2f"),::FormatDimension(m_A,pDisplayUnits->GetLongTimeUnit()),m_B);
+   strResult.Format(_T("A = %s, B = %4.2f"),::FormatDimension(m_A,pDisplayUnits->GetFractionalDaysUnit()),m_B);
    GetDlgItem(IDC_RESULT)->SetWindowText(strResult);
 }

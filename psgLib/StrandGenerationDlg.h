@@ -51,7 +51,7 @@ public:
    };
 
    bool m_DoUseHarpedGrid;
-   bool m_DoUseHarpedWebStrands;
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
 
    int m_StrandType; // 0 = straight, 1 = harped
    Float64 m_Xstart, m_Ystart;

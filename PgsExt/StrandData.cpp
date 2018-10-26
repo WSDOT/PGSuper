@@ -427,6 +427,7 @@ HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_StrandType = (var.boolVal == VARIANT_TRUE ? pgsTypes::Temporary : pgsTypes::Straight);
       }
 
+      var.vt = VT_BOOL;
       hr = pStrLoad->get_Property(_T("IsExtendedStrandStart"),&var);
       m_bIsExtendedStrand[pgsTypes::metStart] = (var.boolVal == VARIANT_TRUE ? true : false);
 
@@ -573,6 +574,11 @@ bool CStrandData::operator==(const CStrandData& rOther) const
    }
 
    if ( m_TempStrandUsage != rOther.m_TempStrandUsage )
+   {
+      return false;
+   }
+
+   if ( m_AdjustableStrandType != rOther.m_AdjustableStrandType )
    {
       return false;
    }
@@ -960,6 +966,21 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       }
 
 
+      if (14.0 <= version)
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         pStrLoad->get_Property(_T("AdjustableStrandType"),&var);
+         m_AdjustableStrandType = (pgsTypes::AdjustableStrandType)var.lVal;
+      }
+      else
+      {
+         // At this point we can assume that very old versions are harped. Howeve, very recent versions were set
+         // in the library, but we can't know that at this time. So set to harped and fix the descrepancy 
+         // later when resolving library conflicts
+         m_AdjustableStrandType = pgsTypes::asHarped;
+      }
+
       if ( 5.0 <= version && m_NumPermStrandsType != sdtDirectInput )
       {
          // not writing this data if NumPermStrandsType is sdtDirectInput... this was added in version 13 of the data block
@@ -1085,7 +1106,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PrestressData"),13.0);
+   pStrSave->BeginUnit(_T("PrestressData"),14.0);
 
    pStrSave->put_Property(_T("HsoEndMeasurement"), CComVariant(m_HsoEndMeasurement));
    pStrSave->put_Property(_T("HpOffsetAtEnd"), CComVariant(m_HpOffsetAtEnd));
@@ -1230,6 +1251,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("LastUserPjTemp"), CComVariant(m_LastUserPjack[pgsTypes::Temporary]));
    pStrSave->put_Property(_T("LastUserPjPermanent"), CComVariant(m_LastUserPjack[pgsTypes::Permanent]));
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(m_TempStrandUsage));
+   pStrSave->put_Property(_T("AdjustableStrandType"),CComVariant(m_AdjustableStrandType)); // added version 14.
 
    if ( m_NumPermStrandsType != sdtDirectInput )
    {
@@ -1456,6 +1478,24 @@ StrandIndexType CStrandData::GetStrandCount(pgsTypes::StrandType strandType) con
    return m_Nstrands[strandType];
 }
 
+pgsTypes::AdjustableStrandType CStrandData::GetAdjustableStrandType() const
+{
+   return m_AdjustableStrandType;
+}
+
+void CStrandData::SetAdjustableStrandType(pgsTypes::AdjustableStrandType type)
+{
+   if (type != pgsTypes::asStraightOrHarped)
+   {
+      m_AdjustableStrandType = type;
+   }
+   else
+   {
+      ATLASSERT(false); // bridge project data should never be this value
+      m_AdjustableStrandType = pgsTypes::asHarped;
+   }
+}
+
 void CStrandData::AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx)
 {
    m_NextendedStrands[strandType][endType].push_back(gridIdx);
@@ -1501,6 +1541,8 @@ void CStrandData::ResetPrestressData()
    m_HpOffsetAtEnd      = 0.0;
    m_HsoHpMeasurement   = hsoLEGACY;
    m_HpOffsetAtHp       = 0.0;
+
+   m_AdjustableStrandType = pgsTypes::asHarped;
 }
 
 void CStrandData::ClearDirectFillData()
@@ -1735,6 +1777,8 @@ void CStrandData::MakeCopy(const CStrandData& rOther)
 
    m_TempStrandUsage    = rOther.m_TempStrandUsage;
    m_bSymmetricDebond   = rOther.m_bSymmetricDebond;
+
+   m_AdjustableStrandType = rOther.m_AdjustableStrandType;
 
    m_bConvertExtendedStrands = rOther.m_bConvertExtendedStrands;
 

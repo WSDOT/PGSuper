@@ -114,7 +114,6 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey/*,poiRefAttribute*/) );
@@ -128,15 +127,7 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
       col = 0;
       const pgsPointOfInterest& poi = *i;
 
-      const CSegmentKey& segKey = poi.GetSegmentKey();
-
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(segKey);
-      if ( intervalIdx < erectionIntervalIdx )
-      {
-         end_size = 0;
-      }
-
-      (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+      (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetNetAg(intervalIdx,poi));
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetNetIg(intervalIdx,poi));

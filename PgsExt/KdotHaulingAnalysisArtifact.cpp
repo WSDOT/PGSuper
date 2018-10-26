@@ -642,8 +642,6 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       p_table->SetColumnSpan(0,i,SKIP_CELL);
    }
 
-   Float64 overhang = this->GetTrailingOverhang();
-
    RowIndexType row=2;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
@@ -658,7 +656,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
          ATLASSERT(false); // this should not happen
          continue;
       }
-      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT,poi,overhang );
+      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT,poi );
 
       // Tension
       Float64 fTensTop, fTensBottom, tensCapacity;
@@ -786,8 +784,6 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
    (*p_table)(0,2) << COLHDR(_T("Eccentricity"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(0,3) << COLHDR(_T("Dynamic") << rptNewLine << _T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
-   Float64 overhang = this->GetTrailingOverhang();
-
    RowIndexType row = 1;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_HaulingPois.end());
@@ -797,7 +793,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
       const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
-      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
+      (*p_table)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
       (*p_table)(row,1) << force.SetValue( pStressArtifact->GetEffectiveHorizPsForce());
       (*p_table)(row,2) << dim.SetValue( pStressArtifact->GetEccentricityPsForce());
 
@@ -841,7 +837,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
       const pgsKdotHaulingStressAnalysisArtifact* pStressArtifact = GetHaulingStressAnalysisArtifact(poi);
  
-      (*p_table)(row1,0) << location.SetValue( POI_HAUL_SEGMENT, poi,overhang );
+      (*p_table)(row1,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
       
       Float64 ps, tot, dmo;
       pStressArtifact->GetTopFiberStress(&ps, &tot);
@@ -880,8 +876,6 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   Float64 overhang = this->GetTrailingOverhang();
-
    std::_tstring tablename(_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling"));
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(10,tablename);
@@ -917,7 +911,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
       Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
       pStressArtifact->GetAlternativeTensileStressParameters(&Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
 
-      (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi, overhang );
+      (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
 
       if (Yna < 0 )
       {

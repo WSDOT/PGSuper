@@ -74,6 +74,8 @@ public:
    CTimelineManager(const CTimelineManager& rOther);
    ~CTimelineManager();
 
+   void Clear();
+
    CTimelineManager& operator= (const CTimelineManager& rOther);
    bool operator==(const CTimelineManager& rOther) const;
    bool operator!=(const CTimelineManager& rOther) const;
@@ -221,7 +223,6 @@ public:
 protected:
    void MakeCopy(const CTimelineManager& rOther);
    virtual void MakeAssignment(const CTimelineManager& rOther);
-   void Clear();
    void Sort();
    int CanRemoveEvent(CTimelineEvent* pTimelineEvent);
 

@@ -283,13 +283,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
          col = 0;
 
-         Float64 end_size = 0 ;
-         if ( intervalIdx != releaseIntervalIdx )
-         {
-            end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-         }
-
-         (*pTable)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*pTable)(row,col++) << location.SetValue( poiRefAttribute, poi );
          (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCinc[index]) << rptNewLine;
          (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCinc[index]);
 
@@ -481,13 +475,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
          col = 0;
 
-         Float64 end_size = 0 ;
-         if ( intervalIdx != releaseIntervalIdx )
-         {
-            end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-         }
-
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( bPedLoading )
          {
@@ -877,13 +865,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
 
-         Float64 end_size = 0;
-         if ( intervalIdx != releaseIntervalIdx )
-         {
-            end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-         }
-
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
          if ( bDesign )
          {

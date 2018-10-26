@@ -257,9 +257,7 @@ void CTSRemovalDeflectionsTable::Build(rptChapter* pChapter,IBroker* pBroker,con
 
             ColumnIndexType col = 0;
 
-            Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
-
-            (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
             (*p_table)(row,col++) << deflection.SetValue( girder[index] );
             (*p_table)(row,col++) << deflection.SetValue( diaphragm[index] );
 

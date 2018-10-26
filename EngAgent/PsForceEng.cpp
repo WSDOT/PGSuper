@@ -1219,13 +1219,27 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
       }
       else if ( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx )
       {
-         if ( strandType == pgsTypes::Temporary )
+         if ( intervalTime == pgsTypes::Start )
          {
-            loss = pDetails->pLosses->TemporaryStrand_AfterTransfer();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
+            }
          }
          else
          {
-            loss = pDetails->pLosses->PermanentStrand_AfterTransfer();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterTransfer();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterTransfer();
+            }
          }
       }
       else if ( intervalIdx == liftSegmentIntervalIdx )
@@ -1252,13 +1266,27 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
       }
       else if ( intervalIdx == tsInstallationIntervalIdx )
       {
-         if ( strandType == pgsTypes::Temporary )
+         if ( intervalTime == pgsTypes::Start )
          {
-            loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandInstallation();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AtShipping();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AtShipping();
+            }
          }
          else
          {
-            loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandInstallation();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandInstallation();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandInstallation();
+            }
          }
       }
       else if ( intervalIdx == erectSegmentIntervalIdx )
@@ -1274,35 +1302,77 @@ Float64 pgsPsForceEng::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::
       }
       else if ( intervalIdx == tsRemovalIntervalIdx )
       {
-         if ( strandType == pgsTypes::Temporary )
+         if ( intervalTime == pgsTypes::Start )
          {
-            loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
+            }
          }
          else
          {
-            loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
+            }
          }
       }
       else if ( intervalIdx == castDeckIntervalIdx || intervalIdx == compositeDeckIntervalIdx )
       {
-         if ( strandType == pgsTypes::Temporary )
+         if ( intervalTime == pgsTypes::Start )
          {
-            loss = pDetails->pLosses->TemporaryStrand_AfterDeckPlacement();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
+            }
          }
          else
          {
-            loss = pDetails->pLosses->PermanentStrand_AfterDeckPlacement();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterDeckPlacement();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterDeckPlacement();
+            }
          }
       }
       else if ( intervalIdx == railingSystemIntervalIdx || (intervalIdx == overlayIntervalIdx && !bIsFutureOverlay) )
       {
-         if ( strandType == pgsTypes::Temporary )
+         if ( intervalTime == pgsTypes::Start )
          {
-            loss = pDetails->pLosses->TemporaryStrand_AfterSIDL();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterDeckPlacement();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterDeckPlacement();
+            }
          }
          else
          {
-            loss = pDetails->pLosses->PermanentStrand_AfterSIDL();
+            if ( strandType == pgsTypes::Temporary )
+            {
+               loss = pDetails->pLosses->TemporaryStrand_AfterSIDL();
+            }
+            else
+            {
+               loss = pDetails->pLosses->PermanentStrand_AfterSIDL();
+            }
          }
       }
       else if ( intervalIdx == liveLoadIntervalIdx || (intervalIdx == overlayIntervalIdx && bIsFutureOverlay)  )

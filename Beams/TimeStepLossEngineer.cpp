@@ -907,7 +907,6 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       {
          CComPtr<IRebar> rebar;
          item->get_Rebar(&rebar);
-
          Float64 Ab;
          rebar->get_NominalArea(&Ab);
 
@@ -953,19 +952,21 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          // each strand for each strand type.
 
          // section properties
-         tsDetails.Strands[strandType].As = m_pStrandGeom->GetStrandArea(segmentKey,intervalIdx,strandType);
+         tsDetails.Strands[strandType].As = m_pStrandGeom->GetStrandArea(poi,intervalIdx,strandType);
 
          // location of strands from top of girder
-         Float64 nEffectiveStrands = 0;
-         tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandOffset(intervalIdx,poi,strandType,&nEffectiveStrands));
+         tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandLocation(poi,strandType,intervalIdx));
 
          tsDetails.Strands[strandType].E = EStrand[strandType];
 
          if ( intervalIdx == stressStrandsIntervalIdx )
          {
             // Strands are stress in this interval.. get Pjack and fpj
-            tsDetails.Strands[strandType].Pj  = (tsDetails.Strands[strandType].As == 0 ? 0 : m_pStrandGeom->GetPjack(segmentKey,strandType));
-            tsDetails.Strands[strandType].fpj = (tsDetails.Strands[strandType].As == 0 ? 0 : tsDetails.Strands[strandType].Pj/tsDetails.Strands[strandType].As);
+            // Pjack is for all the strands (even debonded strands).... need the nominal strand area
+            // (area of all the strands, even the debonded strands) to get fpj
+            Float64 As = m_pStrandGeom->GetStrandArea(segmentKey,intervalIdx,strandType);
+            tsDetails.Strands[strandType].Pj  = (As == 0 ? 0 : m_pStrandGeom->GetPjack(segmentKey,strandType));
+            tsDetails.Strands[strandType].fpj = (As == 0 ? 0 : tsDetails.Strands[strandType].Pj/As);
 
             // strands relax over the duration of the interval. compute the amount of relaxation
             if ( bIgnoreRelaxationEffects )
@@ -987,12 +988,19 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                // accounts for lack of development and location of debonding
                Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi,strandType);
 
+               // xfer_factor reduces the nominal strand force (force based on all strands)
+               // do the actual force by making adjustments for lack of full development
+               // and debonding. Since the strands data structure contains the actual
+               // effective area of strands (area reduced for debonding) we need to
+               // get the nominal area here and use it in the calculation below
+               Float64 As = m_pStrandGeom->GetStrandArea(segmentKey,intervalIdx,strandType);
+
                // this the interval when the prestress force is release into the girders, apply the
                // prestress as an external force. The prestress force is the area of strand times
                // the effective stress in the strands at the end of the previous interval.
                // Negative sign because the force resisted by the girder section is equal and opposite
                // the force in the strand (strands put a compression force into the girder)
-               Float64 P = -xfer_factor*tsDetails.Strands[strandType].As*prevTimeStepDetails.Strands[strandType].fpe;
+               Float64 P = -xfer_factor*As*prevTimeStepDetails.Strands[strandType].fpe;
                tsDetails.dPi[pftPretension] += P;
                tsDetails.dMi[pftPretension] += P*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
 
@@ -1038,6 +1046,12 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                // section properties
                strand.As = m_pMaterials->GetStrandMaterial(segmentKey,strandType)->GetNominalArea();
 
+               // If poi is at a section where this strand is debonded, don't count it
+               if ( !m_pStrandGeom->IsStrandDebonded(poi,strandIdx, strandType) )
+               {
+                  strand.As = 0;
+               }
+   
                // location of strand from top of girder
                CComPtr<IPoint2d> point;
                m_pStrandGeom->GetStrandPosition(poi,strandIdx,strandType,&point);
@@ -1073,6 +1087,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                      // the force in the strand (stand put a compression force into the girder)
 
                      // accounts for lack of development and location of debonding
+#pragma Reminder("UPDATE: this should be the adjustment for the individual strands, not all the strands taken together")
                      Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi,strandType);
 
                      Float64 P = -xfer_factor*strand.As*prevTimeStepDetails.Strands[strandType][strandIdx].fpe;
@@ -3022,8 +3037,6 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
       (*pPSLossTable)(0,col) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*pPSLossTable)(0,col) << rptNewLine << _T("Straight") << rptNewLine << _T("Harped");
 
-      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,segIdx));
-
       // Get the losses for this segment
       GET_IFACE(IPointOfInterest,pPoi);
       std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_ERECTED_SEGMENT | POI_TENTH_POINTS));
@@ -3035,7 +3048,7 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          const pgsPointOfInterest& poi(*iter);
          const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
 
-         (*pPSLossTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*pPSLossTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
          for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
          {
@@ -3120,7 +3133,7 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
 
             IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
 
-            (*pPTLossTable[ductIdx])(row,ductCol++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*pPTLossTable[ductIdx])(row,ductCol++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
             (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpF );
             (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpA );

@@ -174,6 +174,11 @@ public:
    virtual Float64 GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
 
+   virtual void GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound);
+
+   // non virtual
+   pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
+
 // IPosttensionForce
 public:
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands);

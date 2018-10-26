@@ -121,7 +121,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
          col = 0;
 
          pgsPointOfInterest& poi = *iter;
-         (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi,0.0);
+         (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi);
 
          const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
          const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);

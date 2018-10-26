@@ -90,7 +90,9 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    }
 
    if ( !bIsApplicable )
+   {
       return;
+   }
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -119,6 +121,7 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
          *pChapter << pBody;
       
          rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,NULL);
+         *pBody << pTable;
 
          (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
          (*pTable)(0,1) << COLHDR(_T("Max Hold Down Force"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
@@ -128,9 +131,13 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
          (*pTable)(1,1) << force.SetValue(pArtifact->GetCapacity());
 
          if ( pArtifact->Passed() )
+         {
             (*pTable)(1,2) << RPT_PASS;
+         }
          else
+         {
             (*pTable)(1,2) << RPT_FAIL;
+         }
       } // is applicable
    } // next segment
 }

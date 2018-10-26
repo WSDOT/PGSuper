@@ -212,8 +212,6 @@ void write_cracked_section_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
@@ -233,7 +231,7 @@ void write_cracked_section_table(IBroker* pBroker,
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       (*table)(row,col++) << dim.SetValue( Yt );
       (*table)(row,col++) << dim.SetValue( Yb );
       (*table)(row,col++) << mom_i.SetValue( csd.Icr );
