@@ -170,6 +170,11 @@ LoadIDType CApplyLoadActivity::GetUserLoadID(IndexType idx) const
    return id;
 }
 
+bool CApplyLoadActivity::IsUserLoadApplied() const
+{
+   return (0 < GetUserLoadCount() ? true : false);
+}
+
 HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    CHRException hr;
@@ -209,10 +214,10 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       pStrLoad->EndUnit();
    }
-   catch(CHRException& exception)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
-      return exception;
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
    return S_OK;

@@ -422,19 +422,19 @@ public:
    virtual Float64 GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64 t1,Float64 t2,Float64 fpso);
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetSegmentLongitudinalRebarName(const CSegmentKey& segmentKey);
-   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade);
    virtual void GetClosureJointLongitudinalRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetClosureJointLongitudinalRebarName(const CClosureKey& closureKey);
-   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade);
    virtual void GetSegmentTransverseRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu);
-   virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade);
    virtual std::_tstring GetSegmentTransverseRebarName(const CSegmentKey& segmentKey);
    virtual void GetClosureJointTransverseRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu);
-   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade);
    virtual std::_tstring GetClosureJointTransverseRebarName(const CClosureKey& closureKey);
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetDeckRebarName();
-   virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
    virtual Float64 GetNWCDensityLimit();
    virtual Float64 GetLWCDensityLimit();
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type);
@@ -553,7 +553,7 @@ public:
    virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust);
    virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,DevelopmentAdjustmentType devAdjust);
 
-   virtual StrandIndexType GetNumStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type);
+   virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type);
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type);
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type);
    virtual Float64 GetStrandArea(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::StrandType type);
@@ -813,6 +813,8 @@ public:
 public:
    virtual bool DoUserLoadsExist(const CSpanGirderKey& spanGirderKey);
    virtual bool DoUserLoadsExist(const CGirderKey& girderKey);
+   virtual bool DoUserLoadsExist(const CSpanGirderKey& spanGirderKey,IntervalIndexType intervalIdx);
+   virtual bool DoUserLoadsExist(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
    virtual const std::vector<UserPointLoad>* GetPointLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
    virtual const std::vector<UserDistributedLoad>* GetDistributedLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
    virtual const std::vector<UserMomentLoad>* GetMomentLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
@@ -925,12 +927,15 @@ public:
    virtual IntervalIndexType GetCastDeckInterval();
    virtual IntervalIndexType GetCompositeDeckInterval();
    virtual IntervalIndexType GetLiveLoadInterval();
+   virtual IntervalIndexType GetLoadRatingInterval();
    virtual IntervalIndexType GetOverlayInterval();
    virtual IntervalIndexType GetInstallRailingSystemInterval();
    virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
    virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID);
+   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType grpIdx);
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey);
 
 private:
@@ -1088,10 +1093,6 @@ private:
    void ValidatePointLoads();
    void ValidateDistributedLoads();
    void ValidateMomentLoads();
-
-   std::vector<UserPointLoad>* GetUserPointLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
-   std::vector<UserDistributedLoad>* GetUserDistributedLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
-   std::vector<UserMomentLoad>* GetUserMomentLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
 
    HRESULT GetSlabOverhangs(Float64 distance,Float64* pLeft,Float64* pRight);
    Float64 GetDistanceFromStartOfBridge(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment);

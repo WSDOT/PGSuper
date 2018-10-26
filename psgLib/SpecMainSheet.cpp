@@ -526,6 +526,8 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
 
+   // NOTE: this looks goofy, but it is correct. There is only one LWC entry for both all and sand lightweight
+   // but it is easier to have 3 sets of values so the application is consistent.
    DDX_Text(pDX,IDC_NWC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_NWC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_NWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::Normal]);
@@ -541,8 +543,9 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]);
    DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::SandLightweight]);
 
-   // NOTE: this looks goofy, but it is correct. There is only one LWC entry for both all and sand lightweight
-   // but it is easier to have 3 sets of values so the application is consistent.
+   DDX_Text(pDX,IDC_NWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::SandLightweight]);
 }
 
 void CSpecMainSheet::CheckShearCapacityMethod()
@@ -617,6 +620,10 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_PhiShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
+
+   DDX_Text(pDX,IDC_NWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
 
    DDX_UnitValueAndTag(pDX, IDC_MAX_STIRRUP_SPACING, IDC_MAX_STIRRUP_SPACING_UNITS, m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim );
    DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_STIRRUP_SPACING,m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim);

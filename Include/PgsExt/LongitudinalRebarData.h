@@ -80,14 +80,14 @@ public:
       Float64 DistFromEnd; // Only applicable to blFromLeft, blFromRight
       Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirder
 
-      pgsTypes::GirderFace  Face;
+      pgsTypes::FaceType  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
 
       RebarRow():
-         Face(pgsTypes::GirderTop), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0),
+         Face(pgsTypes::TopFace), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0),
          BarLayout(pgsTypes::blFullLength), DistFromEnd(0), BarLength(0)
       {;}
 

@@ -2012,19 +2012,19 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             ATLASSERT( 0 <= endHaunch   && endHaunch   < 1e9 );
 
             // get harped strand adjustment limits
-            pgsTypes::GirderFace endTopFace, endBottomFace;
+            pgsTypes::FaceType endTopFace, endBottomFace;
             Float64 endTopLimit, endBottomLimit;
             pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-            IBeamFactory::BeamFace etf = endTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-            IBeamFactory::BeamFace ebf = endBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+            IBeamFactory::BeamFace etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+            IBeamFactory::BeamFace ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
-            pgsTypes::GirderFace hpTopFace, hpBottomFace;
+            pgsTypes::FaceType hpTopFace, hpBottomFace;
             Float64 hpTopLimit, hpBottomLimit;
             pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
     
-            IBeamFactory::BeamFace htf = hpTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-            IBeamFactory::BeamFace hbf = hpBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+            IBeamFactory::BeamFace htf = hpTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+            IBeamFactory::BeamFace hbf = hpBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
             // only allow end adjustents if increment is non-negative
             Float64 end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
@@ -6752,17 +6752,6 @@ Float64 CBridgeAgentImp::GetOverlayDepth()
 {
    Float64 depth;
    m_Bridge->get_WearingSurfaceDepth(&depth);
-
-#if defined _DEBUG
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
-   if ( pDeck->DeckType == pgsTypes::sdtNone )
-   {
-      ATLASSERT(IsZero(depth));
-   }
-#endif
-
    return depth;
 }
 
@@ -8754,7 +8743,7 @@ Float64 CBridgeAgentImp::GetStrandRelaxation(const CSegmentKey& segmentKey,Float
 #pragma Reminder("UPDATE: using dummy method for strand relaxation")
    // this is the method used in Tadros 1977 paper. use the relaxation model from AASHTO
 
-   if ( GetNumStrands(segmentKey,strandType) == 0 )
+   if ( GetStrandCount(segmentKey,strandType) == 0 )
       return 0.0; // no strands, no relaxation
 
    const matPsStrand* pStrand = GetStrandMaterial(segmentKey,strandType);
@@ -8799,12 +8788,12 @@ void CBridgeAgentImp::GetSegmentLongitudinalRebarProperties(const CSegmentKey& s
    *pFu = pRebar->GetUltimateStrength();
 }
 
-void CBridgeAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade)
+void CBridgeAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade)
 {
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
-   type = pLRD->BarType;
-   grade = pLRD->BarGrade;
+   (*pType) = pLRD->BarType;
+   (*pGrade) = pLRD->BarGrade;
 }
 
 std::_tstring CBridgeAgentImp::GetSegmentLongitudinalRebarName(const CSegmentKey& segmentKey)
@@ -8824,12 +8813,12 @@ void CBridgeAgentImp::GetClosureJointLongitudinalRebarProperties(const CClosureK
    *pFu = pRebar->GetUltimateStrength();
 }
 
-void CBridgeAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade)
+void CBridgeAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade)
 {
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetClosureJointLongitudinalRebarData(closureKey);
-   type = pLRD->BarType;
-   grade = pLRD->BarGrade;
+   (*pType) = pLRD->BarType;
+   (*pGrade) = pLRD->BarGrade;
 }
 
 std::_tstring CBridgeAgentImp::GetClosureJointLongitudinalRebarName(const CClosureKey& closureKey)
@@ -8849,12 +8838,12 @@ void CBridgeAgentImp::GetSegmentTransverseRebarProperties(const CSegmentKey& seg
 
 }
 
-void CBridgeAgentImp::GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade)
+void CBridgeAgentImp::GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade)
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
-   type  = pShearData->ShearBarType;
-   grade = pShearData->ShearBarGrade;
+   (*pType)  = pShearData->ShearBarType;
+   (*pGrade) = pShearData->ShearBarGrade;
 }
 
 std::_tstring CBridgeAgentImp::GetSegmentTransverseRebarName(const CSegmentKey& segmentKey)
@@ -8874,12 +8863,12 @@ void CBridgeAgentImp::GetClosureJointTransverseRebarProperties(const CClosureKey
 
 }
 
-void CBridgeAgentImp::GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade)
+void CBridgeAgentImp::GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade)
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetClosureJointShearData(closureKey);
-   type  = pShearData->ShearBarType;
-   grade = pShearData->ShearBarGrade;
+   (*pType)  = pShearData->ShearBarType;
+   (*pGrade) = pShearData->ShearBarGrade;
 }
 
 std::_tstring CBridgeAgentImp::GetClosureJointTransverseRebarName(const CClosureKey& closureKey)
@@ -8905,13 +8894,13 @@ std::_tstring CBridgeAgentImp::GetDeckRebarName()
    return lrfdRebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade);
 }
 
-void CBridgeAgentImp::GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade)
+void CBridgeAgentImp::GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
 {
    // top and bottom mat use the same material
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
-   type = pDeck->DeckRebarData.TopRebarType;
-   grade = pDeck->DeckRebarData.TopRebarGrade;
+   (*pType)  = pDeck->DeckRebarData.TopRebarType;
+   (*pGrade) = pDeck->DeckRebarData.TopRebarGrade;
 }
 
 Float64 CBridgeAgentImp::GetNWCDensityLimit()
@@ -11568,7 +11557,7 @@ void CBridgeAgentImp::GridFillToSequentialFill(LPCTSTR strGirderName,pgsTypes::S
 }
 
 
-StrandIndexType CBridgeAgentImp::GetNumStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type)
+StrandIndexType CBridgeAgentImp::GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type)
 {
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
@@ -11678,7 +11667,7 @@ Float64 CBridgeAgentImp::GetStrandArea(const CSegmentKey& segmentKey,IntervalInd
    if ( intervalIdx < GetStressStrandInterval(segmentKey) )
       return 0; // strands aren't stressed so they aren't even in play yet
 
-   StrandIndexType Ns = GetNumStrands(segmentKey,type);
+   StrandIndexType Ns = GetStrandCount(segmentKey,type);
    const matPsStrand* pStrand = GetStrandMaterial(segmentKey,type);
 
    Float64 aps = pStrand->GetNominalArea();
@@ -12337,7 +12326,7 @@ StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(const CSegmentKey& segmen
 //-----------------------------------------------------------------------------
 RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType )
 {
-   StrandIndexType nStrands = GetNumStrands(segmentKey,strandType);
+   StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
    return GetNumRowsWithStrand(segmentKey,nStrands,strandType);
 }
 
@@ -12346,13 +12335,13 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const CSegmentKey& segmentKey
                                                    RowIndexType rowIdx,
                                                    pgsTypes::StrandType strandType )
 {
-   StrandIndexType nStrands = GetNumStrands(segmentKey,strandType);
+   StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
    return GetNumStrandInRow(segmentKey,nStrands,rowIdx,strandType);
 }
 
 std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const CSegmentKey& segmentKey, RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
-   StrandIndexType nStrands = GetNumStrands(segmentKey,strandType);
+   StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
    return GetStrandsInRow(segmentKey,nStrands,rowIdx,strandType);
 }
 
@@ -12567,7 +12556,7 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(const CSegmentKey&
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
 
-   StrandIndexType nStrands = GetNumStrands(segmentKey,strandType);
+   StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
 
    HRESULT hr;
    CComPtr<IDblArray> arrLeft, arrRight;
@@ -12801,7 +12790,7 @@ bool CBridgeAgentImp::IsDebondingSymmetric(const CSegmentKey& segmentKey)
       if ( nDebonded == 0 )
          continue;
 
-      StrandIndexType n = GetNumStrands(segmentKey,strandType);
+      StrandIndexType n = GetStrandCount(segmentKey,strandType);
       for ( StrandIndexType strandIdx = 0; strandIdx < n; strandIdx++ )
       {
          Float64 start, end;
@@ -14658,7 +14647,7 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
    }
 
    IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
-   if ( (location == pgsTypes::TopDeck || location == pgsTypes::BottomDeck) && // want S for deck
+   if (  IsDeckStressLocation(location) && // want S for deck
          compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
       )
    {
@@ -14675,36 +14664,25 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
 
 Float64 CBridgeAgentImp::GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
 {
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-
-   Float64 yb;
-   props.ShapeProps->get_Ybottom(&yb);
-   
-   Float64 area;
-   props.ShapeProps->get_Area(&area);
-
-   Float64 Ix;
-   props.ShapeProps->get_Ixx(&Ix);
-
-   Float64 k = (IsZero(area*yb) ? 0 : -Ix/(area*yb));
-   return k;
+   Float64 Sb = fabs(GetS(spType,intervalIdx,poi,pgsTypes::BottomGirder));
+   Float64 A  = GetAg(spType,intervalIdx,poi);
+   Float64 Kt = IsZero(A) ? 0 : Sb/A ;
+   return Kt;
 }
 
 Float64 CBridgeAgentImp::GetKb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
 {
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
+   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+   if ( compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
+   {
+      pgsTypes::TopDeck;
+   }
 
-   Float64 yt;
-   props.ShapeProps->get_Ytop(&yt);
-   
-   Float64 area;
-   props.ShapeProps->get_Area(&area);
-
-   Float64 Ix;
-   props.ShapeProps->get_Ixx(&Ix);
-
-   Float64 k = (IsZero(area*yt) ? 0 : Ix/(area*yt));
-   return k;
+   Float64 St = fabs(GetS(spType,intervalIdx,poi,topLocation));
+   Float64 A  = GetAg(spType,intervalIdx,poi);
+   Float64 Kb = IsZero(A) ? 0 : St/A ;
+   return Kb;
 }
 
 Float64 CBridgeAgentImp::GetEIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
@@ -15844,17 +15822,10 @@ bool CBridgeAgentImp::DoUserLoadsExist(const CSpanGirderKey& spanGirderKey)
    IntervalIndexType nIntervals = m_IntervalManager.GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      const std::vector<IUserDefinedLoads::UserPointLoad>* uplv = GetPointLoads(intervalIdx,spanGirderKey);
-      if (uplv != NULL && !uplv->empty())
+      if ( DoUserLoadsExist(spanGirderKey,intervalIdx) )
+      {
          return true;
-
-      const std::vector<IUserDefinedLoads::UserDistributedLoad>* udlv = GetDistributedLoads(intervalIdx,spanGirderKey);
-      if (udlv != NULL && !udlv->empty())
-         return true;
-
-      const std::vector<IUserDefinedLoads::UserMomentLoad>* umlv = GetMomentLoads(intervalIdx,spanGirderKey);
-      if (umlv != NULL && !umlv->empty())
-         return true;
+      }
    }
 
    return false;
@@ -15864,38 +15835,94 @@ bool CBridgeAgentImp::DoUserLoadsExist(const CGirderKey& girderKey)
 {
    SpanIndexType startSpanIdx = GetGirderGroupStartSpan(girderKey.groupIndex);
    SpanIndexType endSpanIdx   = GetGirderGroupEndSpan(girderKey.groupIndex);
-
-   if (startSpanIdx == endSpanIdx )
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
-      return DoUserLoadsExist(CSpanGirderKey(startSpanIdx,girderKey.girderIndex));
-   }
-   else
-   {
-      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+      if ( DoUserLoadsExist(CSpanGirderKey(spanIdx,girderKey.girderIndex)) )
       {
-         if ( DoUserLoadsExist(CSpanGirderKey(spanIdx,girderKey.girderIndex)) )
-            return true;
+         return true;
       }
    }
    return false;
 }
 
+bool CBridgeAgentImp::DoUserLoadsExist(const CSpanGirderKey& spanGirderKey,IntervalIndexType intervalIdx)
+{
+   const std::vector<IUserDefinedLoads::UserPointLoad>* uplv = GetPointLoads(intervalIdx,spanGirderKey);
+   if (uplv != NULL && !uplv->empty())
+   {
+      return true;
+   }
+
+   const std::vector<IUserDefinedLoads::UserDistributedLoad>* udlv = GetDistributedLoads(intervalIdx,spanGirderKey);
+   if (udlv != NULL && !udlv->empty())
+   {
+      return true;
+   }
+
+   const std::vector<IUserDefinedLoads::UserMomentLoad>* umlv = GetMomentLoads(intervalIdx,spanGirderKey);
+   if (umlv != NULL && !umlv->empty())
+   {
+      return true;
+   }
+
+   return false;
+}
+
+bool CBridgeAgentImp::DoUserLoadsExist(const CGirderKey& girderKey,IntervalIndexType intervalIdx)
+{
+   SpanIndexType startSpanIdx = GetGirderGroupStartSpan(girderKey.groupIndex);
+   SpanIndexType endSpanIdx   = GetGirderGroupEndSpan(girderKey.groupIndex);
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   {
+      if ( DoUserLoadsExist(CSpanGirderKey(spanIdx,girderKey.girderIndex),intervalIdx) )
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+
 const std::vector<IUserDefinedLoads::UserPointLoad>* CBridgeAgentImp::GetPointLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey)
 {
-   std::vector<UserPointLoad>* vec = GetUserPointLoads(intervalIdx,spanGirderKey);
-   return vec;
+   ValidateUserLoads();
+
+   PointLoadCollection::iterator found( m_PointLoads[intervalIdx].find(spanGirderKey) );
+
+   if (found == m_PointLoads[intervalIdx].end())
+   {
+      return NULL;
+   }
+
+   return &(found->second);
 }
 
 const std::vector<IUserDefinedLoads::UserDistributedLoad>* CBridgeAgentImp::GetDistributedLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey)
 {
-   std::vector<UserDistributedLoad>* vec = GetUserDistributedLoads(intervalIdx,spanGirderKey);
-   return vec;
+   ValidateUserLoads();
+
+   DistributedLoadCollection::iterator found( m_DistributedLoads[intervalIdx].find(spanGirderKey) );
+
+   if (found == m_DistributedLoads[intervalIdx].end())
+   {
+      return NULL;
+   }
+
+   return &(found->second);
 }
 
 const std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetMomentLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey)
 {
-   std::vector<UserMomentLoad>* vec = GetUserMomentLoads(intervalIdx,spanGirderKey);
-   return vec;
+   ValidateUserLoads();
+
+   MomentLoadCollection::iterator found( m_MomentLoads[intervalIdx].find(spanGirderKey) );
+
+   if (found == m_MomentLoads[intervalIdx].end())
+   {
+      return NULL;
+   }
+      
+   return &(found->second);
 }
 
 /////////////////////////////////////////////////////
@@ -16499,7 +16526,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi)
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   pgsTypes::GirderFace tensionSide = pShearCapacity->GetFlexuralTensionSide(pgsTypes::StrengthI,intervalIdx,poi);
+   pgsTypes::FaceType tensionSide = pShearCapacity->GetFlexuralTensionSide(pgsTypes::StrengthI,intervalIdx,poi);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -16513,7 +16540,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi)
    // get moment capacity details
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    MOMENTCAPACITYDETAILS capdet;
-   pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, tensionSide == pgsTypes::GirderBottom ? true : false, &capdet);
+   pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, tensionSide == pgsTypes::BottomFace ? true : false, &capdet);
 
    Float64 struct_slab_h = GetStructuralSlabDepth(poi);
    Float64 Ytop = struct_slab_h - capdet.dc; // compression resultant (from top of bare girder in Girder Section Coordinates)
@@ -18454,6 +18481,15 @@ IntervalIndexType CBridgeAgentImp::GetLiveLoadInterval()
    return m_IntervalManager.GetLiveLoadInterval();
 }
 
+IntervalIndexType CBridgeAgentImp::GetLoadRatingInterval()
+{
+#pragma Reminder("UPDATE: assuming load ratings occur in the final interval")
+   // the could occur in any interval after the bridge is open to traffic.
+   // should allow the user to select the load rating interval in the loading rating configuration dialog
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetIntervalCount()-1;
+}
+
 IntervalIndexType CBridgeAgentImp::GetOverlayInterval()
 {
    VALIDATE(BRIDGE);
@@ -18474,6 +18510,13 @@ IntervalIndexType CBridgeAgentImp::GetFirstTendonStressingInterval(const CGirder
    if ( nDucts == 0 )
       return INVALID_INDEX;
 
+   // Convert the actual number of ducts to the number of raw input ducts.
+   // There is one duct per web. If there is multiple webs, such as with U-Beams,
+   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
+   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
+   WebIndexType nWebs = GetWebCount(girderKey);
+   nDucts = nDucts/nWebs;
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    EventIndexType ptEventIdx = pIBridgeDesc->GetTimelineManager()->GetEventCount();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -18492,6 +18535,13 @@ IntervalIndexType CBridgeAgentImp::GetLastTendonStressingInterval(const CGirderK
    if ( nDucts == 0 )
       return INVALID_INDEX;
 
+   // Convert the actual number of ducts to the number of raw input ducts.
+   // There is one duct per web. If there is multiple webs, such as with U-Beams,
+   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
+   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
+   WebIndexType nWebs = GetWebCount(girderKey);
+   nDucts = nDucts/nWebs;
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    EventIndexType ptEventIdx = 0;
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -18505,17 +18555,26 @@ IntervalIndexType CBridgeAgentImp::GetLastTendonStressingInterval(const CGirderK
 IntervalIndexType CBridgeAgentImp::GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
    VALIDATE(BRIDGE);
+   ATLASSERT(ductIdx != INVALID_INDEX);
+   return m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
+}
 
-   // Convert the actual duct index to the index value for the raw input.
-   // There is one duct per web. If there is multiple webs, such as with U-Beams,
-   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
-   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
-   WebIndexType nWebs = GetWebCount(girderKey);
-   DuctIndexType index = ductIdx/nWebs;
+bool CBridgeAgentImp::IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx)
+{
+   VALIDATE(BRIDGE);
+   ATLASSERT(intervalIdx != INVALID_INDEX);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType ptEventIdx = pIBridgeDesc->GetStressTendonEventIndex(girderKey,index);
-   return m_IntervalManager.GetInterval(ptEventIdx);
+   DuctIndexType nDucts = GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      IntervalIndexType stressingIntervalIdx = GetStressTendonInterval(girderKey,ductIdx);
+      if ( stressingIntervalIdx == intervalIdx )
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 IntervalIndexType CBridgeAgentImp::GetTemporarySupportRemovalInterval(SupportIDType tsID)
@@ -18524,17 +18583,53 @@ IntervalIndexType CBridgeAgentImp::GetTemporarySupportRemovalInterval(SupportIDT
    return m_IntervalManager.GetTemporarySupportRemovalInterval(tsID);
 }
 
+std::vector<IntervalIndexType> CBridgeAgentImp::GetTemporarySupportRemovalIntervals(GroupIndexType grpIdx)
+{
+   std::vector<IntervalIndexType> tsrIntervals;
+
+   // Get the intervals when temporary supports are removed for this group
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
+   const CSpanData2* pSpan        = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
+   const CSpanData2* pEndSpan     = pGroup->GetPier(pgsTypes::metEnd)->GetNextSpan();
+
+   while ( pSpan != pEndSpan )
+   {
+      std::vector<const CTemporarySupportData*> vTS( pSpan->GetTemporarySupports() );
+      std::vector<const CTemporarySupportData*>::iterator tsIter(vTS.begin());
+      std::vector<const CTemporarySupportData*>::iterator tsIterEnd(vTS.end());
+      for ( ; tsIter != tsIterEnd; tsIter++ )
+      {
+         const CTemporarySupportData* pTS = *tsIter;
+         SupportIDType tsID = pTS->GetID();
+         ATLASSERT(tsID != INVALID_ID);
+
+         IntervalIndexType intervalIdx = GetTemporarySupportRemovalInterval(tsID);
+         ATLASSERT(intervalIdx != INVALID_INDEX);
+
+         tsrIntervals.push_back( intervalIdx );
+      }
+
+      pSpan = pSpan->GetNextPier()->GetNextSpan();
+   }
+
+   // sort and remove any duplicates
+   std::sort(tsrIntervals.begin(),tsrIntervals.end());
+   tsrIntervals.erase( std::unique(tsrIntervals.begin(),tsrIntervals.end()), tsrIntervals.end() );
+
+   return tsrIntervals;
+}
+
 std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGirderKey& girderKey)
 {
    std::vector<IntervalIndexType> vIntervals;
 
-#pragma Reminder("UPDATE: should spec check any interval where a load is added")
-   // need to look at user defined loads and add the intervals when they are added
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    // Segment erection intervals only need to be spec checked if there are piers or temporary supports
    // that cause negative moments in the segment. This occurs when the segment is continuous over
-   // these support types.
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   // these support types. Erecting the segment causes a change in loading condition compared to the
+   // simple span loading condition before erection.
 
    // first check  piers
    GroupIndexType nGroups = GetGirderGroupCount();
@@ -18583,9 +18678,8 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
                }
             }
 
-         if ( bIsContinuousOverSupport )
-            break;
-
+            if ( bIsContinuousOverSupport )
+               break;
          }
       }
    }
@@ -18609,7 +18703,7 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
       }
 
       // Only check temporary strand interval if there are temporary strands
-      if ( 0 < GetNumStrands(segmentKey,pgsTypes::Temporary) )
+      if ( 0 < GetStrandCount(segmentKey,pgsTypes::Temporary) )
       {
          vIntervals.push_back(GetTemporaryStrandRemovalInterval(segmentKey));
       }
@@ -18625,6 +18719,30 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
    {
       vIntervals.push_back(GetStressTendonInterval(girderKey,ductIdx));
    }
+
+   // Need to spec check whenever a user defined load is applied
+   IntervalIndexType nIntervals = GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+      {
+         // loads are defined by span so loop over all the spans in this group
+         SpanIndexType startSpanIdx, endSpanIdx;
+         GetGirderGroupSpans(grpIdx,&startSpanIdx,&endSpanIdx);
+         GirderIndexType nGirdersInGroup = GetGirderCount(grpIdx);
+         GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirdersInGroup-1); // should never happen, but make sure the girder index isn't out of bounds
+
+         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+         {
+            CSpanGirderKey spanGirderKey(spanIdx,gdrIdx);
+            if ( DoUserLoadsExist(spanGirderKey,intervalIdx) )
+            {
+               // user defined loads are defined in this interval
+               vIntervals.push_back(intervalIdx);
+            }
+         } // span loop
+      } // group loop
+   } // interval loop
 
    // Always spec check the last interval (this will cover live load)
    vIntervals.push_back(GetIntervalCount()-1); // last interval
@@ -18810,50 +18928,6 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const COf
 
       point->put_Y(y);
    }
-}
-
-//////////////////////////
-std::vector<IUserDefinedLoads::UserPointLoad>* CBridgeAgentImp::GetUserPointLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey)
-{
-   ValidateUserLoads();
-
-   PointLoadCollection::iterator found( m_PointLoads[intervalIdx].find(spanGirderKey) );
-
-   if (found != m_PointLoads[intervalIdx].end())
-   {
-      return &(found->second);
-   }
-
-   return 0;
-}
-
-std::vector<IUserDefinedLoads::UserDistributedLoad>* CBridgeAgentImp::GetUserDistributedLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey)
-{
-   ValidateUserLoads();
-
-   DistributedLoadCollection::iterator found( m_DistributedLoads[intervalIdx].find(spanGirderKey) );
-
-   if (found != m_DistributedLoads[intervalIdx].end())
-   {
-      return &(found->second);
-   }
-
-   return 0;
-}
-
-
-std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetUserMomentLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey)
-{
-   ValidateUserLoads();
-
-   MomentLoadCollection::iterator found( m_MomentLoads[intervalIdx].find(spanGirderKey) );
-
-   if (found != m_MomentLoads[intervalIdx].end())
-   {
-      return &(found->second);
-   }
-
-   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -19887,7 +19961,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             // (0,0) is at the top of the girder so Y is measured
             // down from the top
             Float64 yStart, yEnd;
-            if ( info.Face == pgsTypes::GirderTop )
+            if ( info.Face == pgsTypes::TopFace )
             {
                yStart = -(info.Cover + db/2);
                yEnd   = yStart;
@@ -20035,7 +20109,7 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
          // (0,0) is at the top of the girder so Y is measured
          // down from the top
          Float64 yStart, yEnd;
-         if ( info.Face == pgsTypes::GirderTop )
+         if ( info.Face == pgsTypes::TopFace )
          {
             yStart = -(info.Cover + db/2);
             yEnd   = yStart;
@@ -20966,7 +21040,7 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    pStrand = GetStrandMaterial(segmentKey,pgsTypes::Harped);
    aps = pStrand->GetNominalArea();
 
-   StrandIndexType Nh = (bUseConfig ? config.PrestressConfig.GetNStrands(pgsTypes::Harped) : pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped));
+   StrandIndexType Nh = (bUseConfig ? config.PrestressConfig.GetNStrands(pgsTypes::Harped) : pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped));
 
    strand_points.Release();
    if(bUseConfig)
@@ -22085,19 +22159,19 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppS
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strGirderName);
 
    // get harped strand adjustment limits
-   pgsTypes::GirderFace endTopFace, endBottomFace;
+   pgsTypes::FaceType endTopFace, endBottomFace;
    Float64 endTopLimit, endBottomLimit;
    pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-   IBeamFactory::BeamFace etf = endTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace ebf = endBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
-   pgsTypes::GirderFace hpTopFace, hpBottomFace;
+   pgsTypes::FaceType hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
    pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
 
-   IBeamFactory::BeamFace htf = hpTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace hbf = hpBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace htf = hpTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace hbf = hpBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
    // only allow end adjustents if increment is non-negative
    Float64 end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;

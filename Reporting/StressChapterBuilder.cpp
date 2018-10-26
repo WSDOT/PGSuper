@@ -27,8 +27,10 @@
 #include <Reporting\ProductStressTable.h>
 #include <Reporting\UserStressTable.h>
 #include <Reporting\CombinedStressTable.h>
-#include <Reporting\PrestressStressTable.h>
+#include <Reporting\PretensionStressTable.h>
+#include <Reporting\PosttensionStressTable.h>
 #include <Reporting\LiveLoadDistributionFactorTable.h>
+#include <Reporting\TSRemovalStressTable.h>
 
 #include <IFace\Bridge.h>
 
@@ -36,6 +38,7 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -79,6 +82,10 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptParagraph* p = 0;
 
@@ -129,15 +136,13 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    // Product Stresses
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *p << _T("Product Load Stresses") << rptNewLine;
    p->SetName(_T("Product Load Stresses"));
+   *p << p->GetName() << rptNewLine;
    *pChapter << p;
 
    if ( bDesign )
    {
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *p << _T("Load Responses - Casting Yard")<<rptNewLine;
-      p->SetName(_T("Casting Yard Results"));
+      p = new rptParagraph;
       *pChapter << p;
 
       for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
@@ -145,18 +150,50 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
          GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
+         rptRcTable* pReleaseLayoutTable = NULL;
+         rptRcTable* pStorageLayoutTable = NULL;
+         rptRcTable* pLayoutTable        = NULL;
          SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+         if ( 1 < nSegments )
+         {
+            pReleaseLayoutTable = pgsReportStyleHolder::CreateTableNoHeading(nSegments,_T("Segment Stresses at Prestress Release"));
+            *p << pReleaseLayoutTable << rptNewLine;
+            pReleaseLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
+            pReleaseLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+
+            pStorageLayoutTable = pgsReportStyleHolder::CreateTableNoHeading(nSegments,_T("Segment Stresses during Storage"));
+            *p << pStorageLayoutTable << rptNewLine;
+            pStorageLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
+            pStorageLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+         }
+         else
+         {
+            pLayoutTable = pgsReportStyleHolder::CreateTableNoHeading(2);
+            *p << pLayoutTable << rptNewLine;
+            pLayoutTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
+            pLayoutTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+         }
+
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-            p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-            *pChapter << p;
-            *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
 
-            p = new rptParagraph;
-            *pChapter << p;
-            *p << CCastingYardStressTable().Build(pBroker,segmentKey,pDisplayUnits) << rptNewLine;
+            if ( pLayoutTable )
+            {
+               (*pLayoutTable)(0,0) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,_T("Stresses at Release"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,1) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,_T("Stresses during Storage"),pDisplayUnits) << rptNewLine;
+            }
+            else
+            {
+               CString strTableTitle;
+               strTableTitle.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
+
+               (*pReleaseLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+               (*pStorageLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+            }
          }
       }
    }
@@ -168,30 +205,53 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
+      // product stresses in girder
       p = new rptParagraph;
       *pChapter << p;
-      *p << CProductStressTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,pDisplayUnits) << rptNewLine;
+      *p << CProductStressTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,pDisplayUnits,true/*girder stresses*/) << rptNewLine;
       *p << LIVELOAD_PER_LANE << rptNewLine;
 
+      // product stresses in deck
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << CProductStressTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+
+      // stresses in girder
       GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
       bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
       if (bAreThereUserLoads)
       {
-         *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+         std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
+         {
+            IntervalIndexType intervalIdx = *iter;
+            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx))
+            {
+               *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits,true/*girder stresses*/) << rptNewLine;
+               if ( compositeDeckIntervalIdx <= intervalIdx )
+               {
+                  *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
+               }
+            }
+         }
       }
+
+       CTSRemovalStressTable().Build(pChapter,pBroker,girderKey,analysisType,pDisplayUnits,true/*girder stresses*/);
+       CTSRemovalStressTable().Build(pChapter,pBroker,girderKey,analysisType,pDisplayUnits,false/*deck stresses*/);
    } // next group
 
    // Load Combinations (DC, DW, etc) & Limit States
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals          = pIntervals->GetIntervalCount();
-   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0)); // release interval is the same for all segments
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
+   std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+   std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+   for ( ; iter != end; iter++ )
    {
+      IntervalIndexType intervalIdx = *iter;
+
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;
@@ -199,20 +259,31 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       p->SetName(strName);
       *p << p->GetName();
 
-      CCombinedStressTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      CCombinedStressTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating, true/*girder stresses*/);
       if ( liveLoadIntervalIdx <= intervalIdx )
       {
          p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
          *pChapter << p;
          *p << LIVELOAD_PER_GIRDER << rptNewLine;
       }
+
+      if ( compositeDeckIntervalIdx <= intervalIdx )
+      {
+         CCombinedStressTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating, false/*deck stresses*/);
+         if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            *pChapter << p;
+            *p << LIVELOAD_PER_GIRDER << rptNewLine;
+         }
+      }
    } // next interval
 
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
-   *p << _T("Stresses due to Prestress") << rptNewLine;
-   p->SetName(_T("Prestress"));
+   p->SetName(_T("Stresses due to Prestress"));
+   *p << p->GetName() << rptNewLine;
    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
@@ -223,13 +294,42 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       {
          CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-         p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-         *pChapter << p;
-         *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         if ( 1 < nSegments )
+         {
+            p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            *pChapter << p;
+            *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         }
 
          p = new rptParagraph;
          *pChapter << p;
-         *p << CPrestressStressTable().Build(pBroker,segmentKey,bDesign,pDisplayUnits) << rptNewLine;
+         *p << CPretensionStressTable().Build(pBroker,segmentKey,bDesign,pDisplayUnits) << rptNewLine;
+      }
+   }
+
+
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   if ( pDocType->IsPGSpliceDocument() )
+   {
+      GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << p;
+      p->SetName(_T("Stresses due to Post-tensioning"));
+      *p << p->GetName() << rptNewLine;
+      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      {
+         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+         GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
+
+         CGirderKey girderKey(grpIdx,gdrIdx);
+
+         if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
+         {
+            p = new rptParagraph;
+            *pChapter << p;
+            *p << CPosttensionStressTable().Build(pBroker,girderKey,bDesign,pDisplayUnits,true /*girder stresses*/) << rptNewLine;
+            *p << CPosttensionStressTable().Build(pBroker,girderKey,bDesign,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
+         }
       }
    }
 

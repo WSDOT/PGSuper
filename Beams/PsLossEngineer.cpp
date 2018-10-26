@@ -1284,7 +1284,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -1463,7 +1463,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1681,7 +1681,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -1832,7 +1832,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    Float64 end_size = pBridge->GetSegmentStartEndDistance( segmentKey );
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -1996,7 +1996,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    Float64 end_size = pBridge->GetSegmentStartEndDistance( segmentKey );
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    //GET_IFACE(IPointOfInterest,pIPoi);
    //std::vector<pgsPointOfInterest> bsPoi( pIPoi->GetPointsOfInterest(segmentKey) );

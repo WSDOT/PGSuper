@@ -84,8 +84,10 @@ static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
 // Pen styles for stresses at top and bottom of girder
-#define PS_STRESS_TOP     PS_SOLID
-#define PS_STRESS_BOTTOM  PS_DASH
+#define PS_STRESS_TOP_GIRDER     PS_SOLID
+#define PS_STRESS_BOTTOM_GIRDER  PS_DASH
+#define PS_STRESS_TOP_DECK       PS_DOT
+#define PS_STRESS_BOTTOM_DECK    PS_DASHDOT
 
 BEGIN_MESSAGE_MAP(CAnalysisResultsGraphBuilder, CEAFGraphBuilderBase)
 END_MESSAGE_MAP()
@@ -205,8 +207,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
 
-         StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
-         bTempStrand |= ( 0 < NtMax );
+         StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
+         bTempStrand |= ( 0 < Nt );
       } // next segIdx
    } // next groupIdx
 
@@ -372,8 +374,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    intervals = AddTSRemovalIntervals(overlayIntervalIdx,vOverlayIntervals,vTempSupportRemovalIntervals);
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Overlay"), pftOverlay, intervals, ACTIONS_ALL,VIOLET) );
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Prestress"), graphPrestress, vAllIntervals, DODGERBLUE, DODGERBLUE) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Post Tension"), graphPostTension, vAllPTIntervals, DODGERBLUE, ORANGE) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Prestress"),    graphPrestress,   vAllIntervals,   DODGERBLUE) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Post Tension"), graphPostTension, vAllPTIntervals, DODGERBLUE) );
 
    // User Defined Static Loads
 #pragma Reminder("UPDATE: user defined load intervals")
@@ -1000,7 +1002,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderI
 void CAnalysisResultsGraphBuilder::InitializeGraph(const CAnalysisResultsGraphDefinition& graphDef,ActionType actionType,IntervalIndexType intervalIdx,bool bIsFinalShear,IndexType* pDataSeriesID,pgsTypes::BridgeAnalysisType* pBAT,IndexType* pAnalysisTypeCount)
 {
    CString strDataLabel(graphDef.m_Name);
-   COLORREF c(graphDef.m_Color1);
+   COLORREF c(graphDef.m_Color);
 
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
@@ -1062,16 +1064,16 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(const CAnalysisResultsGraphDe
       if ( analysisType == pgsTypes::Envelope )
       {
          *pAnalysisTypeCount = 1;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),    PS_STRESS_TOP,    1, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"), PS_STRESS_BOTTOM, 1, c);
+         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),    PS_STRESS_TOP_GIRDER,    1, c);
+         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"), PS_STRESS_BOTTOM_GIRDER, 1, c);
          pBAT[0] = pgsTypes::MinSimpleContinuousEnvelope;
          pBAT[1] = pgsTypes::MaxSimpleContinuousEnvelope;
 
          if ( compositeDeckIntervalIdx <= intervalIdx )
          {
             *pAnalysisTypeCount = 2;
-            pDataSeriesID[2] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),    PS_STRESS_TOP,    1, c);
-            pDataSeriesID[3] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"), PS_STRESS_BOTTOM, 1, c);
+            pDataSeriesID[2] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),    PS_STRESS_TOP_DECK,    1, c);
+            pDataSeriesID[3] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"), PS_STRESS_BOTTOM_DECK, 1, c);
             pBAT[2] = pgsTypes::MinSimpleContinuousEnvelope;
             pBAT[3] = pgsTypes::MinSimpleContinuousEnvelope;
          }
@@ -1079,16 +1081,16 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(const CAnalysisResultsGraphDe
       else
       {
          *pAnalysisTypeCount = 1;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),    PS_STRESS_TOP,    1, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"), PS_STRESS_BOTTOM, 1, c);
+         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),    PS_STRESS_TOP_GIRDER,    1, c);
+         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"), PS_STRESS_BOTTOM_GIRDER, 1, c);
          pBAT[0] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
          pBAT[1] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
          if ( compositeDeckIntervalIdx <= intervalIdx )
          {
             *pAnalysisTypeCount = 2;
-            pDataSeriesID[2] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),    PS_STRESS_TOP,    1, c);
-            pDataSeriesID[3] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"), PS_STRESS_BOTTOM, 1, c);
+            pDataSeriesID[2] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),    PS_STRESS_TOP_DECK,    1, c);
+            pDataSeriesID[3] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"), PS_STRESS_BOTTOM_DECK, 1, c);
             pBAT[2] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
             pBAT[3] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
          }
@@ -1138,8 +1140,11 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(const CAnalysisResultsGraph
          }
       case actionStress:
          {
+         pgsTypes::StressLocation topLocation = (analysisIdx == 0 ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
+         pgsTypes::StressLocation botLocation = (analysisIdx == 0 ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
+
          std::vector<Float64> fTop, fBot;
-         pForces->GetStress( combination_type, intervalIdx, vPoi, ctCummulative, bat[analysisIdx], &fTop, &fBot );
+         pForces->GetStress( combination_type, intervalIdx, vPoi, ctCummulative, bat[analysisIdx], topLocation, botLocation, &fTop, &fBot );
          AddGraphPoints(data_series_id[2*analysisIdx],   xVals, fTop);
          AddGraphPoints(data_series_id[2*analysisIdx+1], xVals, fBot);
          break;
@@ -1159,7 +1164,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(const CAnalysisResultsGraphDefi
    CString strDataLabel(graphDef.m_Name);
    strDataLabel += _T(" (per girder)");
 
-   COLORREF c(graphDef.m_Color1);
+   COLORREF c(graphDef.m_Color);
 
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
@@ -1173,6 +1178,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(const CAnalysisResultsGraphDefi
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
       if (actionType == actionShear && !bIsFinalShear)
       {
          strDataLabel = _T("");
@@ -1190,11 +1196,15 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(const CAnalysisResultsGraphDefi
    }
 
    // data series for stresses
-#pragma Reminder("UPDATE: add deck stresses")
-   IndexType stress_top_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP,   1,c);
-   IndexType stress_top_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP,   1,c);
-   IndexType stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM,1,c);
-   IndexType stress_bot_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_BOTTOM,1,c);
+   IndexType stress_top_girder_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_top_girder_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_bot_girder_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,1,c);
+   IndexType stress_bot_girder_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_BOTTOM_GIRDER,1,c);
+
+   IndexType stress_top_deck_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),   PS_STRESS_TOP_DECK,   1,c);
+   IndexType stress_top_deck_min = m_Graph.CreateDataSeries(_T(""),                           PS_STRESS_TOP_DECK,   1,c);
+   IndexType stress_bot_deck_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"),PS_STRESS_BOTTOM_DECK,1,c);
+   IndexType stress_bot_deck_min = m_Graph.CreateDataSeries(_T(""),                           PS_STRESS_BOTTOM_DECK,1,c);
 
    switch(actionType)
    {
@@ -1258,23 +1268,42 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(const CAnalysisResultsGraphDefi
       }
    case actionStress:
       {
-#pragma Reminder("UPDATE: add deck stresses")
          std::vector<Float64> fTopMin,fTopMax,fBotMin,fBotMax;
+
+         // Girder Stresses
          if ( analysisType == pgsTypes::Envelope )
          {
-            pForces->GetCombinedLiveLoadStress(llType, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
-            AddGraphPoints(stress_top_min, xVals, fTopMin);
-            AddGraphPoints(stress_bot_min, xVals, fBotMin);
-            AddGraphPoints(stress_top_max, xVals, fTopMax);
-            AddGraphPoints(stress_bot_max, xVals, fBotMax);
+            pForces->GetCombinedLiveLoadStress(llType, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+            AddGraphPoints(stress_top_girder_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_girder_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_girder_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_girder_max, xVals, fBotMax);
          }
          else
          {
-            pForces->GetCombinedLiveLoadStress(llType, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
-            AddGraphPoints(stress_top_min, xVals, fTopMin);
-            AddGraphPoints(stress_bot_min, xVals, fBotMin);
-            AddGraphPoints(stress_top_max, xVals, fTopMax);
-            AddGraphPoints(stress_bot_max, xVals, fBotMax);
+            pForces->GetCombinedLiveLoadStress(llType, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+            AddGraphPoints(stress_top_girder_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_girder_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_girder_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_girder_max, xVals, fBotMax);
+         }
+
+         // Deck Stresses
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            pForces->GetCombinedLiveLoadStress(llType, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, pgsTypes::TopDeck, pgsTypes::BottomDeck, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+            AddGraphPoints(stress_top_deck_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_deck_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_deck_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_deck_max, xVals, fBotMax);
+         }
+         else
+         {
+            pForces->GetCombinedLiveLoadStress(llType, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, pgsTypes::TopDeck, pgsTypes::BottomDeck, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+            AddGraphPoints(stress_top_deck_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_deck_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_deck_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_deck_max, xVals, fBotMax);
          }
       break;
       }
@@ -1290,7 +1319,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(const CAnalysisResults
    CString strDataLabel(graphDef.m_Name);
    strDataLabel += _T(" (per lane)");
 
-   COLORREF c(graphDef.m_Color1);
+   COLORREF c(graphDef.m_Color);
 
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
@@ -1318,11 +1347,15 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(const CAnalysisResults
    }
 
    // data series for stresses
-#pragma Reminder("UPDATE: add deck stresses")
-   IndexType stress_top_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP,   1,c);
-   IndexType stress_top_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP,   1,c);
-   IndexType stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM,1,c);
-   IndexType stress_bot_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_BOTTOM,1,c);
+   IndexType stress_top_girder_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_top_girder_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_bot_girder_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,1,c);
+   IndexType stress_bot_girder_min = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_BOTTOM_GIRDER,1,c);
+
+   IndexType stress_top_deck_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),   PS_STRESS_TOP_DECK,   1,c);
+   IndexType stress_top_deck_min = m_Graph.CreateDataSeries(_T(""),                           PS_STRESS_TOP_DECK,   1,c);
+   IndexType stress_bot_deck_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"),PS_STRESS_BOTTOM_DECK,1,c);
+   IndexType stress_bot_deck_min = m_Graph.CreateDataSeries(_T(""),                           PS_STRESS_BOTTOM_DECK,1,c);
 
    switch(actionType)
    {
@@ -1422,8 +1455,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(const CAnalysisResults
       }
    case actionStress:
       {
-#pragma Reminder("UPDATE: add deck stresses")
          std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
+
+         // Girder stresses
          if ( analysisType == pgsTypes::Envelope )
          {
             if ( vehicleIndex != INVALID_INDEX )
@@ -1431,10 +1465,10 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(const CAnalysisResults
             else
                pForces->GetLiveLoadStress(llType, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, pgsTypes::TopGirder,pgsTypes::BottomGirder, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
 
-            AddGraphPoints(stress_top_min, xVals, fTopMin);
-            AddGraphPoints(stress_bot_min, xVals, fBotMin);
-            AddGraphPoints(stress_top_max, xVals, fTopMax);
-            AddGraphPoints(stress_bot_max, xVals, fBotMax);
+            AddGraphPoints(stress_top_girder_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_girder_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_girder_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_girder_max, xVals, fBotMax);
          }
          else
          {
@@ -1443,10 +1477,36 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(const CAnalysisResults
             else
                pForces->GetLiveLoadStress(llType, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, pgsTypes::TopGirder,pgsTypes::BottomGirder, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
 
-            AddGraphPoints(stress_top_min, xVals, fTopMin);
-            AddGraphPoints(stress_bot_min, xVals, fBotMin);
-            AddGraphPoints(stress_top_max, xVals, fTopMax);
-            AddGraphPoints(stress_bot_max, xVals, fBotMax);
+            AddGraphPoints(stress_top_girder_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_girder_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_girder_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_girder_max, xVals, fBotMax);
+         }
+
+         // Deck stresses
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            if ( vehicleIndex != INVALID_INDEX )
+               pForces->GetVehicularLiveLoadStress(llType, vehicleIndex, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, pgsTypes::TopDeck,pgsTypes::BottomDeck, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+            else
+               pForces->GetLiveLoadStress(llType, intervalIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, pgsTypes::TopDeck,pgsTypes::BottomDeck, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+
+            AddGraphPoints(stress_top_deck_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_deck_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_deck_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_deck_max, xVals, fBotMax);
+         }
+         else
+         {
+            if ( vehicleIndex != INVALID_INDEX )
+               pForces->GetVehicularLiveLoadStress(llType, vehicleIndex, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, pgsTypes::TopDeck,pgsTypes::BottomDeck, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+            else
+               pForces->GetLiveLoadStress(llType, intervalIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, pgsTypes::TopDeck,pgsTypes::BottomDeck, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+
+            AddGraphPoints(stress_top_deck_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_deck_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_deck_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_deck_max, xVals, fBotMax);
          }
       break;
       }
@@ -1511,11 +1571,11 @@ void CAnalysisResultsGraphBuilder::PrestressLoadGraph(const CAnalysisResultsGrap
 
    CString strDataLabel(graphDef.m_Name);
 
-   COLORREF c(graphDef.m_Color1);
+   COLORREF c(graphDef.m_Color);
 
    IndexType deflection = m_Graph.CreateDataSeries(strDataLabel,   PS_SOLID,   1,c);
-   IndexType stress_top = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP,   1,c);
-   IndexType stress_bot = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM,1,c);
+   IndexType stress_top = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_bot = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,1,c);
 
    std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
@@ -1562,12 +1622,13 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(const CAnalysisResultsG
 
    CString strDataLabel(graphDef.m_Name);
 
-   COLORREF c(graphDef.m_Color1);
+   COLORREF c(graphDef.m_Color);
    int pen_size = 3;
 
 #pragma Reminder("UPDATE: allowable stress plotting is now the same for all intervals")
    // Need to look at applicability top and bottom for tension and compression
    // Need to plot allowable top, allowable bottom, or just allowable if same for both
+   // Don't plot allowables in the "not applicable" areas
 
    // data series min/max capacity(allowable)
    IndexType max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,pen_size,c);
@@ -1640,14 +1701,13 @@ void CAnalysisResultsGraphBuilder::PostTensionLoadGraph(const CAnalysisResultsGr
 
    CString strDataLabel(graphDef.m_Name);
 
-   COLORREF c1(graphDef.m_Color1);
-   COLORREF c2(graphDef.m_Color2);
+   COLORREF c(graphDef.m_Color);
 
-   IndexType deflection = m_Graph.CreateDataSeries(strDataLabel,   PS_SOLID,   1,c1);
-   IndexType stress_top_girder = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP,   1,c1);
-   IndexType stress_bot_girder = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM,1,c1);
-   IndexType stress_top_deck   = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),     PS_STRESS_TOP,   1,c2);
-   IndexType stress_bot_deck   = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"),  PS_STRESS_BOTTOM,1,c2);
+   IndexType deflection = m_Graph.CreateDataSeries(strDataLabel,   PS_SOLID,   1,c);
+   IndexType stress_top_girder = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_bot_girder = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,1,c);
+   IndexType stress_top_deck   = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),     PS_STRESS_TOP_DECK,     1,c);
+   IndexType stress_bot_deck   = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Deck"),  PS_STRESS_BOTTOM_DECK,  1,c);
 
    std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
@@ -1712,22 +1772,33 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(const CAnalysisResultsGra
 
    CString strDataLabel(graphDef.m_Name);
 
-   COLORREF c(graphDef.m_Color1);
+   COLORREF c(graphDef.m_Color);
    int pen_size = (graphType == graphAllowable || graphType == graphCapacity ? 3 : 1);
 
    // data series for moment, shears and deflections
-   IndexType max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,pen_size,c);
-   IndexType min_data_series = m_Graph.CreateDataSeries(_T(""),      PS_SOLID,pen_size,c);
+   IndexType max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,1,c);
+   IndexType min_data_series = m_Graph.CreateDataSeries(_T(""),      PS_SOLID,1,c);
+
+   // data series for allowable stresses and capacity
+   IndexType max_girder_capacity_series = m_Graph.CreateDataSeries(strDataLabel+_T(" - Girder"),PS_SOLID,3,c);
+   IndexType min_girder_capacity_series = m_Graph.CreateDataSeries(_T(""),PS_SOLID,3,c);
+   IndexType max_deck_capacity_series = m_Graph.CreateDataSeries(strDataLabel+_T(" - Deck"),PS_DOT,3,c);
+   IndexType min_deck_capacity_series = m_Graph.CreateDataSeries(_T(""),PS_DOT,3,c);
 
    // data series for stresses
-   IndexType stress_top_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),    PS_STRESS_TOP,   1,c);
-   IndexType stress_top_min = m_Graph.CreateDataSeries(_T(""),                              PS_STRESS_TOP,   1,c);
-   IndexType stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+_T(" -  Bottom Girder"),PS_STRESS_BOTTOM,1,c);
-   IndexType stress_bot_min = m_Graph.CreateDataSeries(_T(""),                              PS_STRESS_BOTTOM,1,c);
+   IndexType stress_top_girder_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),    PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_top_girder_min = m_Graph.CreateDataSeries(_T(""),                              PS_STRESS_TOP_GIRDER,   1,c);
+   IndexType stress_bot_girder_max = m_Graph.CreateDataSeries(strDataLabel+_T(" -  Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,1,c);
+   IndexType stress_bot_girder_min = m_Graph.CreateDataSeries(_T(""),                              PS_STRESS_BOTTOM_GIRDER,1,c);
+   
+   IndexType stress_top_deck_max = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Deck"),      PS_STRESS_TOP_DECK,   1,c);
+   IndexType stress_top_deck_min = m_Graph.CreateDataSeries(_T(""),                              PS_STRESS_TOP_DECK,   1,c);
+   IndexType stress_bot_deck_max = m_Graph.CreateDataSeries(strDataLabel+_T(" -  Bottom Deck"),  PS_STRESS_BOTTOM_DECK,1,c);
+   IndexType stress_bot_deck_min = m_Graph.CreateDataSeries(_T(""),                              PS_STRESS_BOTTOM_DECK,1,c);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    switch(action)
    {
@@ -1737,19 +1808,19 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(const CAnalysisResultsGra
          {
             GET_IFACE(IMomentCapacity,pCapacity);
             std::vector<Float64> pMn = pCapacity->GetMomentCapacity(intervalIdx,vPoi,true);
-            AddGraphPoints(max_data_series, xVals, pMn);
+            AddGraphPoints(max_girder_capacity_series, xVals, pMn);
 
             std::vector<Float64> nMn = pCapacity->GetMomentCapacity(intervalIdx,vPoi,false);
-            AddGraphPoints(min_data_series, xVals, nMn);
+            AddGraphPoints(min_girder_capacity_series, xVals, nMn);
          }
          else if ( graphType == graphMinCapacity )
          {
             GET_IFACE(IMomentCapacity,pCapacity);
             std::vector<Float64> pMrMin = pCapacity->GetMinMomentCapacity(intervalIdx,vPoi,true);
-            AddGraphPoints(max_data_series, xVals, pMrMin);
+            AddGraphPoints(max_girder_capacity_series, xVals, pMrMin);
 
             std::vector<Float64> nMrMin = pCapacity->GetMinMomentCapacity(intervalIdx,vPoi,false);
-            AddGraphPoints(min_data_series, xVals, nMrMin);
+            AddGraphPoints(min_girder_capacity_series, xVals, nMrMin);
          }
          else
          {
@@ -1786,7 +1857,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(const CAnalysisResultsGra
          {
             GET_IFACE(IShearCapacity,pCapacity);
             std::vector<Float64> pVn = pCapacity->GetShearCapacity(limitState, intervalIdx, vPoi);
-            AddGraphPoints(max_data_series, xVals,  pVn);
+            AddGraphPoints(max_girder_capacity_series, xVals,  pVn);
 
             std::vector<Float64>::iterator iter;
             std::vector<Float64> nVn;
@@ -1794,7 +1865,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(const CAnalysisResultsGra
             {
                nVn.push_back(-1*(*iter));
             }
-            AddGraphPoints(min_data_series, xVals, nVn);
+            AddGraphPoints(min_girder_capacity_series, xVals, nVn);
          }
          else
          {
@@ -1848,15 +1919,34 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(const CAnalysisResultsGra
             // not the deck
             if ( limitState != pgsTypes::ServiceIII )
             {
-               std::vector<Float64> c( pAllowable->GetAllowableStress(vPoi,pgsTypes::TopGirder,intervalIdx,limitState,pgsTypes::Compression,false,false) );
-               AddGraphPoints(max_data_series, xVals, c);
+               std::vector<Float64> c( pAllowable->GetGirderAllowableCompressionStress(vPoi,intervalIdx,limitState) );
+               AddGraphPoints(max_girder_capacity_series, xVals, c);
             }
 
             if ( limitState == pgsTypes::ServiceIII || intervalIdx < liveLoadIntervalIdx )
             {
-               std::vector<Float64> t(pAllowable->GetAllowableStress(vPoi,pgsTypes::TopGirder,intervalIdx,limitState,pgsTypes::Tension,false,false));
-               AddGraphPoints(min_data_series, xVals, t);
-               m_Graph.SetDataLabel(min_data_series,strDataLabel);
+               std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,intervalIdx,limitState,false,false));
+               AddGraphPoints(min_girder_capacity_series, xVals, t);
+               m_Graph.SetDataLabel(min_girder_capacity_series,strDataLabel+_T(" - Girder"));
+            }
+
+            if ( compositeDeckIntervalIdx <= intervalIdx )
+            {
+               // can use TopDeck or BottomDeck to get allowable stress... 
+               // we just need to designate that we want the allowable stress for the deck and
+               // not the girder
+               if ( limitState != pgsTypes::ServiceIII )
+               {
+                  std::vector<Float64> c( pAllowable->GetDeckAllowableCompressionStress(vPoi,intervalIdx,limitState) );
+                  AddGraphPoints(max_deck_capacity_series, xVals, c);
+               }
+
+               if ( limitState == pgsTypes::ServiceIII || intervalIdx < liveLoadIntervalIdx )
+               {
+                  std::vector<Float64> t(pAllowable->GetDeckAllowableTensionStress(vPoi,intervalIdx,limitState,false));
+                  AddGraphPoints(min_deck_capacity_series, xVals, t);
+                  m_Graph.SetDataLabel(min_deck_capacity_series,strDataLabel+_T(" - Deck"));
+               }
             }
          }
          else
@@ -1878,11 +1968,34 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(const CAnalysisResultsGra
                pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::BottomGirder, bIncPrestress, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &fBotMin, &fBotMax);
             }
 
-            AddGraphPoints(stress_top_min, xVals, fTopMin);
-            AddGraphPoints(stress_bot_min, xVals, fBotMin);
+            AddGraphPoints(stress_top_girder_min, xVals, fTopMin);
+            AddGraphPoints(stress_bot_girder_min, xVals, fBotMin);
 
-            AddGraphPoints(stress_top_max, xVals, fTopMax);
-            AddGraphPoints(stress_bot_max, xVals, fBotMax);
+            AddGraphPoints(stress_top_girder_max, xVals, fTopMax);
+            AddGraphPoints(stress_bot_girder_max, xVals, fBotMax);
+
+            if ( compositeDeckIntervalIdx <= intervalIdx )
+            {
+               if ( analysisType == pgsTypes::Envelope )
+               {
+                  std::vector<Float64> dummy;
+                  pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::TopDeck,    bIncPrestress, pgsTypes::MaxSimpleContinuousEnvelope, &dummy,   &fTopMax);
+                  pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::TopDeck,    bIncPrestress, pgsTypes::MinSimpleContinuousEnvelope, &fTopMin, &dummy);
+                  pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::BottomDeck, bIncPrestress, pgsTypes::MaxSimpleContinuousEnvelope, &dummy,   &fBotMax);
+                  pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::BottomDeck, bIncPrestress, pgsTypes::MinSimpleContinuousEnvelope, &fBotMin, &dummy);
+               }
+               else
+               {
+                  pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::TopDeck,    bIncPrestress, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &fTopMin, &fTopMax);
+                  pForces->GetStress( limitState, intervalIdx, vPoi, pgsTypes::BottomDeck, bIncPrestress, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &fBotMin, &fBotMax);
+               }
+
+               AddGraphPoints(stress_top_deck_min, xVals, fTopMin);
+               AddGraphPoints(stress_bot_deck_min, xVals, fBotMin);
+
+               AddGraphPoints(stress_top_deck_max, xVals, fTopMax);
+               AddGraphPoints(stress_bot_deck_max, xVals, fBotMax);
+            }
          }
       break;
       }

@@ -71,7 +71,7 @@ CUserDisplacementsTable& CUserDisplacementsTable::operator= (const CUserDisplace
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                                               IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -79,7 +79,10 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>(_T("Displacements - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   CString strTitle;
+   strTitle.Format(_T("Displacements due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -96,11 +99,6 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
@@ -115,23 +113,19 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
-      std::vector<Float64> minDC1, maxDC1, minDC2, maxDC2;
-      std::vector<Float64> minDW1, maxDW1, minDW2, maxDW2;
-      std::vector<Float64> minLL3, maxLL3;
+      std::vector<Float64> minDC, maxDC;
+      std::vector<Float64> minDW, maxDW;
+      std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC1 = pForces2->GetDisplacement( castDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC1 = pForces2->GetDisplacement( castDeckIntervalIdx, pftUserDC, vPoi, minBAT );
-      maxDC2 = pForces2->GetDisplacement( railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC2 = pForces2->GetDisplacement( railingSystemIntervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC = pForces2->GetDisplacement( intervalIdx, pftUserDC, vPoi, maxBAT );
+      minDC = pForces2->GetDisplacement( intervalIdx, pftUserDC, vPoi, minBAT );
 
+      maxDW = pForces2->GetDisplacement( intervalIdx, pftUserDW, vPoi, maxBAT );
+      minDW = pForces2->GetDisplacement( intervalIdx, pftUserDW, vPoi, minBAT );
 
-      maxDW1 = pForces2->GetDisplacement( castDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW1 = pForces2->GetDisplacement( castDeckIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxDW2 = pForces2->GetDisplacement( railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW2 = pForces2->GetDisplacement( railingSystemIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxLL3 = pForces2->GetDisplacement( liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT );
-      minLL3 = pForces2->GetDisplacement( liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT );
+      maxLLIM = pForces2->GetDisplacement( intervalIdx, pftUserLLIM, vPoi, maxBAT );
+      minLLIM = pForces2->GetDisplacement( intervalIdx, pftUserLLIM, vPoi, minBAT );
 
       // Fill up the table
       IndexType index = 0;
@@ -146,26 +140,18 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& gi
 
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col++) << displacement.SetValue( maxDC1[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minDC1[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDW1[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minDW1[index] );
-
-            (*p_table)(row,col++) << displacement.SetValue( maxDC2[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minDC2[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDW2[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minDW2[index] );
-            
-            (*p_table)(row,col++) << displacement.SetValue( maxLL3[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minLL3[index] );
+            (*p_table)(row,col++) << displacement.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << displacement.SetValue( minDC[index] );
+            (*p_table)(row,col++) << displacement.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << displacement.SetValue( minDW[index] );
+            (*p_table)(row,col++) << displacement.SetValue( maxLLIM[index] );
+            (*p_table)(row,col++) << displacement.SetValue( minLLIM[index] );
          }
          else
          {
-            (*p_table)(row,col++) << displacement.SetValue( maxDC1[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDW1[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDC2[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxDW2[index] );
-            (*p_table)(row,col++) << displacement.SetValue( maxLL3[index] );
+            (*p_table)(row,col++) << displacement.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << displacement.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << displacement.SetValue( maxLLIM[index] );
          }
 
          row++;

@@ -558,9 +558,9 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    const matPsStrand* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;
-   Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-   Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
-   Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+   Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+   Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
    Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
 
    std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
@@ -772,7 +772,7 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
    to_point->put_X(gdr_length);
 
    std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
-   ATLASSERT( 0 <= vPOI.size() && vPOI.size() < 3 );
+   ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
    pgsPointOfInterest hp1_poi;
    pgsPointOfInterest hp2_poi;
 
@@ -931,9 +931,9 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   StrandIndexType ns = pStrandGeometry->GetNumStrands(segmentKey, pgsTypes::Straight);
-   ns += pStrandGeometry->GetNumStrands(segmentKey, pgsTypes::Harped);
-   ns += pStrandGeometry->GetNumStrands(segmentKey, pgsTypes::Temporary);
+   StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
+   ns += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
+   ns += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
    if (0 < ns)
    {
       CComPtr<IPoint2d> from_point, to_point;
@@ -1066,7 +1066,7 @@ void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalD
    Float64 end_lgth    = pBridge->GetSegmentEndEndDistance(segmentKey);
    Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
 
-   StrandIndexType Nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+   StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
    Float64 Hg_start = pGirder->GetHeight(pgsPointOfInterest(segmentKey,0.00) );
    Float64 Hg_end   = pGirder->GetHeight(pgsPointOfInterest(segmentKey,gdr_length) );

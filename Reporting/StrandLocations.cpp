@@ -95,7 +95,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
    // Straight strands
    pgsPointOfInterest end_poi(segmentKey,0.0);
-   StrandIndexType nss = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
+   StrandIndexType nss = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
    StrandIndexType nExtendedLeft  = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
    StrandIndexType nExtendedRight = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
@@ -197,7 +197,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    // Temporary strands
    if ( 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
    {
-      StrandIndexType nts = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      StrandIndexType nts = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
       nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
       if (nts >0)
       {
@@ -264,7 +264,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    }
 
    // Harped strands
-   StrandIndexType nhs = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+   StrandIndexType nhs = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
    if (0 < nhs)
    {
@@ -369,7 +369,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    // Temporary strands
    if ( 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
    {
-      StrandIndexType nts = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      StrandIndexType nts = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
       nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
       if (nts >0)
       {

@@ -70,14 +70,17 @@ CUserRotationTable& CUserRotationTable::operator= (const CUserRotationTable& rOt
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(_T("Rotations - User Defined Loads"),true,analysisType,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   CString strTitle;
+   strTitle.Format(_T("Rotations due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(strTitle.GetBuffer(),true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IProductForces,pForces);
@@ -94,7 +97,6 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -141,12 +143,14 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         if (rctdr.DoReport(castDeckIntervalIdx))
+         if (rctdr.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, minBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT ) );
          }
          else
          {
@@ -154,64 +158,22 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(railingSystemIntervalIdx))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDC,    poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDC,    poi, minBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDW,    poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDW,    poi, minBAT ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
-         
-         if (rctdr.DoReport(liveLoadIntervalIdx))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, minBAT ) );
-         }
-         else
-         {
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
          }
       }
       else
       {
-         if (rctdr.DoReport(castDeckIntervalIdx))
+         if (rctdr.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT ) );
          }
          else
          {
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(railingSystemIntervalIdx))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDC, poi, maxBAT ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDW, poi, maxBAT ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(liveLoadIntervalIdx))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, maxBAT ) );
-         }
-         else
-         {
             (*p_table)(row,col++) << RPT_NA;
          }
       }

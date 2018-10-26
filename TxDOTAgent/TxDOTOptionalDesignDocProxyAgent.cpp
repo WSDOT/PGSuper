@@ -502,7 +502,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             // Compute and store required concrete strength
             if ( ststype[icase] == pgsTypes::Compression )
             {
-               Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,pgsTypes::TopGirder,intervals[icase],lstates[icase]);
+               Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,intervals[icase],lstates[icase]);
                Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue

@@ -1912,19 +1912,19 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    GET_IFACE(IStrandGeometry, pStrandGeometry );
    
-   StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+   StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    resultsFile<<bridgeId<<", "<<pid<<", 123010, "<<loc<<", "<<nh<<   ", 101, "<<gdrIdx<<std::endl;
 
    Float64 hj = pStrandGeometry->GetPjack(segmentKey,pgsTypes::Harped);
    resultsFile<<bridgeId<<", "<<pid<<", 123011, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(hj, unitMeasure::Newton)) <<   ", 101, "<<gdrIdx<<std::endl;
 
-   StrandIndexType ns = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
+   StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    resultsFile<<bridgeId<<", "<<pid<<", 123012, "<<loc<<", "<<ns<<   ", 101, "<<gdrIdx<<std::endl;
 
    Float64 sj = pStrandGeometry->GetPjack(segmentKey,pgsTypes::Straight);
    resultsFile<<bridgeId<<", "<<pid<<", 123013, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(sj, unitMeasure::Newton)) <<   ", 101, "<<gdrIdx<<std::endl;
 
-   StrandIndexType nt = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType nt = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
    resultsFile<<bridgeId<<", "<<pid<<", 123014, "<<loc<<", "<<nt<<   ", 101, "<<gdrIdx<<std::endl;
 
    Float64 tj = pStrandGeometry->GetPjack(segmentKey,pgsTypes::Temporary);

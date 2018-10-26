@@ -123,6 +123,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
 
@@ -424,9 +425,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltDesign, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltDesign, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -434,7 +435,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                   }
                   col++;
 
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltDesign, liveLoadIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltDesign, loadRatingIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( min );
                   if ( bIndicateControllingLoad && 0 <= minConfig )
                   {
@@ -452,9 +453,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Routine, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -462,7 +463,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                   }
                   col++;
 
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Routine, loadRatingIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( min );
                   if ( bIndicateControllingLoad && 0 <= minConfig )
                   {
@@ -480,9 +481,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Special, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -490,7 +491,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                   }
                   col++;
 
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Special, loadRatingIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( min );
                   if ( bIndicateControllingLoad && 0 <= minConfig )
                   {
@@ -508,9 +509,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Routine, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -518,7 +519,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                   }
                   col++;
 
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Routine, loadRatingIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( min );
                   if ( bIndicateControllingLoad && 0 <= minConfig )
                   {
@@ -536,9 +537,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Special, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -546,7 +547,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                   }
                   col++;
 
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Special, loadRatingIntervalIdx, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( min );
                   if ( bIndicateControllingLoad && 0 <= minConfig )
                   {
@@ -692,9 +693,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltDesign, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltDesign, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -719,9 +720,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Routine, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -746,9 +747,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltLegalRating_Special, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -773,9 +774,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Routine, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {
@@ -800,9 +801,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pProductForces->GetLiveLoadRotation( pgsTypes::lltPermitRating_Special, loadRatingIntervalIdx, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << rotation.SetValue( max );
                   if ( bIndicateControllingLoad && 0 <= maxConfig )
                   {

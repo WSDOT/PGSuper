@@ -155,12 +155,19 @@ protected:
    void BuildAllowDeckStressInformation(rptChapter* pChapter, 
                                         IBroker* pBroker,
                                         const pgsGirderArtifact* pGirderArtifact,
-                                        SegmentIndexType segIdx,
                                         IEAFDisplayUnits* pDisplayUnits,
                                         IntervalIndexType intervalIdx,
                                         pgsTypes::LimitState ls) const;
 
    void BuildAllowSegmentStressInformation(rptParagraph* pPara, 
+                                           IBroker* pBroker,
+                                           const pgsSegmentArtifact* pSegmentArtifact,
+                                           IndexType artifactIdx,
+                                           IEAFDisplayUnits* pDisplayUnits,
+                                           IntervalIndexType intervalIdx,
+                                           pgsTypes::LimitState limitState) const;
+
+   void BuildAllowClosureJointStressInformation(rptParagraph* pPara, 
                                            IBroker* pBroker,
                                            const pgsSegmentArtifact* pSegmentArtifact,
                                            IndexType artifactIdx,

@@ -161,10 +161,10 @@ HRESULT CSegmentActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
 
       hr = pStrLoad->EndUnit();
    }
-   catch(CHRException& exception)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
-      return exception;
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
    return S_OK;
@@ -333,10 +333,10 @@ HRESULT CConstructSegmentActivity::Load(IStructuredLoad* pStrLoad,IProgress* pPr
 
       hr = pStrLoad->EndUnit();
    }
-   catch(CHRException& exception)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
-      return exception;
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
    return S_OK;

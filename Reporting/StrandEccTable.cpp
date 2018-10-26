@@ -143,9 +143,9 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    StrandIndexType Ns, Nh, Nt;
-   Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-   Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
-   Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+   Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+   Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    std::vector<pgsPointOfInterest> pois(pPoi->GetPointsOfInterest(segmentKey));
    pPoi->RemovePointsOfInterest(pois,POI_CLOSURE);

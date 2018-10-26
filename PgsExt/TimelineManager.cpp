@@ -139,19 +139,28 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
       if ( pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied() )
       {
          CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetLiveLoadEventIndex());
-         pOtherTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(false);
+         if ( pOtherTimelineEvent )
+         {
+            pOtherTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(false);
+         }
       }
 
       if ( pTimelineEvent->GetApplyLoadActivity().IsOverlayLoadApplied() )
       {
          CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetOverlayLoadEventIndex());
-         pOtherTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(false);
+         if ( pOtherTimelineEvent )
+         {
+            pOtherTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(false);
+         }
       }
 
       if ( pTimelineEvent->GetApplyLoadActivity().IsRailingSystemLoadApplied() )
       {
          CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetRailingSystemLoadEventIndex());
-         pOtherTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(false);
+         if ( pOtherTimelineEvent )
+         {
+            pOtherTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(false);
+         }
       }
 
       IndexType nUserLoads = pTimelineEvent->GetApplyLoadActivity().GetUserLoadCount();
@@ -162,7 +171,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetApplyLoadActivity().HasUserLoad(loadID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetApplyLoadActivity().HasUserLoad(loadID) )
             {
                pOtherTimelineEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
             }
@@ -182,7 +191,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetCastClosureJointActivity().HasPier(pierID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetCastClosureJointActivity().HasPier(pierID) )
             {
                pOtherTimelineEvent->GetCastClosureJointActivity().RemovePier(pierID);
             }
@@ -199,7 +208,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetCastClosureJointActivity().HasTempSupport(tsID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetCastClosureJointActivity().HasTempSupport(tsID) )
             {
                pOtherTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(tsID);
             }
@@ -210,13 +219,19 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
    if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
    {
       CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetCastDeckEventIndex());
-      pOtherTimelineEvent->GetCastDeckActivity().Enable(false);
+      if ( pOtherTimelineEvent )
+      {
+         pOtherTimelineEvent->GetCastDeckActivity().Enable(false);
+      }
    }
 
    if ( pTimelineEvent->GetConstructSegmentsActivity().IsEnabled() )
    {
       CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetSegmentConstructionEventIndex());
-      pOtherTimelineEvent->GetConstructSegmentsActivity().Enable(false);
+      if ( pOtherTimelineEvent ) 
+      {
+         pOtherTimelineEvent->GetConstructSegmentsActivity().Enable(false);
+      }
    }
 
    if ( pTimelineEvent->GetErectPiersActivity().IsEnabled() )
@@ -231,7 +246,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetErectPiersActivity().HasPier(pierID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetErectPiersActivity().HasPier(pierID) )
             {
                pOtherTimelineEvent->GetErectPiersActivity().RemovePier(pierID);
             }
@@ -248,7 +263,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetErectPiersActivity().HasTempSupport(tsID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetErectPiersActivity().HasTempSupport(tsID) )
             {
                pOtherTimelineEvent->GetErectPiersActivity().RemoveTempSupport(tsID);
             }
@@ -268,7 +283,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetErectSegmentsActivity().HasSegment(segmentID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetErectSegmentsActivity().HasSegment(segmentID) )
             {
                pOtherTimelineEvent->GetErectSegmentsActivity().RemoveSegment(segmentID);
             }
@@ -288,7 +303,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetRemoveTempSupportsActivity().HasTempSupport(tsID) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetRemoveTempSupportsActivity().HasTempSupport(tsID) )
             {
                pOtherTimelineEvent->GetRemoveTempSupportsActivity().RemoveTempSupport(tsID);
             }
@@ -309,7 +324,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
          for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
          {
             CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(eventIdx);
-            if ( pOtherTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
+            if ( pOtherTimelineEvent && pOtherTimelineEvent->GetStressTendonActivity().IsTendonStressed(girderKey,ductIdx) )
             {
                pOtherTimelineEvent->GetStressTendonActivity().RemoveTendon(girderKey,ductIdx);
             }
@@ -777,8 +792,14 @@ CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
 {
    ASSERT_VALID;
 
-   ATLASSERT(0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() );
-   return m_TimelineEvents[eventIdx];
+   if (0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() )
+   {
+      return m_TimelineEvents[eventIdx];
+   }
+   else
+   {
+      return NULL;
+   }
 }
 
 CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
@@ -2007,10 +2028,10 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       pStrLoad->EndUnit();
    }
-   catch(CHRException& exception)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
-      return exception;
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
    ASSERT_VALID;
@@ -2243,7 +2264,7 @@ int CTimelineManager::CanRemoveEvent(CTimelineEvent* pTimelineEvent)
       return TLM_LIVELOAD_ACTIVITY_REQUIRED;
    }
 
-   if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().GetUserLoadCount() != 0 )
+   if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsUserLoadApplied() )
    {
       // there are use loads in this activity so it can't be removed
       return TLM_USER_LOAD_ACTIVITY_REQUIRED;

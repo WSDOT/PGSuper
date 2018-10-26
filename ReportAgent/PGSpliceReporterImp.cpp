@@ -84,7 +84,6 @@
 #include <Reporting\PointOfInterestChapterBuilder.h>
 #include <Reporting\ProductForcesChapterBuilder.h>
 
-#include <Reporting\SegmentConstructionChapterBuilder.h>
 #include <Reporting\DetailsChapterBuilder.h>
 
 #include <Reporting\IntervalChapterBuilder.h>

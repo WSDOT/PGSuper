@@ -250,8 +250,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       }
       else
       {
-         Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-         Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+         Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+         Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
       }
    }
 
@@ -432,20 +432,27 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
    matRebar::Type rebarType;
    matRebar::Grade deckRebarGrade;
-   pMaterial->GetDeckRebarMaterial(rebarType,deckRebarGrade);
+   pMaterial->GetDeckRebarMaterial(&rebarType,&deckRebarGrade);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    Float64 PhiRC,PhiPS,PhiSP,PhiC;
-   pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiSP,&PhiC);
-   if ( bIsSplicedGirder )
+   if ( poi.HasAttribute(POI_CLOSURE) )
    {
-      pmcd->Phi = PhiSP;
+      pmcd->Phi = pResistanceFactors->GetClosureJointFlexureResistanceFactor(concType);
    }
    else
    {
-      pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
-                                                   // Removed in AASHTO LRFD 6th Edition 2012, however
-                                                   // PPR has been computed above to take this into account
+      pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiSP,&PhiC);
+      if ( bIsSplicedGirder )
+      {
+         pmcd->Phi = PhiSP;
+      }
+      else
+      {
+         pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
+                                                      // Removed in AASHTO LRFD 6th Edition 2012, however
+                                                      // PPR has been computed above to take this into account
+      }
    }
 
    Float64 C,T;
@@ -754,44 +761,49 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       pmcd->ecl = ecl;
       pmcd->etl = etl;
 
-      if ( IsZero(pmcd->c) ) 
+      // Compute Phi based on the net tensile strain....
+      // This not applicable at closure joints
+      if ( !poi.HasAttribute(POI_CLOSURE) )
       {
-         if ( bIsSplicedGirder )
+         if ( IsZero(pmcd->c) ) 
          {
-            pmcd->Phi = PhiSP;
-         }
-         else
-         {
-            pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
-         }
-      }
-      else
-      {
-         pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
-         if ( bIsSplicedGirder )
-         {
-            pmcd->Phi = PhiC + 0.20*(pmcd->et - ecl)/(etl-ecl);
-         }
-         else
-         {
-            if ( bPositiveMoment )
+            if ( bIsSplicedGirder )
             {
-               pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+               pmcd->Phi = PhiSP;
             }
             else
             {
-               pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+               pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
             }
          }
-      }
+         else
+         {
+            pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
+            if ( bIsSplicedGirder )
+            {
+               pmcd->Phi = PhiC + 0.20*(pmcd->et - ecl)/(etl-ecl);
+            }
+            else
+            {
+               if ( bPositiveMoment )
+               {
+                  pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+               }
+               else
+               {
+                  pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+               }
+            }
+         }
 
-      if ( bIsSplicedGirder )
-      {
-         pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiSP);
-      }
-      else
-      {
-         pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
+         if ( bIsSplicedGirder )
+         {
+            pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiSP);
+         }
+         else
+         {
+            pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
+         }
       }
    }
 
@@ -1487,8 +1499,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       }
       else
       {
-         Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-         Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+         Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+         Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
       }
    }
 

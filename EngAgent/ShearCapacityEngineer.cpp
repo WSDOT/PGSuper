@@ -541,7 +541,14 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, In
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    GET_IFACE(IMaterials,pMaterial);
 
-   pscd->Phi = pResistanceFactors->GetShearResistanceFactor( pMaterial->GetSegmentConcreteType(segmentKey) );
+   if ( poi.HasAttribute(POI_CLOSURE) )
+   {
+      pscd->Phi = pResistanceFactors->GetClosureJointShearResistanceFactor( pMaterial->GetSegmentConcreteType(segmentKey) );
+   }
+   else
+   {
+      pscd->Phi = pResistanceFactors->GetShearResistanceFactor( pMaterial->GetSegmentConcreteType(segmentKey) );
+   }
 
    // shear area (bv and dv)
    pscd->bv = pGdr->GetShearWidth(poi);

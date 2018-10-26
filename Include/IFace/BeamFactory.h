@@ -257,8 +257,21 @@ DEFINE_GUID(IID_ISplicedBeamFactory,
 0xe97f7992, 0xbe87, 0x43cf, 0x86, 0x57, 0xa4, 0x77, 0xef, 0xc3, 0x2b, 0x47);
 interface ISplicedBeamFactory : IBeamFactory
 {
-   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations() = 0;
+   // returns true if the section depth can be variable
+   virtual bool SupportsVariableDepthSection() = 0;
+   
+   // returns the dimension label for the depth of the section
+   virtual LPCTSTR GetVariableDepthDimension() = 0;
+
+   // returns the supported segment depth variations based on the varible depth section mode
+   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(bool bIsVariableDepthSection) = 0;
+
+   // returns true if variable depth bottom flange is support.
    virtual bool CanBottomFlangeDepthVary() = 0;
+
+   // returns the dimension label for the bottom flange depth
    virtual LPCTSTR GetBottomFlangeDepthDimension() = 0;
+
+   // returns true if the section supports end blocks
    virtual bool SupportsEndBlocks() = 0;
 };

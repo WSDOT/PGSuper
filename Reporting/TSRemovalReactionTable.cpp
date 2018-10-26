@@ -79,7 +79,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  reaction, pDisplayUnits->GetShearUnit(), false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuity_interval;
+   IntervalIndexType continuityIntervalIdx;
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -88,6 +88,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
 
 
    // Get the results
@@ -108,45 +109,47 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
-   std::set<IntervalIndexType> tsrIntervals;
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
+      // Get the intervals when temporary supports are removed for this group
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
+
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      // Get the intervals when temporary supports are removed for this group
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
-      const CSpanData2* pSpan = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
-      const CSpanData2* pEndSpan = pGroup->GetPier(pgsTypes::metEnd)->GetPrevSpan();
-      for ( SpanIndexType spanIdx = pSpan->GetIndex(); spanIdx <= pEndSpan->GetIndex(); spanIdx++ )
-      {
-         std::vector<const CTemporarySupportData*> vTS( pSpan->GetTemporarySupports() );
-         std::vector<const CTemporarySupportData*>::iterator tsIter(vTS.begin());
-         std::vector<const CTemporarySupportData*>::iterator tsIterEnd(vTS.end());
-         for ( ; tsIter != tsIterEnd; tsIter++ )
-         {
-            const CTemporarySupportData* pTS = *tsIter;
-            tsrIntervals.insert( pIntervals->GetTemporarySupportRemovalInterval(pTS->GetID()) );
-         }
-
-         pSpan = pSpan->GetNextPier()->GetNextSpan();
-      }
 
       if ( tsrIntervals.size() == 0 )
          continue; // next group
 
+      // determine if any user defined loads where applied before the first temporary
+      // support removal interval
+      bool bAreThereUserLoads = false;
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(grpIdx,gdrIdx,0));
+      for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < tsrIntervals.front(); intervalIdx++ )
+      {
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            bAreThereUserLoads = true;
+            break; // just need to find one instance
+         }
+      }
+
 #pragma Reminder("UPDATE: can this be re-worked to use RDP's ReactionLocationIterator?")
 
-      std::set<IntervalIndexType>::iterator iter(tsrIntervals.begin());
-      std::set<IntervalIndexType>::iterator end(tsrIntervals.end());
+      std::vector<IntervalIndexType>::iterator iter(tsrIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(tsrIntervals.end());
       for ( ; iter != end; iter++ )
       {
          IntervalIndexType tsrIntervalIdx = *iter;
 
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
          bPedLoading = false;
          bPermit     = false;
+
+         // are there user defined loads in this interval?
+         if ( pUDL->DoUserLoadsExist(girderKey,tsrIntervalIdx) )
+         {
+            bAreThereUserLoads = true;
+         }
 
          std::auto_ptr<IProductReactionAdapter> pForces;
          if( tableType == PierReactionsTable )
@@ -155,7 +158,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          }
          else
          {
-            pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, continuity_interval, girderKey) );
+            pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, continuityIntervalIdx, girderKey) );
          }
 
          CString strLabel;
@@ -175,8 +178,26 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
          RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
-                                                                                               bPermit,false,analysisType,continuity_interval,
+                                                                                               bPermit,false,analysisType,continuityIntervalIdx,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+
+         if ( bAreThereUserLoads )
+         {
+            nCols += 3;
+            p_table->SetNumberOfColumns(nCols);
+            p_table->SetRowSpan(0,nCols-3,2);
+            p_table->SetRowSpan(1,nCols-3,SKIP_CELL);
+            (*p_table)(0,nCols-3) << COLHDR(_T("User DC"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+
+            p_table->SetRowSpan(0,nCols-2,2);
+            p_table->SetRowSpan(1,nCols-2,SKIP_CELL);
+            (*p_table)(0,nCols-2) << COLHDR(_T("User DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+            p_table->SetRowSpan(0,nCols-1,2);
+            p_table->SetRowSpan(1,nCols-1,SKIP_CELL);
+            (*p_table)(0,nCols-1) << COLHDR(_T("User LLIM"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+         }
+
          // write out the results
          IndexType index = 0;
          for ( PierIndexType pier = startPier; pier <= endPier; pier++, index++)
@@ -223,6 +244,13 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
             (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftTrafficBarrier, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
             (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftOverlay,        pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+
+            if ( bAreThereUserLoads )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserDC, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserDW, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pProdForces->GetReaction( tsrIntervalIdx, pftUserLLIM, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            }
 
             row++;
          } // next pier

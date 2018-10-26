@@ -361,8 +361,14 @@ void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBea
 
 IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
 {
+   Float64 parent_version;
+   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
+
+
    IBeamFactory::Dimensions dimensions;
-   Float64 parent_version = pLoad->GetVersion();
 
    // In Feb,2008 we created version 10.0 which updated the flawed dimensioning for box beams. This update completely
    // rearranged all box dimensions. 

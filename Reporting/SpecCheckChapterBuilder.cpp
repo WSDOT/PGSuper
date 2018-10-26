@@ -220,7 +220,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    } // next interval
 
 
-   if ( compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx )
+   if ( lastTendonStressingIntervalIdx != INVALID_INDEX &&         // if there are tendons AND
+        compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx // if they are stressed after the deck is composite
+      )
    {
       rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       p->SetName(_T("Deck Stresses"));

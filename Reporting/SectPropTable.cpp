@@ -72,14 +72,14 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
                                            IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType constructionIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeIntervalIdx    = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType constructionIntervalIdx        = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
 #if defined _DEBUG
    {
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
       GET_IFACE2(pBroker,IGirder,pGirder);
       ATLASSERT( pGirder->IsPrismatic(erectSegmentIntervalIdx,segmentKey) == true );
@@ -124,27 +124,28 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*xs_table)(row++,0) << _T("I")<< Sub(_T("x")) << _T(" (") << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<_T(")");
    (*xs_table)(row++,0) << _T("I")<< Sub(_T("y")) << _T(" (")  << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<_T(")");
    (*xs_table)(row++,0) << _T("d (girder depth)  (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
-   (*xs_table)(row++,0) << RPT_YTOP  << Sub(_T(" girder")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << RPT_YTOP_GIRDER << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << RPT_YBOT_GIRDER  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
 
    if ( bComposite )
    {
-      (*xs_table)(row++,0) << RPT_YTOP  << Sub(_T(" slab")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << RPT_YTOP_DECK << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << RPT_YBOT_DECK << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
    }
 
-   (*xs_table)(row++,0) << RPT_YBOT  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << RPT_STOP_GIRDER << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << RPT_SBOT_GIRDER << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+
+   if ( bComposite )
+   {
+      (*xs_table)(row++,0) << RPT_STOP_DECK << _T(" = n(") << Sub2(_T("I"),_T("x")) << _T("/") << RPT_YTOP_DECK << _T(")") << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << RPT_SBOT_DECK << _T(" = n(") << Sub2(_T("I"),_T("x")) << _T("/") << RPT_YBOT_DECK << _T(")") << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << Sub2(_T("Q"),_T("deck")) << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << _T("Effective Flange Width (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+   }
    
    (*xs_table)(row++,0) << Sub2(_T("k"),_T("t"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(") (Top kern point)");
    (*xs_table)(row++,0) << Sub2(_T("k"),_T("b"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(") (Bottom kern point)");
-
-   (*xs_table)(row++,0) << RPT_STOP  << Sub(_T(" girder")) << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
-   (*xs_table)(row++,0) << RPT_SBOT  << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
-
-   if ( bComposite )
-   {
-      (*xs_table)(row++,0) << RPT_STOP  << Sub(_T(" slab")) << _T(" = n(") << Sub2(_T("I"),_T("x")) << _T("/") << Sub2(_T("Y"),_T("t slab")) << _T(")") << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
-      (*xs_table)(row++,0) << _T("Q") << Sub(_T("slab")) << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
-      (*xs_table)(row++,0) << _T("Effective Flange Width (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
-   }
 
    (*xs_table)(row++,0) << _T("Perimeter (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
    (*xs_table)(row++,0) << _T("Span/Depth Ratio");
@@ -164,10 +165,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
     // Write non-composite properties
    row = xs_table->GetNumberOfHeaderRows();
 
-   Float64 Yt, Yb;
-   Yt = pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::TopDeck);
-   Yb = fabs(pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::BottomGirder));
-   Float64 depth = Yt + Yb;
+   Float64 depth = pSectProp->GetHg(constructionIntervalIdx,poi);
 
    Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
 
@@ -175,27 +173,29 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIx(constructionIntervalIdx,poi) );
    (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIy(constructionIntervalIdx,poi) );
    (*xs_table)(row++,1) << l1.SetValue( depth );
-   (*xs_table)(row++,1) << l1.SetValue( Yt );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
 
    if ( bComposite )
    {
-      (*xs_table)(row++,1) << _T("-");
+      (*xs_table)(row++,1) << _T("-"); // Ytd
+      (*xs_table)(row++,1) << _T("-"); // Ybd
    }
 
-   (*xs_table)(row++,1) << l1.SetValue( Yb );
+   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder)) );
+   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder)) );
+
+   if ( bComposite )
+   {
+      (*xs_table)(row++,1) << _T("-"); // Std
+      (*xs_table)(row++,1) << _T("-"); // Sbd
+   }
+
+   (*xs_table)(row++,1) << _T("-"); // Qdeck
+   (*xs_table)(row++,1) << _T("-"); // Effective flange width
 
    (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKt(constructionIntervalIdx,poi)) );
    (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKb(constructionIntervalIdx,poi)) );
-
-   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopDeck)) );
-   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
-
-   if ( bComposite )
-   {
-      (*xs_table)(row++,1) << _T("-");
-      (*xs_table)(row++,1) << _T("-");
-      (*xs_table)(row++,1) << _T("-");
-   }
 
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetPerimeter(poi) );
    (*xs_table)(row++,1) << scalar.SetValue( span_length/depth );
@@ -208,28 +208,37 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       // Write composite properties
       row = xs_table->GetNumberOfHeaderRows();
 
-      Yt = pSectProp->GetY(compositeIntervalIdx,poi,pgsTypes::TopDeck);
-      Yb = fabs(pSectProp->GetY(compositeIntervalIdx,poi,pgsTypes::BottomGirder));
-      depth = Yt + Yb;
-
-      (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(compositeIntervalIdx,poi) );
-      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIx(compositeIntervalIdx,poi) );
-      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIy(compositeIntervalIdx,poi) );
-      (*xs_table)(row++,2) << l1.SetValue( depth );
-      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeIntervalIdx,poi,pgsTypes::TopGirder) );
-      (*xs_table)(row++,2) << l1.SetValue( Yt );
-      (*xs_table)(row++,2) << l1.SetValue( Yb );
-      (*xs_table)(row++,2) << _T("-");
-      (*xs_table)(row++,2) << _T("-");
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder)) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeIntervalIdx,poi,pgsTypes::TopDeck)) );
+      (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(compositeDeckIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIx(compositeDeckIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIy(compositeDeckIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetHg(compositeDeckIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder)) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder)) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck)) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck)) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetQSlab(poi) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetEffectiveFlangeWidth(poi) );
-      (*xs_table)(row++,2) << _T("-");
+
+      if ( lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx )
+      {
+         // PT occurs after the deck is composite so kern points are applicable
+         (*xs_table)(row++,2) << l1.SetValue( fabs(pSectProp->GetKt(lastTendonStressingIntervalIdx,poi)) );
+         (*xs_table)(row++,2) << l1.SetValue( fabs(pSectProp->GetKb(lastTendonStressingIntervalIdx,poi)) );
+      }
+      else
+      {
+         // No PT after deck is composite so kern points have not value... don't report them
+         (*xs_table)(row++,2) << _T("-"); // kt
+         (*xs_table)(row++,2) << _T("-"); // kb
+      }
+      (*xs_table)(row++,2) << _T("-"); // perimeter
       (*xs_table)(row++,2) << scalar.SetValue( span_length/depth );
-      (*xs_table)(row++,2) << _T("-");
-      (*xs_table)(row++,2) << _T("-");
+      (*xs_table)(row++,2) << _T("-"); // wgt/length
+      (*xs_table)(row++,2) << _T("-"); // total weight
    }
 
    return xs_table;

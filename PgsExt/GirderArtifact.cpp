@@ -238,6 +238,38 @@ bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType interv
    return false;
 }
 
+bool pgsGirderArtifact::WasGirderWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.WasSegmentWithRebarAllowableStressUsed(intervalIdx,ls) ||
+           artifact.WasClosureJointWithRebarAllowableStressUsed(intervalIdx,ls,true /*in PTZ*/) ||
+           artifact.WasClosureJointWithRebarAllowableStressUsed(intervalIdx,ls,false /*not in PTZ*/))
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
+bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+{
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( artifact.WasDeckWithRebarAllowableStressUsed(intervalIdx,ls) )
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
 bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
 {
    std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());

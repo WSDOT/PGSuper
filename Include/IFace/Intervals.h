@@ -120,6 +120,9 @@ interface IIntervals : IUnknown
    // this is the replacement for pgsTypes::BridgeSite3
    virtual IntervalIndexType GetLiveLoadInterval() = 0;
 
+   // returns the index of the interval when load rating calculations are performed
+   virtual IntervalIndexType GetLoadRatingInterval() = 0;
+
    // returns the index of the interval when the overlay is
    // installed. 
    // this is a replacement for pgsTypes::BridgeSite2 or pgsTypes::BridgeSite3,
@@ -142,8 +145,14 @@ interface IIntervals : IUnknown
    // note that this tendon in all girders in the group are assumed to be stressed at the same time
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 
+   // returns true if a tendon is stressed during the specified interval
+   virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+
    // returns the interval index when a temporary support is removed
    virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID) = 0;
+
+   // returns a vector of removal intervals for all the temporary supports in the specified group
+   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType grpIdx) = 0;
 
    // returns a vector of intervals that should be spec checked
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) = 0;

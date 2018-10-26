@@ -257,7 +257,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgs
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Ns = pStrandGeom->GetNumStrands(segmentKey,strandType);
+   StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey,strandType);
 
    // Quick check to make sure there is even an adjustment to be made
    // If there are no strands, just leave
@@ -687,7 +687,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey)
 {
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
-   StrandIndexType Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
    if (0 < Nh)
    {
       GET_IFACE(IPointOfInterest,pPOI);
@@ -777,7 +777,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType N = pStrandGeom->GetNumStrands(segmentKey,strandType);
+   StrandIndexType N = pStrandGeom->GetStrandCount(segmentKey,strandType);
    
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
@@ -851,7 +851,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    else
    {
       Pj = pStrandGeom->GetPjack(segmentKey,strandType);
-      N  = pStrandGeom->GetNumStrands(segmentKey,strandType);
+      N  = pStrandGeom->GetStrandCount(segmentKey,strandType);
    }
 
    if ( strandType == pgsTypes::Temporary )
@@ -908,7 +908,7 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    }
    else
    {
-      N = pStrandGeom->GetNumStrands(segmentKey,strandType);
+      N = pStrandGeom->GetStrandCount(segmentKey,strandType);
    }
    
    GET_IFACE(ISegmentData,pSegmentData );
@@ -952,7 +952,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    else
    {
       Pj = pStrandGeom->GetPjack(segmentKey,strandType);
-      N  = pStrandGeom->GetNumStrands(segmentKey,strandType);
+      N  = pStrandGeom->GetStrandCount(segmentKey,strandType);
    }
 
    if ( strandType == pgsTypes::Temporary )

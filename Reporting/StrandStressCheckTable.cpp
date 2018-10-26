@@ -114,7 +114,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          strandTypes.push_back(pgsTypes::Harped);
       }
 
-      StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
       if ( 0 < Nt )
       {
          strandTypes.push_back(pgsTypes::Temporary);

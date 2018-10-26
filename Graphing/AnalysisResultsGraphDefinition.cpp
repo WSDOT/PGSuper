@@ -47,8 +47,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = actions;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
 }
 
 // constructor for combinations
@@ -66,8 +65,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = actions;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
 }
 
 // constructor for product loads
@@ -86,8 +84,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
    
    m_ApplicableActions = actions;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
 }
 
 // constructor for live loads
@@ -103,8 +100,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = actions;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
 }
 
 // constructor for prestress
@@ -113,9 +109,8 @@ IDType id,
 const CString name,
 GraphType type,
 const std::vector<IntervalIndexType>& intervals,
-COLORREF c1,
-COLORREF c2
-): m_ID(id),m_Name(name),m_GraphType(type),m_Color1(c1),m_Color2(c2)
+COLORREF c
+): m_ID(id),m_Name(name),m_GraphType(type),m_Color(c)
 {
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 }
@@ -135,8 +130,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = ACTIONS_STRESS_ONLY;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
 }
 
 // constructor for vehicular live loads
@@ -155,8 +149,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
    m_VehicleIndex = vehicleIndex;
 }
 
@@ -176,8 +169,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
 }
 
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
@@ -194,8 +186,7 @@ COLORREF c
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_Color1 = c;
-   m_Color2 = c;
+   m_Color = c;
    m_VehicleIndex = INVALID_INDEX; // not a specific vehicle, but rather an envelope
 }
 

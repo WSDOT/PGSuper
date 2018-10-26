@@ -235,15 +235,15 @@ void CApplyLoadsDlg::InitUserLoads()
    m_ctrlUserLoads.SetExtendedStyle ( LVS_EX_FULLROWSELECT );
 
    int st;
-   st = m_ctrlUserLoads.InsertColumn(0,_T("Type")/*,LVCFMT_LEFT,lft_wid*/);
+   st = m_ctrlUserLoads.InsertColumn(0,_T("Type"));
    ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(1,_T("Load Case")/*,LVCFMT_LEFT,lft_wid*/);
+   st = m_ctrlUserLoads.InsertColumn(1,_T("Load Case"));
    ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(2,_T("Location")/*,LVCFMT_LEFT,lft_wid*/);
+   st = m_ctrlUserLoads.InsertColumn(2,_T("Location"));
    ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(3,_T("Magnitude")/*,LVCFMT_LEFT,rgt_wid*/);
+   st = m_ctrlUserLoads.InsertColumn(3,_T("Magnitude"));
    ATLASSERT(st!=-1);
-   st = m_ctrlUserLoads.InsertColumn(4,_T("Description")/*,LVCFMT_LEFT,rgt_wid*/);
+   st = m_ctrlUserLoads.InsertColumn(4,_T("Description"));
    ATLASSERT(st!=-1);
 
    int rowIdx = 0;

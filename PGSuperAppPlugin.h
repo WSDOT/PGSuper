@@ -29,8 +29,6 @@
 #include <EAF\EAFUIIntegration.h>
 #include "PGSuperBaseAppPlugin.h"
 
-#include "PGSuperCommandLineInfo.h"
-
 class CPGSuperAppPlugin;
 
 class CMyCmdTarget : public CCmdTarget
@@ -95,7 +93,6 @@ public:
    void OnProgramSettings();
 
 protected:
-   void Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo);
    void ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdInfo);
 
 // IEAFAppPlugin

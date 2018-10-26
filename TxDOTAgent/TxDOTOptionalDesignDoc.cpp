@@ -232,12 +232,12 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
       break;
 
    case STRLOAD_E_INVALIDFORMAT:
-      pLog->LogMessage( TEXT("File does not have valid PGSuper format") );
+      pLog->LogMessage( TEXT("File does not have valid TOGA format") );
       AfxFormatString1( msg1, IDS_E_INVALIDFORMAT, lpszPathName );
       break;
 
    case STRLOAD_E_BADVERSION:
-      pLog->LogMessage( TEXT("This file came from a newer version of PGSuper, please upgrade") );
+      pLog->LogMessage( TEXT("This file came from a newer version of TOGA, please upgrade") );
       AfxFormatString1( msg1, IDS_E_INVALIDVERSION, lpszPathName );
       break;
 
@@ -1396,7 +1396,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    {
       strands.NumPermStrandsType = CStrandData::npsTotal;
 
-      StrandIndexType ntot = pOdGirderData->GetNumStrands();
+      StrandIndexType ntot = pOdGirderData->GetStrandCount();
 
       // We still must compute num straight/harped to appease pgsuper
       StrandIndexType ns, nh;

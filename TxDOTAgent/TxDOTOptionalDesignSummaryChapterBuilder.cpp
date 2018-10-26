@@ -332,11 +332,11 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
       note = _T(" (non-standard direct straight strand fill)");
    }
 
-   (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Permanent) << note;
+   (*p_table)(row++,1) << pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Permanent) << note;
 
-   if( pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
+   if( pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
    {
-      StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+      StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
       if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard && nh>0)
       {
          (*p_table)(row,0) << _T("Girder Bottom to Topmost Strand (To)");

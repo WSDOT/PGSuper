@@ -573,160 +573,169 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 {
    USES_CONVERSION;
    CComVariant var;
+   CHRException hr;
 
-   pStrLoad->BeginUnit(_T("PrecastSegment"));
-
-   var.vt = VT_ID;
-   pStrLoad->get_Property(_T("ID"),&var);
-   m_SegmentID = VARIANT2ID(var);
-   ATLASSERT(m_SegmentID != INVALID_ID);
-   m_pGirder->GetGirderGroup()->GetBridgeDescription()->UpdateNextSegmentID(m_SegmentID);
-
-   var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("StartSpan"),&var);
-   SpanIndexType startSpanIdx = VARIANT2INDEX(var);
-
-   pStrLoad->get_Property(_T("EndSpan"),&var);
-   SpanIndexType endSpanIdx = VARIANT2INDEX(var);
-
-   if ( m_pGirder && m_pGirder->GetGirderGroup() && m_pGirder->GetGirderGroup()->GetBridgeDescription() )
+   try
    {
-      // resolve references now
-      m_pSpanData[pgsTypes::metStart] = m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSpan(startSpanIdx);
-      m_pSpanData[pgsTypes::metEnd]   = m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSpan(endSpanIdx);
+      hr = pStrLoad->BeginUnit(_T("PrecastSegment"));
 
-      m_SpanIdx[pgsTypes::metStart] = INVALID_INDEX;
-      m_SpanIdx[pgsTypes::metEnd]   = INVALID_INDEX;
-   }
-   else
-   {
-      // resolve references later
-      m_pSpanData[pgsTypes::metStart] = NULL;
-      m_pSpanData[pgsTypes::metEnd]   = NULL;
+      var.vt = VT_ID;
+      hr = pStrLoad->get_Property(_T("ID"),&var);
+      m_SegmentID = VARIANT2ID(var);
+      ATLASSERT(m_SegmentID != INVALID_ID);
+      m_pGirder->GetGirderGroup()->GetBridgeDescription()->UpdateNextSegmentID(m_SegmentID);
 
-      m_SpanIdx[pgsTypes::metStart] = startSpanIdx;
-      m_SpanIdx[pgsTypes::metEnd]   = endSpanIdx;
-   }
+      var.vt = VT_INDEX;
+      hr = pStrLoad->get_Property(_T("StartSpan"),&var);
+      SpanIndexType startSpanIdx = VARIANT2INDEX(var);
+
+      hr = pStrLoad->get_Property(_T("EndSpan"),&var);
+      SpanIndexType endSpanIdx = VARIANT2INDEX(var);
+
+      if ( m_pGirder && m_pGirder->GetGirderGroup() && m_pGirder->GetGirderGroup()->GetBridgeDescription() )
+      {
+         // resolve references now
+         m_pSpanData[pgsTypes::metStart] = m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSpan(startSpanIdx);
+         m_pSpanData[pgsTypes::metEnd]   = m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSpan(endSpanIdx);
+
+         m_SpanIdx[pgsTypes::metStart] = INVALID_INDEX;
+         m_SpanIdx[pgsTypes::metEnd]   = INVALID_INDEX;
+      }
+      else
+      {
+         // resolve references later
+         m_pSpanData[pgsTypes::metStart] = NULL;
+         m_pSpanData[pgsTypes::metEnd]   = NULL;
+
+         m_SpanIdx[pgsTypes::metStart] = startSpanIdx;
+         m_SpanIdx[pgsTypes::metEnd]   = endSpanIdx;
+      }
 
 
-   var.vt = VT_BSTR;
-   pStrLoad->get_Property(_T("SegmentVariation"),&var);
-   CString strVariationType(OLE2T(var.bstrVal));
-   if ( strVariationType == _T("None") )
-   {
-      m_VariationType = pgsTypes::svtNone;
-   }
-   else if (strVariationType == _T("Linear") || strVariationType == _T("Parabolic") ) 
-   {
-      m_VariationType = (strVariationType == _T("Linear") ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("SegmentVariation"),&var);
+      CString strVariationType(OLE2T(var.bstrVal));
+      if ( strVariationType == _T("None") )
+      {
+         m_VariationType = pgsTypes::svtNone;
+      }
+      else if (strVariationType == _T("Linear") || strVariationType == _T("Parabolic") ) 
+      {
+         m_VariationType = (strVariationType == _T("Linear") ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("LeftPrismaticLength"),&var);
+         m_VariationLength[pgsTypes::sztLeftPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftPrismaticHeight"),&var);
+         m_VariationHeight[pgsTypes::sztLeftPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftPrismaticBottomFlangeDepth"),&var);
+         m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightPrismaticLength"),&var);
+         m_VariationLength[pgsTypes::sztRightPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightPrismaticHeight"),&var);
+         m_VariationHeight[pgsTypes::sztRightPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightPrismaticBottomFlangeDepth"),&var);
+         m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = var.dblVal;
+
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property(_T("VariableBottomFlangeDepthEnabled"),&var);
+         m_bVariableBottomFlangeDepthEnabled = (var.boolVal == VARIANT_TRUE ? true : false);
+      }
+      else if (strVariationType == _T("DoubleLinear") || strVariationType == _T("DoubleParabolic")) 
+      {
+         m_VariationType = (strVariationType == _T("DoubleLinear") ? pgsTypes::svtDoubleLinear : pgsTypes::svtDoubleParabolic);
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("LeftPrismaticLength"),&var);
+         m_VariationLength[pgsTypes::sztLeftPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftPrismaticHeight"),&var);
+         m_VariationHeight[pgsTypes::sztLeftPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftPrismaticBottomFlangeDepth"),&var);
+         m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftTaperedLength"),&var);
+         m_VariationLength[pgsTypes::sztLeftTapered] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftTaperedHeight"),&var);
+         m_VariationHeight[pgsTypes::sztLeftTapered] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("LeftTaperedBottomFlangeDepth"),&var);
+         m_VariationBottomFlangeDepth[pgsTypes::sztLeftTapered] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightTaperedLength"),&var);
+         m_VariationLength[pgsTypes::sztRightTapered] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightTaperedHeight"),&var);
+         m_VariationHeight[pgsTypes::sztRightTapered] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightTaperedBottomFlangeDepth"),&var);
+         m_VariationBottomFlangeDepth[pgsTypes::sztRightTapered] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightPrismaticLength"),&var);
+         m_VariationLength[pgsTypes::sztRightPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightPrismaticHeight"),&var);
+         m_VariationHeight[pgsTypes::sztRightPrismatic] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightPrismaticBottomFlangeDepth"),&var);
+         m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = var.dblVal;
+
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property(_T("VariableBottomFlangeDepthEnabled"),&var);
+         m_bVariableBottomFlangeDepthEnabled = (var.boolVal == VARIANT_TRUE ? true : false);
+      }
+      else if (strVariationType == _T("General")) 
+      {
+         ATLASSERT(false); // not implemented
+      }
+      else
+      {
+         // bad input
+         ATLASSERT(false); // bad input
+      }
+
       var.vt = VT_R8;
-      pStrLoad->get_Property(_T("LeftPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::sztLeftPrismatic] = var.dblVal;
+      hr = pStrLoad->get_Property(_T("LeftEndBlockLength"),&var);
+      EndBlockLength[pgsTypes::metStart] = var.dblVal;
 
-      pStrLoad->get_Property(_T("LeftPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::sztLeftPrismatic] = var.dblVal;
+      hr = pStrLoad->get_Property(_T("LeftEndBlockTransition"),&var);
+      EndBlockTransitionLength[pgsTypes::metStart] = var.dblVal;
 
-      pStrLoad->get_Property(_T("LeftPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = var.dblVal;
+      hr = pStrLoad->get_Property(_T("LeftEndBlockWidth"),&var);
+      EndBlockWidth[pgsTypes::metStart] = var.dblVal;
 
-      pStrLoad->get_Property(_T("RightPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::sztRightPrismatic] = var.dblVal;
+      hr = pStrLoad->get_Property(_T("RightEndBlockLength"),&var);
+      EndBlockLength[pgsTypes::metEnd] = var.dblVal;
 
-      pStrLoad->get_Property(_T("RightPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::sztRightPrismatic] = var.dblVal;
+      hr = pStrLoad->get_Property(_T("RightEndBlockTransition"),&var);
+      EndBlockTransitionLength[pgsTypes::metEnd] = var.dblVal;
 
-      pStrLoad->get_Property(_T("RightPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = var.dblVal;
+      hr = pStrLoad->get_Property(_T("RightEndBlockWidth"),&var);
+      EndBlockWidth[pgsTypes::metEnd] = var.dblVal;
 
-      var.vt = VT_BOOL;
-      pStrLoad->get_Property(_T("VariableBottomFlangeDepthEnabled"),&var);
-      m_bVariableBottomFlangeDepthEnabled = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      Float64 version;
+      hr = Strands.Load(pStrLoad,pProgress,&version);
+      hr = Material.Load(pStrLoad,pProgress);
+
+      CStructuredLoad load(pStrLoad);
+      hr = ShearData.Load(&load);
+
+      hr = LongitudinalRebarData.Load(pStrLoad,pProgress);
+      hr = HandlingData.Load(pStrLoad,pProgress);
+
+      hr = pStrLoad->EndUnit(); // PrecastSegment
    }
-   else if (strVariationType == _T("DoubleLinear") || strVariationType == _T("DoubleParabolic")) 
+   catch (HRESULT)
    {
-      m_VariationType = (strVariationType == _T("DoubleLinear") ? pgsTypes::svtDoubleLinear : pgsTypes::svtDoubleParabolic);
-      var.vt = VT_R8;
-      pStrLoad->get_Property(_T("LeftPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::sztLeftPrismatic] = var.dblVal;
-
-      pStrLoad->get_Property(_T("LeftPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::sztLeftPrismatic] = var.dblVal;
-
-      pStrLoad->get_Property(_T("LeftPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = var.dblVal;
-
-      pStrLoad->get_Property(_T("LeftTaperedLength"),&var);
-      m_VariationLength[pgsTypes::sztLeftTapered] = var.dblVal;
-
-      pStrLoad->get_Property(_T("LeftTaperedHeight"),&var);
-      m_VariationHeight[pgsTypes::sztLeftTapered] = var.dblVal;
-
-      pStrLoad->get_Property(_T("LeftTaperedBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::sztLeftTapered] = var.dblVal;
-
-      pStrLoad->get_Property(_T("RightTaperedLength"),&var);
-      m_VariationLength[pgsTypes::sztRightTapered] = var.dblVal;
-
-      pStrLoad->get_Property(_T("RightTaperedHeight"),&var);
-      m_VariationHeight[pgsTypes::sztRightTapered] = var.dblVal;
-
-      pStrLoad->get_Property(_T("RightTaperedBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::sztRightTapered] = var.dblVal;
-
-      pStrLoad->get_Property(_T("RightPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::sztRightPrismatic] = var.dblVal;
-
-      pStrLoad->get_Property(_T("RightPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::sztRightPrismatic] = var.dblVal;
-
-      pStrLoad->get_Property(_T("RightPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = var.dblVal;
-
-      var.vt = VT_BOOL;
-      pStrLoad->get_Property(_T("VariableBottomFlangeDepthEnabled"),&var);
-      m_bVariableBottomFlangeDepthEnabled = (var.boolVal == VARIANT_TRUE ? true : false);
+      ATLASSERT(false);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
-   else if (strVariationType == _T("General")) 
-   {
-      ATLASSERT(false); // not implemented
-   }
-   else
-   {
-      // bad input
-      ATLASSERT(false); // bad input
-   }
-
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("LeftEndBlockLength"),&var);
-   EndBlockLength[pgsTypes::metStart] = var.dblVal;
-
-   pStrLoad->get_Property(_T("LeftEndBlockTransition"),&var);
-   EndBlockTransitionLength[pgsTypes::metStart] = var.dblVal;
-
-   pStrLoad->get_Property(_T("LeftEndBlockWidth"),&var);
-   EndBlockWidth[pgsTypes::metStart] = var.dblVal;
-
-   pStrLoad->get_Property(_T("RightEndBlockLength"),&var);
-   EndBlockLength[pgsTypes::metEnd] = var.dblVal;
-
-   pStrLoad->get_Property(_T("RightEndBlockTransition"),&var);
-   EndBlockTransitionLength[pgsTypes::metEnd] = var.dblVal;
-
-   pStrLoad->get_Property(_T("RightEndBlockWidth"),&var);
-   EndBlockWidth[pgsTypes::metEnd] = var.dblVal;
-
-
-   Float64 version;
-   Strands.Load(pStrLoad,pProgress,&version);
-   Material.Load(pStrLoad,pProgress);
-
-   CStructuredLoad load(pStrLoad);
-   ShearData.Load(&load);
-
-   LongitudinalRebarData.Load(pStrLoad,pProgress);
-   HandlingData.Load(pStrLoad,pProgress);
-
-   pStrLoad->EndUnit(); // PrecastSegment
 
    return S_OK;
       

@@ -35,8 +35,6 @@
 
 #include <EAF\EAFMainFrame.h>
 
-#include <IFace\Test1250.h>
-
 
 BEGIN_MESSAGE_MAP(CPGSpliceAppCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
@@ -179,37 +177,7 @@ CString CPGSpliceAppPlugin::GetUsageMessage()
 
 BOOL CPGSpliceAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
-   // cmdInfo is the command line information from the application. The application
-   // doesn't know about this plug-in at the time the command line parameters are parsed
-   //
-   // Re-parse the parameters with our own command line information object
-   CPGSuperCommandLineInfo pgsCmdInfo;
-   EAFGetApp()->ParseCommandLine(pgsCmdInfo);
-   cmdInfo = pgsCmdInfo;
-
-   if (pgsCmdInfo.m_bDo1250Test)
-   {
-      Process1250Testing(pgsCmdInfo);
-      return TRUE; // command line parameters handled
-   }
-
-   BOOL bHandled = FALSE;
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
-   CEAFDocument* pDoc = pFrame->GetDocument();
-   if ( pDoc )
-   {
-      bHandled = pDoc->ProcessCommandLineOptions(cmdInfo);
-   }
-
-   // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
-   // if there is more than one parameter and it isn't handled there is something wrong
-   if ( ((1 == pgsCmdInfo.m_Count && pgsCmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo.m_Count)) && !bHandled )
-   {
-      cmdInfo.m_bError = TRUE;
-      bHandled = TRUE;
-   }
-
-   return bHandled;
+   return DoProcessCommandLineOptions(cmdInfo);
 }
 
 //////////////////////////
@@ -363,86 +331,4 @@ bool CPGSpliceAppPlugin::UpdatingTemplates()
 void CPGSpliceAppPlugin::OnProgramSettings()
 {
    UpdateProgramSettings(FALSE);
-}
-
-
-
-void CPGSpliceAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo)
-{
-   USES_CONVERSION;
-
-   ASSERT(rCmdInfo.m_bDo1250Test);
-
-   // The document is opened when CEAFApp::InitInstance calls ProcessShellCommand
-   // Get the document
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
-   CPGSpliceDoc* pPgsDoc = (CPGSpliceDoc*)pFrame->GetDocument();
-
-   CComPtr<IBroker> pBroker;
-   pPgsDoc->GetBroker(&pBroker);
-   GET_IFACE2( pBroker, ITest1250, ptst );
-
-   CString resultsfile, poifile, errfile;
-   if (create_test_file_names(rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))
-   {
-      try
-      {
-         if (!ptst->RunTest(rCmdInfo.m_SubdomainId, std::_tstring(resultsfile), std::_tstring(poifile)))
-         {
-            CString msg = CString(_T("Error - Running test on file"))+rCmdInfo.m_strFileName;
-            ::AfxMessageBox(msg);
-         }
-
-         if ( pPgsDoc->IsModified() )
-            pPgsDoc->DoFileSave();
-      }
-      catch(const sysXBase& e)
-      {
-         std::_tstring msg;
-         e.GetErrorMessage(&msg);
-         std::_tofstream os;
-         os.open(errfile);
-         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;
-      }
-      catch(CException* pex)
-      {
-         TCHAR   szCause[255];
-         CString strFormatted;
-         pex->GetErrorMessage(szCause, 255);
-         std::_tofstream os;
-         os.open(errfile);
-         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
-         delete pex;
-      }
-      catch(CException& ex)
-      {
-         TCHAR   szCause[255];
-         CString strFormatted;
-         ex.GetErrorMessage(szCause, 255);
-         std::_tofstream os;
-         os.open(errfile);
-         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
-      }
-      catch(const std::exception* pex)
-      {
-         std::_tstring strMsg(CA2T(pex->what()));
-         std::_tofstream os;
-         os.open(errfile);
-         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
-         delete pex;
-      }
-      catch(const std::exception& ex)
-      {
-         std::_tstring strMsg(CA2T(ex.what()));
-         std::_tofstream os;
-         os.open(errfile);
-         os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
-      }
-      catch(...)
-      {
-         std::_tofstream os;
-         os.open(errfile);
-         os <<_T("Unknown Error running test for input file: ")<<rCmdInfo.m_strFileName;
-      }
-   }
 }

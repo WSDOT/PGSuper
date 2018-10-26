@@ -1411,6 +1411,7 @@ void CPGSuperDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName 
       return;
    }
 
+   CString strLog;
    CString msg1;
    switch( hr )
    {
@@ -1430,12 +1431,14 @@ void CPGSuperDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName 
       break;
 
    case STRLOAD_E_INVALIDFORMAT:
-      pLog->LogMessage( TEXT("File does not have valid PGSuper format") );
+      strLog.Format(_T("File does not have a valid %s format"),::AfxGetAppName());
+      pLog->LogMessage(strLog);
       AfxFormatString1( msg1, IDS_E_INVALIDFORMAT, lpszPathName );
       break;
 
    case STRLOAD_E_BADVERSION:
-      pLog->LogMessage( TEXT("This file came from a newer version of PGSuper, please upgrade") );
+      strLog.Format(_T("This file came from a newer version of %s, please upgrade"),::AfxGetAppName());
+      pLog->LogMessage(strLog);
       AfxFormatString1( msg1, IDS_E_INVALIDVERSION, lpszPathName );
       break;
 

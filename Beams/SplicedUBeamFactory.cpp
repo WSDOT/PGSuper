@@ -509,7 +509,11 @@ void CSplicedUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const
 
 IBeamFactory::Dimensions CSplicedUBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
 {
-   Float64 parent_version = pLoad->GetVersion();
+   Float64 parent_version;
+   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
 
    IBeamFactory::Dimensions dimensions;
    std::vector<std::_tstring>::iterator iter;
@@ -983,8 +987,20 @@ GirderIndexType CSplicedUBeamFactory::GetMinimumBeamCount()
 }
 
 // ISplicedBeamFactory
-std::vector<pgsTypes::SegmentVariationType> CSplicedUBeamFactory::GetSupportedSegmentVariations()
+bool CSplicedUBeamFactory::SupportsVariableDepthSection()
 {
+   return false; // section cannot be varied
+}
+
+LPCTSTR CSplicedUBeamFactory::GetVariableDepthDimension()
+{
+   ATLASSERT(false); // should never get here because U-beams don't support variable depth
+   return _T("???");
+}
+
+std::vector<pgsTypes::SegmentVariationType> CSplicedUBeamFactory::GetSupportedSegmentVariations(bool bIsVariableDepthSection)
+{
+   ATLASSERT(bIsVariableDepthSection == false);
    std::vector<pgsTypes::SegmentVariationType> variations;
    variations.push_back(pgsTypes::svtNone);
    return variations;
@@ -997,7 +1013,8 @@ bool CSplicedUBeamFactory::CanBottomFlangeDepthVary()
 
 LPCTSTR CSplicedUBeamFactory::GetBottomFlangeDepthDimension()
 {
-   return _T("");
+   ATLASSERT(false); // should never get here because U-beams don't support variable depth
+   return _T("???");
 }
 
 bool CSplicedUBeamFactory::SupportsEndBlocks()

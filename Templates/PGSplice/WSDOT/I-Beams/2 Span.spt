@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PGSplice version="3">
-  <Version>3.0.0.6</Version>
+  <Version>3.0.0.9</Version>
   <Broker version="1">
     <Agent version="1">
       <CLSID>{256B5B5B-762C-4693-8802-6B0351290FEA}</CLSID>
       <LIBRARY_MANAGER version="2">
-        <TimeStamp>3560184225</TimeStamp>
+        <TimeStamp>3569000334</TimeStamp>
         <LIBRARY_MANAGER_ENTRY version="1">
           <LIBRARY_NAME>CONCRETE_LIBRARY</LIBRARY_NAME>
           <LIBRARY version="1">
@@ -594,10 +594,10 @@
             <LIBRARY_DISPLAY_NAME>Project Criteria</LIBRARY_DISPLAY_NAME>
             <LIBRARY_ENTRY version="1">
               <ENTRY_KEY>WSDOT - Spliced Girders</ENTRY_KEY>
-              <SpecificationLibraryEntry version="45">
+              <SpecificationLibraryEntry version="50">
                 <Name>WSDOT - Spliced Girders</Name>
                 <Description>AASHTO LRFD Bridge Design Specification, 6th Edition 2012 - US Units, modified to reflect WSDOT design practices</Description>
-                <SpecificationType>AashtoLrfd2012</SpecificationType>
+                <SpecificationType>AashtoLrfd2013</SpecificationType>
                 <SpecificationUnits>UsUnitsSpec</SpecificationUnits>
                 <SectionPropertyType>1</SectionPropertyType>
                 <DoCheckStrandSlope>-1</DoCheckStrandSlope>
@@ -693,27 +693,41 @@
                 <Bs3TensStressServSc>0</Bs3TensStressServSc>
                 <Bs3DoTensStressServScMax>0</Bs3DoTensStressServScMax>
                 <Bs3TensStressServScMax>0</Bs3TensStressServScMax>
-                <MomentCapacity version="2">
+                <MomentCapacity version="3">
                   <Bs3LRFDOverreinforcedMomentCapacity>1</Bs3LRFDOverreinforcedMomentCapacity>
                   <IncludeRebarForCapacity>0</IncludeRebarForCapacity>
                   <IncludeNoncompositeMomentForNegMomentDesign>-1</IncludeNoncompositeMomentForNegMomentDesign>
-                  <ReductionFactor version="1">
-                    <NormalWeight version="1">
+                  <ResistanceFactor version="1">
+                    <NormalWeight version="2">
                       <TensionControlled_RC>0.90000000000000002</TensionControlled_RC>
                       <TensionControlled_PS>1</TensionControlled_PS>
+                      <TensionControlled_Spliced>0.94999999999999996</TensionControlled_Spliced>
                       <CompressionControlled>0.75</CompressionControlled>
                     </NormalWeight>
-                    <AllLightweight version="1">
+                    <AllLightweight version="2">
                       <TensionControlled_RC>0.90000000000000002</TensionControlled_RC>
                       <TensionControlled_PS>1</TensionControlled_PS>
+                      <TensionControlled_Spliced>0.94999999999999996</TensionControlled_Spliced>
                       <CompressionControlled>0.75</CompressionControlled>
                     </AllLightweight>
-                    <SandLightweight version="1">
+                    <SandLightweight version="2">
                       <TensionControlled_RC>0.90000000000000002</TensionControlled_RC>
                       <TensionControlled_PS>1</TensionControlled_PS>
+                      <TensionControlled_Spliced>0.94999999999999996</TensionControlled_Spliced>
                       <CompressionControlled>0.75</CompressionControlled>
                     </SandLightweight>
-                  </ReductionFactor>
+                  </ResistanceFactor>
+                  <ClosureJointResistanceFactor version="1">
+                    <NormalWeight version="1">
+                      <FullyBondedTendons>0.94999999999999996</FullyBondedTendons>
+                    </NormalWeight>
+                    <AllLightweight version="1">
+                      <FullyBondedTendons>0.90000000000000002</FullyBondedTendons>
+                    </AllLightweight>
+                    <SandLightweight version="1">
+                      <FullyBondedTendons>0.90000000000000002</FullyBondedTendons>
+                    </SandLightweight>
+                  </ClosureJointResistanceFactor>
                 </MomentCapacity>
                 <ModulusOfRuptureCoefficient version="1">
                   <Moment version="1">
@@ -794,24 +808,30 @@
                 <CheckLiveLoadDeflection>-1</CheckLiveLoadDeflection>
                 <LiveLoadDeflectionLimit>800</LiveLoadDeflectionLimit>
                 <Limits version="1">
-                  <Normal version="1">
+                  <Normal version="2">
                     <MaxSlabFc>41368544</MaxSlabFc>
                     <MaxGirderFci>51710680</MaxGirderFci>
                     <MaxGirderFc>68947576</MaxGirderFc>
+                    <MaxClosureFci>41368543.759020001</MaxClosureFci>
+                    <MaxClosureFc>55158058.345360003</MaxClosureFc>
                     <MaxConcreteUnitWeight>2643.04638671875</MaxConcreteUnitWeight>
                     <MaxConcreteAggSize>0.038100000470876701</MaxConcreteAggSize>
                   </Normal>
-                  <AllLightweight version="1">
+                  <AllLightweight version="2">
                     <MaxSlabFc>41368543.759020001</MaxSlabFc>
                     <MaxGirderFci>51710679.698775001</MaxGirderFci>
                     <MaxGirderFc>62052815.638530001</MaxGirderFc>
+                    <MaxClosureFci>41368543.759020001</MaxClosureFci>
+                    <MaxClosureFc>55158058.345360003</MaxClosureFc>
                     <MaxConcreteUnitWeight>2002.3079217450172</MaxConcreteUnitWeight>
                     <MaxConcreteAggSize>0.038099999999999995</MaxConcreteAggSize>
                   </AllLightweight>
-                  <SandLightweight version="1">
+                  <SandLightweight version="2">
                     <MaxSlabFc>41368543.759020001</MaxSlabFc>
                     <MaxGirderFci>51710679.698775001</MaxGirderFci>
                     <MaxGirderFc>62052815.638530001</MaxGirderFc>
+                    <MaxClosureFci>41368543.759020001</MaxClosureFci>
+                    <MaxClosureFc>55158058.345360003</MaxClosureFc>
                     <MaxConcreteUnitWeight>2002.3079217450172</MaxConcreteUnitWeight>
                     <MaxConcreteAggSize>0.038099999999999995</MaxConcreteAggSize>
                   </SandLightweight>
@@ -820,16 +840,21 @@
                 <EnableSlabOffsetDesign>-1</EnableSlabOffsetDesign>
                 <DesignStrandFillType>1</DesignStrandFillType>
                 <EffectiveFlangeWidthMethod>0</EffectiveFlangeWidthMethod>
-                <Shear version="1">
+                <Shear version="2">
                   <LongReinfShearMethod>0</LongReinfShearMethod>
                   <IncludeRebarForCapacity>-1</IncludeRebarForCapacity>
                   <ShearFlowMethod>1</ShearFlowMethod>
                   <ShearCapacityMethod>0</ShearCapacityMethod>
-                  <ReductionFactor version="1">
+                  <ResistanceFactor version="1">
                     <Normal>0.90000000000000002</Normal>
                     <AllLightweight>0.80000000000000004</AllLightweight>
                     <SandLightweight>0.80000000000000004</SandLightweight>
-                  </ReductionFactor>
+                  </ResistanceFactor>
+                  <ClosureJointResistanceFactor version="1">
+                    <Normal>0.90000000000000002</Normal>
+                    <AllLightweight>0.69999999999999996</AllLightweight>
+                    <SandLightweight>0.69999999999999996</SandLightweight>
+                  </ClosureJointResistanceFactor>
                 </Shear>
                 <PedestrianLoad>3591.0194235224999</PedestrianLoad>
                 <MinSidewalkWidth>0.60960000000000003</MinSidewalkWidth>
@@ -837,6 +862,20 @@
                 <StrandExtensions version="1">
                   <AllowStraightStrandExtensions>-1</AllowStraightStrandExtensions>
                 </StrandExtensions>
+                <ClosureJoint version="1">
+                  <ClosureCompStressAtStressing>0.59999999999999998</ClosureCompStressAtStressing>
+                  <ClosureTensStressPTZAtStressing>0</ClosureTensStressPTZAtStressing>
+                  <ClosureTensStressPTZWithRebarAtStressing>248.92460634769199</ClosureTensStressPTZWithRebarAtStressing>
+                  <ClosureTensStressAtStressing>0</ClosureTensStressAtStressing>
+                  <ClosureTensStressWithRebarAtStressing>498.89952749010001</ClosureTensStressWithRebarAtStressing>
+                  <ClosureCompStressAtService>0.45000000000000001</ClosureCompStressAtService>
+                  <ClosureCompStressWithLiveLoadAtService>0.59999999999999998</ClosureCompStressWithLiveLoadAtService>
+                  <ClosureTensStressPTZAtService>0</ClosureTensStressPTZAtService>
+                  <ClosureTensStressPTZWithRebarAtService>248.92460634769199</ClosureTensStressPTZWithRebarAtService>
+                  <ClosureTensStressAtService>0</ClosureTensStressAtService>
+                  <ClosureTensStressWithRebarAtService>498.89952749010001</ClosureTensStressWithRebarAtService>
+                  <ClosureCompStressFatigue>0.40000000000000002</ClosureCompStressFatigue>
+                </ClosureJoint>
               </SpecificationLibraryEntry>
             </LIBRARY_ENTRY>
           </LIBRARY>
@@ -1053,7 +1092,7 @@
           </LIBRARY>
         </LIBRARY_MANAGER_ENTRY>
       </LIBRARY_MANAGER>
-      <ProjectData version="5">
+      <ProjectData version="6">
         <ProjectProperties version="1">
           <BridgeName></BridgeName>
           <BridgeId></BridgeId>
@@ -1693,13 +1732,13 @@
           </TimelineEvents>
           <Piers version="1">
             <PierCount>3</PierCount>
-            <PierDataDetails version="10">
+            <PierDataDetails version="11">
               <ID>0</ID>
               <Station>0</Station>
               <Orientation>NORMAL</Orientation>
+              <IsBoundaryPier>-1</IsBoundaryPier>
               <PierConnectionType>6</PierConnectionType>
-              <SegmentConnectionType>0</SegmentConnectionType>
-              <Back version="1">
+              <Back version="2">
                 <GirderEndDistance>0.52069999999999994</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
                 <GirderBearingOffset>0.82550000000000001</GirderBearingOffset>
@@ -1711,7 +1750,7 @@
                   <DiaphragmLoadType>ApplyAtBearingCenterline</DiaphragmLoadType>
                 </Diaphragm>
               </Back>
-              <Ahead version="1">
+              <Ahead version="2">
                 <GirderEndDistance>0.30479999999999996</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
                 <GirderBearingOffset>0.60959999999999992</GirderBearingOffset>
@@ -1724,13 +1763,13 @@
                 </Diaphragm>
               </Ahead>
             </PierDataDetails>
-            <PierDataDetails version="10">
+            <PierDataDetails version="11">
               <ID>1</ID>
               <Station>68.579999999999998</Station>
               <Orientation>NORMAL</Orientation>
-              <PierConnectionType>0</PierConnectionType>
+              <IsBoundaryPier>0</IsBoundaryPier>
               <SegmentConnectionType>2</SegmentConnectionType>
-              <Back version="1">
+              <Back version="2">
                 <GirderEndDistance>0.30479999999999996</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
                 <GirderBearingOffset>0.60959999999999992</GirderBearingOffset>
@@ -1742,7 +1781,7 @@
                   <DiaphragmLoadType>ApplyAtBearingCenterline</DiaphragmLoadType>
                 </Diaphragm>
               </Back>
-              <Ahead version="1">
+              <Ahead version="2">
                 <GirderEndDistance>0.52069999999999994</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
                 <GirderBearingOffset>0.82550000000000001</GirderBearingOffset>
@@ -1755,13 +1794,13 @@
                 </Diaphragm>
               </Ahead>
             </PierDataDetails>
-            <PierDataDetails version="10">
+            <PierDataDetails version="11">
               <ID>2</ID>
               <Station>137.16</Station>
               <Orientation>NORMAL</Orientation>
+              <IsBoundaryPier>-1</IsBoundaryPier>
               <PierConnectionType>1</PierConnectionType>
-              <SegmentConnectionType>0</SegmentConnectionType>
-              <Back version="1">
+              <Back version="2">
                 <GirderEndDistance>0.30479999999999996</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
                 <GirderBearingOffset>0.60959999999999992</GirderBearingOffset>
@@ -1773,7 +1812,7 @@
                   <DiaphragmLoadType>ApplyAtBearingCenterline</DiaphragmLoadType>
                 </Diaphragm>
               </Back>
-              <Ahead version="1">
+              <Ahead version="2">
                 <GirderEndDistance>0.52069999999999994</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
                 <GirderBearingOffset>0.82550000000000001</GirderBearingOffset>
@@ -1789,7 +1828,7 @@
           </Piers>
           <TemporarySupports version="1">
             <TemporarySupportCount>2</TemporarySupportCount>
-            <TemporarySupportData version="1">
+            <TemporarySupportData version="2">
               <ID>2</ID>
               <Type>ErectionTower</Type>
               <ConnectionType>ClosurePour</ConnectionType>
@@ -1800,21 +1839,8 @@
               <GirderBearingOffset>0.30480000000000002</GirderBearingOffset>
               <BearingOffsetMeasurementType>NormalToPier</BearingOffsetMeasurementType>
               <SupportWidth>0.30480000000000002</SupportWidth>
-              <GirderSpacing version="1">
-                <MeasurementLocation>0</MeasurementLocation>
-                <MeasurementType>0</MeasurementType>
-                <RefGirder>-1</RefGirder>
-                <RefGirderOffsetType>1</RefGirderOffsetType>
-                <RefGirderOffset>0</RefGirderOffset>
-                <SpacingGroupCount>1</SpacingGroupCount>
-                <SpacingGroup version="1">
-                  <Spacing>2.1845015999999999</Spacing>
-                  <FirstGirderIndex>0</FirstGirderIndex>
-                  <LastGirderIndex>5</LastGirderIndex>
-                </SpacingGroup>
-              </GirderSpacing>
             </TemporarySupportData>
-            <TemporarySupportData version="1">
+            <TemporarySupportData version="2">
               <ID>3</ID>
               <Type>ErectionTower</Type>
               <ConnectionType>ClosurePour</ConnectionType>
@@ -1825,19 +1851,6 @@
               <GirderBearingOffset>0.30480000000000002</GirderBearingOffset>
               <BearingOffsetMeasurementType>NormalToPier</BearingOffsetMeasurementType>
               <SupportWidth>0.30480000000000002</SupportWidth>
-              <GirderSpacing version="1">
-                <MeasurementLocation>0</MeasurementLocation>
-                <MeasurementType>0</MeasurementType>
-                <RefGirder>-1</RefGirder>
-                <RefGirderOffsetType>1</RefGirderOffsetType>
-                <RefGirderOffset>0</RefGirderOffset>
-                <SpacingGroupCount>1</SpacingGroupCount>
-                <SpacingGroup version="1">
-                  <Spacing>2.1845015999999999</Spacing>
-                  <FirstGirderIndex>0</FirstGirderIndex>
-                  <LastGirderIndex>5</LastGirderIndex>
-                </SpacingGroup>
-              </GirderSpacing>
             </TemporarySupportData>
           </TemporarySupports>
           <Spans version="1">
@@ -2035,14 +2048,7 @@
                     <ID>0</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>0</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -2255,14 +2261,7 @@
                     <ID>30</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -2475,14 +2474,7 @@
                     <ID>24</ID>
                     <StartSpan>1</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -2677,14 +2669,7 @@
                     <ID>3</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>0</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -2897,14 +2882,7 @@
                     <ID>31</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -3117,14 +3095,7 @@
                     <ID>25</ID>
                     <StartSpan>1</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -3319,14 +3290,7 @@
                     <ID>6</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>0</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -3539,14 +3503,7 @@
                     <ID>32</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -3759,14 +3716,7 @@
                     <ID>26</ID>
                     <StartSpan>1</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -3961,14 +3911,7 @@
                     <ID>9</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>0</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -4181,14 +4124,7 @@
                     <ID>33</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -4401,14 +4337,7 @@
                     <ID>27</ID>
                     <StartSpan>1</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -4603,14 +4532,7 @@
                     <ID>12</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>0</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -4823,14 +4745,7 @@
                     <ID>34</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -5043,14 +4958,7 @@
                     <ID>28</ID>
                     <StartSpan>1</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -5245,14 +5153,7 @@
                     <ID>15</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>0</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -5465,14 +5366,7 @@
                     <ID>35</ID>
                     <StartSpan>0</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -5685,14 +5579,7 @@
                     <ID>29</ID>
                     <StartSpan>1</StartSpan>
                     <EndSpan>1</EndSpan>
-                    <SegmentVariation>Linear</SegmentVariation>
-                    <LeftPrismaticLength>0</LeftPrismaticLength>
-                    <LeftPrismaticHeight>2.4003000000000001</LeftPrismaticHeight>
-                    <LeftPrismaticBottomFlangeDepth>0.13017499999999999</LeftPrismaticBottomFlangeDepth>
-                    <RightPrismaticLength>0</RightPrismaticLength>
-                    <RightPrismaticHeight>2.4003000000000001</RightPrismaticHeight>
-                    <RightPrismaticBottomFlangeDepth>0.13017499999999999</RightPrismaticBottomFlangeDepth>
-                    <VariableBottomFlangeDepthEnabled>0</VariableBottomFlangeDepthEnabled>
+                    <SegmentVariation>None</SegmentVariation>
                     <LeftEndBlockLength>0</LeftEndBlockLength>
                     <LeftEndBlockTransition>0</LeftEndBlockTransition>
                     <LeftEndBlockWidth>0</LeftEndBlockWidth>
@@ -5951,6 +5838,11 @@
           <WobbleFriction>0.00065616797900200005</WobbleFriction>
           <FrictionCoefficient>0.25</FrictionCoefficient>
         </PostTensioning>
+        <TemporaryStrandPT version="1">
+          <AnchorSet>0.0095249999999999987</AnchorSet>
+          <WobbleFriction>0.00065616797900200005</WobbleFriction>
+          <FrictionCoefficient>0.25</FrictionCoefficient>
+        </TemporaryStrandPT>
         <UserDefinedLoads version="3">
           <UserDefinedPointLoads version="1">
             <Count>0</Count>

@@ -294,7 +294,7 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
    m_OptFci = pOptGirderData->GetFci();
 
    m_OptStrandFillType = pOptGirderData->GetStrandFillType();
-   m_strOptNoStrands.Format(_T("%d"), pOptGirderData->GetNumStrands() );
+   m_strOptNoStrands.Format(_T("%d"), pOptGirderData->GetStrandCount() );
 
    // original
    CTxDOTOptionalDesignGirderData* pOrigGirderData = m_pData->GetOriginalDesignGirderData();
@@ -303,7 +303,7 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
    m_OrigFci = pOrigGirderData->GetFci();
 
    m_OrigStrandFillType = pOrigGirderData->GetStrandFillType();
-   m_strOrigNoStrands.Format(_T("%d"), pOrigGirderData->GetNumStrands() );
+   m_strOrigNoStrands.Format(_T("%d"), pOrigGirderData->GetStrandCount() );
 }
 
 void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()

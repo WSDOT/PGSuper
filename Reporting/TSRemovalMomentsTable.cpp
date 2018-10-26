@@ -77,7 +77,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
    INIT_UV_PROTOTYPE( rptMomentSectionValue,     moment,   pDisplayUnits->GetMomentUnit(),     false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuity_interval;
+   IntervalIndexType continuityIntervalIdx;
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -86,6 +86,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
 
 
    // Get the results
@@ -98,49 +99,47 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
 
-   std::set<IntervalIndexType> tsrIntervals;
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
+      // Get the intervals when temporary supports are removed for this group
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
+
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      // Get the intervals when temporary supports are removed for this group
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
-      const CSpanData2* pSpan = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
-      const CSpanData2* pEndSpan = pGroup->GetPier(pgsTypes::metEnd)->GetPrevSpan();
-      for ( SpanIndexType spanIdx = pSpan->GetIndex(); spanIdx <= pEndSpan->GetIndex(); spanIdx++ )
-      {
-         std::vector<const CTemporarySupportData*> vTS( pSpan->GetTemporarySupports() );
-         std::vector<const CTemporarySupportData*>::iterator tsIter(vTS.begin());
-         std::vector<const CTemporarySupportData*>::iterator tsIterEnd(vTS.end());
-         for ( ; tsIter != tsIterEnd; tsIter++ )
-         {
-            const CTemporarySupportData* pTS = *tsIter;
-            tsrIntervals.insert( pIntervals->GetTemporarySupportRemovalInterval(pTS->GetID()) );
-         }
-
-         pSpan = pSpan->GetNextPier()->GetNextSpan();
-      }
 
       if ( tsrIntervals.size() == 0 )
          continue; // next group
 
+      // determine if any user defined loads where applied before the first temporary
+      // support removal interval
+      bool bAreThereUserLoads = false;
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(grpIdx,gdrIdx,0));
+      for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < tsrIntervals.front(); intervalIdx++ )
+      {
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            bAreThereUserLoads = true;
+            break; // just need to find one instance
+         }
+      }
 
-      std::set<IntervalIndexType>::iterator iter(tsrIntervals.begin());
-      std::set<IntervalIndexType>::iterator end(tsrIntervals.end());
+      std::vector<IntervalIndexType>::iterator iter(tsrIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(tsrIntervals.end());
       for ( ; iter != end; iter++ )
       {
          IntervalIndexType tsrIntervalIdx = *iter;
 
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
          bPedLoading = false;
          bPermit     = false;
+
+         // are there user defined loads in this interval?
+         if ( pUDL->DoUserLoadsExist(girderKey,tsrIntervalIdx) )
+         {
+            bAreThereUserLoads = true;
+         }
 
          CString strLabel;
          strLabel.Format(_T("Moment due to removal of temporary supports in Interval %d"),LABEL_INTERVAL(tsrIntervalIdx));
@@ -159,9 +158,25 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
          RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
-                                                                                                 bPermit,false,analysisType,continuity_interval,
+                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
+         if ( bAreThereUserLoads )
+         {
+            nCols += 3;
+            p_table->SetNumberOfColumns(nCols);
+            p_table->SetRowSpan(0,nCols-3,2);
+            p_table->SetRowSpan(1,nCols-3,SKIP_CELL);
+            (*p_table)(0,nCols-3) << COLHDR(_T("User DC"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+            p_table->SetRowSpan(0,nCols-2,2);
+            p_table->SetRowSpan(1,nCols-2,SKIP_CELL);
+            (*p_table)(0,nCols-2) << COLHDR(_T("User DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+            p_table->SetRowSpan(0,nCols-1,2);
+            p_table->SetRowSpan(1,nCols-1,SKIP_CELL);
+            (*p_table)(0,nCols-1) << COLHDR(_T("User LLIM"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+         }
 
          CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
          std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
@@ -217,6 +232,14 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
             minOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT );
          }
 
+         std::vector<Float64> userDC, userDW, userLLIM;
+         if ( bAreThereUserLoads )
+         {
+            userDC   = pForces2->GetMoment(tsrIntervalIdx, pftUserDC,   vPoi, maxBAT);
+            userDW   = pForces2->GetMoment(tsrIntervalIdx, pftUserDW,   vPoi, maxBAT);
+            userLLIM = pForces2->GetMoment(tsrIntervalIdx, pftUserLLIM, vPoi, maxBAT);
+         }
+
          // write out the results
          std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
          std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
@@ -249,7 +272,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
             if ( bConstruction )
             {
-               if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
                {
                   (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
                   (*p_table)(row,col++) << moment.SetValue( minConstruction[index] );
@@ -260,7 +283,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
                }
             }
 
-            if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
             {
                (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
                (*p_table)(row,col++) << moment.SetValue( minSlab[index] );
@@ -277,7 +300,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
             if ( bDeckPanels )
             {
-               if ( analysisType == pgsTypes::Envelope && continuity_interval == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
                {
                   (*p_table)(row,col++) << moment.SetValue( maxDeckPanel[index] );
                   (*p_table)(row,col++) << moment.SetValue( minDeckPanel[index] );
@@ -313,6 +336,14 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
                (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
             }
+
+            if ( bAreThereUserLoads )
+            {
+               (*p_table)(row,col++) << moment.SetValue( userDC[index] );
+               (*p_table)(row,col++) << moment.SetValue( userDW[index] );
+               (*p_table)(row,col++) << moment.SetValue( userLLIM[index] );
+            }
+
 
             row++;
          } // next poi

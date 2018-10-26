@@ -99,7 +99,7 @@ void pgsDebondArtifact::AddFraDebondedStrandsInRow(Float64 fra)
    m_FraDebondedStrandsInRow.push_back(fra);
 }
 
-std::vector<StrandIndexType> pgsDebondArtifact::GetNumStrandsInRow() const
+std::vector<StrandIndexType> pgsDebondArtifact::GetStrandCountInRow() const
 {
    return m_nStrandsInRow;
 }

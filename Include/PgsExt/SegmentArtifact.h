@@ -40,12 +40,6 @@
 
 #include <map>
 
-#define PTZ_NONE 0
-#define PTZ_TOP_YES 0x0001
-#define PTZ_TOP_NO  0x0002
-#define PTZ_BOTTOM_YES 0x0010
-#define PTZ_BOTTOM_NO  0x0020
-
 
 /*****************************************************************************
    pgsSegmentArtifact
@@ -126,9 +120,12 @@ public:
    // if attribute is POI_CLOSURE, only closure joints are checked
    bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
 
-   // returns one of the PTZ flags that indicate where the precompressed tensile zone
-   // is on this segment
-   int GetPrecompressedTensileZone(IntervalIndexType intervalIdx,pgsTypes::StressLocation stressLocation) const;
+   bool WasSegmentWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool WasClosureJointWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const;
+
+   // returns true if the allowable tension capacity with adequate reinforcement was used
+   // anywhere along this segment for the deck
+   bool WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
 
    void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow);
    Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
@@ -145,6 +142,8 @@ public:
 
    Float64 GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
    Float64 GetRequiredSegmentConcreteStrength() const;
+   Float64 GetRequiredClosureJointConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredClosureJointConcreteStrength() const;
    Float64 GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
    Float64 GetRequiredDeckConcreteStrength() const;
 

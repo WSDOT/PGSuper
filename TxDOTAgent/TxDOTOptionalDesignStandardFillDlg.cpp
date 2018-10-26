@@ -105,7 +105,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
 
 void CTxDOTOptionalDesignStandardFillDlg::LoadDialogData()
 {
-   StrandIndexType ns = m_pGirderData->GetNumStrands();
+   StrandIndexType ns = m_pGirderData->GetStrandCount();
    m_strNumStrands.Format(_T("%d"),ns);
 
    m_To = m_pGirderData->GetStrandTo();

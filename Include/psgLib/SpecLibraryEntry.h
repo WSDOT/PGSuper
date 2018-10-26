@@ -747,6 +747,9 @@ public:
    void SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiTensionSpliced,Float64 phiCompression);
    void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const;
 
+   void SetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
+   Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const;
+
    // Set/Get parameter that indicates if non-composite moments are included in negative moment (deck)
    // design. If true, Mu for deck design includes moments on the non-composite section.
    void IncludeNoncompositeMomentsForNegMomentDesign(bool bInclude);
@@ -769,6 +772,9 @@ public:
    // Set/Get the shear capacity resistance factors
    void SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
    Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) const;
+
+   void SetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
+   Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const;
 
    // Longitudinal Reinforcement for shear
 
@@ -1251,6 +1257,9 @@ private:
    Float64 m_PhiFlexureTensionSpliced[3]; // tension controlled, spliced girders
    Float64 m_PhiFlexureCompression[3];
    Float64 m_PhiShear[3];
+
+   Float64 m_PhiClosureJointFlexure[3];
+   Float64 m_PhiClosureJointShear[3];
 
    Int16 m_RelaxationLossMethod;  // method for computing relaxation losses for LRFD 2005 and later, refined method
    Int16 m_FcgpComputationMethod; // method for computing fcgp for losses. only used for txdot 2013

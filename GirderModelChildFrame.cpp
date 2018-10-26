@@ -462,7 +462,7 @@ void CGirderModelChildFrame::UpdateBar()
 
       poi = pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT);
       CollectionIndexType nPoi = poi.size();
-      ASSERT(0 < nPoi && nPoi <3);
+      ATLASSERT( 0 <= nPoi && nPoi <= 2 );
       iter = poi.begin();
       pgsPointOfInterest left_hp_poi = *iter++;
       pgsPointOfInterest right_hp_poi = left_hp_poi;

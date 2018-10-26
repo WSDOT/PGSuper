@@ -95,7 +95,7 @@ public:
    std::vector<Float64> GetFraDebondedStrandsInRow() const;
    void AddFraDebondedStrandsInRow(Float64 fra);
 
-   std::vector<StrandIndexType> GetNumStrandsInRow() const;
+   std::vector<StrandIndexType> GetStrandCountInRow() const;
    void AddNumStrandsInRow(StrandIndexType nStrandsInRow);
 
    std::vector<StrandIndexType> GetNumDebondedStrandsInRow() const;

@@ -822,9 +822,9 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          }
          col2 += 2;
 
-         (*pTable2)(row2,col2++) << stress.SetValue(/*tsDetails.Girder.fBot[TIMESTEP_DC][ctCummulative] + tsDetails.Girder.fBot[TIMESTEP_DW][ctCummulative] + */tsDetails.Girder.fBot[TIMESTEP_CR][ctCummulative] + tsDetails.Girder.fBot[TIMESTEP_SH][ctCummulative] + tsDetails.Girder.fBot[TIMESTEP_PS][ctCummulative]);
-         (*pTable2)(row2,col2++) << stress.SetValue(/*tsDetails.Girder.fTop[TIMESTEP_DC][ctCummulative] + tsDetails.Girder.fTop[TIMESTEP_DW][ctCummulative] + */tsDetails.Girder.fTop[TIMESTEP_CR][ctCummulative] + tsDetails.Girder.fTop[TIMESTEP_SH][ctCummulative] + tsDetails.Girder.fTop[TIMESTEP_PS][ctCummulative]);
-         (*pTable2)(row2,col2++) << stress.SetValue(/*tsDetails.Deck.fTop[TIMESTEP_DC][ctCummulative] + tsDetails.Deck.fTop[TIMESTEP_DW][ctCummulative] + */tsDetails.Deck.fTop[TIMESTEP_CR][ctCummulative] + tsDetails.Deck.fTop[TIMESTEP_SH][ctCummulative] + tsDetails.Deck.fTop[TIMESTEP_PS][ctCummulative]);
+         (*pTable2)(row2,col2++) << stress.SetValue(/*tsDetails.Girder.f[pgsTypes::BottomFace][TIMESTEP_DC][ctCummulative] + tsDetails.Girder.f[pgsTypes::BottomFace][TIMESTEP_DW][ctCummulative] + */tsDetails.Girder.f[pgsTypes::BottomFace][TIMESTEP_CR][ctCummulative] + tsDetails.Girder.f[pgsTypes::BottomFace][TIMESTEP_SH][ctCummulative] + tsDetails.Girder.f[pgsTypes::BottomFace][TIMESTEP_PS][ctCummulative]);
+         (*pTable2)(row2,col2++) << stress.SetValue(/*tsDetails.Girder.f[pgsTypes::TopFace][TIMESTEP_DC][ctCummulative] + tsDetails.Girder.f[pgsTypes::TopFace][TIMESTEP_DW][ctCummulative] + */tsDetails.Girder.f[pgsTypes::TopFace][TIMESTEP_CR][ctCummulative] + tsDetails.Girder.f[pgsTypes::TopFace][TIMESTEP_SH][ctCummulative] + tsDetails.Girder.f[pgsTypes::TopFace][TIMESTEP_PS][ctCummulative]);
+         (*pTable2)(row2,col2++) << stress.SetValue(/*tsDetails.Deck.f[pgsTypes::TopFace][TIMESTEP_DC][ctCummulative] + tsDetails.Deck.f[pgsTypes::TopFace][TIMESTEP_DW][ctCummulative] + */tsDetails.Deck.f[pgsTypes::TopFace][TIMESTEP_CR][ctCummulative] + tsDetails.Deck.f[pgsTypes::TopFace][TIMESTEP_SH][ctCummulative] + tsDetails.Deck.f[pgsTypes::TopFace][TIMESTEP_PS][ctCummulative]);
 
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.dPext);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Pext);

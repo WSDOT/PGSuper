@@ -438,7 +438,12 @@ void CUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamF
 
 IBeamFactory::Dimensions CUBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
 {
-   Float64 parent_version = pLoad->GetVersion();
+   Float64 parent_version;
+   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
+
 
    IBeamFactory::Dimensions dimensions;
    std::vector<std::_tstring>::iterator iter;

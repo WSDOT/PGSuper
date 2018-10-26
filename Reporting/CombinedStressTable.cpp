@@ -76,26 +76,35 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
                                          IEAFDisplayUnits* pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                                         bool bDesign,bool bRating) const
+                                         bool bDesign,bool bRating,bool bGirderStresses) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
-   BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
+#if defined _DEBUG
+   if ( !bGirderStresses )
+   {
+      // only report deck stresses after the deck is composite
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      ATLASSERT(compositeDeckIntervalIdx <= intervalIdx);
+   }
+#endif
+
+   BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating, bGirderStresses);
 
    if (liveLoadIntervalIdx <= intervalIdx)
    {
       if (bDesign)
-         BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, true, false);
+         BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, true, false, bGirderStresses);
 
       if (bRating)
-         BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true);
+         BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true, bGirderStresses);
 
       if (bDesign)
-         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, true, false);
+         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, true, false, bGirderStresses);
 
       if (bRating)
-         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, false, true);
+         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, false, true, bGirderStresses);
    }
 }
 
@@ -104,13 +113,15 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
                                          IEAFDisplayUnits* pDisplayUnits,
                                          IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
-                                         bool bDesign,bool bRating) const
+                                         bool bDesign,bool bRating,bool bGirderStresses) const
 {
-   // Build table
+   pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
+   pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
+
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(true);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -154,7 +165,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    // Set up table headings
-   pTable = pgsReportStyleHolder::CreateDefaultTable(bTimeStepMethod ? 12 : 6,_T("Stress"));
+   std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
+   pTable = pgsReportStyleHolder::CreateDefaultTable(bTimeStepMethod ? 12 : 6,strTitle);
 
    (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*pTable)(0,col1++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -199,7 +211,6 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
-
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       std::vector<Float64> fTopDCinc, fBotDCinc;
@@ -220,31 +231,31 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
 
-      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopDCinc, &fBotDCinc);
+      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopDWinc, &fBotDWinc);
       if ( bRating )
       {
-         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctIncremental, bat, &fTopDWRatinginc, &fBotDWRatinginc);
+         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopDWRatinginc, &fBotDWRatinginc);
       }
-      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
-      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopDCcum, &fBotDCcum);
+      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopDWcum, &fBotDWcum);
       if ( bRating )
       {
-         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctCummulative, bat, &fTopDWRatingcum, &fBotDWRatingcum);
+         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopDWRatingcum, &fBotDWRatingcum);
       }
 
       if ( bTimeStepMethod )
       {
-         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctIncremental, bat, &fTopCRinc, &fBotCRinc);
-         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctCummulative, bat, &fTopCRcum, &fBotCRcum);
-         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctIncremental, bat, &fTopSHinc, &fBotSHinc);
-         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctCummulative, bat, &fTopSHcum, &fBotSHcum);
-         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctIncremental, bat, &fTopPSinc, &fBotPSinc);
-         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctCummulative, bat, &fTopPScum, &fBotPScum);
+         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopCRinc, &fBotCRinc);
+         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopCRcum, &fBotCRcum);
+         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopSHinc, &fBotSHinc);
+         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopSHcum, &fBotSHcum);
+         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctIncremental, bat, topLocation, botLocation, &fTopPSinc, &fBotPSinc);
+         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctCummulative, bat, topLocation, botLocation, &fTopPScum, &fBotPScum);
       }
 
-      pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI,&fTopMaxServiceI);
-      pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI,&fBotMaxServiceI);
+      pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceI,&fTopMaxServiceI);
+      pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceI,&fBotMaxServiceI);
 
       // Fill up the table
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -328,8 +339,11 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
                                          const CGirderKey& girderKey,
                                          IEAFDisplayUnits* pDisplayUnits,
                                          pgsTypes::AnalysisType analysisType,
-                                         bool bDesign,bool bRating) const
+                                         bool bDesign,bool bRating,bool bGirderStresses) const
 {
+   pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
+   pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(); // always
 
@@ -337,7 +351,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(true);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -352,13 +366,21 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
    bool bPermit = false;// never for stress
 
-   LPCTSTR strLabel = bDesign ? _T("Stress - Design Vehicles") : _T("Stress - Rating Vehicles");
+   std::_tstring strTitle;
+   if ( bGirderStresses )
+   {
+      strTitle = (bDesign ? _T("Girder Stresses - Design Vehicles") : _T("Girder Stresses - Rating Vehicles"));
+   }
+   else
+   {
+      strTitle = (bDesign ? _T("Deck Stresses - Design Vehicles") : _T("Deck Stresses - Rating Vehicles"));
+   }
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,true,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strTitle.c_str(),false,bDesign,bPermit,bPedLoading,bRating,true,true,
                            intervalIdx,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
    *p << p_table;
 
@@ -400,16 +422,16 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       // Bridge site 3
       if ( bPedLoading )
       {
-         pForces2->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, intervalIdx, vPoi, bat, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL );
+         pForces2->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, intervalIdx, vPoi, bat, topLocation, botLocation, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL );
       }
 
       if ( bDesign )
       {
-         pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, intervalIdx, vPoi, bat, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
+         pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, intervalIdx, vPoi, bat, topLocation, botLocation, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltFatigue, intervalIdx, vPoi, bat, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL );
+            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltFatigue, intervalIdx, vPoi, bat, topLocation, botLocation, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL );
          }
       }
 
@@ -417,17 +439,17 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       {
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {
-            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, intervalIdx, vPoi, bat, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
+            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, intervalIdx, vPoi, bat, topLocation, botLocation, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltLegalRating_Routine, intervalIdx, vPoi, bat, &fTopMinLegalRoutineLL, &fTopMaxLegalRoutineLL, &fBotMinLegalRoutineLL, &fBotMaxLegalRoutineLL );
+            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltLegalRating_Routine, intervalIdx, vPoi, bat, topLocation, botLocation, &fTopMinLegalRoutineLL, &fTopMaxLegalRoutineLL, &fBotMinLegalRoutineLL, &fBotMaxLegalRoutineLL );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
          {
-            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltLegalRating_Special, intervalIdx, vPoi, bat, &fTopMinLegalSpecialLL, &fTopMaxLegalSpecialLL, &fBotMinLegalSpecialLL, &fBotMaxLegalSpecialLL );
+            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltLegalRating_Special, intervalIdx, vPoi, bat, topLocation, botLocation, &fTopMinLegalSpecialLL, &fTopMaxLegalSpecialLL, &fBotMinLegalSpecialLL, &fBotMaxLegalSpecialLL );
          }
       }
 
@@ -581,8 +603,11 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
                                          const CGirderKey& girderKey,
                                          IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
-                                         bool bDesign,bool bRating) const
+                                         bool bDesign,bool bRating,bool bGirderStresses) const
 {
+   pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
+   pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // NOTE - Stregth II stresses not reported because they aren't used for anything
@@ -591,7 +616,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(true);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -635,7 +660,8 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          nCols += 2;
    }
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+   std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
+   p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
 
    *p << p_table;
 
@@ -771,42 +797,42 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
       if ( bDesign )
       {
-         pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI, &fTopMaxServiceI);
-         pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI, &fBotMaxServiceI);
+         pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceI, &fTopMaxServiceI);
+         pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceI, &fBotMaxServiceI);
 
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
          {
-            pLsForces2->GetStress( pgsTypes::ServiceIA, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIA, &fTopMaxServiceIA);
-            pLsForces2->GetStress( pgsTypes::ServiceIA, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIA, &fBotMaxServiceIA);
+            pLsForces2->GetStress( pgsTypes::ServiceIA, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceIA, &fTopMaxServiceIA);
+            pLsForces2->GetStress( pgsTypes::ServiceIA, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceIA, &fBotMaxServiceIA);
          }
          else
          {
-            pLsForces2->GetStress( pgsTypes::FatigueI, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinFatigueI, &fTopMaxFatigueI);
-            pLsForces2->GetStress( pgsTypes::FatigueI, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinFatigueI, &fBotMaxFatigueI);
+            pLsForces2->GetStress( pgsTypes::FatigueI, intervalIdx, vPoi, topLocation, false, bat, &fTopMinFatigueI, &fTopMaxFatigueI);
+            pLsForces2->GetStress( pgsTypes::FatigueI, intervalIdx, vPoi, botLocation, false, bat, &fBotMinFatigueI, &fBotMaxFatigueI);
          }
 
-         pLsForces2->GetStress( pgsTypes::ServiceIII, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII, &fTopMaxServiceIII);
-         pLsForces2->GetStress( pgsTypes::ServiceIII, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII, &fBotMaxServiceIII);
+         pLsForces2->GetStress( pgsTypes::ServiceIII, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceIII, &fTopMaxServiceIII);
+         pLsForces2->GetStress( pgsTypes::ServiceIII, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceIII, &fBotMaxServiceIII);
       }
 
       if ( bRating )
       {
          if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
          {
-            pLsForces2->GetStress( pgsTypes::ServiceIII_Inventory, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII_Inventory, &fTopMaxServiceIII_Inventory);
-            pLsForces2->GetStress( pgsTypes::ServiceIII_Inventory, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII_Inventory, &fBotMaxServiceIII_Inventory);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_Inventory, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceIII_Inventory, &fTopMaxServiceIII_Inventory);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_Inventory, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceIII_Inventory, &fBotMaxServiceIII_Inventory);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalRoutine, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII_Routine, &fTopMaxServiceIII_Routine);
-            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalRoutine, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII_Routine, &fBotMaxServiceIII_Routine);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalRoutine, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceIII_Routine, &fTopMaxServiceIII_Routine);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalRoutine, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceIII_Routine, &fBotMaxServiceIII_Routine);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
          {
-            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalSpecial, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII_Special, &fTopMaxServiceIII_Special);
-            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalSpecial, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII_Special, &fBotMaxServiceIII_Special);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalSpecial, intervalIdx, vPoi, topLocation, false, bat, &fTopMinServiceIII_Special, &fTopMaxServiceIII_Special);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalSpecial, intervalIdx, vPoi, botLocation, false, bat, &fBotMinServiceIII_Special, &fBotMaxServiceIII_Special);
          }
       }
 

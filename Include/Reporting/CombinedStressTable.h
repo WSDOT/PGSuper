@@ -77,7 +77,7 @@ public:
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                      bool bDesign,bool bRating) const;
+                      bool bDesign,bool bRating,bool bGirderStresses) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -91,21 +91,21 @@ protected:
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                      bool bDesign,bool bRating) const;
+                      bool bDesign,bool bRating,bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
    virtual void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::AnalysisType analysisType,
-                      bool bDesign = true,bool bRating = true) const;
+                      bool bDesign,bool bRating,bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
    virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType,
-                      bool bDesign = true,bool bRating = true) const;
+                      bool bDesign,bool bRating,bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
    void MakeCopy(const CCombinedStressTable& rOther);

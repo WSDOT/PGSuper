@@ -445,9 +445,10 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
       hr = pStrLoad->EndUnit(); // TxDOTOptionalGirderData
    }
-   catch(...)
+   catch(HRESULT hResult)
    {
       ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
    // One last step - clear out any strand data from fill methods not used
@@ -541,7 +542,7 @@ Float64 CTxDOTOptionalDesignGirderData::GetFc() const
 
 // Data for standard fill
 // ========================
-StrandIndexType CTxDOTOptionalDesignGirderData::GetNumStrands()
+StrandIndexType CTxDOTOptionalDesignGirderData::GetStrandCount()
 {
    return m_NumStrands;
 }
@@ -634,12 +635,12 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
          Float64 height = pGdrEntry->GetBeamHeight(pgsTypes::metStart);
 
          // Adjustment limits for strand locations at ends
-         pgsTypes::GirderFace  topFace, bottomFace;
+         pgsTypes::FaceType  topFace, bottomFace;
          Float64  topLimit, bottomLimit;
          pGdrEntry->GetEndAdjustmentLimits(&topFace, &topLimit, &bottomFace, &bottomLimit);
 
          // To max is easy
-         *pToUpper = topFace==pgsTypes::GirderBottom ? topLimit : height-topLimit;
+         *pToUpper = topFace==pgsTypes::BottomFace ? topLimit : height-topLimit;
 
          // To-min must take height of strand bundle into consideration
          // compute lower and upper bounds of numHarped strands at girder end
@@ -665,7 +666,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
 
          Float64 h_bundle = ymax-ymin;
 
-         Float64 bot_loc = bottomFace==pgsTypes::GirderTop ? height-bottomLimit : bottomLimit;
+         Float64 bot_loc = bottomFace==pgsTypes::TopFace ? height-bottomLimit : bottomLimit;
 
          *pToLower = h_bundle + bot_loc;
       }

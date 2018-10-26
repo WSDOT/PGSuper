@@ -339,72 +339,81 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    USES_CONVERSION;
 
+   CHRException hr;
+
    DeleteSegments();
    DeleteClosures();
 
-   pStrLoad->BeginUnit(_T("Girder"));
-
-   CBridgeDescription2* pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
-
-   CComVariant var;
-   var.vt = VT_ID;
-   pStrLoad->get_Property(_T("ID"),&var);
-   m_GirderID = VARIANT2ID(var);
-
-   if ( !pBridgeDesc->UseSameGirderForEntireBridge() )
+   try
    {
-      var.vt = VT_BSTR;
-      pStrLoad->get_Property(_T("GirderType"),&var);
-      m_GirderType = OLE2T(var.bstrVal);
-   }
+      hr = pStrLoad->BeginUnit(_T("Girder"));
 
-   var.vt = VT_INDEX;
-   pStrLoad->get_Property(_T("SegmentCount"),&var);
-   SegmentIndexType nSegments = VARIANT2INDEX(var);
+      CBridgeDescription2* pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
 
-   m_PTData.Load(pStrLoad,pProgress);
+      CComVariant var;
+      var.vt = VT_ID;
+      hr = pStrLoad->get_Property(_T("ID"),&var);
+      m_GirderID = VARIANT2ID(var);
 
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      CPrecastSegmentData* pSegment = new CPrecastSegmentData;
-      pSegment->SetGirder(this);
-      pSegment->SetIndex(segIdx);
-
-      if ( segIdx != 0 )
+      if ( !pBridgeDesc->UseSameGirderForEntireBridge() )
       {
-         pSegment->SetLeftClosure(m_Closures.back());
-         m_Closures.back()->SetRightSegment(pSegment);
+         var.vt = VT_BSTR;
+         hr = pStrLoad->get_Property(_T("GirderType"),&var);
+         m_GirderType = OLE2T(var.bstrVal);
       }
 
-      pSegment->Load(pStrLoad,pProgress);
+      var.vt = VT_INDEX;
+      hr = pStrLoad->get_Property(_T("SegmentCount"),&var);
+      SegmentIndexType nSegments = VARIANT2INDEX(var);
 
-      ATLASSERT(pSegment->GetID() != INVALID_ID);
+      hr = m_PTData.Load(pStrLoad,pProgress);
 
-      m_Segments.push_back(pSegment);
-      if ( segIdx < nSegments-1 )
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CClosureJointData* pClosure = new CClosureJointData;
-         pClosure->SetGirder(this);
-         pClosure->SetIndex(segIdx);
+         CPrecastSegmentData* pSegment = new CPrecastSegmentData;
+         pSegment->SetGirder(this);
+         pSegment->SetIndex(segIdx);
 
-         pSegment->SetRightClosure(pClosure);
-         pClosure->SetLeftSegment(pSegment);
+         if ( segIdx != 0 )
+         {
+            pSegment->SetLeftClosure(m_Closures.back());
+            m_Closures.back()->SetRightSegment(pSegment);
+         }
 
-         pClosure->Load(pStrLoad,pProgress);
-         m_Closures.push_back(pClosure);
+         hr = pSegment->Load(pStrLoad,pProgress);
+
+         ATLASSERT(pSegment->GetID() != INVALID_ID);
+
+         m_Segments.push_back(pSegment);
+         if ( segIdx < nSegments-1 )
+         {
+            CClosureJointData* pClosure = new CClosureJointData;
+            pClosure->SetGirder(this);
+            pClosure->SetIndex(segIdx);
+
+            pSegment->SetRightClosure(pClosure);
+            pClosure->SetLeftSegment(pSegment);
+
+            hr = pClosure->Load(pStrLoad,pProgress);
+            m_Closures.push_back(pClosure);
+         }
       }
+
+
+      var.vt = VT_I8;
+      hr = pStrLoad->get_Property(_T("ConditionFactorType"),&var);
+      m_ConditionFactorType = pgsTypes::ConditionFactorType(var.lVal);
+
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("ConditionFactor"),&var);
+      m_ConditionFactor = var.dblVal;
+
+      hr = pStrLoad->EndUnit();
    }
-
-
-   var.vt = VT_I8;
-   pStrLoad->get_Property(_T("ConditionFactorType"),&var);
-   m_ConditionFactorType = pgsTypes::ConditionFactorType(var.lVal);
-
-   var.vt = VT_R8;
-   pStrLoad->get_Property(_T("ConditionFactor"),&var);
-   m_ConditionFactor = var.dblVal;
-
-   pStrLoad->EndUnit();
+   catch(HRESULT)
+   {
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
+   }
 
    UpdateLinks();    // links segments and closures
    UpdateSegments(); // sets the span pointers on the segments
@@ -628,7 +637,7 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegm
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedFactory(factory);
    if ( splicedFactory )
    {
-      variations = splicedFactory->GetSupportedSegmentVariations();
+      variations = splicedFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());
    }
    else
    {
@@ -689,7 +698,37 @@ const GirderLibraryEntry* CSplicedGirderData::GetGirderLibraryEntry() const
 
 void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
 {
-   m_pGirderLibraryEntry = pEntry;
+   if ( m_pGirderLibraryEntry != pEntry )
+   {
+      m_pGirderLibraryEntry = pEntry;
+
+      if ( m_pGirderLibraryEntry != NULL )
+      {
+         CComPtr<IBeamFactory> beamFactory;
+         m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+
+         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(beamFactory);
+         if ( splicedBeamFactory )
+         {
+            std::vector<pgsTypes::SegmentVariationType> variations = splicedBeamFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());
+
+            // need to make sure the segment variation type is consistent with the
+            // types available for this girder library entry
+            SegmentIndexType nSegments = GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CPrecastSegmentData* pSegment = GetSegment(segIdx);
+               std::vector<pgsTypes::SegmentVariationType>::iterator found = std::find(variations.begin(),variations.end(),pSegment->GetVariationType());
+               if ( found == variations.end() )
+               {
+                  // the current setting fot the segment variation is no longer a valid
+                  // value, so change it to the first available value
+                  pSegment->SetVariationType(variations.front());
+               } // end if
+            } // next segment
+         } // if spliced girder
+      } // if not null
+   } // if lib entry different
 }
 
 Float64 CSplicedGirderData::GetConditionFactor() const

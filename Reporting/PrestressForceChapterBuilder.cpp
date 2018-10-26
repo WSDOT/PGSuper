@@ -119,8 +119,8 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             rptParagraph* pPara = new rptParagraph;
             *pChapter << pPara;
-            StrandIndexType Ns = pStrandGeom->GetNumStrands(thisSegmentKey,pgsTypes::Straight);
-            StrandIndexType Nh = pStrandGeom->GetNumStrands(thisSegmentKey,pgsTypes::Harped);
+            StrandIndexType Ns = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Straight);
+            StrandIndexType Nh = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
             *pPara << _T("Number of straight strands (N") << Sub(_T("s")) << _T(") = ") << Ns << _T(" ") 
                << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)) << _T(")") << rptNewLine;
             *pPara << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands (N") << Sub(_T("h")) << _T(") = ") << Nh << _T(" ") 
@@ -128,7 +128,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary ) )
             {
-               *pPara << _T("Number of temporary strands (N") << Sub(_T("t")) << _T(") = ") << pStrandGeom->GetNumStrands(thisSegmentKey,pgsTypes::Temporary) << _T(" ") 
+               *pPara << _T("Number of temporary strands (N") << Sub(_T("t")) << _T(") = ") << pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) << _T(" ") 
                   << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(")") << rptNewLine;
 
                   

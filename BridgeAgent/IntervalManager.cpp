@@ -239,75 +239,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          }
       }
 
-      if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() && pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
-      {
-         CInterval i;
-
-         // this is an abrupt change in boundary condition, treat as sudden change in loading
-         i.StartEventIdx = eventIdx;
-         i.EndEventIdx   = eventIdx;
-         i.Start         = pTimelineEvent->GetDay();
-         i.End           = i.Start;
-         i.Middle        = i.Start;
-         i.Duration      = 0;
-         i.Description   = _T("Stress tendon and remove temporary supports");
-         m_Intervals.push_back(i);
-
-         const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
-         std::vector<SupportIDType> tsIDs(removeTS.GetTempSupports());
-         IntervalIndexType intervalIdx = m_Intervals.size()-1;
-         std::vector<SupportIDType>::iterator iter(tsIDs.begin());
-         std::vector<SupportIDType>::iterator end(tsIDs.end());
-         for ( ; iter != end; iter++ )
-         {
-            SupportIDType tsID(*iter);
-            m_TempSupportRemovalIntervals.insert(std::make_pair(tsID,intervalIdx));
-         }
-      }
-      else
-      {
-         if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() )
-         {
-            CInterval i;
-
-            // this is an abrupt change in boundary condition, treat as sudden change in loading
-            i.StartEventIdx = eventIdx;
-            i.EndEventIdx   = eventIdx;
-            i.Start         = pTimelineEvent->GetDay();
-            i.End           = i.Start;
-            i.Middle        = i.Start;
-            i.Duration      = 0;
-            i.Description   = _T("Stress tendon");
-            m_Intervals.push_back(i);
-         }
-
-         if ( pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
-         {
-            CInterval i;
-
-            // this is an abrupt change in boundary condition, treat as sudden change in loading
-            i.StartEventIdx = eventIdx;
-            i.EndEventIdx   = eventIdx;
-            i.Start         = pTimelineEvent->GetDay();
-            i.End           = i.Start;
-            i.Middle        = i.Start;
-            i.Duration      = 0;
-            i.Description   = _T("Remove temporary supports");
-            m_Intervals.push_back(i);
-
-            const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
-            std::vector<SupportIDType> tsIDs(removeTS.GetTempSupports());
-            IntervalIndexType intervalIdx = m_Intervals.size()-1;
-            std::vector<SupportIDType>::iterator iter(tsIDs.begin());
-            std::vector<SupportIDType>::iterator end(tsIDs.end());
-            for ( ; iter != end; iter++ )
-            {
-               SupportIDType tsID(*iter);
-               m_TempSupportRemovalIntervals.insert(std::make_pair(tsID,intervalIdx));
-            }
-         }
-      }
-
       if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() )
       {
          CInterval i;
@@ -323,11 +254,11 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
          bool bRailing  = pTimelineEvent->GetApplyLoadActivity().IsRailingSystemLoadApplied();
          bool bOverlay  = pTimelineEvent->GetApplyLoadActivity().IsOverlayLoadApplied();
          bool bLiveLoad = pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied();
-         bool bUserLoad = pTimelineEvent->GetApplyLoadActivity().GetUserLoadCount() != 0;
+         bool bUserLoad = pTimelineEvent->GetApplyLoadActivity().IsUserLoadApplied();
 
          if ( bUserLoad && !bRailing && !bOverlay && !bLiveLoad )
          {
-            i.Description = _T("Apply User Defined Load");
+            i.Description = _T("User Defined Loading Applied");
             m_Intervals.push_back(i);
          }
 
@@ -378,8 +309,88 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
             m_Intervals.push_back(i);
             m_LiveLoadInterval = m_Intervals.size() - 1;
          }
+      }
 
-#pragma Reminder("UPATE: Need to add loading interval for user defined external loads")
+      if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() && pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
+      {
+         CInterval i;
+
+         // this is an abrupt change in boundary condition, treat as sudden change in loading
+         i.StartEventIdx = eventIdx;
+         i.EndEventIdx   = eventIdx;
+         i.Start         = pTimelineEvent->GetDay();
+         i.End           = i.Start;
+         i.Middle        = i.Start;
+         i.Duration      = 0;
+         i.Description   = _T("Stress tendon and remove temporary supports");
+         m_Intervals.push_back(i);
+
+         IntervalIndexType intervalIdx = m_Intervals.size()-1;
+
+         const CStressTendonActivity& stressTendon = pTimelineEvent->GetStressTendonActivity();
+         const std::vector<std::pair<CGirderKey,DuctIndexType>>& tendons( stressTendon.GetTendons() );
+         std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator tendonIter(tendons.begin());
+         std::vector<std::pair<CGirderKey,DuctIndexType>>::const_iterator tendonIterEnd(tendons.end());
+         for ( ; tendonIter != tendonIterEnd; tendonIter++ )
+         {
+            CGirderKey girderKey = tendonIter->first;
+            DuctIndexType ductIdx = tendonIter->second;
+
+            m_StressTendonIntervals.insert(std::make_pair(CTendonKey(girderKey,ductIdx),intervalIdx));
+         }
+
+         const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
+         const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
+         std::vector<SupportIDType>::const_iterator tsIter(tsIDs.begin());
+         std::vector<SupportIDType>::const_iterator tsIterEnd(tsIDs.end());
+         for ( ; tsIter != tsIterEnd; tsIter++ )
+         {
+            SupportIDType tsID(*tsIter);
+            m_TempSupportRemovalIntervals.insert(std::make_pair(tsID,intervalIdx));
+         }
+      }
+      else
+      {
+         if ( pTimelineEvent->GetStressTendonActivity().IsEnabled() )
+         {
+            CInterval i;
+
+            // this is an abrupt change in boundary condition, treat as sudden change in loading
+            i.StartEventIdx = eventIdx;
+            i.EndEventIdx   = eventIdx;
+            i.Start         = pTimelineEvent->GetDay();
+            i.End           = i.Start;
+            i.Middle        = i.Start;
+            i.Duration      = 0;
+            i.Description   = _T("Stress tendon");
+            m_Intervals.push_back(i);
+         }
+
+         if ( pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
+         {
+            CInterval i;
+
+            // this is an abrupt change in boundary condition, treat as sudden change in loading
+            i.StartEventIdx = eventIdx;
+            i.EndEventIdx   = eventIdx;
+            i.Start         = pTimelineEvent->GetDay();
+            i.End           = i.Start;
+            i.Middle        = i.Start;
+            i.Duration      = 0;
+            i.Description   = _T("Remove temporary supports");
+            m_Intervals.push_back(i);
+
+            const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
+            std::vector<SupportIDType> tsIDs(removeTS.GetTempSupports());
+            IntervalIndexType intervalIdx = m_Intervals.size()-1;
+            std::vector<SupportIDType>::iterator iter(tsIDs.begin());
+            std::vector<SupportIDType>::iterator end(tsIDs.end());
+            for ( ; iter != end; iter++ )
+            {
+               SupportIDType tsID(*iter);
+               m_TempSupportRemovalIntervals.insert(std::make_pair(tsID,intervalIdx));
+            }
+         }
       }
 
       // At the end of every event, create a general time step
@@ -585,6 +596,18 @@ IntervalIndexType CIntervalManager::GetInstallRailingSystemInterval() const
    return m_RailingSystemInterval;
 }
 
+IntervalIndexType CIntervalManager::GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+{
+   std::map<CTendonKey,IntervalIndexType>::const_iterator found(m_StressTendonIntervals.find(CTendonKey(girderKey,ductIdx)));
+   if ( found == m_StressTendonIntervals.end() )
+   {
+      ATLASSERT(false);
+      return INVALID_INDEX;
+   }
+
+   return found->second;
+}
+
 IntervalIndexType CIntervalManager::GetTemporarySupportRemovalInterval(SupportIDType tsID) const
 {
    std::map<SupportIDType,IntervalIndexType>::const_iterator found(m_TempSupportRemovalIntervals.find(tsID) );
@@ -615,3 +638,24 @@ void CIntervalManager::AssertValid() const
    ATLASSERT(m_RailingSystemInterval <= m_LiveLoadInterval);
 }
 #endif
+
+CIntervalManager::CTendonKey::CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx) :
+m_GirderKey(girderKey),m_DuctIdx(ductIdx)
+{
+}
+
+CIntervalManager::CTendonKey::CTendonKey(const CIntervalManager::CTendonKey& other) :
+m_GirderKey(other.m_GirderKey),m_DuctIdx(other.m_DuctIdx)
+{
+}
+
+bool CIntervalManager::CTendonKey::operator<(const CIntervalManager::CTendonKey& other) const
+{
+   if ( m_GirderKey < other.m_GirderKey )
+      return true;
+
+   if ( m_DuctIdx < other.m_DuctIdx )
+      return true;
+
+   return false;
+}

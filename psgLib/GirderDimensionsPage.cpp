@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CGirderDimensionsPage, CPropertyPage)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_VIEWSECTION,OnViewSection)
    ON_BN_CLICKED(IDC_VIEWSECTION_MID,OnViewSectionMid)
+   ON_BN_CLICKED(IDC_VARIABLE_DEPTH_CHECK, &CGirderDimensionsPage::OnBnClickedVariableDepthCheck)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -101,13 +102,24 @@ BOOL CGirderDimensionsPage::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_DIMENSIONS, this);
    m_Grid.CustomInit();
 
+
    CPropertyPage::OnInitDialog();
+
+   OnBnClickedVariableDepthCheck();
 
    CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_BEAMTYPES);
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    CComPtr<IBeamFactory> pFactory;
    pDad->m_Entry.GetBeamFactory(&pFactory);
+
+   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(pFactory);
+   if ( splicedBeamFactory && !splicedBeamFactory->SupportsVariableDepthSection() )
+   {
+      GetDlgItem(IDC_VARIABLE_DEPTH_GROUP)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_VARIABLE_DEPTH_CHECK)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_NOTES)->ShowWindow(SW_HIDE);
+   }
 
    // Fill the beam family combo box
    std::vector<CString> familyNames = CBeamFamilyManager::GetBeamFamilyNames();
@@ -232,4 +244,16 @@ void CGirderDimensionsPage::OnDestroy()
    }
 
    CPropertyPage::OnDestroy();
+}
+
+void CGirderDimensionsPage::OnBnClickedVariableDepthCheck()
+{
+   // TODO: Add your control notification handler code here
+   int show;
+   if ( IsDlgButtonChecked(IDC_VARIABLE_DEPTH_CHECK) == BST_CHECKED )
+      show = SW_SHOW;
+   else
+      show = SW_HIDE;
+
+   GetDlgItem(IDC_NOTES)->ShowWindow(show);
 }

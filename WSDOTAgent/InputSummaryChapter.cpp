@@ -504,7 +504,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
 
-   StrandIndexType Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
 
    Float64 es; // eccentricity of straight strands
    Float64 eh; // eccentricity of harped strands at mid-span
@@ -592,7 +592,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    bool are_harped_straight = pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey);
 
    (*pTable)(row,0) << _T("Number of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands");
-   (*pTable)(row,1) << pStrandGeom->GetNumStrands( segmentKey, pgsTypes::Harped );
+   (*pTable)(row,1) << pStrandGeom->GetStrandCount( segmentKey, pgsTypes::Harped );
    row++;
 
    (*pTable)(row,0) << LABEL_HARP_TYPE(are_harped_straight)<<_T(" Strand ") << Sub2(_T("P"),_T("jack"));
@@ -600,7 +600,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    row++;
 
    (*pTable)(row,0) << _T("Number of Straight Strands");
-   (*pTable)(row,1) << pStrandGeom->GetNumStrands( segmentKey, pgsTypes::Straight );
+   (*pTable)(row,1) << pStrandGeom->GetStrandCount( segmentKey, pgsTypes::Straight );
    StrandIndexType nDebonded = pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
    if ( nDebonded != 0 )
       (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -636,7 +636,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
          break;
       }
 
-      (*pTable)(row,1) << pStrandGeom->GetNumStrands( segmentKey, pgsTypes::Temporary );
+      (*pTable)(row,1) << pStrandGeom->GetStrandCount( segmentKey, pgsTypes::Temporary );
       row++;
 
       (*pTable)(row,0) << _T("Temporary Strand ") << Sub2(_T("P"),_T("jack"));

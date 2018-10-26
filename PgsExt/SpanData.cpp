@@ -444,9 +444,10 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit(); // span data details
    }
-   catch(...)
+   catch(HRESULT)
    {
       ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    return hr;

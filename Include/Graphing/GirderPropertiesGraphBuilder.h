@@ -35,12 +35,9 @@ public:
       Height,
       Area,
       MomentOfInertia,
-      YTop,
-      YBottom,
-      TopSectionModulus,
-      BottomSectionModulus,
-      TopKernPoint,
-      BottomKernPoint,
+      Centroid,
+      SectionModulus,
+      KernPoint,
       StrandEccentricity,
       TendonEccentricity,
       TendonProfile,
@@ -70,6 +67,6 @@ protected:
    void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType);
    void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertType,pgsTypes::SectionPropertyType sectPropType);
 
-   IndexType InitializeGraph(PropertyType propertyType);
+   void InitializeGraph(PropertyType propertyType,IndexType* pGraph1,IndexType* pGraph2);
    void UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
 };

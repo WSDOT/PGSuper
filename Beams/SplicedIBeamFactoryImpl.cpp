@@ -674,7 +674,11 @@ void CSplicedIBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const
 
 IBeamFactory::Dimensions CSplicedIBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
 {
-   Float64 parent_version = pLoad->GetVersion();
+   Float64 parent_version;
+   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
 
    IBeamFactory::Dimensions dimensions;
    std::vector<std::_tstring>::iterator iter;
@@ -1116,20 +1120,36 @@ GirderIndexType CSplicedIBeamFactory::GetMinimumBeamCount()
 }
 
 // ISplicedBeamFactory
-std::vector<pgsTypes::SegmentVariationType> CSplicedIBeamFactory::GetSupportedSegmentVariations()
+bool CSplicedIBeamFactory::SupportsVariableDepthSection()
+{
+   return true; // IBeams can be fixed depth or variable depth
+}
+
+LPCTSTR CSplicedIBeamFactory::GetVariableDepthDimension()
+{
+   return _T("D7");
+}
+
+std::vector<pgsTypes::SegmentVariationType> CSplicedIBeamFactory::GetSupportedSegmentVariations(bool bIsVariableDepthSection)
 {
    std::vector<pgsTypes::SegmentVariationType> variations;
-   variations.push_back(pgsTypes::svtNone);
-   variations.push_back(pgsTypes::svtLinear);
-   variations.push_back(pgsTypes::svtParabolic);
-   variations.push_back(pgsTypes::svtDoubleLinear);
-   variations.push_back(pgsTypes::svtDoubleParabolic);
+   if ( bIsVariableDepthSection )
+   {
+      variations.push_back(pgsTypes::svtLinear);
+      variations.push_back(pgsTypes::svtParabolic);
+      variations.push_back(pgsTypes::svtDoubleLinear);
+      variations.push_back(pgsTypes::svtDoubleParabolic);
+   }
+   else
+   {
+      variations.push_back(pgsTypes::svtNone);
+   }
    return variations;
 }
 
 bool CSplicedIBeamFactory::CanBottomFlangeDepthVary()
 {
-   return true; // the bottom flange depth can vary
+   return true;
 }
 
 LPCTSTR CSplicedIBeamFactory::GetBottomFlangeDepthDimension()

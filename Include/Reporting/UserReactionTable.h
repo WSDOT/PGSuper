@@ -79,7 +79,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             ReactionTableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
+                             ReactionTableType tableType,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

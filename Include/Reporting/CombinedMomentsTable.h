@@ -918,7 +918,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       else
       {
          pTable->SetColumnSpan(0,col1,nVhls*2);
-         (*pTable)(0,col1++) << _T("Total Live Load");
+         (*pTable)(0,col1++) << _T("Live Load");
          pTable->SetColumnSpan(1,col2,2);
          (*pTable)(1,col2++) << (includeImpact ? _T("* LL+IM Design") : _T("* LL Design"));
          (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );

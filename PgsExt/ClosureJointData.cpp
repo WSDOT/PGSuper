@@ -514,9 +514,10 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_Rebar.Load(pStrLoad,pProgress);
       hr = pStrLoad->EndUnit(); // ClosureJoint
    }
-   catch(...)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    return S_OK;

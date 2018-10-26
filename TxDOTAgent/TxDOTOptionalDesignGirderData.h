@@ -113,7 +113,7 @@ public:
 
    // Data for standard fill
    // ========================
-   StrandIndexType GetNumStrands();
+   StrandIndexType GetStrandCount();
    void SetNumStrands(StrandIndexType ns);
 
    // Data for direct manip fill

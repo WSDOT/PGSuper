@@ -1129,9 +1129,10 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 #endif
 
    }
-   catch(...)
+   catch(HRESULT hResult)
    {
       ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    return S_OK;

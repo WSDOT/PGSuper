@@ -97,7 +97,9 @@ public:
    virtual GirderIndexType GetMinimumBeamCount();
 
 // ISplicedBeamFactory
-   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations();
+   virtual bool SupportsVariableDepthSection();
+   virtual LPCTSTR GetVariableDepthDimension();
+   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(bool bIsVariableDepthSection);
    virtual bool CanBottomFlangeDepthVary();
    virtual LPCTSTR GetBottomFlangeDepthDimension();
    virtual bool SupportsEndBlocks();

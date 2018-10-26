@@ -25,6 +25,8 @@
 #include "PGSuperCatalogServers.h"
 #include <EAF\EAFApp.h>
 
+#include "PGSuperCommandLineInfo.h"
+
 // Base class for all PGSuper Document-type application plugins
 // Performs common initialization expected by the CPGSuperDoc class
 class CPGSuperBaseAppPlugin
@@ -102,6 +104,9 @@ protected:
    CString GetSaveCacheFolder();
 
    const CPGSuperCatalogServers* GetCatalogServers() const;
+
+   BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
+   void Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo);
 
 private:
    CPGSuperCatalogServers m_CatalogServers;

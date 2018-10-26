@@ -112,10 +112,10 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       pStrLoad->EndUnit();
    }
-   catch(CHRException& exception)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
-      return exception;
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
    return S_OK;

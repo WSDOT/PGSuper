@@ -93,7 +93,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
 
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
 
-      StrandIndexType Nt    = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      StrandIndexType Nt    = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
       StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
       IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);

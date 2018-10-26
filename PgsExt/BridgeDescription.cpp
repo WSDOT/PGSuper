@@ -362,9 +362,9 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
                IsBridgeSpacing(m_GirderSpacingType),
                m_SlabOffsetType == pgsTypes::sotBridge);
    }
-   catch(...)
+   catch(HRESULT)
    {
-      ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    ASSERT_VALID;
@@ -669,12 +669,12 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
       CPierData2* pPrevPier = pNewSpan->GetPrevPier();
       CGirderSpacing2* pSpacingAtPrevPier = pPrevPier->GetGirderSpacing(pgsTypes::Ahead);
-      pSpacingAtPrevPier->SetGirderCount(nGirders);
+      pSpacingAtPrevPier->InitGirderCount(nGirders);
       pGirderSpacingStart->SetSpacingData(pSpacingAtPrevPier);
 
       CPierData2* pNextPier = pNewSpan->GetNextPier();
       CGirderSpacing2* pSpacingAtNextPier = pNextPier->GetGirderSpacing(pgsTypes::Back);
-      pSpacingAtNextPier->SetGirderCount(nGirders);
+      pSpacingAtNextPier->InitGirderCount(nGirders);
       pGirderSpacingEnd->SetSpacingData(pSpacingAtNextPier);
    }
 }

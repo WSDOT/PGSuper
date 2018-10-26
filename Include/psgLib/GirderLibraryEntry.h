@@ -138,10 +138,6 @@ public:
 
    ~CClassFactoryHolder()
    {
-      //if ( m_ClassFactory )
-      //   m_ClassFactory->LockServer(FALSE);
-
-      //m_ClassFactory.Release();
    }
 
    HRESULT CreateInstance(IUnknown* pUnkOuter,REFIID riid,void** ppvObject)
@@ -188,7 +184,7 @@ public:
       Float64 DistFromEnd; // Only applicable to blFromLeft, blFromRight
       Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirder
 
-      pgsTypes::GirderFace  Face;
+      pgsTypes::FaceType  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
@@ -388,6 +384,9 @@ public:
    Float64 GetDimension(const std::_tstring& name) const;
    void SetDimension(const std::_tstring& name,Float64 value,bool bAdjustStrands);
 
+   void EnableVariableDepthSection(bool bEnable);
+   bool IsVariableDepthSectionEnabled() const;
+
    //------------------------------------------------------------------------
    // Remove all strands
    void ClearAllStrands();
@@ -518,11 +517,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set/get the harped strand adjustment limits at ends and harping points
-   void SetHPAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
-   void GetHPAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
+   void SetHPAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit);
+   void GetHPAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const;
 
-   void SetEndAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
-   void GetEndAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
+   void SetEndAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit);
+   void GetEndAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const;
 
    //------------------------------------------------------------------------
    // Set the max downward strand increment for design at girder end
@@ -676,6 +675,8 @@ private:
    // GROUP: DATA MEMBERS
    CComPtr<IBeamFactory> m_pBeamFactory;
    Dimensions m_Dimensions;
+   bool m_bSupportsVariableDepthSection;
+   bool m_bIsVariableDepthSectionEnabled;
 
    bool m_bUseDifferentHarpedGridAtEnds;
 
@@ -796,9 +797,9 @@ private:
    {
       bool       m_AllowVertAdjustment;
       Float64    m_StrandIncrement;
-      pgsTypes::GirderFace m_TopFace;
+      pgsTypes::FaceType m_TopFace;
       Float64    m_TopLimit;
-      pgsTypes::GirderFace m_BottomFace;
+      pgsTypes::FaceType m_BottomFace;
       Float64    m_BottomLimit;
 
       HarpedStrandAdjustment();

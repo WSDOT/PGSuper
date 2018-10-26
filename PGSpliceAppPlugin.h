@@ -29,8 +29,6 @@
 #include <EAF\EAFUIIntegration.h>
 #include "PGSuperBaseAppPlugin.h"
 
-#include "PGSuperCommandLineInfo.h"
-
 class CPGSpliceAppPlugin;
 
 class CPGSpliceAppCmdTarget : public CCmdTarget
@@ -90,9 +88,6 @@ public:
    void UpdateTemplates();
    bool UpdatingTemplates();
    void OnProgramSettings();
-
-protected:
-   void Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo);
 
 // IEAFAppPlugin
 public:

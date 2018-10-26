@@ -686,9 +686,10 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit(); // PierDataDetails
    }
-   catch(...)
+   catch(HRESULT)
    {
       ATLASSERT(false);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    ASSERT_VALID;

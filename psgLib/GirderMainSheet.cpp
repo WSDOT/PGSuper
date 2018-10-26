@@ -130,9 +130,12 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 
    bool bUnitsSI = (pApp->GetUnitsMode() == eafTypes::umSI);
 
+   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
+
+   DDX_Check_Bool(pDX,IDC_VARIABLE_DEPTH_CHECK,m_Entry.m_bIsVariableDepthSectionEnabled);
+
    if ( pDX->m_bSaveAndValidate )
    {
-
       // Pull the values from the grid... Convert back to system units
       std::vector<std::_tstring> names = m_Entry.m_pBeamFactory->GetDimensionNames();
       std::vector<const unitLength*> units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
@@ -202,15 +205,25 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 
       m_GirderDimensionsPage.GetDlgItem(IDC_NOTES)->SetWindowText(_T(""));
 
-      CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
       if ( splicedBeamFactory )
       {
+         CString strNotes;
+         CString strNote1;
+         strNote1.Format(_T("This is a variable depth girder. The overall section depth can be modified in the bridge model. The %s dimensions(s) establish the default depth of the section."),splicedBeamFactory->GetVariableDepthDimension());
+
          if (splicedBeamFactory->CanBottomFlangeDepthVary())
          {
-            CString strNotes;
-            strNotes.Format(_T("This girder supports a variable depth bottom flange.\nThe %s dimension(s) can be modified when defining the girder shape."),splicedBeamFactory->GetBottomFlangeDepthDimension());
-            m_GirderDimensionsPage.GetDlgItem(IDC_NOTES)->SetWindowText(strNotes);
+            CString strNote2;
+            strNote2.Format(_T("This girder supports a variable depth bottom flange. The %s dimension(s) can be modified in the bridge model."),splicedBeamFactory->GetBottomFlangeDepthDimension());
+
+            strNotes.Format(_T("%s\n\n%s"),strNote1,strNote2);
          }
+         else
+         {
+            strNotes = strNote1;
+         }
+
+         m_GirderDimensionsPage.GetDlgItem(IDC_NOTES)->SetWindowText(strNotes);
       }
    }
 }

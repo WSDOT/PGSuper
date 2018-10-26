@@ -143,7 +143,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
          else
             (*p_table)(row,2)  << color(Red) << _T("Girder") << color(Black);
 
-         (*p_table)(row,3) << (rowData.Face==pgsTypes::GirderTop ? _T("Top") : _T("Bottom"));
+         (*p_table)(row,3) << (rowData.Face==pgsTypes::TopFace ? _T("Top") : _T("Bottom"));
          (*p_table)(row,4) << dim.SetValue(rowData.Cover);
          (*p_table)(row,5) << pRebar->GetName();
          (*p_table)(row,6) << rowData.NumberOfBars;

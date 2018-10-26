@@ -91,6 +91,8 @@ private:
    int m_LastBeamType;
 
    friend CGirderMainSheet;
+public:
+   afx_msg void OnBnClickedVariableDepthCheck();
 };
 
 //{{AFX_INSERT_LOCATION}}

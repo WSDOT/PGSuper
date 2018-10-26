@@ -1580,7 +1580,7 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
 
-   StrandIndexType nStrands = pStrandGeom->GetNumStrands(segmentKey,strandType);
+   StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
    if ( nStrands == 0 )
       return 0;
 
@@ -2943,7 +2943,7 @@ std::vector<CRACKINGMOMENTDETAILS> CEngAgentImp::GetCrackingMomentDetails(Interv
 
 /////////////////////////////////////////////////////////////////////////////
 // IShearCapacity
-pgsTypes::GirderFace CEngAgentImp::GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+pgsTypes::FaceType CEngAgentImp::GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
 {
    // determine the "flexural tension side". See LRFD Figure C5.8.3.4.2-2
 
@@ -2977,7 +2977,7 @@ pgsTypes::GirderFace CEngAgentImp::GetFlexuralTensionSide(pgsTypes::LimitState l
    // Determine if the tension side is on the top half or bottom half of the girder
    // The flexural tension side is on the bottom when the maximum (positive) bending moment
    // exceeds the minimum (negative) bending moment
-   pgsTypes::GirderFace tensionSide = (fabs(Mu_min) <= fabs(Mu_max) ? pgsTypes::GirderBottom : pgsTypes::GirderTop);
+   pgsTypes::FaceType tensionSide = (fabs(Mu_min) <= fabs(Mu_max) ? pgsTypes::BottomFace : pgsTypes::TopFace);
    return tensionSide;
 }
 
@@ -3404,7 +3404,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
-   Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI);
+   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI);
    Float64 t, fmax;
    bool bfMax;
    pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,false,&t,&bfMax,&fmax);

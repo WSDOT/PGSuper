@@ -500,8 +500,8 @@ public:
    CDuctData* GetDuct(DuctIndexType idx);
    bool CanRemoveDuct(DuctIndexType idx) const;
    void RemoveDuct(DuctIndexType idx);
-   StrandIndexType GetNumStrands(DuctIndexType ductIndex) const;
-   StrandIndexType GetNumStrands() const;
+   StrandIndexType GetStrandCount(DuctIndexType ductIndex) const;
+   StrandIndexType GetStrandCount() const;
    Float64 GetPjack(DuctIndexType ductIndex) const;
 
    void InsertSpan(SpanIndexType newSpanIndex);

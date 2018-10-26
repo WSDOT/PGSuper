@@ -75,7 +75,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bDesign,bool bRating,IEAFDisplayUnits* pDisplayUnits) const;
+                             bool bDesign,bool bRating,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

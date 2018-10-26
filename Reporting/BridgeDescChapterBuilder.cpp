@@ -1840,7 +1840,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             (*pTable)(row,0) << _T("Number of Straight Strands");
-            (*pTable)(row,1) << pStrand->GetNumStrands(thisSegmentKey,pgsTypes::Straight);
+            (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Straight);
             StrandIndexType nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Straight);
             if ( nDebonded != 0 )
                (*pTable)(row,1) << rptNewLine << nDebonded << _T(" debonded");
@@ -1859,7 +1859,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
-            (*pTable)(row,1) << pStrand->GetNumStrands(thisSegmentKey,pgsTypes::Harped);
+            (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
             nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Harped);
             if ( nDebonded != 0 )
                (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -1870,13 +1870,13 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             (*pTable)(row,0) << _T("Total Number of Permanent Strands");
-            (*pTable)(row,1) << pStrand->GetNumStrands(thisSegmentKey,pgsTypes::Straight) + pStrand->GetNumStrands(thisSegmentKey,pgsTypes::Harped);
+            (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Straight) + pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
             row++;
 
             if ( 0 < pStrand->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
             {
                (*pTable)(row,0) << _T("Number of Temporary Strands");
-               (*pTable)(row,1) << pStrand->GetNumStrands(thisSegmentKey,pgsTypes::Temporary);
+               (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Temporary);
                nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Temporary);
                if ( nDebonded != 0 )
                   (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -2311,7 +2311,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          //row++;
 
          //(*pTable)(row,0) << _T("Number of Straight Strands");
-         //(*pTable)(row,1) << pStrand->GetNumStrands(segmentKey,pgsTypes::Straight);
+         //(*pTable)(row,1) << pStrand->GetStrandCount(segmentKey,pgsTypes::Straight);
          //StrandIndexType nDebonded = pStrand->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
          //if ( nDebonded != 0 )
          //   (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -2322,7 +2322,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          //row++;
 
          //(*pTable)(row,0) << _T("Number of Harped Strands");
-         //(*pTable)(row,1) << pStrand->GetNumStrands(segmentKey,pgsTypes::Harped);
+         //(*pTable)(row,1) << pStrand->GetStrandCount(segmentKey,pgsTypes::Harped);
          //nDebonded = pStrand->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
          //if ( nDebonded != 0 )
          //   (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -2335,7 +2335,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          //if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
          //{
          //   (*pTable)(row,0) << _T("Number of Temporary Strands");
-         //   (*pTable)(row,1) << pStrand->GetNumStrands(segmentKey,pgsTypes::Temporary);
+         //   (*pTable)(row,1) << pStrand->GetStrandCount(segmentKey,pgsTypes::Temporary);
          //   nDebonded = pStrand->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
          //   if ( nDebonded != 0 )
          //      (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");

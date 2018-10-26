@@ -358,10 +358,10 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit();
    }
-   catch(CHRException& exception)
+   catch(HRESULT hResult)
    {
       ATLASSERT(false);
-      return exception;
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
    return S_OK;

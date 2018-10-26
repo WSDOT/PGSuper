@@ -96,6 +96,9 @@ public:
    // returns the interval index when a temporary support is removed
    IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID) const;
 
+   // returns the interval index when a tendon is stressed
+   IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+
 protected:
    struct CInterval
    {
@@ -109,6 +112,18 @@ protected:
    };
 
    std::vector<CInterval> m_Intervals;
+
+   class CTendonKey
+   {
+   public:
+      CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx);
+      CTendonKey(const CTendonKey& other);
+      bool operator<(const CTendonKey& other) const;
+
+      CGirderKey m_GirderKey;
+      DuctIndexType m_DuctIdx;
+   };
+   std::map<CTendonKey,IntervalIndexType> m_StressTendonIntervals;
 
    std::map<SupportIDType,IntervalIndexType> m_TempSupportRemovalIntervals;
 

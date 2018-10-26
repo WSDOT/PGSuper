@@ -78,7 +78,7 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    Float64 nEffectiveStrands;
    Float64 ept = pStrandGeom->GetTempEccentricity( tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0), &nEffectiveStrands);
    Float64 Apt = pStrandGeom->GetStrandArea(segmentKey,tsInstallIntervalIdx,pgsTypes::Temporary);
-   StrandIndexType Npt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   StrandIndexType Npt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;

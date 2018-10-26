@@ -1315,7 +1315,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
             end_poi.SetDistFromStart(segment_length);
 
          std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
-         ATLASSERT( 0 <= vPOI.size() && vPOI.size() < 3 );
+         ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
          pgsPointOfInterest hp1_poi;
          pgsPointOfInterest hp2_poi;
 
@@ -1497,9 +1497,9 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
             running_segment_length += start_offset;
          }
 
-         StrandIndexType nStrands = pStrandGeometry->GetNumStrands(segmentKey, pgsTypes::Straight);
-         nStrands += pStrandGeometry->GetNumStrands(segmentKey, pgsTypes::Harped);
-         nStrands += pStrandGeometry->GetNumStrands(segmentKey, pgsTypes::Temporary);
+         StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
+         nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
+         nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
          if (0 < nStrands)
          {
             CComPtr<IPoint2d> from_point, to_point;
@@ -1510,7 +1510,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
 
             GET_IFACE2(pBroker,IPointOfInterest,pPOI);
             std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
-            ATLASSERT( 0 <= vPOI.size() && vPOI.size() < 3 );
+            ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
 
             // Look up the POI so it is faster to get section properties
             pgsPointOfInterest start_poi( pPOI->GetPointOfInterest(segmentKey,0.0) );
@@ -2457,7 +2457,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
          BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
          dimLine->SetWitnessLength(-twip_offset);
 
-         //StrandIndexType Nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+         //StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
          //Float64 lft_harp, rgt_harp;
          //pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
@@ -3361,9 +3361,9 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    const matPsStrand* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;
-   Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-   Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
-   Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+   Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+   Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+   Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
    Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
 
    std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));

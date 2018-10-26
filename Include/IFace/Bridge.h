@@ -658,25 +658,25 @@ interface IMaterials : IUnknown
    // Properties of Precast Segment Longitudinal Rebar
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetSegmentLongitudinalRebarName(const CSegmentKey& segmentKey) = 0;
-   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade) = 0;
 
    virtual void GetClosureJointLongitudinalRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetClosureJointLongitudinalRebarName(const CClosureKey& closureKey) = 0;
-   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade) = 0;
 
    // Properties of precast Segment Transverse Rebar
    virtual void GetSegmentTransverseRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetSegmentTransverseRebarName(const CSegmentKey& segmentKey) = 0;
-   virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade) = 0;
 
    virtual void GetClosureJointTransverseRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetClosureJointTransverseRebarName(const CClosureKey& closureKey) = 0;
-   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade) = 0;
 
    // Rebar properties for deck
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetDeckRebarName() = 0;
-   virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade) = 0;
 
    // Density limits for normal and light weight concrete
    virtual Float64 GetNWCDensityLimit() = 0; // returns the minimum density for normal weight concrete
@@ -897,7 +897,7 @@ interface IStrandGeometry : IUnknown
    virtual GridIndexType SequentialFillToGridFill(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType StrandNo) = 0;
    virtual void GridFillToSequentialFill(LPCTSTR strGirderName,pgsTypes::StrandType type,GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2) = 0;
 
-   virtual StrandIndexType GetNumStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) = 0;
+   virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type) = 0;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) = 0;
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) = 0;
 
@@ -1197,8 +1197,14 @@ interface IUserDefinedLoads : IUnknown
    // moment and point loads are the same, except for the interpretation of Magnitude
    typedef UserPointLoad UserMomentLoad;
 
+   // returns true if user defined loads exist in any interval
    virtual bool DoUserLoadsExist(const CSpanGirderKey& spanGirderKey) = 0;
    virtual bool DoUserLoadsExist(const CGirderKey& girderKey) = 0;
+
+   // returns true if user defined loads exist in the specified interval
+   virtual bool DoUserLoadsExist(const CSpanGirderKey& spanGirderKey,IntervalIndexType intervalIdx) = 0;
+   virtual bool DoUserLoadsExist(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+
    virtual const std::vector<UserPointLoad>* GetPointLoads(IntervalIndexType intervalIdx, const CSpanGirderKey& spanGirderKey)=0;
    virtual const std::vector<UserDistributedLoad>* GetDistributedLoads(IntervalIndexType intervalIdx, const CSpanGirderKey& spanGirderKey)=0;
    virtual const std::vector<UserMomentLoad>* GetMomentLoads(IntervalIndexType intervalIdx, const CSpanGirderKey& spanGirderKey)=0;

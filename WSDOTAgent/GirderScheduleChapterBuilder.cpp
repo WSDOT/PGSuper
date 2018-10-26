@@ -355,8 +355,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx));
 
    
-   StrandIndexType Ns = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
-   StrandIndexType Nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+   StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+   StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    if ( bCanReportPrestressInformation )
    {
       (*p_table)(++row,0) << _T("Number of Straight Strands");
@@ -374,7 +374,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary ) )
       {
-         StrandIndexType Nt = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Temporary);
+         StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary);
          (*p_table)(++row,0) << _T("Number of Temporary Strands");
 
          switch ( pSegment->Strands.TempStrandUsage )

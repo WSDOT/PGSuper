@@ -324,7 +324,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
          std::vector<pgsPointOfInterest>::iterator iter;
          poi = pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT);
          IndexType nPoi = poi.size();
-         ASSERT(0 < nPoi && nPoi <3);
+         ATLASSERT( 0 <= nPoi && nPoi <= 2 );
          iter = poi.begin();
          pgsPointOfInterest left_hp_poi = *iter++;
          pgsPointOfInterest right_hp_poi = left_hp_poi;

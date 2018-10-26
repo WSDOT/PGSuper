@@ -80,7 +80,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
    // build data structures
    Compute();
 
-   StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_SegmentKey,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
    bool is_optional = optionalName.size() > 0;
 
    // see if we have an error condition - don't build table if so
@@ -308,7 +308,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-      StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+      StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
       if (nh>0)
       {
          areAnyHarpedStrands = true;
@@ -348,8 +348,8 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       {
          const CSegmentKey& segmentKey(*itsg);
 
-         StrandIndexType ns = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
-         StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+         StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+         StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
          bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -423,8 +423,8 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       {
          const CSegmentKey& segmentKey(*itsg);
 
-         StrandIndexType ns = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
-         StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+         StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+         StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
          bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -521,8 +521,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-      StrandIndexType ns = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
-      StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+      StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+      StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
       const matPsStrand* pstrand = pStrands->StrandMaterial[pgsTypes::Straight];

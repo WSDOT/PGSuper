@@ -75,7 +75,7 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                              IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -129,92 +129,58 @@ public:
 //
 
 template <class M,class T>
-rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
-   ColumnIndexType nCols = 6;
+   ColumnIndexType nCols = 4;
    if ( analysisType == pgsTypes::Envelope )
-      nCols += 5;
+   {
+      nCols += 3;
+   }
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
 
    // Set up table headings
-   if ( !bPierTable )
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   else
-      (*pTable)(0,0) << _T("");
-
-   if ( analysisType == pgsTypes::Envelope )
+   if ( bPierTable )
    {
-      pTable->SetNumberOfHeaderRows(3);
-      pTable->SetRowSpan(0,0,3);
-      pTable->SetRowSpan(1,0,SKIP_CELL);
-      pTable->SetRowSpan(2,0,SKIP_CELL);
-
-      pTable->SetColumnSpan(0,1,4);
-      (*pTable)(0,1) << _T("Bridge Site 1");
-
-      pTable->SetColumnSpan(0,2,4);
-      (*pTable)(0,2) << _T("Bridge Site 2");
-
-      pTable->SetColumnSpan(0,3,2);
-      (*pTable)(0,3) << _T("");
-
-      ColumnIndexType i;
-      for ( i = 4; i < nCols; i++ )
-         pTable->SetColumnSpan(0,i,SKIP_CELL);
-
-      pTable->SetColumnSpan(1,1,2);
-      (*pTable)(1,1) << _T("User DC");
-
-      pTable->SetColumnSpan(1,2,2);
-      (*pTable)(1,2) << _T("User DW");
-
-      pTable->SetColumnSpan(1,3,2);
-      (*pTable)(1,3) << _T("User DC");
-
-      pTable->SetColumnSpan(1,4,2);
-      (*pTable)(1,4) << _T("User DW");
-
-      pTable->SetColumnSpan(1,5,2);
-      (*pTable)(1,5) << _T("User LL+IM");
-
-      for ( i = 6; i < nCols; i++ )
-         pTable->SetColumnSpan(1,i,SKIP_CELL);
-
-      (*pTable)(2,1) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(2,2) << COLHDR(_T("Min"), M, unitT );
-      (*pTable)(2,3) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(2,4) << COLHDR(_T("Min"), M, unitT );
-      (*pTable)(2,5) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(2,6) << COLHDR(_T("Min"), M, unitT );
-      (*pTable)(2,7) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(2,8) << COLHDR(_T("Min"), M, unitT );
-      (*pTable)(2,9) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(2,10)<< COLHDR(_T("Min"), M, unitT );
+      (*pTable)(0,0) << _T("");
    }
    else
    {
+      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
+
+   if ( analysisType == pgsTypes::Envelope )
+   {
       pTable->SetNumberOfHeaderRows(2);
-      pTable->SetRowSpan(0,0,3);
+      pTable->SetRowSpan(0,0,2);
       pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,2);
-      (*pTable)(0,1) << _T("Bridge Site 1");
+      (*pTable)(0,1) << _T("User DC");
 
       pTable->SetColumnSpan(0,2,2);
-      (*pTable)(0,2) << _T("Bridge Site 2");
+      (*pTable)(0,2) << _T("User DW");
 
-      pTable->SetColumnSpan(0,3,1);
-      (*pTable)(0,3) << _T("");
+      pTable->SetColumnSpan(0,3,2);
+      (*pTable)(0,3) << _T("User LL+IM");
 
-      for ( ColumnIndexType i = 4; i < nCols; i++ )
-         pTable->SetColumnSpan(0,i,SKIP_CELL);
+       pTable->SetColumnSpan(0,4,SKIP_CELL);
+       pTable->SetColumnSpan(0,5,SKIP_CELL);
+       pTable->SetColumnSpan(0,6,SKIP_CELL);
 
-      (*pTable)(1,1) << COLHDR(_T("User DC"),          M, unitT );
-      (*pTable)(1,2) << COLHDR(_T("User DW"),          M, unitT );
-      (*pTable)(1,3) << COLHDR(_T("User DC"),          M, unitT );
-      (*pTable)(1,4) << COLHDR(_T("User DW"),          M, unitT );
-      (*pTable)(1,5) << COLHDR(_T("User LL+IM"),       M, unitT );
+      (*pTable)(1,1) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,2) << COLHDR(_T("Min"), M, unitT );
+      (*pTable)(1,3) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,4) << COLHDR(_T("Min"), M, unitT );
+      (*pTable)(1,5) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,6) << COLHDR(_T("Min"), M, unitT );
+   }
+   else
+   {
+      pTable->SetNumberOfHeaderRows(1);
+      (*pTable)(0,1) << COLHDR(_T("User DC"),          M, unitT );
+      (*pTable)(0,2) << COLHDR(_T("User DW"),          M, unitT );
+      (*pTable)(0,3) << COLHDR(_T("User LL+IM"),       M, unitT );
    }
 
    return pTable;

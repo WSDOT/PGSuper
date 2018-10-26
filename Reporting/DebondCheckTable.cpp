@@ -183,7 +183,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,I
    RowIndexType table_row = table->GetNumberOfHeaderRows();
 
 
-   std::vector<StrandIndexType> nStrandsInRow = pDebondArtifact->GetNumStrandsInRow();
+   std::vector<StrandIndexType> nStrandsInRow = pDebondArtifact->GetStrandCountInRow();
    std::vector<StrandIndexType> nDebondedStrandsInRow = pDebondArtifact->GetNumDebondedStrandsInRow();
    std::vector<Float64> vFra = pDebondArtifact->GetFraDebondedStrandsInRow();
    std::vector<Float64> vMaxFra = pDebondArtifact->GetMaxFraDebondedStrandsInRow();

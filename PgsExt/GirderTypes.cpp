@@ -288,9 +288,10 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->EndUnit();
    }
-   catch(...)
+   catch(HRESULT)
    {
       ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    ASSERT_VALID;

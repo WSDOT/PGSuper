@@ -74,7 +74,7 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the typical displacements  table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                              IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS

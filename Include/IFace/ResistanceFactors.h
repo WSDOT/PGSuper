@@ -42,5 +42,8 @@ interface IResistanceFactors : IUnknown
    virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) = 0;
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) = 0;
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) = 0;
+
+   virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) = 0;
+   virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) = 0;
 };
 

@@ -71,7 +71,7 @@ CUserShearTable& CUserShearTable::operator= (const CUserShearTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -79,7 +79,10 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(_T("Shear - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   CString strTitle;
+   strTitle.Format(_T("Shears due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -96,11 +99,6 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
@@ -115,22 +113,19 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
-      std::vector<sysSectionValue> minDC1, maxDC1, minDC2, maxDC2;
-      std::vector<sysSectionValue> minDW1, maxDW1, minDW2, maxDW2;
-      std::vector<sysSectionValue> minLL3, maxLL3;
+      std::vector<sysSectionValue> minDC, maxDC;
+      std::vector<sysSectionValue> minDW, maxDW;
+      std::vector<sysSectionValue> minLLIM, maxLLIM;
 
 
-      maxDC1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDC, vPoi, minBAT );
-      maxDC2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, maxBAT );
+      minDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, minBAT );
 
-      maxDW1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxDW2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxLL3 = pForces2->GetShear( liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT );
-      minLL3 = pForces2->GetShear( liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT );
+      maxDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, maxBAT );
+      minDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, minBAT );
+
+      maxLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, maxBAT );
+      minLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, minBAT );
 
       // Fill up the table
       IndexType index = 0;
@@ -145,26 +140,18 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
 
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col++) << shear.SetValue( maxDC1[index] );
-            (*p_table)(row,col++) << shear.SetValue( minDC1[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxDW1[index] );
-            (*p_table)(row,col++) << shear.SetValue( minDW1[index] );
-
-            (*p_table)(row,col++) << shear.SetValue( maxDC2[index] );
-            (*p_table)(row,col++) << shear.SetValue( minDC2[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxDW2[index] );
-            (*p_table)(row,col++) << shear.SetValue( minDW2[index] );
-            
-            (*p_table)(row,col++) << shear.SetValue( maxLL3[index] );
-            (*p_table)(row,col++) << shear.SetValue( minLL3[index] );
+            (*p_table)(row,col++) << shear.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << shear.SetValue( minDC[index] );
+            (*p_table)(row,col++) << shear.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << shear.SetValue( minDW[index] );
+            (*p_table)(row,col++) << shear.SetValue( maxLLIM[index] );
+            (*p_table)(row,col++) << shear.SetValue( minLLIM[index] );
          }
          else
          {
-            (*p_table)(row,col++) << shear.SetValue( maxDC1[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxDW1[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxDC2[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxDW2[index] );
-            (*p_table)(row,col++) << shear.SetValue( maxLL3[index] );
+            (*p_table)(row,col++) << shear.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << shear.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << shear.SetValue( maxLLIM[index] );
          }
 
          row++;

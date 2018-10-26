@@ -146,7 +146,7 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("Face"),         &var);
-      rebar_row.Face = (pgsTypes::GirderFace)(var.lVal);
+      rebar_row.Face = (pgsTypes::FaceType)(var.lVal);
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Cover"),        &var);

@@ -59,8 +59,7 @@ public:
    std::set<IntervalIndexType> m_IntervalApplicability; // intervals that this graph is applicable to
    int m_ApplicableActions; // 0 = all, 1 = Forces Only, 2 = Stress Only
    VehicleIndexType m_VehicleIndex;
-   COLORREF m_Color1;
-   COLORREF m_Color2;
+   COLORREF m_Color;
 
    CAnalysisResultsGraphDefinition();
    
@@ -84,7 +83,7 @@ public:
                 const std::vector<IntervalIndexType>& intervals,int actions,COLORREF c);
    
    // constructor for prestress
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,GraphType type,const std::vector<IntervalIndexType>& intervals,COLORREF c1,COLORREF c2);
+   CAnalysisResultsGraphDefinition(IDType id,const CString name,GraphType type,const std::vector<IntervalIndexType>& intervals,COLORREF c);
    
    // constructor for demands
    CAnalysisResultsGraphDefinition(IDType id,const CString name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,COLORREF c);

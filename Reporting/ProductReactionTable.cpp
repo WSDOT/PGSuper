@@ -101,6 +101,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
 
@@ -437,9 +438,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, loadRatingIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
 
                   if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
@@ -449,7 +450,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                   col++;
 
-                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, loadRatingIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( min );
 
                   if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
@@ -469,9 +470,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, loadRatingIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
 
                   if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
@@ -481,7 +482,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                   col++;
 
-                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, loadRatingIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( min );
 
                   if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
@@ -501,9 +502,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, loadRatingIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
 
                   if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
@@ -513,7 +514,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                   col++;
 
-                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, loadRatingIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( min );
 
                   if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
@@ -533,9 +534,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, loadRatingIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
 
                   if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
@@ -545,7 +546,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                   col++;
 
-                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, loadRatingIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( min );
 
                   if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
@@ -698,9 +699,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))  )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltDesign, loadRatingIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
                   if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
                   {
@@ -727,9 +728,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, loadRatingIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
                   if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
                   {
@@ -754,9 +755,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Legal - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, loadRatingIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
                   if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
                   {
@@ -781,9 +782,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, loadRatingIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
                   if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
                   {
@@ -808,9 +809,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             // Permit Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               if ( reactionDecider.DoReport(loadRatingIntervalIdx) )
                {
-                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, loadRatingIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                   (*p_table)(row,col) << reaction.SetValue( max );
                   if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
                   {

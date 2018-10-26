@@ -140,7 +140,7 @@ inline void TxDOTDebondTool::Compute()
    // standard debond increment
    Float64 three_feet = ::ConvertToSysUnits( 3.0,unitMeasure::Feet);
 
-   StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_SegmentKey,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
 
    pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
    CComPtr<IPoint2dCollection> coords;

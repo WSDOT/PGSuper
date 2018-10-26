@@ -2,8 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by PGSuperAppPlugin.rc
 //
-#define EAFID_INDICATOR_MODIFIED        1
-#define EAFID_INDICATOR_STATUS          2
 #define ID_INDICATOR_ANALYSIS           3
 #define ID_INDICATOR_AUTOCALC_ON        4
 #define ID_INDICATOR_AUTOCALC_OFF       5
@@ -1472,15 +1470,6 @@
 #define IDC_JOIN                        12879
 #define IDS_INCOMPATIBLE_BEARING_MSG    13100
 #define IDS_INCOMPATIBLE_BEARING_MSG2   13101
-#define EAF_RESERVED_COMMAND_BASE       0x8000
-#define EAFID_VIEW_STATUSCENTER         32768
-#define EAFID_VIEW_STATUSCENTER2        32769
-#define EAFID_VIEW_STATUSCENTER3        32770
-#define EAFID_APP_LEGAL                 32771
-#define EAFID_UNITS_SI                  32772
-#define EAFID_UNITS_US                  32773
-#define EAFID_EDIT_UNITS                32774
-#define EAFID_TIPOFTHEDAY               32775
 #define ID_HELP_JOINARPLIST             33024
 #define ID_HELP_INET_ARP                33025
 #define ID_HELP_INET_WSDOT              33026

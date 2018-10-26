@@ -28,6 +28,7 @@
 class CPierData2;
 class CTemporarySupportData;
 class CBridgeDescription2;
+class CBridgeDescription;
 class CGirderGroupData;
 class CSplicedGirderData;
 
@@ -118,11 +119,12 @@ protected:
    typedef std::pair<GirderIndexType,GirderIndexType> SpacingGroup; // first and second can never be the same value
    std::vector<SpacingGroup> m_SpacingGroups; // defines how girder lines are grouped
 
-   // secret backdoor that CGirderGroupData and CBridgeDescription2 can initialize
+   // secret backdoor that certain types can use to initialize
    // this girder spacing so the internal m_GirderSpacing vector has the right
    // number of entires.
    void InitGirderCount(GirderIndexType nGirders);
    friend CGirderGroupData;
+   friend CBridgeDescription;
    friend CBridgeDescription2;
 };
 

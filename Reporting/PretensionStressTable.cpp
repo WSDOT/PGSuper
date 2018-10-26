@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <Reporting\PrestressStressTable.h>
+#include <Reporting\PretensionStressTable.h>
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\GirderPointOfInterest.h>
@@ -40,28 +40,28 @@ static char THIS_FILE[] = __FILE__;
 
 /****************************************************************************
 CLASS
-   CPrestressStressTable
+   CPretensionStressTable
 ****************************************************************************/
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPrestressStressTable::CPrestressStressTable()
+CPretensionStressTable::CPretensionStressTable()
 {
 }
 
-CPrestressStressTable::CPrestressStressTable(const CPrestressStressTable& rOther)
+CPretensionStressTable::CPretensionStressTable(const CPretensionStressTable& rOther)
 {
    MakeCopy(rOther);
 }
 
-CPrestressStressTable::~CPrestressStressTable()
+CPretensionStressTable::~CPretensionStressTable()
 {
 }
 
 //======================== OPERATORS  =======================================
-CPrestressStressTable& CPrestressStressTable::operator= (const CPrestressStressTable& rOther)
+CPretensionStressTable& CPretensionStressTable::operator= (const CPretensionStressTable& rOther)
 {
    if( this != &rOther )
    {
@@ -72,7 +72,7 @@ CPrestressStressTable& CPrestressStressTable::operator= (const CPrestressStressT
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
+rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
                                             bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -87,51 +87,23 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& seg
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
-   //// Determine if there are temporary strands
-   //bool bTempStrands = false;
-   //GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   //GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
-   //GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   //for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
-   //{
-   //   GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-   //   GirderIndexType firstGdrIdx = (segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex);
-   //   GirderIndexType lastGdrIdx  = (segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGdrIdx);
-   //   for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
-   //   {
-   //      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-   //      SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
-   //      SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
-   //      for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
-   //      {
-   //         CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
-   //         if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
-   //         {
-   //            bTempStrands = true;
-   //            break;
-   //         }
-   //      }
-   //   }
-   //}
+   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
+   IntervalIndexType nIntervals = vIntervals.size();
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    ColumnIndexType nColumns;
    if ( bDesign )
    {
       nColumns = 2 // two location columns
-               + nIntervals-1 // one for each interval
-               ;//+ (bTempStrands ? 1 : 0); // one for temporary strand removal
+               + nIntervals; // one for each interval
    }
    else
    {
       // Load Rating
       nColumns = 2; // location column and column for live load stage
    }
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Prestress Stresses"));
+
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Girder Stresses"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
@@ -152,24 +124,26 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& seg
       (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
       {
-         (*p_table)(0,col++) << COLHDR(pIntervals->GetDescription(intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         IntervalIndexType intervalIdx = *iter;
+         (*p_table)(0,col++) << COLHDR(_T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
-
-      //if ( bTempStrands )
-      //   (*p_table)(0,col++) << COLHDR(_T("Temporary") << rptNewLine << _T("Strand") << rptNewLine << _T("Removal"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
    }
    else
    {
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR(pIntervals->GetDescription(liveLoadIntervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(_T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(loadRatingIntervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+
+   // don't want to report at these locations since the are off segment
+   // and don't have stresses due to pre-tensioning.
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
@@ -199,36 +173,31 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& seg
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
       (*p_table)(row,col++) << gdrpoi.SetValue( POI_RELEASED_SEGMENT, poi );
-      (*p_table)(row,col++) << spanpoi.SetValue( POI_GIRDER, poi, end_size  );
+      (*p_table)(row,col++) << spanpoi.SetValue( POI_ERECTED_SEGMENT, poi, end_size  );
 
       if ( !bSkipToNextRow )
       {
          Float64 fTop, fBot;
          if ( bDesign )
          {
-            for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+            for ( ; iter != end; iter++ )
             {
+               IntervalIndexType intervalIdx = *iter;
+
                fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
                fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
                (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
                (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
                col++;
             }
-
-            //if ( bTempStrands )
-            //{
-            //   fTop = pPrestress->GetStress(tsRemovalIntervalIdx,poi,pgsTypes::TopGirder);
-            //   fBot = pPrestress->GetStress(tsRemovalIntervalIdx,poi,pgsTypes::BottomGirder);
-            //   (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-            //   (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
-            //   col++;
-            //}
          }
          else
          {
             // Rating
-            fTop = pPrestress->GetStress(liveLoadIntervalIdx,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder);
+            fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
+            fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
@@ -250,12 +219,12 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& seg
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void CPrestressStressTable::MakeCopy(const CPrestressStressTable& rOther)
+void CPretensionStressTable::MakeCopy(const CPretensionStressTable& rOther)
 {
    // Add copy code here...
 }
 
-void CPrestressStressTable::MakeAssignment(const CPrestressStressTable& rOther)
+void CPretensionStressTable::MakeAssignment(const CPretensionStressTable& rOther)
 {
    MakeCopy( rOther );
 }

@@ -320,7 +320,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
 
    matRebar::Grade barGrade;
    matRebar::Type barType;
-   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,barType,barGrade);
+   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
    ATLASSERT(pool != NULL);
@@ -339,6 +339,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
 
    m_BarLegCollection.clear();
 
+   // Precompute bar areas for all possible bar combinations
    IndexType nb = pGirderEntry->GetNumStirrupSizeBarCombos();
    for(IndexType ib=0; ib<nb; ib++)
    {
@@ -804,39 +805,50 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          i++;
       }
       
-      // Mirror about location of mid-span measured from girder start
-      Float64 spn2 = (m_StartConnectionLength+m_SegmentLength-m_EndConnectionLength)/2.0; 
-      mirror_avs.MirrorAboutY(spn2);
-
-      // Mirror function can cause very slight numerical problems with the end locations of the range. 
-      // Reset to the exact values
-      Float64 range_start = m_DesignPois[0].GetDistFromStart();
-      Float64 range_end   = m_DesignPois.back().GetDistFromStart();
-      mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
-
-      // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
-      // Use function2d class to get x,y locations for mirror
+      // mathPwLinearFunction2dUsingPoints can throw, and it's probably not the end of the world
+      // if if does. Don't let it crash program.
       IndexType spn2_idx=0; // store index at mid-span;
-      idx=0;
-      i = m_DesignPois.begin();
-      for ( ; i != end; i++ )
+      try
       {
-         const pgsPointOfInterest& poi = *i;
+         // Mirror about location of mid-span measured from girder start
+         Float64 spn2 = (m_StartConnectionLength+m_SegmentLength-m_EndConnectionLength)/2.0; 
+         mirror_avs.MirrorAboutY(spn2);
 
-         Float64 x = poi.GetDistFromStart();
-         Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
-         Float64 mry = mirror_avs.Evaluate(x);
-
-         Float64 maxy = Max(ry, mry);
-
-         ry = maxy;
-
-         if (spn2_idx==0 && x>spn2)
+         // Mirrored function needs to lie at least within the same X range as the original function
+         // Force this by extending range out to support locations
+         Float64 range_start = m_StartConnectionLength;
+         Float64 range_end   = m_SegmentLength - m_EndConnectionLength;
+         mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
+   
+         // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
+         // Use function2d class to get x,y locations for mirror
+         idx=0;
+         i = m_DesignPois.begin();
+         for ( ; i != end; i++ )
          {
-            spn2_idx = idx;
+            const pgsPointOfInterest& poi = *i;
+   
+            Float64 x = poi.GetDistFromStart();
+            Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
+            Float64 mry = mirror_avs.Evaluate(x);
+   
+            Float64 maxy = Max(ry, mry);
+   
+            ry = maxy;
+   
+            if (spn2_idx==0 && x>spn2)
+            {
+               spn2_idx = idx;
+            }
+   
+            idx++;
          }
-
-         idx++;
+      }
+      catch(...)
+      {
+         ATLASSERT(0); // This really should never happen. Somehow our function got out
+                       // of bounds? This is a programming error.
+         spn2_idx = rDemandAtPois.size()/2; // reasonable assumption for mid-span
       }
 
       // Last step is to process the avs curve to make sure that values always increase from
@@ -1420,7 +1432,7 @@ bool  pgsShearDesignTool::ModifyPreExistingStirrupDesign()
    // Some needed values
    matRebar::Grade barGrade;
    matRebar::Type barType;
-   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,barType,barGrade);
+   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
    ATLASSERT(pool != NULL);
 
@@ -1691,7 +1703,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
    GET_IFACE(IMaterials,pMaterial);
    matRebar::Grade barGrade;
    matRebar::Type barType;
-   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,barType,barGrade);
+   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
    ATLASSERT(pool != NULL);
@@ -1842,7 +1854,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
          GET_IFACE(IMaterials,pMaterial);
          matRebar::Grade barGrade;
          matRebar::Type barType;
-         pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,barType,barGrade);
+         pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          ATLASSERT(pool != NULL);
@@ -1988,7 +2000,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
             GET_IFACE(IMaterials,pMaterial);
             matRebar::Grade barGrade;
             matRebar::Type barType;
-            pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,barType,barGrade);
+            pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
             lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
             ATLASSERT(pool != NULL);
 
@@ -2352,7 +2364,7 @@ Float64 pgsShearDesignTool::GetMinStirrupSpacing(matRebar::Size size)
    GET_IFACE(IMaterials,pMaterial);
    matRebar::Grade barGrade;
    matRebar::Type barType;
-   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,barType,barGrade);
+   pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
    const matRebar* pRebar = prp->GetRebar(barType,barGrade,size);

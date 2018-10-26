@@ -656,9 +656,14 @@ void CBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBea
 
 IBeamFactory::Dimensions CBulbTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
 {
-   IBeamFactory::Dimensions dimensions;
+   Float64 parent_version;
+   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
 
-   Float64 parent_version = pLoad->GetVersion();
+
+   IBeamFactory::Dimensions dimensions;
 
    if ( 14 <= parent_version && !pLoad->BeginUnit(_T("BulbTeeDimensions")) )
       THROW_LOAD(InvalidFileFormat,pLoad);

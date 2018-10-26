@@ -61,6 +61,7 @@ public:
    bool HasUserLoad(LoadIDType loadID);
    IndexType GetUserLoadCount() const;
    LoadIDType GetUserLoadID(IndexType idx) const;
+   bool IsUserLoadApplied() const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);

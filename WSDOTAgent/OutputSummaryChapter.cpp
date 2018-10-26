@@ -582,11 +582,12 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    if ( 0 < NhMax )
    {
       vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+      ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
       hp_count = vPoi.size();
       iter = vPoi.begin();
       hp_left = *iter;
       hp_right = hp_left;
-      if ( hp_count > 1 )
+      if ( 1 < hp_count )
       {
          iter++;
          hp_right = *iter;
@@ -1440,6 +1441,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
    pgsPointOfInterest hp_right;
    IndexType hp_count = 0;
    vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+   ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
    if ( 0 < vPoi.size() && 0 < NhMax )
    {
       iter = vPoi.begin();

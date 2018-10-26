@@ -393,15 +393,12 @@ struct TIME_STEP_CONCRETE
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
-   Float64 fTop[18][2]; // first index is one of the ProductForceType enum values
-   Float64 fBot[18][2]; // second index is one of the CombinationType enum values
+   Float64 f[2][18][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the ProductForceType enum values
+                        // third index is one of the CombinationType enum values
 
    // Stress in this due to live load
-   Float64 fTopLLMin;
-   Float64 fBotLLMin;
-
-   Float64 fTopLLMax;
-   Float64 fBotLLMax;
+   Float64 fLLMin[2]; // index is pgsTypes::FaceType
+   Float64 fLLMax[2];
 
    TIME_STEP_CONCRETE()
    {
@@ -426,17 +423,18 @@ struct TIME_STEP_CONCRETE
       {
          dP[i] = 0;
          dM[i] = 0;
-         fTop[i][0] = 0;
-         fBot[i][0] = 0;
-         fTop[i][1] = 0;
-         fBot[i][1] = 0;
+
+         f[pgsTypes::TopFace][i][0] = 0;
+         f[pgsTypes::TopFace][i][1] = 0;
+
+         f[pgsTypes::BottomFace][i][0] = 0;
+         f[pgsTypes::BottomFace][i][1] = 0;
       }
 
-      fTopLLMin = 0;
-      fBotLLMin = 0;
-
-      fTopLLMax = 0;
-      fBotLLMax = 0;
+      fLLMin[pgsTypes::TopFace]    = 0;
+      fLLMin[pgsTypes::BottomFace] = 0;
+      fLLMax[pgsTypes::TopFace]    = 0;
+      fLLMax[pgsTypes::BottomFace] = 0;
    }
 };
 

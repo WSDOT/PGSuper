@@ -935,6 +935,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PosttensionStressTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PrestressForceChapterBuilder.cpp"
 				>
 			</File>
@@ -943,7 +947,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PrestressStressTable.cpp"
+				RelativePath=".\PretensionStressTable.cpp"
 				>
 			</File>
 			<File
@@ -1008,10 +1012,6 @@
 			</File>
 			<File
 				RelativePath=".\SectPropTable2.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SegmentConstructionChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -1160,6 +1160,10 @@
 			</File>
 			<File
 				RelativePath=".\TSRemovalShearTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TSRemovalStressTable.cpp"
 				>
 			</File>
 			<File
@@ -1571,6 +1575,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\PosttensionStressTable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\PrestressForceChapterBuilder.h"
 				>
 			</File>
@@ -1579,7 +1587,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Reporting\PrestressStressTable.h"
+				RelativePath="..\Include\Reporting\PretensionStressTable.h"
 				>
 			</File>
 			<File
@@ -1648,10 +1656,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\SectPropTable2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\SegmentConstructionChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1752,6 +1756,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TSRemovalShearTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TSRemovalStressTable.h"
 				>
 			</File>
 			<File

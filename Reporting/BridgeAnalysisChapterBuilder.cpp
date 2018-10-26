@@ -103,11 +103,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   IntervalIndexType lastIntervalIdx = nIntervals-1; // last interval
-   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0)); // release interval is the same for all segments
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount()-1;
+
+   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
@@ -158,7 +158,16 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
    if (bAreThereUserLoads)
    {
-      *p << CUserMomentsTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserMomentsTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
    }
 
    CTSRemovalMomentsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
@@ -177,7 +186,16 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (bAreThereUserLoads)
    {
-      *p << CUserShearTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserShearTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
    }
 
    CTSRemovalShearTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
@@ -212,8 +230,17 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (bAreThereUserLoads)
    {
-      *p << CUserReactionTable().Build(pBroker,girderKey,m_AnalysisType,PierReactionsTable,pDisplayUnits) << rptNewLine;
-      *p << CUserReactionTable().Build(pBroker,girderKey,m_AnalysisType,BearingReactionsTable,pDisplayUnits) << rptNewLine;
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserReactionTable().Build(pBroker,girderKey,m_AnalysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+            *p << CUserReactionTable().Build(pBroker,girderKey,m_AnalysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
    }
 
    CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,PierReactionsTable,pDisplayUnits);
@@ -232,7 +259,16 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (bAreThereUserLoads)
    {
-      *p << CUserDisplacementsTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserDisplacementsTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
    }
 
    CTSRemovalDisplacementsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
@@ -251,7 +287,16 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (bAreThereUserLoads)
    {
-      *p << CUserRotationTable().Build(pBroker,girderKey,m_AnalysisType,pDisplayUnits) << rptNewLine;
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserRotationTable().Build(pBroker,girderKey,m_AnalysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
    }
 
    CTSRemovalRotationTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
@@ -377,8 +422,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    // Load Combinations (DC, DW, etc) & Limit States
-   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+   std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
+   std::vector<IntervalIndexType>::iterator intervalIterEnd(vIntervals.end());
+   for ( ; intervalIter != intervalIterEnd; intervalIter++ )
    {
+      IntervalIndexType intervalIdx = *intervalIter;
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;

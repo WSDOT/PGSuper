@@ -509,7 +509,12 @@ void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const
 
 IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
 {
-   Float64 parent_version = pLoad->GetVersion();
+   Float64 parent_version;
+   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
+
 
    IBeamFactory::Dimensions dimensions;
    std::vector<std::_tstring>::iterator iter;

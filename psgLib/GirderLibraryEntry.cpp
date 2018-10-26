@@ -78,7 +78,8 @@ static char THIS_FILE[] = __FILE__;
 // from 19.0 to 20.0 added shear design parameters
 // from 20.0 to 21.0 Web strands can be harped or straight e.g.,  ForceHarpedStrandsStraight
 // from 21.0 to 22.0 Added layout options for longitudinal rebar
-#define CURRENT_VERSION 22.0
+// from 22.0 to 23.0 Added option for variable depth girders
+#define CURRENT_VERSION 23.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) {
@@ -132,6 +133,10 @@ m_MaxDebondLengthBySpanFraction(-1.0), //
 m_MaxDebondLengthByHardDistance(-1.0)
 {
 	CWaitCursor cursor;
+
+   m_bSupportsVariableDepthSection = false;
+   m_bIsVariableDepthSectionEnabled = false;
+
 
    // When the user creates a new library entry, it needs a beam type. The beam type
    // is defined by the beam factory this object holds. Therefore we need to create a
@@ -246,7 +251,14 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
    pSave->Property(_T("SectionName"),CString(pszUserType));
 
-   m_pBeamFactory->SaveSectionDimensions(pSave,m_Dimensions);
+
+   pSave->BeginUnit(_T("SectionDimensions"),1.0);
+      if ( m_bSupportsVariableDepthSection )
+      {
+         pSave->Property(_T("VariableDepthSection"),m_bIsVariableDepthSectionEnabled);
+      }
+      m_pBeamFactory->SaveSectionDimensions(pSave,m_Dimensions);
+   pSave->EndUnit(); // SectionDimensions
 
    // added version 16, removed version 17
    //pSave->Property(_T("CanPostTension"), m_bCanPostTension );
@@ -425,7 +437,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("DistFromEnd"), (*itl).DistFromEnd);
       pSave->Property(_T("BarLength"), (*itl).BarLength);
 
-      if (itl->Face==pgsTypes::GirderBottom)
+      if (itl->Face==pgsTypes::BottomFace)
          pSave->Property(_T("Face"), _T("Bottom"));
       else
          pSave->Property(_T("Face"), _T("Top"));
@@ -578,8 +590,40 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          ATLASSERT(m_pBeamFactory != NULL);
 
-         m_Dimensions.clear();
-         m_Dimensions = m_pBeamFactory->LoadSectionDimensions(pLoad);
+
+         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+         if ( splicedBeamFactory )
+         {
+            m_bSupportsVariableDepthSection = splicedBeamFactory->SupportsVariableDepthSection();
+         }
+         else
+         {
+            m_bSupportsVariableDepthSection = false;
+         }
+
+
+         if ( 22 < version )
+         {
+            if ( !pLoad->BeginUnit(_T("SectionDimensions")) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( m_bSupportsVariableDepthSection ) 
+            {
+               if ( !pLoad->Property(_T("VariableDepthSection"),&m_bIsVariableDepthSectionEnabled) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            m_Dimensions.clear();
+            m_Dimensions = m_pBeamFactory->LoadSectionDimensions(pLoad);
+
+            if ( !pLoad->EndUnit() )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+          }
+         else
+         {
+            m_Dimensions.clear();
+            m_Dimensions = m_pBeamFactory->LoadSectionDimensions(pLoad);
+         }
       } // end of ( version < 1.1 )
 
 
@@ -630,14 +674,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
             // convert old cover to adjustment limit
-            m_EndAdjustment.m_TopFace = pgsTypes::GirderTop;
+            m_EndAdjustment.m_TopFace = pgsTypes::TopFace;
             m_EndAdjustment.m_TopLimit = top_cover;
-            m_EndAdjustment.m_BottomFace = pgsTypes::GirderBottom;
+            m_EndAdjustment.m_BottomFace = pgsTypes::BottomFace;
             m_EndAdjustment.m_BottomLimit = bottom_cover;
 
-            m_HPAdjustment.m_TopFace = pgsTypes::GirderTop;
+            m_HPAdjustment.m_TopFace = pgsTypes::TopFace;
             m_HPAdjustment.m_TopLimit = top_cover;
-            m_HPAdjustment.m_BottomFace = pgsTypes::GirderBottom;
+            m_HPAdjustment.m_BottomFace = pgsTypes::BottomFace;
             m_HPAdjustment.m_BottomLimit = bottom_cover;
 
             if(!pLoad->Property(_T("EndStrandIncrement"), &m_EndAdjustment.m_StrandIncrement))
@@ -659,7 +703,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("EndBottomFace"), &lface))
                THROW_LOAD(InvalidFileFormat,pLoad); 
 
-            m_EndAdjustment.m_BottomFace = lface==0 ? pgsTypes::GirderTop : pgsTypes::GirderBottom;
+            m_EndAdjustment.m_BottomFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("EndBottomLimit"), &m_EndAdjustment.m_BottomLimit))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -667,7 +711,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("EndTopFace"), &lface))
                THROW_LOAD(InvalidFileFormat,pLoad); 
 
-            m_EndAdjustment.m_TopFace = lface==0 ? pgsTypes::GirderTop : pgsTypes::GirderBottom;
+            m_EndAdjustment.m_TopFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("EndTopLimit"), &m_EndAdjustment.m_TopLimit))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -681,7 +725,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("HPBottomFace"), &lface))
                THROW_LOAD(InvalidFileFormat,pLoad); 
 
-            m_HPAdjustment.m_BottomFace = lface==0 ? pgsTypes::GirderTop : pgsTypes::GirderBottom;
+            m_HPAdjustment.m_BottomFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("HPBottomLimit"), &m_HPAdjustment.m_BottomLimit))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -689,7 +733,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("HPTopFace"), &lface))
                THROW_LOAD(InvalidFileFormat,pLoad); 
 
-            m_HPAdjustment.m_TopFace = lface==0 ? pgsTypes::GirderTop : pgsTypes::GirderBottom;
+            m_HPAdjustment.m_TopFace = lface==0 ? pgsTypes::TopFace : pgsTypes::BottomFace;
 
             if(!pLoad->Property(_T("HPTopLimit"), &m_HPAdjustment.m_TopLimit))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1629,9 +1673,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if (tmp==_T("Bottom"))
-            li.Face = pgsTypes::GirderBottom;
+            li.Face = pgsTypes::BottomFace;
          else if (tmp==_T("Top"))
-            li.Face = pgsTypes::GirderTop;
+            li.Face = pgsTypes::TopFace;
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2056,19 +2100,19 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    Float64 end_increment = this->IsVerticalAdjustmentAllowedEnd() ? this->GetEndStrandIncrement() : -1.0;
    Float64 hp_increment  = this->IsVerticalAdjustmentAllowedHP()  ? this->GetHPStrandIncrement() : -1.0;
 
-   pgsTypes::GirderFace endTopFace, endBottomFace;
+   pgsTypes::FaceType endTopFace, endBottomFace;
    Float64 endTopLimit, endBottomLimit;
    this->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-   IBeamFactory::BeamFace etf = endTopFace==pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace ebf = endBottomFace==pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace etf = endTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace ebf = endBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
-   pgsTypes::GirderFace hpTopFace, hpBottomFace;
+   pgsTypes::FaceType hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
    this->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
  
-   IBeamFactory::BeamFace htf = hpTopFace==pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace htf = hpTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
    CComPtr<IStrandMover> strand_mover;
    m_pBeamFactory->CreateStrandMover(m_Dimensions, 
@@ -2429,7 +2473,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       // make sure bars are inside of girder - use shape symmetry
       gpPoint2d testpnt;
       testpnt.X() = (*itl).BarSpacing * ((*itl).NumberOfBars-1)/2.;
-      if ((*itl).Face==pgsTypes::GirderBottom)
+      if ((*itl).Face==pgsTypes::BottomFace)
          testpnt.Y() = (*itl).Cover;
       else
          testpnt.Y() = height-(*itl).Cover;
@@ -2491,6 +2535,12 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
       std::_tstring& rname = *name_iter;
       Float64 value = *dim_iter;
       AddDimension(rname,value);
+   }
+
+   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   if ( splicedBeamFactory && splicedBeamFactory->SupportsVariableDepthSection() )
+   {
+      m_bSupportsVariableDepthSection = true;
    }
 }
 
@@ -2576,6 +2626,19 @@ void GirderLibraryEntry::SetDimension(const std::_tstring& name,Float64 value,bo
          strandLocation.m_Yend   += deltaY[pgsTypes::metEnd];
       }
    }
+}
+
+void GirderLibraryEntry::EnableVariableDepthSection(bool bEnable)
+{
+   m_bIsVariableDepthSectionEnabled = bEnable;
+}
+
+bool GirderLibraryEntry::IsVariableDepthSectionEnabled() const
+{
+   if ( m_bSupportsVariableDepthSection )
+      return m_bIsVariableDepthSectionEnabled;
+   else
+      return false;
 }
 
 void GirderLibraryEntry::ClearAllStrands()
@@ -3081,7 +3144,7 @@ Float64 GirderLibraryEntry::GetHPStrandIncrement() const
 }
 
 
-void GirderLibraryEntry::SetEndAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit)
+void GirderLibraryEntry::SetEndAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit)
 {
    m_EndAdjustment.m_TopFace     = topFace;
    m_EndAdjustment.m_TopLimit    = topLimit;
@@ -3089,7 +3152,7 @@ void GirderLibraryEntry::SetEndAdjustmentLimits(pgsTypes::GirderFace  topFace, F
    m_EndAdjustment.m_BottomLimit = bottomLimit;
 }
 
-void GirderLibraryEntry::GetEndAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const
+void GirderLibraryEntry::GetEndAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const
 {
    *topFace = m_EndAdjustment.m_TopFace;
    *topLimit = m_EndAdjustment.m_TopLimit;
@@ -3097,7 +3160,7 @@ void GirderLibraryEntry::GetEndAdjustmentLimits(pgsTypes::GirderFace* topFace, F
    *bottomLimit = m_EndAdjustment.m_BottomLimit;
 }
 
-void GirderLibraryEntry::SetHPAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit)
+void GirderLibraryEntry::SetHPAdjustmentLimits(pgsTypes::FaceType  topFace, Float64  topLimit, pgsTypes::FaceType  bottomFace, Float64  bottomLimit)
 {
    m_HPAdjustment.m_TopFace     = topFace;
    m_HPAdjustment.m_TopLimit    = topLimit;
@@ -3105,7 +3168,7 @@ void GirderLibraryEntry::SetHPAdjustmentLimits(pgsTypes::GirderFace  topFace, Fl
    m_HPAdjustment.m_BottomLimit = bottomLimit;
 }
 
-void GirderLibraryEntry::GetHPAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const
+void GirderLibraryEntry::GetHPAdjustmentLimits(pgsTypes::FaceType* topFace, Float64* topLimit, pgsTypes::FaceType* bottomFace, Float64* bottomLimit) const
 {
    *topFace = m_HPAdjustment.m_TopFace;
    *topLimit = m_HPAdjustment.m_TopLimit;
@@ -3287,6 +3350,8 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_LongSteelInfo = rOther.m_LongSteelInfo;
 
    m_Dimensions = rOther.m_Dimensions;
+   m_bSupportsVariableDepthSection = rOther.m_bSupportsVariableDepthSection;
+   m_bIsVariableDepthSectionEnabled = rOther.m_bIsVariableDepthSectionEnabled;
 
    m_pBeamFactory.Release();
    m_pBeamFactory = rOther.m_pBeamFactory;
@@ -3794,9 +3859,9 @@ static const Float64 TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
 GirderLibraryEntry::HarpedStrandAdjustment::HarpedStrandAdjustment() : 
 m_AllowVertAdjustment(false), 
 m_StrandIncrement(TwoInches),
-m_TopFace(pgsTypes::GirderTop), 
+m_TopFace(pgsTypes::TopFace), 
 m_TopLimit(TwoInches),
-m_BottomFace(pgsTypes::GirderBottom), 
+m_BottomFace(pgsTypes::BottomFace), 
 m_BottomLimit(TwoInches)
 {
 }

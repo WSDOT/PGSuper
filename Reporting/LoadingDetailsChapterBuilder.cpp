@@ -2030,7 +2030,7 @@ void CLoadingDetailsChapterBuilder::ReportCamberLoads(rptChapter* pChapter,bool 
             *pPara << rptNewLine;
          
             GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-            if ( 0 < pStrandGeom->GetNumStrands(thisSegmentKey,pgsTypes::Temporary) )
+            if ( 0 < pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) )
             {
                Float64 MxferL, MxferR, MremoveL, MremoveR;
                pCamber->GetTempStrandEquivLoading(thisSegmentKey,&MxferL,&MxferR,&MremoveL,&MremoveR);

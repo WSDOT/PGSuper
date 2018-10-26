@@ -187,7 +187,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    m_HgEnd   = pSectProp->GetHg(intervalIdx,poiEnd);
 
    vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT);
-   ATLASSERT(vPoi.size() == 1 || vPoi.size() == 2);
+   ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
    if ( 0 < vPoi.size() )
    {
       pgsPointOfInterest poiHp1(vPoi.front());

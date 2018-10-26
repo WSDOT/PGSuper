@@ -122,7 +122,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      if ( pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Permanent) == 0 )
+      if ( pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Permanent) == 0 )
       {
          *pPara << _T("The girder must have strands to perform a fabrication optimization analysis") << rptNewLine;
          continue;

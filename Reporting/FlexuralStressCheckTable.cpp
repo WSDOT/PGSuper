@@ -173,10 +173,12 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(CSegmentKey(pGirderArtifact->GetGirderKey(),segIdx == ALL_SEGMENTS ? 0 : segIdx));
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
+   bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(girderKey,intervalIdx);
+   bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval);
 
    GET_IFACE2(pBroker, IEventMap, pEventMap );
    std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
@@ -197,7 +199,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
 
    *pPara << strLimitState << rptNewLine;
 
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   if ( bIsStressingInterval )
    {
       *pPara << _T("For Temporary Stresses before Losses [5.9.4.1]") << rptNewLine;
    }
@@ -208,7 +210,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
 
    if ( bCompression )
    {
-      if ( intervalIdx < compositeDeckIntervalIdx )
+      if ( bIsStressingInterval )
          *pPara << _T("Compression Stresses [5.9.4.1.1]") << rptNewLine;
       else
          *pPara << _T("Compression Stresses [5.9.4.2.1]") << rptNewLine;
@@ -216,7 +218,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    
    if ( bTension )
    {
-      if ( intervalIdx < compositeDeckIntervalIdx )
+      if ( bIsStressingInterval )
          *pPara << _T("Tension Stresses [5.9.4.1.2]") << rptNewLine;
       else
          *pPara << _T("Tension Stresses [5.9.4.2.2]") << rptNewLine;
@@ -247,7 +249,6 @@ void CFlexuralStressCheckTable::BuildAllowStressInformation(rptChapter* pChapter
       BuildAllowDeckStressInformation(pChapter, 
                                       pBroker,
                                       pGirderArtifact,
-                                      segIdx,
                                       pDisplayUnits,
                                       intervalIdx,
                                       limitState);
@@ -693,10 +694,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                
                col++;
             }
-            else
+            else if ( bApplicableTensionTop || bApplicableTensionBot )
             {
-               ATLASSERT( !bIsTopTensionApplicableAtThisPOI && !bIsBotTensionApplicableAtThisPOI );
-               (*p_table)(row,col++) << RPT_NA; // stress check isn't applicable at this location
+               // tension check isn't applicable at this location, but it is applicable
+               // somewhere along the girder, so report N/A for this locatino
+               (*p_table)(row,col++) << RPT_NA;
             }
          }
 
@@ -980,7 +982,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
          else
             *p << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-         BuildAllowSegmentStressInformation(p, pBroker, pSegmentArtifact, nArtifacts-1, pDisplayUnits, intervalIdx, limitState);
+         BuildAllowClosureJointStressInformation(p, pBroker, pSegmentArtifact, nArtifacts-1, pDisplayUnits, intervalIdx, limitState);
 
          *p << rptNewLine;
       }
@@ -990,16 +992,12 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
 void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pChapter, 
                                                                 IBroker* pBroker,
                                                                 const pgsGirderArtifact* pGirderArtifact,
-                                                                SegmentIndexType segIdx,
                                                                 IEAFDisplayUnits* pDisplayUnits,
                                                                 IntervalIndexType intervalIdx,
                                                                 pgsTypes::LimitState limitState) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-
-   pgsTypes::StressLocation topLocation = pgsTypes::TopDeck;
-   pgsTypes::StressLocation botLocation = pgsTypes::BottomDeck;
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -1009,6 +1007,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    Float64 fc = pMaterials->GetDeckFc(intervalIdx);
    *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
@@ -1025,268 +1024,71 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       const pgsFlexuralStressArtifact* pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,0);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
 
-      Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,topLocation,intervalIdx,limitState);
+      Float64 c = pAllowable->GetDeckAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
+      Float64 fAllowable = pAllowable->GetDeckAllowableCompressionStress(poi,intervalIdx,limitState);
 
-      bool bIsTopApplicable = pArtifact->IsApplicable(topLocation);
-      bool bIsBotApplicable = pArtifact->IsApplicable(botLocation);
-
-      Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-      Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-      if ( bIsTopApplicable && bIsBotApplicable )
-      {
-         // Compression stress is applicable at top and bottom... only want to report
-         // allowable once if it is the same value
-         if ( IsEqual(fAllowableTop,fAllowableBot) )
-         {
-            *pPara << _T("Allowable compressive stress = -") << c;
-            *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-         }
-         else
-         {
-            // Not the same value... report each one individually
-
-            *pPara << _T("Top of Girder - Allowable compressive stress = -") << c;
-            *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-
-            *pPara << _T("Bottom of Girder - Allowable compressive stress = -") << c;
-            *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-         }
-      }
-      else
-      {
-         // Stress check only applicable at the top or the bottom (not both)
-         if ( bIsTopApplicable )
-         {
-            *pPara << _T("Top of Girder - Allowable compressive stress = -") << c;
-            *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-         }
-
-         if ( bIsBotApplicable )
-         {
-            *pPara << _T("Bottom of Girder - Allowable compressive stress = -") << c;
-            *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-         }
-      }
+      *pPara << _T("Allowable compressive stress = -") << c << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
    }
 
    //
    // Tension
    //
 
-   int fPTZTop    = 0;
-   int fPTZBottom = 0;
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
-   SegmentIndexType lastSegIdx  = (segIdx == ALL_SEGMENTS ? nSegments-1 : firstSegIdx);
-   for ( SegmentIndexType sIdx = firstSegIdx; sIdx <= lastSegIdx; sIdx++ )
-   {
-      const pgsSegmentArtifact* pSegArtifact = pGirderArtifact->GetSegmentArtifact(sIdx);
-      fPTZTop    |= pSegArtifact->GetPrecompressedTensileZone(intervalIdx,topLocation);
-      fPTZBottom |= pSegArtifact->GetPrecompressedTensileZone(intervalIdx,botLocation);
-   }
-
    if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension) )
    {
       const pgsFlexuralStressArtifact* pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
-      bool bIsClosure = poi.HasAttribute(POI_CLOSURE);
 
-      bool bIsTopInPTZ = pArtifact->IsInPrecompressedTensileZone(topLocation);
-      bool bIsBotInPTZ = pArtifact->IsInPrecompressedTensileZone(botLocation);
+      bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(girderKey,intervalIdx);
 
-      bool bIsTopApplicable = pSegmentArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension,topLocation);
+      Float64 t;            // tension coefficient
+      Float64 t_max;        // maximum allowable tension
+      bool b_t_max;         // true if max allowable tension is applicable
+      pAllowable->GetDeckAllowableTensionStressCoefficient(poi,intervalIdx,limitState,false/*without rebar*/,&t,&b_t_max,&t_max);
 
-      if ( bIsTopApplicable )
+      if ( bIsTendonStressingInterval )
       {
-         // stresses are checked in the top of the girder so report the
-         // allowable tension for the top of the girder
+         (*pPara) << _T("Allowable tensile stress in areas other than the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
 
-         Float64 t;            // tension coefficient
-         Float64 t_max;        // maximum allowable tension
-         bool b_t_max;         // true if max allowable tension is applicable
-
-         // Get allowable tension stress parameters
-         pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,false/*without rebar*/,bIsTopInPTZ,&t,&b_t_max,&t_max);
-
-         if ( sysFlags<int>::IsSet(fPTZTop,PTZ_TOP_YES) )
+         if ( b_t_max )
          {
-            (*pPara) << _T("Top of Deck - Allowable tensile stress in the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,topLocation,0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsTopInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Top of Deck - Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               *pPara << RPT_FC;
-
-               fAllowableTop  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,topLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
+            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
          }
 
-         if ( sysFlags<int>::IsSet(fPTZTop,PTZ_TOP_NO) )
+         Float64 fAllowable = pAllowable->GetDeckAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/);
+         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+
+         if ( pGirderArtifact->WasDeckWithRebarAllowableStressUsed(intervalIdx,limitState) )
          {
-            (*pPara) << _T("Top of Deck - Allowable tensile stress in areas other than the precompressed tensile zone");
+            Float64 t_with_rebar; // allowable tension when sufficient rebar is used
+            pAllowable->GetDeckAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);
+            fAllowable = pAllowable->GetDeckAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/);
 
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
+            (*pPara) << _T("Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone = ") 
+                     << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable)
+                     << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
-            *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,topLocation,bIsClosure?POI_CLOSURE:0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsTopInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Top of Deck - Allowable tensile stress in areas with sufficient bonded reinforcement in areas other than the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-                *pPara << RPT_FC;
-
-               fAllowableTop  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,topLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
          }
       }
-
-      bool bIsBotApplicable = pSegmentArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension,botLocation);
-
-      if ( bIsBotApplicable )
+      else
       {
-         // stresses are checked in the bottom of the girder so report the
-         // allowable tension for the bottom of the girder
+         (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
 
-         Float64 t;            // tension coefficient
-         Float64 t_max;        // maximum allowable tension
-         bool b_t_max;         // true if max allowable tension is applicable
-
-         // Get allowable tension stress parameters
-         pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,false/*without rebar*/,bIsBotInPTZ,&t,&b_t_max,&t_max);
-
-         if ( sysFlags<int>::IsSet(fPTZBottom,PTZ_BOTTOM_YES) )
+         if ( b_t_max )
          {
-            (*pPara) << _T("Bottom of Deck - Allowable tensile stress in the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,botLocation,0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsBotInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Bottom of Deck - Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               *pPara << RPT_FC;
-
-               fAllowableBot  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,botLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
+            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
          }
 
-         if ( sysFlags<int>::IsSet(fPTZBottom,PTZ_BOTTOM_NO) )
-         {
-            (*pPara) << _T("Bottom of Deck - Allowable tensile stress in areas other than the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,botLocation,0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsBotInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Bottom of Deck - Allowable tensile stress in areas with sufficient bonded reinforcement in areas other than the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               *pPara << RPT_FC;
-
-               fAllowableBot  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,botLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
-         }
+         Float64 fAllowable = pAllowable->GetDeckAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/);
+         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
       }
    }
 
    //
    // Required Strength
    //
-   Float64 fc_reqd;
-   if ( segIdx == ALL_SEGMENTS )
-   {
-      fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength(intervalIdx,limitState);
-   }
-   else
-   {
-      fc_reqd = pSegmentArtifact->GetRequiredDeckConcreteStrength(intervalIdx,limitState);
-   }
+   Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength(intervalIdx,limitState);
 
    if ( 0 < fc_reqd )
    {
@@ -1335,95 +1137,24 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression));
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,artifactIdx);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
+      ATLASSERT(!poi.HasAttribute(POI_CLOSURE));
 
-      bool bFci;
-      if ( poi.HasAttribute(POI_CLOSURE) )
-      {
-         // if POI is at a closure joint, use f'ci for all intervals up to and including
-         // when the closure joint becomes composite (initial loading of closure joint)
-         // otherwise use f'c
-         IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(poi.GetSegmentKey());
-         bFci = (intervalIdx <= compositeClosureIntervalIdx ? true : false);
-      }
+      // use f'ci if this is at release, otherwise use f'c
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      bool bFci = (intervalIdx == releaseIntervalIdx ? true : false);
+
+      Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
+      Float64 fAllowable = pAllowable->GetSegmentAllowableCompressionStress(poi,intervalIdx,limitState);
+
+      *pPara << _T("Allowable compressive stress = -") << c;
+
+      if ( bFci )
+         (*pPara) << RPT_FCI;
       else
-      {
-         // Not at a closure joint... use f'ci if this is at release, otherwise use f'c
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-         bFci = (intervalIdx == releaseIntervalIdx ? true : false);
-      }
-
-      Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,topLocation,intervalIdx,limitState);
-
-      bool bIsTopApplicable = pArtifact->IsApplicable(topLocation);
-      bool bIsBotApplicable = pArtifact->IsApplicable(botLocation);
-
-      Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-      Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-      if ( bIsTopApplicable && bIsBotApplicable )
-      {
-         // Compression stress is applicable at top and bottom... only want to report
-         // allowable once if it is the same value
-         if ( IsEqual(fAllowableTop,fAllowableBot) )
-         {
-            *pPara << _T("Allowable compressive stress = -") << c;
-            if (bFci)
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            *pPara << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-         }
-         else
-         {
-            // Not the same value... report each one individually
-
-            *pPara << _T("Top of Girder - Allowable compressive stress = -") << c;
-            if (bFci)
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            *pPara << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-
-            *pPara << _T("Bottom of Girder - Allowable compressive stress = -") << c;
-            if (bFci)
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            *pPara << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-         }
-      }
-      else
-      {
-         // Stress check only applicable at the top or the bottom (not both)
-         if ( bIsTopApplicable )
-         {
-            *pPara << _T("Top of Girder - Allowable compressive stress = -") << c;
-            if (bFci)
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            *pPara << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-         }
-
-         if ( bIsBotApplicable )
-         {
-            *pPara << _T("Bottom of Girder - Allowable compressive stress = -") << c;
-            if (bFci)
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            *pPara << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-         }
-      }
+         (*pPara) << RPT_FC;
+      
+      *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
    }
-
-   int fPTZTop    = pSegmentArtifact->GetPrecompressedTensileZone(intervalIdx,topLocation);
-   int fPTZBottom = pSegmentArtifact->GetPrecompressedTensileZone(intervalIdx,botLocation);
 
    //
    // Tension
@@ -1433,228 +1164,74 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension));
       pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx);
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
+      ATLASSERT( !poi.HasAttribute(POI_CLOSURE) );
+      
+      // use f'ci if this is at release, otherwise use f'c
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+      bool bFci = (intervalIdx == releaseIntervalIdx ? true : false);
 
-      bool bIsClosure = poi.HasAttribute(POI_CLOSURE);
+      bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
+      bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval ? true : false);
 
-      bool bFci;
-      if ( bIsClosure )
+      Float64 t;            // tension coefficient
+      Float64 t_max;        // maximum allowable tension
+      bool b_t_max;         // true if max allowable tension is applicable
+      pAllowable->GetSegmentAllowableTensionStressCoefficient(poi,intervalIdx,limitState,false/*without rebar*/,&t,&b_t_max,&t_max);
+
+      if ( bIsStressingInterval )
       {
-         // if POI is at a closure joint, use f'ci for all intervals up to and including
-         // when the closure joint becomes composite (initial loading of closure joint)
-         // otherwise use f'c
-         IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(poi.GetSegmentKey());
-         bFci = (intervalIdx <= compositeClosureIntervalIdx ? true : false);
+         (*pPara) << _T("Allowable tensile stress in areas other than the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t) << symbol(ROOT);
+         
+         if ( bFci )
+            (*pPara) << RPT_FCI;
+         else
+            (*pPara) << RPT_FC;
+
+         if ( b_t_max )
+         {
+            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
+         }
+
+         Float64 fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/);
+         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+
+         if ( pSegmentArtifact->WasSegmentWithRebarAllowableStressUsed(intervalIdx,limitState) )
+         {
+            Float64 t_with_rebar; // allowable tension when sufficient rebar is used
+            pAllowable->GetSegmentAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);
+            fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/);
+
+            (*pPara) << _T("Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone = ") 
+                     << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
+
+            if ( bFci )
+               (*pPara) << RPT_FCI;
+            else
+               (*pPara) << RPT_FC;
+
+            (*pPara) << _T(" = ") << stress_u.SetValue(fAllowable)
+                     << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+
+         }
       }
       else
       {
-         // Not at a closure joint... use f'ci if this is at release, otherwise use f'c
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-         bFci = (intervalIdx == releaseIntervalIdx ? true : false);
-      }
+         (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t) << symbol(ROOT);
 
-      bool bIsTopInPTZ = pArtifact->IsInPrecompressedTensileZone(topLocation);
-      bool bIsBotInPTZ = pArtifact->IsInPrecompressedTensileZone(botLocation);
+         if ( bFci )
+            (*pPara) << RPT_FCI;
+         else
+            (*pPara) << RPT_FC;
 
-      bool bIsTopApplicable = pSegmentArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension,topLocation);
-
-      if ( bIsTopApplicable )
-      {
-         // stresses are checked in the top of the girder so report the
-         // allowable tension for the top of the girder
-
-         Float64 t;            // tension coefficient
-         Float64 t_max;        // maximum allowable tension
-         bool b_t_max;         // true if max allowable tension is applicable
-
-         // Get allowable tension stress parameters
-         pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,false/*without rebar*/,bIsTopInPTZ,&t,&b_t_max,&t_max);
-
-         if ( sysFlags<int>::IsSet(fPTZTop,PTZ_TOP_YES) )
+         if ( b_t_max )
          {
-            (*pPara) << _T("Top of Girder - Allowable tensile stress in the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            if ( bFci )
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,topLocation,bIsClosure?POI_CLOSURE:0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsTopInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Top of Girder - Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               if ( bFci )
-                  *pPara << RPT_FCI;
-               else
-                  *pPara << RPT_FC;
-
-               fAllowableTop  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,topLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
+            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
          }
 
-         if ( sysFlags<int>::IsSet(fPTZTop,PTZ_TOP_NO) )
-         {
-            (*pPara) << _T("Top of Girder - Allowable tensile stress in areas other than the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            if ( bFci )
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,topLocation,bIsClosure?POI_CLOSURE:0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsTopInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Top of Girder - Allowable tensile stress in areas with sufficient bonded reinforcement in areas other than the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               if ( bFci )
-                  *pPara << RPT_FCI;
-               else
-                  *pPara << RPT_FC;
-
-               fAllowableTop  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,topLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableTop);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
-         }
-      }
-
-      bool bIsBotApplicable = pSegmentArtifact->IsFlexuralStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension,botLocation);
-
-      if ( bIsBotApplicable )
-      {
-         // stresses are checked in the bottom of the girder so report the
-         // allowable tension for the bottom of the girder
-
-         Float64 t;            // tension coefficient
-         Float64 t_max;        // maximum allowable tension
-         bool b_t_max;         // true if max allowable tension is applicable
-
-         // Get allowable tension stress parameters
-         pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,false/*without rebar*/,bIsBotInPTZ,&t,&b_t_max,&t_max);
-
-         if ( sysFlags<int>::IsSet(fPTZBottom,PTZ_BOTTOM_YES) )
-         {
-            (*pPara) << _T("Bottom of Girder - Allowable tensile stress in the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            if ( bFci )
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,botLocation,bIsClosure?POI_CLOSURE:0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsBotInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Bottom of Girder - Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               if ( bFci )
-                  *pPara << RPT_FCI;
-               else
-                  *pPara << RPT_FC;
-
-               fAllowableBot  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,botLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
-         }
-
-         if ( sysFlags<int>::IsSet(fPTZBottom,PTZ_BOTTOM_NO) )
-         {
-            (*pPara) << _T("Bottom of Girder - Allowable tensile stress in areas other than the precompressed tensile zone");
-
-            (*pPara) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
-
-            if ( bFci )
-               *pPara << RPT_FCI;
-            else
-               *pPara << RPT_FC;
-
-            if ( b_t_max )
-               *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-
-            Float64 fAllowableTop = pArtifact->GetCapacity(topLocation);
-            Float64 fAllowableBot = pArtifact->GetCapacity(botLocation);
-
-            *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot) << rptNewLine;
-
-            // report allowable stress if the with rebar stress was used anywhere in the segment
-            if ( pSegmentArtifact->WasWithRebarAllowableStressUsed(intervalIdx,limitState,botLocation,bIsClosure?POI_CLOSURE:0) )
-            {
-               Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-               pAllowable->GetAllowableTensionStressCoefficient(poi,topLocation,intervalIdx,limitState,true/*with rebar*/,bIsBotInPTZ,&t_with_rebar,&b_t_max,&t_max);
-
-               (*pPara) << _T("Bottom of Girder - Allowable tensile stress in areas with sufficient bonded reinforcement in areas other than the precompressed tensile zone");
-            
-               (*pPara) << _T(" = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT);
-
-               if ( bFci )
-                  *pPara << RPT_FCI;
-               else
-                  *pPara << RPT_FC;
-
-               fAllowableBot  = pSegmentArtifact->GetCapacityWithRebar(intervalIdx,limitState,botLocation);
-               *pPara  << _T(" = ") << stress_u.SetValue(fAllowableBot);
-
-               *pPara << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.");
-
-               *pPara << rptNewLine;
-            }
-         }
+         Float64 fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/);
+         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
       }
    }
 
@@ -1662,6 +1239,156 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    // Required Strength
    //
    Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(intervalIdx,limitState);
+   if ( 0 < fc_reqd )
+   {
+      *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
+   }
+   else if ( IsZero(fc_reqd) )
+   {
+      // do nothing if exactly zero
+   }
+   else
+   {
+      *pPara << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
+   }
+}
+
+void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParagraph* pPara, 
+                                           IBroker* pBroker,
+                                           const pgsSegmentArtifact* pSegmentArtifact,
+                                           IndexType artifactIdx,
+                                           IEAFDisplayUnits* pDisplayUnits,
+                                           IntervalIndexType intervalIdx,
+                                           pgsTypes::LimitState limitState) const
+{
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress,   pDisplayUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+
+   const CSegmentKey& segmentKey(pSegmentArtifact->GetSegmentKey());
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   const pgsFlexuralStressArtifact* pArtifact;
+
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+
+   //
+   // Compression
+   //
+   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) )
+   {
+      ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Compression));
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,artifactIdx);
+      const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
+      ATLASSERT(poi.HasAttribute(POI_CLOSURE));
+
+      // use f'ci for all intervals up to and including
+      // when the closure joint becomes composite (initial loading of closure joint)
+      // otherwise use f'c
+      IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
+      bool bFci = (intervalIdx <= compositeClosureIntervalIdx ? true : false);
+
+      Float64 c = pAllowable->GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
+      Float64 fAllowable = pAllowable->GetClosureJointAllowableCompressionStress(poi,intervalIdx,limitState);
+      *pPara << _T("Allowable compressive stress = -") << c;
+      if (bFci)
+         *pPara << RPT_FCI;
+      else
+         *pPara << RPT_FC;
+
+      *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+   }
+
+   //
+   // Tension
+   //
+   if ( pAllowable->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension) )
+   {
+      ATLASSERT( 0 < pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension));
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx);
+      const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
+      ATLASSERT(poi.HasAttribute(POI_CLOSURE));
+
+      // use f'ci for all intervals up to and including
+      // when the closure joint becomes composite (initial loading of closure joint)
+      // otherwise use f'c
+      IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(poi.GetSegmentKey());
+      bool bFci = (intervalIdx <= compositeClosureIntervalIdx ? true : false);
+
+      Float64 t;            // tension coefficient
+      Float64 t_max;        // maximum allowable tension
+      bool b_t_max;         // true if max allowable tension is applicable
+
+      // Precompressed tensile zone
+      pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,false/*without rebar*/,true/*in PTZ*/,&t,&b_t_max,&t_max);
+
+      (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t) << symbol(ROOT);
+         
+      if ( bFci )
+         *pPara << RPT_FCI;
+      else
+         *pPara << RPT_FC;
+
+      if ( b_t_max )
+      {
+         *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
+      }
+
+      Float64 fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/,true/*in PTZ*/);
+      *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+
+      if ( pSegmentArtifact->WasClosureJointWithRebarAllowableStressUsed(intervalIdx,limitState,true/*in PTZ*/) )
+      {
+         Float64 t_with_rebar; // allowable tension when sufficient rebar is used
+         pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,true/*in PTZ*/,&t_with_rebar,&b_t_max,&t_max);
+         fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/,true/*in PTZ*/);
+
+         (*pPara) << _T("Allowable tensile stress in joints with minimum bonded auxiliary reinforcement in the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable)
+                  << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+
+      }
+
+
+      // Other than Precompressed tensile zone
+      pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,false/*without rebar*/,false/*not in PTZ*/,&t,&b_t_max,&t_max);
+
+      (*pPara) << _T("Allowable tensile stress in areas other than the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t) << symbol(ROOT);
+         
+      if ( bFci )
+         *pPara << RPT_FCI;
+      else
+         *pPara << RPT_FC;
+
+      if ( b_t_max )
+      {
+         *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
+      }
+
+      fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi,intervalIdx,limitState,false/*without rebar*/,false/*not in PTZ*/);
+      *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+
+      if ( pSegmentArtifact->WasClosureJointWithRebarAllowableStressUsed(intervalIdx,limitState,false/*not in PTZ*/) )
+      {
+         Float64 t_with_rebar; // allowable tension when sufficient rebar is used
+         pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,false/*not in PTZ*/,&t_with_rebar,&b_t_max,&t_max);
+         fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/,false/*not in PTZ*/);
+
+         (*pPara) << _T("Allowable tensile stress in joints with minimum bonded auxiliary reinforcement in areas other than the precompressed tensile zone = ") 
+                  << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable)
+                  << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+
+      }
+   }
+
+   //
+   // Required Strength
+   //
+   Float64 fc_reqd = pSegmentArtifact->GetRequiredClosureJointConcreteStrength(intervalIdx,limitState);
    if ( 0 < fc_reqd )
    {
       *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;

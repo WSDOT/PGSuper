@@ -28,6 +28,7 @@
 #include <PGSuperException.h>
 
 #include <IFace\Project.h>
+#include <IFace\BeamFactory.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -454,9 +455,10 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
                IsBridgeSpacing(m_GirderSpacingType),
                m_SlabOffsetType == pgsTypes::sotBridge);
    }
-   catch(...)
+   catch(HRESULT)
    {
       ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    ASSERT_VALID;
@@ -2200,6 +2202,49 @@ const GirderLibraryEntry* CBridgeDescription2::GetGirderLibraryEntry() const
 void CBridgeDescription2::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
 {
    m_pGirderLibraryEntry = pEntry;
+   if ( m_pGirderLibraryEntry != pEntry )
+   {
+      // girder entry changed...
+      m_pGirderLibraryEntry = pEntry;
+
+      if ( m_pGirderLibraryEntry != NULL )
+      {
+         CComPtr<IBeamFactory> beamFactory;
+         m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+
+         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(beamFactory);
+         if ( splicedBeamFactory )
+         {
+            std::vector<pgsTypes::SegmentVariationType> variations = splicedBeamFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());
+
+            // need to make sure the segment variation type is consistent with the
+            // types available for this girder library entry
+            std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
+            std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
+            for ( ; grpIter != grpIterEnd; grpIter++ )
+            {
+               CGirderGroupData* pGroup = *grpIter;
+               GirderIndexType nGirders = pGroup->GetGirderCount();
+               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+               {
+                  CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+                  SegmentIndexType nSegments = pGirder->GetSegmentCount();
+                  for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+                  {
+                     CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+                     std::vector<pgsTypes::SegmentVariationType>::iterator found = std::find(variations.begin(),variations.end(),pSegment->GetVariationType());
+                     if ( found == variations.end() )
+                     {
+                        // the current setting fot the segment variation is no longer a valid
+                        // value, so change it to the first available value
+                        pSegment->SetVariationType(variations.front());
+                     } // end if
+                  } // next segment
+               } // next girder
+            } // next group
+         } // if spliced girder
+      } // if not null
+   } // if lib entry different
 }
 
 void CBridgeDescription2::SetGirderOrientation(pgsTypes::GirderOrientationType gdrOrientation)

@@ -167,8 +167,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
-   case YTop:
-   case YBottom:
+   case Centroid:
       {
       const unitmgtLengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new LengthTool(heightUnit);
@@ -178,8 +177,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
-   case TopSectionModulus:
-   case BottomSectionModulus:
+   case SectionModulus:
       {
       const unitmgtLength3Data& sectionModulusUnit = pDisplayUnits->GetSectModulusUnit();
       m_pYFormat = new SectionModulusTool(sectionModulusUnit);
@@ -189,8 +187,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
-   case TopKernPoint:
-   case BottomKernPoint:
+   case KernPoint:
       {
       const unitmgtLengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new LengthTool(heightUnit);
@@ -253,9 +250,9 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Girde
 
    CString strGraphTitle;
    if ( grpIdx == ALL_GROUPS )
-      strGraphTitle.Format(_T("Girder %s - %s - %s"),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),strInterval);
+      strGraphTitle.Format(_T("Girder %s - %s - Interval %d: %s"),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
    else
-      strGraphTitle.Format(_T("Group %d Girder %s - %s - %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),strInterval);
+      strGraphTitle.Format(_T("Group %d Girder %s - %s - Interval %d: %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
    
    m_Graph.SetTitle(std::_tstring(strGraphTitle));
 }
@@ -282,7 +279,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
       return;
    }
 
-   IndexType dataSeries = InitializeGraph(propertyType);
+   IndexType dataSeries1, dataSeries2;
+   InitializeGraph(propertyType,&dataSeries1,&dataSeries2);
 
    GET_IFACE(ISectionProperties,pSectProps);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -298,47 +296,38 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
    for ( ; iter != end; iter++, xIter++ )
    {
       pgsPointOfInterest& poi = *iter;
-      Float64 value;
+      Float64 value1,value2;
       switch(propertyType)
       {
       case Height:
-         value = pSectProps->GetHg(intervalIdx,poi);
+         value1 = pSectProps->GetHg(intervalIdx,poi);
          break;
          
       case Area:
-         value = pSectProps->GetAg(sectPropType,intervalIdx,poi);
+         value1 = pSectProps->GetAg(sectPropType,intervalIdx,poi);
          break;
          
       case MomentOfInertia:
-         value = pSectProps->GetIx(sectPropType,intervalIdx,poi);
+         value1 = pSectProps->GetIx(sectPropType,intervalIdx,poi);
          break;
 
-      case YTop:
-         value = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+      case Centroid:
+         value1 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
+         value2 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
 
-      case YBottom:
-         value = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
+      case SectionModulus:
+         value1 = fabs(pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck));
+         value2 = fabs(pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder));
          break;
 
-      case TopSectionModulus:
-         value = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
-         break;
-
-      case BottomSectionModulus:
-         value = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
-         break;
-
-      case TopKernPoint:
-         value = pSectProps->GetKt(sectPropType,intervalIdx,poi);
-         break;
-
-      case BottomKernPoint:
-         value = pSectProps->GetKb(sectPropType,intervalIdx,poi);
+      case KernPoint:
+         value1 = pSectProps->GetKt(sectPropType,intervalIdx,poi);
+         value2 = pSectProps->GetKb(sectPropType,intervalIdx,poi);
          break;
 
       case StrandEccentricity:
-         value = pStrandGeom->GetEccentricity(sectPropType,intervalIdx,poi,true,&nEffectiveStrands);
+         value1 = pStrandGeom->GetEccentricity(sectPropType,intervalIdx,poi,true,&nEffectiveStrands);
          break;
 
       case TendonEccentricity:
@@ -347,16 +336,17 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 
       case EffectiveFlangeWidth:
          if ( intervalIdx < pIntervals->GetCompositeDeckInterval() )
-            value = 0;
+            value1 = 0;
          else
-            value = pSectProps->GetEffectiveFlangeWidth(poi);
+            value1 = pSectProps->GetEffectiveFlangeWidth(poi);
          break;
 
       case Fc:
          if ( poi.HasAttribute(POI_CLOSURE) )
-            value = pMaterials->GetClosureJointFc(poi.GetSegmentKey(),intervalIdx);
+            value1 = pMaterials->GetClosureJointFc(poi.GetSegmentKey(),intervalIdx);
          else
-            value = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
+            value1 = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
+         break;
 
       default:
          ATLASSERT(false);
@@ -364,7 +354,15 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 
       Float64 X = *xIter;
 
-      AddGraphPoint(dataSeries,X,value);
+      if ( dataSeries1 != INVALID_INDEX )
+      {
+         AddGraphPoint(dataSeries1,X,value1);
+      }
+
+      if ( dataSeries2 != INVALID_INDEX )
+      {
+         AddGraphPoint(dataSeries2,X,value2);
+      }
    }
 }
 
@@ -436,28 +434,16 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       return _T("Moment of Inertia");
       break;
 
-   case YTop:
-      return _T("Centroid from Top");
+   case Centroid:
+      return _T("Centroid");
       break;
 
-   case YBottom:
-      return _T("Centroid from Bottom");
+   case SectionModulus:
+      return _T("Section Modulus");
       break;
 
-   case TopSectionModulus:
-      return _T("Top Section Modulus");
-      break;
-
-   case BottomSectionModulus:
-      return _T("Bottom Section Modulus");
-      break;
-
-   case TopKernPoint:
-      return _T("Top Kern Point");
-      break;
-
-   case BottomKernPoint:
-      return _T("Bottom Kern Point");
+   case KernPoint:
+      return _T("Kern Point");
       break;
 
    case StrandEccentricity:
@@ -487,7 +473,42 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
    return _T("");
 }
 
-IndexType CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType)
+void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,IndexType* pGraph1,IndexType* pGraph2)
 {
-   return m_Graph.CreateDataSeries(GetPropertyLabel(propertyType),PS_SOLID,1,ORANGE);
+   *pGraph1 = INVALID_INDEX;
+   *pGraph2 = INVALID_INDEX;
+
+   std::_tstring strPropertyLabel1( GetPropertyLabel(propertyType) );
+   std::_tstring strPropertyLabel2(strPropertyLabel1);
+   switch(propertyType)
+   {
+   case Height:
+   case Area:
+   case MomentOfInertia:
+   case StrandEccentricity:
+   case TendonEccentricity:
+   case TendonProfile:
+   case EffectiveFlangeWidth:
+   case Fc:
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      break;
+
+   case Centroid:
+      strPropertyLabel1 += _T(" from Top");
+      strPropertyLabel2 += _T(" from Bottom");
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+      break;
+
+   case SectionModulus:
+   case KernPoint:
+      strPropertyLabel1 = _T("Top ") + strPropertyLabel1;
+      strPropertyLabel2 = _T("Bottom ") + strPropertyLabel2;
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,1,ORANGE);
+      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,1,BLUE);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
 }

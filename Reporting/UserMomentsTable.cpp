@@ -70,7 +70,7 @@ CUserMomentsTable& CUserMomentsTable::operator= (const CUserMomentsTable& rOther
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -78,7 +78,10 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>(_T("Moments - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   CString strTitle;
+   strTitle.Format(_T("Moment due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    if (girderKey.groupIndex == ALL_GROUPS)
    {
@@ -95,11 +98,6 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
@@ -114,23 +112,19 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
-      std::vector<Float64> minDC1, maxDC1, minDC2, maxDC2;
-      std::vector<Float64> minDW1, maxDW1, minDW2, maxDW2;
-      std::vector<Float64> minLL3, maxLL3;
+      std::vector<Float64> minDC, maxDC;
+      std::vector<Float64> minDW, maxDW;
+      std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDC, vPoi, minBAT );
-      maxDC2 = pForces2->GetMoment( railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC2 = pForces2->GetMoment( railingSystemIntervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, maxBAT );
+      minDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, minBAT );
 
+      maxDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, maxBAT );
+      minDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, minBAT );
 
-      maxDW1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxDW2 = pForces2->GetMoment( railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW2 = pForces2->GetMoment( railingSystemIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxLL3 = pForces2->GetMoment( liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT );
-      minLL3 = pForces2->GetMoment( liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT );
+      maxLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, maxBAT );
+      minLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, minBAT );
 
       // Fill up the table
       IndexType index = 0;
@@ -145,26 +139,18 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
 
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col++) << moment.SetValue( maxDC1[index] );
-            (*p_table)(row,col++) << moment.SetValue( minDC1[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxDW1[index] );
-            (*p_table)(row,col++) << moment.SetValue( minDW1[index] );
-
-            (*p_table)(row,col++) << moment.SetValue( maxDC2[index] );
-            (*p_table)(row,col++) << moment.SetValue( minDC2[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxDW2[index] );
-            (*p_table)(row,col++) << moment.SetValue( minDW2[index] );
-            
-            (*p_table)(row,col++) << moment.SetValue( maxLL3[index] );
-            (*p_table)(row,col++) << moment.SetValue( minLL3[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDC[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDW[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxLLIM[index] );
+            (*p_table)(row,col++) << moment.SetValue( minLLIM[index] );
          }
          else
          {
-            (*p_table)(row,col++) << moment.SetValue( maxDC1[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxDW1[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxDC2[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxDW2[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxLL3[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDC[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDW[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxLLIM[index] );
          }
 
          row++;

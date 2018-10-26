@@ -189,6 +189,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
+      std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
+
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *p << _T("Load Responses - Bridge Site")<<rptNewLine;
       p->SetName(_T("Bridge Site Results"));
@@ -206,7 +208,16 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
       if (bAreThereUserLoads)
       {
-         *p << CUserMomentsTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
+         {
+            IntervalIndexType intervalIdx = *iter;
+            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+            {
+               *p << CUserMomentsTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+            }
+         }
       }
 
       CTSRemovalMomentsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
@@ -226,7 +237,17 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
       if (bAreThereUserLoads)
       {
-         *p << CUserShearTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
+         {
+            IntervalIndexType intervalIdx = *iter;
+
+            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+            {
+               *p << CUserShearTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+            }
+         }
       }
 
       CTSRemovalShearTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
@@ -264,15 +285,21 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
       if (bAreThereUserLoads)
       {
-         *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,pDisplayUnits) << rptNewLine;
-         if(bDoBearingReaction)
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
          {
-            *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,pDisplayUnits) << rptNewLine;
+            IntervalIndexType intervalIdx = *iter;
+            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+            {
+               *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+               if(bDoBearingReaction)
+               {
+                  *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+               }
+            }
          }
       }
-
-#pragma Reminder("Report reactions due to temporary support removal")
-      //CTSRemovalReactionsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
 
       // Product Displacements
       if ( bDesign )
@@ -290,7 +317,17 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
          if (bAreThereUserLoads)
          {
-            *p << CUserDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+            for ( ; iter != end; iter++ )
+            {
+               IntervalIndexType intervalIdx = *iter;
+
+               if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+               {
+                  *p << CUserDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+               }
+            }
          }
 
          CTSRemovalDisplacementsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
@@ -309,7 +346,17 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
          if (bAreThereUserLoads)
          {
-            *p << CUserRotationTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+            for ( ; iter != end; iter++ )
+            {
+               IntervalIndexType intervalIdx = *iter;
+
+               if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+               {
+                  *p << CUserRotationTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+               }
+            }
          }
 
          CTSRemovalRotationTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
@@ -329,61 +376,63 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             *p << rptNewLine;
          }
       } // if design
-   } // next group
 
 
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   bool bDoBearingReaction, bDummy;
-   bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(lastIntervalIdx,girderKey,&bDummy,&bDummy);
+      bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(lastIntervalIdx,thisGirderKey,&bDummy,&bDummy);
 
-   // Load Combinations (DC, DW, etc) & Limit States
-   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
-      CString strName;
-      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-      p->SetName(strName);
-      *p << p->GetName();
-
-      if ( liveLoadIntervalIdx == intervalIdx )
+      // Load Combinations (DC, DW, etc) & Limit States
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
       {
-         CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
-      }
+         IntervalIndexType intervalIdx = *iter;
 
-      CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-      CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-      if ( castDeckIntervalIdx <= intervalIdx )
-      {
-         CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
-         if( bDoBearingReaction )
+         p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << p;
+         CString strName;
+         strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         p->SetName(strName);
+         *p << p->GetName() << rptNewLine;
+
+         if ( liveLoadIntervalIdx == intervalIdx )
          {
-            CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
+            CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,thisGirderKey,pDisplayUnits);
          }
 
-         if ( liveLoadIntervalIdx <= intervalIdx )
+         CCombinedMomentsTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+         CCombinedShearTable().Build(  pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+         if ( castDeckIntervalIdx <= intervalIdx )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-            *pChapter << p;
-            *p << _T("Live Load Reactions Without Impact") << rptNewLine;
-            p->SetName(_T("Live Load Reactions Without Impact"));
-            CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
-            if(bDoBearingReaction)
+            CCombinedReactionTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
+            if( bDoBearingReaction )
             {
-               CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
+               CCombinedReactionTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
             }
 
-            if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
+            if ( liveLoadIntervalIdx <= intervalIdx )
             {
                p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
                *pChapter << p;
-               *p << _T("Concurrent Shears") << rptNewLine;
-               p->SetName(_T("Concurrent Shears"));
-               CConcurrentShearTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,liveLoadIntervalIdx, analysisType);
+               *p << _T("Live Load Reactions Without Impact") << rptNewLine;
+               p->SetName(_T("Live Load Reactions Without Impact"));
+               CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,thisGirderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
+               if(bDoBearingReaction)
+               {
+                  CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,thisGirderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
+               }
+
+               if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
+               {
+                  p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+                  *pChapter << p;
+                  *p << _T("Concurrent Shears") << rptNewLine;
+                  p->SetName(_T("Concurrent Shears"));
+                  CConcurrentShearTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,liveLoadIntervalIdx, analysisType);
+               }
             }
          }
-      }
-   } // next interval
+      } // next interval
+   } // next group
 
    return pChapter;
 }

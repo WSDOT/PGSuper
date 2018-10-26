@@ -154,7 +154,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,pDisplayUnits) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
    }
 
    // Combined reactions
@@ -203,7 +203,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    if (are_user_loads)
    {
       *p << rptNewLine;
-      *p << CUserRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),pDisplayUnits) << rptNewLine;
+      *p << CUserRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),intervalIdx,pDisplayUnits) << rptNewLine;
    }
 
    p = new rptParagraph;

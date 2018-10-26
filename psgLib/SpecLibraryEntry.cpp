@@ -274,6 +274,15 @@ m_ClosureCompStressFatigue(0.40)
    m_PhiShear[pgsTypes::SandLightweight] = 0.7;
    m_PhiShear[pgsTypes::AllLightweight]  = 0.7;
 
+   m_PhiClosureJointFlexure[pgsTypes::Normal]          = 0.95;
+   m_PhiClosureJointFlexure[pgsTypes::SandLightweight] = 0.90;
+   m_PhiClosureJointFlexure[pgsTypes::AllLightweight]  = 0.90;
+
+   m_PhiClosureJointShear[pgsTypes::Normal]          = 0.90;
+   m_PhiClosureJointShear[pgsTypes::SandLightweight] = 0.70;
+   m_PhiClosureJointShear[pgsTypes::AllLightweight]  = 0.70;
+
+
    m_MaxSlabFc[pgsTypes::Normal]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
    m_MaxSegmentFci[pgsTypes::Normal]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
    m_MaxSegmentFc[pgsTypes::Normal]          = ::ConvertToSysUnits(10.0,unitMeasure::KSI);
@@ -517,11 +526,11 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    //pSave->Property(_T("IncludeRebar_MomentCapacity"),m_bIncludeRebar_Moment); // added for version 7.0
 
    // added in version 37
-   pSave->BeginUnit(_T("MomentCapacity"),2.0);
+   pSave->BeginUnit(_T("MomentCapacity"),3.0);
       pSave->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
       pSave->Property(_T("IncludeRebarForCapacity"),m_bIncludeRebar_Moment);
       pSave->Property(_T("IncludeNoncompositeMomentForNegMomentDesign"),m_bIncludeForNegMoment); // added version 2 of this data block
-      pSave->BeginUnit(_T("ReductionFactor"),1.0);
+      pSave->BeginUnit(_T("ResistanceFactor"),1.0);
          pSave->BeginUnit(_T("NormalWeight"),2.0);
             pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::Normal]);
             pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::Normal]);
@@ -540,7 +549,20 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
             pSave->Property(_T("TensionControlled_Spliced"),m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]);
             pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::SandLightweight]);
          pSave->EndUnit(); // SandLightweight
-      pSave->EndUnit(); // ReductionFactor
+      pSave->EndUnit(); // ResistanceFactor
+
+      // added ClosureJointResistanceFactor in version 3.0 of MomentCapacity data block
+      pSave->BeginUnit(_T("ClosureJointResistanceFactor"),1.0);
+         pSave->BeginUnit(_T("NormalWeight"),1.0);
+            pSave->Property(_T("FullyBondedTendons"),m_PhiClosureJointFlexure[pgsTypes::Normal]);
+         pSave->EndUnit(); // NormalWeight
+         pSave->BeginUnit(_T("AllLightweight"),1.0);
+            pSave->Property(_T("FullyBondedTendons"),m_PhiClosureJointFlexure[pgsTypes::AllLightweight]);
+         pSave->EndUnit(); // AllLightweight
+         pSave->BeginUnit(_T("SandLightweight"),1.0);
+            pSave->Property(_T("FullyBondedTendons"),m_PhiClosureJointFlexure[pgsTypes::SandLightweight]);
+         pSave->EndUnit(); // SandLightweight
+      pSave->EndUnit(); // ClosureJointResistanceFactor
    pSave->EndUnit(); // MomentCapacity
 
    // changed in version 37
@@ -737,7 +759,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 //   pSave->Property(_T("SlabOffsetMethod"),(long)m_SlabOffsetMethod);
 
    // reconfigured in version 37 and added Phi
-   pSave->BeginUnit(_T("Shear"),1.0);
+   pSave->BeginUnit(_T("Shear"),2.0);
       // moved here in version 37
       pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
 
@@ -748,13 +770,20 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("ShearFlowMethod"),(long)m_ShearFlowMethod);
       pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
 
-      // added inv ersion 37
-      pSave->BeginUnit(_T("ReductionFactor"),1.0);
+      // added in version 37
+      pSave->BeginUnit(_T("ResistanceFactor"),1.0);
          pSave->Property(_T("Normal"),m_PhiShear[pgsTypes::Normal]);
          pSave->Property(_T("AllLightweight"),m_PhiShear[pgsTypes::AllLightweight]);
          pSave->Property(_T("SandLightweight"),m_PhiShear[pgsTypes::SandLightweight]);
-      pSave->EndUnit(); // ReductionFactor
-   pSave->EndUnit(); // Shear
+      pSave->EndUnit(); // ResistanceFactor
+
+      // Added ClosureJointResistanceFactor in version 2 of Shear data block
+      pSave->BeginUnit(_T("ClosureJointResistanceFactor"),1.0);
+         pSave->Property(_T("Normal"),m_PhiClosureJointShear[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_PhiClosureJointShear[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_PhiClosureJointShear[pgsTypes::SandLightweight]);
+      pSave->EndUnit(); // ResistanceFactor
+pSave->EndUnit(); // Shear
 
    // added in version 26
    pSave->Property(_T("PedestrianLoad"),m_PedestrianLoad);
@@ -1505,8 +1534,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                m_bIncludeForNegMoment = (temp == 0 ? false : true);
             }
 
-            if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+            if ( mc_version < 3 )
+            {
+               if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+            else
+            {
+               // fixed spelling error in version 3 of MomentCapacity data block
+               if ( !pLoad->BeginUnit(_T("ResistanceFactor")) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->BeginUnit(_T("NormalWeight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1575,8 +1613,45 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
              if ( !pLoad->EndUnit() ) // SandLightweight
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-             if ( !pLoad->EndUnit() ) // ReductionFactor
+             if ( !pLoad->EndUnit() ) // ResistanceFactor
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+             if ( 2 < mc_version )
+             {
+                // added ClosureJointResistanceFactor in version 3 of the MomentCapacity data block
+                if ( !pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->BeginUnit(_T("NormalWeight")) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::Normal]) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->EndUnit() ) // NormalWeight
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->BeginUnit(_T("AllLightweight")) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::AllLightweight]) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->EndUnit() ) // AllLightweight
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->BeginUnit(_T("SandLightweight")) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::SandLightweight]) )
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->EndUnit() ) // SandLightweight
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+
+                if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
+                   THROW_LOAD(InvalidFileFormat,pLoad);
+             }
 
         if ( !pLoad->EndUnit() ) // MomentCapacity
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2394,6 +2469,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->BeginUnit(_T("Shear")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
+         Float64 shear_version = pLoad->GetVersion();
+
          if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
             THROW_LOAD(InvalidFileFormat,pLoad);
          m_LongReinfShearMethod = temp;
@@ -2444,8 +2521,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == scmWSDOT2007 )
             m_ShearCapacityMethod = scmBTEquations;
 
-         if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         // Fixed misspelling in version 2 of the Shear data block
+         if ( shear_version < 2 )
+         {
+            if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         else
+         {
+            if ( !pLoad->BeginUnit(_T("ResistanceFactor")) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
             if ( !pLoad->Property(_T("Normal"),&m_PhiShear[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2456,8 +2542,27 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->Property(_T("SandLightweight"),&m_PhiShear[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->EndUnit() ) // ReductionFactor
+         if ( !pLoad->EndUnit() ) // ResistanceFactor
             THROW_LOAD(InvalidFileFormat,pLoad);
+
+         // Added ClosureJointResistanceFactor in version 2 of the Shear data block
+         if ( 1 < shear_version )
+         {
+            if ( !pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
+               THROW_LOAD(InvalidFileFormat,pLoad );
+
+            if ( !pLoad->Property(_T("Normal"),&m_PhiClosureJointShear[pgsTypes::Normal]) )
+               THROW_LOAD(InvalidFileFormat,pLoad );
+
+            if ( !pLoad->Property(_T("AllLightweight"),&m_PhiClosureJointShear[pgsTypes::AllLightweight]) )
+               THROW_LOAD(InvalidFileFormat,pLoad );
+
+            if ( !pLoad->Property(_T("SandLightweight"),&m_PhiClosureJointShear[pgsTypes::SandLightweight]) )
+               THROW_LOAD(InvalidFileFormat,pLoad );
+
+            if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
+               THROW_LOAD(InvalidFileFormat,pLoad );
+         }
 
          if ( !pLoad->EndUnit() ) // Shear
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2778,11 +2883,14 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    for ( int i = 0; i < 3; i++ )
    {
-      TESTD(m_PhiFlexureTensionPS[i],rOther.m_PhiFlexureTensionPS[i]);
-      TESTD(m_PhiFlexureTensionRC[i],rOther.m_PhiFlexureTensionRC[i]);
-      TESTD(m_PhiFlexureTensionSpliced[i],rOther.m_PhiFlexureTensionSpliced[i]);
-      TESTD(m_PhiFlexureCompression[i],rOther.m_PhiFlexureCompression[i]);
-      TESTD(m_PhiShear[i],rOther.m_PhiShear[i]);
+      TESTD(m_PhiFlexureTensionPS[i],      rOther.m_PhiFlexureTensionPS[i]);
+      TESTD(m_PhiFlexureTensionRC[i],      rOther.m_PhiFlexureTensionRC[i]);
+      TESTD(m_PhiFlexureTensionSpliced[i], rOther.m_PhiFlexureTensionSpliced[i]);
+      TESTD(m_PhiFlexureCompression[i],    rOther.m_PhiFlexureCompression[i]);
+      TESTD(m_PhiShear[i],                 rOther.m_PhiShear[i]);
+
+      TESTD(m_PhiClosureJointFlexure[i],rOther.m_PhiClosureJointFlexure[i]);
+      TESTD(m_PhiClosureJointShear[i],  rOther.m_PhiClosureJointShear[i]);
    }
 
    TEST( m_bIncludeForNegMoment, rOther.m_bIncludeForNegMoment);
@@ -4342,6 +4450,16 @@ void SpecLibraryEntry::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,F
    *phiCompression    = m_PhiFlexureCompression[type];
 }
 
+void SpecLibraryEntry::SetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type,Float64 phi)
+{
+   m_PhiClosureJointFlexure[type] = phi;
+}
+
+Float64 SpecLibraryEntry::GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const
+{
+   return m_PhiClosureJointFlexure[type];
+}
+
 void SpecLibraryEntry::SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi)
 {
    m_PhiShear[type] = phi;
@@ -4350,6 +4468,16 @@ void SpecLibraryEntry::SetShearResistanceFactor(pgsTypes::ConcreteType type,Floa
 Float64 SpecLibraryEntry::GetShearResistanceFactor(pgsTypes::ConcreteType type) const
 {
    return m_PhiShear[type];
+}
+
+void SpecLibraryEntry::SetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi)
+{
+   m_PhiClosureJointShear[type] = phi;
+}
+
+Float64 SpecLibraryEntry::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const
+{
+   return m_PhiClosureJointShear[type];
 }
 
 void SpecLibraryEntry::IncludeNoncompositeMomentsForNegMomentDesign(bool bInclude)
@@ -4730,6 +4858,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
       m_PhiFlexureTensionSpliced[i] = rOther.m_PhiFlexureTensionSpliced[i];
       m_PhiFlexureCompression[i]    = rOther.m_PhiFlexureCompression[i];
       m_PhiShear[i]                 = rOther.m_PhiShear[i];
+
+
+      m_PhiClosureJointFlexure[i] = rOther.m_PhiClosureJointFlexure[i];
+      m_PhiClosureJointShear[i]   = rOther.m_PhiClosureJointShear[i];
    }
 
    m_bIncludeForNegMoment = rOther.m_bIncludeForNegMoment;

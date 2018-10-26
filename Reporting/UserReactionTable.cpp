@@ -70,16 +70,21 @@ CUserReactionTable& CUserReactionTable::operator= (const CUserReactionTable& rOt
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                      ReactionTableType tableType, IEAFDisplayUnits* pDisplayUnits) const
+                                      ReactionTableType tableType, IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( (tableType==PierReactionsTable ? 
-                                                                                   _T("Total Girderline Reactions at Abutments and Piers - User Defined Loads") :
-                                                                                   _T("Girder Bearing Reactions - User Defined Loads") ),
-                                                                                  true,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   CString strTitle;
+   if ( tableType == PierReactionsTable )
+      strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   else
+      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
+                                                                                  true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
@@ -90,7 +95,6 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -125,12 +129,14 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         if (rctdr.DoReport(castDeckIntervalIdx))
+         if (rctdr.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftUserDC,       maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftUserDC,       minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftUserDW,       maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftUserDW,       minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,       maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,       minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,       maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,       minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserLLIM,    maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserLLIM,    minBAT ) );
          }
          else
          {
@@ -138,64 +144,22 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(railingSystemIntervalIdx))
-         {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftUserDC,       maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftUserDC,       minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftUserDW,       maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftUserDW,       minBAT ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
-         
-         if (rctdr.DoReport(liveLoadIntervalIdx))
-         {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( liveLoadIntervalIdx, reactionLocation, pftUserLLIM,    maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( liveLoadIntervalIdx, reactionLocation, pftUserLLIM,    minBAT ) );
-         }
-         else
-         {
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
          }
       }
       else
       {
-         if (rctdr.DoReport(castDeckIntervalIdx))
+         if (rctdr.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftUserDC,  maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftUserDW,  maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,  maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,  maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserLLIM,   maxBAT ) );
          }
          else
          {
             (*p_table)(row,col++) << RPT_NA;
             (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(railingSystemIntervalIdx))
-         {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftUserDC,  maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftUserDW,  maxBAT ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(liveLoadIntervalIdx))
-         {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( liveLoadIntervalIdx, reactionLocation, pftUserLLIM,   maxBAT ) );
-         }
-         else
-         {
             (*p_table)(row,col++) << RPT_NA;
          }
       }

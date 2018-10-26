@@ -72,7 +72,7 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
+rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strTableTitle,
                                             IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -81,10 +81,12 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   ATLASSERT( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx );
 
    location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Casting Yard Stresses"));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,strTableTitle);
 
    if (segmentKey.groupIndex == ALL_GROUPS)
    {
@@ -115,10 +117,17 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
+      if ( intervalIdx == releaseIntervalIdx )
+      {
+         (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
+      }
+      else
+      {
+         (*p_table)(row,0) << location.SetValue( POI_STORAGE_SEGMENT, poi );
+      }
 
       Float64 fTop, fBot;
-      pProductForces->GetStress(releaseIntervalIdx, pftGirder, poi, bat, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
+      pProductForces->GetStress(intervalIdx, pftGirder, poi, bat, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );
 

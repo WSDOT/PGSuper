@@ -218,8 +218,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    }
 
 	/* 5. STRAND COUNT */
-   StrandIndexType harpedCount   = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
-   StrandIndexType straightCount = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
+   StrandIndexType harpedCount   = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
+   StrandIndexType straightCount = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
 
 	StrandIndexType strandNum = harpedCount + straightCount;
 

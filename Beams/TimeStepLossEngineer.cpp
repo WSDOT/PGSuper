@@ -1346,18 +1346,18 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    {
       for (int i = 0; i < 3; i++ )
       {
-         tsDetails.Girder.fTop[i][ctIncremental] = tsDetails.Girder.dP[i]/tsDetails.Girder.An - tsDetails.Girder.dM[i]*tsDetails.Girder.Ytn/tsDetails.Girder.In;
-         tsDetails.Girder.fTop[i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Girder.fTop[i][ctCummulative] + tsDetails.Girder.fTop[i][ctIncremental];
+         tsDetails.Girder.f[pgsTypes::TopFace][i][ctIncremental] = tsDetails.Girder.dP[i]/tsDetails.Girder.An - tsDetails.Girder.dM[i]*tsDetails.Girder.Ytn/tsDetails.Girder.In;
+         tsDetails.Girder.f[pgsTypes::TopFace][i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Girder.f[pgsTypes::TopFace][i][ctCummulative] + tsDetails.Girder.f[pgsTypes::TopFace][i][ctIncremental];
          
-         tsDetails.Girder.fBot[i][ctIncremental] = tsDetails.Girder.dP[i]/tsDetails.Girder.An + tsDetails.Girder.dM[i]*tsDetails.Girder.Ybn/tsDetails.Girder.In;
-         tsDetails.Girder.fBot[i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Girder.fBot[i][ctCummulative] + tsDetails.Girder.fBot[i][ctIncremental];
+         tsDetails.Girder.f[pgsTypes::BottomFace][i][ctIncremental] = tsDetails.Girder.dP[i]/tsDetails.Girder.An + tsDetails.Girder.dM[i]*tsDetails.Girder.Ybn/tsDetails.Girder.In;
+         tsDetails.Girder.f[pgsTypes::BottomFace][i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Girder.f[pgsTypes::BottomFace][i][ctCummulative] + tsDetails.Girder.f[pgsTypes::BottomFace][i][ctIncremental];
       }
 
       Float64 Hg = tsDetails.Girder.Ybn + tsDetails.Girder.Ytn;
-      tsDetails.Girder.fTopLLMin = -MllMax*tsDetails.Ytr/tsDetails.Itr; // if MllMax > 0, causes compression in top of girder (fTopLLMin) and tension in bottom of girder (fTopLLMax)
-      tsDetails.Girder.fBotLLMax = MllMax*(Hg - tsDetails.Ytr)/tsDetails.Itr;
-      tsDetails.Girder.fTopLLMax = -MllMin*tsDetails.Ytr/tsDetails.Itr; // if MllMin < 0, causes tension in top of girder (fTopLLMax) and compression in botom of girder (fBotLLMin)
-      tsDetails.Girder.fBotLLMin = MllMin*(Hg - tsDetails.Ytr)/tsDetails.Itr;
+      tsDetails.Girder.fLLMin[pgsTypes::TopFace]    = -MllMax*tsDetails.Ytr/tsDetails.Itr; // if MllMax > 0, causes compression in top of girder (fLLMin[pgsTypes::TopFace]) and tension in bottom of girder (fLLMax[pgsTypes::TopFace])
+      tsDetails.Girder.fLLMax[pgsTypes::TopFace]    = -MllMin*tsDetails.Ytr/tsDetails.Itr; // if MllMin < 0, causes tension in top of girder (fLLMax[pgsTypes::TopFace]) and compression in botom of girder (fLLMin[pgsTypes::BottomFace])
+      tsDetails.Girder.fLLMin[pgsTypes::BottomFace] =  MllMin*(Hg - tsDetails.Ytr)/tsDetails.Itr;
+      tsDetails.Girder.fLLMax[pgsTypes::BottomFace] =  MllMax*(Hg - tsDetails.Ytr)/tsDetails.Itr;
    }
 
    if ( !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
@@ -1366,20 +1366,20 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       {
          for ( int i = 0; i < 3; i++ )
          {
-            tsDetails.Deck.fTop[i][ctIncremental] = tsDetails.Deck.dP[i]/tsDetails.Deck.An - tsDetails.Deck.dM[i]*tsDetails.Deck.Ytn/tsDetails.Deck.In;
-            tsDetails.Deck.fTop[i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Deck.fTop[i][ctCummulative] + tsDetails.Deck.fTop[i][ctIncremental];
+            tsDetails.Deck.f[pgsTypes::TopFace][i][ctIncremental] = tsDetails.Deck.dP[i]/tsDetails.Deck.An - tsDetails.Deck.dM[i]*tsDetails.Deck.Ytn/tsDetails.Deck.In;
+            tsDetails.Deck.f[pgsTypes::TopFace][i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Deck.f[pgsTypes::TopFace][i][ctCummulative] + tsDetails.Deck.f[pgsTypes::TopFace][i][ctIncremental];
 
-            tsDetails.Deck.fBot[i][ctIncremental] = tsDetails.Deck.dP[i]/tsDetails.Deck.An + tsDetails.Deck.dM[i]*tsDetails.Deck.Ybn/tsDetails.Deck.In;
-            tsDetails.Deck.fBot[i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Deck.fBot[i][ctCummulative] + tsDetails.Deck.fBot[i][ctIncremental];
+            tsDetails.Deck.f[pgsTypes::BottomFace][i][ctIncremental] = tsDetails.Deck.dP[i]/tsDetails.Deck.An + tsDetails.Deck.dM[i]*tsDetails.Deck.Ybn/tsDetails.Deck.In;
+            tsDetails.Deck.f[pgsTypes::BottomFace][i][ctCummulative] = details.TimeStepDetails[intervalIdx-1].Deck.f[pgsTypes::BottomFace][i][ctCummulative] + tsDetails.Deck.f[pgsTypes::BottomFace][i][ctIncremental];
          }
 
          Float64 tDeck = tsDetails.Deck.Ybn + tsDetails.Deck.Ytn;
          Float64 Ytr_TopDeck = tsDetails.Ytr + tDeck;
          Float64 Ytr_BotDeck = tsDetails.Ytr;
-         tsDetails.Deck.fTopLLMin = -MllMax*(EDeck/EGirder)*Ytr_TopDeck/tsDetails.Itr;
-         tsDetails.Deck.fTopLLMax = -MllMin*(EDeck/EGirder)*Ytr_TopDeck/tsDetails.Itr;
-         tsDetails.Deck.fBotLLMin = -MllMax*(EDeck/EGirder)*Ytr_BotDeck/tsDetails.Itr;
-         tsDetails.Deck.fBotLLMax = -MllMin*(EDeck/EGirder)*Ytr_BotDeck/tsDetails.Itr;
+         tsDetails.Deck.fLLMin[pgsTypes::TopFace]    = -MllMax*(EDeck/EGirder)*Ytr_TopDeck/tsDetails.Itr;
+         tsDetails.Deck.fLLMax[pgsTypes::TopFace]    = -MllMin*(EDeck/EGirder)*Ytr_TopDeck/tsDetails.Itr;
+         tsDetails.Deck.fLLMin[pgsTypes::BottomFace] = -MllMax*(EDeck/EGirder)*Ytr_BotDeck/tsDetails.Itr;
+         tsDetails.Deck.fLLMax[pgsTypes::BottomFace] = -MllMin*(EDeck/EGirder)*Ytr_BotDeck/tsDetails.Itr;
       }
    }
 

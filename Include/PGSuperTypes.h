@@ -367,8 +367,8 @@ struct pgsTypes
    enum GirderLocation
    { Interior = 0, Exterior = 1 };
 
-   enum GirderFace 
-   {GirderTop, GirderBottom};
+   enum FaceType 
+   {TopFace, BottomFace};
 
    // NOTE: Enum values are out of order so that they match values used in earlier
    // versions of the software
@@ -664,7 +664,7 @@ struct LONGITUDINALREBARCONFIG
 public:
    struct RebarRow 
    {
-      pgsTypes::GirderFace  Face;
+      pgsTypes::FaceType  Face;
       matRebar::Size BarSize;
       Int32       NumberOfBars;
       Float64     Cover;

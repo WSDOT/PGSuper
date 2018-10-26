@@ -89,8 +89,8 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    (*xs_table)(0,col) << _T("Girder");
    (*xs_table)(1,col++) << COLHDR(_T("Area"),           rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
    (*xs_table)(1,col++) << COLHDR(RPT_IX,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*xs_table)(1,col++) << COLHDR(RPT_YTOP,             rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
-   (*xs_table)(1,col++) << COLHDR(RPT_YBOT, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
+   (*xs_table)(1,col++) << COLHDR(RPT_YTOP_GIRDER,             rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
+   (*xs_table)(1,col++) << COLHDR(RPT_YBOT_GIRDER, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
 
    xs_table->SetColumnSpan(0,col,4);
    xs_table->SetColumnSpan(0,col+1,SKIP_CELL);
@@ -99,8 +99,8 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    (*xs_table)(0,col) << _T("Deck");
    (*xs_table)(1,col++) << COLHDR(_T("Area"),           rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
    (*xs_table)(1,col++) << COLHDR(RPT_IX,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*xs_table)(1,col++) << COLHDR(RPT_YTOP,             rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
-   (*xs_table)(1,col++) << COLHDR(RPT_YBOT, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
+   (*xs_table)(1,col++) << COLHDR(RPT_YTOP_DECK,             rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
+   (*xs_table)(1,col++) << COLHDR(RPT_YBOT_DECK, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),      false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        l1,       pDisplayUnits->GetComponentDimUnit(),    false );

@@ -243,7 +243,7 @@ void CGirderDescDebondPage::OnPaint()
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    Float64 y_min =  DBL_MAX;
    Float64 y_max = -DBL_MAX;
-   StrandIndexType nStrands = GetNumStrands();
+   StrandIndexType nStrands = GetStrandCount();
 
    ConfigStrandFillVector  fillvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
    PRESTRESSCONFIG config;
@@ -405,7 +405,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    pDC->SetBkMode(TRANSPARENT);
 
    // Draw all the strands bonded
-   StrandIndexType nStrands = GetNumStrands();
+   StrandIndexType nStrands = GetStrandCount();
 
    ConfigStrandFillVector  straightStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Straight);
    ConfigStrandFillVector  harpedStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Harped);
@@ -563,7 +563,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
 }
 
-StrandIndexType CGirderDescDebondPage::GetNumStrands()
+StrandIndexType CGirderDescDebondPage::GetStrandCount()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -608,7 +608,7 @@ void CGirderDescDebondPage::OnChange()
       percent = 100.0 * (Float64)ndbs/(Float64)ns;
 
    CString str;
-   str.Format(_T("Straight=%d  Harped=%d"), GetNumStrands(),ns-GetNumStrands());
+   str.Format(_T("Straight=%d  Harped=%d"), GetStrandCount(),ns-GetStrandCount());
    CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
    pNs->SetWindowText(str);
 

@@ -531,9 +531,10 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
 
       hr = pStrLoad->EndUnit();
    }
-   catch(...)
+   catch(HRESULT)
    {
       ATLASSERT(0);
+      THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
    // Not sure how this happened, but at least on regression test file (UserSelect.pgs) has negative

@@ -1054,6 +1054,12 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
    Float64 slope = pStrandGeom->GetMaxStrandSlope(pgsPointOfInterest(m_SegmentKey,0.00), nh,
                                                end_offset, hp_offset );
 
+   ATLASSERT(slope < 0); // we got the slope at the start of the girder
+                         // it should be going downward to the right... this is a negative slope
+
+   slope *= -1; // all the code below is based on the slope being a positive value so reverse the sign
+
+
    LOG(_T("Design for Maximum Strand Slope"));
    LOG(_T("Maximum Strand Slope 1 : ") << m_AllowableStrandSlope);
    LOG(_T("Actual  Strand Slope 1 : ") << slope);
@@ -1415,8 +1421,8 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   m_pArtifact->SetNumStraightStrands(pStrandGeom->GetNumStrands(m_SegmentKey,pgsTypes::Straight));
-   m_pArtifact->SetNumHarpedStrands(pStrandGeom->GetNumStrands(m_SegmentKey,pgsTypes::Harped));
+   m_pArtifact->SetNumStraightStrands(pStrandGeom->GetStrandCount(m_SegmentKey,pgsTypes::Straight));
+   m_pArtifact->SetNumHarpedStrands(pStrandGeom->GetStrandCount(m_SegmentKey,pgsTypes::Harped));
 
    m_bConfigDirty = true; // cache is dirty
 
@@ -1590,7 +1596,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( stressType == pgsTypes::Compression )
    {
-      Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls);
+      Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls);
       fc_reqd = fControl/c;
       LOG(c << _T("F demand (compression) = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd,unitMeasure::KSI) << _T(" KSI"));
    }

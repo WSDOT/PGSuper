@@ -573,9 +573,9 @@ void CBridgeSectionView::UpdateGirderTooltips()
       const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
       StrandIndexType Ns, Nh, Nt, Nsd;
-      Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
-      Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
-      Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+      Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
       Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
 
       std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));

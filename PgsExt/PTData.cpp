@@ -1094,12 +1094,12 @@ void CPTData::RemoveDuct(DuctIndexType idx)
    m_Ducts.erase( m_Ducts.begin() + idx );
 }
 
-StrandIndexType CPTData::GetNumStrands(DuctIndexType ductIndex) const
+StrandIndexType CPTData::GetStrandCount(DuctIndexType ductIndex) const
 {
    return m_Ducts[ductIndex].nStrands;
 }
 
-StrandIndexType CPTData::GetNumStrands() const
+StrandIndexType CPTData::GetStrandCount() const
 {
    StrandIndexType nStrands = 0;
    std::vector<CDuctData>::const_iterator iter(m_Ducts.begin());

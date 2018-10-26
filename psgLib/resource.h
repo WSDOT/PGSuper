@@ -849,6 +849,7 @@
 #define IDC_CHECK_SPLITTING             1444
 #define IDC_TOP_FLANGE_ROUGHENED        1444
 #define IDC_USER                        1444
+#define IDC_VARIABLE_DEPTH_CHECK        1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -978,7 +979,9 @@
 #define IDC_LWC_PHI_TENSION_PS2         1525
 #define IDC_LWC_PHI_TENSION_SPLICED     1525
 #define IDC_EG_DC_BS2_UNIT              1526
+#define IDC_PHI_NWC_HEADER2             1526
 #define IDC_EG_DC_BS2_LABEL             1527
+#define IDC_PHI_LWC_HEADER2             1527
 #define IDC_EG_DW_BS2                   1528
 #define IDC_EG_DW_BS2_UNIT              1529
 #define IDC_EG_DW_BS2_LABEL             1530
@@ -1028,11 +1031,11 @@
 #define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY_UNIT 1555
 #define IDC_ALPHA_LABEL                 1555
 #define IDC_SUPPORT_LESS_THAN_UNIT      1556
+#define IDC_ALPHA                       1556
 #define IDC_FCPG_STATIC                 1557
+#define IDC_BETA_LABEL                  1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
-#define IDC_ALPHA                       1556
-#define IDC_BETA_LABEL                  1557
 #define IDC_ALPHA_UNIT                  1558
 #define IDC_RADIO1                      1559
 #define IDC_GROSS                       1559
@@ -1060,7 +1063,10 @@
 #define IDC_LF_LOWER1                   1573
 #define IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT 1573
 #define IDC_LF_UPPER1_LABEL             1574
+#define IDC_NWC_JOINT_PHI               1574
 #define IDC_LF_UPPER1                   1575
+#define IDC_LWC_JOINT_PHI               1575
+#define IDC_VARIABLE_DEPTH_GROUP        1575
 #define IDC_ADTT2_LABEL                 1576
 #define IDC_SERVICE_TENSION_WITH_REBAR  1576
 #define IDC_ADTT2                       1577
@@ -1126,7 +1132,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        217
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1574
+#define _APS_NEXT_CONTROL_VALUE         1576
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
