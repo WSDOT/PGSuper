@@ -32,13 +32,13 @@
 #endif // _MSC_VER > 1000
 
 #include <DManip\DManip.h>
-class CPGSuperDocBase;
+class CPGSDocBase;
 class CGirderModelChildFrame;
 
 class CGirderDropSite : public CCmdTarget  
 {
 public:
-	CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame);
+	CGirderDropSite(CPGSDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame);
 	virtual ~CGirderDropSite();
 
    virtual void OnFinalRelease();
@@ -55,7 +55,7 @@ public:
    END_INTERFACE_PART(DropSite)
 
 private:
-   CPGSuperDocBase* m_pDoc;
+   CPGSDocBase* m_pDoc;
    CGirderModelChildFrame* m_pFrame;
    CComPtr<iDisplayObject> m_DispObj;
    CSpanKey m_SpanKey;

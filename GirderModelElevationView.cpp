@@ -228,7 +228,7 @@ void CGirderModelElevationView::OnInitialUpdate()
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
    CComPtr<iDisplayObjectFactory> doFactory;
    doFactory.Attach((iDisplayObjectFactory*)factory->GetInterface(&IID_iDisplayObjectFactory));
@@ -430,7 +430,7 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    // clean out all the display objects
    dispMgr->ClearDisplayObjects();
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
 
@@ -653,7 +653,7 @@ void CGirderModelElevationView::OnEditPrestressing()
    }
 
    pgsPointOfInterest poi = GetCutLocation();
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
+   ((CPGSDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelElevationView::OnEditStirrups() 
@@ -665,12 +665,12 @@ void CGirderModelElevationView::OnEditStirrups()
    }
 
    pgsPointOfInterest poi = GetCutLocation();
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
+   ((CPGSDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelElevationView::OnViewSettings() 
 {
-	((CPGSuperDocBase*)GetDocument())->EditGirderViewSettings(VS_GIRDER_ELEVATION);
+	((CPGSDocBase*)GetDocument())->EditGirderViewSettings(VS_GIRDER_ELEVATION);
 }
 
 void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL)
@@ -988,7 +988,7 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
    }
 }
 
-void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(SUPPORT_LIST,&pDL);
@@ -1036,7 +1036,7 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSuperDocBase* pDoc
    } // group loop
 }
 
-void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pSupportDisplayList;
    dispMgr->FindDisplayList(SUPPORT_LIST,&pSupportDisplayList);
@@ -1104,7 +1104,7 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSuperDocBase* p
    }
 }
 
-void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    // get the display list and clear out any old display objects
    CComPtr<iDisplayList> pDL;
@@ -1188,7 +1188,7 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSuperDocBase* pDoc
    } // group loop
 }
 
-void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    // get the display list and clear out any old display objects
    CComPtr<iDisplayList> pDL;
@@ -1276,7 +1276,7 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSuperDocBase*
    } // group loop
 }
 
-void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(STRAND_LIST,&pDL);
@@ -1504,7 +1504,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,
    } // end of group loop
 }
 
-void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
 #pragma Reminder("UPDATE: this shows the geometric centroid of the strand, need to show location of resultant PS force")
 
@@ -1667,7 +1667,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
    }
 }
 
-void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(TENDON_LIST,&pDL);
@@ -1764,7 +1764,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
    }
 }
 
-void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(REBAR_LIST,&pDL);
@@ -1916,7 +1916,7 @@ template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIn
    return bMatchSpan && bMatchGirder;
 }
 
-void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(LOAD_LIST,&pDL);
@@ -2048,7 +2048,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
    }
 }
 
-void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(LOAD_LIST,&pDL);
@@ -2170,7 +2170,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDocBa
    }
 }
 
-void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(LOAD_LIST,&pDL);
@@ -2280,7 +2280,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDocBase* p
    }
 }
 
-void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
 {
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
@@ -2346,7 +2346,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSuperDocBase* pDoc,
    }
 }
 
-void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(DIMLINE_LIST,&pDL);
@@ -2766,7 +2766,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSuperDocBase* pD
    }
 }
 
-void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayObjectFactory> factory;
    dispMgr->GetDisplayObjectFactory(0, &factory);
@@ -2793,7 +2793,7 @@ void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSuperDocBase* p
    pDL->AddDisplayObject(disp_obj);
 }
 
-void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
 {
    CComPtr<iDisplayList> pDL;
    dispMgr->FindDisplayList(STIRRUP_LIST,&pDL);

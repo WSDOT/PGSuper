@@ -68,7 +68,7 @@ void CPGSuperDocTemplateBase::LoadTemplateInformation()
    CWinApp* pApp = AfxGetApp();
    HICON defaultIcon = pApp->LoadIcon(GetTemplateIconResourceID());
 
-   CPGSuperBaseAppPlugin* pAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(m_pPlugin);
+   CPGSAppPluginBase* pAppPlugin = dynamic_cast<CPGSAppPluginBase*>(m_pPlugin);
    CString strWorkgroupFolderName;
    pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 

@@ -22,31 +22,14 @@
 
 #pragma once
 #include "PGSuperAppPlugin\PGSuperAppPlugin_i.h"
-#include <EAF\EAFAppPlugin.h>
-#include "PGSuperBaseAppPlugin.h"
 #include "PGSuperAppPlugin\resource.h"
+#include "PGSProjectImporterAppPluginBase.h"
 
-
-class CPGSuperProjectImporterAppPlugin;
-
-class CProjectImportersCmdTarget : public CCmdTarget
-{
-public:
-   CProjectImportersCmdTarget() {};
-
-   afx_msg void OnConfigureProjectImporters();
-
-   CPGSuperProjectImporterAppPlugin* m_pMyAppPlugin;
-
-   DECLARE_MESSAGE_MAP()
-};
 
 class ATL_NO_VTABLE CPGSuperProjectImporterAppPlugin : 
-   public CPGSuperBaseAppPlugin,
+   public CPGSProjectImporterAppPluginBase,
    public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSuperProjectImporterAppPlugin, &CLSID_PGSuperProjectImporterAppPlugin>,
-   public IEAFAppPlugin,
-   public IEAFCommandCallback
+   public CComCoClass<CPGSuperProjectImporterAppPlugin, &CLSID_PGSuperProjectImporterAppPlugin>
 {
 public:
    CPGSuperProjectImporterAppPlugin()
@@ -60,7 +43,9 @@ public:
    virtual CString GetTemplateFileExtension();
    virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
 
-   virtual void SaveReportOptions();
+   virtual CATID GetProjectImporterCATID();
+   virtual UINT GetMenuResourceID();
+   virtual CPGSImportPluginDocTemplateBase* CreateDocTemplate();
 
 BEGIN_COM_MAP(CPGSuperProjectImporterAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
@@ -71,28 +56,6 @@ BEGIN_CONNECTION_POINT_MAP(CPGSuperProjectImporterAppPlugin)
 END_CONNECTION_POINT_MAP()
 
 DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN)
-
-   HMENU m_hMenuShared;
-   CProjectImportersCmdTarget m_MyCmdTarget;
-
-   void ConfigureProjectImporters();
-
-   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const;
-
-// IEAFAppPlugin
-public:
-   virtual BOOL Init(CEAFApp* pParent);
-   virtual void Terminate();
-   virtual void IntegrateWithUI(BOOL bIntegrate);
-   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
-   virtual HMENU GetSharedMenuHandle();
-   virtual CString GetName();
-
-// IEAFCommandCallback
-public:
-   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
-   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(PGSuperProjectImporterAppPlugin), CPGSuperProjectImporterAppPlugin)

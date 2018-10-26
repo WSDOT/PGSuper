@@ -210,7 +210,7 @@ void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_ALIGNMENT_PLAN_CTX,NULL);
 
@@ -241,7 +241,7 @@ void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CAlignmentPlanView::OnViewSettings() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_ALIGNMENT);
+   ((CPGSDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_ALIGNMENT);
 }
 
 void CAlignmentPlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -384,7 +384,7 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
 
    Float64 angle = atan2(dy,dx);
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( settings & IDA_AP_NORTH_UP )
    {
@@ -399,7 +399,7 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
 
 void CAlignmentPlanView::BuildBridgeDisplayObjects()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( (settings & IDA_AP_DRAW_BRIDGE) == 0 )
    {
@@ -478,7 +478,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    EAFGetBroker(&pBroker);
 
    // Label Start and End of Bridge
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( (settings & IDA_AP_DRAW_BRIDGE) != 0 )
    {

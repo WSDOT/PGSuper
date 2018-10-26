@@ -35,7 +35,7 @@ typedef CEAFPluginManager<IPGSpliceComponentInfo,CPGSpliceDoc> CPGSpliceComponen
 #define ETSD_GENERAL       0
 #define ETSD_CONNECTION    1
 
-class CPGSpliceDoc : public CPGSuperDocBase
+class CPGSpliceDoc : public CPGSDocBase
 {
 protected: // create from serialization only
 	CPGSpliceDoc();

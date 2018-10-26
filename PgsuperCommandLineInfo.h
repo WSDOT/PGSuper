@@ -44,7 +44,7 @@ COPYRIGHT
 LOG
    rdp : 09.24.1999 : Created file
 *****************************************************************************/
-class  CPGSuperCommandLineInfo : public CPGSuperBaseCommandLineInfo
+class  CPGSuperCommandLineInfo : public CPGSBaseCommandLineInfo
 {
 public:
    CPGSuperCommandLineInfo();

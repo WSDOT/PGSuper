@@ -214,19 +214,8 @@ bool CStabilityGraphBuilder::UpdateNow()
    GET_IFACE(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IDocumentType,pDocType);
 
-   CString subtitle;
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      subtitle.Format(_T("Span %d Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
-   }
-   else
-   {
-      subtitle.Format(_T("Group %d Girder %s Segment %d"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex));
-   }
-
-   m_PrintSubtitle = std::_tstring(subtitle);
+   m_PrintSubtitle = SEGMENT_LABEL(segmentKey);
 
    Float64 hp1,hp2;
    pStrandGeom->GetHarpingPointLocations(segmentKey,&hp1,&hp2);

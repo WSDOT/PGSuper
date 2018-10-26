@@ -490,7 +490,7 @@ Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes:
    CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
-   ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,false);
+   ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,false,resultsType);
 
    CComPtr<IResult3Ds> results;
 
@@ -3170,7 +3170,7 @@ Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,LoadingCo
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,intervalIdx < liveLoadIntervalIdx ? false : true);
+   ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,intervalIdx < liveLoadIntervalIdx ? false : true,resultsType);
 
    CComPtr<IResult3Ds> results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
@@ -4001,7 +4001,7 @@ void CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::Li
    CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pierIdx,girderKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
-   ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,intervalIdx < liveLoadIntervalIdx ? false : true);
+   ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,intervalIdx < liveLoadIntervalIdx ? false : true, rtCumulative);
 
    CComBSTR bstrLoadCombo( GetLoadCombinationName(limitState) );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
@@ -5343,7 +5343,7 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
    {
       SupportIndexType supportIdx = supportIter->first;
       pgsTypes::SupportType supportType = supportIter->second;
-      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false);
+      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false,resultsType);
 
       CComPtr<IResult3Ds> results;
 
@@ -5393,6 +5393,7 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
       //
       // Prestress and primary post-tensioning don't cause reactions
       // they only cause direction axial compression and bending
+      // (secondary PT causes reactions)
       return std::vector<Float64>(vSupports.size(),0.0);
    }
 
@@ -5401,15 +5402,6 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
    pModelData = GetGirderModel(GetGirderLineIndex(girderKey));
 
    std::vector<Float64> reactions;
-
-
-   if ( pfType == pgsTypes::pftPostTensioning )
-   {
-      // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
-      // curvatures to the model as the secondary effects product load type, the post-tension reactions
-      // are the reactions computed by the secondary effects load case
-      pfType = pgsTypes::pftSecondaryEffects;
-   }
 
    CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
@@ -5420,7 +5412,7 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
    {
       SupportIndexType supportIdx = supportIter->first;
       pgsTypes::SupportType supportType = supportIter->second;
-      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false);
+      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false,resultsType);
 
       CComPtr<IResult3Ds> results;
 
@@ -5488,7 +5480,7 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
    {
       SupportIndexType supportIdx = supportIter->first;
       pgsTypes::SupportType supportType = supportIter->second;
-      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false);
+      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false,resultsType);
 
       CComPtr<IResult3Ds> results;
 
@@ -5551,7 +5543,7 @@ void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vec
    {
       SupportIndexType supportIdx = supportIter->first;
       pgsTypes::SupportType supportType = supportIter->second;
-      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false);
+      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false,rtCumulative);
 
       IntervalIndexType tsRemovalIntervalIdx = INVALID_INDEX;
       if ( supportType == pgsTypes::stTemporary )
@@ -5621,7 +5613,7 @@ void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType interva
    {
       PierIndexType pierIdx = *pierIter;
 
-      ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,true);
+      ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,true,rtIncremental);
 
       CComPtr<ILiveLoadModelResults> minResults;
       CComPtr<ILiveLoadModelResults> maxResults;
@@ -5721,7 +5713,7 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
    {
       PierIndexType pierIdx = *pierIter;
 
-      ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,true);
+      ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,true,rtIncremental);
 
       VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
       VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
@@ -5890,7 +5882,7 @@ void CGirderModelManager::GetCombinedLiveLoadReaction(IntervalIndexType interval
    {
       PierIndexType pierIdx = *pierIter;
 
-      ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,true);
+      ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,true,rtCumulative);
 
       CComBSTR bstrLoadCombo( GetLiveLoadName(llType) );
       CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
@@ -9525,6 +9517,7 @@ void CGirderModelManager::ApplyUserDefinedLoads(ILBAMModel* pModel,GirderIndexTy
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
@@ -9534,9 +9527,9 @@ void CGirderModelManager::ApplyUserDefinedLoads(ILBAMModel* pModel,GirderIndexTy
 
       CSpanKey spanKey(spanIdx,gdrIdx);
 
-      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(CGirderKey(pGroup->GetIndex(),gdrIdx));
 
-      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+      for ( IntervalIndexType intervalIdx = erectionIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
       {
          CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
@@ -15658,13 +15651,14 @@ bool CGirderModelManager::CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPo
    return true;
 }
 
-void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,pgsTypes::BridgeAnalysisType bat,bool bLiveLoadReaction)
+void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,pgsTypes::BridgeAnalysisType bat,bool bLiveLoadReaction,ResultsType resultsType)
 {
    // Configures the LBAM Pois for Reactions. The IDs we want for obtaining reactions depend on
    // the segment and pier boundary conditions. This method makes it easy, consistent, and seemless
    // to set up the m_LBAMPoi array
 
    m_LBAMPoi->Clear();
+   std::vector<IDType> vIDs;
    GET_IFACE(IBridge,pBridge);
 
    if ( supportType == pgsTypes::stPier )
@@ -15680,9 +15674,15 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
          return;
       }
 
-      PierIndexType nPiers = pBridge->GetPierCount();
+      // If we have a boundary pier, the support model can get tricky.
+      // Depending on boundary conditions, we have to create temporary,
+      // dummy, supports to get the reactions from simple span
+      // elements (like girders and segments, and cast wet deck)
+
+      // gather information about continuity at the pier
       bool bContinuousBack, bContinuousAhead;
       pBridge->IsContinuousAtPier(pierIdx,&bContinuousBack,&bContinuousAhead);
+
       bool bIntegralBack, bIntegralAhead;
       pBridge->IsIntegralAtPier(pierIdx,&bIntegralBack,&bIntegralAhead);
 
@@ -15702,7 +15702,9 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
          aheadContinuityIntervalIdx = pIntervals->GetInterval(aheadEventIdx);
       }
 
-      if ( pierIdx == 0 || pierIdx == nPiers-1 // first or last pier in the bridge
+      // if this is an abutment, or a continuous type pier and continuity
+      // has been acheived, we need the LBAM Support ID for the actual pier
+      if ( pBridge->IsAbutment(pierIdx) // first or last pier in the bridge
          || // -OR-
           (
            ((bContinuousBack || bIntegralBack) && (backContinuityIntervalIdx <= intervalIdx)) // continuous/integral on back side and interval is after continuity is made
@@ -15712,19 +15714,24 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
          )
       {
          // The support element of the pier is what we want
-         m_LBAMPoi->Add(GetPierID(pierIdx));
+         vIDs.push_back(GetPierID(pierIdx));
       }
-      else
+
+      if ( !pBridge->IsAbutment(pierIdx) && 
+          (resultsType == rtCumulative ||
+           intervalIdx < backContinuityIntervalIdx ||
+           intervalIdx < aheadContinuityIntervalIdx)
+          )
       {
          // The temporary support objects used to maintain stability in the LBAM is what we want
          // (NOTE: THESE ARE NOT THE TEMPORARY SUPPORT SHORING TOWER OBJECTS USED IN SPLICED GIRDER CONSTRUCTION)
          SupportIDType backID, aheadID;
          GetPierTemporarySupportIDs(pierIdx,&backID,&aheadID);
 
-         if ( (bContinuousBack || bIntegralBack) && backContinuityIntervalIdx <= intervalIdx )
+         if ( (bContinuousBack || bIntegralBack) && (backContinuityIntervalIdx <= intervalIdx) && resultsType == rtIncremental )
          {
             // Continuous/integral on back side AND interval is after continuity is made
-            m_LBAMPoi->Add(GetPierID(pierIdx));
+            vIDs.push_back(GetPierID(pierIdx));
          }
          else
          {
@@ -15741,18 +15748,18 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
             {
                // The CL Bearing is at the CL Pier so there isn't a temporary support.
                // (See how the LBAM is built)
-               m_LBAMPoi->Add(GetPierID(pierIdx));
+               vIDs.push_back(GetPierID(pierIdx));
             }
             else
             {
-               m_LBAMPoi->Add(backID);
+               vIDs.push_back(backID);
             }
          }
 
-         if ( (bContinuousAhead || bIntegralAhead) && aheadContinuityIntervalIdx <= intervalIdx )
+         if ( (bContinuousAhead || bIntegralAhead) && (aheadContinuityIntervalIdx <= intervalIdx) && resultsType == rtIncremental )
          {
             // Continuous/integral on ahead side AND interval is after continuity is made
-            m_LBAMPoi->Add(GetPierID(pierIdx));
+            vIDs.push_back(GetPierID(pierIdx));
          }
          else
          {
@@ -15768,11 +15775,11 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
             {
                // The CL Bearing is at the CL Pier so there isn't a temporary support.
                // (See how the LBAM is built)
-               m_LBAMPoi->Add(GetPierID(pierIdx));
+               vIDs.push_back(GetPierID(pierIdx));
             }
             else
             {
-               m_LBAMPoi->Add(aheadID);
+               vIDs.push_back(aheadID);
             }
          }
       }
@@ -15783,33 +15790,27 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
       if ( pBridge->GetSegmentConnectionTypeAtTemporarySupport(tsIdx) == pgsTypes::tsctContinuousSegment )
       {
          SupportIDType tsID = GetTemporarySupportID(tsIdx);
-         m_LBAMPoi->Add(tsID);
+         vIDs.push_back(tsID);
       }
       else
       {
          // at closure joint
          // left support point
          SupportIDType ID = -((SupportIDType)(tsIdx+1)*100);
-         m_LBAMPoi->Add(ID);
+         vIDs.push_back(ID);
 
          // right support point
          ID = -( (SupportIDType)((tsIdx+1)*100+1) );
-         m_LBAMPoi->Add(ID);
+         vIDs.push_back(ID);
       }
    }
 
    // make sure we don't have two of the same IDs
-   CollectionIndexType nItems;
-   m_LBAMPoi->get_Count(&nItems);
-   if ( nItems == 2 )
+   std::sort(vIDs.begin(),vIDs.end());
+   vIDs.erase(std::unique(vIDs.begin(),vIDs.end()),vIDs.end());
+   BOOST_FOREACH(IDType id,vIDs)
    {
-      SupportIDType id1, id2;
-      m_LBAMPoi->get_Item(0,&id1);
-      m_LBAMPoi->get_Item(1,&id2);
-      if ( id1 == id2 )
-      {
-         m_LBAMPoi->Remove(1);
-      }
+      m_LBAMPoi->Add(id);
    }
 }
 

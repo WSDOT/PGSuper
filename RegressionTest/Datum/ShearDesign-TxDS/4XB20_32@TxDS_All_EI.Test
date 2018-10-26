@@ -1,30 +1,30 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     1   4XB20       16   1/2  270  7.03  7.03   2  2.50  16   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    1.365   -1.932    1271 0.700  0.830  0.10 -0.02  0.00 -0.00 -0.02  25.43  77.09   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    4   8.67                   1      1     4XB20         16   1/2  270   7.03   7.03   2   2.50   16     2    2   0   0   0   0   4.000  5.000   1.365    -1.932     1271   0.700  0.830  1.222  -0.26  -0.01  -0.01  -0.29   25.43   77.09    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     2   4XB20       16   1/2  270  7.03  7.03   2  2.50  16   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    1.379   -1.945    1267 0.681  0.830  0.10 -0.02  0.00 -0.00 -0.02  25.43  76.63   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    4   8.67                   1      2     4XB20         16   1/2  270   7.03   7.03   2   2.50   16     2    2   0   0   0   0   4.000  5.000   1.379    -1.945     1267   0.681  0.830  1.222  -0.27  -0.01  -0.01  -0.31   25.43   76.63    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     1   4XB20       38   1/2  270  6.19  5.89  10  2.50  22  10  6  2  2  0  0  0  0  0  0  0  4.800  5.000    2.596   -3.451    2113 0.644  0.803  0.31 -0.08  0.00 -0.01 -0.09 106.28 287.57   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    4   8.67                   2      1     4XB20         38   1/2  270   6.19   5.89  10   2.50   22    10    6   2   2   0   0   4.800  5.000   2.596    -3.451     2113   0.644  0.803  3.771  -1.01  -0.05  -0.06  -1.12  106.28  287.57    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     2   4XB20       38   1/2  270  6.19  5.89  10  2.50  22  10  6  2  2  0  0  0  0  0  0  0  4.800  5.000    2.629   -3.487    2115 0.627  0.803  0.31 -0.09  0.00 -0.01 -0.09 106.28 285.63   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    4   8.67                   2      2     4XB20         38   1/2  270   6.19   5.89  10   2.50   22    10    6   2   2   0   0   4.800  5.000   2.629    -3.487     2115   0.627  0.803  3.771  -1.05  -0.06  -0.06  -1.18  106.28  285.63    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

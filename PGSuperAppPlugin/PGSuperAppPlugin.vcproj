@@ -1320,6 +1320,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PGSImportPluginDocTemplateBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PGSpliceAppPlugin.cpp"
 				>
 			</File>
@@ -1337,6 +1341,26 @@
 			</File>
 			<File
 				RelativePath="..\PGSpliceDocTemplate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceImportPluginDocTemplate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceProjectImporterAppPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceProjectImporterMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSProjectImporterAppPluginBase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSProjectImporterMgrBase.cpp"
 				>
 			</File>
 			<File
@@ -2278,6 +2302,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PGSImportPluginDocTemplateBase.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PGSpliceAppPlugin.h"
 				>
 			</File>
@@ -2299,6 +2327,26 @@
 			</File>
 			<File
 				RelativePath="..\PGSpliceDocTemplate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceImportPluginDocTemplate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceProjectImporterAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceProjectImporterMgr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSProjectImporterAppPluginBase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSProjectImporterMgrBase.h"
 				>
 			</File>
 			<File
@@ -2350,11 +2398,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2973,6 +3021,10 @@
 			</File>
 			<File
 				RelativePath="..\res\PGSpliceDoc.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\PGSpliceProjectImporterAppPlugin.rgs"
 				>
 			</File>
 			<File

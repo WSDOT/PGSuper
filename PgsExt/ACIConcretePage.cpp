@@ -156,17 +156,26 @@ void CACIConcretePage::OnCompute()
 
    CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
 
-   CACIParametersDlg dlg;
-   dlg.m_t1  = pParent->m_TimeAtInitialStrength;
-   dlg.m_fc1 = pParent->m_fci;
-   dlg.m_fc2 = pParent->m_fc28;
-   if ( dlg.DoModal() )
+   INT_PTR result;
    {
-      m_A = dlg.m_A;
-      m_B = dlg.m_B;
-      pParent->m_fci = dlg.m_fc1;
-      pParent->m_fc28 = dlg.m_fc2;
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CACIParametersDlg dlg;
+      dlg.m_t1  = pParent->m_TimeAtInitialStrength;
+      dlg.m_fc1 = pParent->m_fci;
+      dlg.m_fc2 = pParent->m_fc28;
+      result = dlg.DoModal();
 
+      if ( result == IDOK )
+      {
+         m_A = dlg.m_A;
+         m_B = dlg.m_B;
+         pParent->m_fci = dlg.m_fc1;
+         pParent->m_fc28 = dlg.m_fc2;
+      }
+   }
+
+   if ( result == IDOK )
+   {
       UpdateData(FALSE);
    }
 }

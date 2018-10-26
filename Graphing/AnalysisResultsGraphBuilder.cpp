@@ -946,8 +946,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
 
    CGirderKey girderKey(grpIdx == ALL_GROUPS ? 0 : grpIdx,gdrIdx);
 
-   GET_IFACE(IDocumentType,pDocType);
-
    if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING )
    {
       // Plotting by loading
@@ -963,14 +961,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       }
       else
       {
-         if ( pDocType->IsPGSuperDocument() )
-         {
-            strGraphTitle.Format(_T("Span %d Girder %s - Interval %d: %s - %s %s"),LABEL_SPAN(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_INTERVAL(intervalIdx),strInterval,strCombo,strAction);
-         }
-         else
-         {
-            strGraphTitle.Format(_T("Group %d Girder %s - Interval %d: %s - %s %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_INTERVAL(intervalIdx),strInterval,strCombo,strAction);
-         }
+         strGraphTitle.Format(_T("%s - Interval %d: %s - %s %s"),GIRDER_LABEL(CGirderKey(grpIdx,gdrIdx)),LABEL_INTERVAL(intervalIdx),strInterval,strCombo,strAction);
       }
       
       m_Graph.SetTitle(strGraphTitle);
@@ -988,19 +979,13 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       }
       else
       {
-         if ( pDocType->IsPGSuperDocument() )
-         {
-            strGraphTitle.Format(_T("Span %d Girder %s - %s - %s %s"),LABEL_SPAN(grpIdx),LABEL_GIRDER(gdrIdx),graphDef.m_Name.c_str(),strCombo,strAction);
-         }
-         else
-         {
-            strGraphTitle.Format(_T("Group %d Girder %s - %s - %s %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),graphDef.m_Name.c_str(),strCombo,strAction);
-         }
+         strGraphTitle.Format(_T("%s - %s - %s %s"),GIRDER_LABEL(CGirderKey(grpIdx,gdrIdx)),graphDef.m_Name.c_str(),strCombo,strAction);
       }
 
       m_Graph.SetTitle(strGraphTitle);
    }
 
+   GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       CString strSubtitle;

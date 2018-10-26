@@ -27,6 +27,7 @@
 #pragma once
 
 #include <PGSuperAll.h>
+#include <WBFLSTL.h>
 
 #include <Reporter\Reporter.h>
 

@@ -28,14 +28,14 @@
 
 #include "PGSuperBaseCommandLineInfo.h"
 
-// Base class for all PGSuper Document-type application plugins
-// Performs common initialization expected by the CPGSuperDocBase class
-class CPGSuperBaseAppPlugin : 
+// Base class for all PGS Document-type application plugins
+// Performs common initialization expected by the CPGSDocBase class
+class CPGSAppPluginBase : 
    public CEAFCustomReportMixin
 {
 public:
-   CPGSuperBaseAppPlugin();
-   virtual ~CPGSuperBaseAppPlugin();
+   CPGSAppPluginBase();
+   virtual ~CPGSAppPluginBase();
 
    virtual CString GetAppName() const = 0;
    virtual CString GetTemplateFileExtension() = 0;
@@ -125,10 +125,10 @@ protected:
 
    const CPGSuperCatalogServers* GetCatalogServers() const;
 
-   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const = 0;
+   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const = 0;
    virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
-   virtual void Process1250Testing(const CPGSuperBaseCommandLineInfo& rCmdInfo);
-   virtual void ProcessLibrarySetUp(const CPGSuperBaseCommandLineInfo& rCmdInfo);
+   virtual void Process1250Testing(const CPGSBaseCommandLineInfo& rCmdInfo);
+   virtual void ProcessLibrarySetUp(const CPGSBaseCommandLineInfo& rCmdInfo);
 
 
 private:

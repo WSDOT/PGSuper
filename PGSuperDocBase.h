@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PGSuperDocBase.h : interface of the CPGSuperDocBase class
+// PGSuperDocBase.h : interface of the CPGSDocBase class
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -67,19 +67,18 @@ class pgsSegmentDesignArtifact;
 class CPGSuperDocProxyAgent;
 
 /*--------------------------------------------------------------------*/
-class CPGSuperDocBase : public CEAFBrokerDocument, 
+class CPGSDocBase : public CEAFBrokerDocument, 
                     public CEAFAutoCalcDocMixin,  // mix-in class for auto-calc capabilities
                     public libISupportLibraryManager
 {
 protected: // create from serialization only
-	CPGSuperDocBase();
+	CPGSDocBase();
 
 // CBrokerDocument over-rides
 protected:
    virtual BOOL Init();
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
    virtual void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu);
-   //virtual void OnCustomReportError(eafTypes::CustomReportError error, LPCTSTR lpszReportName, LPCTSTR lpszOtherName);
    virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
 
 // CEAFAutoCalcDocMixin over-rides
@@ -108,7 +107,7 @@ public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CPGSuperDocBase)
+	//{{AFX_VIRTUAL(CPGSDocBase)
 	public:
 	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName);
    virtual void OnCloseDocument();
@@ -125,7 +124,7 @@ public:
 
 // Implementation
 public:
-	virtual ~CPGSuperDocBase();
+	virtual ~CPGSDocBase();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -369,12 +368,10 @@ protected:
 
 // Generated message map functions
 protected:
-	//{{AFX_MSG(CPGSuperDocBase)
+	//{{AFX_MSG(CPGSDocBase)
 	afx_msg void OnFileProjectProperties();
 	afx_msg void OnProjectEnvironment();
    afx_msg void OnRatingSpec();
-	afx_msg void OnProjectAutoCalc();
-	afx_msg void OnUpdateProjectAutoCalc(CCmdUI* pCmdUI);
 	afx_msg void OnExportToTemplateFile();
 	afx_msg void OnViewsettingsBridgemodelEditor();
 	afx_msg void OnLoadsLoadModifiers();
@@ -407,6 +404,8 @@ protected:
    afx_msg void OnExport(UINT nID);
    afx_msg void OnImportMenu(CCmdUI* pCmdUI);
    afx_msg void OnExportMenu(CCmdUI* pCmdUI);
+   afx_msg void OnAutoCalc();
+   afx_msg void OnUpdateAutoCalc(CCmdUI* pCmdUI);
 
    afx_msg void OnAbout();
 

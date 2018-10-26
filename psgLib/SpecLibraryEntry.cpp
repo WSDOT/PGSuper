@@ -392,90 +392,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Name"),this->GetName().c_str());
    pSave->Property(_T("Description"),this->GetDescription().c_str());
 
-   if (m_SpecificationType==lrfdVersionMgr::FirstEdition1994)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1994"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::FirstEditionWith1996Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1996"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::FirstEditionWith1997Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1997"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SecondEdition1998)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1998"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith1999Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1999"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2000Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2000"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2001Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2001"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2002Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2002"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2003Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2003"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::ThirdEdition2004)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2004"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::ThirdEditionWith2005Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2005"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::ThirdEditionWith2006Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2006"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::FourthEdition2007)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2007"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::FourthEditionWith2008Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2008"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::FourthEditionWith2009Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2009"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::FifthEdition2010)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2010"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SixthEdition2012)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2012"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SixthEditionWith2013Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2013"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SeventhEdition2014)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2014"));
-   }
-   else if (m_SpecificationType==lrfdVersionMgr::SeventhEditionWith2015Interims)
-   {
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2015"));
-   }
-   else
-   {
-      ASSERT(false); // is there a new version?
-   }
+   pSave->Property(_T("SpecificationType"),lrfdVersionMgr::GetVersionString(m_SpecificationType,true));
 
    if (m_SpecificationUnits==lrfdVersionMgr::SI)
    {
@@ -968,87 +885,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp==_T("AashtoLrfd2015"))
+         try
          {
-            m_SpecificationType = lrfdVersionMgr::SeventhEditionWith2015Interims;
+            m_SpecificationType = lrfdVersionMgr::GetVersion(tmp.c_str());
          }
-         else if(tmp==_T("AashtoLrfd2014"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SeventhEdition2014;
-         }
-         else if(tmp==_T("AashtoLrfd2013"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SixthEditionWith2013Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2012"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SixthEdition2012;
-         }
-         else if(tmp==_T("AashtoLrfd2010"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FifthEdition2010;
-         }
-         else if(tmp==_T("AashtoLrfd2009"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FourthEditionWith2009Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2008"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FourthEditionWith2008Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2007"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FourthEdition2007;
-         }
-         else if(tmp==_T("AashtoLrfd2006"))
-         {
-            m_SpecificationType = lrfdVersionMgr::ThirdEditionWith2006Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2005"))
-         {
-            m_SpecificationType = lrfdVersionMgr::ThirdEditionWith2005Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2004"))
-         {
-            m_SpecificationType = lrfdVersionMgr::ThirdEdition2004;
-         }
-         else if(tmp==_T("AashtoLrfd2003"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SecondEditionWith2003Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2002"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SecondEditionWith2002Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2001"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SecondEditionWith2001Interims;
-         }
-         else if(tmp==_T("AashtoLrfd2000"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SecondEditionWith2000Interims;
-         }
-         else if(tmp==_T("AashtoLrfd1999"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SecondEditionWith1999Interims;
-         }
-         else if(tmp==_T("AashtoLrfd1998"))
-         {
-            m_SpecificationType = lrfdVersionMgr::SecondEdition1998;
-         }
-         else if(tmp==_T("AashtoLrfd1997"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FirstEditionWith1997Interims;
-         }
-         else if(tmp==_T("AashtoLrfd1996"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FirstEditionWith1996Interims;
-         }
-         else if (tmp==_T("AashtoLrfd1994"))
-         {
-            m_SpecificationType = lrfdVersionMgr::FirstEdition1994;
-         }
-         else
+         catch(...)
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }

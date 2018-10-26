@@ -188,16 +188,16 @@ CProjectAgentImp::CProjectAgentImp()
    // Default live loads is HL-93 for design, nothing for permit
    LiveLoadSelection selection;
    selection.EntryName = _T("HL-93");
-   m_SelectedLiveLoads[pgsTypes::lltDesign].push_back(selection);
+   m_SelectedLiveLoads[pgsTypes::lltDesign].insert(selection);
 
    selection.EntryName = _T("Fatigue");
-   m_SelectedLiveLoads[pgsTypes::lltFatigue].push_back(selection);
+   m_SelectedLiveLoads[pgsTypes::lltFatigue].insert(selection);
 
    selection.EntryName = _T("AASHTO Legal Loads");
-   m_SelectedLiveLoads[pgsTypes::lltLegalRating_Routine].push_back(selection);
+   m_SelectedLiveLoads[pgsTypes::lltLegalRating_Routine].insert(selection);
 
    selection.EntryName = _T("Notional Rating Load (NRL)");
-   m_SelectedLiveLoads[pgsTypes::lltLegalRating_Special].push_back(selection);
+   m_SelectedLiveLoads[pgsTypes::lltLegalRating_Special].insert(selection);
 
    // Default impact factors
    m_TruckImpact[pgsTypes::lltDesign]  = 0.33;
@@ -3841,10 +3841,8 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
    pSave->put_Property(_T("VehicleCount"), CComVariant(cnt));
    {
       pSave->BeginUnit(_T("Vehicles"),1.0);
-      
-      for (LiveLoadSelectionContainer::size_type itrk=0; itrk<cnt; itrk++)
+      BOOST_FOREACH(LiveLoadSelection& sel,pObj->m_SelectedLiveLoads[llType])
       {
-         LiveLoadSelection& sel = pObj->m_SelectedLiveLoads[llType][itrk];
          const std::_tstring& name = sel.EntryName;
          pSave->put_Property(_T("VehicleName"), CComVariant(name.c_str()));
       }
@@ -3938,16 +3936,19 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
             LiveLoadSelection sel;
             sel.EntryName = vnam;
+            pObj->m_SelectedLiveLoads[llType].insert(sel);
+         }
+      }
 
-            if ( !pObj->IsReservedLiveLoad(sel.EntryName) )
-            {
-               use_library_entry( &pObj->m_LibObserver,
-                                  sel.EntryName, 
-                                  &sel.pEntry, 
-                                  *pLiveLoadLibrary);
-            }
-            
-            pObj->m_SelectedLiveLoads[llType].push_back(sel);
+      // assocated library entry
+      BOOST_FOREACH(LiveLoadSelection& sel,pObj->m_SelectedLiveLoads[llType])
+      {
+         if ( !pObj->IsReservedLiveLoad(sel.EntryName) )
+         {
+            use_library_entry(&pObj->m_LibObserver,
+                              sel.EntryName,
+                              &sel.pEntry,
+                              *pLiveLoadLibrary);
          }
       }
 
@@ -4611,8 +4612,8 @@ void CProjectAgentImp::VerifyRebarGrade()
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              lrfdVersionMgr::GetCodeString().c_str(),
-                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                              lrfdVersionMgr::GetCodeString(),
+                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                               lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -4627,8 +4628,8 @@ void CProjectAgentImp::VerifyRebarGrade()
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              lrfdVersionMgr::GetCodeString().c_str(),
-                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                              lrfdVersionMgr::GetCodeString(),
+                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                               lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -4646,8 +4647,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 lrfdVersionMgr::GetCodeString().c_str(),
-                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                                 lrfdVersionMgr::GetCodeString(),
+                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                                  lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -4662,8 +4663,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 lrfdVersionMgr::GetCodeString().c_str(),
-                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                                 lrfdVersionMgr::GetCodeString(),
+                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                                  lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -4682,8 +4683,8 @@ void CProjectAgentImp::VerifyRebarGrade()
    {
       CString strMsg;
       strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
-                     lrfdVersionMgr::GetCodeString().c_str(),
-                     lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims).c_str(),
+                     lrfdVersionMgr::GetCodeString(),
+                     lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims,false),
                      lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
       pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
@@ -5071,17 +5072,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
       return;
    }
 
-   GET_IFACE(IDocumentType,pDocType);
-   std::_tostringstream str;
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      str << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(segmentKey.girderIndex);
-   }
-   else
-   {
-      str << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(", Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex);
-   }
-   std::_tstring segmentLabel(str.str());
+   std::_tstring segmentLabel = SEGMENT_LABEL(segmentKey);
 
    const GirderLibraryEntry* pGirderEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
    // If library entry forbids offset, reset vertical adjustment of harped strands to zero (default). This will partially avoid getting
@@ -7462,7 +7453,7 @@ Float64 CProjectAgentImp::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType rati
    ATLASSERT(::IsPermitRatingType(ratingType));
 
 #if defined _DEBUG
-   pgsTypes::LimitState ls = ::GetServiceLimitStateType(ratingType);
+   pgsTypes::LimitState ls = ::GetStrengthLimitStateType(ratingType);
    ATLASSERT( GetLiveLoadFactor(ls,true) < 0 );
 #endif
 
@@ -8750,8 +8741,6 @@ void CProjectAgentImp::FirePendingEvents()
 	
 	   m_PendingEventsHash.clear();
 	   m_PendingEvents = 0;
-	
-	   Fire_OnFirePendingEvents();
 
       m_bFiringEvents = false;
    }
@@ -8759,6 +8748,8 @@ void CProjectAgentImp::FirePendingEvents()
    {
       m_EventHoldCount--;
    }
+	
+   Fire_OnFirePendingEvents();
 
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->FirePendingEvents();
@@ -8772,9 +8763,9 @@ void CProjectAgentImp::CancelPendingEvents()
       m_EventHoldCount = 0;
       m_PendingEventsHash.clear();
       m_PendingEvents = 0;
-
-      Fire_OnCancelPendingEvents();
    }
+
+   Fire_OnCancelPendingEvents();
 
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->CancelPendingEvents();
@@ -8901,8 +8892,8 @@ std::vector<std::_tstring> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoad
    std::vector<std::_tstring> strNames;
    strNames.reserve(m_SelectedLiveLoads[llType].size());
 
-   std::vector<LiveLoadSelection>::iterator iter(m_SelectedLiveLoads[llType].begin());
-   std::vector<LiveLoadSelection>::iterator iterEnd(m_SelectedLiveLoads[llType].end());
+   LiveLoadSelectionIterator iter(m_SelectedLiveLoads[llType].begin());
+   LiveLoadSelectionIterator iterEnd(m_SelectedLiveLoads[llType].end());
    for ( ; iter != iterEnd; iter++ )
    {
       const LiveLoadSelection& lls = *iter;
@@ -8920,11 +8911,9 @@ void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std:
    // first see of any data has changed
    if (names.size() == m_SelectedLiveLoads[llType].size())
    {
-      std::vector<LiveLoadSelection>::iterator iter(m_SelectedLiveLoads[llType].begin());
-      std::vector<LiveLoadSelection>::iterator iterEnd(m_SelectedLiveLoads[llType].end());
-      for ( ; iter != iterEnd; iter++ )
+      BOOST_FOREACH(LiveLoadSelection& selection,m_SelectedLiveLoads[llType])
       {
-         std::vector<std::_tstring>::const_iterator its = std::find(names.begin(), names.end(), iter->EntryName);
+         std::vector<std::_tstring>::const_iterator its = std::find(names.begin(), names.end(), selection.EntryName);
          if (its == names.end())
          {
             change = true;
@@ -8942,16 +8931,12 @@ void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std:
       LiveLoadLibrary* pLiveLoadLibrary = m_pLibMgr->GetLiveLoadLibrary();
 
       // one of the selected entries have changed - first release all entries
-      std::vector<LiveLoadSelection>::iterator iter(m_SelectedLiveLoads[llType].begin());
-      std::vector<LiveLoadSelection>::iterator iterEnd(m_SelectedLiveLoads[llType].end());
-      for ( ; iter != iterEnd; iter++ )
+      BOOST_FOREACH(LiveLoadSelection& selection,m_SelectedLiveLoads[llType])
       {
-         LiveLoadSelection& selection = *iter;
-
          if ( selection.pEntry != NULL )
          {
             release_library_entry( &m_LibObserver, 
-                                   iter->pEntry,
+                                   selection.pEntry,
                                    pLiveLoadLibrary);
          }
       }
@@ -8976,7 +8961,7 @@ void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std:
                                *pLiveLoadLibrary);
          }
 
-         m_SelectedLiveLoads[llType].push_back(selection);
+         m_SelectedLiveLoads[llType].insert(selection);
       }
 
       Fire_LiveLoadChanged();
@@ -10021,6 +10006,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDescription(_T("Final with Live Load (Bridge Site 3)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(true);
+   pTimelineEvent->GetApplyLoadActivity().ApplyRatingLiveLoad(true);
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // user defined loads

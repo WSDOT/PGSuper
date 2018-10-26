@@ -147,7 +147,7 @@ BOOL CRatingOptionsDlg::OnInitDialog()
 void CRatingOptionsDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    const std::map<IDType,IEditLoadRatingOptionsCallback*>& callbacks = pDoc->GetEditLoadRatingOptionsCallbacks();
    std::map<IDType,IEditLoadRatingOptionsCallback*>::const_iterator callbackIter(callbacks.begin());

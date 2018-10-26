@@ -119,7 +119,7 @@ void CTemporarySupportDlg::InitPages(const std::set<EditBridgeExtension>& editBr
 void CTemporarySupportDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditTemporarySupportCallback*> callbacks = pDoc->GetEditTemporarySupportCallbacks();
    std::map<IDType,IEditTemporarySupportCallback*>::iterator callbackIter(callbacks.begin());
@@ -139,7 +139,7 @@ void CTemporarySupportDlg::CreateExtensionPages()
 void CTemporarySupportDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_BridgeExtensionPages = editBridgeExtensions;
 
@@ -219,7 +219,7 @@ void CTemporarySupportDlg::NotifyBridgeExtensionPages()
    // It gives the bridge dialog extension pages to sync their data with whatever got changed in 
    // the extension pages in this dialog
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditTemporarySupportCallback*> callbacks = pDoc->GetEditTemporarySupportCallbacks();
    std::map<IDType,IEditTemporarySupportCallback*>::iterator callbackIter(callbacks.begin());

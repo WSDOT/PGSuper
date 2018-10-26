@@ -95,7 +95,7 @@ CPGSuperDocProxyAgent::~CPGSuperDocProxyAgent()
 {
 }
 
-void CPGSuperDocProxyAgent::SetDocument(CPGSuperDocBase* pDoc)
+void CPGSuperDocProxyAgent::SetDocument(CPGSDocBase* pDoc)
 {
    m_pMyDocument = pDoc;
 }
@@ -120,16 +120,12 @@ void CPGSuperDocProxyAgent::ResetStatusBar()
 
 void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
 {
-   GET_IFACE(IEAFAcceleratorTable,pAccelTable);
-   pAccelTable->AddAccelKey(FVIRTKEY,           VK_F5, ID_PROJECT_UPDATENOW,NULL);
-   pAccelTable->AddAccelKey(FCONTROL | FVIRTKEY,VK_U,  ID_PROJECT_UPDATENOW,NULL);
+   m_pMyDocument->CreateAcceleratorKeys();
 }
 
 void CPGSuperDocProxyAgent::RemoveAcceleratorKeys()
 {
-   GET_IFACE(IEAFAcceleratorTable,pAccelTable);
-   pAccelTable->RemoveAccelKey(FVIRTKEY,           VK_F5);
-   pAccelTable->RemoveAccelKey(FCONTROL | FVIRTKEY,VK_U );
+   m_pMyDocument->RemoveAcceleratorKeys();
 }
 
 void CPGSuperDocProxyAgent::CreateToolBars()
@@ -1374,7 +1370,7 @@ void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);

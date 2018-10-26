@@ -277,7 +277,7 @@ void CCopyGirderDlg::CopyToSelectionChanged()
    m_PropertiesList.ResetContent();
 
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    const std::map<IDType,ICopyGirderPropertiesCallback*>& callbacks = pDoc->GetCopyGirderPropertiesCallbacks();
    std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator iter(callbacks.begin());

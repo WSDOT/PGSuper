@@ -65,7 +65,7 @@ void CPierDisplayObjectEvents::EditPier(iDisplayObject* pDO)
    CDisplayView* pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDocBase*)pDoc)->EditPierDescription(m_PierIdx,EPD_GENERAL);
+   ((CPGSDocBase*)pDoc)->EditPierDescription(m_PierIdx,EPD_GENERAL);
 }
 
 void CPierDisplayObjectEvents::SelectPier(iDisplayObject* pDO)
@@ -214,7 +214,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,NULL);

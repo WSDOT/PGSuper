@@ -156,7 +156,7 @@ STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnContextMenu(iDisplayO
    METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    if ( pDO->IsSelected() )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       CEAFMenu* pMenu;
       if ( pThis->m_ViewType == CBridgeDisplayObjectEvents::Plan )
       {

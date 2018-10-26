@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 24.17   6  0.12  1     1    5B28       24   1/2  270 11.24 11.24   0  2.50  24   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    1.944   -2.224    2105 0.387  0.641  0.16 -0.03  0.00 -0.01 -0.04  39.37 121.01   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12    Sandy Creek    1      1      5B28         24   1/2  270  11.24  11.24   0   2.50   24     0    0   0   0   0   0   4.000  5.000   1.944    -2.224     2105   0.387  0.641  1.938  -0.35  -0.06  -0.07  -0.48   39.37  121.01    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 24.17   6  0.12  1     2    4B28       20   1/2  270 11.12 11.12   2  2.50  20   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.067   -2.337    1821 0.333  0.465  0.16 -0.03  0.00 -0.01 -0.04  32.21  98.66   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12    Sandy Creek    1      2      4B28         20   1/2  270  11.12  11.12   2   2.50   20     2    2   0   0   0   0   4.000  5.000   2.067    -2.337     1821   0.333  0.465  1.913  -0.36  -0.07  -0.08  -0.53   32.21   98.66    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 24.17   6  0.12  1     4    4B28       20   1/2  270 11.12 11.12   2  2.50  20   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.067   -2.337    1821 0.333  0.465  0.16 -0.03  0.00 -0.01 -0.04  32.21  98.66   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12    Sandy Creek    1      4      4B28         20   1/2  270  11.12  11.12   2   2.50   20     2    2   0   0   0   0   4.000  5.000   2.067    -2.337     1821   0.333  0.465  1.913  -0.36  -0.07  -0.08  -0.53   32.21   98.66    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

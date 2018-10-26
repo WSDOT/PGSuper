@@ -49,6 +49,7 @@ extern CComModule _Module;
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 #include <WBFLRCCapacity.h>
+#include <WBFLSTL.h>
 
 #include <System\System.h>
 #include <PgsExt\PgsExt.h>

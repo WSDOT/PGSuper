@@ -22,7 +22,7 @@
 
 /****************************************************************************
 CLASS
-   CPGSuperBaseCommandLineInfo
+   CPGSBaseCommandLineInfo
 ****************************************************************************/
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PgsuperBaseCommandLineInfo.h"
@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPGSuperBaseCommandLineInfo::CPGSuperBaseCommandLineInfo() :
+CPGSBaseCommandLineInfo::CPGSBaseCommandLineInfo() :
 CEAFCommandLineInfo(),
 m_bDo1250Test(false),
 m_SubdomainId(0),
@@ -48,13 +48,13 @@ m_bSetUpdateLibrary(false)
    m_Count=0;
 }
 
-CPGSuperBaseCommandLineInfo::~CPGSuperBaseCommandLineInfo()
+CPGSBaseCommandLineInfo::~CPGSBaseCommandLineInfo()
 {
 }
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void CPGSuperBaseCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast)
+void CPGSBaseCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast)
 {
    m_Count++;
 
@@ -171,7 +171,7 @@ void CPGSuperBaseCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL
    }
 }
 
-CString CPGSuperBaseCommandLineInfo::GetUsageMessage()
+CString CPGSBaseCommandLineInfo::GetUsageMessage()
 {
    CString strOption1(_T("/TestR - Generates NCHRP 12-50 test results for all problem domains"));
    CString strOption2(_T("/Test[n] - Generates NCHRP 12-50 test results for a specified problem domain. Substitute the problem domain ID for n"));
@@ -183,7 +183,7 @@ CString CPGSuperBaseCommandLineInfo::GetUsageMessage()
    return strMsg;
 }
 
-CString CPGSuperBaseCommandLineInfo::GetErrorMessage()
+CString CPGSBaseCommandLineInfo::GetErrorMessage()
 {
    CString strMsg;
    strMsg.Format(_T("%s was started with invalid command line options."),GetAppName());

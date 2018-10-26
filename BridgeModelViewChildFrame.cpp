@@ -449,7 +449,7 @@ void CBridgeModelViewChildFrame::OnViewGirder()
 
    if ( GetBridgePlanView()->GetSelectedGirder(&segmentKey) || GetBridgePlanView()->GetSelectedSegment(&segmentKey) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       pDoc->OnViewGirderEditor();
    }
 }
@@ -459,7 +459,7 @@ void CBridgeModelViewChildFrame::OnEditSpan()
    SpanIndexType spanIdx;
    if ( GetBridgePlanView()->GetSelectedSpan(&spanIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       pDoc->EditSpanDescription(spanIdx,ESD_GENERAL);
    }
 }
@@ -469,7 +469,7 @@ void CBridgeModelViewChildFrame::OnEditPier()
    PierIndexType pierIdx;
    if ( GetBridgePlanView()->GetSelectedPier(&pierIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       pDoc->EditPierDescription(pierIdx,EPD_GENERAL);
    }
 }
@@ -480,7 +480,7 @@ void CBridgeModelViewChildFrame::SelectSpan(SpanIndexType spanIdx)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectSpan(spanIdx);
    m_bSelecting = false;
 }
@@ -491,7 +491,7 @@ void CBridgeModelViewChildFrame::SelectPier(PierIndexType pierIdx)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectPier(pierIdx);
    m_bSelecting = false;
 }
@@ -502,7 +502,7 @@ void CBridgeModelViewChildFrame::SelectGirder(const CGirderKey& girderKey)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectGirder(girderKey);
    m_bSelecting = false;
 }
@@ -515,7 +515,7 @@ void CBridgeModelViewChildFrame::SelectSegment(const CSegmentKey& segmentKey)
    ATLASSERT(segmentKey.segmentIndex != INVALID_INDEX);
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectSegment(segmentKey);
    m_bSelecting = false;
 }
@@ -528,7 +528,7 @@ void CBridgeModelViewChildFrame::SelectClosureJoint(const CSegmentKey& closureKe
    ATLASSERT(closureKey.segmentIndex != INVALID_INDEX);
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectClosureJoint(closureKey);
    m_bSelecting = false;
 }
@@ -539,7 +539,7 @@ void CBridgeModelViewChildFrame::SelectTemporarySupport(SupportIDType tsID)
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectTemporarySupport(tsID);
    m_bSelecting = false;
 }
@@ -550,7 +550,7 @@ void CBridgeModelViewChildFrame::SelectDeck()
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectDeck();
    m_bSelecting = false;
 }
@@ -561,14 +561,14 @@ void CBridgeModelViewChildFrame::SelectAlignment()
       return;
 
    m_bSelecting = true;
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->SelectAlignment();
    m_bSelecting = false;
 }
 
 void CBridgeModelViewChildFrame::ClearSelection()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    pDoc->ClearSelection();
 }
 
@@ -584,7 +584,7 @@ void CBridgeModelViewChildFrame::OnDeletePier()
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedPier(&pierIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       pDoc->DeletePier(pierIdx);
    }
    else
@@ -619,7 +619,7 @@ void CBridgeModelViewChildFrame::OnDeleteSpan()
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedSpan(&spanIdx) )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
       pDoc->DeleteSpan(spanIdx);
    }
    else
@@ -668,7 +668,7 @@ void CBridgeModelViewChildFrame::OnInsertSpan()
          bool bCreateNewGroup = dlg.m_bCreateNewGroup;
          EventIndexType eventIdx = dlg.m_EventIndex;
 
-         CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+         CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
          pDoc->InsertSpan(refPierIdx,face,span_length,bCreateNewGroup,eventIdx);
       }
    }
@@ -698,7 +698,7 @@ void CBridgeModelViewChildFrame::OnInsertPier()
          bool bCreateNewGroup = dlg.m_bCreateNewGroup;
          EventIndexType eventIdx = dlg.m_EventIndex;
 
-         CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+         CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
          pDoc->InsertSpan(refPierIdx,pierFace,span_length,bCreateNewGroup,eventIdx);
 
          if ( pierFace == pgsTypes::Back )

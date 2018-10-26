@@ -24,13 +24,6 @@
 
 #pragma once
 
-template<class T>
-struct IncGenerator
-{
-   T current;
-   IncGenerator(const T& start) : current(start) {}
-   T operator()(){return current++;}
-};
 
 #define RPT_GDR_END_LOCATION      _T("Location from") << rptNewLine << _T("End of Girder")
 #define RPT_LFT_SUPPORT_LOCATION  _T("Location from") << rptNewLine << _T("Left Support")

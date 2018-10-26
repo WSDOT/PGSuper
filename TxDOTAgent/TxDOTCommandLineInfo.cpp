@@ -68,9 +68,10 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
       // Parameter is a flag (-flag or /flag)
       if ( m_Count != 0 )
       {
-         // the flag must be the first and only flag on the command line
-         m_bError = TRUE;
-         m_strErrorMsg = GetUsageString();
+         // Not necessarily an error... might be a different extension's command line option
+         //// the flag must be the first and only flag on the command line
+         //m_bError = TRUE;
+         //m_strErrorMsg = GetUsageString();
       }
       else if ( strParam.CompareNoCase(_T("TestDF")) == 0 )
       {

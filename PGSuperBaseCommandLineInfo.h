@@ -28,7 +28,7 @@
 
 /*****************************************************************************
 CLASS 
-   CPGSuperBaseCommandLineInfo
+   CPGSBaseCommandLineInfo
 
    Custom command line parser for PGSuper and PGSplice
 
@@ -52,7 +52,7 @@ LOG
 // Below is to take a sample exterior and interior girder (A and mid-most)
 #define TXEIGIRDERS  -6 
 
-class  CPGSuperBaseCommandLineInfo : public CEAFCommandLineInfo
+class  CPGSBaseCommandLineInfo : public CEAFCommandLineInfo
 {
 public:
    //// Different types of Analysis/Design and level of detail (Ext==exteneded) for TxDOT CAD reports
@@ -60,8 +60,8 @@ public:
    //enum TxFType {txfNormal, txfExtended, txfTest};
 
 
-   CPGSuperBaseCommandLineInfo();
-   virtual ~CPGSuperBaseCommandLineInfo();
+   CPGSBaseCommandLineInfo();
+   virtual ~CPGSBaseCommandLineInfo();
 
    // derive new version to parse new commands
    virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
@@ -80,8 +80,8 @@ public:
 
 private:
    // Prevent accidental copying and assignment
-   CPGSuperBaseCommandLineInfo(const CPGSuperBaseCommandLineInfo&);
-   CPGSuperBaseCommandLineInfo& operator=(const CPGSuperBaseCommandLineInfo&);
+   CPGSBaseCommandLineInfo(const CPGSBaseCommandLineInfo&);
+   CPGSBaseCommandLineInfo& operator=(const CPGSBaseCommandLineInfo&);
 
    virtual LPCTSTR GetAppName() const = 0;
 };

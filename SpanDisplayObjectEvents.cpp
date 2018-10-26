@@ -70,7 +70,7 @@ void CBridgePlanViewSpanDisplayObjectEvents::EditSpan(iDisplayObject* pDO)
    CDisplayView* pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
+   ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
 }
 
 void CBridgePlanViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)
@@ -210,7 +210,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMe
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_SPAN_CONTEXT,NULL);
@@ -294,7 +294,7 @@ void CBridgeSectionViewSpanDisplayObjectEvents::EditSpan(iDisplayObject* pDO)
    CDisplayView* pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
+   ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
 }
 
 void CBridgeSectionViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)

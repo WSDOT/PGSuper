@@ -194,7 +194,7 @@ LRESULT CPierDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 void CPierDetailsDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
    std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -214,7 +214,7 @@ void CPierDetailsDlg::CreateExtensionPages()
 void CPierDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_BridgeExtensionPages = editBridgeExtensions;
 
@@ -302,7 +302,7 @@ void CPierDetailsDlg::NotifyBridgeExtensionPages()
    // It gives the bridge dialog extension pages to sync their data with whatever got changed in 
    // the extension pages in this dialog
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    const std::map<IDType,IEditPierCallback*>& callbacks = pDoc->GetEditPierCallbacks();
    std::map<IDType,IEditPierCallback*>::const_iterator callbackIter(callbacks.begin());

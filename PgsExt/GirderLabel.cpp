@@ -30,6 +30,7 @@
 #include <PgsExt\GirderLabel.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Project.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,6 +62,52 @@ std::_tstring pgsGirderLabel::GetGirderLabel(GirderIndexType gdrIdx)
    }
 
    return strLabel;
+}
+
+std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      std::_tostringstream os;
+      os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      return os.str();
+   }
+   else
+   {
+      std::_tostringstream os;
+      os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      return os.str();
+   }
+}
+
+std::_tstring pgsGirderLabel::GetSegmentLabel(const CSegmentKey& segmentKey)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      ATLASSERT(segmentKey.segmentIndex == 0);
+      std::_tostringstream os;
+      os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(segmentKey.girderIndex);
+      return os.str();
+   }
+   else
+   {
+      std::_tostringstream os;
+      os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(", Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex);
+      return os.str();
+   }
+}
+
+std::_tstring pgsGirderLabel::GetClosureLabel(const CClosureKey& closureKey)
+{
+   std::_tostringstream os;
+   os << _T("Group ") << LABEL_GROUP(closureKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(closureKey.girderIndex) << _T(", Closure ") << LABEL_SEGMENT(closureKey.segmentIndex);
+   return os.str();
 }
 
 bool pgsGirderLabel::UseAlphaLabel()

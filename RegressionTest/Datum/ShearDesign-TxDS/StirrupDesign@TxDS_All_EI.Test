@@ -1,22 +1,22 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     Tx34       42   1/2  270 10.92  6.73   8 30.5  5.100  5.800    3.054   -3.703   3767  0.637  0.814  0.37 -0.11  0.00 -0.01 -0.12 131.83 356.26   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      1      Tx34         42   1/2  270  10.92   6.73                                               8  30.5  8.5  5.100  5.800   3.054    -3.703     3767   0.637  0.814  4.469  -1.32  -0.08  -0.08  -1.48  131.83  356.26    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     Tx34       44   1/2  270 10.74  6.74   8 30.5  5.300  6.200    3.188   -3.894   3926  0.637  0.814  0.38 -0.13  0.00 -0.01 -0.13 140.97 378.30   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      2      Tx34         44   1/2  270  10.74   6.74                                               8  30.5  8.5  5.300  6.200   3.188    -3.894     3926   0.637  0.814  4.556  -1.50  -0.11  -0.07  -1.70  140.97  378.30    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     Tx34       54   1/2  270  9.75  5.75  12 30.5  6.200  6.700    3.690   -4.316   4176  0.637  0.814  0.38 -0.13  0.00 -0.01 -0.13 186.86 513.14   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      4      Tx34         54   1/2  270   9.75   5.75                                              12  30.5 12.5  6.200  6.700   3.690    -4.316     4176   0.637  0.814  4.602  -1.50  -0.11  -0.07  -1.70  186.86  513.14    1.00    1.00    1.00 
 
 
 Girder design was Not Successful

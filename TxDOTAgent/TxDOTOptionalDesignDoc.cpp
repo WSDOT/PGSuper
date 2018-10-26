@@ -148,7 +148,8 @@ m_GirderModelEditorSettings(DEF_GV)
    m_ProjectData.Attach(this); // subscribe to events
 
    // Reserve command IDs for document plug ins
-   GetPluginCommandManager()->ReserveCommandIDRange(TOGA_PLUGIN_COMMAND_COUNT);
+   UINT nCommands = GetPluginCommandManager()->ReserveCommandIDRange(TOGA_PLUGIN_COMMAND_COUNT);
+   ATLASSERT(nCommands == TOGA_PLUGIN_COMMAND_COUNT);
 }
 
 CTxDOTOptionalDesignDoc::~CTxDOTOptionalDesignDoc()
@@ -324,7 +325,7 @@ BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
       return FALSE;
 
    // NOTE: This could be a problem... the PGSuper doc proxy agent is local to the PGSuper.exe project
-   // If it is needed in this document, I recommend that we create a CPGSuperDocBase base class for
+   // If it is needed in this document, I recommend that we create a CPGSDocBase base class for
    // CPGSuperDoc and CTxDOTOptionDesignDoc. This class would go into a new DLL (on that will ultimately
    // have the PGSuper app plugin and all the associated files) and be exported. This class would implement
    // this method so all PGSuper-doc objects have the proper agents loaded.

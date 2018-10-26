@@ -611,15 +611,16 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
          // copy handling data. storage configuration was added in PGSuper Version 3
          // the assumed storage configuration was at the permanent support locations.
-         // use the girder end distance as the default storage location.
+         // use the average girder end distance as the default storage location.
          pNewSegment->HandlingData = girderData.HandlingData;
          CPierData2* pPier = pNewSpan->GetPier(pgsTypes::metStart);
-         Float64 endDist;  
+         Float64 startEndDist, endEndDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
-         pNewSegment->HandlingData.LeftStoragePoint = endDist;
+         pPier->GetGirderEndDistance(pgsTypes::Ahead,&startEndDist,&endDistMeasure);
          pPier = pNewSpan->GetPier(pgsTypes::metEnd);
-         pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
+         pPier->GetGirderEndDistance(pgsTypes::Back,&endEndDist,&endDistMeasure);
+         Float64 endDist = (startEndDist + endEndDist)/2;
+         pNewSegment->HandlingData.LeftStoragePoint = endDist;
          pNewSegment->HandlingData.RightStoragePoint = endDist;
 
          pNewSegment->LongitudinalRebarData = girderData.LongitudinalRebarData;

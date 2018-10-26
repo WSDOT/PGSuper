@@ -200,7 +200,7 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu;
 

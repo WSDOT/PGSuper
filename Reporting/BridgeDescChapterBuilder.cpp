@@ -2038,7 +2038,6 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    GET_IFACE2(pBroker, IBridge,           pBridge ); 
    GET_IFACE2(pBroker, IStrandGeometry,   pStrand);
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, IDocumentType,     pDocType);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -2059,24 +2058,14 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             // Setup the table
-            std::_tostringstream os;
-            if ( pDocType->IsPGSuperDocument() )
-            {
-               os << _T("Span ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) <<std::endl;
-            }
-            else
-            {
-               os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) <<std::endl;
-            }
+            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-            rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,os.str().c_str());
+            rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,SEGMENT_LABEL(thisSegmentKey));
             pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
             pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
             pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
             pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
             *pPara << pTable << rptNewLine;
-
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
             RowIndexType row = 0;
 

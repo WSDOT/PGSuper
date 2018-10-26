@@ -60,9 +60,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperDoc
 
-IMPLEMENT_DYNCREATE(CPGSuperDoc, CPGSuperDocBase)
+IMPLEMENT_DYNCREATE(CPGSuperDoc, CPGSDocBase)
 
-BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSuperDocBase)
+BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSDocBase)
 	//{{AFX_MSG_MAP(CPGSuperDoc)
 	ON_COMMAND(ID_PROJECT_BRIDGEDESC, OnEditBridgeDescription)
 	ON_COMMAND(ID_EDIT_SEGMENT, OnEditGirder)
@@ -94,7 +94,7 @@ BOOL CPGSuperDoc::Init()
    GetComponentInfoManager()->SetCATID(GetComponentInfoCategoryID());
    GetComponentInfoManager()->LoadPlugins();
 
-   return CPGSuperDocBase::Init();
+   return CPGSDocBase::Init();
 }
 
 #ifdef _DEBUG
@@ -489,7 +489,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
 void CPGSuperDoc::LoadDocumentSettings()
 {
-   CPGSuperDocBase::LoadDocumentSettings();
+   CPGSDocBase::LoadDocumentSettings();
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
@@ -533,7 +533,7 @@ void CPGSuperDoc::LoadDocumentSettings()
 
 void CPGSuperDoc::SaveDocumentSettings()
 {
-   CPGSuperDocBase::SaveDocumentSettings();
+   CPGSDocBase::SaveDocumentSettings();
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();

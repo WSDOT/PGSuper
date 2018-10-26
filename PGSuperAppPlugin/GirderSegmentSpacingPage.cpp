@@ -143,6 +143,19 @@ void CGirderSegmentSpacingPage::DoDataExchange(CDataExchange* pDX)
       pSpacing->SetRefGirder(m_RefGirderIdx);
       pSpacing->SetRefGirderOffset(m_RefGirderOffset);
       pSpacing->SetRefGirderOffsetType(m_RefGirderOffsetType);
+
+      if ( m_bIsPier )
+      {
+         // we are editing a pier...
+         CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+         if ( pParent->m_pPier->IsInteriorPier() )
+         {
+            //... and it is an interior pier.
+            // There is only one spacing for an interior pier so that precast segments line up.
+            // We edit the back spacing so make the ahead spacing same as the back spacing.
+            pParent->m_pPier->SetGirderSpacing(pgsTypes::Ahead,*(pParent->m_pPier->GetGirderSpacing(pgsTypes::Back)));
+         }
+      }
    }
 }
 

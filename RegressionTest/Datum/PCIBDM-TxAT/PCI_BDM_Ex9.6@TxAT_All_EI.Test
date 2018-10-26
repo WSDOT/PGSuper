@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  1     1     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.724   -3.662   8432  1.020  1.000 -0.17 -0.10  0.00 -0.00 -0.10   0.00   0.00   4.00  10.00  10.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.00    4  12.00                   1      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.724    -3.662     8432   1.020  1.000  -2.01  -1.19  -0.07  -0.04  -1.30    0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -16,9 +16,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  1     2     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.869   -3.762   8361  0.928  1.083 -0.17 -0.12  0.00 -0.00 -0.12   0.00   0.00   4.00  10.00  10.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.00    4  12.00                   1      2      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.869    -3.762     8361   0.928  1.083  -2.01  -1.40  -0.07  -0.04  -1.51    0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -33,9 +33,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  2     1     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.990   -3.785   8223  1.000  1.000 -0.23 -0.14  0.00 -0.00 -0.14   0.00   0.00   4.00  10.00  10.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.00    4  12.00                   2      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.990    -3.785     8223   1.000  1.000  -2.77  -1.63  -0.02  -0.01  -1.67    0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -51,9 +51,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  2     2     BT72       44   1/2  270 30.79 16.06  12 70.0  5.500  7.000    3.180   -3.935   8255  0.908  1.083  0.36 -0.16  0.00 -0.00 -0.16 132.18 342.70   3.00  10.00  10.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.00    4  12.00                   2      2      BT72         44   1/2  270  30.79  16.06                                              12  70.0 16.0  5.500  7.000   3.180    -3.935     8255   0.908  1.083  4.361  -1.92  -0.02  -0.01  -1.96  132.18  342.70    3.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -61,9 +61,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  3     1     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.724   -3.662   8433  1.020  1.000 -0.17 -0.10  0.00 -0.00 -0.10   0.00   0.00   4.00  10.00  10.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.00    4  12.00                   3      1      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.724    -3.662     8433   1.020  1.000  -2.01  -1.19  -0.07  -0.04  -1.30    0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -81,9 +81,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  3     2     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.869   -3.762   8361  0.928  1.083 -0.17 -0.12  0.00 -0.00 -0.12   0.00   0.00   4.00  10.00  10.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.00    4  12.00                   3      2      BT72          0   1/2  270   0.00   0.00                                               0   0.0  0.0  5.500  7.000   2.869    -3.762     8361   0.928  1.083  -2.01  -1.40  -0.07  -0.04  -1.51    0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful

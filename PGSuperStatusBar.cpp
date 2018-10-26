@@ -42,7 +42,7 @@ static UINT indicators[] =
    ID_INDICATOR_ANALYSIS,
    EAFID_INDICATOR_STATUS,
    EAFID_INDICATOR_MODIFIED,
-   ID_INDICATOR_AUTOCALC_ON,
+   EAFID_INDICATOR_AUTOCALC_ON,
    ID_INDICATOR_CAPS,
    ID_INDICATOR_NUM,
    ID_INDICATOR_SCRL,
@@ -54,14 +54,13 @@ static UINT indicators[] =
 CPGSuperStatusBar::CPGSuperStatusBar()
 {
    m_AnalysisModePaneIdx = -1;
-   m_AutoCalcPaneIdx     = -1;
 }
 
 CPGSuperStatusBar::~CPGSuperStatusBar()
 {
 }
 
-BEGIN_MESSAGE_MAP(CPGSuperStatusBar, CEAFStatusBar)
+BEGIN_MESSAGE_MAP(CPGSuperStatusBar, CEAFAutoCalcStatusBar)
 	//{{AFX_MSG_MAP(CPGSuperStatusBar)
 	ON_WM_LBUTTONDBLCLK()
 	//}}AFX_MSG_MAP
@@ -76,7 +75,7 @@ void CPGSuperStatusBar::GetStatusIndicators(const UINT** lppIDArray,int* pnIDCou
 BOOL CPGSuperStatusBar::SetStatusIndicators(const UINT* lpIDArray, int nIDCount)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return CEAFStatusBar::SetStatusIndicators(lpIDArray,nIDCount);
+   return CEAFAutoCalcStatusBar::SetStatusIndicators(lpIDArray,nIDCount);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,14 +92,7 @@ void CPGSuperStatusBar::OnLButtonDblClk(UINT nFlags, CPoint point)
       PostMessage(WM_COMMAND,ID_PROJECT_ANALYSIS,0);
    }
 
-   // AutoCalc Mode
-   GetStatusBarCtrl().GetRect(GetAutoCalcPaneIndex(),&rect);
-   if (rect.PtInRect(point))
-   {
-      PostMessage(WM_COMMAND,ID_PROJECT_AUTOCALC,0);
-   }
-
-   CEAFStatusBar::OnLButtonDblClk(nFlags, point);
+   CEAFAutoCalcStatusBar::OnLButtonDblClk(nFlags, point);
 }
 
 int CPGSuperStatusBar::GetAnalysisModePaneIndex()
@@ -125,51 +117,15 @@ int CPGSuperStatusBar::GetAnalysisModePaneIndex()
    return m_AnalysisModePaneIdx;
 }
 
-int CPGSuperStatusBar::GetAutoCalcPaneIndex()
-{
-   if ( m_AutoCalcPaneIdx < 0 )
-   {
-      for ( int i = 0; i < GetPaneCount(); i++ )
-      {
-         UINT nID;
-         UINT nStyle;
-         int cxWidth;
-         GetPaneInfo(i,nID,nStyle,cxWidth);
-
-         if ( nID == ID_INDICATOR_AUTOCALC_ON )
-         {
-            m_AutoCalcPaneIdx = i;
-            break;
-         }
-      }
-   }
-
-   return m_AutoCalcPaneIdx;
-}
-
 void CPGSuperStatusBar::Reset()
 {
-   CEAFStatusBar::Reset();
+   CEAFAutoCalcStatusBar::Reset();
 
    int idx = GetAnalysisModePaneIndex();
    if ( 0 <= idx )
+   {
       SetPaneText( idx, _T("") );
-
-   idx = GetAutoCalcPaneIndex();
-   if ( 0 <= idx )
-      SetPaneText( idx, _T("") );
-}
-
-void CPGSuperStatusBar::AutoCalcEnabled( bool bEnable )
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CString status_text;
-   VERIFY(status_text.LoadString(bEnable ? ID_INDICATOR_AUTOCALC_ON : ID_INDICATOR_AUTOCALC_OFF));
-
-   int idx = GetAutoCalcPaneIndex();
-   if ( 0 <= idx )
-      SetPaneText(idx, status_text, TRUE);
+   }
 }
 
 void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType)
@@ -190,5 +146,7 @@ void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType an
 
    int idx = GetAnalysisModePaneIndex();
    if ( 0 <= idx )
+   {
       SetPaneText(idx,strAnalysisType,TRUE);
+   }
 }

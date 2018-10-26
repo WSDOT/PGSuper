@@ -69,14 +69,14 @@ int CStrandRowGrid::GetColWidth(ROWCOL nCol)
    switch (nCol)
    {
    case 0:
-      return (int)(rect.Width( )*(Float64)1/7);
+      return (int)(rect.Width( )*(Float64)4/20);
    case 1:
-      return (int)(rect.Width( )*(Float64)3/7);
+      return (int)(rect.Width( )*(Float64)8/20);
    case 2:
-      return (int)(rect.Width( )*(Float64)3/7);
+      return (int)(rect.Width( )*(Float64)8/20);
    default:
       ASSERT(0);
-      return (int)(rect.Width( )/7);
+      return (int)(rect.Width( )/5);
    }
 }
 
@@ -257,7 +257,7 @@ CTxDOTOptionalDesignGirderData::StrandRowContainer CStrandRowGrid::GetData()
          CTxDOTOptionalDesignGirderData::StrandRow strrow;
 
          long strandcnt;
-         sysTokenizer::ParseLong(strStrands, (long*)&strandcnt);  // save num strands as integral value as well
+         sysTokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
 
          strrow.StrandsInRow = (StrandIndexType)strandcnt;
 
@@ -289,7 +289,7 @@ void CStrandRowGrid::ComputeStrands(StrandIndexType* pNum, Float64* pCg)
       if (strStrands!=_T("0"))
       {
          long strandcnt;
-         sysTokenizer::ParseLong(strStrands, (long*)&strandcnt);  // save num strands as integral value as well
+         sysTokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
 
          CString strRow = GetCellValue(row,1);
          Float64 rowht;

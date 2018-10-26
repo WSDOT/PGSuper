@@ -32,7 +32,7 @@
 class ATL_NO_VTABLE CCurvelImporter : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CCurvelImporter, &CLSID_CurvelImporter>,
-   public IPGSuperDataImporter
+   public IPGSDataImporter
 {
 public:
 	CCurvelImporter()
@@ -47,10 +47,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_CURVELIMPORTER)
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_COM_MAP(CCurvelImporter)
-	COM_INTERFACE_ENTRY(IPGSuperDataImporter)
+	COM_INTERFACE_ENTRY(IPGSDataImporter)
 END_COM_MAP()
 
-// IPGSuperDataImporter
+// IPGSDataImporter
 public:
    STDMETHOD(Init)(UINT nCmdID);
    STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText);

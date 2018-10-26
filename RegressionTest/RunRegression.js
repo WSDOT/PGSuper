@@ -44,11 +44,15 @@ timerFileDate = timerFileDate.replace(/:/gi, ";");
 var timerFileName = new String;
 timerFileName = "\\ARP\\PGSuper\\RegressionTest\\RegTimer_" + timerFileDate + ".log";
 
-var timerFile = FSO.OpenTextFile(timerFileName, 2, true); // 2 = write new file
-timerFile.WriteLine("********** Starting new regr test at: " + startDate.toString() + " elapsed times in minutes *************");
-
 // parse the command line and set options
 var st = ParseCommandLine();
+
+if ( ExecuteCommands )
+{
+   var timerFile = FSO.OpenTextFile(timerFileName, 2, true); // 2 = write new file
+   timerFile.WriteLine("********** Starting new regr test at: " + startDate.toString() + " elapsed times in minutes *************");
+}
+
 if (st!=0)
 {
    CleanUpTest();
@@ -93,6 +97,21 @@ if (OldTxDOTAgentState == "Disabled") {
     WScript.Quit(1);
 }
 
+
+// Ensure XBRate Extension Agent is enabled. It is required for the /XBR commands
+var OldXBRateAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{60BF2930-673C-4d29-B654-8A2E0879DE2B}");
+if (OldXBRateAgentState == "Disabled") {
+    DisplayMessage("********");
+    DisplayMessage("********");
+    DisplayMessage("Error - XBRateAgent extensions are not Enabled - Regression tests depend");
+    DisplayMessage("        on this to output test data.");
+    DisplayMessage("        To fix: Start PGSuper and enable the XBrate extensions from");
+    DisplayMessage("        the Manage Extensions dialog.");
+    DisplayMessage("********");
+    DisplayMessage("********");
+    WScript.Quit(1);
+}
+
 // First clean up results from any old runs and set up environment
 var CurrentFolder = StartFolderSpec;
 InitTest(CurrentFolder);
@@ -120,12 +139,16 @@ var endTime = endDate.getTime();
 var elapsed = (endTime-startTime)/60000.0;
 DisplayMessage("Elapsed Time was: "+elapsed+" Minutes");
 
-var myFile = FSO.OpenTextFile("\\ARP\\PGSuper\\RegressionTest\\RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
-myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
-myFile.close();
+if ( ExecuteCommands )
+{
+   // only log times if the tess were actually run... (don't log times when /N option is used... it isn't meaninful data)
+   var myFile = FSO.OpenTextFile("\\ARP\\PGSuper\\RegressionTest\\RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
+   myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
+   myFile.close();
 
-timerFile.WriteLine(endDate.toString() + " : Total Elapsed Time was: " + elapsed + " Minutes");
-timerFile.close();  
+   timerFile.WriteLine(endDate.toString() + " : Total Elapsed Time was: " + elapsed + " Minutes");
+   timerFile.close();  
+}
       
 WScript.Quit(st);
 
@@ -166,16 +189,16 @@ function RunTest (currFolder, currCommand)
                newSG = ParseGirderFromFileName(s, currSpan, currGirder);
 
                var outFile= new String;
-               if (newCommand!="TestR")
-               {
-                  outFile = s.substring(0,idx) + "@" + newCommand + "_" + newSG.m_Span + "_" + newSG.m_Girder + ".Test";
-                  cmd = Application + " /" + newCommand + " " + s + " " + outFile + " " + newSG.m_Span + " " + newSG.m_Girder;
-               }
-               else
+               if (newCommand == "TestR"  || newCommand == "XBRTest" )
                {
                   // Strip output file name when 1250 is used (1250's generate their own file names)
                   outFile = "";
                   cmd = Application + " /" + newCommand + " " + s; 
+               }
+               else
+               {
+                  outFile = s.substring(0,idx) + "@" + newCommand + "_" + newSG.m_Span + "_" + newSG.m_Girder + ".Test";
+                  cmd = Application + " /" + newCommand + " " + s + " " + outFile + " " + newSG.m_Span + " " + newSG.m_Girder;
                }
 
                if(ExecuteCommands)
@@ -248,8 +271,8 @@ function InitTest(currFolder)
     }
    
    // Save initial server and publisher
-   OldCatalogServer = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\CatalogServer");
-   OldCatalogPublisher = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\Publisher");
+   OldCatalogServer = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\CatalogServer2");
+   OldCatalogPublisher = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\Publisher2");
    
    // Run PGSuper to set new server and publisher
    SetPGSuperLibrary(NewCatalogServer, NewCatalogPublisher);
@@ -264,7 +287,7 @@ function SetPGSuperLibrary(server, publisher)
    {
        DisplayMessage("Running: "+ cmd);
        DisplayMessage("");
-       st = wsShell.Run(cmd,1,"TRUE");
+       st = wsShell.Run(cmd,1,"TRUE"); 
    }
    else
    {
@@ -398,6 +421,10 @@ function ParseCommandFromFolderName(currCommand, folderName)
      else if (s=="TXTOGA")
      {
         cmd = "TxToga";
+     }
+     else if ( s == "XBRTEST" )
+     {
+        cmd = "XBRTest"
      }
      else
      {

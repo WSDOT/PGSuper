@@ -1027,7 +1027,7 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 
 void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )

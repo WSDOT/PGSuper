@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    W35DG  *    15  0.60  270 20.17 11.37   5 31.0  4.100  5.000    1.551   -2.629   1960  0.625  0.625  0.16 -0.00 -0.01 -0.01 -0.01  51.37 139.41   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      1     W35DG         15   0.6  270  20.17  11.37   0   2.00    6     0    0   0   0   0   0   4.100  5.000   1.551    -2.629     1960   0.625  0.625  1.966  -0.00  -0.07  -0.07  -0.15   51.37  139.41    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -10,9 +10,9 @@ Confinement zone check failed.
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    W35DG  *    14  0.60  270 20.18 12.46   4 31.0  4.000  5.000    1.426   -2.441   1780  0.534  0.667  0.15 -0.00 -0.01 -0.01 -0.01  44.88 125.08   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      2     W35DG         14   0.6  270  20.18  12.46   0   2.00    6     0    0   0   0   0   0   4.000  5.000   1.426    -2.441     1780   0.534  0.667  1.854  -0.01  -0.07  -0.07  -0.16   44.88  125.08    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -22,9 +22,9 @@ Confinement zone check failed.
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     3    W35DG  *    14  0.60  270 20.18 12.46   4 31.0  4.000  5.000    1.426   -2.441   1780  0.534  0.667  0.15 -0.00 -0.01 -0.01 -0.01  44.88 125.08   1.75   5.00   5.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                   1      3     W35DG         14   0.6  270  20.18  12.46   0   2.00    6     0    0   0   0   0   0   4.000  5.000   1.426    -2.441     1780   0.534  0.667  1.854  -0.01  -0.07  -0.07  -0.16   44.88  125.08    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

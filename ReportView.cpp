@@ -234,7 +234,7 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
    // creation because the underlying framework doesn't support it directly.
 
    CEAFDocument* pEAFDoc = (CEAFDocument*)GetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
    CEAFAutoCalcDocMixin* pAutoCalcDoc = dynamic_cast<CEAFAutoCalcDocMixin*>(pDoc);
    ATLASSERT(pAutoCalcDoc); // your document must use the autocalc mix in
 
@@ -278,8 +278,6 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
 
       if(rptSpec)
       {
-         GET_IFACE2(pBroker,IDocumentType,pDocType);
-
          CMultiViewSpanGirderReportSpecification* pSGRptSpec( dynamic_cast<CMultiViewSpanGirderReportSpecification*>(rptSpec.get()) );
 
          AFX_MANAGE_STATE(AfxGetStaticModuleState()); /////////
@@ -301,16 +299,7 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
             const CGirderKey& girderKey(*iter);
 
             // Progress button
-            std::_tostringstream os;
-            if ( pDocType->IsPGSuperDocument() )
-            {
-               os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
-            }
-            else
-            {
-               os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
-            }
-            pProgress->UpdateMessage(os.str().c_str());
+            pProgress->UpdateMessage(GIRDER_LABEL(girderKey));
 
             if ( pProgress->Continue() != S_OK )
             {

@@ -230,7 +230,7 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
 
-      CPGSuperDocBase* pPGSuperDoc = (CPGSuperDocBase*)pDoc;
+      CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
@@ -520,7 +520,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContex
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
 
-      CPGSuperDocBase* pPGSuperDoc = (CPGSuperDocBase*)pDoc;
+      CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
@@ -770,7 +770,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
          }
       }
 
-      CPGSuperDocBase* pBaseDoc = (CPGSuperDocBase*)(pDoc);
+      CPGSDocBase* pBaseDoc = (CPGSDocBase*)(pDoc);
       pBaseDoc->BuildReportMenu(pMenu,true);
 
       const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pBaseDoc->GetBridgeSectionViewCallbacks();

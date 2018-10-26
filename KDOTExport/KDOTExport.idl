@@ -24,7 +24,7 @@ library KDOTExport
 	]
 	coclass PGSuperDataExporter
 	{
-		[default] interface IPGSuperDataExporter;
+		[default] interface IPGSDataExporter;
 	};
 
    [

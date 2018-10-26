@@ -101,21 +101,9 @@ void CGraphView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IVersionInfo,pVerInfo);
-
    // get paper size
    PGSuperCalculationSheet border(pBroker);
 
-   CDocument* pDoc = GetDocument();
-   CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();
-   CComPtr<IEAFAppPlugin> appPlugin;
-   pDocTemplate->GetPlugin(&appPlugin);
-   CString strBottomTitle;
-   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),sysDate().Year());
-
-   border.SetTitle(strBottomTitle);
-   CString path = pDoc->GetPathName();
-   border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);
 
    if (rcPrint.IsRectEmpty())

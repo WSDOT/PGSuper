@@ -85,7 +85,7 @@ BOOL CSpecDescrPage::OnInitDialog()
    int idx;
    for ( int i = 1; i < (int)lrfdVersionMgr::LastVersion; i++ )
    {
-      idx = pSpec->AddString(lrfdVersionMgr::GetVersionString((lrfdVersionMgr::Version)(i)).c_str());
+      idx = pSpec->AddString(lrfdVersionMgr::GetVersionString((lrfdVersionMgr::Version)(i)));
       pSpec->SetItemData(idx,(DWORD)(i));
    }
 

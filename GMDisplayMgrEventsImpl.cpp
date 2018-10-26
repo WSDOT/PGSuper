@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGMDisplayMgrEventsImpl
-CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSuperDocBase* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation)
+CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSDocBase* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation)
 {
    m_pDoc    = pDoc;
    m_pFrame  = pFrame;
@@ -139,7 +139,7 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CDisplayView* pView = pDisplayMgr->GetView();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_GIRDER_CTX,NULL);

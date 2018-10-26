@@ -1,7 +1,7 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.50   6  7.50  1     1    U40        66   1/2  270 12.66 11.95  28  2.17  27  20  6  6  4  2  2  0  0  0  0  0  5.300  7.100    4.561   -3.840    6428 0.525  0.717  0.37 -0.21 -0.01 -0.01 -0.23 179.14 484.02   1.00   1.00   1.00
-                                                                       4.14  27   8  8  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.50    6   7.50    U40, 7.5, 5    1      1      U40          66   1/2  270  12.66  11.95  28   2.17   27    20    6   6   4   2   2   5.300  7.100   4.561    -3.840     6428   0.525  0.717  4.456  -2.46  -0.13  -0.10  -2.70  179.14  484.02    1.00    1.00    1.00 
+                                                                                                  4.14   27     8    8   0   0   0   0 
 
 
 The Specification Check was Not Successful
@@ -9,10 +9,10 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.50   6  7.50  1     2    U40        43  0.60  270 13.45 12.87  22  2.17  27  20  6  8  2  2  2  0  0  0  0  0  5.000  6.400    4.340   -3.666    6197 0.521  0.717  0.38 -0.18 -0.01 -0.01 -0.20 160.65 432.94   1.00   1.00   1.00
-                                                                       4.14  16   2  2  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.50    6   7.50    U40, 7.5, 5    1      2      U40          43   0.6  270  13.45  12.87  22   2.17   27    20    6   8   2   2   2   5.000  6.400   4.340    -3.666     6197   0.521  0.717  4.601  -2.10  -0.13  -0.11  -2.35  160.65  432.94    1.00    1.00    1.00 
+                                                                                                  4.14   16     2    2   0   0   0   0 
 
 
 The Specification Check was Not Successful
@@ -20,10 +20,10 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.50   6  7.50  1     4    U40        62   1/2  270 12.81 12.16  26  2.17  27  20  6  8  2  2  2  0  0  0  0  0  5.100  6.600    4.340   -3.666    6197 0.521  0.717  0.34 -0.18 -0.01 -0.01 -0.20 159.68 436.22   1.00   1.00   1.00
-                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.50    6   7.50    U40, 7.5, 5    1      4      U40          62   1/2  270  12.81  12.16  26   2.17   27    20    6   8   2   2   2   5.100  6.600   4.340    -3.666     6197   0.521  0.717  4.066  -2.10  -0.13  -0.11  -2.35  159.68  436.22    1.00    1.00    1.00 
+                                                                                                  4.14   27     6    6   0   0   0   0 
 
 
 The Specification Check was Not Successful

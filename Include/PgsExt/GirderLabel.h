@@ -31,6 +31,7 @@ interface IEAFDisplayUnits;
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PgsExt\ConcreteMaterial.h>
+#include <PgsExt\Keys.h>
 
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
 #define LABEL_INDEX(_i_) (IndexType)(_i_+1)
@@ -46,6 +47,10 @@ interface IEAFDisplayUnits;
 #define LABEL_ROW(_r_) (RowIndexType)LABEL_INDEX(_r_)
 #define LABEL_COLUMN(_c_) (ColumnIndexType)LABEL_INDEX(_c_)
 
+#define GIRDER_LABEL(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
+#define SEGMENT_LABEL(_s_) pgsGirderLabel::GetSegmentLabel(_s_).c_str()
+#define CLOSURE_LABEL(_c_) pgsGirderLabel::GetClosureLabel(_c_).c_str()
+
 // Return string describing type of harped strands
 inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adjustable Straight") : _T("Harped"); }
 inline LPCTSTR ABR_LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adj. Straight") : _T("Harped"); }
@@ -54,6 +59,9 @@ class PGSEXTCLASS pgsGirderLabel
 {
 public:
    static std::_tstring GetGirderLabel(GirderIndexType gdrIdx);
+   static std::_tstring GetGirderLabel(const CGirderKey& girderKey);
+   static std::_tstring GetSegmentLabel(const CSegmentKey& segmentKey);
+   static std::_tstring GetClosureLabel(const CClosureKey& closureKey);
    static bool UseAlphaLabel();
    static bool UseAlphaLabel(bool bUseAlpha);
 

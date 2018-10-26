@@ -46,7 +46,7 @@ public:
 };
 
 class ATL_NO_VTABLE CPGSuperAppPlugin : 
-   public CPGSuperBaseAppPlugin,
+   public CPGSAppPluginBase,
    public CComObjectRootEx<CComSingleThreadModel>,
    //public CComRefCountTracer<CPGSuperAppPlugin,CComObjectRootEx<CComSingleThreadModel>>,
    public CComCoClass<CPGSuperAppPlugin, &CLSID_PGSuperAppPlugin>,
@@ -95,7 +95,7 @@ public:
    void OnProgramSettings();
 
 protected:
-   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const;
+   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;
 
 #if defined _BETA_VERSION
    virtual LPCTSTR GetCatalogServerKey();

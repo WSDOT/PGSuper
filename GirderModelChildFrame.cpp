@@ -167,7 +167,7 @@ BOOL CGirderModelChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext*
       return FALSE;
    }
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
    CDocTemplate* pDocTemplate = pDoc->GetDocTemplate();
    ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
 
@@ -243,7 +243,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    }
 
    // sets the check state of the sync button
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    pBtn->SetCheck( settings & IDG_SV_SYNC_GIRDER ? TRUE : FALSE);
@@ -487,7 +487,7 @@ void CGirderModelChildFrame::OnGirderChanged()
 
    if ( DoSyncWithBridgeModelView() )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
       pDoc->SelectGirder(m_GirderKey);
    }
 }
@@ -516,7 +516,7 @@ void CGirderModelChildFrame::OnGroupChanged()
 
    if ( DoSyncWithBridgeModelView() ) 
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
       pDoc->SelectGirder(m_GirderKey);
    }
 }
@@ -640,14 +640,10 @@ void CGirderModelChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	if (bAddToTitle)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDocumentType,pDocType);
-      CString strLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
       CString msg;
       if ( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS  )
       {
-         msg.Format(_T("Girder View - %s %d, Girder %s"), strLabel, LABEL_GROUP(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+         msg.Format(_T("Girder View - %s"), GIRDER_LABEL(m_GirderKey));
       }
       else
       {
@@ -773,7 +769,7 @@ LRESULT CGirderModelChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)
 
 void CGirderModelChildFrame::OnSync() 
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
 
    if ( DoSyncWithBridgeModelView() )
@@ -795,7 +791,7 @@ void CGirderModelChildFrame::OnSetFocus(CWnd* pOldWnd)
 
    if ( m_bIsAfterFirstUpdate && DoSyncWithBridgeModelView() ) 
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetActiveDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
       pDoc->SelectGirder(m_GirderKey);
    }
 }

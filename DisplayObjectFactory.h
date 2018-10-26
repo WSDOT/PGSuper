@@ -31,7 +31,7 @@
 
 #include <DManip\DManip.h>
 
-class CPGSuperDocBase;
+class CPGSDocBase;
 
 /////////////////////////////////////////////////////////////////////////////
 // CDisplayObjectFactory command target
@@ -39,7 +39,7 @@ class CPGSuperDocBase;
 class CDisplayObjectFactory : public CCmdTarget
 {
 public:
-	CDisplayObjectFactory(CPGSuperDocBase* pDoc);
+	CDisplayObjectFactory(CPGSDocBase* pDoc);
 
 // Attributes
 public:
@@ -63,7 +63,7 @@ protected:
 
 private:
    CComPtr<iDisplayObjectFactory> m_Factory;
-   CPGSuperDocBase* m_pDoc;
+   CPGSDocBase* m_pDoc;
 };
 
 /////////////////////////////////////////////////////////////////////////////

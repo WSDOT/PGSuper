@@ -289,17 +289,8 @@ void CEngAgentImp::ValidateArtifacts(const CGirderKey& girderKey)
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IDocumentType,pDocType);
-
    std::_tostringstream os;
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      os << "Analyzing Span " << LABEL_SPAN(girderKey.groupIndex) << " Girder " << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
-   }
-   else
-   {
-      os << "Analyzing Group " << LABEL_GROUP(girderKey.groupIndex) << " Girder " << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
-   }
+   os << _T("Analyzing ") << GIRDER_LABEL(girderKey) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    const pgsGirderArtifact* pGdrArtifact = m_Designer.Check(girderKey);
@@ -1182,24 +1173,10 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const p
    CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IDocumentType,pDocType);
    std::_tostringstream os;
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      os << _T("Analyzing cracked section for Span ")
-         << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ")
-         << LABEL_GIRDER(segmentKey.girderIndex) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-         << _T(" from start of girder") << std::ends;
-   }
-   else
-   {
-      os << _T("Analyzing cracked section for Group ")
-         << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ")
-         << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ")
-         << LABEL_SEGMENT(segmentKey.segmentIndex) 
-         << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-         << _T(" from start of segment") << std::ends;
-   }
+   os << _T("Analyzing cracked section for ") << SEGMENT_LABEL(segmentKey)
+      << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 

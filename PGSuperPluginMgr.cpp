@@ -84,7 +84,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
          if ( strState.CompareNoCase(_T("Enabled")) == 0 )
          {
-            CComPtr<IPGSuperDataImporter> importer;
+            CComPtr<IPGSDataImporter> importer;
             importer.CoCreateInstance(clsid[i]);
 
             if ( !importer )
@@ -138,7 +138,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
          if ( strState.CompareNoCase(_T("Enabled")) == 0 )
          {
-            CComPtr<IPGSuperDataExporter> exporter;
+            CComPtr<IPGSDataExporter> exporter;
             exporter.CoCreateInstance(clsid[i]);
 
             if ( !exporter )
@@ -190,7 +190,7 @@ CollectionIndexType CPGSuperPluginMgrBase::GetExporterCount()
    return m_ExporterPlugins.size();
 }
 
-void CPGSuperPluginMgrBase::GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSuperDataImporter** ppImporter)
+void CPGSuperPluginMgrBase::GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter)
 {
    if ( bByIndex )
    {
@@ -212,7 +212,7 @@ void CPGSuperPluginMgrBase::GetPGSuperImporter(CollectionIndexType key,bool bByI
    }
 }
 
-void CPGSuperPluginMgrBase::GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSuperDataExporter** ppExporter)
+void CPGSuperPluginMgrBase::GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter)
 {
    if ( bByIndex )
    {

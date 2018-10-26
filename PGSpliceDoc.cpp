@@ -64,9 +64,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPGSpliceDoc
 
-IMPLEMENT_DYNCREATE(CPGSpliceDoc, CPGSuperDocBase)
+IMPLEMENT_DYNCREATE(CPGSpliceDoc, CPGSDocBase)
 
-BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSuperDocBase)
+BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSDocBase)
 	//{{AFX_MSG_MAP(CPGSpliceDoc)
 	ON_COMMAND(ID_PROJECT_BRIDGEDESC, OnEditBridgeDescription)
    ON_COMMAND_RANGE(ID_EDIT_SEGMENT_MIN,ID_EDIT_SEGMENT_MAX,OnEditSegment)
@@ -104,7 +104,7 @@ BOOL CPGSpliceDoc::Init()
    GetComponentInfoManager()->SetCATID(GetComponentInfoCategoryID());
    GetComponentInfoManager()->LoadPlugins();
 
-   return CPGSuperDocBase::Init();
+   return CPGSDocBase::Init();
 }
 
 #ifdef _DEBUG

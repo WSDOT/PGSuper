@@ -453,27 +453,31 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    	/* 18. ESTIMATED CAMBER IMMEDIATELY BEFORE SLAB CASTING (MAX) */
       value = pCamber->GetDCamberForGirderSchedule( pmid[0],CREEP_MAXTIME);
+      value = IsZero(value) ? 0 : value;
 
-      Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid[0], bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad,   pmid[0], bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftDiaphragm, pmid[0], bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid[0], bat, rtCumulative, false );
+      value = IsZero(value) ? 0 : value;
 
-      Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 20. DEFLECTION (OVERLAY)  */
       value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftOverlay, pmid[0], bat, rtCumulative, false );
+      value = IsZero(value) ? 0 : value;
 
-      Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 21. DEFLECTION (OTHER)  */
       value =  pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, pmid[0], bat, rtCumulative, false );
       value += pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk,       pmid[0], bat, rtCumulative, false );
+      value = IsZero(value) ? 0 : value;
 
-      Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 22. DEFLECTION (TOTAL)  */
       Float64 totalDeflection = slabDiaphDeflection + overlayDeflection + otherDeflection;
@@ -503,15 +507,15 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       /* WRITE TO FILE */
       //==================
 	   //----- COL 18 ---- 
-      workerB.WriteFloat64(initialCamber,_T("Dinit"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(initialCamber,_T("Dinit"),7,5,_T("%5.3f"));
 	   //----- COL 19 ---- 
-      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),7,5,_T("%5.3f"));
 	   //----- COL 20 ---- 
-      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),7,5,_T("%5.3f"));
 	   //----- COL 21 ---- 
-      workerB.WriteFloat64(otherDeflection,_T("Dothr"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(otherDeflection,_T("Dothr"),7,5,_T("%5.3f"));
 	   //----- COL 22 ---- 
-      workerB.WriteFloat64(totalDeflection,_T("Dtot "),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(totalDeflection,_T("Dtot "),7,5,_T("%5.3f"));
 	   //----- COL 23 ---- 
       workerB.WriteFloat64(initialLoss,_T("LossIn"),8,6,_T("%6.2f"));
 	   //----- COL 24 ---- 

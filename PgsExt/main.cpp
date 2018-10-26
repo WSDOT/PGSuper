@@ -36,6 +36,7 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Allowables.h>
+#include <IFace\DocumentType.h>
 
 #include <EAF\EAFDisplayUnits.h>
 

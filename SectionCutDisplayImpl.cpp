@@ -455,7 +455,7 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
       if ( callbacks.size() == 0 )

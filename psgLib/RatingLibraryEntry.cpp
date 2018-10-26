@@ -2328,41 +2328,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    pSave->Property(_T("Name"), GetName().c_str());
    pSave->Property(_T("Description"), GetDescription().c_str());
-
-   switch (m_SpecificationVersion)
-   {
-   case lrfrVersionMgr::FirstEdition2008:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2008"));
-      break;
-
-   case lrfrVersionMgr::FirstEditionWith2010Interims:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2010"));
-      break;
-
-   case lrfrVersionMgr::SecondEdition2011:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2011"));
-      break;
-      
-   case lrfrVersionMgr::SecondEditionWith2011Interims:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2011i"));
-      break;
-      
-   case lrfrVersionMgr::SecondEditionWith2013Interims:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2013"));
-      break;
-      
-   case lrfrVersionMgr::SecondEditionWith2014Interims:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2014"));
-      break;
-      
-   case lrfrVersionMgr::SecondEditionWith2015Interims:
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2015"));
-      break;
-
-   default:
-      ASSERT(0);
-      pSave->Property(_T("SpecificationVersion"), _T("LRFR2008"));
-   }
+   pSave->Property(_T("SpecificationVersion"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion,true));
 
    pSave->Property(_T("AlwaysRate"),m_bAlwaysRate);
 
@@ -2493,39 +2459,14 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if(strSpecVersion == _T("LRFR2008"))
+   try
    {
-      m_SpecificationVersion = lrfrVersionMgr::FirstEdition2008;
+      m_SpecificationVersion = lrfrVersionMgr::GetVersion(strSpecVersion.c_str());
    }
-   else if(strSpecVersion == _T("LRFR2010"))
-   {
-      m_SpecificationVersion = lrfrVersionMgr::FirstEditionWith2010Interims;
-   }
-   else if (strSpecVersion == _T("LRFR2011"))
-   {
-      m_SpecificationVersion = lrfrVersionMgr::SecondEdition2011;
-   }
-   else if (strSpecVersion == _T("LRFR2011i"))
-   {
-      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2011Interims;
-   }
-   else if (strSpecVersion == _T("LRFR2013"))
-   {
-      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2013Interims;
-   }
-   else if (strSpecVersion == _T("LRFR2014"))
-   {
-      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2014Interims;
-   }
-   else if (strSpecVersion == _T("LRFR2015"))
-   {
-      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2015Interims;
-   }
-   else
+   catch(...)
    {
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
-
 
    if ( !pLoad->Property(_T("AlwaysRate"),&m_bAlwaysRate) )
    {

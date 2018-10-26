@@ -42,7 +42,7 @@
 
 #include "CPPGSuperDocProxyAgent.h"
 
-class CPGSuperDocBase;
+class CPGSDocBase;
 struct IBroker;
 
 // {71D5ABEE-23D6-4593-BB8D-20B092CB2E9A}
@@ -138,7 +138,7 @@ BEGIN_CONNECTION_POINT_MAP(CPGSuperDocProxyAgent)
 END_CONNECTION_POINT_MAP()
 
 public:
-   void SetDocument(CPGSuperDocBase* pDoc);
+   void SetDocument(CPGSDocBase* pDoc);
    void OnStatusChanged();
 
    void OnResetHints();
@@ -377,7 +377,7 @@ private:
    long m_GraphingViewKey;
    long m_LoadsViewKey;
    
-   CPGSuperDocBase* m_pMyDocument;
+   CPGSDocBase* m_pMyDocument;
 
    UINT m_StdToolBarID;
    UINT m_LibToolBarID;

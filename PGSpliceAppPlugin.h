@@ -46,7 +46,7 @@ public:
 };
 
 class ATL_NO_VTABLE CPGSpliceAppPlugin : 
-   public CPGSuperBaseAppPlugin,
+   public CPGSAppPluginBase,
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPGSpliceAppPlugin, &CLSID_PGSpliceAppPlugin>,
    public IEAFAppPlugin,
@@ -91,7 +91,7 @@ public:
    void OnProgramSettings();
 
 protected:
-   virtual CPGSuperBaseCommandLineInfo* CreateCommandLineInfo() const;
+   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;
 
 // IEAFAppPlugin
 public:

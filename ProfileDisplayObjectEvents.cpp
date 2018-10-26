@@ -155,7 +155,7 @@ STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnContextMenu(iDisplay
    METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    if ( pDO->IsSelected() )
    {
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       const std::map<IDType,IAlignmentProfileViewEventCallback*>& callbacks = pDoc->GetAlignmentProfileViewCallbacks();
 
       // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything

@@ -196,16 +196,16 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
             if ( pLayoutTable )
             {
-               (*pLayoutTable)(0,0) << CCastingYardMomentsTable().Build(pBroker,segmentKey,releaseIntervalIdx,_T("At Release"),pDisplayUnits) << rptNewLine;
-               (*pLayoutTable)(0,1) << CCastingYardMomentsTable().Build(pBroker,segmentKey,storageIntervalIdx,_T("During Storage"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,0) << CCastingYardMomentsTable().Build(pBroker,segmentKey,releaseIntervalIdx,POI_RELEASED_SEGMENT,_T("At Release"),    pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,1) << CCastingYardMomentsTable().Build(pBroker,segmentKey,storageIntervalIdx,POI_STORAGE_SEGMENT, _T("During Storage"),pDisplayUnits) << rptNewLine;
             }
             else
             {
                CString strTableTitle;
                strTableTitle.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
 
-               (*pReleaseLayoutTable)(0,segIdx) << CCastingYardMomentsTable().Build(pBroker,segmentKey,releaseIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
-               (*pStorageLayoutTable)(0,segIdx) << CCastingYardMomentsTable().Build(pBroker,segmentKey,storageIntervalIdx,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+               (*pReleaseLayoutTable)(0,segIdx) << CCastingYardMomentsTable().Build(pBroker,segmentKey,releaseIntervalIdx,POI_RELEASED_SEGMENT,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
+               (*pStorageLayoutTable)(0,segIdx) << CCastingYardMomentsTable().Build(pBroker,segmentKey,storageIntervalIdx,POI_STORAGE_SEGMENT, strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
             }
          }
       }
@@ -459,7 +459,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(thisGirderKey);
          vIntervals.clear();
          vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
-         std::generate(vIntervals.begin(),vIntervals.end(),IncGenerator<IntervalIndexType>(firstReleaseIntervalIdx));
+         std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
          // when we go to C++ 11, use the std::itoa algorithm
       }
       BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)

@@ -39,7 +39,7 @@
 typedef CEAFPluginManager<IPGSuperComponentInfo,CPGSuperDoc> CPGSuperComponentInfoManager;
 
 /*--------------------------------------------------------------------*/
-class CPGSuperDoc : public CPGSuperDocBase
+class CPGSuperDoc : public CPGSDocBase
 {
 protected: // create from serialization only
 	CPGSuperDoc();

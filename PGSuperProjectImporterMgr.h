@@ -21,44 +21,15 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "Plugins\PGSuperIEPlugin.h"
-#include <EAF\EAFUtilities.h>
-#include <set>
+#include "PGSProjectImporterMgrBase.h"
 
-class CPGSuperProjectImporterMgr
+class CPGSuperProjectImporterMgr : public CPGSProjectImporterMgrBase
 {
 public:
    CPGSuperProjectImporterMgr();
 
-   bool LoadImporters();
-   void UnloadImporters();
-   CollectionIndexType GetImporterCount() const;
-   void GetImporter(CollectionIndexType idx,IPGSuperProjectImporter** ppImporter);
-   void GetImporter(const CLSID& clsid,IPGSuperProjectImporter** ppImporter);
-   void AddImporter(const CLSID& clsid,IPGSuperProjectImporter* pImporter);
-   void RemoveImporter(const CLSID& clsid);
+   virtual LPCTSTR GetAppName();
 
-private:
-   struct Record
-   { 
-      CLSID clsid; CComPtr<IPGSuperProjectImporter> Importer;
-      Record() {}
-      Record(const Record& other) 
-      {
-         clsid    = other.clsid;
-         Importer = other.Importer;
-      }
-      Record& operator=(const Record& other)
-      {
-         clsid    = other.clsid;
-         Importer = other.Importer;
-         return *this;
-      }
-      bool operator<(const Record& other) const
-      {
-         return clsid < other.clsid;
-      }
-   };
-
-   std::set<Record> m_ImporterRecords;
+protected:
+   virtual CATID GetProjectImporterCATID();
 };

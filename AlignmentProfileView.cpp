@@ -199,7 +199,7 @@ void CAlignmentProfileView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_ALIGNMENT_PROFILE_CTX,NULL);
 
@@ -230,7 +230,7 @@ void CAlignmentProfileView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CAlignmentProfileView::OnViewSettings() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PROFILE);
+   ((CPGSDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PROFILE);
 }
 
 void CAlignmentProfileView::UpdateDisplayObjects()
@@ -363,7 +363,7 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
 
 void CAlignmentProfileView::BuildBridgeDisplayObjects()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( (settings & IDP_AP_DRAW_BRIDGE) == 0 )
    {
@@ -440,7 +440,7 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    EAFGetBroker(&pBroker);
 
    // Label Start/End of Bridge
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( (settings & IDP_AP_DRAW_BRIDGE) != 0 )
    {

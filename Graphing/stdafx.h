@@ -27,6 +27,7 @@
 #pragma once
 
 #include <PGSuperAll.h>
+#include <WBFLSTL.h>
 
 #include <IFace\Tools.h>
 

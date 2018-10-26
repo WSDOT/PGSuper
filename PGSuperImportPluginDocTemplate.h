@@ -22,12 +22,9 @@
 
 #pragma once
 
-#include <EAF\EAFDocTemplate.h>
-#include "PGSuperDoc.h"
-#include "Plugins\PGSuperIEPlugin.h"
-#include "PGSuperProjectImporterMgr.h"
+#include "PGSImportPluginDocTemplateBase.h"
 
-class CPGSuperImportPluginDocTemplate : public CEAFDocTemplate
+class CPGSuperImportPluginDocTemplate : public CPGSImportPluginDocTemplateBase
 {
 public:
    CPGSuperImportPluginDocTemplate(UINT nIDResource,
@@ -40,18 +37,10 @@ public:
    
    ~CPGSuperImportPluginDocTemplate();
 
-   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
-
-	virtual BOOL GetDocString(CString& rString,enum DocStringIndex index) const;
-
-   CPGSuperProjectImporterMgr& GetProjectImporterManager();
-
-   virtual CDocTemplate::Confidence MatchDocType(LPCTSTR lpszPathName,	CDocument*& rpDocMatch);
-
 protected:
-   virtual BOOL DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame);
 
    DECLARE_DYNAMIC(CPGSuperImportPluginDocTemplate)
-   CPGSuperProjectImporterMgr m_ProjectImporterMgr;
+
+   virtual CPGSProjectImporterMgrBase* CreateProjectImporterMgr() const;
 };
 

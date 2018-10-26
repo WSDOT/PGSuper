@@ -514,7 +514,7 @@ void CBridgePlanView::OnInitialUpdate()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
    CComPtr<iDisplayObjectFactory> doFactory;
    doFactory.Attach((iDisplayObjectFactory*)factory->GetInterface(&IID_iDisplayObjectFactory));
@@ -1050,7 +1050,7 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_BRIDGE_PLAN_CTX,NULL);
 
@@ -1081,12 +1081,12 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CBridgePlanView::OnEditDeck() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
+   ((CPGSDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
 }
 
 void CBridgePlanView::OnViewSettings() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PLAN);
+   ((CPGSDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PLAN);
 }
 
 void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -1219,7 +1219,7 @@ void CBridgePlanView::UpdateDisplayObjects()
    CWaitCursor wait;
 
    // capture the current selection
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CSelection selection = pDoc->GetSelection();
 
    CComPtr<iDisplayMgr> dispMgr;
@@ -1418,7 +1418,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
@@ -1724,7 +1724,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -1843,7 +1843,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
    //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
@@ -2379,7 +2379,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
    //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -3018,7 +3018,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    doPnt->SetGravityWellStrategy(gravity_well);
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CBridgePlanViewSlabDisplayObjectEvents* pEvents = new CBridgePlanViewSlabDisplayObjectEvents(pDoc, pBroker,m_pFrame,strategy->DoFill());
    CComPtr<iDisplayObjectEvents> events;
    events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));

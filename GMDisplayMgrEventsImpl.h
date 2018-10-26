@@ -40,7 +40,7 @@ class CPGSuperDoc;
 class CGMDisplayMgrEventsImpl : public CCmdTarget
 {
 public:
-   CGMDisplayMgrEventsImpl(CPGSuperDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation);
+   CGMDisplayMgrEventsImpl(CPGSDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation);
    ~CGMDisplayMgrEventsImpl();
 
    DECLARE_INTERFACE_MAP()
@@ -59,7 +59,7 @@ public:
    END_INTERFACE_PART(Events)
 
 public:
-   CPGSuperDocBase*        m_pDoc;
+   CPGSDocBase*        m_pDoc;
    CGirderModelChildFrame* m_pFrame;
    CWnd*                   m_pParent;
    bool                    m_bGirderElevation;

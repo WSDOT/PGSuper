@@ -122,7 +122,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 void CGirderDescDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    const std::map<IDType,IEditGirderCallback*>& callbacks = pDoc->GetEditGirderCallbacks();
    std::map<IDType,IEditGirderCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -422,19 +422,9 @@ void CGirderDescDlg::AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool 
       AddPage( &m_Debond );
    }
 
-   AddPage(&m_LongRebar);
+   AddPage( &m_LongRebar );
    AddPage( &m_Shear );
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   GET_IFACE2_NOCHECK(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-
-   // don't add page if both hauling and lifting checks are disabled
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
-   {
-      AddPage( &m_Lifting );
-   }
+   AddPage( &m_Lifting );
 }
 
 void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding)

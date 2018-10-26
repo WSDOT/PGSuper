@@ -93,7 +93,7 @@ void CSplicedGirderDescDlg::Init()
 void CSplicedGirderDescDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditSplicedGirderCallback*> callbacks = pDoc->GetEditSplicedGirderCallbacks();
    std::map<IDType,IEditSplicedGirderCallback*>::iterator callbackIter(callbacks.begin());

@@ -67,14 +67,14 @@ interface IRoadway : IUnknown
 {
    // Gets the station, elevation, profile grade and coordinate of the start point of the alignment. The start point
    // is assumed to be at lessor station of the 1/n of the first span length before the first pier and
-   // the least station of any alignment, profile, or cross section entry. The actually alignment has
+   // the least station of any alignment, profile, or cross section entry. The actual alignment has
    // infinite length, this method gives a reasonable starting point when a finite
    // alignment length is needed.
    virtual void GetStartPoint(Float64 n,Float64* pStartStation,Float64* pStartElevation,Float64* pGrade,IPoint2d** ppPoint) = 0;
 
    // Gets the station, elevation, profile grade and coordinate of the end point of the alignment. The end point
    // is assumed to be at greater station of the 1/n of the last span length after the last pier and
-   // the greatest station of any alignment, profile, or cross section entry. The actually alignment has
+   // the greatest station of any alignment, profile, or cross section entry. The actual alignment has
    // infinite length, this method gives a reasonable starting point when a finite
    // alignment length is needed.
    virtual void GetEndPoint(Float64 n,Float64* pEndStation,Float64* pEndElevation,Float64* pGrade,IPoint2d** ppPoint) = 0;

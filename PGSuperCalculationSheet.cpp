@@ -31,6 +31,8 @@ CLASS
 #include <IFace\VersionInfo.h>
 #include <IFace\DocumentType.h>
 
+#include <EAF\EAFDocument.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -54,16 +56,22 @@ WsdotCalculationSheet()
    SetEngineer(pProj->GetEngineer());
    SetCompany(pProj->GetCompany());
 
+   // set the bottom title
    GET_IFACE(IVersionInfo,pVerInfo);
    GET_IFACE(IDocumentType,pDocType);
 
+   CEAFDocument* pDoc = EAFGetDocument();
+   CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();
+   CComPtr<IEAFAppPlugin> appPlugin;
+   pDocTemplate->GetPlugin(&appPlugin);
    CString strBottomTitle;
-   if ( pDocType->IsPGSuperDocument() )
-      strBottomTitle.Format(_T("PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
-   else
-      strBottomTitle.Format(_T("PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
+   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),sysDate().Year());
 
    SetTitle(strBottomTitle);
+
+   // set the document name
+   CString path = pDoc->GetPathName();
+   SetFileName(path);
 }
 
 PGSuperCalculationSheet::PGSuperCalculationSheet(const PGSuperCalculationSheet& rOther) :

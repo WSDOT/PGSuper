@@ -71,7 +71,7 @@ library PGSuper
 	]
 	coclass CurvelExporter
 	{
-		[default] interface IPGSuperDataExporter;
+		[default] interface IPGSDataExporter;
 	};
 	[
 		uuid(E56801AC-B583-4e9e-A2D8-2AA64079BE15),
@@ -79,7 +79,7 @@ library PGSuper
 	]
 	coclass CurvelImporter
 	{
-		[default] interface IPGSuperDataImporter;
+		[default] interface IPGSDataImporter;
 	};
 	[
 		uuid(16A21688-25B4-4118-ABF4-DD6D4983A2CD),
@@ -87,6 +87,6 @@ library PGSuper
 	]
 	coclass GenCompExporter
 	{
-		[default] interface IPGSuperDataExporter;
+		[default] interface IPGSDataExporter;
 	};
 };

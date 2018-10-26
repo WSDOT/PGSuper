@@ -93,7 +93,8 @@ CLibraryEditorDoc::CLibraryEditorDoc()
    status_center.Enable(false);
 
    // Reserve command IDs for document plug ins
-   GetPluginCommandManager()->ReserveCommandIDRange(LIBRARY_PLUGIN_COMMAND_COUNT);
+   UINT nCommands = GetPluginCommandManager()->ReserveCommandIDRange(LIBRARY_PLUGIN_COMMAND_COUNT);
+   ATLASSERT(nCommands == LIBRARY_PLUGIN_COMMAND_COUNT);
 
    UIHints(FALSE); // not using UIHints feature
 }

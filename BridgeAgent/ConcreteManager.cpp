@@ -354,9 +354,8 @@ void CConcreteManager::ValidateConcrete()
       Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
       if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
       {
-         Float64 fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
          std::_tostringstream os;
-         os << _T("Slab concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+         os << _T("Slab concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
 
          std::_tstring strMsg = os.str();
 
@@ -446,15 +445,11 @@ void CConcreteManager::ValidateConcrete()
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-            std::_tostringstream osLabel;
-            osLabel << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx);
-            ValidateConcreteParameters(m_pSegmentConcrete[segmentKey],pgsConcreteStrengthStatusItem::GirderSegment,osLabel.str().c_str(),segmentKey);
+            ValidateConcreteParameters(m_pSegmentConcrete[segmentKey],pgsConcreteStrengthStatusItem::GirderSegment,SEGMENT_LABEL(segmentKey),segmentKey);
 
             if ( segIdx < nSegments-1 )
             {
-               std::_tostringstream osLabel2;
-               osLabel2 << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure ") << LABEL_SEGMENT(segIdx);
-               ValidateConcreteParameters(m_pClosureConcrete[segmentKey],pgsConcreteStrengthStatusItem::ClosureJoint,osLabel2.str().c_str(),segmentKey);
+               ValidateConcreteParameters(m_pClosureConcrete[segmentKey],pgsConcreteStrengthStatusItem::ClosureJoint,CLOSURE_LABEL(segmentKey),segmentKey);
             }
          }
       }
@@ -558,9 +553,10 @@ void CConcreteManager::ValidateDeckConcrete()
 void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
 {
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(ILimits,pLimits);
 
+   // these interfaces not used unless there is a problem
+   GET_IFACE_NOCHECK(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    pgsTypes::ConcreteType concreteType = (pgsTypes::ConcreteType)pConcrete->GetType();
@@ -570,9 +566,6 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
    Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
    // the LRFD doesn't say that this specifically applies to closure joints,
    // but we are going to assume that it does.
-
-   Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(concreteType);
-   Float64 MaxWc  = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
    Float64 max_fci, max_fc;
    if ( elementType == pgsConcreteStrengthStatusItem::GirderSegment )
@@ -585,11 +578,6 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
       max_fci = pLimits->GetMaxClosureFci(concreteType);
       max_fc  = pLimits->GetMaxClosureFc(concreteType);
    }
-   Float64 fciMax = ::ConvertFromSysUnits(max_fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
-   Float64 fcMax  = ::ConvertFromSysUnits(max_fc, pDisplayUnits->GetStressUnit().UnitOfMeasure);
-
-   Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(concreteType);
-   Float64 MaxAggSize   = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
    std::_tstring strMsg;
 
@@ -605,10 +593,10 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fci < fci )
+   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Initial concrete strength exceeds the normal value of ") << fciMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Initial concrete strength (") << (LPCTSTR)::FormatDimension(fci,pDisplayUnits->GetStressUnit()) <<  _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fci,pDisplayUnits->GetStressUnit());
 
       strMsg = os.str();
 
@@ -616,10 +604,10 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fc < fc28 )
+   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Concrete strength (") << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fc,pDisplayUnits->GetStressUnit());
 
       strMsg = os.str();
 
@@ -627,11 +615,12 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
       pStatusCenter->Add(pStatusItem);
    }
 
+   Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(concreteType);
    Float64 wc = pConcrete->GetStrengthDensity();
    if ( max_wc < wc && !IsEqual(max_wc,wc,0.0001))
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Concrete density for strength calcuations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Concrete density for strength calcuations (") << (LPCTSTR)::FormatDimension(wc,pDisplayUnits->GetDensityUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_wc,pDisplayUnits->GetDensityUnit());
 
       strMsg = os.str();
 
@@ -643,7 +632,7 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
    if ( max_wc < wc && !IsEqual(max_wc,wc,0.0001) )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Concrete density for weight calcuations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Concrete density for weight calcuations (") << (LPCTSTR)::FormatDimension(wc,pDisplayUnits->GetDensityUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_wc,pDisplayUnits->GetDensityUnit());
 
       strMsg = os.str();
 
@@ -669,10 +658,11 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
       pStatusCenter->Add(pStatusItem);
    }
 
+   Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(concreteType);
    if ( max_agg_size < pConcrete->GetMaxAggregateSize() && !IsEqual(max_agg_size,pConcrete->GetMaxAggregateSize()) )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
+      os << strLabel << _T(": Concrete aggregate size (") << (LPCTSTR)::FormatDimension(pConcrete->GetMaxAggregateSize(),pDisplayUnits->GetComponentDimUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_agg_size,pDisplayUnits->GetComponentDimUnit());
 
       strMsg = os.str();
 
@@ -688,8 +678,8 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
    {
       std::_tostringstream os;
       os << strLabel << _T(": Ec (") 
-         << FormatDimension(Ec28, pDisplayUnits->GetModEUnit()).GetBuffer() << _T(") is less than Eci (")
-         << FormatDimension(Eci,  pDisplayUnits->GetModEUnit()).GetBuffer() << _T(")");
+         << (LPCTSTR)FormatDimension(Ec28, pDisplayUnits->GetModEUnit()) << _T(") is less than Eci (")
+         << (LPCTSTR)FormatDimension(Eci,  pDisplayUnits->GetModEUnit()) << _T(")");
 
       strMsg = os.str();
 

@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   5  7.00  1     1     Tx46       44   1/2  270 15.42  9.24   8 42.5  4.600  5.000    3.261   -3.348   5327  0.566  0.820  0.31 -0.11  0.00 -0.01 -0.12 121.61 324.94   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00                   1      1      Tx46         44   1/2  270  15.42   9.24                                               8  42.5  8.5  4.600  5.000   3.261    -3.348     5327   0.566  0.820  3.693  -1.35  -0.11  -0.10  -1.57  121.61  324.94    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   5  7.00  1     2     Tx46       44   1/2  270 15.42  9.24   8 42.5  4.600  5.000    3.318   -3.411   5402  0.566  0.820  0.31 -0.12  0.00 -0.01 -0.13 121.61 322.52   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00                   1      2      Tx46         44   1/2  270  15.42   9.24                                               8  42.5  8.5  4.600  5.000   3.318    -3.411     5402   0.566  0.820  3.693  -1.45  -0.11  -0.10  -1.67  121.61  322.52    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   5  7.00  1     3     Tx46       44   1/2  270 15.42  9.24   8 42.5  4.600  5.000    3.318   -3.411   5402  0.566  0.820  0.31 -0.12  0.00 -0.01 -0.13 121.61 322.52   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00                   1      3      Tx46         44   1/2  270  15.42   9.24                                               8  42.5  8.5  4.600  5.000   3.318    -3.411     5402   0.566  0.820  3.693  -1.45  -0.11  -0.10  -1.67  121.61  322.52    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -28,9 +28,9 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   5  7.00  2     1     Tx46       44   1/2  270 15.42  9.24   8 42.5  4.600  5.000    3.261   -3.348   5327  0.566  0.820  0.31 -0.11  0.00 -0.01 -0.12 121.61 324.94   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00                   2      1      Tx46         44   1/2  270  15.42   9.24                                               8  42.5  8.5  4.600  5.000   3.261    -3.348     5327   0.566  0.820  3.694  -1.35  -0.11  -0.10  -1.57  121.61  324.94    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -38,9 +38,9 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   5  7.00  2     2     Tx46       44   1/2  270 15.42  9.24   8 42.5  4.600  5.000    3.318   -3.411   5402  0.566  0.820  0.31 -0.12  0.00 -0.01 -0.13 121.61 322.52   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00                   2      2      Tx46         44   1/2  270  15.42   9.24                                               8  42.5  8.5  4.600  5.000   3.318    -3.411     5402   0.566  0.820  3.694  -1.45  -0.11  -0.10  -1.67  121.61  322.52    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -48,9 +48,9 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   5  7.00  2     3     Tx46       44   1/2  270 15.42  9.24   8 42.5  4.600  5.000    3.318   -3.411   5402  0.566  0.820  0.31 -0.12  0.00 -0.01 -0.13 121.61 322.52   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00                   2      3      Tx46         44   1/2  270  15.42   9.24                                               8  42.5  8.5  4.600  5.000   3.318    -3.411     5402   0.566  0.820  3.694  -1.45  -0.11  -0.10  -1.67  121.61  322.52    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

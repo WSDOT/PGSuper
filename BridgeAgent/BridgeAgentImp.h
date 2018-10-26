@@ -344,6 +344,10 @@ public:
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
    virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
    virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
+   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point);
+   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point);
+   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point);
+   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point);
    virtual Float64 GetPierStation(PierIndexType pierIdx);
    virtual Float64 GetAheadBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey);
    virtual Float64 GetBackBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey);
@@ -1344,6 +1348,8 @@ private:
 
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
+   void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
+   void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
    void CreateCompositeOverlayEdgePaths(const CBridgeDescription2* pBridgeDesc,IPath** ppLeftPath,IPath** ppRightPath);
 
    boost::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder);

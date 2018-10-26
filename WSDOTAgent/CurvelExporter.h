@@ -31,7 +31,7 @@
 class ATL_NO_VTABLE CCurvelExporter : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CCurvelExporter, &CLSID_CurvelExporter>,
-   public IPGSuperDataExporter
+   public IPGSDataExporter
 {
 public:
 	CCurvelExporter()
@@ -47,10 +47,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_CURVELEXPORTER)
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_COM_MAP(CCurvelExporter)
-   COM_INTERFACE_ENTRY(IPGSuperDataExporter)
+   COM_INTERFACE_ENTRY(IPGSDataExporter)
 END_COM_MAP()
 
-// IPGSuperDataExporter
+// IPGSDataExporter
 public:
    STDMETHOD(Init)(UINT nCmdID);
    STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText);

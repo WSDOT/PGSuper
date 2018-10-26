@@ -2268,10 +2268,7 @@ void CPierData2::SetPierData(CPierData* pPier)
       m_LLDFs.push_back(lldf2);
    }
 
-   if ( 0 < pPier->m_LLDFs.size() )
-   {
-      m_bDistributionFactorsFromOlderVersion = true;
-   }
+   m_bDistributionFactorsFromOlderVersion = pPier->m_DistributionFactorsFromOlderVersion;
 }
 
 void CPierData2::ValidateBoundaryConditionType()

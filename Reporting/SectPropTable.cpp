@@ -184,13 +184,15 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*xs_table)(row++,1) << _T("-"); // Ybd
    }
 
-   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
+   (*xs_table)(row++,1) << l3.SetValue( -pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
    (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
 
    if ( bComposite )
    {
       (*xs_table)(row++,1) << _T("-"); // Std
       (*xs_table)(row++,1) << _T("-"); // Sbd
+      (*xs_table)(row++,1) << _T("-"); // Qdeck
+      (*xs_table)(row++,1) << _T("-"); // Effective flange width
    }
 
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKt(constructionIntervalIdx,poi) );
@@ -201,12 +203,6 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    (*xs_table)(row++,1) << force_per_length.SetValue(pSectProp->GetSegmentWeightPerLength(segmentKey) );
    (*xs_table)(row++,1) << force.SetValue(pSectProp->GetSegmentWeight(segmentKey) );
-
-   if ( bComposite )
-   {
-      (*xs_table)(row++,1) << _T("-"); // Qdeck
-      (*xs_table)(row++,1) << _T("-"); // Effective flange width
-   }
 
    if ( bComposite )
    {
@@ -221,10 +217,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( -pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck) );
+      (*xs_table)(row++,2) << l3.SetValue( -pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck) );
+      (*xs_table)(row++,2) << l3.SetValue( -pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomDeck) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetQSlab(poi) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetEffectiveFlangeWidth(poi) );
 
@@ -241,6 +237,9 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
          (*xs_table)(row++,2) << _T("-"); // kb
       }
       (*xs_table)(row++,2) << _T("-"); // perimeter
+
+      depth = pSectProp->GetHg(compositeDeckIntervalIdx,poi);
+
       (*xs_table)(row++,2) << scalar.SetValue( span_length/depth );
       (*xs_table)(row++,2) << _T("-"); // wgt/length
       (*xs_table)(row++,2) << _T("-"); // total weight

@@ -31,6 +31,8 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
       return;
    }
 
+   pDX->PrepareCtrl(IDC_POINT_GRID);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -46,6 +48,14 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
       Float64 location, offset;
       CDuctGeometry::OffsetType offsetType;
       ductGeometry.GetPoint(pntIdx,&location,&offset,&offsetType);
+
+      if ( offset <= 0.0 )
+      {
+         CString strMsg(_T("The tendon offset must be greater than zero."));
+         AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
+         pDX->Fail();
+      }
+
 
       Float64 dXg = location;
       if ( location < 0 )
@@ -68,7 +78,6 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
          CString strMsg;
          strMsg.Format(_T("Duct point %d is beyond the end of the girder. Adjust duct point location."),(pntIdx+1));
          AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
-         pDX->PrepareCtrl(IDC_POINT_GRID);
          pDX->Fail();
       }
    }

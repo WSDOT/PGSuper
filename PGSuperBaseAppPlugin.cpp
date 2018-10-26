@@ -33,17 +33,17 @@
 
 #include <MFCTools\AutoRegistry.h>
 
-CPGSuperBaseAppPlugin::CPGSuperBaseAppPlugin()
+CPGSAppPluginBase::CPGSAppPluginBase()
 {
    m_CacheUpdateFrequency = Daily;
    m_SharedResourceType = srtInternetFtp;
 }
 
-CPGSuperBaseAppPlugin::~CPGSuperBaseAppPlugin()
+CPGSAppPluginBase::~CPGSAppPluginBase()
 {
 }
 
-HRESULT CPGSuperBaseAppPlugin::OnFinalConstruct()
+HRESULT CPGSAppPluginBase::OnFinalConstruct()
 {
    m_CatalogServers.SetAppName(GetAppName());
 
@@ -67,7 +67,7 @@ HRESULT CPGSuperBaseAppPlugin::OnFinalConstruct()
    return S_OK;
 }
 
-void CPGSuperBaseAppPlugin::OnFinalRelease()
+void CPGSAppPluginBase::OnFinalRelease()
 {
    if ( m_strAppProfileName != _T("") )
    {
@@ -84,34 +84,34 @@ void CPGSuperBaseAppPlugin::OnFinalRelease()
    m_AppUnitSystem.Release();
 }
 
-void CPGSuperBaseAppPlugin::DefaultInit()
+void CPGSAppPluginBase::DefaultInit()
 {
    m_CatalogServers.SetTemplateFileExtenstion(GetTemplateFileExtension());
    LoadRegistryValues();
 }
 
-void CPGSuperBaseAppPlugin::DefaultTerminate()
+void CPGSAppPluginBase::DefaultTerminate()
 {
    SaveRegistryValues();
 }
 
-void CPGSuperBaseAppPlugin::GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
+void CPGSAppPluginBase::GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
 {
    m_AppUnitSystem.CopyTo(ppAppUnitSystem);
 }
 
 
-CString CPGSuperBaseAppPlugin::GetEngineerName()
+CString CPGSAppPluginBase::GetEngineerName()
 {
    return m_EngineerName;
 }
 
-CString CPGSuperBaseAppPlugin::GetEngineerCompany()
+CString CPGSAppPluginBase::GetEngineerCompany()
 {
    return m_CompanyName;
 }
 
-void CPGSuperBaseAppPlugin::LoadRegistryValues()
+void CPGSAppPluginBase::LoadRegistryValues()
 {
    // Do any necessary conversions from previous versions of PGSuper
    RegistryConvert();
@@ -120,7 +120,7 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
    LoadCustomReportInformation();
 }
 
-void CPGSuperBaseAppPlugin::LoadSettings()
+void CPGSAppPluginBase::LoadSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
@@ -142,32 +142,32 @@ void CPGSuperBaseAppPlugin::LoadSettings()
    m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
 }
 
-LPCTSTR CPGSuperBaseAppPlugin::GetCatalogServerKey()
+LPCTSTR CPGSAppPluginBase::GetCatalogServerKey()
 {
    return _T("CatalogServer");
 }
 
-LPCTSTR CPGSuperBaseAppPlugin::GetPublisherKey()
+LPCTSTR CPGSAppPluginBase::GetPublisherKey()
 {
    return _T("Publisher");
 }
 
-LPCTSTR CPGSuperBaseAppPlugin::GetMasterLibraryCacheKey()
+LPCTSTR CPGSAppPluginBase::GetMasterLibraryCacheKey()
 {
    return _T("MasterLibraryCache");
 }
 
-LPCTSTR CPGSuperBaseAppPlugin::GetMasterLibraryURLKey()
+LPCTSTR CPGSAppPluginBase::GetMasterLibraryURLKey()
 {
    return _T("MasterLibraryURL");
 }
 
-LPCTSTR CPGSuperBaseAppPlugin::GetWorkgroupTemplatesCacheKey()
+LPCTSTR CPGSAppPluginBase::GetWorkgroupTemplatesCacheKey()
 {
    return _T("WorkgroupTemplatesCache");
 }
 
-void CPGSuperBaseAppPlugin::LoadOptions()
+void CPGSAppPluginBase::LoadOptions()
 {
    CEAFApp* pParentApp = EAFGetApp();
 
@@ -222,14 +222,14 @@ void CPGSuperBaseAppPlugin::LoadOptions()
    m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),strWorkgroupTemplates);
 }
 
-void CPGSuperBaseAppPlugin::SaveRegistryValues()
+void CPGSAppPluginBase::SaveRegistryValues()
 {
    SaveSettings();
    SaveOptions();
    SaveCustomReportInformation();
 }
 
-void CPGSuperBaseAppPlugin::SaveSettings()
+void CPGSAppPluginBase::SaveSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
@@ -240,7 +240,7 @@ void CPGSuperBaseAppPlugin::SaveSettings()
    pApp->WriteProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),m_CacheUpdateFrequency);
 }
 
-void CPGSuperBaseAppPlugin::SaveOptions()
+void CPGSAppPluginBase::SaveOptions()
 {
    CEAFApp* pParentApp = EAFGetApp();
 
@@ -266,21 +266,21 @@ void CPGSuperBaseAppPlugin::SaveOptions()
    pApp->WriteProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),m_WorkgroupTemplateFolderCache);
 }
 
-void CPGSuperBaseAppPlugin::LoadCustomReportInformation()
+void CPGSAppPluginBase::LoadCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::LoadCustomReportInformation();
 }
 
-void CPGSuperBaseAppPlugin::SaveCustomReportInformation()
+void CPGSAppPluginBase::SaveCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::SaveCustomReportInformation();
 }
 
-void CPGSuperBaseAppPlugin::RegistryConvert()
+void CPGSAppPluginBase::RegistryConvert()
 {
    CAutoRegistry autoReg(GetAppName());
 
@@ -337,12 +337,12 @@ void CPGSuperBaseAppPlugin::RegistryConvert()
 
 }
 
-CString CPGSuperBaseAppPlugin::GetCachedMasterLibraryFile()
+CString CPGSAppPluginBase::GetCachedMasterLibraryFile()
 {
    return m_MasterLibraryFileCache;
 }
 
-CString CPGSuperBaseAppPlugin::GetMasterLibraryFile()
+CString CPGSAppPluginBase::GetMasterLibraryFile()
 {
    CString strMasterLibFile;
    switch( m_SharedResourceType )
@@ -369,32 +369,32 @@ CString CPGSuperBaseAppPlugin::GetMasterLibraryFile()
    return strMasterLibFile;
 }
 
-void CPGSuperBaseAppPlugin::GetTemplateFolders(CString& strWorkgroupFolder)
+void CPGSAppPluginBase::GetTemplateFolders(CString& strWorkgroupFolder)
 {
    strWorkgroupFolder = m_WorkgroupTemplateFolderCache;
 }
 
-void CPGSuperBaseAppPlugin::SetCacheUpdateFrequency(CacheUpdateFrequency frequency)
+void CPGSAppPluginBase::SetCacheUpdateFrequency(CacheUpdateFrequency frequency)
 {
    m_CacheUpdateFrequency = frequency;
 }
 
-CacheUpdateFrequency CPGSuperBaseAppPlugin::GetCacheUpdateFrequency()
+CacheUpdateFrequency CPGSAppPluginBase::GetCacheUpdateFrequency()
 {
    return m_CacheUpdateFrequency;
 }
 
-void CPGSuperBaseAppPlugin::SetSharedResourceType(SharedResourceType resType)
+void CPGSAppPluginBase::SetSharedResourceType(SharedResourceType resType)
 {
    m_SharedResourceType = resType;
 }
 
-SharedResourceType CPGSuperBaseAppPlugin::GetSharedResourceType()
+SharedResourceType CPGSAppPluginBase::GetSharedResourceType()
 {
    return m_SharedResourceType;
 }
 
-CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
+CString CPGSAppPluginBase::GetMasterLibraryPublisher() const
 {
    CString strPublisher;
    switch( m_SharedResourceType )
@@ -420,7 +420,7 @@ CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
    return strPublisher;
 }
 
-BOOL CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun) 
+BOOL CPGSAppPluginBase::UpdateProgramSettings(BOOL bFirstRun) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -497,7 +497,7 @@ BOOL CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
    return FALSE;
 }
 
-void CPGSuperBaseAppPlugin::UpdateCache()
+void CPGSAppPluginBase::UpdateCache()
 {
    CAutoRegistry autoReg(GetAppName());
    CEAFApp* pApp = EAFGetApp();
@@ -564,7 +564,7 @@ void CPGSuperBaseAppPlugin::UpdateCache()
    }
 }
 
-void CPGSuperBaseAppPlugin::RestoreLibraryAndTemplatesToDefault()
+void CPGSAppPluginBase::RestoreLibraryAndTemplatesToDefault()
 {
    m_SharedResourceType = srtDefault;
 
@@ -576,13 +576,13 @@ void CPGSuperBaseAppPlugin::RestoreLibraryAndTemplatesToDefault()
    DoCacheUpdate();
 }
 
-void CPGSuperBaseAppPlugin::DeleteCache(LPCTSTR pstrCache)
+void CPGSAppPluginBase::DeleteCache(LPCTSTR pstrCache)
 {
    RecursiveDelete(pstrCache);
    ::RemoveDirectory(pstrCache);
 }
 
-void CPGSuperBaseAppPlugin::RecursiveDelete(LPCTSTR pstr)
+void CPGSAppPluginBase::RecursiveDelete(LPCTSTR pstr)
 {
    CFileFind finder;
 
@@ -615,7 +615,7 @@ void CPGSuperBaseAppPlugin::RecursiveDelete(LPCTSTR pstr)
    finder.Close();
 }
 
-bool CPGSuperBaseAppPlugin::IsTimeToUpdateCache()
+bool CPGSAppPluginBase::IsTimeToUpdateCache()
 {
    LOG(_T("IsTimeToUpdateCache()"));
    if ( m_SharedResourceType == srtDefault )
@@ -671,7 +671,7 @@ bool CPGSuperBaseAppPlugin::IsTimeToUpdateCache()
    return bTimeToUpdate;
 }
 
-bool CPGSuperBaseAppPlugin::AreUpdatesPending()
+bool CPGSAppPluginBase::AreUpdatesPending()
 {
    // get the MD5 files from the Internet or local network, compute the MD5 of the cache
    // if different, then there is an update pending
@@ -727,7 +727,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
 }
 
 
-bool CPGSuperBaseAppPlugin::DoCacheUpdate()
+bool CPGSAppPluginBase::DoCacheUpdate()
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -861,7 +861,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    return bSuccessful;
 }
 
-sysDate CPGSuperBaseAppPlugin::GetLastCacheUpdateDate()
+sysDate CPGSAppPluginBase::GetLastCacheUpdateDate()
 {
    CAutoRegistry autoReg(GetAppName());
 
@@ -872,7 +872,7 @@ sysDate CPGSuperBaseAppPlugin::GetLastCacheUpdateDate()
    return sysDate(last_update);
 }
 
-void CPGSuperBaseAppPlugin::SetLastCacheUpdateDate(const sysDate& date)
+void CPGSAppPluginBase::SetLastCacheUpdateDate(const sysDate& date)
 {
    CAutoRegistry autoReg(GetAppName());
 
@@ -882,7 +882,7 @@ void CPGSuperBaseAppPlugin::SetLastCacheUpdateDate(const sysDate& date)
    pApp->WriteProfileInt(_T("Settings"),_T("LastCacheUpdate"),date.Hash());
 }
 
-CString CPGSuperBaseAppPlugin::GetDefaultMasterLibraryFile()
+CString CPGSAppPluginBase::GetDefaultMasterLibraryFile()
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -908,7 +908,7 @@ CString CPGSuperBaseAppPlugin::GetDefaultMasterLibraryFile()
    return strAppPath + CString(_T("Configurations\\WSDOT.lbr"));
 }
 
-CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
+CString CPGSAppPluginBase::GetDefaultWorkgroupTemplateFolder()
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -934,7 +934,7 @@ CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
    return strAppPath + CString(_T("Configurations\\")) + GetAppName();
 }
 
-CString CPGSuperBaseAppPlugin::GetCacheFolder()
+CString CPGSAppPluginBase::GetCacheFolder()
 {
    CAutoRegistry autoReg(GetAppName());
 
@@ -954,7 +954,7 @@ CString CPGSuperBaseAppPlugin::GetCacheFolder()
    }
 }
 
-CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
+CString CPGSAppPluginBase::GetSaveCacheFolder()
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -974,34 +974,37 @@ CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
    }
 }
 
-const CPGSuperCatalogServers* CPGSuperBaseAppPlugin::GetCatalogServers() const
+const CPGSuperCatalogServers* CPGSAppPluginBase::GetCatalogServers() const
 {
    return &m_CatalogServers;
 }
 
-BOOL CPGSuperBaseAppPlugin::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
    // cmdInfo is the command line information from the application. The application
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
    // Re-parse the parameters with our own command line information object
-   std::auto_ptr<CPGSuperBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
-   EAFGetApp()->ParseCommandLine(*pgsCmdInfo);
-   cmdInfo = *pgsCmdInfo;
+   std::auto_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
+   if ( pgsCmdInfo.get() != NULL )
+   {
+      EAFGetApp()->ParseCommandLine(*pgsCmdInfo);
+      cmdInfo = *pgsCmdInfo;
 
-   if (pgsCmdInfo->m_bError)
-   {
-      return FALSE;
-   }
-   else if (pgsCmdInfo->m_bDo1250Test)
-   {
-      Process1250Testing(*pgsCmdInfo);
-      return TRUE; // command line parameters handled
-   }
-   else if (pgsCmdInfo->m_bSetUpdateLibrary)
-   {
-      ProcessLibrarySetUp(*pgsCmdInfo);
-      return TRUE;
+      if (pgsCmdInfo->m_bError)
+      {
+         return FALSE;
+      }
+      else if (pgsCmdInfo->m_bDo1250Test)
+      {
+         Process1250Testing(*pgsCmdInfo);
+         return TRUE; // command line parameters handled
+      }
+      else if (pgsCmdInfo->m_bSetUpdateLibrary)
+      {
+         ProcessLibrarySetUp(*pgsCmdInfo);
+         return TRUE;
+      }
    }
 
    BOOL bHandled = FALSE;
@@ -1014,7 +1017,7 @@ BOOL CPGSuperBaseAppPlugin::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmd
 
    // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
    // if there is more than one parameter and it isn't handled there is something wrong
-   if ( ((1 == pgsCmdInfo->m_Count && pgsCmdInfo->m_nShellCommand != CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo->m_Count)) && !bHandled )
+   if ( ((pgsCmdInfo.get() != NULL && 1 == pgsCmdInfo->m_Count && pgsCmdInfo->m_nShellCommand != CCommandLineInfo::FileOpen) || (1 <  pgsCmdInfo->m_Count)) && !bHandled )
    {
       cmdInfo.m_bError = TRUE;
       bHandled = TRUE;
@@ -1023,7 +1026,7 @@ BOOL CPGSuperBaseAppPlugin::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmd
    return bHandled;
 }
 
-void CPGSuperBaseAppPlugin::Process1250Testing(const CPGSuperBaseCommandLineInfo& rCmdInfo)
+void CPGSAppPluginBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdInfo)
 {
    USES_CONVERSION;
    ASSERT(rCmdInfo.m_bDo1250Test);
@@ -1105,7 +1108,7 @@ void CPGSuperBaseAppPlugin::Process1250Testing(const CPGSuperBaseCommandLineInfo
    }
 }
 
-void CPGSuperBaseAppPlugin::ProcessLibrarySetUp(const CPGSuperBaseCommandLineInfo& rCmdInfo)
+void CPGSAppPluginBase::ProcessLibrarySetUp(const CPGSBaseCommandLineInfo& rCmdInfo)
 {
    ASSERT(rCmdInfo.m_bSetUpdateLibrary);
 

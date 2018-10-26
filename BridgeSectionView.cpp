@@ -462,7 +462,7 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_BRIDGE_XSECTION_CTX,NULL);
 
@@ -493,12 +493,12 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CBridgeSectionView::OnEditDeck() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
+   ((CPGSDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
 }
 
 void CBridgeSectionView::OnViewSettings() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_SECTION);
+   ((CPGSDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_SECTION);
 }
 
 void CBridgeSectionView::OnSize(UINT nType, int cx, int cy) 
@@ -525,7 +525,7 @@ void CBridgeSectionView::OnSize(UINT nType, int cx, int cy)
 
 void CBridgeSectionView::UpdateGirderTooltips()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
@@ -725,7 +725,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();;
 
    GroupIndexType grpIdx = GetGroupIndex();
@@ -909,7 +909,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    GroupIndexType grpIdx = GetGroupIndex();
@@ -1071,7 +1071,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
 void CBridgeSectionView::BuildDeckDisplayObjects()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
@@ -1474,7 +1474,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
 void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 {
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
    UINT settings = pDoc->GetBridgeEditorSettings();
 

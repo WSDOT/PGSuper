@@ -199,7 +199,7 @@ LRESULT CSpanDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 void CSpanDetailsDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    const std::map<IDType,IEditSpanCallback*>& callbacks = pDoc->GetEditSpanCallbacks();
    std::map<IDType,IEditSpanCallback*>::const_iterator callbackIter(callbacks.begin());
@@ -219,7 +219,7 @@ void CSpanDetailsDlg::CreateExtensionPages()
 void CSpanDetailsDlg::CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_BridgeExtensionPages = editBridgeExtensions;
 

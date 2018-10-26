@@ -289,14 +289,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             {
                pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
                *pChapter << pPara;
-               if ( pDocType->IsPGSuperDocument() )
-               {
-                  (*pPara) << _T("Span ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-               }
-               else
-               {
-                  (*pPara) << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-               }
+               *pPara << SEGMENT_LABEL(thisSegmentKey) << rptNewLine;
             }
 
             pPara = new rptParagraph();

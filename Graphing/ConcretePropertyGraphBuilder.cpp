@@ -44,7 +44,7 @@
 
 #include <MFCTools\MFCTools.h>
 
-#include <Reporting\ReportNotes.h> // for IncGenerator
+#include <Reporting\ReportNotes.h> // for IncrementValue
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -434,7 +434,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    if ( m_GraphType == GRAPH_TYPE_CR )
    {
       vIntervals.resize(nIntervals-startIntervalIdx);
-      std::generate(vIntervals.begin(),vIntervals.end(),IncGenerator<IntervalIndexType>(startIntervalIdx));
+      std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(startIntervalIdx));
    }
    else
    {

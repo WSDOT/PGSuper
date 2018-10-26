@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents
 
-CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;
@@ -262,7 +262,7 @@ STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnUnselect(
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSlabDisplayObjectEvents
 
-CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;

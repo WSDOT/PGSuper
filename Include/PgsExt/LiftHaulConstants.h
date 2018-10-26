@@ -31,13 +31,6 @@ enum GirderOrientation{ Plumb, Inclined };
 // Directions of applied impact
 enum ImpactDir {idUp, idNone, idDown, SIZE_OF_IMPACTDIR};
 
-// Functor class for giving tolerance for finding floats in map containers
-class Float64_less
-{
-public:
-   bool operator() (const Float64 d1, const Float64 d2) const {return d1+1.0e-9 < d2;} 
-};
-
 // Function for comparing two required concrete strengths. -1 means infinite
 Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc);
 

@@ -39,7 +39,7 @@ class CBridgeModelViewChildFrame;
 class CBridgePlanViewSlabDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CBridgePlanViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
+	CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
 
 protected:
 
@@ -67,7 +67,7 @@ protected:
 private:
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
-   CPGSuperDocBase* m_pDoc;
+   CPGSDocBase* m_pDoc;
    PierIndexType m_nPiers;
 
    bool m_bFillIfNotSelected;
@@ -86,7 +86,7 @@ private:
 class CBridgeSectionViewSlabDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CBridgeSectionViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
+	CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
 
 protected:
 
@@ -114,7 +114,7 @@ protected:
 private:
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
-   CPGSuperDocBase* m_pDoc;
+   CPGSDocBase* m_pDoc;
 
    bool m_bFillIfNotSelected;
 

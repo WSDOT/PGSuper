@@ -13,6 +13,7 @@
 #include "afxres.h"
 #include <EAF\EAFResources.h>
 #include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -83,6 +84,7 @@ IDR_PGSPLICEAPPPLUGINIMPL REGISTRY                "res\\PGSpliceAppPluginImpl.rg
 IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
 IDR_PGSPLICECOMPONENTINFO REGISTRY                "res\\PGSpliceComponentInfo.rgs"
 IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProjectImporterAppPlugin.rgs"
+IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSpliceProjectImporterAppPlugin.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -115,7 +117,8 @@ IDI_EDIT_LOADS          ICON                    "..\\res\\edit_loa.ico"
 IDI_POINT_LOAD          ICON                    "..\\res\\point_load.ico"
 IDI_DISTRIBUTED_LOAD    ICON                    "..\\res\\distributed_load.ico"
 IDI_MOMENT_LOAD         ICON                    "..\\res\\moment.ico"
-IDR_PROJECTIMPORTER     ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSUPERPROJECTIMPORTER     ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSPLICEPROJECTIMPORTER     ICON                    "..\\res\\Bridge2.ico"
 IDI_EARTH               ICON                    "..\\res\\Globe.ico"
 IDI_EDIT_BRIDGE         ICON                    "..\\res\\EditBridge.ico"
 IDI_EDIT_GIRDER         ICON                    "..\\res\\EditGirder.ico"
@@ -179,7 +182,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_PROJECT_DESIGNGIRDER
     SEPARATOR
-    BUTTON      ID_PROJECT_UPDATENOW
+    BUTTON      EAFID_AUTOCALC_UPDATENOW
 END
 
 IDR_PGSPLICE_STDTOOLBAR TOOLBAR  16, 16
@@ -218,7 +221,7 @@ BEGIN
     BUTTON      EAFID_VIEW_STATUSCENTER2
     BUTTON      EAFID_VIEW_STATUSCENTER3
     SEPARATOR
-    BUTTON      ID_PROJECT_UPDATENOW
+    BUTTON      EAFID_AUTOCALC_UPDATENOW
 END
 
 IDR_LIBTOOLBAR TOOLBAR  16, 16
@@ -301,7 +304,7 @@ BEGIN
     END
     POPUP "&Project"
     BEGIN
-        MENUITEM "Update &Now\tF5",             ID_PROJECT_UPDATENOW
+        MENUITEM "Update &Now\tF5",             EAFID_AUTOCALC_UPDATENOW
         MENUITEM SEPARATOR
         MENUITEM "&Units...",                   EAFID_EDIT_UNITS
         MENUITEM "&Project Criteria...",        ID_PROJECT_SPEC
@@ -343,7 +346,7 @@ BEGIN
     END
     POPUP "&Options"
     BEGIN
-        MENUITEM "Turn &AutoCalc On",           ID_PROJECT_AUTOCALC
+        MENUITEM "Turn &AutoCalc On",           EAFID_TOGGLE_AUTOCALC
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR
         MENUITEM "&Hints...",                   EAFID_OPTIONS_HINTS
         MENUITEM "&Labels...",                  ID_OPTIONS_LABELS
@@ -449,7 +452,7 @@ BEGIN
     BEGIN
         MENUITEM "&Design Girder...\tCtrl+D",   ID_PROJECT_DESIGNGIRDER,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
-        MENUITEM "Update &Now\tF5",             ID_PROJECT_UPDATENOW,MFT_STRING,MFS_ENABLED
+        MENUITEM "Update &Now\tF5",             EAFID_AUTOCALC_UPDATENOW,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Units...",                   EAFID_EDIT_UNITS,MFT_STRING,MFS_ENABLED
         MENUITEM "Structural Analysis &Method...", ID_PROJECT_ANALYSIS,MFT_STRING,MFS_ENABLED
@@ -492,7 +495,7 @@ BEGIN
     END
     POPUP "&Options",                       65535,MFT_STRING,MFS_ENABLED
     BEGIN
-        MENUITEM "Turn &AutoCalc On",           ID_PROJECT_AUTOCALC,MFT_STRING,MFS_ENABLED
+        MENUITEM "Turn &AutoCalc On",           EAFID_TOGGLE_AUTOCALC,MFT_STRING,MFS_ENABLED
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR,MFT_STRING,MFS_ENABLED
         MENUITEM "&Hints...",                   EAFID_OPTIONS_HINTS,MFT_STRING,MFS_ENABLED
         MENUITEM "&Labels...",                  ID_OPTIONS_LABELS,MFT_STRING,MFS_ENABLED
@@ -3302,8 +3305,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,42
- PRODUCTVERSION 3,0,0,42
+ FILEVERSION 3,0,0,43
+ PRODUCTVERSION 3,0,0,43
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3320,12 +3323,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.42"
+            VALUE "FileVersion", "3.0.0.43"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.42"
+            VALUE "ProductVersion", "3.0.0.43"
         END
     END
     BLOCK "VarFileInfo"
@@ -4275,7 +4278,8 @@ STRINGTABLE
 BEGIN
     IDR_PGSUPER             "\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
     IDR_BRIDGEMODELEDITOR   "Bridge View\n\n\n\n\n\n"
-    IDR_PROJECTIMPORTER     "Bridge View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
+    IDR_PGSUPERPROJECTIMPORTER     "Bridge View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
+    IDR_PGSPLICEPROJECTIMPORTER     "Bridge View\nPGSplice\nPGSplice Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
     IDR_ANALYSISMODELEDITOR "Analysis Model Editor\n\n\n\n\n\n"
     IDR_LIBRARYEDITOR       "Library Editor\n\n\n\n\n\n"
@@ -4553,8 +4557,6 @@ BEGIN
     ID_VIEWSETTINGS_ANALYSISMODELEDITOR "Analysis Model Editor view settings"
     ID_VIEWSETTINGS_LIBRARYEDITOR "Library Editor view settings"
     ID_CONFIGURE_PGSUPER    "Configure the library, template, and user information settings\nConfigure PGSuper"
-    ID_PROJECT_AUTOCALC     "Toggles AutoCalc mode.\nAutoCalc"
-    ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now (F5)"
     ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nDesign Girder (Ctrl+D)"
     ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nSelect Project Criteria"
     ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
@@ -4597,11 +4599,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    EAFID_INDICATOR_MODIFIED "Modified"
-    EAFID_INDICATOR_STATUS  "OK"
     ID_INDICATOR_ANALYSIS   "CONTINUOUS"
-    ID_INDICATOR_AUTOCALC_ON "AutoCalc : On"
-    ID_INDICATOR_AUTOCALC_OFF "AutoCalc : Off"
     IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
     IDS_GIRDER_SHEAR        "Trans. Reinforcement"
     IDS_LIVE_LOAD_FACTOR_TOOLTIP 

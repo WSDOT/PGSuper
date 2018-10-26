@@ -1,24 +1,24 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   6  6.50  1     1    WF74G  *    42  0.60  270 32.42 17.66  10 70.0  5.100  6.300    4.176   -3.987  11354  0.629  0.755  0.40 -0.14  0.00 -0.01 -0.16 183.34 334.94   3.00   6.17   6.17
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    6   6.50                   1      1     WF74G    *    42   0.6  270  32.42  17.66                                              10  70.0  4.0  5.100  6.300   4.176    -3.987    11354   0.629  0.755  4.858  -1.70  -0.15  -0.16  -2.01  183.34  334.94    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   6  6.50  1     2    WF74G  *    41  0.60  270 32.44 15.95  11 70.0  4.900  6.000    3.997   -3.823  11074  0.573  0.756  0.38 -0.14  0.00 -0.01 -0.15 176.94 331.06   3.00   6.17   6.17
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    6   6.50                   1      2     WF74G    *    41   0.6  270  32.44  15.95                                              11  70.0  4.0  4.900  6.000   3.997    -3.823    11074   0.573  0.756  4.600  -1.65  -0.15  -0.16  -1.97  176.94  331.06    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   6  6.50  1     4    WF74G  *    41  0.60  270 32.44 15.95  11 70.0  4.900  6.000    3.997   -3.823  11074  0.573  0.756  0.38 -0.14  0.00 -0.01 -0.15 176.94 331.06   3.00   6.17   6.17
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    6   6.50                   1      4     WF74G    *    41   0.6  270  32.44  15.95                                              11  70.0  4.0  4.900  6.000   3.997    -3.823    11074   0.573  0.756  4.600  -1.65  -0.15  -0.16  -1.97  176.94  331.06    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful

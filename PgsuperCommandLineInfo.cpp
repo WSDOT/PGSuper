@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 
 //======================== LIFECYCLE  =======================================
 CPGSuperCommandLineInfo::CPGSuperCommandLineInfo() : 
-CPGSuperBaseCommandLineInfo()
+CPGSBaseCommandLineInfo()
 {
 }
 

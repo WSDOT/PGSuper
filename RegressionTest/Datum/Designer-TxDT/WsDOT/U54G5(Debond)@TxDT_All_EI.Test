@@ -1,7 +1,7 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- ---                               ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00  1     1   (Debo       62  0.60  270 16.22 15.93  14  0.00   0   0                               15.000 15.000    7.470   -4.750   13167 1.016  1.016  0.21 -0.13  0.00 -0.01 -0.14 176.94 247.70   0.00   0.00   0.00
-                                                                       4.00  25   4  0  0  0  0  0  0  0  0  0  2 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    4   8.00                   1      1     (Debo         62   0.6  270  16.22  15.93  14   0.00    0     0                       15.000 15.000   7.470    -4.750    13167   1.016  1.016  2.519  -1.61  -0.09  -0.11  -1.83  176.94  247.70    0.00    0.00    0.00 
+                                                                                                  4.00   25     4    0   0   0   0   0 
 Warning: The number of debonded sections exceeds ten for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 
@@ -15,10 +15,10 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- ---                               ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00  1     2   (Debo       48  0.60  270 16.85 16.64  12  0.00   0   0                               15.000 15.000    6.501   -3.895   10790 0.557  0.773  0.13 -0.10  0.00 -0.01 -0.12 105.74 161.12   0.00   0.00   0.00
-                                                                       4.00  23   2  0  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Debnd                                   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    4   8.00                   1      2     (Debo         48   0.6  270  16.85  16.64  12   0.00    0     0                       15.000 15.000   6.501    -3.895    10790   0.557  0.773  1.579  -1.25  -0.10  -0.12  -1.49  105.74  161.12    0.00    0.00    0.00 
+                                                                                                  4.00   23     2    0   0   0   0   0 
 Warning: The number of debonded sections exceeds ten for beam 2 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 

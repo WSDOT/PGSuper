@@ -134,7 +134,7 @@ void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegme
 void CGirderSegmentDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditSegmentCallback*> callbacks = pDoc->GetEditSegmentCallbacks();
    std::map<IDType,IEditSegmentCallback*>::iterator callbackIter(callbacks.begin());
@@ -154,7 +154,7 @@ void CGirderSegmentDlg::CreateExtensionPages()
 void CGirderSegmentDlg::CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_SplicedGirderExtensionPages = editSplicedGirderExtensions;
 
@@ -238,7 +238,7 @@ void CGirderSegmentDlg::NotifySplicedGirderExtensionPages()
    // It gives the spliced girder dialog extension pages to sync their data with whatever got changed in 
    // the extension pages in this dialog
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditSegmentCallback*> callbacks = pDoc->GetEditSegmentCallbacks();
    std::map<IDType,IEditSegmentCallback*>::iterator callbackIter(callbacks.begin());

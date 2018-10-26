@@ -139,16 +139,25 @@ void CCEBFIPConcretePage::OnCompute()
 
    CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
 
-   CCEBFIPParametersDlg dlg;
-   dlg.m_t1  = pParent->m_TimeAtInitialStrength;
-   dlg.m_fc1 = pParent->m_fci;
-   dlg.m_fc2 = pParent->m_fc28;
-   if ( dlg.DoModal() )
+   INT_PTR result;
    {
-      m_S = dlg.m_S;
-      pParent->m_fci = dlg.m_fc1;
-      pParent->m_fc28 = dlg.m_fc2;
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CCEBFIPParametersDlg dlg;
+      dlg.m_t1  = pParent->m_TimeAtInitialStrength;
+      dlg.m_fc1 = pParent->m_fci;
+      dlg.m_fc2 = pParent->m_fc28;
+      result = dlg.DoModal();
 
+      if ( result == IDOK )
+      {
+         m_S = dlg.m_S;
+         pParent->m_fci = dlg.m_fc1;
+         pParent->m_fc28 = dlg.m_fc2;
+      }
+   }
+
+   if ( result == IDOK )
+   {
       UpdateData(FALSE);
    }
 }

@@ -54,7 +54,7 @@ library TxDOTAgentLib
    ]
    coclass TxDOTCadExporter
    {
-      [default] interface IPGSuperDataExporter;
+      [default] interface IPGSDataExporter;
    };
 
 	[

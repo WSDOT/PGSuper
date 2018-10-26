@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PGSuperDocBase.cpp : implementation of the CPGSuperDocBase class
+// PGSuperDocBase.cpp : implementation of the CPGSDocBase class
 //
 #include "PGSuperAppPlugin\stdafx.h"
 
@@ -219,17 +219,16 @@ static void UpdatePrestressForce(pgsTypes::StrandType type, const CSegmentKey& s
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CPGSuperDocBase
+// CPGSDocBase
 
-BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
-	//{{AFX_MSG_MAP(CPGSuperDocBase)
+BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
+	//{{AFX_MSG_MAP(CPGSDocBase)
 	ON_COMMAND(ID_FILE_PROJECT_PROPERTIES, OnFileProjectProperties)
 	ON_COMMAND(ID_PROJECT_ENVIRONMENT, OnProjectEnvironment)
    ON_COMMAND(ID_PROJECT_EFFECTIVEFLANGEWIDTH, OnEffectiveFlangeWidth)
 	ON_COMMAND(ID_PROJECT_SPEC, OnProjectSpec)
 	ON_COMMAND(ID_RATING_SPEC,  OnRatingSpec)
-	ON_COMMAND(ID_PROJECT_AUTOCALC, OnProjectAutoCalc)
-	ON_UPDATE_COMMAND_UI(ID_PROJECT_AUTOCALC, OnUpdateProjectAutoCalc)
+	ON_UPDATE_COMMAND_UI(EAFID_TOGGLE_AUTOCALC, OnUpdateAutoCalc)
 	ON_COMMAND(IDM_EXPORT_TEMPLATE, OnExportToTemplateFile)
 	ON_COMMAND(ID_VIEWSETTINGS_BRIDGEMODELEDITOR, OnViewsettingsBridgemodelEditor)
 	ON_COMMAND(ID_LOADS_LOADMODIFIERS, OnLoadsLoadModifiers)
@@ -259,9 +258,12 @@ BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
 
 	ON_COMMAND(ID_EDIT_USERLOADS, OnEditUserLoads)
    //}}AFX_MSG_MAP
-	
-   ON_COMMAND(ID_PROJECT_UPDATENOW, OnUpdateNow)
-	ON_UPDATE_COMMAND_UI(ID_PROJECT_UPDATENOW, OnUpdateUpdateNow)
+
+   // autocalc command implementations
+   ON_COMMAND(EAFID_TOGGLE_AUTOCALC, OnAutoCalc)
+   ON_UPDATE_COMMAND_UI(EAFID_TOGGLE_AUTOCALC,OnUpdateAutoCalc)
+   ON_COMMAND(EAFID_AUTOCALC_UPDATENOW, OnUpdateNow)
+	ON_UPDATE_COMMAND_UI(EAFID_AUTOCALC_UPDATENOW, OnUpdateUpdateNow)
 
 	ON_COMMAND(ID_FILE_SEND_MAIL, OnFileSendMail)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SEND_MAIL, OnUpdateFileSendMail)
@@ -285,9 +287,9 @@ BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CPGSuperDocBase construction/destruction
+// CPGSDocBase construction/destruction
 
-CPGSuperDocBase::CPGSuperDocBase():
+CPGSDocBase::CPGSDocBase():
 m_bDesignSlabOffset(true),
 m_bAutoCalcEnabled(true)
 {
@@ -317,12 +319,13 @@ m_bAutoCalcEnabled(true)
    SetCustomReportHelpID(eafTypes::crhFavoriteReport,IDH_FAVORITE_REPORT);
 
 
-   // Reserve a range of command IDs for extension agent commands (which are current supported)
+   // Reserve a range of command IDs for extension agent commands (which are currently supported)
    // and EAFDocumentPlugin objects (which are not currently supported in PGSuper)
-   GetPluginCommandManager()->ReserveCommandIDRange(PGSUPER_PLUGIN_COMMAND_COUNT);
+   UINT nCommands = GetPluginCommandManager()->ReserveCommandIDRange(PGSUPER_PLUGIN_COMMAND_COUNT);
+   ATLASSERT(nCommands == PGSUPER_PLUGIN_COMMAND_COUNT);
 }
 
-CPGSuperDocBase::~CPGSuperDocBase()
+CPGSDocBase::~CPGSDocBase()
 {
    m_DocUnitSystem.Release();
    m_pPluginMgr->UnloadPlugins();
@@ -332,12 +335,12 @@ CPGSuperDocBase::~CPGSuperDocBase()
 }
 
 // CEAFAutoCalcDocMixin overrides
-bool CPGSuperDocBase::IsAutoCalcEnabled() const
+bool CPGSDocBase::IsAutoCalcEnabled() const
 {
    return m_bAutoCalcEnabled;
 }
 
-void CPGSuperDocBase::EnableAutoCalc(bool bEnable)
+void CPGSDocBase::EnableAutoCalc(bool bEnable)
 {
    if ( m_bAutoCalcEnabled != bEnable )
    {
@@ -356,51 +359,51 @@ void CPGSuperDocBase::EnableAutoCalc(bool bEnable)
    }
 }
 
-void CPGSuperDocBase::OnUpdateNow()
+void CPGSDocBase::OnUpdateNow()
 {
    CEAFAutoCalcDocMixin::OnUpdateNow();
 }
 
-void CPGSuperDocBase::OnUpdateUpdateNow(CCmdUI* pCmdUI)
+void CPGSDocBase::OnUpdateUpdateNow(CCmdUI* pCmdUI)
 {
    CEAFAutoCalcDocMixin::OnUpdateUpdateNow(pCmdUI);
 }
 
-void CPGSuperDocBase::OnViewStatusCenter(UINT nID)
+void CPGSDocBase::OnViewStatusCenter(UINT nID)
 {
    CEAFBrokerDocument::OnViewStatusCenter();
 }
 
-void CPGSuperDocBase::OnLibMgrChanged(psgLibraryManager* pNewLibMgr)
+void CPGSDocBase::OnLibMgrChanged(psgLibraryManager* pNewLibMgr)
 {
    GET_IFACE( ILibrary, pLib );
    pLib->SetLibraryManager( pNewLibMgr );
 }
 
 // libISupportLibraryManager implementation
-CollectionIndexType CPGSuperDocBase::GetNumberOfLibraryManagers() const
+CollectionIndexType CPGSDocBase::GetNumberOfLibraryManagers() const
 {
    return 1;
 }
 
-libLibraryManager* CPGSuperDocBase::GetLibraryManager(CollectionIndexType num)
+libLibraryManager* CPGSDocBase::GetLibraryManager(CollectionIndexType num)
 {
    PRECONDITION( num == 0 );
    return &m_LibMgr;
 }
 
-libLibraryManager* CPGSuperDocBase::GetTargetLibraryManager()
+libLibraryManager* CPGSDocBase::GetTargetLibraryManager()
 {
    return &m_LibMgr;
 }
 
-void CPGSuperDocBase::GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem)
+void CPGSDocBase::GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem)
 {
    (*ppDocUnitSystem) = m_DocUnitSystem;
    (*ppDocUnitSystem)->AddRef();
 }
 
-void CPGSuperDocBase::EditAlignmentDescription(int nPage)
+void CPGSDocBase::EditAlignmentDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -424,7 +427,7 @@ void CPGSuperDocBase::EditAlignmentDescription(int nPage)
    }
 }
 
-void CPGSuperDocBase::EditBridgeDescription(int nPage)
+void CPGSDocBase::EditBridgeDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -465,7 +468,7 @@ void CPGSuperDocBase::EditBridgeDescription(int nPage)
    }
 }
 
-bool CPGSuperDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
+bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -498,7 +501,7 @@ bool CPGSuperDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
    return true;
 }
 
-bool CPGSuperDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
+bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -531,7 +534,7 @@ bool CPGSuperDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
    return true;
 }
 
-bool CPGSuperDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
+bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 {
 #pragma Reminder("UPDATE: move this to the CPGSuperDoc class... it doesn't belong in the common base class")
    // it doesn't apply to PGSplice
@@ -623,7 +626,7 @@ bool CPGSuperDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segment
 }
 
 
-bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
+bool CPGSDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -684,7 +687,7 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    }
 }
    
-void CPGSuperDocBase::AddPointLoad(const CPointLoadData& loadData)
+void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -699,7 +702,7 @@ void CPGSuperDocBase::AddPointLoad(const CPointLoadData& loadData)
    }
 }
 
-bool CPGSuperDocBase::EditPointLoad(CollectionIndexType loadIdx)
+bool CPGSDocBase::EditPointLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -725,7 +728,7 @@ bool CPGSuperDocBase::EditPointLoad(CollectionIndexType loadIdx)
    return false;
 }
 
-void CPGSuperDocBase::DeletePointLoad(CollectionIndexType loadIdx)
+void CPGSDocBase::DeletePointLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -736,7 +739,7 @@ void CPGSuperDocBase::DeletePointLoad(CollectionIndexType loadIdx)
    pTransactions->Execute(pTxn);
 }
 
-void CPGSuperDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
+void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -752,7 +755,7 @@ void CPGSuperDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
    }
 }
 
-bool CPGSuperDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
+bool CPGSDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -778,7 +781,7 @@ bool CPGSuperDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
    return false;
 }
 
-void CPGSuperDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
+void CPGSDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -789,7 +792,7 @@ void CPGSuperDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
    pTransactions->Execute(pTxn);
 }
 
-void CPGSuperDocBase::AddMomentLoad(const CMomentLoadData& loadData)
+void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -805,7 +808,7 @@ void CPGSuperDocBase::AddMomentLoad(const CMomentLoadData& loadData)
    }
 }
 
-bool CPGSuperDocBase::EditMomentLoad(CollectionIndexType loadIdx)
+bool CPGSDocBase::EditMomentLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -831,7 +834,7 @@ bool CPGSuperDocBase::EditMomentLoad(CollectionIndexType loadIdx)
    return false;
 }
 
-void CPGSuperDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
+void CPGSDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -842,7 +845,7 @@ void CPGSuperDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
    pTransactions->Execute(pTxn);
 }
 
-void CPGSuperDocBase::EditGirderViewSettings(int nPage)
+void CPGSDocBase::EditGirderViewSettings(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -863,7 +866,7 @@ void CPGSuperDocBase::EditGirderViewSettings(int nPage)
    }
 }
 
-void CPGSuperDocBase::EditBridgeViewSettings(int nPage)
+void CPGSDocBase::EditBridgeViewSettings(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -892,7 +895,7 @@ void CPGSuperDocBase::EditBridgeViewSettings(int nPage)
 	
 }
 
-BOOL CPGSuperDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
+BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 {
    CFileFind dir_finder;
    BOOL bMoreDir = dir_finder.FindFile(CString(lpszDir)+_T("\\*"));
@@ -940,12 +943,12 @@ BOOL CPGSuperDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
    return TRUE;
 }
 
-BOOL CPGSuperDocBase::UpdateTemplates()
+BOOL CPGSDocBase::UpdateTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    CString workgroup_folder;
    pPGSuper->GetTemplateFolders(workgroup_folder);
@@ -975,14 +978,14 @@ BOOL CPGSuperDocBase::UpdateTemplates()
    return FALSE; // didn't really open a file
 }
 
-IDType CPGSuperDocBase::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
+IDType CPGSDocBase::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_BridgePlanViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterBridgePlanViewCallback(IDType ID)
+bool CPGSDocBase::UnregisterBridgePlanViewCallback(IDType ID)
 {
    std::map<IDType,IBridgePlanViewEventCallback*>::iterator found = m_BridgePlanViewCallbacks.find(ID);
    if ( found == m_BridgePlanViewCallbacks.end() )
@@ -995,19 +998,19 @@ bool CPGSuperDocBase::UnregisterBridgePlanViewCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IBridgePlanViewEventCallback*>& CPGSuperDocBase::GetBridgePlanViewCallbacks()
+const std::map<IDType,IBridgePlanViewEventCallback*>& CPGSDocBase::GetBridgePlanViewCallbacks()
 {
    return m_BridgePlanViewCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
+IDType CPGSDocBase::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_BridgeSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterBridgeSectionViewCallback(IDType ID)
+bool CPGSDocBase::UnregisterBridgeSectionViewCallback(IDType ID)
 {
    std::map<IDType,IBridgeSectionViewEventCallback*>::iterator found = m_BridgeSectionViewCallbacks.find(ID);
    if ( found == m_BridgeSectionViewCallbacks.end() )
@@ -1020,19 +1023,19 @@ bool CPGSuperDocBase::UnregisterBridgeSectionViewCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IBridgeSectionViewEventCallback*>& CPGSuperDocBase::GetBridgeSectionViewCallbacks()
+const std::map<IDType,IBridgeSectionViewEventCallback*>& CPGSDocBase::GetBridgeSectionViewCallbacks()
 {
    return m_BridgeSectionViewCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback)
+IDType CPGSDocBase::RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_AlignmentPlanViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterAlignmentPlanViewCallback(IDType ID)
+bool CPGSDocBase::UnregisterAlignmentPlanViewCallback(IDType ID)
 {
    std::map<IDType,IAlignmentPlanViewEventCallback*>::iterator found = m_AlignmentPlanViewCallbacks.find(ID);
    if ( found == m_AlignmentPlanViewCallbacks.end() )
@@ -1045,19 +1048,19 @@ bool CPGSuperDocBase::UnregisterAlignmentPlanViewCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IAlignmentPlanViewEventCallback*>& CPGSuperDocBase::GetAlignmentPlanViewCallbacks()
+const std::map<IDType,IAlignmentPlanViewEventCallback*>& CPGSDocBase::GetAlignmentPlanViewCallbacks()
 {
    return m_AlignmentPlanViewCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback)
+IDType CPGSDocBase::RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_AlignmentProfileViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterAlignmentProfileViewCallback(IDType ID)
+bool CPGSDocBase::UnregisterAlignmentProfileViewCallback(IDType ID)
 {
    std::map<IDType,IAlignmentProfileViewEventCallback*>::iterator found = m_AlignmentProfileViewCallbacks.find(ID);
    if ( found == m_AlignmentProfileViewCallbacks.end() )
@@ -1070,19 +1073,19 @@ bool CPGSuperDocBase::UnregisterAlignmentProfileViewCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IAlignmentProfileViewEventCallback*>& CPGSuperDocBase::GetAlignmentProfileViewCallbacks()
+const std::map<IDType,IAlignmentProfileViewEventCallback*>& CPGSDocBase::GetAlignmentProfileViewCallbacks()
 {
    return m_AlignmentProfileViewCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
+IDType CPGSDocBase::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_GirderElevationViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterGirderElevationViewCallback(IDType ID)
+bool CPGSDocBase::UnregisterGirderElevationViewCallback(IDType ID)
 {
    std::map<IDType,IGirderElevationViewEventCallback*>::iterator found = m_GirderElevationViewCallbacks.find(ID);
    if ( found == m_GirderElevationViewCallbacks.end() )
@@ -1095,19 +1098,19 @@ bool CPGSuperDocBase::UnregisterGirderElevationViewCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IGirderElevationViewEventCallback*>& CPGSuperDocBase::GetGirderElevationViewCallbacks()
+const std::map<IDType,IGirderElevationViewEventCallback*>& CPGSDocBase::GetGirderElevationViewCallbacks()
 {
    return m_GirderElevationViewCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
+IDType CPGSDocBase::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_GirderSectionViewCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterGirderSectionViewCallback(IDType ID)
+bool CPGSDocBase::UnregisterGirderSectionViewCallback(IDType ID)
 {
    std::map<IDType,IGirderSectionViewEventCallback*>::iterator found = m_GirderSectionViewCallbacks.find(ID);
    if ( found == m_GirderSectionViewCallbacks.end() )
@@ -1120,19 +1123,19 @@ bool CPGSuperDocBase::UnregisterGirderSectionViewCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IGirderSectionViewEventCallback*>& CPGSuperDocBase::GetGirderSectionViewCallbacks()
+const std::map<IDType,IGirderSectionViewEventCallback*>& CPGSDocBase::GetGirderSectionViewCallbacks()
 {
    return m_GirderSectionViewCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback)
+IDType CPGSDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditPierCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditPierCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditPierCallback(IDType ID)
 {
    std::map<IDType,IEditPierCallback*>::iterator found = m_EditPierCallbacks.find(ID);
    if ( found == m_EditPierCallbacks.end() )
@@ -1145,19 +1148,19 @@ bool CPGSuperDocBase::UnregisterEditPierCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditPierCallback*>& CPGSuperDocBase::GetEditPierCallbacks()
+const std::map<IDType,IEditPierCallback*>& CPGSDocBase::GetEditPierCallbacks()
 {
    return m_EditPierCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+IDType CPGSDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditTemporarySupportCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditTemporarySupportCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditTemporarySupportCallback(IDType ID)
 {
    std::map<IDType,IEditTemporarySupportCallback*>::iterator found = m_EditTemporarySupportCallbacks.find(ID);
    if ( found == m_EditTemporarySupportCallbacks.end() )
@@ -1170,19 +1173,19 @@ bool CPGSuperDocBase::UnregisterEditTemporarySupportCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditTemporarySupportCallback*>& CPGSuperDocBase::GetEditTemporarySupportCallbacks()
+const std::map<IDType,IEditTemporarySupportCallback*>& CPGSDocBase::GetEditTemporarySupportCallbacks()
 {
    return m_EditTemporarySupportCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
+IDType CPGSDocBase::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditSpanCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditSpanCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditSpanCallback(IDType ID)
 {
    std::map<IDType,IEditSpanCallback*>::iterator found = m_EditSpanCallbacks.find(ID);
    if ( found == m_EditSpanCallbacks.end() )
@@ -1195,12 +1198,12 @@ bool CPGSuperDocBase::UnregisterEditSpanCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditSpanCallback*>& CPGSuperDocBase::GetEditSpanCallbacks()
+const std::map<IDType,IEditSpanCallback*>& CPGSDocBase::GetEditSpanCallbacks()
 {
    return m_EditSpanCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback * pCopyCallback)
+IDType CPGSDocBase::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback * pCopyCallback)
 {
    IDType key = m_CallbackID++;
    m_EditGirderCallbacks.insert(std::make_pair(key,pCallback));
@@ -1213,7 +1216,7 @@ IDType CPGSuperDocBase::RegisterEditGirderCallback(IEditGirderCallback* pCallbac
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditGirderCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditGirderCallback(IDType ID)
 {
    std::map<IDType,IEditGirderCallback*>::iterator foundCallback = m_EditGirderCallbacks.find(ID);
    if ( foundCallback == m_EditGirderCallbacks.end() )
@@ -1232,17 +1235,17 @@ bool CPGSuperDocBase::UnregisterEditGirderCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditGirderCallback*>& CPGSuperDocBase::GetEditGirderCallbacks()
+const std::map<IDType,IEditGirderCallback*>& CPGSDocBase::GetEditGirderCallbacks()
 {
    return m_EditGirderCallbacks;
 }
 
-const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSuperDocBase::GetCopyGirderPropertiesCallbacks()
+const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSDocBase::GetCopyGirderPropertiesCallbacks()
 {
    return m_CopyGirderPropertiesCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
+IDType CPGSDocBase::RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
 {
    IDType key = m_CallbackID++;
    m_EditSplicedGirderCallbacks.insert(std::make_pair(key,pCallback));
@@ -1255,7 +1258,7 @@ IDType CPGSuperDocBase::RegisterEditSplicedGirderCallback(IEditSplicedGirderCall
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditSplicedGirderCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditSplicedGirderCallback(IDType ID)
 {
    std::map<IDType,IEditSplicedGirderCallback*>::iterator found = m_EditSplicedGirderCallbacks.find(ID);
    if ( found == m_EditSplicedGirderCallbacks.end() )
@@ -1274,24 +1277,24 @@ bool CPGSuperDocBase::UnregisterEditSplicedGirderCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditSplicedGirderCallback*>& CPGSuperDocBase::GetEditSplicedGirderCallbacks()
+const std::map<IDType,IEditSplicedGirderCallback*>& CPGSDocBase::GetEditSplicedGirderCallbacks()
 {
    return m_EditSplicedGirderCallbacks;
 }
 
-const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSuperDocBase::GetCopySplicedGirderPropertiesCallbacks()
+const std::map<IDType,ICopyGirderPropertiesCallback*>& CPGSDocBase::GetCopySplicedGirderPropertiesCallbacks()
 {
    return m_CopySplicedGirderPropertiesCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditSegmentCallback(IEditSegmentCallback* pCallback)
+IDType CPGSDocBase::RegisterEditSegmentCallback(IEditSegmentCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditSegmentCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditSegmentCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditSegmentCallback(IDType ID)
 {
    std::map<IDType,IEditSegmentCallback*>::iterator found = m_EditSegmentCallbacks.find(ID);
    if ( found == m_EditSegmentCallbacks.end() )
@@ -1304,19 +1307,19 @@ bool CPGSuperDocBase::UnregisterEditSegmentCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditSegmentCallback*>& CPGSuperDocBase::GetEditSegmentCallbacks()
+const std::map<IDType,IEditSegmentCallback*>& CPGSDocBase::GetEditSegmentCallbacks()
 {
    return m_EditSegmentCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback)
+IDType CPGSDocBase::RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditClosureJointCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditClosureJointCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditClosureJointCallback(IDType ID)
 {
    std::map<IDType,IEditClosureJointCallback*>::iterator found = m_EditClosureJointCallbacks.find(ID);
    if ( found == m_EditClosureJointCallbacks.end() )
@@ -1329,19 +1332,19 @@ bool CPGSuperDocBase::UnregisterEditClosureJointCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditClosureJointCallback*>& CPGSuperDocBase::GetEditClosureJointCallbacks()
+const std::map<IDType,IEditClosureJointCallback*>& CPGSDocBase::GetEditClosureJointCallbacks()
 {
    return m_EditClosureJointCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
+IDType CPGSDocBase::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditBridgeCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditBridgeCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditBridgeCallback(IDType ID)
 {
    std::map<IDType,IEditBridgeCallback*>::iterator found = m_EditBridgeCallbacks.find(ID);
    if ( found == m_EditBridgeCallbacks.end() )
@@ -1354,19 +1357,19 @@ bool CPGSuperDocBase::UnregisterEditBridgeCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditBridgeCallback*>& CPGSuperDocBase::GetEditBridgeCallbacks()
+const std::map<IDType,IEditBridgeCallback*>& CPGSDocBase::GetEditBridgeCallbacks()
 {
    return m_EditBridgeCallbacks;
 }
 
-IDType CPGSuperDocBase::RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback)
+IDType CPGSDocBase::RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback)
 {
    IDType key = m_CallbackID++;
    m_EditLoadRatingOptionsCallbacks.insert(std::make_pair(key,pCallback));
    return key;
 }
 
-bool CPGSuperDocBase::UnregisterEditLoadRatingOptionsCallback(IDType ID)
+bool CPGSDocBase::UnregisterEditLoadRatingOptionsCallback(IDType ID)
 {
    std::map<IDType,IEditLoadRatingOptionsCallback*>::iterator found = m_EditLoadRatingOptionsCallbacks.find(ID);
    if ( found == m_EditLoadRatingOptionsCallbacks.end() )
@@ -1379,12 +1382,12 @@ bool CPGSuperDocBase::UnregisterEditLoadRatingOptionsCallback(IDType ID)
    return true;
 }
 
-const std::map<IDType,IEditLoadRatingOptionsCallback*>& CPGSuperDocBase::GetEditLoadRatingOptionsCallbacks()
+const std::map<IDType,IEditLoadRatingOptionsCallback*>& CPGSDocBase::GetEditLoadRatingOptionsCallbacks()
 {
    return m_EditLoadRatingOptionsCallbacks;
 }
 
-BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
+BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )
    {
@@ -1395,13 +1398,13 @@ BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    return TRUE;
 }
 
-void CPGSuperDocBase::OnCloseDocument()
+void CPGSDocBase::OnCloseDocument()
 {
-   //// Put report favorites options back into CPGSuperBaseAppPlugin
+   //// Put report favorites options back into CPGSAppPluginBase
    //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    //CComPtr<IEAFAppPlugin> pAppPlugin;
    //pTemplate->GetPlugin(&pAppPlugin);
-   //CPGSuperBaseAppPlugin* pPGSuperAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   //CPGSAppPluginBase* pPGSuperAppPlugin = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    //bool doDisplayFavorites = GetDoDisplayFavoriteReports();
    //std::vector<std::_tstring> Favorites = GetFavoriteReports();
@@ -1418,12 +1421,12 @@ void CPGSuperDocBase::OnCloseDocument()
    CBeamFamilyManager::Reset();
 }
 
-void CPGSuperDocBase::InitProjectProperties()
+void CPGSDocBase::InitProjectProperties()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    CString engineer_name = pPGSuper->GetEngineerName();
    CString company       = pPGSuper->GetEngineerCompany();
@@ -1439,7 +1442,7 @@ void CPGSuperDocBase::InitProjectProperties()
    }
 }
 
-void CPGSuperDocBase::OnCreateInitialize()
+void CPGSDocBase::OnCreateInitialize()
 {
    // called before any data is loaded/created in the document
    CEAFBrokerDocument::OnCreateInitialize();
@@ -1449,7 +1452,7 @@ void CPGSuperDocBase::OnCreateInitialize()
    // created yet
 }
 
-void CPGSuperDocBase::OnCreateFinalize()
+void CPGSDocBase::OnCreateFinalize()
 {
    CEAFBrokerDocument::OnCreateFinalize();
 
@@ -1465,9 +1468,9 @@ void CPGSuperDocBase::OnCreateFinalize()
    //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    //CComPtr<IEAFAppPlugin> pAppPlugin;
    //pTemplate->GetPlugin(&pAppPlugin);
-   //CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   //CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
-   //// Transfer report favorites and custom reports data from CPGSuperBaseAppPlugin to CEAFBrokerDocument (this)
+   //// Transfer report favorites and custom reports data from CPGSAppPluginBase to CEAFBrokerDocument (this)
    //bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
    //std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
 
@@ -1533,7 +1536,7 @@ void CPGSuperDocBase::OnCreateFinalize()
    pUIEvents->HoldEvents(false);
 }
 
-BOOL CPGSuperDocBase::CreateBroker()
+BOOL CPGSDocBase::CreateBroker()
 {
    if ( !CEAFBrokerDocument::CreateBroker() )
    {
@@ -1555,13 +1558,13 @@ BOOL CPGSuperDocBase::CreateBroker()
    return TRUE;
 }
 
-HINSTANCE CPGSuperDocBase::GetResourceInstance()
+HINSTANCE CPGSDocBase::GetResourceInstance()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return AfxGetInstanceHandle();
 }
 
-BOOL CPGSuperDocBase::OnOpenDocument(LPCTSTR lpszPathName)
+BOOL CPGSDocBase::OnOpenDocument(LPCTSTR lpszPathName)
 {
    CString file_ext;
    CString file_name(lpszPathName);
@@ -1582,7 +1585,7 @@ BOOL CPGSuperDocBase::OnOpenDocument(LPCTSTR lpszPathName)
    }
 }
 
-BOOL CPGSuperDocBase::OpenTheDocument(LPCTSTR lpszPathName)
+BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
 {
    // don't fire UI events as the UI isn't completely built when the document is created
    // (view classes haven't been initialized)
@@ -1601,7 +1604,7 @@ BOOL CPGSuperDocBase::OpenTheDocument(LPCTSTR lpszPathName)
 }
 
 
-HRESULT CPGSuperDocBase::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileName)
+HRESULT CPGSDocBase::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileName)
 {
    // Open the document and look at the second line
    // If the version tag is 0.80, then the document needs to be converted
@@ -1669,21 +1672,21 @@ HRESULT CPGSuperDocBase::ConvertTheDocument(LPCTSTR lpszPathName, CString* preal
    return E_FAIL;
 }
 
-CString CPGSuperDocBase::GetRootNodeName()
+CString CPGSDocBase::GetRootNodeName()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
    return pPGSuper->GetAppName();
 }
 
-Float64 CPGSuperDocBase::GetRootNodeVersion()
+Float64 CPGSDocBase::GetRootNodeVersion()
 {
    return FILE_VERSION;
 }
 
-HRESULT CPGSuperDocBase::WriteTheDocument(IStructuredSave* pStrSave)
+HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 {
    // before the standard broker document persistence, write out the version
    // number of the application that created this document
@@ -1705,7 +1708,7 @@ HRESULT CPGSuperDocBase::WriteTheDocument(IStructuredSave* pStrSave)
    return S_OK;
 }
 
-HRESULT CPGSuperDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
+HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
    Float64 version;
    HRESULT hr = pStrLoad->get_Version(&version);
@@ -1742,7 +1745,7 @@ HRESULT CPGSuperDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
    return S_OK;
 }
 
-void CPGSuperDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
+void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
 {
    CString msg;
 
@@ -1765,7 +1768,7 @@ void CPGSuperDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBa
    AfxMessageBox(msg );
 }
 
-void CPGSuperDocBase::OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
+void CPGSDocBase::OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
 {
    CString msg;
 
@@ -1789,29 +1792,29 @@ void CPGSuperDocBase::OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lps
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CPGSuperDocBase diagnostics
+// CPGSDocBase diagnostics
 
 #ifdef _DEBUG
-void CPGSuperDocBase::AssertValid() const
+void CPGSDocBase::AssertValid() const
 {
 	CEAFBrokerDocument::AssertValid();
 }
 
-void CPGSuperDocBase::Dump(CDumpContext& dc) const
+void CPGSDocBase::Dump(CDumpContext& dc) const
 {
 	CEAFBrokerDocument::Dump(dc);
 }
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
-// CPGSuperDocBase commands
+// CPGSDocBase commands
 
-BOOL CPGSuperDocBase::Init()
+BOOL CPGSDocBase::Init()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    if ( !CEAFBrokerDocument::Init() )
    {
@@ -1868,7 +1871,7 @@ BOOL CPGSuperDocBase::Init()
    return TRUE;
 }
 
-BOOL CPGSuperDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
+BOOL CPGSDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
 {
    if ( !CEAFBrokerDocument::LoadSpecialAgents(pBrokerInit) )
    {
@@ -1898,7 +1901,7 @@ BOOL CPGSuperDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
    return TRUE;
 }
 
-void CPGSuperDocBase::OnFileProjectProperties() 
+void CPGSDocBase::OnFileProjectProperties() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1933,7 +1936,7 @@ void CPGSuperDocBase::OnFileProjectProperties()
 }
 
 
-void CPGSuperDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
+void CPGSDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // Skipping the default functionality and replacing it with something better
@@ -2005,7 +2008,7 @@ void CPGSuperDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName 
    AfxMessageBox( msg );
 }
 
-void CPGSuperDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
+void CPGSDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // Skipping the default functionality and replacing it with something better
@@ -2055,7 +2058,7 @@ void CPGSuperDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName 
    AfxMessageBox( msg );
 }
 
-void CPGSuperDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
+void CPGSDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2101,7 +2104,7 @@ void CPGSuperDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathNa
    AfxMessageBox( msg );
 }
 
-void CPGSuperDocBase::OnProjectEnvironment() 
+void CPGSDocBase::OnProjectEnvironment() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2127,7 +2130,7 @@ void CPGSuperDocBase::OnProjectEnvironment()
    }
 }
 
-void CPGSuperDocBase::OnEffectiveFlangeWidth()
+void CPGSDocBase::OnEffectiveFlangeWidth()
 {
    GET_IFACE(IEffectiveFlangeWidth,pEFW);
    CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S less than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
@@ -2144,7 +2147,7 @@ void CPGSuperDocBase::OnEffectiveFlangeWidth()
 }
 
 /*--------------------------------------------------------------------*/
-void CPGSuperDocBase::OnProjectSpec() 
+void CPGSDocBase::OnProjectSpec() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2176,7 +2179,7 @@ void CPGSuperDocBase::OnProjectSpec()
    }
 }
 
-void CPGSuperDocBase::OnRatingSpec()
+void CPGSDocBase::OnRatingSpec()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2335,32 +2338,23 @@ void CPGSuperDocBase::OnRatingSpec()
    }
 }
 
-/*--------------------------------------------------------------------*/
-void CPGSuperDocBase::OnProjectAutoCalc() 
+void CPGSDocBase::OnAutoCalc()
 {
-	EnableAutoCalc( !IsAutoCalcEnabled() );
+   CEAFAutoCalcDocMixin::OnAutoCalc();   
+}
+
+void CPGSDocBase::OnUpdateAutoCalc(CCmdUI* pCmdUI)
+{
+   CEAFAutoCalcDocMixin::OnUpdateAutoCalc(pCmdUI);   
 }
 
 /*--------------------------------------------------------------------*/
-void CPGSuperDocBase::OnUpdateProjectAutoCalc(CCmdUI* pCmdUI) 
-{
-	if ( IsAutoCalcEnabled() )
-   {
-      pCmdUI->SetText( _T("Turn AutoCalc Off") );
-   }
-   else
-   {
-      pCmdUI->SetText( _T("Turn AutoCalc On") );
-   }
-}
-
-/*--------------------------------------------------------------------*/
-void CPGSuperDocBase::OnExportToTemplateFile() 
+void CPGSDocBase::OnExportToTemplateFile() 
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2446,18 +2440,18 @@ bool DoesFileExist(const CString& filename)
 }
 
 
-void CPGSuperDocBase::OnViewsettingsBridgemodelEditor() 
+void CPGSDocBase::OnViewsettingsBridgemodelEditor() 
 {
    EditBridgeViewSettings(0);
 }
 
-void CPGSuperDocBase::OnViewsettingsGirderEditor() 
+void CPGSDocBase::OnViewsettingsGirderEditor() 
 {
    EditGirderViewSettings(0);
 }
 
 
-void CPGSuperDocBase::OnLoadsLoadModifiers() 
+void CPGSDocBase::OnLoadsLoadModifiers() 
 {
    GET_IFACE(ILoadModifiers,pLoadModifiers);
 
@@ -2499,7 +2493,7 @@ void CPGSuperDocBase::OnLoadsLoadModifiers()
    }
 }
 
-void CPGSuperDocBase::OnLoadsLoadFactors()
+void CPGSDocBase::OnLoadsLoadFactors()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2516,7 +2510,7 @@ void CPGSuperDocBase::OnLoadsLoadFactors()
    }
 }
 
-void CPGSuperDocBase::UpdateAnalysisTypeStatusIndicator()
+void CPGSDocBase::UpdateAnalysisTypeStatusIndicator()
 {
    CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)(EAFGetMainFrame()->GetStatusBar());
 
@@ -2524,7 +2518,7 @@ void CPGSuperDocBase::UpdateAnalysisTypeStatusIndicator()
    pStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
 }
 
-bool CPGSuperDocBase::LoadMasterLibrary()
+bool CPGSDocBase::LoadMasterLibrary()
 {
    WATCH(_T("Loading Master Library"));
 
@@ -2532,7 +2526,7 @@ bool CPGSuperDocBase::LoadMasterLibrary()
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
    CString strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
 
@@ -2544,7 +2538,7 @@ bool CPGSuperDocBase::LoadMasterLibrary()
    return DoLoadMasterLibrary(strMasterLibaryFile);
 }
 
-bool CPGSuperDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
+bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
 {
    if ( strMasterLibraryFile.GetLength() == 0 )
    {
@@ -2575,7 +2569,7 @@ bool CPGSuperDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
             CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
             CComPtr<IEAFAppPlugin> pAppPlugin;
             pTemplate->GetPlugin(&pAppPlugin);
-            CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+            CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
             pPGSuper->UpdateProgramSettings(TRUE);
             strFile = pPGSuper->GetCachedMasterLibraryFile();
@@ -2633,12 +2627,12 @@ bool CPGSuperDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
    return true; // the only way out alive!
 }
 
-CSelection CPGSuperDocBase::GetSelection()
+CSelection CPGSDocBase::GetSelection()
 {
    return m_Selection;
 }
 
-void CPGSuperDocBase::SetSelection(const CSelection& selection)
+void CPGSDocBase::SetSelection(const CSelection& selection)
 {
    if ( m_Selection != selection )
    {
@@ -2647,7 +2641,7 @@ void CPGSuperDocBase::SetSelection(const CSelection& selection)
    }
 }
 
-void CPGSuperDocBase::SelectPier(PierIndexType pierIdx)
+void CPGSDocBase::SelectPier(PierIndexType pierIdx)
 {
    if ( m_Selection.Type == CSelection::Pier && m_Selection.PierIdx == pierIdx )
    {
@@ -2666,7 +2660,7 @@ void CPGSuperDocBase::SelectPier(PierIndexType pierIdx)
    UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
 }
 
-void CPGSuperDocBase::SelectSpan(SpanIndexType spanIdx)
+void CPGSDocBase::SelectSpan(SpanIndexType spanIdx)
 {
    if ( m_Selection.Type == CSelection::Span && m_Selection.SpanIdx == spanIdx )
    {
@@ -2684,7 +2678,7 @@ void CPGSuperDocBase::SelectSpan(SpanIndexType spanIdx)
    UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
 }
 
-void CPGSuperDocBase::SelectGirder(const CGirderKey& girderKey)
+void CPGSDocBase::SelectGirder(const CGirderKey& girderKey)
 {
    if ( m_Selection.Type == CSelection::Girder && m_Selection.GroupIdx == girderKey.groupIndex && m_Selection.GirderIdx == girderKey.girderIndex )
    {
@@ -2709,7 +2703,7 @@ void CPGSuperDocBase::SelectGirder(const CGirderKey& girderKey)
    }
 }
 
-void CPGSuperDocBase::SelectSegment(const CSegmentKey& segmentKey)
+void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey)
 {
    if ( m_Selection.Type == CSelection::Segment && m_Selection.GroupIdx == segmentKey.groupIndex && m_Selection.GirderIdx == segmentKey.girderIndex && m_Selection.SegmentIdx == segmentKey.segmentIndex )
    {
@@ -2734,7 +2728,7 @@ void CPGSuperDocBase::SelectSegment(const CSegmentKey& segmentKey)
    }
 }
 
-void CPGSuperDocBase::SelectClosureJoint(const CClosureKey& closureKey)
+void CPGSDocBase::SelectClosureJoint(const CClosureKey& closureKey)
 {
    if ( m_Selection.Type == CSelection::ClosureJoint && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
    {
@@ -2759,7 +2753,7 @@ void CPGSuperDocBase::SelectClosureJoint(const CClosureKey& closureKey)
    }
 }
 
-void CPGSuperDocBase::SelectTemporarySupport(SupportIDType tsID)
+void CPGSDocBase::SelectTemporarySupport(SupportIDType tsID)
 {
    if ( m_Selection.Type == CSelection::TemporarySupport && m_Selection.tsID == tsID )
    {
@@ -2783,7 +2777,7 @@ void CPGSuperDocBase::SelectTemporarySupport(SupportIDType tsID)
    }
 }
 
-void CPGSuperDocBase::SelectDeck()
+void CPGSDocBase::SelectDeck()
 {
    if ( m_Selection.Type == CSelection::Deck )
    {
@@ -2802,7 +2796,7 @@ void CPGSuperDocBase::SelectDeck()
    UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
 }
 
-void CPGSuperDocBase::SelectAlignment()
+void CPGSDocBase::SelectAlignment()
 {
    if ( m_Selection.Type == CSelection::Alignment )
    {
@@ -2821,7 +2815,7 @@ void CPGSuperDocBase::SelectAlignment()
    UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
 }
 
-void CPGSuperDocBase::ClearSelection()
+void CPGSDocBase::ClearSelection()
 {
    if ( m_Selection.Type == CSelection::None )
    {
@@ -2846,7 +2840,7 @@ void CPGSuperDocBase::ClearSelection()
    }
 }
 
-void CPGSuperDocBase::OnCopyGirderProps() 
+void CPGSDocBase::OnCopyGirderProps() 
 {
 #pragma Reminder("UPDATE: need to make OnCopyGirderProps work for spliced girders")
    // This may be a case when OnCopyGirderProps needs to move to the CPGSuperDoc and CPGSpliceDoc
@@ -2885,7 +2879,7 @@ void CPGSuperDocBase::OnCopyGirderProps()
    }
 }
 
-void CPGSuperDocBase::OnImportProjectLibrary() 
+void CPGSDocBase::OnImportProjectLibrary() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2979,7 +2973,7 @@ void CPGSuperDocBase::OnImportProjectLibrary()
    }
 }
 
-void CPGSuperDocBase::OnLoadsLldf() 
+void CPGSDocBase::OnLoadsLldf() 
 {
    GET_IFACE(ILiveLoads,pLiveLoads);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -2991,7 +2985,7 @@ void CPGSuperDocBase::OnLoadsLldf()
    OnLoadsLldf(method,roaAction);
 }
 
-void CPGSuperDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) 
+void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3015,7 +3009,7 @@ void CPGSuperDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,Lldf
    }
 }
 
-void CPGSuperDocBase::OnAddPointload() 
+void CPGSDocBase::OnAddPointload() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3033,7 +3027,7 @@ void CPGSuperDocBase::OnAddPointload()
 }
 
 /*-------------------------------------------------------------------*/
-void CPGSuperDocBase::OnAddDistributedLoad() 
+void CPGSDocBase::OnAddDistributedLoad() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3051,7 +3045,7 @@ void CPGSuperDocBase::OnAddDistributedLoad()
 	
 }
 
-void CPGSuperDocBase::OnAddMomentLoad() 
+void CPGSDocBase::OnAddMomentLoad() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3068,7 +3062,7 @@ void CPGSuperDocBase::OnAddMomentLoad()
    }
 }
 
-void CPGSuperDocBase::OnConstructionLoads()
+void CPGSDocBase::OnConstructionLoads()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3085,17 +3079,17 @@ void CPGSuperDocBase::OnConstructionLoads()
    }
 }
 
-void CPGSuperDocBase::OnProjectAlignment() 
+void CPGSDocBase::OnProjectAlignment() 
 {
    EditAlignmentDescription(EBD_ROADWAY);
 }
 
-void CPGSuperDocBase::OnProjectProfile()
+void CPGSDocBase::OnProjectProfile()
 {
    EditAlignmentDescription(EBD_PROFILE);
 }
 
-void CPGSuperDocBase::OnLiveLoads() 
+void CPGSDocBase::OnLiveLoads() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3171,7 +3165,7 @@ void CPGSuperDocBase::OnLiveLoads()
    }
 }
 
-BOOL CPGSuperDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) const
+BOOL CPGSDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) const
 {
    USES_CONVERSION;
 
@@ -3182,9 +3176,9 @@ BOOL CPGSuperDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) cons
       return TRUE;
    }
 
-   CPGSuperDocBase* pThis = const_cast<CPGSuperDocBase*>(this);
+   CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
-   CComPtr<IPGSuperDataExporter> exporter;
+   CComPtr<IPGSDataExporter> exporter;
    pThis->m_pPluginMgr->GetPGSuperExporter(nID,false,&exporter);
    if ( exporter )
    {
@@ -3196,7 +3190,7 @@ BOOL CPGSuperDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) cons
       return TRUE;
    }
    
-   CComPtr<IPGSuperDataImporter> importer;
+   CComPtr<IPGSDataImporter> importer;
    pThis->m_pPluginMgr->GetPGSuperImporter(nID,false,&importer);
    if ( importer )
    {
@@ -3211,7 +3205,7 @@ BOOL CPGSuperDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) cons
    return FALSE;
 }
 
-BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    USES_CONVERSION;
 
@@ -3222,9 +3216,9 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
       return TRUE;
    }
 
-   CPGSuperDocBase* pThis = const_cast<CPGSuperDocBase*>(this);
+   CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
-   CComPtr<IPGSuperDataExporter> exporter;
+   CComPtr<IPGSDataExporter> exporter;
    pThis->m_pPluginMgr->GetPGSuperExporter(nID,false,&exporter);
    if ( exporter )
    {
@@ -3240,7 +3234,7 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
       return TRUE;
    }
    
-   CComPtr<IPGSuperDataImporter> importer;
+   CComPtr<IPGSDataImporter> importer;
    pThis->m_pPluginMgr->GetPGSuperImporter(nID,false,&importer);
    if ( importer )
    {
@@ -3259,7 +3253,7 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
    return FALSE;
 }
 
-void CPGSuperDocBase::CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt)
+void CPGSDocBase::CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt)
 {
    if ( !bPrompt && m_Selection.Type == CSelection::None)
    {
@@ -3278,35 +3272,35 @@ void CPGSuperDocBase::CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt)
    // the base class does nothing so we won't bother calling it
 }
 
-void CPGSuperDocBase::CreateGraphView(CollectionIndexType graphIdx)
+void CPGSDocBase::CreateGraphView(CollectionIndexType graphIdx)
 {
    m_pPGSuperDocProxyAgent->CreateGraphView(graphIdx);
 
    // the base class does nothing so we won't bother calling it
 }
 
-void CPGSuperDocBase::OnViewBridgeModelEditor()
+void CPGSDocBase::OnViewBridgeModelEditor()
 {
    m_pPGSuperDocProxyAgent->CreateBridgeModelView();
 }
 
-void CPGSuperDocBase::OnViewGirderEditor()
+void CPGSDocBase::OnViewGirderEditor()
 {
    CGirderKey girderKey(m_Selection.GroupIdx,m_Selection.GirderIdx);
    m_pPGSuperDocProxyAgent->CreateGirderView(girderKey);
 }
 
-void CPGSuperDocBase::OnEditUserLoads()
+void CPGSDocBase::OnEditUserLoads()
 {
    m_pPGSuperDocProxyAgent->CreateLoadsView();
 }
 
-void CPGSuperDocBase::OnViewLibraryEditor()
+void CPGSDocBase::OnViewLibraryEditor()
 {
    m_pPGSuperDocProxyAgent->CreateLibraryEditorView();
 }
 
-void CPGSuperDocBase::OnEditPier() 
+void CPGSDocBase::OnEditPier() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3335,7 +3329,7 @@ void CPGSuperDocBase::OnEditPier()
    }
 }
 
-void CPGSuperDocBase::OnEditSpan() 
+void CPGSDocBase::OnEditSpan() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3364,7 +3358,7 @@ void CPGSuperDocBase::OnEditSpan()
    }
 }
 
-void CPGSuperDocBase::DeletePier(PierIndexType pierIdx)
+void CPGSDocBase::DeletePier(PierIndexType pierIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3417,7 +3411,7 @@ void CPGSuperDocBase::DeletePier(PierIndexType pierIdx)
    }
 }
 
-void CPGSuperDocBase::DeleteSpan(SpanIndexType spanIdx)
+void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3452,7 +3446,7 @@ void CPGSuperDocBase::DeleteSpan(SpanIndexType spanIdx)
    }
 }
 
-void CPGSuperDocBase::OnDeleteSelection() 
+void CPGSDocBase::OnDeleteSelection() 
 {
    if (  m_Selection.Type == CSelection::Pier )
    {
@@ -3468,7 +3462,7 @@ void CPGSuperDocBase::OnDeleteSelection()
    }
 }
 
-void CPGSuperDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI) 
+void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI) 
 {
    CView* pView = EAFGetActiveView();
 
@@ -3522,21 +3516,21 @@ void CPGSuperDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    }
 }
 
-void CPGSuperDocBase::DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face)
+void CPGSDocBase::DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face)
 {
    txnDeleteSpan* pTxn = new txnDeleteSpan(pierIdx,face);
    GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
 
-void CPGSuperDocBase::DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType)
+void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType)
 {
    PierIndexType pierIdx = (pierRemoveType == pgsTypes::PrevPier ? spanIdx : spanIdx+1);
    pgsTypes::PierFaceType pierFace = (pierRemoveType == pgsTypes::PrevPier ? pgsTypes::Ahead : pgsTypes::Back);
    DeletePier(pierIdx,pierFace);
 }
 
-void CPGSuperDocBase::OnInsert() 
+void CPGSDocBase::OnInsert() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3571,14 +3565,14 @@ void CPGSuperDocBase::OnInsert()
    }
 }
 
-void CPGSuperDocBase::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,EventIndexType eventIdx)
+void CPGSDocBase::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,EventIndexType eventIdx)
 {
    txnInsertSpan* pTxn = new txnInsertSpan(refPierIdx,pierFace,spanLength,bCreateNewGroup,eventIdx);
    GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
 
-void CPGSuperDocBase::OnOptionsLabels() 
+void CPGSDocBase::OnOptionsLabels() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3595,7 +3589,7 @@ void CPGSuperDocBase::OnOptionsLabels()
    }
 }
 
-void CPGSuperDocBase::OnLosses()
+void CPGSDocBase::OnLosses()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3675,7 +3669,7 @@ void CPGSuperDocBase::OnLosses()
    }
 }
 
-BOOL CPGSuperDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
+BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
 {
     // document classes can't process ON_NOTIFY
     // see http://www.codeproject.com/KB/docview/NotifierApp.aspx for details
@@ -3702,7 +3696,7 @@ BOOL CPGSuperDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLER
 	return CEAFBrokerDocument::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
-void CPGSuperDocBase::PopulateReportMenu()
+void CPGSDocBase::PopulateReportMenu()
 {
    CEAFMenu* pMainMenu = GetMainMenu();
 
@@ -3722,7 +3716,7 @@ void CPGSuperDocBase::PopulateReportMenu()
    CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
 }
 
-void CPGSuperDocBase::PopulateGraphMenu()
+void CPGSDocBase::PopulateGraphMenu()
 {
    CEAFMenu* pMainMenu = GetMainMenu();
 
@@ -3742,7 +3736,7 @@ void CPGSuperDocBase::PopulateGraphMenu()
    CEAFBrokerDocument::PopulateGraphMenu(pGraphMenu);
 }
 
-void CPGSuperDocBase::LoadDocumentSettings()
+void CPGSDocBase::LoadDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::LoadDocumentSettings();
@@ -3809,7 +3803,7 @@ void CPGSuperDocBase::LoadDocumentSettings()
    pgsReportStyleHolder::SetReportCoverImage(pApp->GetProfileString(_T("Settings"),_T("ReportCoverImage"),strDefaultReportCoverImage));
 }
 
-void CPGSuperDocBase::SaveDocumentSettings()
+void CPGSDocBase::SaveDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::SaveDocumentSettings();
@@ -3832,7 +3826,7 @@ void CPGSuperDocBase::SaveDocumentSettings()
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("ShowProjectProperties"),m_bShowProjectProperties ? _T("On") : _T("Off") ));
 }
 
-void CPGSuperDocBase::OnLogFileOpened()
+void CPGSDocBase::OnLogFileOpened()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3846,14 +3840,14 @@ void CPGSuperDocBase::OnLogFileOpened()
    pLog->LogMessage(strMsg);
 }
 
-void CPGSuperDocBase::BrokerShutDown()
+void CPGSDocBase::BrokerShutDown()
 {
    CEAFBrokerDocument::BrokerShutDown();
 
    m_pPGSuperDocProxyAgent = NULL;
 }
 
-void CPGSuperDocBase::OnStatusChanged()
+void CPGSDocBase::OnStatusChanged()
 {
    CEAFBrokerDocument::OnStatusChanged();
    if ( m_pPGSuperDocProxyAgent )
@@ -3862,19 +3856,19 @@ void CPGSuperDocBase::OnStatusChanged()
    }
 }
 
-void CPGSuperDocBase::LoadToolbarState()
+void CPGSDocBase::LoadToolbarState()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::LoadToolbarState();
 }
 
-void CPGSuperDocBase::SaveToolbarState()
+void CPGSDocBase::SaveToolbarState()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::SaveToolbarState();
 }
 
-CString CPGSuperDocBase::GetToolbarSectionName()
+CString CPGSDocBase::GetToolbarSectionName()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
@@ -3885,13 +3879,13 @@ CString CPGSuperDocBase::GetToolbarSectionName()
    return strToolbarSection;
 }
 
-void CPGSuperDocBase::OnUpdateViewGraphs(CCmdUI* pCmdUI)
+void CPGSDocBase::OnUpdateViewGraphs(CCmdUI* pCmdUI)
 {
    GET_IFACE(IGraphManager,pGraphMgr);
    pCmdUI->Enable( 0 < pGraphMgr->GetGraphBuilderCount() );
 }
 
-BOOL CPGSuperDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr) 
+BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3926,13 +3920,13 @@ BOOL CPGSuperDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
    return TRUE;
 }
 
-void CPGSuperDocBase::OnUpdateViewReports(CCmdUI* pCmdUI)
+void CPGSDocBase::OnUpdateViewReports(CCmdUI* pCmdUI)
 {
    GET_IFACE(IReportManager,pReportMgr);
    pCmdUI->Enable( 0 < pReportMgr->GetReportBuilderCount() );
 }
 
-BOOL CPGSuperDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr) 
+BOOL CPGSDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3967,7 +3961,7 @@ BOOL CPGSuperDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 }
 
 
-void CPGSuperDocBase::OnImportMenu(CCmdUI* pCmdUI)
+void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
 {
    USES_CONVERSION;
 
@@ -4003,7 +3997,7 @@ void CPGSuperDocBase::OnImportMenu(CCmdUI* pCmdUI)
       // populate the menu
       for ( idx = 0; idx < nImporters; idx++ )
       {
-         CComPtr<IPGSuperDataImporter> importer;
+         CComPtr<IPGSDataImporter> importer;
          m_pPluginMgr->GetPGSuperImporter(idx,true,&importer);
 
          UINT cmdID = m_pPluginMgr->GetPGSuperImporterCommand(idx);
@@ -4024,7 +4018,7 @@ void CPGSuperDocBase::OnImportMenu(CCmdUI* pCmdUI)
    pCmdUI->m_nIndex--; // point to last menu added
 }
 
-void CPGSuperDocBase::OnExportMenu(CCmdUI* pCmdUI)
+void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
 {
    USES_CONVERSION;
 
@@ -4058,7 +4052,7 @@ void CPGSuperDocBase::OnExportMenu(CCmdUI* pCmdUI)
 
       for ( idx = 0; idx < nExporters; idx++ )
       {
-         CComPtr<IPGSuperDataExporter> exporter;
+         CComPtr<IPGSDataExporter> exporter;
          m_pPluginMgr->GetPGSuperExporter(idx,true,&exporter);
 
          UINT cmdID = m_pPluginMgr->GetPGSuperExporterCommand(idx);
@@ -4080,9 +4074,9 @@ void CPGSuperDocBase::OnExportMenu(CCmdUI* pCmdUI)
 	pCmdUI->m_nIndex--; // point to last menu added
 }
 
-void CPGSuperDocBase::OnImport(UINT nID)
+void CPGSDocBase::OnImport(UINT nID)
 {
-   CComPtr<IPGSuperDataImporter> importer;
+   CComPtr<IPGSDataImporter> importer;
    m_pPluginMgr->GetPGSuperImporter(nID,false,&importer);
 
    if ( importer )
@@ -4091,9 +4085,9 @@ void CPGSuperDocBase::OnImport(UINT nID)
    }
 }
 
-void CPGSuperDocBase::OnExport(UINT nID)
+void CPGSDocBase::OnExport(UINT nID)
 {
-   CComPtr<IPGSuperDataExporter> exporter;
+   CComPtr<IPGSDataExporter> exporter;
    m_pPluginMgr->GetPGSuperExporter(nID,false,&exporter);
 
    if ( exporter )
@@ -4102,7 +4096,7 @@ void CPGSuperDocBase::OnExport(UINT nID)
    }
 }
 
-void CPGSuperDocBase::OnAbout()
+void CPGSDocBase::OnAbout()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -4113,124 +4107,79 @@ void CPGSuperDocBase::OnAbout()
    dlg.DoModal();
 }
 
-UINT CPGSuperDocBase::GetBridgeEditorSettings() const
+UINT CPGSDocBase::GetBridgeEditorSettings() const
 {
    return m_BridgeModelEditorSettings;
 }
 
-void CPGSuperDocBase::SetBridgeEditorSettings(UINT settings)
+void CPGSDocBase::SetBridgeEditorSettings(UINT settings)
 {
    m_BridgeModelEditorSettings = settings;
 }
 
-UINT CPGSuperDocBase::GetAlignmentEditorSettings() const
+UINT CPGSDocBase::GetAlignmentEditorSettings() const
 {
    return m_AlignmentEditorSettings;
 }
 
-void CPGSuperDocBase::SetAlignmentEditorSettings(UINT settings)
+void CPGSDocBase::SetAlignmentEditorSettings(UINT settings)
 {
    m_AlignmentEditorSettings = settings;
 }
 
-UINT CPGSuperDocBase::GetGirderEditorSettings() const
+UINT CPGSDocBase::GetGirderEditorSettings() const
 {
    return m_GirderModelEditorSettings;
 }
 
-void CPGSuperDocBase::SetGirderEditorSettings(UINT settings)
+void CPGSDocBase::SetGirderEditorSettings(UINT settings)
 {
    m_GirderModelEditorSettings = settings;
 }
 
-void CPGSuperDocBase::ResetUIHints()
+void CPGSDocBase::ResetUIHints()
 {
    __super::ResetUIHints();
    m_pPGSuperDocProxyAgent->OnResetHints();
 }
 
-bool CPGSuperDocBase::ShowProjectPropertiesOnNewProject()
+bool CPGSDocBase::ShowProjectPropertiesOnNewProject()
 {
    return m_bShowProjectProperties;
 }
 
-void CPGSuperDocBase::ShowProjectPropertiesOnNewProject(bool bShow)
+void CPGSDocBase::ShowProjectPropertiesOnNewProject(bool bShow)
 {
    m_bShowProjectProperties = bShow;
 }
 
-void CPGSuperDocBase::DeleteContents()
+void CPGSDocBase::DeleteContents()
 {
    __super::DeleteContents();
 }
 
-BOOL CPGSuperDocBase::LoadAgents()
+BOOL CPGSDocBase::LoadAgents()
 {
    // set the modulus state to ours so when load agents reads the registry its does so from the right location
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return __super::LoadAgents();
 }
 
-long CPGSuperDocBase::GetReportViewKey()
+long CPGSDocBase::GetReportViewKey()
 {
    return m_pPGSuperDocProxyAgent->GetReportViewKey();
 }
 
 
-void CPGSuperDocBase::OnChangedFavoriteReports(BOOL bIsFavorites,BOOL bFromMenu)
+void CPGSDocBase::OnChangedFavoriteReports(BOOL bIsFavorites,BOOL bFromMenu)
 {
-   //// Prompt user with hint about how this menu item works
-   //if (fromMenu)
-   //{
-   //   int mask = UIHINT_FAVORITES_MENU;
-   //   Uint32 hintSettings = GetUIHintSettings();
-   //   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
-   //   {
-   //      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   //      CString strText(_T("This menu item allows you to display only your favorite reports in the Reports menus, or display all available reports. The change will occur the next time you open a Report menu."));
-   //      if ( EAFShowUIHints(strText) )
-   //      {
-   //         sysFlags<Uint32>::Set(&hintSettings,mask);
-   //         SetUIHintSettings(hintSettings);
-   //      }
-   //   }
-   //}
-
    // update main menu submenu
    __super::OnChangedFavoriteReports(bIsFavorites,bFromMenu);
    PopulateReportMenu();
 }
-//
-//void CPGSuperDocBase::OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName)
-//{
-//   std::_tostringstream os;
-//
-//   switch(error)
-//   {
-//      case creParentMissingAtLoad:
-//         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
-//         break;
-//      case creParentMissingAtImport:
-//         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
-//         break;
-//      case creChapterMissingAtLoad:
-//      case creChapterMissingAtImport:
-//         os << _T("For custom report \"")<<reportName<<_T("\": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
-//         break;
-//      default:
-//         ATLASSERT(false);
-//   };
-//
-//   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-//   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
-//   pStatusCenter->Add(pStatusItem);
-//}
 
-void CPGSuperDocBase::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
+void CPGSDocBase::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
 {
-   //UINT helpID = helpType==crhCustomReport ? IDH_CUSTOM_REPORT : IDH_FAVORITE_REPORT;
-   //::HtmlHelp( NULL, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::ShowCustomReportHelp(helpType);
 }

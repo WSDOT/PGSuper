@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     Tx34       48   1/2  270 10.43  6.76   8 30.5  6.400  7.600    4.568   -4.624   4282  0.618  0.814  0.38 -0.18  0.00 -0.01 -0.19 131.78 269.66   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      1      Tx34         48   1/2  270  10.43   6.76                                               8  30.5  8.5  6.400  7.600   4.568    -4.624     4282   0.618  0.814  4.577  -2.13  0.000  -0.08  -2.22  131.78  269.66    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     Tx34       50   1/2  270 10.21  6.61  10 28.5  6.600  8.200    4.765   -4.812   4403  0.618  0.814  0.38 -0.20  0.00 -0.01 -0.21 139.84 276.95   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      2      Tx34         50   1/2  270  10.21   6.61                                              10  28.5 10.5  6.600  8.200   4.765    -4.812     4403   0.618  0.814  4.615  -2.44  0.000  -0.08  -2.52  139.84  276.95    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     Tx34       50   1/2  270 10.21  6.61  10 28.5  6.600  8.200    4.765   -4.812   4403  0.618  0.814  0.38 -0.20  0.00 -0.01 -0.21 139.84 276.95   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                   1      4      Tx34         50   1/2  270  10.21   6.61                                              10  28.5 10.5  6.600  8.200   4.765    -4.812     4403   0.618  0.814  4.615  -2.44  0.000  -0.08  -2.52  139.84  276.95    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

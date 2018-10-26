@@ -1,14 +1,14 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  0.03  1     1   7DS23       34   1/2  270 10.22 10.20   2  2.50  28   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.297   -2.681    2074 0.671  0.671  0.15  0.00 -0.01 -0.01 -0.01  58.24 213.94   0.00   0.00   0.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.00    4   0.03                   1      1     7DS23         34   1/2  270  10.22  10.20   2   2.50   28     2    2   0   0   0   0   4.000  5.000   2.297    -2.681     2074   0.671  0.671  1.849  0.000  -0.07  -0.10  -0.17   58.24  213.94    0.00    0.00    0.00 
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  0.03  1     2   7DS23       36   1/2  270 10.09 10.06   2  2.50  28   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.336   -2.709    2088 0.671  0.671  0.17  0.00 -0.01 -0.01 -0.02  66.76 238.65   0.00   0.00   0.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.00    4   0.03                   1      2     7DS23         36   1/2  270  10.09  10.06   2   2.50   28     2    2   0   0   0   0   4.000  5.000   2.336    -2.709     2088   0.671  0.671  2.003  0.000  -0.09  -0.10  -0.19   66.76  238.65    0.00    0.00    0.00 
 
 
 The Specification Check was Successful

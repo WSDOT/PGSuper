@@ -29,12 +29,12 @@
 // PGSuperStatusBar.h : header file
 //
 
-#include <EAF\EAFStatusBar.h>
+#include <EAF\EAFAutoCalcStatusBar.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperStatusBar window
 
-class CPGSuperStatusBar : public CEAFStatusBar
+class CPGSuperStatusBar : public CEAFAutoCalcStatusBar
 {
 public:
 	CPGSuperStatusBar();
@@ -44,11 +44,9 @@ public:
    virtual BOOL SetStatusIndicators(const UINT* lpIDArray, int nIDCount);
 
    int GetAnalysisModePaneIndex();
-   int GetAutoCalcPaneIndex();
 
    virtual void Reset();
 
-   void AutoCalcEnabled( bool bEnable );
    void SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType);
 
 // Overrides
@@ -65,7 +63,6 @@ protected:
 
 private:
    int m_AnalysisModePaneIdx;
-   int m_AutoCalcPaneIdx;
 
 	DECLARE_MESSAGE_MAP()
 };

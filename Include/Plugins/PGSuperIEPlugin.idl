@@ -66,7 +66,7 @@ cpp_quote("0xd889af1d, 0xca1, 0x4f01, 0xaa, 0x2d, 0x84, 0xf8, 0xf9, 0xf3, 0xa2, 
    uuid(98B3DF17-7E0E-4d4a-B8A2-5443914FC608),
    pointer_default(unique)
 ]
-interface IPGSuperDataImporter : IUnknown
+interface IPGSDataImporter : IUnknown
 {
    HRESULT Init(UINT nCmdID);
    HRESULT GetMenuText([out]BSTR*  bstrText);
@@ -79,7 +79,7 @@ interface IPGSuperDataImporter : IUnknown
    uuid(5DB8B1D3-C91D-4e62-81E6-A7B64B0D38FD),
    pointer_default(unique)
 ]
-interface IPGSuperProjectImporter : IUnknown
+interface IPGSProjectImporter : IUnknown
 {
    HRESULT GetItemText([out]BSTR* bstrText);
    HRESULT Import([in]IBroker* pBroker);
@@ -90,7 +90,7 @@ interface IPGSuperProjectImporter : IUnknown
    uuid(BF6EC18A-43D2-4ea1-BC7F-54365DD645DA),
    pointer_default(unique)
 ]
-interface IPGSuperDataExporter : IUnknown
+interface IPGSDataExporter : IUnknown
 {
    HRESULT Init(UINT nCmdID);
    HRESULT GetMenuText([out]BSTR*  bstrText);

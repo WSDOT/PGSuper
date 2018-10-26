@@ -146,7 +146,7 @@ void CGirderModelSectionView::OnInitialUpdate()
 
    ScaleToFit();
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -238,7 +238,7 @@ void CGirderModelSectionView::UpdateDisplayObjects()
       return;
    }
 
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
 
    // Grab hold of the broker so we can pass it as a parameter
@@ -272,7 +272,7 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    SetMappingMode(DManip::Isotropic);
 }
 
-void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(SECTION_LIST,&pDL);
@@ -370,7 +370,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
@@ -489,7 +489,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,IB
    }
 }
 
-void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    // The outlines of the ducts are drawn as part of the girder cross section
    // This method adds the text labels to the ducts
@@ -536,7 +536,7 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSuperDocBase* pDoc,IBro
    }
 }
 
-void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -579,7 +579,7 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSuperDocBase* pDoc
    }
 }
 
-void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(CG_LIST,&pDL);
@@ -641,7 +641,7 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -943,7 +943,7 @@ void CGirderModelSectionView::OnEditPrestressing()
    }
 
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
+   ((CPGSDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelSectionView::OnEditStirrups() 
@@ -955,12 +955,12 @@ void CGirderModelSectionView::OnEditStirrups()
    }
 
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
+   ((CPGSDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelSectionView::OnViewSettings() 
 {
-	((CPGSuperDocBase*)GetDocument())->EditGirderViewSettings(VS_GIRDER_SECTION);
+	((CPGSDocBase*)GetDocument())->EditGirderViewSettings(VS_GIRDER_SECTION);
 }
 
 void CGirderModelSectionView::OnUserCut() 
@@ -1008,7 +1008,7 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
       }
 
       // Get the doc and the view settings
-      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+      CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
       UINT settings = pDoc->GetGirderEditorSettings();
 
       // Grab hold of the broker so we can pass it as a parameter

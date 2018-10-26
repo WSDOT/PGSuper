@@ -77,7 +77,7 @@ const CRuntimeClass* CPGSuperAppPlugin::GetDocTemplateRuntimeClass()
 BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   BOOL bHandled = CPGSuperBaseAppPlugin::UpdateProgramSettings(bFirstRun);
+   BOOL bHandled = CPGSAppPluginBase::UpdateProgramSettings(bFirstRun);
    if ( bHandled )
    {
       // Need to find if the PGSuper Project Importer app-plugin has been loaded.
@@ -90,7 +90,7 @@ BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
       pAppPluginMgr->GetPlugin(CLSID_PGSuperProjectImporterAppPlugin,&importerPlugin);
       if ( importerPlugin )
       {
-         CPGSuperBaseAppPlugin* pBasePlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(importerPlugin.p);
+         CPGSAppPluginBase* pBasePlugin = dynamic_cast<CPGSAppPluginBase*>(importerPlugin.p);
          ATLASSERT(pBasePlugin);
          pBasePlugin->DefaultInit();
       }
@@ -100,12 +100,12 @@ BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
 
 HRESULT CPGSuperAppPlugin::FinalConstruct()
 {
-   return OnFinalConstruct(); // CPGSuperBaseAppPlugin
+   return OnFinalConstruct(); // CPGSAppPluginBase
 }
 
 void CPGSuperAppPlugin::FinalRelease()
 {
-   OnFinalRelease(); // CPGSuperBaseAppPlugin
+   OnFinalRelease(); // CPGSAppPluginBase
 }
 
 void CPGSuperAppPlugin::ConfigurePlugins()
@@ -367,7 +367,7 @@ void CPGSuperAppPlugin::OnProgramSettings()
    UpdateProgramSettings(FALSE);
 }
 
-CPGSuperBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
+CPGSBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
 {
    return new CPGSuperCommandLineInfo();
 }

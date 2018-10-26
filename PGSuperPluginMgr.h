@@ -37,8 +37,8 @@ public:
    void UnloadPlugins();
    CollectionIndexType GetImporterCount();
    CollectionIndexType GetExporterCount();
-   void GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSuperDataImporter** ppImporter);
-   void GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSuperDataExporter** ppExporter);
+   void GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
+   void GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
    UINT GetPGSuperImporterCommand(CollectionIndexType idx);
    UINT GetPGSuperExporterCommand(CollectionIndexType idx);
    const CBitmap* GetPGSuperImporterBitmap(CollectionIndexType idx);
@@ -76,8 +76,8 @@ private:
    }
    };
 
-   typedef Record<IPGSuperDataImporter> ImporterRecord;
-   typedef Record<IPGSuperDataExporter> ExporterRecord;
+   typedef Record<IPGSDataImporter> ImporterRecord;
+   typedef Record<IPGSDataExporter> ExporterRecord;
 
    std::vector<ImporterRecord> m_ImporterPlugins;
    std::vector<ExporterRecord> m_ExporterPlugins;

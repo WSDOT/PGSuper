@@ -1,7 +1,7 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 59.25   6 10.25  1     1    U54        70   1/2  270 18.63 17.85  32  2.17  27  20  2 10  4  2  2  0  0  0  0  0  5.200  6.400    4.213   -3.692    9758 0.655  0.936  0.39 -0.19 -0.01 -0.01 -0.20 185.54 497.93   1.00   1.00   1.00
-                                                                       4.14  27  12 12  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25   U54, 10.25, 5   1      1      U54          70   1/2  270  18.63  17.85  32   2.17   27    20    2  10   4   2   2   5.200  6.400   4.213    -3.692     9758   0.655  0.936  4.685  -2.22  -0.14  -0.09  -2.45  185.54  497.93    1.00    1.00    1.00 
+                                                                                                  4.14   27    12   12   0   0   0   0 
 
 
 The Specification Check was Not Successful
@@ -10,10 +10,10 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 59.25   6 10.25  1     2    U54        70   1/2  270 18.63 17.87  30  2.17  27  20  2 10  6  2  0  0  0  0  0  0  5.400  6.500    4.231   -3.706    9786 0.655  0.936  0.38 -0.19 -0.01 -0.01 -0.21 182.81 495.26   1.00   1.00   1.00
-                                                                       4.14  27  10 10  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25   U54, 10.25, 5   1      2      U54          70   1/2  270  18.63  17.87  30   2.17   27    20    2  10   6   2   0   5.400  6.500   4.231    -3.706     9786   0.655  0.936  4.592  -2.24  -0.14  -0.09  -2.48  182.81  495.26    1.00    1.00    1.00 
+                                                                                                  4.14   27    10   10   0   0   0   0 
 
 
 The Specification Check was Not Successful
@@ -22,10 +22,10 @@ Bursting zone check failed.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 59.25   6 10.25  1     4    U54        70   1/2  270 18.63 17.87  30  2.17  27  20  2 10  6  2  0  0  0  0  0  0  5.400  6.500    4.231   -3.706    9786 0.655  0.936  0.38 -0.19 -0.01 -0.01 -0.21 182.81 495.26   1.00   1.00   1.00
-                                                                       4.14  27  10 10  0  0  0  0  0  0  0  0  0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25   U54, 10.25, 5   1      4      U54          70   1/2  270  18.63  17.87  30   2.17   27    20    2  10   6   2   0   5.400  6.500   4.231    -3.706     9786   0.655  0.936  4.592  -2.24  -0.14  -0.09  -2.48  182.81  495.26    1.00    1.00    1.00 
+                                                                                                  4.14   27    10   10   0   0   0   0 
 
 
 The Specification Check was Not Successful

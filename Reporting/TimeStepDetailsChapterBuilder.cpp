@@ -460,7 +460,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const 
       (*pTable)(rowIdx,colIdx++) << modE.SetValue(tsDetails.Strands[strandType].E);
       (*pTable)(rowIdx,colIdx++) << area.SetValue(tsDetails.Strands[strandType].As);
       (*pTable)(rowIdx,colIdx++) << _T("-");
-      (*pTable)(rowIdx,colIdx++) << area.SetValue(tsDetails.Strands[strandType].Ys);
+      (*pTable)(rowIdx,colIdx++) << ecc.SetValue(tsDetails.Strands[strandType].Ys);
       (*pTable)(rowIdx,colIdx++) << _T("-");
    }
 

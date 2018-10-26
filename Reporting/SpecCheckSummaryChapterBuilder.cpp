@@ -110,7 +110,6 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMultiGirderRptSpec,level);
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
-      GET_IFACE2(pBroker,IDocumentType,pDocType);
 
       for (std::vector<CGirderKey>::const_iterator it=girderKeys.begin(); it!=girderKeys.end(); it++)
       {
@@ -120,15 +119,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 
          rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
          *pChapter << pParagraph;
-
-         if ( pDocType->IsPGSuperDocument() )
-         {
-            *pParagraph << _T("Results for Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
-         }
-         else
-         {
-            *pParagraph << _T("Results for Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
-         }
+         *pParagraph << _T("Results for ") << GIRDER_LABEL(girderKey);
 
          CreateContent(pChapter, pBroker, pGirderArtifact);
 

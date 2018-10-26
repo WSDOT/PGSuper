@@ -125,7 +125,7 @@ void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc,const std::se
 void CClosureJointDlg::CreateExtensionPages()
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditClosureJointCallback*> callbacks = pDoc->GetEditClosureJointCallbacks();
    std::map<IDType,IEditClosureJointCallback*>::iterator callbackIter(callbacks.begin());
@@ -145,7 +145,7 @@ void CClosureJointDlg::CreateExtensionPages()
 void CClosureJointDlg::CreateExtensionPages(const std::set<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    m_SplicedGirderExtensionPages = editSplicedGirderExtensions;
 
@@ -213,7 +213,7 @@ void CClosureJointDlg::NotifySplicedGirderExtensionPages()
    // It gives the spliced girder dialog extension pages to sync their data with whatever got changed in 
    // the extension pages in this dialog
    CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
+   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
 
    std::map<IDType,IEditClosureJointCallback*> callbacks = pDoc->GetEditClosureJointCallbacks();
    std::map<IDType,IEditClosureJointCallback*>::iterator callbackIter(callbacks.begin());

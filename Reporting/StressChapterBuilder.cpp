@@ -189,8 +189,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
             if ( pLayoutTable )
             {
-               (*pLayoutTable)(0,0) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,_T("Stresses at Release"),pDisplayUnits) << rptNewLine;
-               (*pLayoutTable)(0,1) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,_T("Stresses during Storage"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,0) << CCastingYardStressTable().Build(pBroker,segmentKey,releaseIntervalIdx,_T("At Release"),pDisplayUnits) << rptNewLine;
+               (*pLayoutTable)(0,1) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,_T("During Storage"),pDisplayUnits) << rptNewLine;
             }
             else
             {
@@ -260,7 +260,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(thisGirderKey);
          vIntervals.clear();
          vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
-         std::generate(vIntervals.begin(),vIntervals.end(),IncGenerator<IntervalIndexType>(firstReleaseIntervalIdx));
+         std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
          // when we go to C++ 11, use the std::itoa algorithm
       }
       BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)

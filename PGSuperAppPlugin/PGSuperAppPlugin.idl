@@ -72,6 +72,14 @@ library PGSuperAppPluginLib
    }
 
    [
+      uuid(398F7443-AA27-442f-ADA4-866E38BE596D)
+   ]
+   coclass PGSpliceProjectImporterAppPlugin
+   {
+      interface IUnknown;
+   }
+
+   [
       uuid(52160B92-F03C-495c-A149-CDF1068E99E3)
    ]
    coclass PGSpliceComponentInfo

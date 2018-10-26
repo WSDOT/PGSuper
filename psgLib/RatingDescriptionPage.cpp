@@ -84,7 +84,7 @@ BOOL CRatingDescriptionPage::OnInitDialog()
    int idx;
    for ( int i = 1; i < (int)lrfrVersionMgr::LastVersion; i++ )
    {
-      idx = pSpec->AddString(lrfrVersionMgr::GetVersionString((lrfrVersionMgr::Version)(i)).c_str());
+      idx = pSpec->AddString(lrfrVersionMgr::GetVersionString((lrfrVersionMgr::Version)(i)));
       pSpec->SetItemData(idx,(DWORD)(i));
    }
 

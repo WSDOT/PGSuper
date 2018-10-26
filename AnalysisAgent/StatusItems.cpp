@@ -25,8 +25,6 @@
 
 #include <PgsExt\GirderLabel.h>
 
-#include <IFace\DocumentType.h>
-
 pgsVSRatioStatusItem::pgsVSRatioStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey), m_SegmentKey(segmentKey)
 {
@@ -59,17 +57,7 @@ void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    pgsVSRatioStatusItem* pItem = dynamic_cast<pgsVSRatioStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
-   GET_IFACE(IDocumentType,pDocType);
    CString strMsg;
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      ATLASSERT(pItem->m_SegmentKey.segmentIndex == 0);
-
-      strMsg.Format(_T("Span %d Girder %s: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),pItem->GetDescription());
-   }
-   else
-   {
-      strMsg.Format(_T("Group %d Girder %s Segment %d: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),LABEL_SEGMENT(pItem->m_SegmentKey.segmentIndex),pItem->GetDescription());
-   }
+   strMsg.Format(_T("%s: %s"),SEGMENT_LABEL(pItem->m_SegmentKey),pItem->GetDescription());
    AfxMessageBox(strMsg);
 }

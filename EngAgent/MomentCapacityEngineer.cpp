@@ -428,31 +428,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
             const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
             CString msg;
-            if ( pDocType->IsPGSuperDocument() )
-            {
-               msg.Format(_T("An unknown error occured while computing %s moment capacity for Span %d Girder %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
-                           (bPositiveMoment ? _T("positive") : _T("negative")),
-                           LABEL_SPAN(segmentKey.groupIndex),
-                           LABEL_GIRDER(segmentKey.girderIndex),
-                           ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
-                           unit.UnitOfMeasure.UnitTag().c_str(),
-                           strErrorCode,
-                           poi.GetID(),
-                           strFileName);
-            }
-            else
-            {
-               msg.Format(_T("An unknown error occured while computing %s moment capacity for Group %d Girder %s Segment %d at %f %s from the left end of the segment.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
-                           (bPositiveMoment ? _T("positive") : _T("negative")),
-                           LABEL_GROUP(segmentKey.groupIndex),
-                           LABEL_GIRDER(segmentKey.girderIndex),
-                           LABEL_SEGMENT(segmentKey.segmentIndex),
-                           ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
-                           unit.UnitOfMeasure.UnitTag().c_str(),
-                           strErrorCode,
-                           poi.GetID(),
-                           strFileName);
-            }
+            msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
+                        (bPositiveMoment ? _T("positive") : _T("negative")),
+                        SEGMENT_LABEL(segmentKey),
+                        ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
+                        unit.UnitOfMeasure.UnitTag().c_str(),
+                        strErrorCode,
+                        poi.GetID(),
+                        strFileName);
             pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg);
             pStatusCenter->Add(pStatusItem);
 

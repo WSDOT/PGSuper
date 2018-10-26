@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02  1     1     6T22       14   1/2  270 10.19  7.33  10 12.0  4.000  5.000    1.556   -2.735    761  0.560  0.560  0.12 -0.00 -0.00 -0.00 -0.01  31.60  93.86   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.98    4   0.02    4-6T22, 35     1      1      6T22         14   1/2  270  10.19   7.33   0   2.00    4     0    0   0   0   0   0   4.000  5.000   1.556    -2.735      761   0.560  0.560  1.453  0.000  -0.02  -0.04  -0.06   31.60   93.86    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Confinement zone check failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02  1     2     6T22       14   1/2  270 10.16  7.30  10 12.0  4.000  5.000    1.567   -2.738    760  0.560  0.560  0.12 -0.00 -0.00 -0.00 -0.01  31.65  93.96   1.00   1.00   1.00
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.98    4   0.02    4-6T22, 35     1      2      6T22         14   1/2  270  10.16   7.30   0   2.00    4     0    0   0   0   0   0   4.000  5.000   1.567    -2.738      760   0.560  0.560  1.456  0.000  -0.02  -0.04  -0.06   31.65   93.96    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

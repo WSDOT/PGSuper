@@ -440,17 +440,9 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegment
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
          GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         GET_IFACE(IDocumentType,pDocType);
 
          CString strMsg;
-         if ( pDocType->IsPGSuperDocument() )
-         {
-            strMsg.Format(_T("Girder %s: Bunk point location at the trailing end of the girder is less than the minimum value of %s"),LABEL_GIRDER(segmentKey.girderIndex),::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
-         }
-         else
-         {
-            strMsg.Format(_T("Group %d Girder %s Segment %d: Bunk point location at the trailing end of the girder is less than the minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
-         }
+         strMsg.Format(_T("%s: Bunk point location at the trailing end of the girder is less than the minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
          pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metStart,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
          pStatusCenter->Add(pStatusItem);
       }
@@ -459,18 +451,9 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegment
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
          GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         GET_IFACE(IDocumentType,pDocType);
 
          CString strMsg;
-         if ( pDocType->IsPGSuperDocument() )
-         {
-            strMsg.Format(_T("Girder %s: Bunk point location at the leading end of the girder is less than the absolute minimum value of %s"),LABEL_GIRDER(segmentKey.girderIndex),::FormatDimension(min_bunk_point_end,pDisplayUnits->GetSpanLengthUnit()));
-         }
-         else
-         {
-            strMsg.Format(_T("Group %d Girder %s Segment %d: Bunk point location at the leading end of the girder is less than the absolute minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_end,pDisplayUnits->GetSpanLengthUnit()));
-         }
-
+         strMsg.Format(_T("%s: Bunk point location at the leading end of the girder is less than the absolute minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_bunk_point_end,pDisplayUnits->GetSpanLengthUnit()));
          pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metEnd,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
          pStatusCenter->Add(pStatusItem);
       }

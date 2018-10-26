@@ -49,7 +49,7 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGirderDropSite::CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame) :
+CGirderDropSite::CGirderDropSite(CPGSDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame) :
 m_SpanKey(spanKey)
 {
    m_pDoc   = pDoc;

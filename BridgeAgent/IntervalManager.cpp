@@ -1085,8 +1085,19 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
 
    // For each activity in this event, get phrase to use in the description of the interval
    // as well as record the interval index if needed. Since the interval object hasn't
-   // been added to the m_Intervals collection yet, the interval is the size of the collection
-   IntervalIndexType intervalIdx = m_Intervals.size();
+   // been added to the m_Intervals collection yet, the interval index is the size of the collection
+   IntervalIndexType intervalIdx;
+   bool bNeedNewInterval = true;
+   if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
+   {
+      // this loads are being applied with the deck, use the deck casting interval
+      intervalIdx = m_CastDeckIntervalIdx;
+      bNeedNewInterval = false;
+   }
+   else
+   {
+      intervalIdx = m_Intervals.size();
+   }
    
    std::vector<CString> strDescriptions;
 
@@ -1398,15 +1409,18 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
       strDescription += str;
    }
 
-   CInterval interval;
-   interval.StartEventIdx = eventIdx;
-   interval.EndEventIdx   = eventIdx;
-   interval.Start         = pTimelineEvent->GetDay() + pTimelineEvent->GetDuration(); // this interval starts at end end of the event and has zero duration
-   interval.End           = interval.Start;
-   interval.Middle        = interval.Start;
-   interval.Duration      = 0;
-   interval.Description = strDescription;
-   StoreInterval(interval);
+   if ( bNeedNewInterval )
+   {
+      CInterval interval;
+      interval.StartEventIdx = eventIdx;
+      interval.EndEventIdx   = eventIdx;
+      interval.Start         = pTimelineEvent->GetDay() + pTimelineEvent->GetDuration(); // this interval starts at end end of the event and has zero duration
+      interval.End           = interval.Start;
+      interval.Middle        = interval.Start;
+      interval.Duration      = 0;
+      interval.Description = strDescription;
+      StoreInterval(interval);
+   }
 }
 
 void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)

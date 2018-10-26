@@ -66,11 +66,11 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\DocumentType.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\EditByUI.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AgeAdjustedMaterial.h>
+#include <IFace\DocumentType.h>
 
 #include <PgsExt\DesignConfigUtil.h>
 
@@ -4496,21 +4496,10 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
    {
       // harp points are outside of the support location
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      GET_IFACE(IDocumentType,pDocType);
       std::_tostringstream os;
-      if ( pDocType->IsPGSuperDocument() )
-      {
-         ATLASSERT(segmentKey.segmentIndex == 0);
-         os << _T("The harping points for Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" in Span ") << LABEL_SPAN(segmentKey.groupIndex) 
-            << _T(" are located outside of the bearings. You can fix this by increasing the girder length, or")
-            << _T(" by changing the harping point location in the girder library entry.")<<std::endl;
-      }
-      else
-      {
-         os << _T("The harping points for Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) 
-            << _T(" are located outside of the bearings. You can fix this by increasing the segment length, or")
-            << _T(" by changing the harping point location in the girder library entry.")<<std::endl;
-      }
+      os << _T("The harping points for ") << SEGMENT_LABEL(segmentKey)
+         << _T(" are located outside of the bearings. You can fix this by increasing the segment length, or")
+         << _T(" by changing the harping point location in the girder library entry.")<<std::endl;
 
       pgsBridgeDescriptionStatusItem* pStatusItem = 
          new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
@@ -5700,7 +5689,17 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
       surface->GetStationRange(&objStartStation,&objEndStation);
       Float64 station;
       objStartStation->get_NormalizedValue(alignment,&station);
-      *pStartStation = Min(*pStartStation,station);
+      if ( nSurfaces == 1 && station < (pierStation - spanLength/n) && IsZero(station) )
+      {
+         // often, the roadway surface is defined by a single point at station 0+00
+         // if there is only one surface defintion and it starts before the bridge
+         // and it is at 0+00, skip it so we don't end up with a really long alignment
+         // and a really short bridge... the graphics come out bad
+      }
+      else
+      {
+         *pStartStation = Min(*pStartStation,station);
+      }
    }
 
    CComPtr<IStation> objRefStation;
@@ -9422,6 +9421,26 @@ void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* directi
 void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point)
 {
    GetSlabEdgePoint(station,direction,qcbRight,point);
+}
+
+void CBridgeAgentImp::GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point)
+{
+   GetCurbLinePoint(station,direction,qcbLeft,point);
+}
+
+void CBridgeAgentImp::GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point)
+{
+   GetCurbLinePoint(station,direction,qcbLeft,point);
+}
+
+void CBridgeAgentImp::GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point)
+{
+   GetCurbLinePoint(station,direction,qcbRight,point);
+}
+
+void CBridgeAgentImp::GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point)
+{
+   GetCurbLinePoint(station,direction,qcbRight,point);
 }
 
 Float64 CBridgeAgentImp::GetPierStation(PierIndexType pierIdx)
@@ -20802,16 +20821,7 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi)
          wMating = 0;
 
          CString strMsg;
-
-         GET_IFACE(IDocumentType,pDocType);
-         if ( pDocType->IsPGSuperDocument() )
-         {
-            strMsg.Format(_T("Span %d Girder %s, Deck panel support width exceeds half the width of the supporting flange. An interface shear width of 0.0 will be used"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
-         }
-         else
-         {
-            strMsg.Format(_T("Group %d Girder %s, Deck panel support width exceeds half the width of the supporting flange. An interface shear width of 0.0 will be used"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
-         }
+         strMsg.Format(_T("%s, Deck panel support width exceeds half the width of the supporting flange. An interface shear width of 0.0 will be used"),GIRDER_LABEL(segmentKey));
 
          pgsBridgeDescriptionStatusItem* pStatusItem = 
             new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Deck,strMsg);
@@ -24430,7 +24440,6 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
    const CLongitudinalRebarData& rebar_data = pSegment->LongitudinalRebarData;
 
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE_NOCHECK(IDocumentType,pDocType);
 
    const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = rebar_data.RebarRows;
    if ( 0 < rebar_rows.size() )
@@ -24511,16 +24520,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             if ( clear < db )
             {
                std::_tostringstream os;
-               if ( pDocType->IsPGSuperDocument() )
-               {
-                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
-                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than the nominal diameter of the bar (See LRFD 5.10.3.1.2)") << std::endl;
-               }
-               else
-               {
-                  os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex)
-                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than the nominal diameter of the bar (See LRFD 5.10.3.1.2)") << std::endl;
-               }
+               os << SEGMENT_LABEL(segmentKey)
+                  << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than the nominal diameter of the bar (See LRFD 5.10.3.1.2)") << std::endl;
 
                pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
 
@@ -24529,16 +24530,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             else if ( clear < 1.33*max_aggregate_size )
             {
                std::_tostringstream os;
-               if ( pDocType->IsPGSuperDocument() )
-               {
-                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
-                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than 1.33 times the maximum size of the coarse aggregate (See LRFD 5.10.3.1.2)") << std::endl;
-               }
-               else
-               {
-                  os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex)
-                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than 1.33 times the maximum size of the coarse aggregate (See LRFD 5.10.3.1.2)") << std::endl;
-               }
+               os << SEGMENT_LABEL(segmentKey)
+                  << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.33 times the maximum size of the coarse aggregate (See LRFD 5.10.3.1.2)") << std::endl;
 
                pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
 
@@ -24547,16 +24540,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
             else if ( clear < ::ConvertToSysUnits(1.0,unitMeasure::Inch) )
             {
                std::_tostringstream os;
-               if ( pDocType->IsPGSuperDocument() )
-               {
-                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
-                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
-               }
-               else
-               {
-                  os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex)
-                     << _T(": Clearance between longitudinal bars in row ") << (idx+1) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
-               }
+               os << SEGMENT_LABEL(segmentKey)
+                  << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
 
                pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
 
@@ -24937,17 +24922,7 @@ void CBridgeAgentImp::CheckBridge()
             if ( sLength <= 0 )
             {
                std::_tostringstream os;
-               GET_IFACE(IDocumentType,pDocType);
-               if ( pDocType->IsPGSuperDocument() )
-               {
-                  os << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx)
-                     << _T(" does not have a positive length.") << std::endl;
-               }
-               else
-               {
-                  os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx)
-                     << _T(" Segment ") << LABEL_SEGMENT(segIdx) << _T(" does not have a positive length.") << std::endl;
-               }
+               os << SEGMENT_LABEL(segmentKey) << _T(" does not have a positive length.") << std::endl;
 
                pgsBridgeDescriptionStatusItem* pStatusItem = 
                   new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
@@ -24977,16 +24952,8 @@ void CBridgeAgentImp::CheckBridge()
 
                if ( Y < -h_start/2 || Y < -h_end/2 )
                {
-                  GET_IFACE(IDocumentType,pDocType);
                   CString strMsg;
-                  if ( pDocType->IsPGSuperDocument() )
-                  {
-                     strMsg.Format(_T("Span %d Girder %s, Temporary strands are not in the top half of the girder"),LABEL_SPAN(grpIdx),LABEL_GIRDER(gdrIdx));
-                  }
-                  else
-                  {
-                     strMsg.Format(_T("Group %d Girder %s Segment %d, Temporary strands are not in the top half of the girder"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx));
-                  }
+                  strMsg.Format(_T("%s, Temporary strands are not in the top half of the girder"),SEGMENT_LABEL(CSegmentKey(grpIdx,gdrIdx,segIdx)));
                   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                }
@@ -26237,6 +26204,37 @@ void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,Di
 
    CComPtr<IPoint2d> pnt2d;
    GetSlabEdgePoint(station,direction,side,&pnt2d);
+
+   Float64 x,y;
+   pnt2d->Location(&x,&y);
+
+   Float64 normal_station,offset;
+   GetStationAndOffset(pnt2d,&normal_station,&offset);
+
+   Float64 elev = GetElevation(normal_station,offset);
+
+   CComPtr<IPoint3d> pnt3d;
+   pnt3d.CoCreateInstance(CLSID_Point3d);
+   pnt3d->Move(x,y,elev);
+
+   (*point) = pnt3d;
+   (*point)->AddRef();
+}
+
+void CBridgeAgentImp::GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point)
+{
+   VALIDATE(BRIDGE);
+
+   HRESULT hr = m_BridgeGeometryTool->CurbLinePoint(m_Bridge,station,direction,side,point);
+   ATLASSERT(SUCCEEDED(hr));
+}
+
+void CBridgeAgentImp::GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point)
+{
+   VALIDATE(BRIDGE);
+
+   CComPtr<IPoint2d> pnt2d;
+   GetCurbLinePoint(station,direction,side,&pnt2d);
 
    Float64 x,y;
    pnt2d->Location(&x,&y);

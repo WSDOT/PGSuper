@@ -460,17 +460,9 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(IDocumentType,pDocType);
 
       CString strMsg;
-      if ( pDocType->IsPGSuperDocument() )
-      {
-         strMsg.Format(_T("Girder %s: Left bunk point is less than the absolute minimum value of %s"),LABEL_GIRDER(segmentKey.girderIndex),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
-      }
-      else
-      {
-         strMsg.Format(_T("Group %d Girder %s Segment %d: Left bunk point is less than the absolute minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
-      }
+      strMsg.Format(_T("%s: Left bunk point is less than the absolute minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
       pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metStart,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -479,18 +471,9 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(IDocumentType,pDocType);
 
       CString strMsg;
-      if ( pDocType->IsPGSuperDocument() )
-      {
-         strMsg.Format(_T("Girder %s: Right bunk point is less than the absolute minimum value of %s"),LABEL_GIRDER(segmentKey.girderIndex),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
-      }
-      else
-      {
-         strMsg.Format(_T("Group %d Girder %s Segment %d: Right bunk point is less than the absolute minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
-      }
-
+      strMsg.Format(_T("%s: Right bunk point is less than the absolute minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
       pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(segmentKey,pgsTypes::metEnd,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }

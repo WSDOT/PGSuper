@@ -289,7 +289,17 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
          ColumnIndexType col = 0;
 
          (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
-         (*p_table)(row,col++) << deflection.SetValue( girder[index] );
+
+         if ( bSegments )
+         {
+            (*p_table)(row,col++) << deflection.SetValue( segment[index] );
+            (*p_table)(row,col++) << deflection.SetValue( girder[index] );
+         }
+         else
+         {
+            (*p_table)(row,col++) << deflection.SetValue( girder[index] );
+         }
+
          (*p_table)(row,col++) << deflection.SetValue( diaphragm[index] );
 
          if ( bShearKey )

@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CDisplayObjectFactory
 
-CDisplayObjectFactory::CDisplayObjectFactory(CPGSuperDocBase* pDoc)
+CDisplayObjectFactory::CDisplayObjectFactory(CPGSDocBase* pDoc)
 {
    m_pDoc = pDoc;
    ::CoCreateInstance(CLSID_DisplayObjectFactory,NULL,CLSCTX_ALL,IID_iDisplayObjectFactory,(void**)&m_Factory);

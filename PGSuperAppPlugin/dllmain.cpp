@@ -98,6 +98,12 @@ BOOL CPGSuperAppPluginApp::InitInstance()
       strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
 #endif
 #endif
+      
+      // rename the file itself
+      int loc = strHelpFile.ReverseFind('\\');
+      strHelpFile = strHelpFile.Left(loc+1);
+      strHelpFile += _T("PGSuper.chm");
+
       free((void*)m_pszHelpFilePath);
       m_pszHelpFilePath = _tcsdup(strHelpFile);
    }
@@ -320,6 +326,11 @@ HRESULT Register(bool bRegister)
 
    // PGSplice
    hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   // PGSplice Project Importers
+   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceProjectImporterAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
 

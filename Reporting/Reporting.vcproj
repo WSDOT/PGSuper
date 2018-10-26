@@ -25,6 +25,7 @@
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
+			UseOfATL="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -111,6 +112,7 @@
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
+			UseOfATL="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -198,6 +200,7 @@
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
+			UseOfATL="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -285,6 +288,7 @@
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
+			UseOfATL="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>

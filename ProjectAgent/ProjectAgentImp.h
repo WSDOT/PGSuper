@@ -708,7 +708,7 @@ private:
       { return EntryName < other.EntryName; }
    };
 
-   typedef std::vector<LiveLoadSelection> LiveLoadSelectionContainer;
+   typedef std::set<LiveLoadSelection> LiveLoadSelectionContainer;
    typedef LiveLoadSelectionContainer::iterator LiveLoadSelectionIterator;
 
    // index is pgsTypes::LiveLoadTypes constant

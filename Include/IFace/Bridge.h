@@ -487,6 +487,11 @@ interface IBridge : IUnknown
    virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point) = 0;
    virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point) = 0;
 
+   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point) = 0;
+   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point) = 0;
+   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point) = 0;
+   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point) = 0;
+
    ///////////////////////////////////////////////////
    // Pier data
    ///////////////////////////////////////////////////

@@ -79,12 +79,12 @@ const CRuntimeClass* CPGSpliceAppPlugin::GetDocTemplateRuntimeClass()
 
 HRESULT CPGSpliceAppPlugin::FinalConstruct()
 {
-   return OnFinalConstruct(); // CPGSuperBaseAppPlugin
+   return OnFinalConstruct(); // CPGSAppPluginBase
 }
 
 void CPGSpliceAppPlugin::FinalRelease()
 {
-   OnFinalRelease(); // CPGSuperBaseAppPlugin
+   OnFinalRelease(); // CPGSAppPluginBase
 }
 
 void CPGSpliceAppPlugin::ConfigurePlugins()
@@ -345,7 +345,7 @@ void CPGSpliceAppPlugin::OnProgramSettings()
    UpdateProgramSettings(FALSE);
 }
 
-CPGSuperBaseCommandLineInfo* CPGSpliceAppPlugin::CreateCommandLineInfo() const
+CPGSBaseCommandLineInfo* CPGSpliceAppPlugin::CreateCommandLineInfo() const
 {
    return new CPGSpliceCommandLineInfo();
 }

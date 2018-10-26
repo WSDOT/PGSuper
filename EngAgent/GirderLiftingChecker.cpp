@@ -383,7 +383,7 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format(_T("Group %d Girder %s Segment %d: Left lift point is less than the minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_lift_point_start,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format(_T("%s: Left lift point is less than the minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_lift_point_start,pDisplayUnits->GetSpanLengthUnit()));
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(segmentKey,pgsTypes::metStart,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -394,7 +394,7 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format(_T("Group %d Girder %s Segment %d: Right lift point is less than the minimum value of %s"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),::FormatDimension(min_lift_point_end,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format(_T("%s: Right lift point is less than the minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_lift_point_end,pDisplayUnits->GetSpanLengthUnit()));
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(segmentKey,pgsTypes::metEnd,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
