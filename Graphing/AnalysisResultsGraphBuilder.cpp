@@ -353,22 +353,11 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPretension),    pftPretension,   vAllIntervals,   ACTIONS_ALL) );
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftCreep),      pftCreep,      vAllIntervals, ACTIONS_ALL) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftShrinkage),  pftShrinkage,  vAllIntervals, ACTIONS_ALL) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftRelaxation), pftRelaxation, vAllIntervals, ACTIONS_ALL) );
-   }
-
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPostTensioning), pftPostTensioning, vAllIntervals, ACTIONS_FORCE_STRESS) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPostTensioning), pftPostTensioning, vAllIntervals, ACTIONS_ALL) );
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSecondaryEffects),      pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftTotalPostTensioning),   pftTotalPostTensioning,   vAllIntervals, ACTIONS_ALL) );
    }
 
 
@@ -381,6 +370,16 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftOverlay), pftOverlay, vAllIntervals, ACTIONS_ALL) );
 
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftCreep),      pftCreep,      vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftShrinkage),  pftShrinkage,  vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftRelaxation), pftRelaxation, vAllIntervals, ACTIONS_ALL) );
+   }
 
    // User Defined Static Loads
 #pragma Reminder("UPDATE: user defined load intervals")

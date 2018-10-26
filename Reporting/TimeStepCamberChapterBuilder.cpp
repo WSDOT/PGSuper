@@ -668,7 +668,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_ERECTED_SEGMENT ) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_SPAN ) );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
@@ -733,12 +733,13 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
       vProductForces.push_back(pftShearKey);
    }
 
+   vProductForces.push_back(pftPretension);
+
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
-      vProductForces.push_back(pftTotalPostTensioning);
+      vProductForces.push_back(pftPostTensioning);
    }
 
-   vProductForces.push_back(pftPretension);
    vProductForces.push_back(pftCreep);
    vProductForces.push_back(pftShrinkage);
    vProductForces.push_back(pftRelaxation);
@@ -779,7 +780,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
       col = 0;
       pgsPointOfInterest& poi(*poiIter);
 
-      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*pTable)(row,col++) << location.SetValue( POI_SPAN, poi );
 
       std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
       std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());

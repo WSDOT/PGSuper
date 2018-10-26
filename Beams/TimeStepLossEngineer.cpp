@@ -3768,6 +3768,6 @@ int CTimeStepLossEngineer::GetProductForceCount()
    // returns the number of product forces that we need to consider from the ProductForceType enum.
    // all off the product forces count except for the two special cases at the end of the enum.
    int n = (int)pftProductForceTypeCount;
-   n -= 2; // remove pftTotalPostTensioning and pftOverlayRating from the count as they are special cases and don't apply here
+   n -= 1; // remove pftOverlayRating from the count as they are special cases and don't apply here
    return n;
 }

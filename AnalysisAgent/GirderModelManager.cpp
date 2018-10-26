@@ -1556,10 +1556,10 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       results.reserve(vPoi.size());
 
-      if ( pfType == pftTotalPostTensioning )
+      if ( pfType == pftPostTensioning )
       {
-         // Total post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
-         // curvatures to the model as the secondary effects product load type, the total post-tension deflection
+         // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
+         // curvatures to the model as the secondary effects product load type, the post-tension deflection
          // is the deflections computed by the secondary effects load case
          pfType = pftSecondaryEffects;
       }
@@ -1626,10 +1626,10 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
          pModelData = UpdateLBAMPois(vPoi);
       }
 
-      if ( pfType == pftTotalPostTensioning )
+      if ( pfType == pftPostTensioning )
       {
-         // Total post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
-         // curvatures to the model as the secondary effects product load type, the total post-tension deflection
+         // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
+         // curvatures to the model as the secondary effects product load type, the post-tension deflection
          // is the deflections computed by the secondary effects load case
          pfType = pftSecondaryEffects;
       }
@@ -3940,9 +3940,13 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
 
    if ( bIncludePrestress )
    {
-      std::vector<Float64> delta = GetDeflection(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
-      std::transform(delta.begin(),delta.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
-      std::transform(delta.begin(),delta.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
+      std::vector<Float64> deltaPS = GetDeflection(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
+      std::transform(deltaPS.begin(),deltaPS.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
+      std::transform(deltaPS.begin(),deltaPS.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
+
+      std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pftPostTensioning,vPoi,bat,rtCumulative);
+      std::transform(deltaPT.begin(),deltaPT.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
+      std::transform(deltaPT.begin(),deltaPT.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
    }
 }
 
@@ -3986,9 +3990,13 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
 
    if ( bIncludePrestress )
    {
-      std::vector<Float64> delta = GetRotation(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
-      std::transform(delta.begin(),delta.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
-      std::transform(delta.begin(),delta.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
+      std::vector<Float64> deltaPS = GetRotation(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
+      std::transform(deltaPS.begin(),deltaPS.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
+      std::transform(deltaPS.begin(),deltaPS.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
+
+      std::vector<Float64> deltaPT = GetRotation(intervalIdx,pftPostTensioning,vPoi,bat,rtCumulative);
+      std::transform(deltaPT.begin(),deltaPT.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
+      std::transform(deltaPT.begin(),deltaPT.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
    }
 }
 
@@ -4576,10 +4584,10 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
    std::vector<Float64> reactions;
 
 
-   if ( pfType == pftTotalPostTensioning )
+   if ( pfType == pftPostTensioning )
    {
-      // Total post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
-      // curvatures to the model as the secondary effects product load type, the total post-tension reactions
+      // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
+      // curvatures to the model as the secondary effects product load type, the post-tension reactions
       // are the reactions computed by the secondary effects load case
       pfType = pftSecondaryEffects;
    }

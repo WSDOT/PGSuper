@@ -149,7 +149,7 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
       std::vector<Float64> Mdia( pProductForces->GetMoment(intervalIdx,pftDiaphragm,vPOI,bat) );
       std::vector<Float64> Mbarrier( pProductForces->GetMoment(intervalIdx,pftTrafficBarrier,vPOI,bat) );
       std::vector<Float64> Moverlay( pProductForces->GetMoment(intervalIdx,pftOverlay,vPOI,bat) );
-      std::vector<Float64> Mptt( pProductForces->GetMoment(intervalIdx,pftTotalPostTensioning,vPOI,bat) );
+      std::vector<Float64> Mptt( pProductForces->GetMoment(intervalIdx,pftPostTensioning,vPOI,bat) );
       std::vector<Float64> Mpts( pProductForces->GetMoment(intervalIdx,pftSecondaryEffects,vPOI,bat) );
 
       std::vector<Float64> MMaxLL, MMinLL;

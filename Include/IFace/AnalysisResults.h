@@ -70,7 +70,6 @@ typedef enum ProductForceType
    pftRelaxation,
 
    // special cases
-   pftTotalPostTensioning, // PT + Secondary Effects
    pftOverlayRating,
 
    pftProductForceTypeCount

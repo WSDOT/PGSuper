@@ -83,7 +83,8 @@ static char THIS_FILE[] = __FILE__;
 // from 21.0 to 22.0 Added layout options for longitudinal rebar
 // from 22   to 23   Changed ForceHarpedStrandsStraight to AdjustableStrandType for more flexibility
 // from 23   to 24   Added Prestressed design strategies (2.9), Added option for variable depth girders (3.0)
-#define CURRENT_VERSION 24.0
+// from 24   to 25   Added Publisher Contact Information
+#define CURRENT_VERSION 25.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) {
@@ -698,9 +699,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          std::_tstring strPublisherContactInfo;
          if ( 24 < version )
          {
-#pragma Reminder("UPDATE: this is ok to fail on v25 only")
             if ( !pLoad->Property(_T("ContactInfo"),&strPublisherContactInfo) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+              THROW_LOAD(InvalidFileFormat,pLoad);
          }
          else
          {
