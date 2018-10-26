@@ -68,7 +68,7 @@ int actions
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
 const std::_tstring& name,
-ProductForceType type,
+pgsTypes::ProductForceType type,
 const std::vector<IntervalIndexType>& intervals,
 int actions
 ): m_ID(id),m_Name(name)

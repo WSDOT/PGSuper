@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,36
- PRODUCTVERSION 3,0,0,36
+ FILEVERSION 3,0,0,37
+ PRODUCTVERSION 3,0,0,37
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "3.0.0.36"
+            VALUE "FileVersion", "3.0.0.37"
             VALUE "InternalName", "Graphing"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.36"
+            VALUE "ProductVersion", "3.0.0.37"
         END
     END
     BLOCK "VarFileInfo"
@@ -157,20 +157,22 @@ BEGIN
     COMBOBOX        IDC_SEGMENT,125,3,52,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_EFFECTIVEPRESTRESS_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 298
+IDD_EFFECTIVEPRESTRESS_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 320
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     COMBOBOX        IDC_GROUP,6,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,81,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_DUCT,6,24,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LISTBOX         IDC_INTERVALS,6,54,142,184,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Stress",IDC_STRESS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,6,264,36,10
-    CONTROL         "Force",IDC_FORCE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,45,264,34,10
-    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,281,48,10
-    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,281,55,10
-    LTEXT           "Interval",IDC_STATIC,6,42,26,8
-    LTEXT           "Hold CTRL key to select multiple intervals\nHold SHIFT key to select range of intervals",IDC_STATIC,6,243,142,18
+    CONTROL         "Permanent",IDC_PERMANENT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,6,44,51,10
+    CONTROL         "Temporary",IDC_TEMPORARY,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,58,44,51,10
+    LTEXT           "Interval",IDC_STATIC,6,61,26,8
+    LISTBOX         IDC_INTERVALS,6,73,142,184,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Hold CTRL key to select multiple intervals\nHold SHIFT key to select range of intervals",IDC_STATIC,6,262,142,18
+    CONTROL         "Stress",IDC_STRESS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,6,283,36,10
+    CONTROL         "Force",IDC_FORCE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,45,283,34,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,303,48,10
+    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,303,55,10
 END
 
 IDD_STRESSHISTORY_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 369
@@ -303,7 +305,7 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 148
         TOPMARGIN, 7
-        BOTTOMMARGIN, 291
+        BOTTOMMARGIN, 313
     END
 
     IDD_STRESSHISTORY_GRAPH_CONTROLLER, DIALOG

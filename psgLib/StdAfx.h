@@ -53,11 +53,7 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
-#if defined NOGRID
-#include "nogrid.h"
-#else
 #include <grid\gxall.h>
-#endif // NOGRID
 
 #include <atlbase.h>
 #include <atlcom.h>

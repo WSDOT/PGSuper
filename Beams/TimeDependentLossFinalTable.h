@@ -56,8 +56,6 @@ private:
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
-
-   bool m_bIsDeckShinkageApplied;
 };
 
 #endif //__TIMEDEPENDENTLOSSFINALTABLE_H_

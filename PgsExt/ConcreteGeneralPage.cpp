@@ -23,19 +23,14 @@
 // ConcreteGeneralPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
-#include "PGSuperDoc.h"
-#include "PGSuperUnits.h"
-#include "ConcreteDetailsDlg.h"
-#include "ConcreteGeneralPage.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include <PgsExt\ConcreteGeneralPage.h>
+#include <PgsExt\ConcreteDetailsDlg.h>
 #include "HtmlHelp\HelpTopics.hh"
 
-#include <System\Tokenizer.h>
 #include "CopyConcreteEntry.h"
-#include <Lrfd\Lrfd.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\Bridge.h>
 
 #include <PGSuperColors.h>
 
@@ -49,15 +44,16 @@ static char THIS_FILE[] = __FILE__;
 // CConcreteGeneralPage dialog
 
 
-CConcreteGeneralPage::CConcreteGeneralPage() : CPropertyPage(CConcreteGeneralPage::IDD)
+CConcreteGeneralPage::CConcreteGeneralPage() : CPropertyPage()
 {
 	//{{AFX_DATA_INIT(CConcreteGeneralPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
-   GET_IFACE(IMaterials,pMaterial);
-   m_MinNWCDensity = pMaterial->GetNWCDensityLimit();
-   m_MaxLWCDensity = pMaterial->GetLWCDensityLimit();
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   Construct(IDD_CONCRETE_DETAILS);
+
+   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
 }
 
 
@@ -79,7 +75,9 @@ void CConcreteGeneralPage::DoDataExchange(CDataExchange* pDX)
 	   DDX_Control(pDX, IDC_FC,      m_ctrlFc);
 	   DDX_Control(pDX, IDC_DS,      m_ctrlStrengthDensity);
 
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
       if ( pParent->m_bFinalProperties )
@@ -193,6 +191,11 @@ BOOL CConcreteGeneralPage::OnInitDialog()
 
    OnConcreteType();
 
+   if ( !pParent->m_bEnableCopyFromLibrary )
+   {
+      GetDlgItem(IDC_COPY_MATERIAL)->ShowWindow(SW_HIDE);
+   }
+
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -266,6 +269,7 @@ void CConcreteGeneralPage::UpdateEc()
 
 void CConcreteGeneralPage::OnCopyMaterial() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CCopyConcreteEntry dlg(false, this);
    INT_PTR result = dlg.DoModal();
    if ( result < 0 )
@@ -366,7 +370,9 @@ HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
          {
             CDataExchange dx(this,TRUE);
 
-            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             Float64 value;
             DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->GetDensityUnit() );
 
@@ -388,6 +394,7 @@ void CConcreteGeneralPage::OnOK()
 {
    CPropertyPage::OnOK();
 
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    if ( !m_bErrorInDDX && !IsDensityInRange(m_Ds,m_Type) )
    {
       AfxMessageBox(m_Type == pgsTypes::Normal ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);

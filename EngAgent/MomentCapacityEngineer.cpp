@@ -1093,7 +1093,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(bPositiveMoment ? pgsTypes::Maximize : pgsTypes::Minimize);
    Float64 fDummy;
-   pProductForces->GetStress(intervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&dfcpe,&fDummy);
+   pProductForces->GetStress(intervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&dfcpe,&fDummy);
    if ( dfcpe < 0 )
    {
       fcpe += dfcpe;
@@ -1259,21 +1259,21 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
       }
 
       // Girder moment
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftGirder,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftGirder,poi, bat, rtCumulative);
 
       // Slab moment
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftSlab,   poi, bat, rtCumulative);
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftSlabPad,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftSlab,   poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftSlabPad,poi, bat, rtCumulative);
 
       // Diaphragm moment
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftDiaphragm,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftDiaphragm,poi, bat, rtCumulative);
 
       // Shear Key moment
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftShearKey,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftShearKey,poi, bat, rtCumulative);
 
       // User DC and User DW
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftUserDC,poi, bat, rtCumulative);
-      Mdnc += pProductForces->GetMoment(intervalIdx,pftUserDW,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftUserDC,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pgsTypes::pftUserDW,poi, bat, rtCumulative);
    }
 
    return Mdnc;
@@ -1328,7 +1328,6 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
    // Compute modulus of rupture
    if ( bPositiveMoment )
    {
-#pragma Reminder("BUG: need modulus of rupture for fc and the specified interval")
       fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
    }
    else
@@ -1336,7 +1335,6 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       GET_IFACE(IBridge,pBridge);
       if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
       {
-#pragma Reminder("BUG: need modulus of rupture for fc and the specified interval")
          fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
       }
       else

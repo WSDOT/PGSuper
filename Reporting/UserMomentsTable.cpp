@@ -115,14 +115,14 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
       std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, maxBAT, rtIncremental );
-      minDC = pForces2->GetMoment( intervalIdx, pftUserDC, vPoi, minBAT, rtIncremental );
+      maxDC = pForces2->GetMoment( intervalIdx, pgsTypes::pftUserDC, vPoi, maxBAT, rtIncremental );
+      minDC = pForces2->GetMoment( intervalIdx, pgsTypes::pftUserDC, vPoi, minBAT, rtIncremental );
 
-      maxDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, maxBAT, rtIncremental );
-      minDW = pForces2->GetMoment( intervalIdx, pftUserDW, vPoi, minBAT, rtIncremental );
+      maxDW = pForces2->GetMoment( intervalIdx, pgsTypes::pftUserDW, vPoi, maxBAT, rtIncremental );
+      minDW = pForces2->GetMoment( intervalIdx, pgsTypes::pftUserDW, vPoi, minBAT, rtIncremental );
 
-      maxLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental );
-      minLLIM = pForces2->GetMoment( intervalIdx, pftUserLLIM, vPoi, minBAT, rtIncremental );
+      maxLLIM = pForces2->GetMoment( intervalIdx, pgsTypes::pftUserLLIM, vPoi, maxBAT, rtIncremental );
+      minLLIM = pForces2->GetMoment( intervalIdx, pgsTypes::pftUserLLIM, vPoi, minBAT, rtIncremental );
 
       // Fill up the table
       IndexType index = 0;

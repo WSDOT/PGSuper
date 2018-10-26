@@ -250,8 +250,6 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
 
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IGirder,pGirder);
 
@@ -494,10 +492,11 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
+   Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(0,Yb - ecc);
+   point->Move(0,Yb - (Hg+ecc));
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);

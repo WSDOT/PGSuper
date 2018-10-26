@@ -22,39 +22,41 @@
 
 #pragma once
 
+#include <PgsExt\PgsExtExp.h>
 
-// CCEBFIPConcretePage dialog
+// CACIConcretePage dialog
 
-class CCEBFIPConcretePage : public CPropertyPage
+class PGSEXTCLASS CACIConcretePage : public CPropertyPage
 {
-	DECLARE_DYNAMIC(CCEBFIPConcretePage)
+	DECLARE_DYNAMIC(CACIConcretePage)
 
 public:
-	CCEBFIPConcretePage();
-	virtual ~CCEBFIPConcretePage();
+	CACIConcretePage();
+	virtual ~CACIConcretePage();
 
 // Dialog Data
-	enum { IDD = IDD_CEBFIP_CONCRETE };
 
    bool m_bUserParameters;
-   Float64 m_S;
-   Float64 m_BetaSc;
-   pgsTypes::CEBFIPCementType m_CementType;
+   Float64 m_A;
+   Float64 m_B;
+   pgsTypes::CureMethod m_CureMethod;
+   pgsTypes::ACI209CementType m_CementType;
+
 
 protected:
-   bool m_bUseCEBFIPParameters;
+   bool m_bUseACIParameters;
 
-protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
 
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
-
-	DECLARE_MESSAGE_MAP()
-public:
    afx_msg void OnUserParameters();
+   afx_msg void OnCureMethod();
    afx_msg void OnCementType();
    afx_msg void OnCompute();
 
+
    void UpdateParameters();
+
+	DECLARE_MESSAGE_MAP()
 };

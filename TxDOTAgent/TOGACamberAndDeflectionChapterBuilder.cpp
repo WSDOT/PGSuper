@@ -128,14 +128,11 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    // Get the interfaces we need
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    GET_IFACE2(pBroker,IProductForces, pProductForces);
-   GET_IFACE2(pBroker,IProductLoads, pProductLoads);
    GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec );
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
@@ -175,29 +172,29 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   delta_dl_orig = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi_orig, bat, rtCumulative, false )
-                 + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi_orig, bat, rtCumulative, false );
+   delta_dl_orig = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_orig, bat, rtCumulative, false )
+                 + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi_orig, bat, rtCumulative, false );
 
-   delta_dl_fabr = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi_fabr, bat, rtCumulative, false )
-                 + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi_fabr, bat, rtCumulative, false );
+   delta_dl_fabr = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_fabr, bat, rtCumulative, false )
+                 + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi_fabr, bat, rtCumulative, false );
 
-   delta_ol_orig = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi_orig, bat, rtCumulative, false );
-   delta_ol_fabr = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi_fabr, bat, rtCumulative, false );
+   delta_ol_orig = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi_orig, bat, rtCumulative, false );
+   delta_ol_fabr = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi_fabr, bat, rtCumulative, false );
 
-   delta_tb_orig = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi_orig, bat, rtCumulative, false );
-   delta_tb_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi_fabr, bat, rtCumulative, false );
+   delta_tb_orig = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_orig, bat, rtCumulative, false );
+   delta_tb_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_fabr, bat, rtCumulative, false );
 
-   Float64 delta_dcu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi_orig, bat, rtCumulative, false);
-   delta_dcu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDC, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dcu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
+   delta_dcu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
 
-   Float64 delta_dcu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi_fabr, bat, rtCumulative, false);
-   delta_dcu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDC, poi_fabr, bat, rtCumulative, false);
+   Float64 delta_dcu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
+   delta_dcu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
 
-   Float64 delta_dwu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi_orig, bat, rtCumulative, false);
-   delta_dwu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDW, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dwu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
+   delta_dwu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
 
-   Float64 delta_dwu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi_fabr, bat, rtCumulative, false);
-   delta_dwu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pftUserDW, poi_fabr, bat, rtCumulative, false);
+   Float64 delta_dwu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
+   delta_dwu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
 
    pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi_orig, bat, true, false, &delta_ll_orig, &temp );
    pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );

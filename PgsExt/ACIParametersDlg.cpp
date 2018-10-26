@@ -23,9 +23,9 @@
 // ACIParametersDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin.h"
-#include "ACIParametersDlg.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include <PgsExt\ACIParametersDlg.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <Material\ACI209Concrete.h>

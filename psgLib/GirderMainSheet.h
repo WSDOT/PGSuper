@@ -66,8 +66,8 @@ public:
 // Attributes
 public:
    CGirderDimensionsPage     m_GirderDimensionsPage;
-   CGirderHarpedStrandPage   m_GirderHarpedStrandPage;
-   CGirderStraightStrandPage m_GirderStraightStrandPage;
+   CGirderPermanentStrandPage   m_GirderPermanentStrandPage;
+   CGirderTemporaryStrandPage m_GirderTemporaryStrandPage;
    CLongSteelPage            m_LongSteelPage;
    CShearSteelPage           m_ShearSteelPage;
    CGirderHarpPointPage      m_HarpPointPage;

@@ -640,6 +640,18 @@
 			Filter="cpp"
 			>
 			<File
+				RelativePath=".\AASHTOConcretePage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ACIConcretePage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ACIParametersDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ApplyLoadActivity.cpp"
 				>
 			</File>
@@ -722,11 +734,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CEBFIPConcretePage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CEBFIPParamatersDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ClosureJointData.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\ColumnData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ConcreteDetailsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ConcreteGeneralPage.cpp"
 				>
 			</File>
 			<File
@@ -790,6 +818,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CopyConcreteEntry.cpp"
+				>
 			</File>
 			<File
 				RelativePath="DebondArtifact.cpp"
@@ -3147,6 +3179,18 @@
 			Filter="H"
 			>
 			<File
+				RelativePath="..\Include\PgsExt\AASHTOConcretePage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ACIConcretePage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ACIParametersDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ApplyLoadActivity.h"
 				>
 			</File>
@@ -3179,6 +3223,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\CEBFIPConcretePage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CEBFIPParametersDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ClosureJointData.h"
 				>
 			</File>
@@ -3187,11 +3239,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\ConcreteDetailsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ConcreteGeneralPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ConcreteMaterial.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\ConstructabilityArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CopyConcreteEntry.h"
 				>
 			</File>
 			<File

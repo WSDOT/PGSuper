@@ -23,8 +23,8 @@
 // CopyConcreteEntry.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
 
 #include "CopyConcreteEntry.h"
 #include "..\htmlhelp\helptopics.hh"

@@ -259,7 +259,7 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CSplitChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-	this->SetWindowText(_T("Bridge Model View"));
+	this->SetWindowText(_T("Bridge View"));
 
    {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());

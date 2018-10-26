@@ -28,13 +28,11 @@
 #endif // _MSC_VER >= 1000
 // GirderStrandPage.h : header file
 //
-#if !defined NOGRID
 // for the grid
 #ifndef _GXALL_H_
 #include "gxwnd.h"
 #include "gxctrl.h"
 #endif
-#endif // NOGRID
 
 #include "GirderGlobalStrandGrid.h"
 #include <Units\Measure.h>
@@ -64,22 +62,22 @@ inline LPCTSTR LOCAL_LABEL_HARP_TYPE(pgsTypes::AdjustableStrandType type)
 class CGirderMainSheet;
 
 /////////////////////////////////////////////////////////////////////////////
-// CGirderHarpedStrandPage dialog
+// CGirderPermanentStrandPage dialog
 
-class CGirderHarpedStrandPage : public CPropertyPage, public CGirderGlobalStrandGridClient
+class CGirderPermanentStrandPage : public CPropertyPage, public CGirderGlobalStrandGridClient
 {
    friend CGirderMainSheet;
 
-	DECLARE_DYNCREATE(CGirderHarpedStrandPage)
+	DECLARE_DYNCREATE(CGirderPermanentStrandPage)
 
 // Construction
 public:
-	CGirderHarpedStrandPage();
-	~CGirderHarpedStrandPage();
+	CGirderPermanentStrandPage();
+	~CGirderPermanentStrandPage();
 
 // Dialog Data
-	//{{AFX_DATA(CGirderHarpedStrandPage)
-	enum { IDD = IDD_HARP_STRAND };
+	//{{AFX_DATA(CGirderPermanentStrandPage)
+	enum { IDD = IDD_GIRDER_PERMANENT_STRANDS };
 	//}}AFX_DATA
 
 private:
@@ -88,7 +86,7 @@ private:
 
 // Overrides
 	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CGirderHarpedStrandPage)
+	//{{AFX_VIRTUAL(CGirderPermanentStrandPage)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -96,7 +94,7 @@ private:
 // Implementation
 protected:
 	// Generated message map functions
-	//{{AFX_MSG(CGirderHarpedStrandPage)
+	//{{AFX_MSG(CGirderPermanentStrandPage)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDelGlobalStrand();
 	afx_msg void OnAddGlobalStrand();

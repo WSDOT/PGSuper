@@ -56,6 +56,7 @@ public:
    CBridgeDescription2* GetBridgeDescription();
 
 // interface IEditPierData
+   virtual CPierData2* GetPierData() {return m_pPier;}
    virtual PierIndexType GetPierCount() { return m_BridgeDesc.GetPierCount(); }
    virtual PierIndexType GetPier() { return m_pPier->GetIndex(); }
    virtual pgsTypes::BoundaryConditionType GetConnectionType();

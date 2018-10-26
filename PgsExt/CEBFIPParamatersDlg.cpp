@@ -23,9 +23,9 @@
 // CEBFIPParametersDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin.h"
-#include "CEBFIPParametersDlg.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include <PgsExt\CEBFIPParametersDlg.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <Material\CEBFIPConcrete.h>

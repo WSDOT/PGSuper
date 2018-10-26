@@ -97,6 +97,7 @@ protected:
    virtual void DoIntegrateWithUI(BOOL bIntegrate);
 
    virtual CATID GetDocumentPluginCATID();
+   virtual HINSTANCE GetResourceInstance();
 
 // Generated message map functions
 protected:

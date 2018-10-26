@@ -440,15 +440,15 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
    // model the alignment as a series of individual points
-   CComPtr<IDirection> bearing;
-   bearing.CoCreateInstance(CLSID_Direction);
    long nPoints = 20;
    Float64 station_inc = (end_station - start_station)/(nPoints-1);
    Float64 station = start_station;
    for ( long i = 0; i < nPoints; i++, station += station_inc)
    {
+      CComPtr<IDirection> normal;
+      pRoadway->GetBearingNormal(station,&normal);
       CComPtr<IPoint2d> p;
-      pRoadway->GetPoint(station,alignment_offset,bearing,&p);
+      pRoadway->GetPoint(station,alignment_offset,normal,&p);
       doBridge->AddPoint(p);
    }
 

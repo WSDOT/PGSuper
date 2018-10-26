@@ -638,14 +638,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\InitialStrainGraphBuilder.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\InitialStrainGraphController.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\LocationGraphController.cpp"
 				>
 			</File>
@@ -797,14 +789,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Graphing\GraphingTypes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Graphing\InitialStrainGraphBuilder.h"
-				>
-			</File>
-			<File
-				RelativePath=".\InitialStrainGraphController.h"
 				>
 			</File>
 			<File

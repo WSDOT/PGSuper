@@ -27,6 +27,7 @@
 #include "PGSuperDoc.h"
 #include "PierLayoutPage.h"
 #include "PierDetailsDlg.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
@@ -64,11 +65,13 @@ void CPierLayoutPage::Init(CPierData2* pPier)
 
 void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
-  
-   CPropertyPage::DoDataExchange(pDX);
+     CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPierConnectionsPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
+	DDX_Control(pDX, IDC_EC,           m_ctrlEc);
+	DDX_Control(pDX, IDC_EC_LABEL,     m_ctrlEcCheck);
+	DDX_Control(pDX, IDC_FC,           m_ctrlFc);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -80,7 +83,10 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
    // Pier Model
    DDX_CBItemData(pDX,IDC_PIER_MODEL_TYPE,m_PierModelType);
 
-   DDX_UnitValueAndTag(pDX,IDC_EC,IDC_EC_UNIT,m_Ec,pDisplayUnits->GetModEUnit());
+   CConcreteMaterial& concrete = m_pPier->GetConcrete();
+   DDX_UnitValueAndTag(pDX,IDC_FC,IDC_FC_UNIT,concrete.Fc,pDisplayUnits->GetStressUnit());
+   DDX_UnitValueAndTag(pDX,IDC_EC,IDC_EC_UNIT,concrete.Ec,pDisplayUnits->GetModEUnit());
+   DDX_Check_Bool(pDX,IDC_EC_LABEL,concrete.bUserEc);
 
    DDX_UnitValueAndTag(pDX,IDC_H1,IDC_H1_UNIT,m_XBeamHeight[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX,IDC_H2,IDC_H2_UNIT,m_XBeamTaperHeight[pgsTypes::pstLeft],pDisplayUnits->GetSpanLengthUnit() );
@@ -116,8 +122,6 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
       if ( m_PierModelType == pgsTypes::pmtPhysical )
       {
-         m_pPier->SetModE(m_Ec);
-
          m_pPier->SetTransverseOffset(m_RefColumnIdx,m_TransverseOffset,m_TransverseOffsetMeasurement);
          for ( int i = 0; i < 2; i++ )
          {
@@ -152,6 +156,9 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CPierLayoutPage)
+   ON_BN_CLICKED(IDC_EC_LABEL,OnUserEc)
+	ON_EN_CHANGE(IDC_FC, OnChangeFc)
+   ON_BN_CLICKED(IDC_MORE_PROPERTIES, OnMoreProperties)
    ON_CBN_SELCHANGE(IDC_PIER_MODEL_TYPE, OnPierModelTypeChanged)
    ON_CBN_SELCHANGE(IDC_COLUMN_SHAPE, OnColumnShapeChanged)
    ON_NOTIFY(UDN_DELTAPOS, IDC_COLUMN_COUNT_SPINNER, OnColumnCountChanged)
@@ -165,7 +172,6 @@ END_MESSAGE_MAP()
 BOOL CPierLayoutPage::OnInitDialog() 
 {
    m_PierModelType = m_pPier->GetPierModelType();
-   m_Ec = m_pPier->GetModE();
 
    m_pPier->GetTransverseOffset(&m_RefColumnIdx,&m_TransverseOffset,&m_TransverseOffsetMeasurement);
    m_XBeamWidth = m_pPier->GetXBeamWidth();
@@ -203,12 +209,47 @@ BOOL CPierLayoutPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   UpdateConcreteTypeLabel();
+   if ( m_strUserEc == _T("") )
+   {
+      m_ctrlEc.GetWindowText(m_strUserEc);
+   }
+   OnUserEc();
+
    OnPierModelTypeChanged();
    OnColumnShapeChanged();
    UpdateColumnSpacingControls();
+   UpdateEcControls();
+
+
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CPierLayoutPage::UpdateConcreteTypeLabel()
+{
+   CString strLabel;
+   switch( m_pPier->GetConcrete().Type )
+   {
+   case pgsTypes::Normal:
+      strLabel = _T("Normal Weight Concrete");
+      break;
+
+   case pgsTypes::AllLightweight:
+      strLabel = _T("All Lightweight Concrete");
+      break;
+
+   case pgsTypes::SandLightweight:
+      strLabel = _T("Sand Lightweight Concrete");
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+      strLabel = _T("Concrete Type Label Error");
+   }
+
+   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);
 }
 
 void CPierLayoutPage::FillTransverseLocationComboBox()
@@ -277,6 +318,110 @@ void CPierLayoutPage::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_CONNECTIONS );
 }
 
+void CPierLayoutPage::OnUserEc()
+{
+   BOOL bEnable = m_ctrlEcCheck.GetCheck();
+
+   GetDlgItem(IDC_EC_LABEL)->EnableWindow(TRUE);
+
+   if (bEnable==FALSE)
+   {
+      m_ctrlEc.GetWindowText(m_strUserEc);
+      UpdateEc();
+   }
+   else
+   {
+      m_ctrlEc.SetWindowText(m_strUserEc);
+   }
+
+   GetDlgItem(IDC_EC)->EnableWindow(bEnable);
+   GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
+}
+
+void CPierLayoutPage::OnMoreProperties()
+{
+   UpdateData(TRUE);
+   CConcreteDetailsDlg dlg(true/*f'c*/,false/*don't enable Compute Time Parameters option*/);
+   CConcreteMaterial& concrete = m_pPier->GetConcrete();
+
+   dlg.m_fc28 = concrete.Fc;
+   dlg.m_Ec28 = concrete.Ec;
+   dlg.m_bUserEc28 = concrete.bUserEc;
+
+   dlg.m_General.m_Type    = concrete.Type;
+   dlg.m_General.m_AggSize = concrete.MaxAggregateSize;
+   dlg.m_General.m_Ds      = concrete.StrengthDensity;
+   dlg.m_General.m_Dw      = concrete.WeightDensity;
+   dlg.m_General.m_strUserEc  = m_strUserEc;
+
+   dlg.m_AASHTO.m_EccK1       = concrete.EcK1;
+   dlg.m_AASHTO.m_EccK2       = concrete.EcK2;
+   dlg.m_AASHTO.m_CreepK1     = concrete.CreepK1;
+   dlg.m_AASHTO.m_CreepK2     = concrete.CreepK2;
+   dlg.m_AASHTO.m_ShrinkageK1 = concrete.ShrinkageK1;
+   dlg.m_AASHTO.m_ShrinkageK2 = concrete.ShrinkageK2;
+   dlg.m_AASHTO.m_bHasFct     = concrete.bHasFct;
+   dlg.m_AASHTO.m_Fct         = concrete.Fct;
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      concrete.Fc               = dlg.m_fc28;
+      concrete.Ec               = dlg.m_Ec28;
+      concrete.bUserEc          = dlg.m_bUserEc28;
+
+      concrete.Type             = dlg.m_General.m_Type;
+      concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
+      concrete.StrengthDensity  = dlg.m_General.m_Ds;
+      concrete.WeightDensity    = dlg.m_General.m_Dw;
+      concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
+      concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
+      concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
+      concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
+      concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
+      concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
+      concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
+      concrete.Fct              = dlg.m_AASHTO.m_Fct;
+
+      m_strUserEc  = dlg.m_General.m_strUserEc;
+      m_ctrlEc.SetWindowText(m_strUserEc);
+
+      UpdateData(FALSE);
+      OnUserEc();
+      UpdateConcreteTypeLabel();
+   }
+}
+
+void CPierLayoutPage::OnChangeFc() 
+{
+   UpdateEc();
+}
+
+void CPierLayoutPage::UpdateEc()
+{
+   // update modulus
+   if (m_ctrlEcCheck.GetCheck() == 0)
+   {
+      // blank out ec
+      CString strEc;
+      m_ctrlEc.SetWindowText(strEc);
+
+      // need to manually parse strength and density values
+      CString strFc, strDensity, strK1, strK2;
+      m_ctrlFc.GetWindowText(strFc);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+      strDensity.Format(_T("%s"),FormatDimension(m_pPier->GetConcrete().StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),m_pPier->GetConcrete().EcK1);
+      strK2.Format(_T("%f"),m_pPier->GetConcrete().EcK2);
+
+      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      m_ctrlEc.SetWindowText(strEc);
+   }
+}
+
 void CPierLayoutPage::OnPierModelTypeChanged()
 {
    CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_MODEL_TYPE);
@@ -296,6 +441,10 @@ void CPierLayoutPage::OnPierModelTypeChanged()
          {
             m_SpacingControl.EnableWindow(bEnable);
          }
+         else if ( nID == IDC_EC_LABEL )
+         {
+            m_ctrlEcCheck.EnableWindow(bEnable);
+         }
          else
          {
             pWnd->EnableWindow(bEnable);
@@ -305,6 +454,7 @@ void CPierLayoutPage::OnPierModelTypeChanged()
    }
 
    UpdateColumnSpacingControls(); // the blanket enable/disable messes up the column spacing controls... fix it 
+   UpdateEcControls(); // the blanket enable/disable messes up the modulus of elasticity controls... fix it
 }
 
 void CPierLayoutPage::OnColumnShapeChanged()
@@ -349,4 +499,11 @@ void CPierLayoutPage::UpdateColumnSpacingControls()
    GetDlgItem(IDC_S_LABEL)->EnableWindow(bEnable);
    m_SpacingControl.EnableWindow(bEnable);
    GetDlgItem(IDC_S_UNIT)->EnableWindow(bEnable);
+}
+
+void CPierLayoutPage::UpdateEcControls()
+{
+   BOOL bEnable = (m_PierModelType == pgsTypes::pmtPhysical && IsDlgButtonChecked(IDC_EC_LABEL)) == BST_CHECKED ? TRUE : FALSE;
+   GetDlgItem(IDC_EC)->EnableWindow(bEnable);
+   GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
 }

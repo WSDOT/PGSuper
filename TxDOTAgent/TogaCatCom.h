@@ -22,40 +22,6 @@
 
 #pragma once
 
-#include <Graphing\GraphingExp.h>
-#include <Graphing\GirderGraphBuilderBase.h>
-
-class CInitialStrainGraphController;
-
-class GRAPHINGCLASS CInitialStrainGraphBuilder : public CGirderGraphBuilderBase
-{
-public:
-   enum GraphType
-   {
-      InitialStrain,
-      InitialCurvature,
-      RestrainingForce,
-      RestrainingMoment
-   };
-
-public:
-   CInitialStrainGraphBuilder();
-   CInitialStrainGraphBuilder(const CInitialStrainGraphBuilder& other);
-   virtual ~CInitialStrainGraphBuilder();
-
-   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
-   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
-   virtual CGraphBuilder* Clone();
-
-protected:
-   virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual bool UpdateNow();
-
-   DECLARE_MESSAGE_MAP()
-
-   void UpdateYAxisUnits(CInitialStrainGraphBuilder::GraphType graphType);
-   void UpdateGraphTitle(GirderIndexType gdrIdx,CInitialStrainGraphBuilder::GraphType graphType);
-   void UpdateGraphData(GirderIndexType gdrIdx,CInitialStrainGraphBuilder::GraphType graphType);
-
-   virtual IntervalIndexType GetBeamDrawInterval();
-};
+// {CC330C8A-90EE-4791-9F87-6875BFA1F59D}
+DEFINE_GUID(CATID_TogaExtensionAgent, 
+0xcc330c8a, 0x90ee, 0x4791, 0x9f, 0x87, 0x68, 0x75, 0xbf, 0xa1, 0xf5, 0x9d);

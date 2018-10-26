@@ -662,6 +662,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    endConnectable->GetSocket(0,atByIndex,&socket);
    socket->Connect(endPlug,&dwCookie);
 
+   pDL->AddDisplayObject(ssm_rep);
    ///////////////////////////////////////////////////////////////////////////////////////////
 }
 
@@ -813,8 +814,8 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
       pntStart->get_Y(&yStart);
       pntEnd->get_Y(&yEnd);
 
-      from_point->put_Y(yStart - HgStart);
-      to_point->put_Y(yEnd - HgEnd);
+      from_point->put_Y(yStart);
+      to_point->put_Y(yEnd);
       
       BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
@@ -824,14 +825,14 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
          // Left debond point
          CComPtr<IPoint2d> left_debond;
          left_debond.CoCreateInstance(CLSID_Point2d);
-         left_debond->Move(start,yStart-HgStart);
+         left_debond->Move(start,yStart);
 
          BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
          BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
 
          CComPtr<IPoint2d> right_debond;
          right_debond.CoCreateInstance(CLSID_Point2d);
-         right_debond->Move(end,yEnd-HgEnd);
+         right_debond->Move(end,yEnd);
 
          BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
          BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
@@ -872,23 +873,23 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
          end_pos->get_Y(&end_y);
 
          from_point->put_X(0.0);
-         from_point->put_Y(start_y-HgStart);
+         from_point->put_Y(start_y);
          to_point->put_X(lft_harp);
-         to_point->put_Y(hp1_y-HgHP1);
+         to_point->put_Y(hp1_y);
          
          BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
          from_point->put_X(lft_harp);
-         from_point->put_Y(hp1_y-HgHP1);
+         from_point->put_Y(hp1_y);
          to_point->put_X(rgt_harp);
-         to_point->put_Y(hp2_y-HgHP2);
+         to_point->put_Y(hp2_y);
          
          BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
          from_point->put_X(rgt_harp);
-         from_point->put_Y(hp2_y-HgHP2);
+         from_point->put_Y(hp2_y);
          to_point->put_X(gdr_length);
-         to_point->put_Y(end_y-HgEnd);
+         to_point->put_Y(end_y);
 
          BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
       }
@@ -909,11 +910,11 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
       Float64 y;
       from_point->put_X(0.0);
       pntStart->get_Y(&y);
-      from_point->put_Y(y-HgStart);
+      from_point->put_Y(y);
 
       to_point->put_X(gdr_length);
       pntEnd->get_Y(&y);
-      to_point->put_Y(y-HgEnd);
+      to_point->put_Y(y);
       
       BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
    }
@@ -926,16 +927,16 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
    ATLASSERT(pDL);
    pDL->Clear();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
    ns += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
    ns += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
    if (0 < ns)
    {
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+
       CComPtr<IPoint2d> from_point, to_point;
       from_point.CoCreateInstance(__uuidof(Point2d));
       to_point.CoCreateInstance(__uuidof(Point2d));
@@ -956,7 +957,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
       Float64 ybg = pSectProp->GetY(releaseIntervalIdx,prev_poi,pgsTypes::BottomGirder);
       Float64 nEff;
       Float64 ex = pStrandGeometry->GetEccentricity(releaseIntervalIdx, prev_poi, pgsTypes::Permanent, &nEff);
-      from_y = ybg - ex - hg;
+      from_y = ybg - (hg + ex);
 
       for ( ; iter!= vPOI.end(); iter++ )
       {
@@ -967,7 +968,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
          hg  = pSectProp->GetHg(releaseIntervalIdx,poi);
          ybg = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
          ex = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, &nEff);
-         to_y = ybg - ex - hg;
+         to_y = ybg - (hg + ex);
 
          from_point->put_X(prev_poi.GetDistFromStart());
          from_point->put_Y(from_y);
@@ -1041,10 +1042,10 @@ void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesig
       to_point.CoCreateInstance(__uuidof(Point2d));
 
       from_point->put_X(0.0);
-      from_point->put_Y(yStart-HgStart);
+      from_point->put_Y(yStart);
 
       to_point->put_X(gdr_length);
-      to_point->put_Y(yEnd-HgEnd);
+      to_point->put_Y(yEnd);
       
       BuildLine(pDL, from_point, to_point, REBAR_COLOR);
    }
@@ -1163,7 +1164,6 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    pDL->Clear();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
 
 
@@ -1190,6 +1190,8 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
 
       if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
+         GET_IFACE2(pBroker,IGirder,pGirder);
+
          ZoneIndexType nStirrupsInZone = ZoneIndexType(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;
          for ( ZoneIndexType i = 0; i <= nStirrupsInZone; i++ )

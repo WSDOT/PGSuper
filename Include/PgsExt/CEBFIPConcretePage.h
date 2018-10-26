@@ -22,42 +22,40 @@
 
 #pragma once
 
-#include <Graphing\InitialStrainGraphBuilder.h>
-#include <Graphing\GirderGraphControllerBase.h>
+#include <PgsExt\PgsExtExp.h>
 
-class CInitialStrainGraphController : public CIntervalGirderGraphControllerBase
+
+// CCEBFIPConcretePage dialog
+
+class PGSEXTCLASS CCEBFIPConcretePage : public CPropertyPage
 {
+	DECLARE_DYNAMIC(CCEBFIPConcretePage)
+
 public:
-   CInitialStrainGraphController();
-   DECLARE_DYNCREATE(CInitialStrainGraphController);
+	CCEBFIPConcretePage();
+	virtual ~CCEBFIPConcretePage();
 
-   virtual IndexType GetGraphCount();
+// Dialog Data
 
-   bool Creep();
-   bool Shrinkage();
-   bool Relaxation();
-
-   CInitialStrainGraphBuilder::GraphType GetGraphType();
-
-   // called by the framework when the view's OnUpdate method is called
-   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   bool m_bUserParameters;
+   Float64 m_S;
+   Float64 m_BetaSc;
+   pgsTypes::CEBFIPCementType m_CementType;
 
 protected:
-   virtual BOOL OnInitDialog();
+   bool m_bUseCEBFIPParameters;
 
-   void FillGraphType();
- 
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual BOOL OnInitDialog();
 
-	//{{AFX_MSG(CInitialStrainGraphController)
-   afx_msg void OnGraphTypeChanged();
-   afx_msg void OnEffectTypeChanged(UINT nIDC);
-   //}}AFX_MSG
+   afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
-
-#ifdef _DEBUG
 public:
-   void AssertValid() const;
-   void Dump(CDumpContext& dc) const;
-#endif //_DEBUG
+   afx_msg void OnUserParameters();
+   afx_msg void OnCementType();
+   afx_msg void OnCompute();
+
+   void UpdateParameters();
 };

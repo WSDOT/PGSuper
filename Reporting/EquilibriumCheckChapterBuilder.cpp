@@ -28,6 +28,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
+#include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -220,13 +221,13 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << rptNewLine;
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
-   *pPara << _T("Pre Creep = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
-   *pPara << _T("Pre Shrinkage = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
-   *pPara << _T("Pre Relaxation = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Pre Creep = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Pre Shrinkage = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Pre Relaxation = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << _T("Mre Creep = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
-   *pPara << _T("Mre Shrinkage = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
-   *pPara << _T("Mre Relaxation = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Mre Creep = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pgsTypes::pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Mre Shrinkage = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pgsTypes::pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Mre Relaxation = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pgsTypes::pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
 
    *pPara << rptNewLine;
    *pPara << rptNewLine;
@@ -237,7 +238,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
 
       Float64 sum_dP = 0;
       Float64 dP = 0;
-      ProductForceType pfType = (ProductForceType)i;
+      pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
       *pPara << pProductLoads->GetProductLoadName(pfType) << rptNewLine;
 
       dP = tsDetails.Girder.dPi[pfType];
@@ -308,7 +309,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       Float64 sum_dM = 0;
       Float64 dP = 0;
       Float64 dM = 0;
-      ProductForceType pfType = (ProductForceType)i;
+      pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
       *pPara << pProductLoads->GetProductLoadName(pfType) << rptNewLine;
 
       dP = tsDetails.Girder.dPi[pfType];

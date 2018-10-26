@@ -388,20 +388,20 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
-      value = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab,      pmid[0], bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, pmid[0], bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey,  pmid[0], bat, rtIncremental, false );
+      value = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab,      pmid[0], bat, rtIncremental, false )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, pmid[0], bat, rtIncremental, false )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey,  pmid[0], bat, rtIncremental, false );
 
       Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 20. DEFLECTION (OVERLAY)  */
-      value = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, pmid[0], bat, rtIncremental, false );
+      value = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, pmid[0], bat, rtIncremental, false );
 
       Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 21. DEFLECTION (OTHER)  */
-      value =  pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, pmid[0], bat, rtIncremental, false );
-      value += pProductForces->GetDeflection(railingSystemIntervalIdx, pftSidewalk,       pmid[0], bat, rtIncremental, false );
+      value =  pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, pmid[0], bat, rtIncremental, false );
+      value += pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk,       pmid[0], bat, rtIncremental, false );
 
       Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 

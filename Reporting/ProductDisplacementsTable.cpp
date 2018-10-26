@@ -133,29 +133,29 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<Float64> girder    = pForces2->GetDeflection(erectSegmentIntervalIdx,pftGirder,vPoi,maxBAT, rtCumulative, false);
-      std::vector<Float64> diaphragm = pForces2->GetDeflection(castDeckIntervalIdx,pftDiaphragm,vPoi,maxBAT, rtCumulative, false);
+      std::vector<Float64> girder    = pForces2->GetDeflection(erectSegmentIntervalIdx,pgsTypes::pftGirder,vPoi,maxBAT, rtCumulative, false);
+      std::vector<Float64> diaphragm = pForces2->GetDeflection(castDeckIntervalIdx,pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative, false);
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetDeflection( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, rtCumulative, false );
-      minSlab = pForces2->GetDeflection( castDeckIntervalIdx, pftSlab, vPoi, minBAT, rtCumulative, false );
+      maxSlab = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative, false );
+      minSlab = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative, false );
 
-      maxSlabPad = pForces2->GetDeflection( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, rtCumulative, false );
-      minSlabPad = pForces2->GetDeflection( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, rtCumulative, false );
+      maxSlabPad = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative, false );
+      minSlabPad = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative, false );
 
       std::vector<Float64> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         maxConstruction = pForces2->GetDeflection( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, rtCumulative, false);
-         minConstruction = pForces2->GetDeflection( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, rtCumulative, false);
+         maxConstruction = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative, false);
+         minConstruction = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative, false);
       }
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         maxDeckPanel = pForces2->GetDeflection( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtCumulative, false);
-         minDeckPanel = pForces2->GetDeflection( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, rtCumulative, false);
+         maxDeckPanel = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative, false);
+         minDeckPanel = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative, false);
       }
 
       std::vector<Float64> dummy;
@@ -190,23 +190,23 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
       if ( bSidewalk )
       {
-         maxSidewalk = pForces2->GetDeflection( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, rtCumulative, false );
-         minSidewalk = pForces2->GetDeflection( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, rtCumulative, false );
+         maxSidewalk = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative, false );
+         minSidewalk = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative, false );
       }
 
       if ( bShearKey )
       {
-         maxShearKey = pForces2->GetDeflection( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, rtCumulative, false );
-         minShearKey = pForces2->GetDeflection( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, rtCumulative, false );
+         maxShearKey = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative, false );
+         minShearKey = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative, false );
       }
 
-      maxTrafficBarrier = pForces2->GetDeflection( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtCumulative, false );
-      minTrafficBarrier = pForces2->GetDeflection( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtCumulative, false );
+      maxTrafficBarrier = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative, false );
+      minTrafficBarrier = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative, false );
 
       if ( bHasOverlay )
       {
-         maxOverlay = pForces2->GetDeflection( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, rtCumulative, false );
-         minOverlay = pForces2->GetDeflection( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, rtCumulative, false );
+         maxOverlay = pForces2->GetDeflection( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative, false );
+         minOverlay = pForces2->GetDeflection( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative, false );
       }
 
       if ( bDesign )

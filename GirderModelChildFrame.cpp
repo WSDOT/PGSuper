@@ -35,6 +35,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
+#include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
@@ -639,16 +640,18 @@ void CGirderModelChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	if (bAddToTitle)
    {
-      CEAFDocument* pDoc = EAFGetDocument();
-      CString strLabel(pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? _T("Span") : _T("Group"));
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IDocumentType,pDocType);
+      CString strLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
       CString msg;
       if ( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS  )
       {
-         msg.Format(_T("Girder Model View - %s %d, Girder %s"), strLabel, LABEL_GROUP(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+         msg.Format(_T("Girder View - %s %d, Girder %s"), strLabel, LABEL_GROUP(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
       }
       else
       {
-         msg.Format(_T("%s"),_T("Girder Model View"));
+         msg.Format(_T("%s"),_T("Girder View"));
       }
 
       // set our title

@@ -135,10 +135,6 @@ void CTOGAGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndex
                      const std::vector<CDebondData>& straightDebond, 
                      const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, Float64 maxDebondLength)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-
    m_pGdrEntry = pGdrEntry;
    m_Span = span;
    m_Girder = girder;
@@ -214,7 +210,6 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Make sure we have up to date grid data
    m_Grid.UpdateData(false);

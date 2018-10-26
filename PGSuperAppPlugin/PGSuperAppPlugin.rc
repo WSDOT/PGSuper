@@ -12,9 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#if !defined NOGRID
 #include "grid\gxresrc.h"
-#endif
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -48,9 +46,7 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
     "#include <EAF\\EAFResources.h>\r\n"
-    "#if !defined NOGRID\r\n"
     "#include ""grid\\gxresrc.h""\r\n"
-    "#endif\0"
 END
 
 3 TEXTINCLUDE 
@@ -70,9 +66,7 @@ BEGIN
     "#include ""afxres.rc""         // Standard components\r\n"
     "#include ""afxprint.rc""       // printing/print preview resources\r\n"
     "#endif\r\n"
-    "#if !defined NOGRID\r\n"
     "#include ""grid\\gxres.rc""\r\n"
-    "#endif\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -353,7 +347,7 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Bridge Model View\tCtrl+B",  ID_VIEW_BRIDGEMODELEDITOR
+        MENUITEM "&Bridge View\tCtrl+B",        ID_VIEW_BRIDGEMODELEDITOR
         MENUITEM "&Girder View\tCtrl+G",        ID_VIEW_GIRDEREDITOR
         POPUP "Gr&aphs"
         BEGIN
@@ -368,7 +362,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&View Settings"
         BEGIN
-            MENUITEM "&Bridge Model View...",       ID_VIEWSETTINGS_BRIDGEMODELEDITOR
+            MENUITEM "&Bridge View...",             ID_VIEWSETTINGS_BRIDGEMODELEDITOR
             MENUITEM "&Girder View...",             ID_VIEWSETTINGS_GIRDEREDITOR
         END
         MENUITEM "Status &Bar",                 ID_VIEW_STATUS_BAR
@@ -502,7 +496,7 @@ BEGIN
     END
     POPUP "&View",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
-        MENUITEM "&Bridge Model View\tCtrl+B",  ID_VIEW_BRIDGEMODELEDITOR,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
+        MENUITEM "&Bridge View\tCtrl+B",        ID_VIEW_BRIDGEMODELEDITOR,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
         MENUITEM "&Girder View\tCtrl+G",        ID_VIEW_GIRDEREDITOR,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
         POPUP "Gr&aphs",                        65535,MFT_STRING,MFS_ENABLED
         BEGIN
@@ -517,7 +511,7 @@ BEGIN
         MENUITEM MFT_SEPARATOR
         POPUP "&View Settings",                 65535,MFT_STRING,MFS_ENABLED
         BEGIN
-            MENUITEM "&Bridge Model View...",       ID_VIEWSETTINGS_BRIDGEMODELEDITOR,MFT_STRING,MFS_ENABLED
+            MENUITEM "&Bridge View...",             ID_VIEWSETTINGS_BRIDGEMODELEDITOR,MFT_STRING,MFS_ENABLED
             MENUITEM "&Girder View...",             ID_VIEWSETTINGS_GIRDEREDITOR,MFT_STRING,MFS_ENABLED
         END
         MENUITEM "Status &Bar",                 ID_VIEW_STATUS_BAR,MFT_STRING,MFS_ENABLED
@@ -1075,8 +1069,7 @@ BEGIN
     ICON            IDI_POINT_LOAD,IDC_POINT_LOAD_DRAG,475,5,21,20,SS_NOTIFY | SS_REALSIZEIMAGE | WS_GROUP,WS_EX_CLIENTEDGE
     ICON            IDI_DISTRIBUTED_LOAD,IDC_DISTRIBUTED_LOAD_DRAG,492,5,21,20,SS_NOTIFY | SS_REALSIZEIMAGE | WS_GROUP,WS_EX_CLIENTEDGE
     ICON            IDI_MOMENT_LOAD,IDC_MOMENT_LOAD_DRAG,508,5,21,20,SS_NOTIFY | SS_REALSIZEIMAGE | WS_GROUP,WS_EX_CLIENTEDGE
-    CONTROL         "Synchronize with Bridge Model View selection",IDC_SYNC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,160,10
+    CONTROL         "Synchronize with Bridge View selection",IDC_SYNC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,160,10
 END
 
 IDD_SECTION_CUT_DIALOG_EX DIALOGEX 0, 0, 333, 115
@@ -1256,20 +1249,6 @@ BEGIN
     LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,57,117,8
     EDITTEXT        IDC_RELHUMIDITY,7,69,40,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,48,72,8,8
-END
-
-IDD_COPY_CONC_ENTRY DIALOGEX 0, 0, 246, 113
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Copy Concrete Properties"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,34,92,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,98,92,50,14
-    COMBOBOX        IDC_CONC_ENTRIES,7,33,232,153,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Select Concrete Library Entry To Be Copied",IDC_LABEL,7,18,138,8
-    ICON            IDI_WARNING2,IDC_WARNING,22,57,20,20,SS_NOTIFY
-    LTEXT           "Note that the concrete strength at release, f'c, is not specified by the library entry. You must specify it manually after you close this dialog.",IDC_WARNOTE,50,55,184,29
-    PUSHBUTTON      "Help",IDHELP,162,92,50,14
 END
 
 IDD_EDIT_POINTLOAD DIALOGEX 0, 0, 394, 170
@@ -1766,31 +1745,6 @@ BEGIN
     COMBOBOX        IDC_RESIZEOPTIONS,7,25,237,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 230, 137
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "General"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    COMBOBOX        IDC_CONCRETE_TYPE,113,6,77,99,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Strength - f'c",IDC_FC_LABEL,22,28,41,8
-    EDITTEXT        IDC_FC,135,22,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_FC_UNIT,195,28,28,8
-    LTEXT           "Unit Weight\n(used to compute Ec)",IDC_DS_TITLE,22,41,122,18
-    EDITTEXT        IDC_DS,135,40,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DS_UNIT,195,46,28,8
-    LTEXT           "Unit Weight with Reinforcement\n(used to compute dead load)",IDC_STATIC,22,60,101,16
-    EDITTEXT        IDC_DW,135,59,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DW_UNIT,195,62,28,8
-    CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,81,74,10
-    EDITTEXT        IDC_EC,135,78,55,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_EC_UNIT,195,81,28,8
-    LTEXT           "Max. Aggregate Size",IDC_STATIC,22,96,66,8
-    EDITTEXT        IDC_AGG_SIZE,135,94,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_AGG_SIZE_UNIT,195,98,28,8
-    PUSHBUTTON      "Copy from library...",IDC_COPY_MATERIAL,42,117,141,13
-    LTEXT           "Type",IDC_STATIC,22,11,17,8
-END
-
 IDD_STRUCTURAL_ANALYSIS_METHOD DIALOG  0, 0, 257, 188
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Structural Analysis Method"
@@ -1911,26 +1865,26 @@ BEGIN
     COMBOBOX        IDC_BOUNDARY_CONDITIONS,17,27,253,179,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Connection Definition",IDC_STATIC,7,56,474,292
     PUSHBUTTON      "Copy Connection Geometry from Library",IDC_COPY,20,70,163,14
-    GROUPBOX        "Girder Connection Properties",IDC_STATIC,19,89,244,109,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Girder Connection Properties",IDC_STATIC,19,89,244,116,0,WS_EX_TRANSPARENT
     LTEXT           "Back",IDC_LEFT_LABEL,94,100,18,8
     LTEXT           "Bearing Offset",IDC_BEARING_OFFSET_LABEL,26,116,49,8
     EDITTEXT        IDC_LEFT_BEARING_OFFSET,78,113,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_LEFT_BEARING_OFFSET_T,117,116,14,8
     COMBOBOX        IDC_BEARING_OFFSET_MEASURE,25,130,229,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "End Distance",IDC_END_DISTANCE_LABEL,26,150,46,8
-    EDITTEXT        IDC_LEFT_END_DISTANCE,78,147,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_LEFT_END_DISTANCE_T,117,150,14,8
-    COMBOBOX        IDC_END_DISTANCE_MEASURE,25,165,229,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Support Width",IDC_SUPPORT_WIDTH_LABEL,25,184,46,8
-    EDITTEXT        IDC_LEFT_SUPPORT_WIDTH,78,181,37,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LEFT_SUPPORT_WIDTH_T,117,184,14,8
+    LTEXT           "End Distance",IDC_END_DISTANCE_LABEL,26,151,46,8
+    EDITTEXT        IDC_LEFT_END_DISTANCE,78,148,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_LEFT_END_DISTANCE_T,117,151,14,8
+    COMBOBOX        IDC_END_DISTANCE_MEASURE,25,166,229,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Support Width",IDC_SUPPORT_WIDTH_LABEL,25,191,46,8
+    EDITTEXT        IDC_LEFT_SUPPORT_WIDTH,78,188,37,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LEFT_SUPPORT_WIDTH_T,117,191,14,8
     LTEXT           "Ahead",IDC_RIGHT_LABEL,159,100,22,8
-    EDITTEXT        IDC_RIGHT_BEARING_OFFSET,145,112,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_RIGHT_BEARING_OFFSET_T,184,115,14,8
-    EDITTEXT        IDC_RIGHT_END_DISTANCE,145,146,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_RIGHT_END_DISTANCE_T,184,149,14,8
-    EDITTEXT        IDC_RIGHT_SUPPORT_WIDTH,145,180,37,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_RIGHT_SUPPORT_WIDTH_T,184,183,14,8
+    EDITTEXT        IDC_RIGHT_BEARING_OFFSET,145,113,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_RIGHT_BEARING_OFFSET_T,184,116,14,8
+    EDITTEXT        IDC_RIGHT_END_DISTANCE,145,148,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_RIGHT_END_DISTANCE_T,184,151,14,8
+    EDITTEXT        IDC_RIGHT_SUPPORT_WIDTH,145,187,37,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_RIGHT_SUPPORT_WIDTH_T,184,190,14,8
     GROUPBOX        "Diaphragm",IDC_STATIC,19,211,451,127,0,WS_EX_TRANSPARENT
     LTEXT           "Back",IDC_BACK_DIAPHRAGM_LABEL,117,223,18,8
     LTEXT           "Diaphragm Height",IDC_BACK_DIAPHRAGM_HEIGHT_LABEL,27,241,64,8
@@ -3171,52 +3125,6 @@ BEGIN
     COMBOBOX        IDC_GIRDERS,157,7,142,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_AASHTO_CONCRETE DIALOGEX 0, 0, 217, 146
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "AASHTO LRFD"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    LTEXT           "Averaging Factor, K1",IDC_EC_K1_LABEL,37,16,71,8
-    EDITTEXT        IDC_EC_K1,114,12,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Bounding Factor, K2",IDC_EC_K2_LABEL,37,33,71,8
-    EDITTEXT        IDC_EC_K2,114,29,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Creep",IDC_STATIC,9,47,20,8
-    LTEXT           "Averaging Factor, K1",IDC_CREEP_K1_LABEL,37,56,71,8
-    EDITTEXT        IDC_CREEP_K1,114,52,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Bounding Factor, K2",IDC_CREEP_K2_LABEL,37,72,71,8
-    EDITTEXT        IDC_CREEP_K2,114,69,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Shrinkage",IDC_STATIC,9,85,33,8
-    LTEXT           "Averaging Factor, K1",IDC_SHRINKAGE_K1_LABEL,37,95,71,8
-    EDITTEXT        IDC_SHRINKAGE_K1,114,91,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Bounding Factor, K2",IDC_SHRINKAGE_K2_LABEL,37,111,71,8
-    EDITTEXT        IDC_SHRINKAGE_K2,114,108,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    CONTROL         "Agg Splitting Strength, fct",IDC_HAS_AGG_STRENGTH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,127,101,10
-    EDITTEXT        IDC_AGG_STRENGTH,113,125,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_AGG_STRENGTH_T,175,127,35,8
-    LTEXT           "Modulus of Elasticity",IDC_STATIC,7,4,66,8
-END
-
-IDD_ACI_CONCRETE DIALOGEX 0, 0, 188, 121
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "ACI 209R-92"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "Use time parameters from ACI 209R-92, Prediction of Creep, Shrinkage, and Temperature Effects in Concrete Structures",IDC_USER,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,7,178,28
-    LTEXT           "Cure Method",IDC_CURE_METHOD_LABEL,7,39,42,8
-    COMBOBOX        IDC_CURE_METHOD,7,55,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Cement Type",IDC_CEMENT_TYPE_LABEL,93,40,44,8
-    COMBOBOX        IDC_CEMENT_TYPE,88,55,65,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "a",IDC_ALPHA_LABEL,7,76,8,8
-    EDITTEXT        IDC_ALPHA,20,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Beta",IDC_BETA_LABEL,91,77,16,8
-    EDITTEXT        IDC_BETA,110,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ALPHA_UNIT,63,76,19,8
-    PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,7,100,174,14
-    LTEXT           "For use in Eq'n 2-1",IDC_STATIC,7,89,60,8
-END
-
 IDD_CAST_DECK DIALOGEX 0, 0, 247, 60
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Cast Deck"
@@ -3290,24 +3198,6 @@ BEGIN
     GROUPBOX        "Lump Sum Losses",IDC_STATIC,7,43,266,166
 END
 
-IDD_ACI_PARAMETERS DIALOGEX 0, 0, 316, 183
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Compute ACI 209R-92 Time Parameters"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,162,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
-    LTEXT           "Concrete Strength at Time of Initial Loading",IDC_T1,7,7,255,8
-    LTEXT           "f'ci",IDC_STATIC,7,29,10,8
-    EDITTEXT        IDC_FCI,21,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_FCI_UNIT,66,28,19,8
-    LTEXT           "Concrete Strength at t = 28 days",IDC_STATIC,7,49,108,8
-    LTEXT           "f'c",IDC_STATIC,7,65,8,8
-    EDITTEXT        IDC_FC,22,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_FC_UNIT,66,66,19,8
-    LTEXT           "Static",IDC_RESULT,7,106,220,8
-END
-
 IDD_TIMESTEP_PARAMETERS DIALOGEX 0, 0, 267, 121
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Time Step Analysis"
@@ -3320,42 +3210,6 @@ BEGIN
     CONTROL         "Ignore Relaxation Effects",IDC_IGNORE_RELAXATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,75,98,10
 END
 
-IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 111
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "CEB-FIP"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "Use time parameters from CEB-FIP Model Code",IDC_USER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,166,10
-    LTEXT           "Cement Type",IDC_STATIC,7,26,44,8
-    COMBOBOX        IDC_CEMENT_TYPE,61,24,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "S",IDC_S_LABEL,7,49,8,8
-    EDITTEXT        IDC_S,27,46,40,14,ES_AUTOHSCROLL
-    LTEXT           "For use in Eq'n 2.1-54",IDC_STATIC,7,62,71,8
-    LTEXT           "Beta SC",IDC_BETA_SC_LABEL,112,49,26,8
-    EDITTEXT        IDC_BETA_SC,155,46,40,14,ES_AUTOHSCROLL
-    LTEXT           "For use in Eq'n 2.1-76",IDC_STATIC,112,62,71,8
-    PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,28,90,174,14
-END
-
-IDD_CEBFIP_PARAMETERS DIALOGEX 0, 0, 316, 183
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Compute CEB-FIP Model Code Time Parameters"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,205,162,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
-    LTEXT           "Concrete Strength at Time of Initial Loading",IDC_T1,7,7,255,8
-    LTEXT           "f'ci",IDC_STATIC,7,29,10,8
-    EDITTEXT        IDC_FCI,21,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_FCI_UNIT,66,28,19,8
-    LTEXT           "Concrete Strength at t = 28 days",IDC_STATIC,7,49,108,8
-    LTEXT           "f'c",IDC_STATIC,7,65,8,8
-    EDITTEXT        IDC_FC,22,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_FC_UNIT,66,66,19,8
-    LTEXT           "Static",IDC_RESULT,7,106,220,8
-END
-
 IDD_PIER_LAYOUT DIALOGEX 0, 0, 365, 374
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Layout"
@@ -3363,33 +3217,39 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Pier Model Type",IDC_PIER_MODEL_LABEL,7,9,52,8
     COMBOBOX        IDC_PIER_MODEL_TYPE,63,7,120,179,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_PIER_LAYOUT,"Static",SS_ENHMETAFILE | WS_BORDER,15,23,335,145
-    GROUPBOX        "Material Properties",IDC_STATIC,7,173,351,28
-    LTEXT           "Ec",IDC_EC_LABEL,17,186,8,8
-    EDITTEXT        IDC_EC,35,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_EC_UNIT,77,186,19,8
+    LTEXT           "All dimensions are in the plane of the pier",IDC_DIMENSIONS_NOTE,226,9,132,8
+    CONTROL         "",IDC_PIER_LAYOUT,"Static",SS_ENHMETAFILE,15,23,335,145
+    GROUPBOX        "Material Properties",IDC_STATIC,7,172,351,29
+    LTEXT           "f'c",IDC_FC_LABEL,19,186,8,8
+    EDITTEXT        IDC_FC,35,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FC_UNIT,79,186,19,8
+    CONTROL         "Ec",IDC_EC_LABEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,102,185,22,10
+    EDITTEXT        IDC_EC,129,182,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_EC_UNIT,171,185,19,8
+    PUSHBUTTON      "More Properties...",IDC_MORE_PROPERTIES,196,183,84,14
+    LTEXT           "Concrete Type Label",IDC_CONCRETE_TYPE_LABEL,284,185,67,8
     GROUPBOX        "Pier Cap Dimensions",IDC_STATIC,7,206,351,51
     LTEXT           "H1",IDC_H1_LABEL,20,222,10,8
     EDITTEXT        IDC_H1,34,219,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_H1_UNIT,75,222,19,8
+    LTEXT           "Static",IDC_H1_UNIT,76,222,19,8
     LTEXT           "H2",IDC_H2_LABEL,103,222,10,8
     EDITTEXT        IDC_H2,117,219,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_H2_UNIT,158,222,19,8
+    LTEXT           "Static",IDC_H2_UNIT,159,222,19,8
     LTEXT           "H3",IDC_H3_LABEL,189,222,10,8
     EDITTEXT        IDC_H3,201,219,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_H3_UNIT,247,222,19,8
+    LTEXT           "Static",IDC_H3_UNIT,246,222,19,8
     LTEXT           "H4",IDC_H4_LABEL,271,222,10,8
     EDITTEXT        IDC_H4,285,219,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_H4_UNIT,331,222,19,8
+    LTEXT           "Static",IDC_H4_UNIT,330,222,19,8
     LTEXT           "X1",IDC_X1_LABEL,20,240,9,8
     EDITTEXT        IDC_X1,34,238,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_X1_UNIT,75,240,19,8
+    LTEXT           "Static",IDC_X1_UNIT,76,240,19,8
     LTEXT           "X2",IDC_X2_LABEL,103,240,9,8
     EDITTEXT        IDC_X2,117,238,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_X2_UNIT,158,240,19,8
+    LTEXT           "Static",IDC_X2_UNIT,159,240,19,8
     LTEXT           "W",IDC_W_LABEL,189,240,8,8
     EDITTEXT        IDC_W,201,238,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_W_UNIT,247,240,19,8
+    LTEXT           "Static",IDC_W_UNIT,246,240,19,8
     GROUPBOX        "Column Layout",IDC_STATIC,7,263,351,67
     EDITTEXT        IDC_COLUMN_COUNT,19,276,31,14,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "",IDC_COLUMN_COUNT_SPINNER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,41,276,11,14
@@ -3410,7 +3270,7 @@ BEGIN
     LTEXT           "Static",IDC_S_UNIT,312,297,19,8
     COMBOBOX        IDC_HEIGHT_MEASURE,193,310,73,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_H,270,310,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_H_UNIT,310,312,19,8
+    LTEXT           "Static",IDC_H_UNIT,312,312,19,8
     GROUPBOX        "Column Shape",IDC_STATIC,7,334,351,33
     COMBOBOX        IDC_COLUMN_SHAPE,15,348,60,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "B",IDC_B_LABEL,91,350,8,8
@@ -3419,7 +3279,6 @@ BEGIN
     LTEXT           "D",IDC_D_LABEL,172,350,8,8
     EDITTEXT        IDC_D,184,348,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_D_UNIT,226,350,19,8
-    LTEXT           "All dimensions are in the plane of the pier",IDC_DIMENSIONS_NOTE,226,9,132,8
 END
 
 
@@ -3429,8 +3288,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,36
- PRODUCTVERSION 3,0,0,36
+ FILEVERSION 3,0,0,37
+ PRODUCTVERSION 3,0,0,37
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3447,12 +3306,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.36"
+            VALUE "FileVersion", "3.0.0.37"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.36"
+            VALUE "ProductVersion", "3.0.0.37"
         END
     END
     BLOCK "VarFileInfo"
@@ -3646,14 +3505,6 @@ BEGIN
         BOTTOMMARGIN, 134
     END
 
-    IDD_COPY_CONC_ENTRY, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 239
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 106
-    END
-
     IDD_EDIT_POINTLOAD, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -3812,14 +3663,6 @@ BEGIN
         RIGHTMARGIN, 305
         TOPMARGIN, 7
         BOTTOMMARGIN, 75
-    END
-
-    IDD_CONCRETE_DETAILS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 223
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 130
     END
 
     IDD_STRUCTURAL_ANALYSIS_METHOD, DIALOG
@@ -4214,22 +4057,6 @@ BEGIN
         BOTTOMMARGIN, 101
     END
 
-    IDD_AASHTO_CONCRETE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 210
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 139
-    END
-
-    IDD_ACI_CONCRETE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 181
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 114
-    END
-
     IDD_CAST_DECK, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -4254,36 +4081,12 @@ BEGIN
         BOTTOMMARGIN, 209
     END
 
-    IDD_ACI_PARAMETERS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 176
-    END
-
     IDD_TIMESTEP_PARAMETERS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 259
         TOPMARGIN, 7
         BOTTOMMARGIN, 114
-    END
-
-    IDD_CEBFIP_CONCRETE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 222
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 104
-    END
-
-    IDD_CEBFIP_PARAMETERS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 176
     END
 
     IDD_PIER_LAYOUT, DIALOG
@@ -4465,8 +4268,8 @@ END
 STRINGTABLE 
 BEGIN
     IDR_PGSUPER             "\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
-    IDR_BRIDGEMODELEDITOR   "Bridge Model View\n\n\n\n\n\n"
-    IDR_PROJECTIMPORTER     "Bridge Model View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
+    IDR_BRIDGEMODELEDITOR   "Bridge View\n\n\n\n\n\n"
+    IDR_PROJECTIMPORTER     "Bridge View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
     IDR_ANALYSISMODELEDITOR "Analysis Model Editor\n\n\n\n\n\n"
     IDR_LIBRARYEDITOR       "Library Editor\n\n\n\n\n\n"
@@ -4729,8 +4532,7 @@ STRINGTABLE
 BEGIN
     ID_FILE_PROJECT_PROPERTIES 
                             "Shows the properties for the current project\nProject Properties"
-    ID_VIEW_BRIDGEMODELEDITOR 
-                            "Shows the Bridge Model\nBridge Model View (Ctrl+B)"
+    ID_VIEW_BRIDGEMODELEDITOR "Shows the Bridge Model\nBridge View (Ctrl+B)"
 END
 
 STRINGTABLE 
@@ -4740,7 +4542,7 @@ BEGIN
                             "Shows the Analysis Model View\nAnalysis Model View"
     ID_VIEW_LIBRARYEDITOR   "Shows the Library Editor\nEdit Library"
     ID_VIEW_REPORTS         "View a report\nReports"
-    ID_VIEWSETTINGS_BRIDGEMODELEDITOR "Bridge Model View Settings"
+    ID_VIEWSETTINGS_BRIDGEMODELEDITOR "Bridge View Settings"
     ID_VIEWSETTINGS_GIRDEREDITOR "Girder View Settings"
     ID_VIEWSETTINGS_ANALYSISMODELEDITOR "Analysis Model Editor view settings"
     ID_VIEWSETTINGS_LIBRARYEDITOR "Library Editor view settings"

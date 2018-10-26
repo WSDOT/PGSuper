@@ -250,8 +250,8 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    Float64 AsReqd = T/allowable_bar_stress;
    ATLASSERT( 0 <= AsReqd );
 
-// This will need to be revisited if we start designing longitudinal rebar
-#pragma Reminder("This function assumes that longitudinal rebar does not change during design")
+   // NOTE: This function assumes that longitudinal rebar does not change during design.
+   // This will need to be revisited if we start designing longitudinal rebar.
 
    // Compute area of rebar actually provided in tension zone. Reduce values for development
    Float64 AsProvd = 0.0; // As provided

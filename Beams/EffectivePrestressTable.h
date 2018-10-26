@@ -58,8 +58,9 @@ private:
 
    const CGirderData* m_pGD;
 
-   bool m_bIsDeckShinkageApplied;
-   bool m_bUseGrossProperties;
+   bool m_bPTTempStrand;
+   bool m_bTempStrands;
    bool m_bIgnoreInitialRelaxation;
-   Float64 m_gLL;
+   Float64 m_gLL_ServiceI;
+   Float64 m_gLL_ServiceIII;
 };

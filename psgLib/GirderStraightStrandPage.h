@@ -32,22 +32,22 @@
 #include <Units\Measure.h>
 
 /////////////////////////////////////////////////////////////////////////////
-// CGirderStraightStrandPage dialog
+// CGirderTemporaryStrandPage dialog
 
-class CGirderStraightStrandPage : public CPropertyPage, public CGirderStrandGridClient
+class CGirderTemporaryStrandPage : public CPropertyPage, public CGirderStrandGridClient
 {
-	DECLARE_DYNCREATE(CGirderStraightStrandPage)
+	DECLARE_DYNCREATE(CGirderTemporaryStrandPage)
 
    friend CGirderMainSheet;
 
 // Construction
 public:
-	CGirderStraightStrandPage();
-	~CGirderStraightStrandPage();
+	CGirderTemporaryStrandPage();
+	~CGirderTemporaryStrandPage();
 
 // Dialog Data
-	//{{AFX_DATA(CGirderStraightStrandPage)
-	enum { IDD = IDD_STRAIGHT_STRAND };
+	//{{AFX_DATA(CGirderTemporaryStrandPage)
+	enum { IDD = IDD_GIRDER_TEMPORARY_STRANDS };
 		// NOTE - ClassWizard will add data members here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
@@ -57,7 +57,7 @@ private:
 
 // Overrides
 	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CGirderStraightStrandPage)
+	//{{AFX_VIRTUAL(CGirderTemporaryStrandPage)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -65,7 +65,7 @@ private:
 // Implementation
 protected:
 	// Generated message map functions
-	//{{AFX_MSG(CGirderStraightStrandPage)
+	//{{AFX_MSG(CGirderTemporaryStrandPage)
 	afx_msg void OnAddTemporaryStrand();
 	afx_msg void OnDelTemporaryStrand();
 	virtual BOOL OnInitDialog();

@@ -87,9 +87,13 @@ public:
    // returns the index of the interval when the segment is lifted from the
    // casting bed and placed into storage
    IntervalIndexType GetLiftingInterval(const CSegmentKey& segmentKey) const;
+   IntervalIndexType GetFirstLiftingInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetLastLiftingInterval(const CGirderKey& girderKey) const;
 
    // returns the index of the interval when the segment is place in storage
    IntervalIndexType GetStorageInterval(const CSegmentKey& segmentKey) const;
+   IntervalIndexType GetFirstStorageInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetLastStorageInterval(const CGirderKey& girderKey) const;
 
    // returns the index of the interval when the segment is transported to the bridge site
    IntervalIndexType GetHaulingInterval(const CSegmentKey& segmentKey) const;

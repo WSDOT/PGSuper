@@ -75,7 +75,7 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
    RowIndexType rowIdx = xs_table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++, rowIdx++ )
+   for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++, rowIdx++ )
    {
       colIdx = 0;
       (*xs_table)(rowIdx,colIdx++) << LABEL_PIER(pierIdx);
@@ -89,9 +89,9 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
       }
       else
       {
-         (*xs_table)(rowIdx,colIdx++) << _T(""); // H
-         (*xs_table)(rowIdx,colIdx++) << _T(""); // A
-         (*xs_table)(rowIdx,colIdx++) << _T(""); // I
+         (*xs_table)(rowIdx,colIdx++) << RPT_NA; // H
+         (*xs_table)(rowIdx,colIdx++) << RPT_NA; // A
+         (*xs_table)(rowIdx,colIdx++) << RPT_NA; // I
       }
    }
 

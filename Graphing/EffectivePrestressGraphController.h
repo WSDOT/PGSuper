@@ -33,6 +33,8 @@ public:
 
    DuctIndexType GetDuct();
    bool IsStressGraph();
+   bool IsPermanentStrands();
+
 
    // called by the framework when the view's OnUpdate method is called
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);

@@ -418,7 +418,7 @@ struct TIME_STEP_CONCRETE
    Float64 r;
 
    // Force on this concrete part due to elastic effects during this interval
-   Float64 dPi[19]; // index is one of the ProductForceType enum values
+   Float64 dPi[19]; // index is one of the pgsTypes::ProductForceType enum values
    Float64 dMi[19];
    Float64 dP, dM; // summation of dPi and dMi
 
@@ -429,7 +429,7 @@ struct TIME_STEP_CONCRETE
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
-   Float64 f[2][19][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the ProductForceType enum values
+   Float64 f[2][19][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the pgsTypes::ProductForceType enum values
                         // third index is one of the ResultsType enum values
 
    // Stress in this due to live load
@@ -673,14 +673,14 @@ struct TIME_STEP_DETAILS
    Float64 E; // modulus used to transform properties into an equivalent material
 
    // Change in total loading on the section due to externally applied loads during this interval
-   // Array index is one of the ProductForceType enum values
-   // upto and including pftRelaxation
+   // Array index is one of the pgsTypes::ProductForceType enum values
+   // upto and including pgsTypes::pftRelaxation
    Float64 dPi[19], dMi[19];
 
 
    // Total loading on the section due to externally applied loads in all intervals upto
-   // and including this interval. Array index is one of the ProductForceType enum values
-   // upto and including pftRelaxation
+   // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
+   // upto and including pgsTypes::pftRelaxation
    Float64 Pi[19], Mi[19];
 
    // Time step parameters for girder and deck

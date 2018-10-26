@@ -87,7 +87,7 @@ public:
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, ProductForceType type, pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, pgsTypes::ProductForceType type, pgsTypes::BridgeAnalysisType bat) = 0;
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
@@ -106,7 +106,7 @@ public:
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType type,pgsTypes::BridgeAnalysisType bat);
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType type,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
@@ -130,7 +130,7 @@ public:
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType type,pgsTypes::BridgeAnalysisType bat);
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType type,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);

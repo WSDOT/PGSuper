@@ -74,7 +74,12 @@ CPierData2::CPierData2()
    m_strOrientation = _T("Normal");
 
    m_PierModelType = pgsTypes::pmtIdealized;
-   m_Ec = ::ConvertToSysUnits(3834,unitMeasure::KSI);
+
+   m_Concrete.bHasInitial = false;
+   m_Concrete.Fc = ::ConvertToSysUnits(4,unitMeasure::KSI);
+   m_Concrete.StrengthDensity = ::ConvertToSysUnits(0.155,unitMeasure::KipPerFeet3);
+   m_Concrete.WeightDensity = m_Concrete.StrengthDensity;
+
    m_RefColumnIdx = 0;
    m_TransverseOffset = 0;
    m_TransverseOffsetMeasurement = pgsTypes::omtAlignment;
@@ -84,8 +89,8 @@ CPierData2::CPierData2()
    m_XBeamTaperHeight[pgsTypes::pstRight] = 0;
    m_XBeamTaperLength[pgsTypes::pstLeft]  = 0;
    m_XBeamTaperLength[pgsTypes::pstRight] = 0;
-   m_XBeamOverhang[pgsTypes::pstLeft]  = ::ConvertToSysUnits(10,unitMeasure::Feet);
-   m_XBeamOverhang[pgsTypes::pstRight] = ::ConvertToSysUnits(10,unitMeasure::Feet);
+   m_XBeamOverhang[pgsTypes::pstLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamOverhang[pgsTypes::pstRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
    m_XBeamWidth = ::ConvertToSysUnits(5,unitMeasure::Feet);
 
    CColumnData defaultColumn(this);
@@ -274,7 +279,7 @@ bool CPierData2::operator==(const CPierData2& rOther) const
          }
       }
 
-      if ( !IsEqual(m_Ec,rOther.m_Ec) )
+      if ( m_Concrete != rOther.m_Concrete )
       {
          return false;
       }
@@ -452,7 +457,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),14.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),15.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -475,7 +480,9 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("PierModelType"),CComVariant(m_PierModelType));
    if ( m_PierModelType == pgsTypes::pmtPhysical )
    {
-      pStrSave->put_Property(_T("Ec"),CComVariant(m_Ec));
+      //pStrSave->put_Property(_T("Ec"),CComVariant(m_Ec)); // removed in version 15
+      m_Concrete.Save(pStrSave,pProgress); // added in version 15
+
       pStrSave->put_Property(_T("RefColumnIndex"),CComVariant(m_RefColumnIdx));
       pStrSave->put_Property(_T("TransverseOffset"),CComVariant(m_TransverseOffset));
       pStrSave->put_Property(_T("TransverseOffsetMeasurement"),CComVariant(m_TransverseOffsetMeasurement));
@@ -720,9 +727,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          if ( m_PierModelType == pgsTypes::pmtPhysical )
          {
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("Ec"),&var);
-            m_Ec = var.dblVal;
+            if ( version < 15 )
+            {
+               // Version 15 and Ec was during beta-development of PGSuper/PGSplice
+               // Most users probably haven't modeled the columns so it doesn't matter
+               // was Ec is.... just load it and ignore it and use the default for m_Concrete
+               var.vt = VT_R8;
+               hr = pStrLoad->get_Property(_T("Ec"),&var);
+            }
+            else
+            {
+               hr = m_Concrete.Load(pStrLoad,pProgress);
+            }
 
             var.vt = VT_INDEX;
             hr = pStrLoad->get_Property(_T("RefColumnIndex"),&var);
@@ -1168,7 +1184,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_ColumnSpacing = rOther.m_ColumnSpacing;
    m_Columns = rOther.m_Columns;
 
-   m_Ec = rOther.m_Ec;
+   m_Concrete = rOther.m_Concrete;
    m_XBeamWidth = rOther.m_XBeamWidth;
 
    for ( int i = 0; i < 2; i++ )
@@ -1617,14 +1633,19 @@ void CPierData2::SetPierModelType(pgsTypes::PierModelType modelType)
    m_PierModelType = modelType;
 }
 
-void CPierData2::SetModE(Float64 Ec)
+void CPierData2::SetConcrete(const CConcreteMaterial& concrete)
 {
-   m_Ec = Ec;
+   m_Concrete = concrete;
 }
 
-Float64 CPierData2::GetModE() const
+CConcreteMaterial& CPierData2::GetConcrete()
 {
-   return m_Ec;
+   return m_Concrete;
+}
+
+const CConcreteMaterial& CPierData2::GetConcrete() const
+{
+   return m_Concrete;
 }
 
 void CPierData2::SetTransverseOffset(ColumnIndexType refColumnIdx,Float64 offset,pgsTypes::OffsetMeasurementType offsetType)
@@ -1634,7 +1655,7 @@ void CPierData2::SetTransverseOffset(ColumnIndexType refColumnIdx,Float64 offset
    m_TransverseOffsetMeasurement = offsetType;
 }
 
-void CPierData2::GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOffset,pgsTypes::OffsetMeasurementType* pOffsetType)
+void CPierData2::GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOffset,pgsTypes::OffsetMeasurementType* pOffsetType) const
 {
    *pRefColumnIdx = m_RefColumnIdx;
    *pOffset = m_TransverseOffset;

@@ -23,12 +23,12 @@
 // AASHTOConcretePage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
-#include "ConcreteDetailsDlg.h"
-#include "AASHTOConcretePage.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
+#include <PgsExt\AASHTOConcretePage.h>
 #include "HtmlHelp\HelpTopics.hh"
 #include <System\Tokenizer.h>
 #include "CopyConcreteEntry.h"
@@ -48,11 +48,13 @@ static char THIS_FILE[] = __FILE__;
 // CAASHTOConcretePage dialog
 
 
-CAASHTOConcretePage::CAASHTOConcretePage() : CPropertyPage(CAASHTOConcretePage::IDD)
+CAASHTOConcretePage::CAASHTOConcretePage() : CPropertyPage()
 {
 	//{{AFX_DATA_INIT(CAASHTOConcretePage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   Construct(IDD_AASHTO_CONCRETE);
 }
 
 

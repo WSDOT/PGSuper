@@ -25,7 +25,7 @@
 class CSegmentKey;
 class CGirderKey;
 
-#include <IFace\AnalysisResults.h> // for ProductForceType
+#include <PGSuperTypes.h> // for pgsTypes::ProductForceType
 
 /*****************************************************************************
 INTERFACE
@@ -91,8 +91,14 @@ interface IIntervals : IUnknown
    // returns the index of the interval when a segment is lifted from the casting bed
    virtual IntervalIndexType GetLiftSegmentInterval(const CSegmentKey& segmentKey) = 0;
 
+   virtual IntervalIndexType GetFirstLiftSegmentInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetLastLiftSegmentInterval(const CGirderKey& girderKey) = 0;
+
    // returns the index of the interval when the segments are place in storage
    virtual IntervalIndexType GetStorageInterval(const CSegmentKey& segmentKey) = 0;
+
+   virtual IntervalIndexType GetFirstStorageInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetLastStorageInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when a segment is hauled to the bridge site
    virtual IntervalIndexType GetHaulSegmentInterval(const CSegmentKey& segmentKey) = 0;
@@ -110,12 +116,16 @@ interface IIntervals : IUnknown
    virtual bool IsSegmentErectionInterval(IntervalIndexType intervalIdx) = 0;
    virtual bool IsSegmentErectionInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
-   // returns the index of the interval when temporary strands are installed in a specific segment
-   // returns INVALID_INDEX the segment does not have temporary strands
+   // returns the index of the interval when temporary strands are stressed for a specific segment
+   // returns INVALID_INDEX if the segment does not have temporary strands
+   virtual IntervalIndexType GetTemporaryStrandStressingInterval(const CSegmentKey& segmentKey) = 0;
+
+   // returns the index of the interval when temporary strands are installed for a specific segment
+   // returns INVALID_INDEX if the segment does not have temporary strands
    virtual IntervalIndexType GetTemporaryStrandInstallationInterval(const CSegmentKey& segmentKey) = 0;
 
    // returns the index of the interval when temporary strands are removed from a specific segment
-   // returns INVALID_INDEX the segment does not have temporary strands
+   // returns INVALID_INDEX if the segment does not have temporary strands
    virtual IntervalIndexType GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey) = 0;
 
    // returns the index of the interval when a closure joint is cast
@@ -180,7 +190,7 @@ interface IIntervals : IUnknown
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey) = 0;
 
    // returns a vector of intervals when user defined loads are applied to this girder
-   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,ProductForceType pfType) = 0;
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,pgsTypes::ProductForceType pfType) = 0;
 
    // returns a vector of intervals that should be spec checked
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) = 0;

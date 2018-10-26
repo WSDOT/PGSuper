@@ -257,8 +257,6 @@ public:
    long GetReportViewKey();
 
 protected:
-   HICON m_hMainFrameBigIcon;
-   HICON m_hMainFrameSmallIcon;
 
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
@@ -349,6 +347,7 @@ protected:
    virtual void OnStatusChanged();
 
    virtual BOOL CreateBroker();
+   virtual HINSTANCE GetResourceInstance();
 
    BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
 

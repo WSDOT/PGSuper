@@ -266,7 +266,7 @@ bool CGirderModelManager::HasShearKeyLoad(const CGirderKey& girderKey)
       {
          // if there are fewer girders in this group than in groupIdx,
          // adjust the girder index based on number of girders in group is.
-         GirderIndexType nGirdersInGroup = pBridge->GetGirderCount(girderKey.groupIndex);
+         GirderIndexType nGirdersInGroup = pBridge->GetGirderCount(grpIdx);
          GirderIndexType gdrIdx = Min(nGirdersInGroup-1,girderKey.girderIndex);
 
          if (pGirder->HasShearKey( CGirderKey(grpIdx,gdrIdx), spacingType))
@@ -399,14 +399,12 @@ bool CGirderModelManager::HasPedestrianLoad(const CGirderKey& girderKey)
 
 Float64 CGirderModelManager::GetPedestrianLoad(const CSegmentKey& segmentKey)
 {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-   CSpanKey spanKey(segmentKey.groupIndex,segmentKey.girderIndex);
-   return GetPedestrianLiveLoad(spanKey);
+   return GetPedestrianLiveLoad(segmentKey);
 }
 
 ///////////////////////////////////////////////////
 // IProductForces
-Float64 CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+Float64 CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -417,7 +415,7 @@ Float64 CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,ProductForce
    return axial.front();
 }
 
-sysSectionValue CGirderModelManager::GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+sysSectionValue CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -428,7 +426,7 @@ sysSectionValue CGirderModelManager::GetShear(IntervalIndexType intervalIdx,Prod
    return shears.front();
 }
 
-Float64 CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+Float64 CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -439,7 +437,7 @@ Float64 CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,ProductForc
    return moments.front();
 }
 
-Float64 CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+Float64 CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -450,7 +448,7 @@ Float64 CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,Product
    return deflections.front();
 }
 
-Float64 CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+Float64 CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -461,7 +459,7 @@ Float64 CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,ProductFo
    return rotations.front();
 }
 
-void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot)
+void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
@@ -476,9 +474,9 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,ProductForceTy
    *pfBot = fBot.front();
 }
 
-Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   if ( pfType == pftPretension || pfType == pftPostTensioning )
+   if ( pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning )
    {
       // Prestress and primary post-tensioning don't cause reactions
       // they only cause direction axial compression and bending
@@ -1209,27 +1207,27 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
 
 ///////////////////////////////////////////////////////
 // IProductForces2
-std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType != pftPostTensioning);
+   ATLASSERT(pfType != pgsTypes::pftPostTensioning);
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   if ( pfType == pftPretension )
+   if ( pfType == pgsTypes::pftPretension )
    {
       ApplyEquivalentPretensionForce(pModelData);
    }
 
    GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pftPretension but it is needed in the poi loop, so get it here even if it isn't used
+   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pgsTypes::pftPretension but it is needed in the poi loop, so get it here even if it isn't used
 
-   int N = (pfType == pftPretension ? 3 : 1);
+   int N = (pfType == pgsTypes::pftPretension ? 3 : 1);
    for ( int i = 0; i < N; i++ )
    {
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          // Get the effective prestress resets m_LBAMPoi... update here
          pModelData = UpdateLBAMPois(vPoi);
@@ -1238,7 +1236,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 
       CComBSTR bstrLoadGroup;
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          bstrLoadGroup = GetLoadGroupName(strandType);
       }
@@ -1308,9 +1306,9 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
    return results;
 }
 
-std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType != pftPostTensioning);
+   ATLASSERT(pfType != pgsTypes::pftPostTensioning);
 
    std::vector<sysSectionValue> results;
    results.reserve(vPoi.size());
@@ -1320,17 +1318,17 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   if ( pfType == pftPretension )
+   if ( pfType == pgsTypes::pftPretension )
    {
       ApplyEquivalentPretensionForce(pModelData);
    }
 
-   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pftPretension but it is needed in the poi loop, so get it here even if it isn't used
+   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pgsTypes::pftPretension but it is needed in the poi loop, so get it here even if it isn't used
 
-   int N = (pfType == pftPretension ? 3 : 1);
+   int N = (pfType == pgsTypes::pftPretension ? 3 : 1);
    for ( int i = 0; i < N; i++ )
    {
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          // Get the effective prestress resets m_LBAMPoi... update here
          pModelData = UpdateLBAMPois(vPoi);
@@ -1339,7 +1337,7 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 
       CComBSTR bstrLoadGroup;
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          bstrLoadGroup = GetLoadGroupName(strandType);
       }
@@ -1398,27 +1396,27 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
    return results;
 }
 
-std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   ATLASSERT(pfType != pftPostTensioning);
+   ATLASSERT(pfType != pgsTypes::pftPostTensioning);
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   if ( pfType == pftPretension )
+   if ( pfType == pgsTypes::pftPretension )
    {
       ApplyEquivalentPretensionForce(pModelData);
    }
 
    GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pftPretension but it is needed in the poi loop, so get it here even if it isn't used
+   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pgsTypes::pftPretension but it is needed in the poi loop, so get it here even if it isn't used
 
-   int N = (pfType == pftPretension ? 3 : 1);
+   int N = (pfType == pgsTypes::pftPretension ? 3 : 1);
    for ( int i = 0; i < N; i++ )
    {
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          // Get the effective prestress resets m_LBAMPoi... update here
          pModelData = UpdateLBAMPois(vPoi);
@@ -1427,7 +1425,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 
       CComBSTR bstrLoadGroup;
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          bstrLoadGroup = GetLoadGroupName(strandType);
       }
@@ -1497,13 +1495,13 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
    return results;
 }
 
-std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<Float64> results;
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   if ( pfType == pftPretension )
+   if ( pfType == pgsTypes::pftPretension )
    {
       // For elastic analysis we assume that the deflection due to the pretension force does not
       // change with time. The only change in deflection that we account for is due to rigid body
@@ -1524,7 +1522,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
          // get Pretension deflections at release
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-         std::vector<Float64> vDyThisSegment = pProductForces->GetDeflection(releaseIntervalIdx,pftPretension,vPoiThisSegment,bat,resultsType,false);
+         std::vector<Float64> vDyThisSegment = pProductForces->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,vPoiThisSegment,bat,resultsType,false);
 
          // get the location of the erected segment supports
          GET_IFACE(IPointOfInterest,pPoi);
@@ -1534,7 +1532,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
          vErectionSupports.push_back(vErectionPoi.back());
 
          // get Pretension deflection at release at the location of the erected segment supports
-         std::vector<Float64> DErectionSupports = pProductForces->GetDeflection(releaseIntervalIdx,pftPretension,vErectionSupports,bat,resultsType,false);
+         std::vector<Float64> DErectionSupports = pProductForces->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,vErectionSupports,bat,resultsType,false);
 
          // get location and deflection at the erecte segment supports for use in the linear interpotation
          Float64 X1 = vErectionSupports.front().GetDistFromStart();
@@ -1565,12 +1563,12 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       results.reserve(vPoi.size());
 
-      if ( pfType == pftPostTensioning )
+      if ( pfType == pgsTypes::pftPostTensioning )
       {
          // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
          // curvatures to the model as the secondary effects product load type, the post-tension deflection
          // is the deflections computed by the secondary effects load case
-         pfType = pftSecondaryEffects;
+         pfType = pgsTypes::pftSecondaryEffects;
       }
 
       CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
@@ -1612,41 +1610,41 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
    return results;
 }
 
-std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   if ( pfType == pftPretension )
+   if ( pfType == pgsTypes::pftPretension )
    {
       ApplyEquivalentPretensionForce(pModelData);
    }
 
-   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pftPretension but it is needed in the poi loop, so get it here even if it isn't used
+   GET_IFACE_NOCHECK(IProductLoads,pProductLoads); // only used if pfType == pgsTypes::pftPretension but it is needed in the poi loop, so get it here even if it isn't used
 
-   int N = (pfType == pftPretension ? 3 : 1);
+   int N = (pfType == pgsTypes::pftPretension ? 3 : 1);
    for ( int i = 0; i < N; i++ )
    {
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          // Get the effective prestress resets m_LBAMPoi... update here
          pModelData = UpdateLBAMPois(vPoi);
       }
 
-      if ( pfType == pftPostTensioning )
+      if ( pfType == pgsTypes::pftPostTensioning )
       {
          // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
          // curvatures to the model as the secondary effects product load type, the post-tension deflection
          // is the deflections computed by the secondary effects load case
-         pfType = pftSecondaryEffects;
+         pfType = pgsTypes::pftSecondaryEffects;
       }
 
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 
       CComBSTR bstrLoadGroup;
-      if ( pfType == pftPretension )
+      if ( pfType == pgsTypes::pftPretension )
       {
          bstrLoadGroup = GetLoadGroupName(strandType);
       }
@@ -1705,13 +1703,13 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
    return results;
 }
 
-void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
+void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
 {
    VERIFY_NOT_TIME_STEP_ANALYSIS;
 
-   ATLASSERT(/*pfType != pftPretension &&*/ pfType != pftPostTensioning && pfType != pftSecondaryEffects);
+   ATLASSERT(/*pfType != pgsTypes::pftPretension &&*/ pfType != pgsTypes::pftPostTensioning && pfType != pgsTypes::pftSecondaryEffects);
 
-   if ( pfType == pftPretension )
+   if ( pfType == pgsTypes::pftPretension )
    {
       CPrestressTool prestressTool(m_pBroker);
       prestressTool.GetPretensionStress(intervalIdx,resultsType,vPoi,topLocation,botLocation,pfTop,pfBot);
@@ -3951,16 +3949,16 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    {
       // prestress deflection is not included in the LBAM models... get the product results load
       // and add them in
-      std::vector<Float64> deltaPS = GetDeflection(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
+      std::vector<Float64> deltaPS = GetDeflection(intervalIdx,pgsTypes::pftPretension,vPoi,bat,rtCumulative);
       std::transform(deltaPS.begin(),deltaPS.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
       std::transform(deltaPS.begin(),deltaPS.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
 
-      // PT already included because it is in the pftSecondaryEffects product load
+      // PT already included because it is in the pgsTypes::pftSecondaryEffects product load
    }
    else
    {
       // Results are to be without prestress so remove the PT effect
-      std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pftPostTensioning,vPoi,bat,rtCumulative);
+      std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
       std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
       std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
    }
@@ -4008,16 +4006,16 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    {
       // prestress deflection is not included in the LBAM models... get the product results load
       // and add them in
-      std::vector<Float64> deltaPS = GetRotation(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
+      std::vector<Float64> deltaPS = GetRotation(intervalIdx,pgsTypes::pftPretension,vPoi,bat,rtCumulative);
       std::transform(deltaPS.begin(),deltaPS.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
       std::transform(deltaPS.begin(),deltaPS.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
 
-      // PT already included because it is in the pftSecondaryEffects product load
+      // PT already included because it is in the pgsTypes::pftSecondaryEffects product load
    }
    else
    {
       // Results are to be without prestress so remove the PT effect
-      std::vector<Float64> deltaPT = GetRotation(intervalIdx,pftPostTensioning,vPoi,bat,rtCumulative);
+      std::vector<Float64> deltaPT = GetRotation(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
       std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
       std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
    }
@@ -4199,7 +4197,7 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
          }
 
          // remove girder moment
-         Float64 Mg = GetMoment(castDeckIntervalIdx,pftGirder,poi,bat,rtCumulative);
+         Float64 Mg = GetMoment(castDeckIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative);
          MzMin -= gDC*Mg;
 
          // if not continuous when deck is cast, 
@@ -4220,18 +4218,18 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
          if ( startPierContinuityIntervalIdx == compositeDeckIntervalIdx && 
               endPierContinuityIntervalIdx   == compositeDeckIntervalIdx )
          {
-            Float64 Mconstruction = GetMoment(castDeckIntervalIdx, pftConstruction, poi, bat, rtCumulative);
-            Float64 Mslab         = GetMoment(castDeckIntervalIdx, pftSlab,         poi, bat, rtCumulative);
-            Float64 Mslab_pad     = GetMoment(castDeckIntervalIdx, pftSlabPad,      poi, bat, rtCumulative);
-            Float64 Mslab_panel   = GetMoment(castDeckIntervalIdx, pftSlabPanel,    poi, bat, rtCumulative);
-            Float64 Mdiaphragm    = GetMoment(castDeckIntervalIdx, pftDiaphragm,    poi, bat, rtCumulative);
-            Float64 Mshear_key    = GetMoment(castDeckIntervalIdx, pftShearKey,     poi, bat, rtCumulative);
+            Float64 Mconstruction = GetMoment(castDeckIntervalIdx, pgsTypes::pftConstruction, poi, bat, rtCumulative);
+            Float64 Mslab         = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab,         poi, bat, rtCumulative);
+            Float64 Mslab_pad     = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad,      poi, bat, rtCumulative);
+            Float64 Mslab_panel   = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel,    poi, bat, rtCumulative);
+            Float64 Mdiaphragm    = GetMoment(castDeckIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
+            Float64 Mshear_key    = GetMoment(castDeckIntervalIdx, pgsTypes::pftShearKey,     poi, bat, rtCumulative);
 
             MzMin -= gDC*(Mconstruction + Mslab + Mslab_pad + Mslab_panel + Mdiaphragm + Mshear_key);
          }
 
          // remove user dc moments
-         Float64 Muser_dc = GetMoment(castDeckIntervalIdx, pftUserDC, poi, bat, rtCumulative);
+         Float64 Muser_dc = GetMoment(castDeckIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtCumulative);
          MzMin -= gDC*Muser_dc;
       }
 
@@ -4341,7 +4339,7 @@ bool CGirderModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,L
    return true;
 }
 
-bool CGirderModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
+bool CGirderModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
 {
    CGirderModelData* pModel = GetGirderModel(GetGirderLineIndex(poi.GetSegmentKey()));
 
@@ -4375,7 +4373,7 @@ bool CGirderModelManager::CreateUniformLoad(IntervalIndexType intervalIdx,LPCTST
    return true;
 }
 
-bool CGirderModelManager::CreateUniformLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
+bool CGirderModelManager::CreateUniformLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
 {
    CGirderModelData* pModel = GetGirderModel(GetGirderLineIndex(poi1.GetSegmentKey()));
 
@@ -4409,7 +4407,7 @@ bool CGirderModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,
    return true;
 }
 
-bool CGirderModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r)
+bool CGirderModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r)
 {
    CGirderModelData* pModel = GetGirderModel(GetGirderLineIndex(poi1.GetSegmentKey()));
 
@@ -4587,11 +4585,11 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoa
 
 ////////////////////////////////////
 // IReactions
-std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
+std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-   if ( intervalIdx < firstSegmentErectionIntervalIdx || (pfType == pftPretension || pfType == pftPostTensioning) )
+   if ( intervalIdx < firstSegmentErectionIntervalIdx || (pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning) )
    {
       // nothing is erected onto the supports yet
       //
@@ -4607,12 +4605,12 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
    std::vector<Float64> reactions;
 
 
-   if ( pfType == pftPostTensioning )
+   if ( pfType == pgsTypes::pftPostTensioning )
    {
       // Post-tensioning isn't the the LBAM. Since we are modeling secondary effects by applying direct
       // curvatures to the model as the secondary effects product load type, the post-tension reactions
       // are the reactions computed by the secondary effects load case
-      pfType = pftSecondaryEffects;
+      pfType = pgsTypes::pftSecondaryEffects;
    }
 
    CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
@@ -5177,7 +5175,7 @@ void CGirderModelManager::GetContraflexurePoints(const CSpanKey& spanKey,Float64
 
 //////////////////////////////////////////////////
 // IBearingDesign
-void CGirderModelManager::GetBearingProductReaction(IntervalIndexType intervalIdx,ProductForceType pfType,const CGirderKey& girderKey,
+void CGirderModelManager::GetBearingProductReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const CGirderKey& girderKey,
                                pgsTypes::BridgeAnalysisType bat, ResultsType resultsType, Float64* pLftEnd,Float64* pRgtEnd)
 {
    // Get Pois at supports
@@ -5646,7 +5644,7 @@ void CGirderModelManager::GetBearingCombinedReaction(IntervalIndexType intervalI
       CComBSTR lg_name;
       load_case->GetLoadGroup(ldGroupIdx, &lg_name);
 
-      ProductForceType prodType = GetProductForceType(lg_name); 
+      pgsTypes::ProductForceType prodType = GetProductForceType(lg_name); 
 
       Float64 lft, rgt;
       GetBearingProductReaction(intervalIdx, prodType, girderKey, bat, resultsType, &lft, &rgt);
@@ -6312,9 +6310,7 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
             break;
 
          default:
-            ATLASSERT(false); // should never get here
-            // These boundary condition types aren't support with column support
-            bReleaseTop = VARIANT_FALSE;
+            bReleaseTop = VARIANT_TRUE;
          }
       }
       else
@@ -6498,7 +6494,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             }
             else
             {
-               Float64 Xb = pBridge->GetDistanceFromStartOfBridge(segmentPoi);
+               Float64 Xb = pPOI->ConvertPoiToBridgeLineCoordinate(segmentPoi);
                Float64 ei_defl = pSectProp->GetBridgeEIxx( Xb );
                ei_defl /= nGirders;
 
@@ -6529,7 +6525,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                   }
                   else
                   {
-                     Float64 Xb = pBridge->GetDistanceFromStartOfBridge(closurePoi);
+                     Float64 Xb = pPOI->ConvertPoiToBridgeLineCoordinate(closurePoi);
                      Float64 ei_defl = pSectProp->GetBridgeEIxx( Xb );
                      ei_defl /= nGirders;
 
@@ -6765,6 +6761,22 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                   if ( startSpanBoundaryCondition == bcFixed )
                   {
                      right_pier_diaphragm_ssm->SetEndRelease(ssLeft,mrtMz);
+                  }
+                  else
+                  {
+                     // if the pier model has in integral column, we have to add a member release
+                     // against the column to keep the simple span behavior before continuity is
+                     // established
+                     pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
+                     if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical &&
+                         (bcType == pgsTypes::bctIntegralBeforeDeck || 
+                          bcType == pgsTypes::bctIntegralAfterDeck ||
+                          bcType == pgsTypes::bctIntegralAfterDeckHingeBack ||
+                          bcType == pgsTypes::bctIntegralBeforeDeckHingeBack )
+                        )
+                     {
+                        right_pier_diaphragm_ssm->SetEndRelease(ssLeft,mrtMz);
+                     }
                   }
                }
                ssms->Add(right_pier_diaphragm_ssm);
@@ -7095,7 +7107,7 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IBridge,pBridge);
 
-   CComBSTR bstrLoadGroup( GetLoadGroupName(pftGirder) );
+   CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    CComBSTR bstrStage;
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -7180,9 +7192,9 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
 
    GET_IFACE(IIntervals,pIntervals);
 
-   CComBSTR bstrSlabLoadGroup( GetLoadGroupName(pftSlab) );
-   CComBSTR bstrSlabPadLoadGroup( GetLoadGroupName(pftSlabPad) );
-   CComBSTR bstrPanelLoadGroup( GetLoadGroupName(pftSlabPanel) );
+   CComBSTR bstrSlabLoadGroup( GetLoadGroupName(pgsTypes::pftSlab) );
+   CComBSTR bstrSlabPadLoadGroup( GetLoadGroupName(pgsTypes::pftSlabPad) );
+   CComBSTR bstrPanelLoadGroup( GetLoadGroupName(pgsTypes::pftSlabPanel) );
 
    MemberIDType mbrID = 0;
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -7239,6 +7251,7 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
 // on the deck may be distributed uniformly among the beams and/or stringers"
 
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IPointOfInterest,pPOI);
 
    // if there isn't an overlay, get the heck outta here
    if ( !pBridge->HasOverlay() )
@@ -7251,7 +7264,7 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
    {
       Float64 station = pBridge->GetPierStation(pierIdx);
-      Float64 dfs     = pBridge->GetDistanceFromStartOfBridge(station);
+      Float64 dfs     = pPOI->ConvertRouteToBridgeLineCoordinate(station);
       Float64 loffs   = pBridge->GetLeftInteriorCurbOffset(dfs);
       Float64 roffs   = pBridge->GetRightInteriorCurbOffset(dfs);
 
@@ -7277,8 +7290,8 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
    GET_IFACE(IIntervals,pIntervals);
 
    // setup stage and load group names
-   CComBSTR bstrLoadGroup( GetLoadGroupName(pftOverlay) ); 
-   CComBSTR bstrLoadGroupRating( GetLoadGroupName(pftOverlayRating) );
+   CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftOverlay) ); 
+   CComBSTR bstrLoadGroupRating( GetLoadGroupName(pgsTypes::pftOverlayRating) );
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
@@ -7485,7 +7498,7 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
    // apply construction loads in the interval when the deck is cast
    GET_IFACE(IIntervals,pIntervals);
 
-   CComBSTR bstrLoadGroup( GetLoadGroupName(pftConstruction) ); 
+   CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftConstruction) ); 
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
@@ -7655,7 +7668,7 @@ void CGirderModelManager::ApplyShearKeyLoad(ILBAMModel* pModel,pgsTypes::Analysi
    // assume shear keys are cast with deck
    GET_IFACE(IIntervals,pIntervals);
 
-   CComBSTR bstrLoadGroup( GetLoadGroupName(pftShearKey) ); 
+   CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftShearKey) ); 
 
    MemberIDType mbrID = 0;
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -7798,8 +7811,8 @@ void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,
 
    GET_IFACE(IIntervals,pIntervals);
 
-   CComBSTR bstrBarrierLoadGroup( GetLoadGroupName(pftTrafficBarrier) ); 
-   CComBSTR bstrSidewalkLoadGroup( GetLoadGroupName(pftSidewalk) ); 
+   CComBSTR bstrBarrierLoadGroup( GetLoadGroupName(pgsTypes::pftTrafficBarrier) ); 
+   CComBSTR bstrSidewalkLoadGroup( GetLoadGroupName(pgsTypes::pftSidewalk) ); 
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
@@ -8858,7 +8871,7 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
    CComPtr<ISuperstructureMembers> ssmbrs;
    pModel->get_SuperstructureMembers(&ssmbrs);
 
-   CComBSTR bstrLoadGroup(GetLoadGroupName(pftSecondaryEffects));
+   CComBSTR bstrLoadGroup(GetLoadGroupName(pgsTypes::pftSecondaryEffects));
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -8991,9 +9004,6 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
 
 Float64 CGirderModelManager::GetPedestrianLiveLoad(const CSpanKey& spanKey)
 {
-   Float64 Wleft  = GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft);
-   Float64 Wright = GetPedestrianLoadPerSidewalk(pgsTypes::tboRight);
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
@@ -9003,6 +9013,14 @@ Float64 CGirderModelManager::GetPedestrianLiveLoad(const CSpanKey& spanKey)
    // We don't know which segment we want the ped live load for... there is not enough
    // data. Assume segment 0
    CSegmentKey segmentKey(grpIdx,spanKey.girderIndex,0);
+
+   return GetPedestrianLiveLoad(segmentKey);
+}
+
+Float64 CGirderModelManager::GetPedestrianLiveLoad(const CSegmentKey& segmentKey)
+{
+   Float64 Wleft  = GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft);
+   Float64 Wright = GetPedestrianLoadPerSidewalk(pgsTypes::tboRight);
 
    // Pedestrian load is distributed to the same girders, and in the same fraction, as the
    // sidewalk dead load
@@ -9768,41 +9786,41 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
       CComPtr<ILoadCase> load_case;
       load_cases->Find(GetLoadCaseName(combo),&load_case);
-      std::vector<ProductForceType> pfTypes(CProductLoadMap::GetProductForces(m_pBroker,combo));
-      std::vector<ProductForceType>::iterator pfIter = pfTypes.begin();
-      std::vector<ProductForceType>::iterator pfIterEnd = pfTypes.end();
+      std::vector<pgsTypes::ProductForceType> pfTypes(CProductLoadMap::GetProductForces(m_pBroker,combo));
+      std::vector<pgsTypes::ProductForceType>::iterator pfIter = pfTypes.begin();
+      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd = pfTypes.end();
       for ( ; pfIter != pfIterEnd; pfIter++ )
       {
-         ProductForceType pfType = *pfIter;
+         pgsTypes::ProductForceType pfType = *pfIter;
          load_case->AddLoadGroup(GetLoadGroupName(pfType));
       }
    }
 
    CComPtr<ILoadCase> load_case_ll;
    load_cases->Find(CComBSTR("LL_IM"),&load_case_ll);
-   load_case_ll->AddLoadGroup(GetLoadGroupName(pftUserLLIM));
+   load_case_ll->AddLoadGroup(GetLoadGroupName(pgsTypes::pftUserLLIM));
 
    // set up load groups
    CComPtr<ILoadGroups> loadGroups;
    pModel->get_LoadGroups(&loadGroups);
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftGirder),         CComBSTR("Girder self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftConstruction),   CComBSTR("Construction"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftSlab),           CComBSTR("Slab self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftSlabPad),        CComBSTR("Slab Pad self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftSlabPanel),      CComBSTR("Slab Panel self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftDiaphragm),      CComBSTR("Diaphragm self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftSidewalk),       CComBSTR("Sidewalk self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftTrafficBarrier), CComBSTR("Traffic Barrier self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftShearKey),       CComBSTR("Shear Key Weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftSecondaryEffects),CComBSTR("Secondary Effects"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlay),        CComBSTR("Overlay self weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlayRating),  CComBSTR("Overlay self weight (rating)"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDC),         CComBSTR("User applied loads in DC"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDW),         CComBSTR("User applied loads in DW"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftUserLLIM),       CComBSTR("User applied live load"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftCreep),          CComBSTR("Creep"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftShrinkage),      CComBSTR("Shrinkage"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pftRelaxation),     CComBSTR("Relaxation"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftGirder),         CComBSTR("Girder self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftConstruction),   CComBSTR("Construction"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSlab),           CComBSTR("Slab self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSlabPad),        CComBSTR("Slab Pad self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSlabPanel),      CComBSTR("Slab Panel self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftDiaphragm),      CComBSTR("Diaphragm self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSidewalk),       CComBSTR("Sidewalk self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftTrafficBarrier), CComBSTR("Traffic Barrier self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftShearKey),       CComBSTR("Shear Key Weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSecondaryEffects),CComBSTR("Secondary Effects"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftOverlay),        CComBSTR("Overlay self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftOverlayRating),  CComBSTR("Overlay self weight (rating)"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftUserDC),         CComBSTR("User applied loads in DC"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftUserDW),         CComBSTR("User applied loads in DW"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftUserLLIM),       CComBSTR("User applied live load"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftCreep),          CComBSTR("Creep"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftShrinkage),      CComBSTR("Shrinkage"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftRelaxation),     CComBSTR("Relaxation"));
 
    // create a couple special load groups for getting effects of the differnet strand types
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::Straight),  CComBSTR("Straight Strand Equivalent Loading"));
@@ -9820,7 +9838,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
 
    GET_IFACE(IIntervals,pIntervals);
 
-   CComBSTR bstrLoadGroup( GetLoadGroupName(pftDiaphragm) ); 
+   CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftDiaphragm) ); 
 
    CComPtr<IPointLoads> pointLoads;
    pModel->get_PointLoads(&pointLoads);
@@ -10085,7 +10103,7 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
 
          IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          CComBSTR bstrStage     = GetLBAMStageName(intervalIdx);
-         CComBSTR bstrLoadGroup = GetLoadGroupName(pftGirder);
+         CComBSTR bstrLoadGroup = GetLoadGroupName(pgsTypes::pftGirder);
 
          std::vector<DiaphragmLoad> loads;
          GetPrecastDiaphragmLoads(segmentKey, &loads);
@@ -10151,7 +10169,7 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
       // Next apply cast-in-place diaphragm loads
       IntervalIndexType intervalIdx = pIntervals->GetCastDeckInterval();
       CComBSTR bstrStage = GetLBAMStageName(intervalIdx);
-      CComBSTR bstrLoadGroup( GetLoadGroupName(pftDiaphragm) ); 
+      CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftDiaphragm) ); 
       SpanIndexType startSpanIdx, endSpanIdx;
       pBridge->GetGirderGroupSpans(grpIdx,&startSpanIdx,&endSpanIdx);
       for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
@@ -12354,12 +12372,12 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
    }
 }
 
-CComBSTR CGirderModelManager::GetLoadGroupName(ProductForceType pfType)
+CComBSTR CGirderModelManager::GetLoadGroupName(pgsTypes::ProductForceType pfType)
 {
    return m_ProductLoadMap.GetGroupLoadName(pfType);
 }
 
-ProductForceType CGirderModelManager::GetProductForceType(const CComBSTR& bstrLoadGroup)
+pgsTypes::ProductForceType CGirderModelManager::GetProductForceType(const CComBSTR& bstrLoadGroup)
 {
    return m_ProductLoadMap.GetProductForceType(bstrLoadGroup);
 }
@@ -12903,7 +12921,7 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder, pGdr);
    GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(ISectionProperties,pSectProp);
 
    GET_IFACE(IIntervals,pIntervals);
@@ -12932,7 +12950,7 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    }
 
    // Get some important POIs that we will be using later
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
    ATLASSERT(vPoi.size()!=0);
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
@@ -13017,10 +13035,10 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
          // Determine the slab overhang
          Float64 station,offset;
          pBridge->GetStationAndOffset(poi,&station,&offset);
-         Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+         Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
 
          // slab overhang from CL of girder (normal to alignment)
-         Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+         Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(Xb) : pBridge->GetRightSlabOverhang(Xb));
 
          if (slab_overhang < 0.0)
          {
@@ -13252,7 +13270,7 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
    pOverlayLoads->clear();
 
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -13270,7 +13288,7 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
    pgsTypes::OverlayLoadDistributionType overlayDistribution = pSpec->GetOverlayLoadDistributionType();
 
    // POIs where overlay loads are laid out
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(thisSegmentKey,POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(thisSegmentKey,POI_ERECTED_SEGMENT) );
    ATLASSERT(vPoi.size()!=0);
 
 
@@ -13296,11 +13314,11 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
 
       Float64 station,girder_offset;
       pBridge->GetStationAndOffset(endPoi,&station,&girder_offset);
-      Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+      Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
 
       // Offsets to toe where overlay starts
-      Float64 left_olay_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
-      Float64 right_olay_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
+      Float64 left_olay_offset  = pBridge->GetLeftOverlayToeOffset(Xb);
+      Float64 right_olay_offset = pBridge->GetRightOverlayToeOffset(Xb);
 
       if (overlayDistribution == pgsTypes::olDistributeEvenly)
       {
@@ -13311,7 +13329,7 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
       }
       else if (overlayDistribution == pgsTypes::olDistributeTributaryWidth)
       {
-         Float64 left_slab_offset  = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
+         Float64 left_slab_offset  = pBridge->GetLeftSlabEdgeOffset(Xb);
 
          // Have to determine how much of overlay is actually over the girder's tributary width
          // Measure distances from left edge of deck to Left/Right edges of overlay
@@ -14115,7 +14133,7 @@ void CGirderModelManager::SaveOverhangPointLoads(const CSegmentKey& segmentKey,p
    }
 }
 
-bool CGirderModelManager::GetOverhangPointLoads(const CSegmentKey& segmentKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx,ProductForceType pfType,
+bool CGirderModelManager::GetOverhangPointLoads(const CSegmentKey& segmentKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,
                                               ResultsType resultsType, Float64* pPStart, Float64* pPEnd)
 {
    ATLASSERT(analysisType == pgsTypes::Simple || analysisType == pgsTypes::Continuous);
@@ -14176,13 +14194,8 @@ bool CGirderModelManager::GetOverhangPointLoads(const CSegmentKey& segmentKey, p
 
 void CGirderModelManager::ValidateGirderModels(const CGirderKey& girderKey)
 {
-#pragma Reminder("UPDATE: the only reason for having this is to create certain loads and cache them")
-   // this will probably become obsolete when the girder models are moved to a girder model manager
-   // like the segment models
-
    // This will validate the bridge site stage models
-   CGirderModelData* pModelData = 0;
-   pModelData = GetGirderModel(GetGirderLineIndex(girderKey));
+   GetGirderModel(GetGirderLineIndex(girderKey));
 }
 
 GirderIndexType CGirderModelManager::GetGirderLineIndex(const CGirderKey& girderKey)
@@ -14363,7 +14376,7 @@ void CGirderModelManager::GetLBAM(CGirderModelData* pModelData,pgsTypes::BridgeA
    }
 }
 
-bool CGirderModelManager::CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
+bool CGirderModelManager::CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
 {
    USES_CONVERSION;
    return CreateConcentratedLoad(pModel,poiMap,intervalIdx,OLE2T(m_ProductLoadMap.GetGroupLoadName(pfType)),poi,Fx,Fy,Mz);
@@ -14407,7 +14420,7 @@ bool CGirderModelManager::CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoi
    return true;
 }
 
-bool CGirderModelManager::CreateUniformLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
+bool CGirderModelManager::CreateUniformLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
 {
    USES_CONVERSION;
    return CreateUniformLoad(pModel,poiMap,intervalIdx,OLE2T(m_ProductLoadMap.GetGroupLoadName(pfType)),poi1,poi2,wx,wy);
@@ -14617,7 +14630,7 @@ bool CGirderModelManager::CreateUniformLoad(ILBAMModel* pModel,const pgsPoiMap& 
    return true;
 }
 
-bool CGirderModelManager::CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r)
+bool CGirderModelManager::CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r)
 {
    USES_CONVERSION;
    return CreateInitialStrainLoad(pModel,poiMap,intervalIdx,OLE2T(m_ProductLoadMap.GetGroupLoadName(pfType)),poi1,poi2,e,r);

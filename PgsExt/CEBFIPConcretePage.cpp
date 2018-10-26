@@ -23,11 +23,11 @@
 // CEBFIPConcretePage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin.h"
-#include "CEBFIPConcretePage.h"
-#include "ConcreteDetailsDlg.h"
-#include "PGSuperAppPlugin\CEBFIPParametersDlg.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include <PgsExt\CEBFIPConcretePage.h>
+#include <PgsExt\ConcreteDetailsDlg.h>
+#include "CEBFIPParametersDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <Material\CEBFIPConcrete.h>
@@ -39,9 +39,10 @@
 IMPLEMENT_DYNAMIC(CCEBFIPConcretePage, CPropertyPage)
 
 CCEBFIPConcretePage::CCEBFIPConcretePage()
-	: CPropertyPage(CCEBFIPConcretePage::IDD)
+	: CPropertyPage()
 {
-
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   Construct(IDD_CEBFIP_CONCRETE);
 }
 
 CCEBFIPConcretePage::~CCEBFIPConcretePage()

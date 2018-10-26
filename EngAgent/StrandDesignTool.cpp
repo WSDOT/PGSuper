@@ -41,16 +41,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
-#pragma Reminder("UPDATE: need poi manager for segment, lifting, and hauling")
-// POI's have been re-worked... lifting and hauling are "side" analyzes. There POI's
-// are kept seperate from the segment/girder POI's.
-
 /****************************************************************************
 CLASS
    pgsStrandDesignTool
 ****************************************************************************/
-
 
 ////// local functions
 //////////////////////
@@ -171,10 +165,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    Float64 ifc = GetMinimumConcreteStrength();
    ifc = Max(slab_fc, ifc);
 
-#pragma Reminder("UPDATE: using fake modulus of rupture")
    matConcreteEx conc(_T("Design Concrete"), ifc, pGirderMaterial->Concrete.StrengthDensity, 
                       pGirderMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE(ifc,  pGirderMaterial->Concrete.StrengthDensity, false ),
-                      0.0,0.0);
+                      0.0,0.0); // we don't need the modulus of rupture for shear or flexur. Just use 0.0
    conc.SetMaxAggregateSize(pGirderMaterial->Concrete.MaxAggregateSize);
    conc.SetType((matConcrete::Type)pGirderMaterial->Concrete.Type);
    conc.HasAggSplittingStrength(pGirderMaterial->Concrete.bHasFct);
@@ -1269,7 +1262,6 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
 
 bool pgsStrandDesignTool::AdjustForHoldDownForce()
 {
-#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
    LOG(_T("Design for Maximum Hold Down Force"));
 
    ATLASSERT(m_DoDesignForHoldDownForce); // should not be calling this
@@ -1296,27 +1288,45 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       return 0;
    }
 
-   pgsPointOfInterest poi( vPOI[0] );
-
+   Float64 maxHFT = 0;
+   Float64 slope; // slope associated with max hold down force
+   Float64 strand_force; // strand force associated with max hold down force
+   pgsPointOfInterest poi; 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 slope = pStrandGeom->GetAvgStrandSlope( poi, nh, end_offset, hp_offset);
-   slope = fabs(slope); // slope could be + or -
-   LOG(_T("Average Strand Slope = 1 : ") << slope);
-
    GET_IFACE(IPretensionForce,pPrestressForce);
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
-   Float64 strand_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/,config);
-   LOG(_T("PS Force in harped strands ") << ::ConvertFromSysUnits(strand_force,unitMeasure::Kip) << _T(" kip"));
 
-   // finally, the hold down force
-   Float64 hft = strand_force / sqrt( 1*1 + slope*slope );
+   std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
+   for ( ; iter != end; iter++ )
+   {
+      pgsPointOfInterest& thisPOI(*iter);
+
+      Float64 s = pStrandGeom->GetAvgStrandSlope( thisPOI, nh, end_offset, hp_offset);
+      s = fabs(s); // slope could be + or -
+      LOG(_T("Average Strand Slope = 1 : ") << s);
+
+      // NOTE: May want to add friction for hold down force...
+      Float64 f = pPrestressForce->GetPrestressForce(thisPOI,pgsTypes::Harped,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/,config);
+      LOG(_T("PS Force in harped strands ") << ::ConvertFromSysUnits(f,unitMeasure::Kip) << _T(" kip"));
+
+      // finally, the hold down force
+      Float64 hft = f / sqrt( 1*1 + s*s);
+      if ( maxHFT < hft )
+      {
+         maxHFT = hft;
+         slope = s;
+         strand_force = f;
+         poi = thisPOI;
+      }
+   }
 
    LOG(_T("Maximum HD ") << ::ConvertFromSysUnits(m_AllowableHoldDownForce,unitMeasure::Kip) << _T(" kip"));
-   LOG(_T("Actual  HD ") << ::ConvertFromSysUnits(hft,unitMeasure::Kip) << _T(" kip"));
+   LOG(_T("Actual  HD ") << ::ConvertFromSysUnits(maxHFT,unitMeasure::Kip) << _T(" kip"));
 
    Float64 adj = 0.0;
-   if ( m_AllowableHoldDownForce < hft )
+   if ( m_AllowableHoldDownForce < maxHFT )
    {
       LOG(_T("Hold down force exceeds max, strands need adjustment"));
 
@@ -1348,9 +1358,9 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    // compute adjustment distance
    Float64 X1, X2, X3, X4;
    pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &X1, &X2, &X3, &X4);
-   Float64 adj = (X2-X1) * (1/slope - 1/sl_reqd);
-
-#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
+   Float64 adj1 = (X2-X1) * (1/slope - 1/sl_reqd);
+   Float64 adj2 = (X4-X3) * (1/slope - 1/sl_reqd);
+   Float64 adj = Max(adj1,adj2);
 
    LOG(_T("Vertical adjustment required to acheive slope = ")<< ::ConvertFromSysUnits(adj,unitMeasure::Inch) << _T(" in"));
 
@@ -2729,7 +2739,8 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
    LOG(_T("Attempting to swap straight for harped to raise ecc to at most  = ")<< ::ConvertFromSysUnits(eccMin, unitMeasure::Inch) << _T(" in"));
    LOG(_T("At ")<< ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Inch) << _T(" in from left end of girder"));
 
-#pragma Reminder("If TxDOT starts designing for lifting, we need to change UI to allow non-standard fill and lifting")
+   // NOTE: If TxDOT starts designing for lifting, we need to change UI to allow non-standard fill and lifting
+
    // Lifting analysis swaps the other way - 
    if (m_DesignOptions.doDesignLifting)
    {
@@ -3328,11 +3339,11 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       Float64 end_supp   = m_SegmentLength - pBridge->GetSegmentEndEndDistance(m_SegmentKey);
 
       // left and right xfer from ends
-      pgsPointOfInterest lxfer(m_SegmentKey,xfer_length);
-      AddPOI(lxfer, start_supp, end_supp,attrib_xfer);
+      pgsPointOfInterest lxfer(m_SegmentKey,xfer_length,attrib_xfer);
+      AddPOI(lxfer, start_supp, end_supp);
 
-      pgsPointOfInterest rxfer(m_SegmentKey,m_SegmentLength-xfer_length);
-      AddPOI(rxfer, start_supp, end_supp,attrib_xfer);
+      pgsPointOfInterest rxfer(m_SegmentKey,m_SegmentLength-xfer_length,attrib_xfer);
+      AddPOI(rxfer, start_supp, end_supp);
 
       if (m_DesignOptions.doDesignForFlexure == dtDesignForDebonding || 
           m_DesignOptions.doDesignForFlexure == dtDesignForDebondingRaised)
@@ -3359,33 +3370,28 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
             // left debond and xfer
             ldb_loc += db_incr;
-            pgsPointOfInterest ldbpo(m_SegmentKey,ldb_loc);
-            AddPOI(ldbpo, start_supp, end_supp,attrib_debond);
+            pgsPointOfInterest ldbpo(m_SegmentKey,ldb_loc,attrib_debond);
+            AddPOI(ldbpo, start_supp, end_supp);
 
             Float64 lxferloc = ldb_loc + xfer_length;
-            pgsPointOfInterest lxfpo(m_SegmentKey,lxferloc);
-            AddPOI(lxfpo, start_supp, end_supp,attrib_xfer);
+            pgsPointOfInterest lxfpo(m_SegmentKey,lxferloc,attrib_xfer);
+            AddPOI(lxfpo, start_supp, end_supp);
 
             // right debond and xfer
             rdb_loc -= db_incr;
-            pgsPointOfInterest rdbpo(m_SegmentKey,rdb_loc);
-            AddPOI(rdbpo, start_supp, end_supp,attrib_debond);
+            pgsPointOfInterest rdbpo(m_SegmentKey,rdb_loc,attrib_debond);
+            AddPOI(rdbpo, start_supp, end_supp);
 
             Float64 rxferloc = rdb_loc - xfer_length;
-            pgsPointOfInterest rxfpo(m_SegmentKey,rxferloc);
-            AddPOI(rxfpo, start_supp, end_supp,attrib_xfer);
+            pgsPointOfInterest rxfpo(m_SegmentKey,rxferloc,attrib_xfer);
+            AddPOI(rxfpo, start_supp, end_supp);
          }
       }
    }
 }
 
-void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn,PoiAttributeType attribute)
+void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn)
 {
-#pragma Reminder("REVIEW: this is kind of funny code")
-   // why isn't the attribute set on the poi before it is passed in there?
-   // also, don't need lft_conn and rgt_conn
-   // review against old code to see if this can be cleaned up
-   rpoi.SetNonReferencedAttributes(attribute);
    m_PoiMgr.AddPointOfInterest(rpoi);
 }
 

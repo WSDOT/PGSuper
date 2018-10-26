@@ -621,7 +621,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation);
 
          Float64 fpt;
-         pProductForces->GetStress(loadRatingIntervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fpt,&fDummy);
+         pProductForces->GetStress(loadRatingIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fpt,&fDummy);
 
          // do this in the loop because the vector of POI can be for multiple segments
          Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
@@ -1360,43 +1360,43 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
       // Get all the product load responces
       GET_IFACE(IProductForces2,pProductForces);
 
-      vConstructionMin = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPoi,batMin, rtIncremental);
-      vConstructionMax = pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,vPoi,batMax, rtIncremental);
+      vConstructionMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftConstruction,vPoi,batMin, rtIncremental);
+      vConstructionMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftConstruction,vPoi,batMax, rtIncremental);
 
-      vSlabMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPoi,batMin, rtIncremental);
-      vSlabMax = pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,vPoi,batMax, rtIncremental);
+      vSlabMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlab,vPoi,batMin, rtIncremental);
+      vSlabMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlab,vPoi,batMax, rtIncremental);
 
-      vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPoi,batMin, rtIncremental);
-      vSlabPanelMax = pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,vPoi,batMax, rtIncremental);
+      vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlabPanel,vPoi,batMin, rtIncremental);
+      vSlabPanelMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlabPanel,vPoi,batMax, rtIncremental);
 
-      vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPoi,batMin, rtIncremental);
-      vDiaphragmMax = pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,vPoi,batMax, rtIncremental);
+      vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftDiaphragm,vPoi,batMin, rtIncremental);
+      vDiaphragmMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftDiaphragm,vPoi,batMax, rtIncremental);
 
-      vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPoi,batMin, rtIncremental);
-      vShearKeyMax = pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,vPoi,batMax, rtIncremental);
+      vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftShearKey,vPoi,batMin, rtIncremental);
+      vShearKeyMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftShearKey,vPoi,batMax, rtIncremental);
 
-      vUserDC1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPoi,batMin, rtIncremental);
-      vUserDC1Max = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,vPoi,batMax, rtIncremental);
+      vUserDC1Min = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftUserDC,vPoi,batMin, rtIncremental);
+      vUserDC1Max = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftUserDC,vPoi,batMax, rtIncremental);
 
-      vUserDW1Min = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPoi,batMin, rtIncremental);
-      vUserDW1Max = pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,vPoi,batMax, rtIncremental);
+      vUserDW1Min = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftUserDW,vPoi,batMin, rtIncremental);
+      vUserDW1Max = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftUserDW,vPoi,batMax, rtIncremental);
 
-      vUserDC2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPoi,batMin, rtIncremental);
-      vUserDC2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,vPoi,batMax, rtIncremental);
+      vUserDC2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDC,vPoi,batMin, rtIncremental);
+      vUserDC2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDC,vPoi,batMax, rtIncremental);
 
-      vUserDW2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPoi,batMin, rtIncremental);
-      vUserDW2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,vPoi,batMax, rtIncremental);
+      vUserDW2Min = pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDW,vPoi,batMin, rtIncremental);
+      vUserDW2Max = pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDW,vPoi,batMax, rtIncremental);
 
-      vTrafficBarrierMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPoi,batMin, rtIncremental);
-      vTrafficBarrierMax = pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,vPoi,batMax, rtIncremental);
+      vTrafficBarrierMin = pProductForces->GetMoment(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,vPoi,batMin, rtIncremental);
+      vTrafficBarrierMax = pProductForces->GetMoment(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,vPoi,batMax, rtIncremental);
 
-      vSidewalkMin = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPoi,batMin, rtIncremental);
-      vSidewalkMax = pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk,vPoi,batMax, rtIncremental);
+      vSidewalkMin = pProductForces->GetMoment(railingSystemIntervalIdx,pgsTypes::pftSidewalk,vPoi,batMin, rtIncremental);
+      vSidewalkMax = pProductForces->GetMoment(railingSystemIntervalIdx,pgsTypes::pftSidewalk,vPoi,batMax, rtIncremental);
 
       if ( !bFutureOverlay )
       {
-         vOverlayMin = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPoi,batMin, rtIncremental);
-         vOverlayMax = pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,vPoi,batMax, rtIncremental);
+         vOverlayMin = pProductForces->GetMoment(overlayIntervalIdx,pgsTypes::pftOverlay,vPoi,batMin, rtIncremental);
+         vOverlayMax = pProductForces->GetMoment(overlayIntervalIdx,pgsTypes::pftOverlay,vPoi,batMax, rtIncremental);
       }
       else
       {
@@ -1404,17 +1404,17 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
          vOverlayMax.resize(vPoi.size(),0);
       }
 
-      vCreepMin = pProductForces->GetMoment(loadRatingIntervalIdx,pftCreep,vPoi,batMin, rtCumulative);
-      vCreepMax = pProductForces->GetMoment(loadRatingIntervalIdx,pftCreep,vPoi,batMax, rtCumulative);
+      vCreepMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftCreep,vPoi,batMin, rtCumulative);
+      vCreepMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftCreep,vPoi,batMax, rtCumulative);
 
-      vShrinkageMin = pProductForces->GetMoment(loadRatingIntervalIdx,pftShrinkage,vPoi,batMin, rtCumulative);
-      vShrinkageMax = pProductForces->GetMoment(loadRatingIntervalIdx,pftShrinkage,vPoi,batMax, rtCumulative);
+      vShrinkageMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftShrinkage,vPoi,batMin, rtCumulative);
+      vShrinkageMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftShrinkage,vPoi,batMax, rtCumulative);
 
-      vRelaxationMin = pProductForces->GetMoment(loadRatingIntervalIdx,pftRelaxation,vPoi,batMin, rtCumulative);
-      vRelaxationMax = pProductForces->GetMoment(loadRatingIntervalIdx,pftRelaxation,vPoi,batMax, rtCumulative);
+      vRelaxationMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftRelaxation,vPoi,batMin, rtCumulative);
+      vRelaxationMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftRelaxation,vPoi,batMax, rtCumulative);
 
-      vSecondaryMin = pProductForces->GetMoment(loadRatingIntervalIdx,pftSecondaryEffects,vPoi,batMin, rtCumulative);
-      vSecondaryMax = pProductForces->GetMoment(loadRatingIntervalIdx,pftSecondaryEffects,vPoi,batMax, rtCumulative);
+      vSecondaryMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftSecondaryEffects,vPoi,batMin, rtCumulative);
+      vSecondaryMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftSecondaryEffects,vPoi,batMax, rtCumulative);
 
       if ( vehicleIdx == INVALID_INDEX )
       {

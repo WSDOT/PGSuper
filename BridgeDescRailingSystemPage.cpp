@@ -28,7 +28,7 @@
 #include "PGSuperDoc.h"
 #include "BridgeDescRailingSystemPage.h"
 #include "BridgeDescDlg.h"
-#include "ConcreteDetailsDlg.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
 #include <PGSuperUnits.h>
 #include "HtmlHelp\HelpTopics.hh"

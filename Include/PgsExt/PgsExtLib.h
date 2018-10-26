@@ -33,6 +33,8 @@
 #include <LRFD\LRFD.h>
 
 #include <IFace\Tools.h>
+#include <EAF\EAFUtilities.h>
+#include <MFCTools\MFCTools.h>
 
 #include <MathEx.h>
 

@@ -168,6 +168,48 @@ void CBridgeDescDlg::NotifyExtensionPages()
          m_Macro.AddTransaction(pTxn);
       }
    }
+
+   // Capture any transactions related to extenion pages on the Pier dialog opened from the framing grid
+   PierIndexType nPiers = m_BridgeDesc.GetPierCount();
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   {
+      std::vector<txnTransaction*> vTransactions = m_FramingPage.m_Grid.GetPierTransactions(pierIdx);
+      std::vector<txnTransaction*>::iterator iter(vTransactions.begin());
+      std::vector<txnTransaction*>::iterator end(vTransactions.end());
+      for ( ; iter != end; iter++ )
+      {
+         txnTransaction* pTxn = *iter;
+         m_Macro.AddTransaction(pTxn->CreateClone()); // must create a clone since the framing grid will delete the transactions
+      }
+   }
+
+   // Capture any transactions related to extenion pages on the Span dialog opened from the framing grid
+   SpanIndexType nSpans = m_BridgeDesc.GetSpanCount();
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      std::vector<txnTransaction*> vTransactions = m_FramingPage.m_Grid.GetSpanTransactions(spanIdx);
+      std::vector<txnTransaction*>::iterator iter(vTransactions.begin());
+      std::vector<txnTransaction*>::iterator end(vTransactions.end());
+      for ( ; iter != end; iter++ )
+      {
+         txnTransaction* pTxn = *iter;
+         m_Macro.AddTransaction(pTxn->CreateClone()); // must create a clone since the framing grid will delete the transactions
+      }
+   }
+
+   // Capture any transactions related to extenion pages on the Temporary Support dialog opened from the framing grid
+   SupportIndexType nTS = m_BridgeDesc.GetTemporarySupportCount();
+   for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
+   {
+      std::vector<txnTransaction*> vTransactions = m_FramingPage.m_Grid.GetTemporarySupportTransactions(tsIdx);
+      std::vector<txnTransaction*>::iterator iter(vTransactions.begin());
+      std::vector<txnTransaction*>::iterator end(vTransactions.end());
+      for ( ; iter != end; iter++ )
+      {
+         txnTransaction* pTxn = *iter;
+         m_Macro.AddTransaction(pTxn->CreateClone()); // must create a clone since the framing grid will delete the transactions
+      }
+   }
 }
 
 BEGIN_MESSAGE_MAP(CBridgeDescDlg, CPropertySheet)

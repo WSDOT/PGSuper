@@ -38,7 +38,6 @@
 #define IDR_ADD_DELETE_POPUP            137
 #define IDD_GIRDER_ERROR                138
 #define IDD_SPEC_DESCR                  139
-#define IDD_GIRDER_MAIN                 140
 #define IDR_LIBRARYTYPE                 143
 #define IDD_EDIT_SHEAR_STEEL            144
 #define IDD_LONG_STEEL                  146
@@ -56,9 +55,9 @@
 #define IDC_Y3_T                        153
 #define IDD_SPEC_LOSSES                 153
 #define IDD_SPEC_LIFTING                154
-#define IDD_STRAIGHT_STRAND             155
+#define IDD_GIRDER_TEMPORARY_STRANDS             155
 #define IDB_CONNECTION                  158
-#define IDD_HARP_STRAND                 164
+#define IDD_GIRDER_PERMANENT_STRANDS                 164
 #define IDB_IN_USE                      164
 #define IDB_IN_USE_AND_READ_ONLY        165
 #define IDB_READ_ONLY                   166

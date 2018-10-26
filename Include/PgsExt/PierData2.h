@@ -29,6 +29,7 @@
 
 #include <PgsExt\GirderSpacing2.h>
 #include <PgsExt\ColumnData.h>
+#include <PgsExt\ConcreteMaterial.h>
 
 class CSpanData2;
 class CBridgeDescription2;
@@ -202,13 +203,14 @@ public:
    pgsTypes::PierModelType GetPierModelType() const;
    void SetPierModelType(pgsTypes::PierModelType modelType);
 
-   void SetModE(Float64 Ec);
-   Float64 GetModE() const;
+   void SetConcrete(const CConcreteMaterial& concrete);
+   CConcreteMaterial& GetConcrete();
+   const CConcreteMaterial& GetConcrete() const;
 
    // NOTE: Cross Beam and Column Data is only used if the pier model type is Physical
 
    void SetTransverseOffset(ColumnIndexType refColumnIdx,Float64 offset,pgsTypes::OffsetMeasurementType offsetType);
-   void GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOffset,pgsTypes::OffsetMeasurementType* pOffsetType);
+   void GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOffset,pgsTypes::OffsetMeasurementType* pOffsetType) const;
 
    /////////////////////////////////////////////////////////////////////
    // Cross Beam
@@ -313,7 +315,7 @@ private:
 
    pgsTypes::PierModelType m_PierModelType; 
 
-   Float64 m_Ec; // modulus of elasticity for the pier
+   CConcreteMaterial m_Concrete;
 
    // This data only used if m_PierModelType is pgsTypes::pmtPhysical
    // Transverse location of the pier relative to the alignment or bridge line

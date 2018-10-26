@@ -182,7 +182,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
          {
             IntervalIndexType intervalIdx = *iter;
 
-            pProductForces->GetStress(intervalIdx,pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
+            pProductForces->GetStress(intervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
 
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
@@ -192,7 +192,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
       else
       {
          // Rating
-         pProductForces->GetStress(loadRatingIntervalIdx,pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
+         pProductForces->GetStress(loadRatingIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
          col++;

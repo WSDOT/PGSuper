@@ -148,8 +148,9 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
 
       //GET_IFACE(IPretensionForce,pPSForce);
       //Float64 xfer = pPSForce->GetXferLengthAdjustment(poi);
-#pragma Reminder("############# - Shear Capacity, strand development length adjustment - ##############")
-      // Should be using development lenght because this is an ultimate condition
+      // Should we be using development length adjustment because this is an ultimate condition?
+      // Logic says we should, but we never have and industry published examples don't seem to 
+      // indicate that we need to.
       Float64 xfer = 1.0;
 
       if (0 < pscd->Aps)
@@ -159,7 +160,9 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
          // use 0.75 for low relax strands, otherwise 0.7 (see PCI BDM 8.4.1.1.4)
          Float64 K = 0.70;
          if ( pStrand->GetType() == matPsStrand::LowRelaxation )
+         {
             K = 0.75;
+         }
 
          pscd->fpops = xfer*K*fpu;
       }
@@ -186,7 +189,9 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
          // use 0.75 for low relax strands, otherwise 0.7 (see PCI BDM 8.4.1.1.4)
          Float64 K = 0.70;
          if ( pTendon->GetType() == matPsStrand::LowRelaxation )
+         {
             K = 0.75;
+         }
 
          pscd->fpopt = K*fpu;
       }
@@ -235,9 +240,13 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    pscd->Vn2 = 0.25* pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
 
    if (pscd->ShearInRange)
+   {
       pscd->Vn = Min(pscd->Vn1,pscd->Vn2);
+   }
    else
+   {
       pscd->Vn = pscd->Vn2;
+   }
 
    pscd->pVn = pscd->Phi * pscd->Vn;
 

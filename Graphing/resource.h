@@ -33,8 +33,6 @@
 #define IDC_BOTTOMDECK                  3025
 #define IDC_TOPGIRDER                   3026
 #define IDC_BOTTOMGIRDER                3027
-#define IDC_TIME                        3028
-#define IDC_INTERVAL_LIST               3029
 #define IDC_PROPERTY                    3030
 #define IDC_BEAM                        3031
 #define IDC_TRANSFORMED                 3032
@@ -61,18 +59,15 @@
 #define IDC_TOP_GIRDER                  3058
 #define IDC_BOTTOM_GIRDER               3059
 #define IDC_TOP_DECK                    3060
-#define IDC_CHECK7                      3061
 #define IDC_BOTTOM_DECK                 3061
-#define IDC_RADIO2                      3064
-#define IDC_MOMENT                      3064
-#define IDC_CHECK1                      3065
 #define IDC_ELEV_ADJUSTMENT             3065
 #define IDC_CREEP                       3065
 #define IDC_SHRINKAGE                   3066
 #define IDC_RELAXATION                  3067
 #define IDC_NET_GIRDER                  3069
-#define IDC_RADIO1                      3070
 #define IDC_NET_DECK                    3070
+#define IDC_PERMANENT                   3070
+#define IDC_TEMPORARY                   3071
 
 // Next default values for new objects
 // 
@@ -80,7 +75,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        205
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         3071
+#define _APS_NEXT_CONTROL_VALUE         3072
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

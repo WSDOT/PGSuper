@@ -141,12 +141,12 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,       maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,       minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,       maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,       minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserLLIM,    maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserLLIM,    minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserDC,       maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserDC,       minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserDW,       maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserDW,       minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserLLIM,    maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserLLIM,    minBAT ) );
          }
          else
          {
@@ -162,9 +162,9 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDC,  maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserDW,  maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pftUserLLIM,   maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserDC,  maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserDW,  maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, reactionLocation, pgsTypes::pftUserLLIM,   maxBAT ) );
          }
          else
          {

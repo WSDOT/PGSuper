@@ -948,50 +948,54 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    // The design artifact
    pgsGirderDesignArtifact artifact(girderKey);
 
+   GET_IFACE(IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    try 
    {
-      IndexType do_cnt = desOptionsColl.size();
-      IndexType do_idx = 1;
-      for(std::vector<arDesignOptions>::const_iterator it = desOptionsColl.begin(); it!=desOptionsColl.end(); it++)
+      std::vector<arDesignOptions>::const_iterator designOptionIter(desOptionsColl.begin());
+      std::vector<arDesignOptions>::const_iterator designOptionIterEnd(desOptionsColl.end());
+      for ( ; designOptionIter != designOptionIterEnd; designOptionIter++ )
       {
-         const arDesignOptions& options = *it;
+         const arDesignOptions& options = *designOptionIter;
 
          DoDesign(girderKey,options,artifact);
 
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-         // the girder should have an overall outcome for all designed segments
-         SegmentIndexType segIdx = 0;
-         pgsSegmentDesignArtifact* pSegmentDesignArtifact = artifact.GetSegmentDesignArtifact(segIdx);
-
-         if (pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::Success ||
-             do_idx == do_cnt)
+         bool bSuccess = true;
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            // We are done if design succeeds, or if this is the last strategy
+            pgsSegmentDesignArtifact* pSegmentDesignArtifact = artifact.GetSegmentDesignArtifact(segIdx);
+            if ( pSegmentDesignArtifact->GetOutcome() != pgsSegmentDesignArtifact::Success )
+            {
+               bSuccess = false;
+               pSegmentDesignArtifact->AddFailedDesign(options);
+            }
+         }
+
+         if ( bSuccess || designOptionIter == designOptionIterEnd-1 )
+         {
+            // if the design succeeded or if we are out of design options, we are done
             break;
          }
-         else
-         {
-            // design failed - store failure information
-            pSegmentDesignArtifact->AddFailedDesign(options);
-         }
-
-         do_idx++;
       }
    }
    catch (pgsSegmentDesignArtifact::Outcome outcome)
    {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-      // the girder should have an overall outcome for all designed segments
-      SegmentIndexType segIdx = 0;
       if (outcome == pgsSegmentDesignArtifact::DesignCancelled )
       {
-         CSegmentKey segmentKey(girderKey,segIdx);
-         pgsSegmentDesignArtifact segmentArtifact(segmentKey);
-         artifact.AddSegmentDesignArtifact(segIdx,segmentArtifact);
+         // Design was cancelled... put a dummy artifact for all segments
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey segmentKey(girderKey,segIdx);
+            pgsSegmentDesignArtifact segmentArtifact(segmentKey);
+            artifact.AddSegmentDesignArtifact(segIdx,segmentArtifact);
+         }
       }
 
-      pgsSegmentDesignArtifact* pSegmentDesignArtifact = artifact.GetSegmentDesignArtifact(segIdx);
-      pSegmentDesignArtifact->SetOutcome(outcome);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         pgsSegmentDesignArtifact* pSegmentDesignArtifact = artifact.GetSegmentDesignArtifact(segIdx);
+         pSegmentDesignArtifact->SetOutcome(outcome);
+      }
    }
 
    return artifact;
@@ -1605,7 +1609,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
    ASSERT_GIRDER_KEY(girderKey);
 
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pGirder);
+   GET_IFACE_NOCHECK(IGirder,pGirder);
 
    // Determine maximum duct size
    GET_IFACE(IPointOfInterest,pPoi);
@@ -1740,7 +1744,6 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
 
 void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact)
 {
-#pragma Reminder("UPDATE: Allowable stress in Post-Tensioned temporary strands needs to be checked")
    GET_IFACE(IAllowableStrandStress,pAllow);
    GET_IFACE(IPretensionForce, pPsForce);
    GET_IFACE(IPointOfInterest,pPoi);
@@ -1816,8 +1819,10 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
 
       if ( pAllow->CheckStressAfterLosses() && strandType != pgsTypes::Temporary )
       {
-#pragma Reminder("REVIEW: wouldn't Service I be the worst case?")
-         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceIII), pAllow->GetAllowableAfterLosses(segmentKey,strandType) );
+         Float64 fpe_ServiceI   = pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceI);
+         Float64 fpe_ServiceIII = pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceIII);
+         Float64 fpe = Max(fpe_ServiceI,fpe_ServiceIII);
+         pArtifact->SetCheckAfterLosses( strandType, fpe, pAllow->GetAllowableAfterLosses(segmentKey,strandType) );
       }
    }
 }
@@ -2006,7 +2011,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
 
          // get segment stress due to post-tensioning
          Float64 fPosttension,fDummy;
-         pProductForces->GetStress(task.intervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPosttension,&fDummy);
+         pProductForces->GetStress(task.intervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPosttension,&fDummy);
 
          // get segment stress due to external loads
          Float64 fLimitStateMin, fLimitStateMax;
@@ -2369,8 +2374,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
 
       // get segment stress due to post-tensioning
       Float64 fTopPosttension, fBotPosttension, fDummy;
-      pProductForces->GetStress(task.intervalIdx,pftPostTensioning,poi,batTop,   rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTopPosttension,&fDummy);
-      pProductForces->GetStress(task.intervalIdx,pftPostTensioning,poi,batBottom,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fDummy,         &fBotPosttension);
+      pProductForces->GetStress(task.intervalIdx,pgsTypes::pftPostTensioning,poi,batTop,   rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTopPosttension,&fDummy);
+      pProductForces->GetStress(task.intervalIdx,pgsTypes::pftPostTensioning,poi,batBottom,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fDummy,         &fBotPosttension);
 
       // get girder stress due to external loads (top)
       Float64 fTopLimitStateMin, fTopLimitStateMax;
@@ -3184,15 +3189,15 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
          Float64 station,offset;
          pBridge->GetStationAndOffset(poi,&station,&offset);
          Float64 start_station = pBridge->GetPierStation(0);
-         Float64 distFromStartOfBridge = station - start_station;
+         Float64 Xb = station - start_station;
 
          if ( segmentKey.girderIndex == 0 )
          {
-            slab_overhang = pBridge->GetLeftSlabOverhang(distFromStartOfBridge); 
+            slab_overhang = pBridge->GetLeftSlabOverhang(Xb); 
          }
          else
          {
-            slab_overhang = pBridge->GetRightSlabOverhang(distFromStartOfBridge);
+            slab_overhang = pBridge->GetRightSlabOverhang(Xb);
          }
 
          Float64 top_width = pGdr->GetTopWidth(poi); // total width of the top of the girder
@@ -4440,8 +4445,7 @@ void pgsDesigner2::CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlope
       capacity = s50;
    }
 
-#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
-   demand = pStrGeom->GetMaxStrandSlope( pgsPointOfInterest(segmentKey,0.00) ); // +/- value
+   demand = pStrGeom->GetMaxStrandSlope( segmentKey ); // +/- value
    demand = fabs(demand); // capacity is always positive so use absolute value of demand
 
    pArtifact->SetCapacity( capacity );
@@ -4465,7 +4469,6 @@ void pgsDesigner2::CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownF
    pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&maxHoldDownForce);
    pArtifact->IsApplicable( bCheck );
 
-#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
    Float64 demand = pPrestressForce->GetHoldDownForce(segmentKey);
 
    pArtifact->SetCapacity( maxHoldDownForce );
@@ -4497,16 +4500,11 @@ void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirder
 
    // Get the POIs for this girder
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_ERECTED_SEGMENT ) );
-#pragma Reminder("UPDATE: this is not every efficient")
-   // What we want is all the POI that occur along a girder within a span because we are checking
-   // deflections within a span... below, we go through the vector of POI and skip all that
-   // are not in the current span. That means we go through this full vector for each span.
-   // It would be more efficient to just get the POI for a given span
-
    GET_IFACE(IProductForces,pForces);
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(CSpanKey(spanIdx,girderKey.girderIndex),POI_ERECTED_SEGMENT);
+
       pgsDeflectionCheckArtifact artifact(spanIdx);
 
       if (pSpecEntry->GetDoEvaluateLLDeflection())
@@ -4520,7 +4518,7 @@ void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirder
          // get max allowable deflection
          Float64 L = pBridge->GetSpanLength(spanIdx,girderKey.girderIndex); // span length for this girder (cl-brg to cl-brg length)
          Float64 ratio = pSpecEntry->GetLLDeflectionLimit();
-         ASSERT(ratio>0);
+         ATLASSERT(0 < ratio);
          Float64 capacity = L/ratio;
 
          artifact.SetAllowableSpanRatio(ratio);
@@ -4539,16 +4537,15 @@ void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirder
          {
             const pgsPointOfInterest& poi = *poiIter;
 
-            // Determine if this POI is in the span that is currently being evaluated
-#pragma Reminder("UPDATE: this is not every efficient") // see note above
+#if defined _DEBUG
+            // make sure the poi is actually in this span
             CSpanKey thisSpanKey;
             Float64 Xspan;
             pPoi->ConvertPoiToSpanPoint(poi,&thisSpanKey,&Xspan);
-            if ( thisSpanKey.spanIndex != spanIdx )
-            {
-               continue;
-            }
+            ATLASSERT(thisSpanKey.spanIndex == spanIdx);
+#endif // _DEBUG
 
+            // Determine if this POI is in the span that is currently being evaluated
             if ( poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2) )
             {
                // skip if critical section as there aren't deflection results at the critical section
@@ -6074,22 +6071,22 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("Current A dimension (Start) = ") << ::ConvertFromSysUnits(startSlabOffset,unitMeasure::Inch) << _T(" in"));
    LOG(_T("Current A dimension (End)   = ") << ::ConvertFromSysUnits(endSlabOffset,  unitMeasure::Inch) << _T(" in"));
    LOG(_T(""));
-   LOG(_T("M girder      = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(erectSegmentIntervalIdx,pftGirder,poi,bat, rtCumulative),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M diaphragm   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M shear key   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M construction= ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftConstruction,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M slab        = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M girder      = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(erectSegmentIntervalIdx,pgsTypes::pftGirder,poi,bat, rtCumulative),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M diaphragm   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M shear key   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftShearKey,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M construction= ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftConstruction,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M slab        = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlab,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("dM slab       = ") << ::ConvertFromSysUnits(pProductForces->GetDesignSlabMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M slab pad    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPad,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M slab pad    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlabPad,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("dM slab pad   = ") << ::ConvertFromSysUnits(pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M panel       = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPanel,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M user dc (1) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M user dw (1) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M barrier     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M sidewalk    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(railingSystemIntervalIdx,pftSidewalk      ,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M user dc (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDC,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M user dw (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(compositeDeckIntervalIdx,pftUserDW,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M overlay     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(overlayIntervalIdx,pftOverlay,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M panel       = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlabPanel,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M user dc (1) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftUserDC,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M user dw (1) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftUserDW,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M barrier     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M sidewalk    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(railingSystemIntervalIdx,pgsTypes::pftSidewalk      ,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M user dc (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDC,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M user dw (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(compositeDeckIntervalIdx,pgsTypes::pftUserDW,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M overlay     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental),unitMeasure::KipFeet) << _T(" k-ft"));
 
    Float64 Mllmax, Mllmin;
    pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx,pgsTypes::lltDesign,poi,bat,true,false,&Mllmin,&Mllmax);

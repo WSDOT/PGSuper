@@ -241,7 +241,7 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
 {
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
-      IntervalIndexType intervalIdx = MAX_INDEX;
+      IntervalIndexType intervalIdx = INVALID_INDEX;
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_StrandStressingSequenceIntervalLimits.begin());
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_StrandStressingSequenceIntervalLimits.end());
       for ( ; iter != iterEnd; iter++ )
@@ -251,7 +251,11 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
               (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
-            intervalIdx = Min(intervalIdx,iter->second.second);
+            if ( intervalIdx == MAX_INDEX )
+            {
+               intervalIdx = 0;
+            }
+            intervalIdx = Max(intervalIdx,iter->second.second);
          }
       }
       return intervalIdx;
@@ -313,7 +317,11 @@ IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirde
               (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
-            intervalIdx = Min(intervalIdx,iter->second.second);
+            if ( intervalIdx == MAX_INDEX )
+            {
+               intervalIdx = 0;
+            }
+            intervalIdx = Max(intervalIdx,iter->second.second);
          }
       }
       return intervalIdx;
@@ -339,9 +347,29 @@ IntervalIndexType CIntervalManager::GetLiftingInterval(const CSegmentKey& segmen
    return GetPrestressReleaseInterval(segmentKey) + 1;
 }
 
+IntervalIndexType CIntervalManager::GetFirstLiftingInterval(const CGirderKey& girderKey) const
+{
+   return GetFirstPrestressReleaseInterval(girderKey)+1;
+}
+
+IntervalIndexType CIntervalManager::GetLastLiftingInterval(const CGirderKey& girderKey) const
+{
+   return GetLastPrestressReleaseInterval(girderKey)+1;
+}
+
 IntervalIndexType CIntervalManager::GetStorageInterval(const CSegmentKey& segmentKey) const
 {
    return GetPrestressReleaseInterval(segmentKey) + 2;
+}
+
+IntervalIndexType CIntervalManager::GetFirstStorageInterval(const CGirderKey& girderKey) const
+{
+   return GetFirstPrestressReleaseInterval(girderKey)+2;
+}
+
+IntervalIndexType CIntervalManager::GetLastStorageInterval(const CGirderKey& girderKey) const
+{
+   return GetLastPrestressReleaseInterval(girderKey)+2;
 }
 
 IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmentKey) const
@@ -422,18 +450,61 @@ IntervalIndexType CIntervalManager::GetCastClosureInterval(const CClosureKey& cl
 
 IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const
 {
-   ASSERT_GIRDER_KEY(girderKey);
-   std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
-   ATLASSERT(found != m_SegmentErectionSequenceIntervalLimits.end());
-   return found->second.first;
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_SegmentErectionSequenceIntervalLimits.begin());
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_SegmentErectionSequenceIntervalLimits.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
+              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+            )
+         {
+            intervalIdx = Min(intervalIdx,iter->second.first);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
+      ATLASSERT(found != m_SegmentErectionSequenceIntervalLimits.end());
+      return found->second.first;
+   }
+
 }
 
 IntervalIndexType CIntervalManager::GetLastSegmentErectionInterval(const CGirderKey& girderKey) const
 {
-   ASSERT_GIRDER_KEY(girderKey);
-   std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
-   ATLASSERT(found != m_SegmentErectionSequenceIntervalLimits.end());
-   return found->second.second;
+   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_SegmentErectionSequenceIntervalLimits.begin());
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_SegmentErectionSequenceIntervalLimits.end());
+      for ( ; iter != iterEnd; iter++ )
+      {
+         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
+              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+            )
+         {
+            if ( intervalIdx == MAX_INDEX )
+            {
+               intervalIdx = 0;
+            }
+            intervalIdx = Max(intervalIdx,iter->second.second);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
+      ATLASSERT(found != m_SegmentErectionSequenceIntervalLimits.end());
+      return found->second.second;
+   }
 }
 
 IntervalIndexType CIntervalManager::GetLiveLoadInterval() const

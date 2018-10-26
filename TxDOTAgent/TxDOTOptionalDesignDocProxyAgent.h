@@ -27,6 +27,7 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
 #include <IFace\VersionInfo.h>
+#include <IFace\DocumentType.h>
 #include "TxDOTOptionalDesignData.h"
 
 #include <pgsExt\GirderArtifact.h>
@@ -70,6 +71,7 @@ class CTxDOTOptionalDesignDocProxyAgent :
    public IAgentEx,
    public IUpdateTemplates,
    public ISelection,
+   public IDocumentType,
    public IVersionInfo,
    public IGetTogaData,
    public IGetTogaResults,
@@ -84,6 +86,7 @@ BEGIN_COM_MAP(CTxDOTOptionalDesignDocProxyAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
    COM_INTERFACE_ENTRY(ISelection)
+   COM_INTERFACE_ENTRY(IDocumentType)
    COM_INTERFACE_ENTRY(IVersionInfo)
    COM_INTERFACE_ENTRY(IGetTogaData)
    COM_INTERFACE_ENTRY(IGetTogaResults)
@@ -126,6 +129,11 @@ public:
    virtual void SelectDeck();
    virtual void SelectAlignment();
    virtual Float64 GetSectionCutStation();
+
+// IDocumentType
+public:
+   virtual bool IsPGSuperDocument() { return true; }
+   virtual bool IsPGSpliceDocument() { return false; }
 
 // IVersionInfo
 public:

@@ -29,6 +29,7 @@
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
+#include <IFace\AnalysisResults.h>
 
 
 #include <PgsExt\GirderArtifact.h>

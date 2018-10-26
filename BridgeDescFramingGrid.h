@@ -96,6 +96,10 @@ public:
    void OnRemoveTemporarySupport();
    bool EnableRemoveTemporarySupportBtn();
 
+   std::vector<txnTransaction*> GetPierTransactions(PierIndexType pierIdx);
+   std::vector<txnTransaction*> GetSpanTransactions(SpanIndexType spanIdx);
+   std::vector<txnTransaction*> GetTemporarySupportTransactions(SupportIndexType tsIdx);
+
 private:
    void InsertRow();
 
@@ -115,6 +119,17 @@ private:
 
    ROWCOL GetTemporarySupportRow(SupportIndexType tsIdx);
    SupportIndexType GetTemporarySupportIndex(ROWCOL nRow);
+
+   void SavePierTransaction(PierIndexType pierIdx,txnTransaction* pTxn);
+   std::map<PierIndexType,std::vector<txnTransaction*>> m_PierTransactions;
+
+   void SaveSpanTransaction(SpanIndexType spanIdx,txnTransaction* pTxn);
+   std::map<SpanIndexType,std::vector<txnTransaction*>> m_SpanTransactions;
+
+   void SaveTemporarySupportTransaction(SupportIndexType tsIdx,txnTransaction* pTxn);
+   std::map<SupportIndexType,std::vector<txnTransaction*>> m_TempSupportTransactions;
+
+   void DeleteTransactions(std::map<IndexType,std::vector<txnTransaction*>>& transactions);
 
    CComPtr<IStation> m_objStation;
    CComPtr<IAngle> m_objAngle;

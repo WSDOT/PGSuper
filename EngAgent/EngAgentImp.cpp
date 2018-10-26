@@ -1456,24 +1456,24 @@ Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTy
    return m_PsForceEngineer.GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,&config);
 }
 
-Float64 CEngAgentImp::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+Float64 CEngAgentImp::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
-   return m_PsForceEngineer.GetElasticEffects(poi,strandType,intervalIdx,intervalTime);
+   return m_PsForceEngineer.GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime);
 }
 
-Float64 CEngAgentImp::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetElasticEffects(poi,strandType,intervalIdx,intervalTime,&config);
+   return m_PsForceEngineer.GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,&config);
 }
 
-Float64 CEngAgentImp::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetElasticEffectsWithLiveLoad(poi,strandType,limitState);
+   return m_PsForceEngineer.GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState);
 }
 
-Float64 CEngAgentImp::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetElasticEffectsWithLiveLoad(poi,strandType,limitState,&config);
+   return m_PsForceEngineer.GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,&config);
 }
 
 Float64 CEngAgentImp::GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx)
@@ -4208,8 +4208,9 @@ const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderK
    std::pair<std::map<CGirderKey,pgsGirderDesignArtifact>::iterator,bool> retval;
    pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey,designOptions);
 
-#pragma Reminder("UPDATE: assuming prestressed girder bridge")
-   // girder artifact should have an overall outcome for the design of all segments
+   // NOTE: girder artifact should have an overall outcome for the design of all segments
+   // we want to know if design was cancelled... all segment artifacts will have the DesignCancelled
+   // outcome so we just have to check the first artifact
    SegmentIndexType segIdx = 0;
    const pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
    if ( pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled )

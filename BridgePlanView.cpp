@@ -1928,6 +1928,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n") + strConnectionTip;
 
+      CString strModelType( pPier->GetPierModelType() == pgsTypes::pmtIdealized ? _T("Idealized") : _T("Physical"));
+      strMsg += _T("\r\nModel Type: ") + strModelType;
+
       EventIndexType eventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
 
       CString strEvent;
@@ -1939,10 +1942,16 @@ void CBridgePlanView::BuildPierDisplayObjects()
       }
       else
       {
-         strEvent.Format(_T("Erection Event: No defined"));
+         strEvent.Format(_T("Erection Event: Not defined"));
       }
 
       strMsg += _T("\r\n") + strEvent;
+
+#if defined _DEBUG
+      CString strDebugMsg;
+      strDebugMsg.Format(_T("\r\n\r\nID: %d"),pPier->GetID());
+      strMsg += strDebugMsg;
+#endif
 
       doCenterLine->SetToolTipText(strMsg);
       doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -2642,8 +2651,8 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          label_display_list->AddDisplayObject(doStation);
 
          // connection
-         Float64 dist_from_start_of_bridge = station - pBridgeDesc->GetPier(0)->GetStation();
-         Float64 left_slab_edge_offset = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
+         Float64 Xb = station - pBridgeDesc->GetPier(0)->GetStation();
+         Float64 left_slab_edge_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
          CComPtr<IPoint2d> connection_label_point;
          pAlignment->GetPoint(station,-left_slab_edge_offset/cos(skew),direction,&connection_label_point);
 

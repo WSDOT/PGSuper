@@ -29,11 +29,7 @@
 #include <afxdisp.h>
 #endif // _AFX_NO_OLE_SUPPORT
 
-#if defined NOGRID
-#include "nogrid.h"
-#else
 #include <grid\gxall.h>
-#endif // NOGRID
 
 #include "SharedCTrls\MultiGirderSelectGrid.h" 
 #include <PgsExt\GirderLabel.h>

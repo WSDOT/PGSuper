@@ -59,7 +59,7 @@ CString CTxDOTComponentInfo::GetDescription()
 HICON CTxDOTComponentInfo::GetIcon()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return AfxGetApp()->LoadIcon(IDI_TXDOT);
+   return AfxGetApp()->LoadIcon(IDR_TXDOTOPTIONALDESIGN);
 }
 
 bool CTxDOTComponentInfo::HasMoreInfo()

@@ -224,10 +224,10 @@ void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplay
    m_pRoadway->GetBearingNormal(station,&normal);
 
    Float64 start_station = m_pBridge->GetPierStation(0);
-   Float64 distFromStartOfBridge = station - start_station;
+   Float64 Xb = station - start_station;
 
-   Float64 left  = m_pBridge->GetLeftSlabEdgeOffset(distFromStartOfBridge);
-   Float64 right = m_pBridge->GetRightSlabEdgeOffset(distFromStartOfBridge);
+   Float64 left  = m_pBridge->GetLeftSlabEdgeOffset(Xb);
+   Float64 right = m_pBridge->GetRightSlabEdgeOffset(Xb);
 
    m_pRoadway->GetPoint(station, left, normal,p1);
    m_pRoadway->GetPoint(station, right,normal,p2);

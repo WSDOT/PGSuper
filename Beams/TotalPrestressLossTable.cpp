@@ -28,6 +28,11 @@
 #include <IFace\PrestressForce.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
+#if defined _DEBUG
+#include <IFace\Intervals.h>
+#include <IFace\PrestressForce.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -49,7 +54,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 
    scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(5); // -99.9
+   scalar.SetWidth(6); // -99.9
    scalar.SetPrecision(1);
    scalar.SetTolerance(1.0e-6);
 }
@@ -95,28 +100,6 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   // delta fpT
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ");
-   if ( !bIgnoreInitialRelaxation )
-   {
-      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
-   }
-
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
-
-   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
-   {
-      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
-   }
-
-   if ( 0 < NtMax )
-   {
-      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("ptr")) << _T(" + ");
-   }
-
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << rptNewLine;
-
-   //
    *pParagraph << _T("% Loss Initial = (");
    if ( !bIgnoreInitialRelaxation )
    {
@@ -126,9 +109,13 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
    *pParagraph << _T("% Loss Final (Time dependent losses only) = (");
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
+   if ( !bIgnoreInitialRelaxation )
+   {
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+   }
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
-   *pParagraph << _T("% Effective Loss (Time dependent losses and elastic gains) = (");
+   *pParagraph << _T("% Loss Total (Time dependent losses and instantaneous effects) = (");
    *pParagraph << RPT_STRESS(_T("pj")) << _T(" - ");
    *pParagraph << RPT_STRESS(_T("pe")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
@@ -156,10 +143,10 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    }
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Final");
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << _T("% Effective") << rptNewLine << _T("Loss");
+   (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Total");
 
    table->m_NtMax = NtMax;
    table->m_pStrands = pStrands;
@@ -172,9 +159,11 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
+   Float64 dfpR0 = 0;
    if ( !m_bIgnoreInitialRelaxation )
    {
-      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
+      dfpR0 = pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer();
+      (*this)(row,col++) << stress.SetValue(dfpR0);
    }
 
    Float64 dfpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
@@ -182,36 +171,51 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 fpj = pDetails->pLosses->GetFpjPermanent();
 
-   (*this)(row,col++) << scalar.SetValue( 100*dfpES/fpj );
+   GET_IFACE2(pBroker,IPretensionForce,pPrestressForce);
+   Float64 adj = pPrestressForce->GetXferLengthAdjustment(poi,pgsTypes::Permanent);
+
+   (*this)(row,col++) << scalar.SetValue( 100*(fpj - adj*(fpj - (dfpR0+dfpES)))/fpj );
    
+   Float64 fpp = 0;
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
-      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
+      fpp = pDetails->pLosses->GetDeltaFpp();
+      (*this)(row,col++) << stress.SetValue(fpp);
    }
 
-
+   Float64 fptr = 0;
    if ( 0 < m_NtMax )
    {
-      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFptr());
+      fptr = pDetails->pLosses->GetDeltaFptr();
+      (*this)(row,col++) << stress.SetValue(fptr);
    }
 
 
-   (*this)(row,col++) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
+   Float64 dfpLT = pDetails->pLosses->TimeDependentLosses();
+   (*this)(row,col++) << stress.SetValue(dfpLT);
+   (*this)(row,col++) << scalar.SetValue( 100*(fpj - adj*(fpj - (dfpR0+dfpLT)))/fpj );
 
    Float64 fpT = pDetails->pLosses->PermanentStrand_Final(); 
-   fpT += dfpES;
-
-   (*this)(row,col++) << stress.SetValue(fpT);
-   (*this)(row,col++) << scalar.SetValue( 100*fpT/fpj );
 
    Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
-   Float64 fpe = fpj - fpT + dfpED + dfpSIDL;
+   Float64 dfpSS = 0;
    if ( m_bIsDeckShinkageApplied )
    {
-      Float64 dfpSS = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
-      fpe += dfpSS;
+      dfpSS = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
    }
+   fpT += dfpES + fpp + fptr - dfpED - dfpSIDL - dfpSS;
+   (*this)(row,col++) << stress.SetValue(fpT);
+
+   Float64 fpe = fpj - fpT;
+   fpe *= adj;
+
+#if defined _DEBUG
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
+   Float64 _fpe_ = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+   ATLASSERT(IsEqual(fpe,_fpe_));
+#endif
 
    (*this)(row,col++) << stress.SetValue(fpe);
 

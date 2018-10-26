@@ -245,6 +245,42 @@ void CConcreteManager::ValidateConcrete()
          }
       }
    }
+   
+   //////////////////////////////////////////////////////////////////////////////
+   //
+   // Pier Concrete
+   //
+   //////////////////////////////////////////////////////////////////////////////
+   PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
+   for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++ )
+   {
+      const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
+      if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
+      {
+         const CConcreteMaterial& concrete = pPier->GetConcrete();
+
+         Float64 modE;
+         if ( concrete.bUserEci )
+         {
+            modE = concrete.Eci;
+         }
+         else
+         {
+            modE = lrfdConcreteUtil::ModE( concrete.Fc, 
+                                           concrete.StrengthDensity, 
+                                           false /* ignore LRFD range checks */ );
+
+            if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               modE *= (concrete.EcK1 * concrete.EcK2);
+            }
+         }
+
+         matConcrete* pPierConcrete = new matConcrete(_T("Pier Concrete"),concrete.Fc,concrete.StrengthDensity,modE);
+         pPierConcrete->SetType((matConcrete::Type)concrete.Type);
+         m_pPierConcrete.insert( std::make_pair(pierIdx,boost::shared_ptr<matConcrete>(pPierConcrete)) );
+      }
+   }
 
    //////////////////////////////////////////////////////////////////////////////
    //
@@ -521,7 +557,6 @@ void CConcreteManager::ValidateDeckConcrete()
 
    m_bIsDeckValidated = true;
 }
-
 
 void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
 {
@@ -1219,6 +1254,20 @@ matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBar
    ValidateConcrete();
    ValidateRailingSystemConcrete();
    return m_pRailingConc[orientation].get();
+}
+
+matConcrete* CConcreteManager::GetPierConcrete(PierIndexType pierIdx)
+{
+   ValidateConcrete();
+   std::map<PierIndexType,boost::shared_ptr<matConcrete>>::iterator found(m_pPierConcrete.find(pierIdx));
+   if ( found == m_pPierConcrete.end() )
+   {
+      // pier concrete models only exist for "physical" piers
+      ATLASSERT(false);
+      return NULL;
+   }
+
+   return found->second.get();
 }
 
 Float64 CConcreteManager::GetNWCDensityLimit()

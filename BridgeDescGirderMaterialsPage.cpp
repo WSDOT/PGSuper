@@ -38,16 +38,15 @@
 #include "SelectItemDlg.h"
 
 #include "GirderDescDlg.h"
-#include "CopyConcreteEntry.h"
 
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <Atlddx.h>
 #include <system\tokenizer.h>
 
-#include "ConcreteDetailsDlg.h"
 #include "PGSuperUnits.h"
 
 
@@ -197,54 +196,8 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    }
 }
 
-void CGirderDescGeneralPage::OnCopyMaterial() 
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-	CCopyConcreteEntry dlg(true, this);
-   INT_PTR result = dlg.DoModal();
-
-   if ( result < 0 )
-   {
-      ::AfxMessageBox(_T("There are no Concrete Material Entries in the library"),MB_OK);
-   }
-   else if (result == IDOK)
-   {
-      const ConcreteLibraryEntry* entry = dlg.m_ConcreteEntry;
-
-      if (entry!=NULL)
-      {
-         CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-         pParent->m_pSegment->Material.Concrete.Type = entry->GetType();
-         pParent->m_pSegment->Material.Concrete.Fc = entry->GetFc();
-         pParent->m_pSegment->Material.Concrete.WeightDensity = entry->GetWeightDensity();
-         pParent->m_pSegment->Material.Concrete.StrengthDensity = entry->GetStrengthDensity();
-         pParent->m_pSegment->Material.Concrete.MaxAggregateSize = entry->GetAggregateSize();
-         pParent->m_pSegment->Material.Concrete.EcK1 = entry->GetModEK1();
-         pParent->m_pSegment->Material.Concrete.EcK2 = entry->GetModEK2();
-         pParent->m_pSegment->Material.Concrete.CreepK1 = entry->GetCreepK1();
-         pParent->m_pSegment->Material.Concrete.CreepK2 = entry->GetCreepK2();
-         pParent->m_pSegment->Material.Concrete.ShrinkageK1 = entry->GetShrinkageK1();
-         pParent->m_pSegment->Material.Concrete.ShrinkageK2 = entry->GetShrinkageK2();
-
-         pParent->m_pSegment->Material.Concrete.bUserEc = entry->UserEc();
-         pParent->m_pSegment->Material.Concrete.Ec = entry->GetEc();
-
-         pParent->m_pSegment->Material.Concrete.bHasFct = entry->HasAggSplittingStrength();
-         pParent->m_pSegment->Material.Concrete.Fct     = entry->GetAggSplittingStrength();
-
-         CDataExchange dx(this,FALSE);
-         ExchangeConcreteData(&dx);
-
-         OnUserEci();
-         OnUserEc();
-      }
-   }
-}
-
 BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDescGeneralPage)
-	ON_BN_CLICKED(IDC_COPY_MATERIAL, OnCopyMaterial)
    ON_BN_CLICKED(IDC_MOD_ECI, OnUserEci)
    ON_BN_CLICKED(IDC_MOD_EC, OnUserEc)
 	ON_COMMAND(ID_HELP, OnHelp)

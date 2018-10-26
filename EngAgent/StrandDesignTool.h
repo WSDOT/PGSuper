@@ -705,7 +705,7 @@ private:
    // compute and cache pois
    void ClearHandingAttributes(pgsPointOfInterest& poi);
    void ValidatePointsOfInterest();
-   void AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn,PoiAttributeType attribute);
+   void AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn);
 
    // Private Debond Design Stuff
    //////////////////////////////

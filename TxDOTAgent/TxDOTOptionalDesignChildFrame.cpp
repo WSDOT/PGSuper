@@ -104,7 +104,7 @@ void CTxDOTOptionalDesignChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	if (bAddToTitle)
    {
-      CString msg(_T("Toga Plugin"));
+      CString msg(_T("TOGA"));
 
       // set our title
 		AfxSetWindowText(m_hWnd, msg);

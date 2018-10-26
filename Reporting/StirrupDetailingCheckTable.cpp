@@ -67,12 +67,14 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
                                                pgsTypes::LimitState ls,
                                                bool* pWriteNote) const
 {
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    *pWriteNote = false; // 
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(" "));
-   table->TableLabel() << _T("Stirrup Detailing Check [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
+   table->TableLabel() << _T("Stirrup Detailing Check: ") << pProductLoads->GetLimitStateName(ls) << _T(" [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
   
    if ( girderKey.groupIndex == ALL_GROUPS )
    {

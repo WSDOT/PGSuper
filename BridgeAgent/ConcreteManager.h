@@ -139,6 +139,7 @@ public:
    Float64 GetRailingSystemAgeingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading);
    matConcreteBase* GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation);
 
+   matConcrete* GetPierConcrete(PierIndexType pierIdx);
 
 private:
    IBroker* m_pBroker; // weak reference
@@ -183,6 +184,10 @@ private:
    // Material model for cast-in-place closure joint
    std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pClosureConcrete;
 
+   // Material model for pier concrete
+   std::map<PierIndexType,boost::shared_ptr<matConcrete>> m_pPierConcrete;
+
+   // Material model for deck concrete
    Float64 m_DeckEcK1;
    Float64 m_DeckEcK2;
    Float64 m_DeckCreepK1;
@@ -191,6 +196,7 @@ private:
    Float64 m_DeckShrinkageK2;
    std::auto_ptr<matConcreteBase> m_pDeckConc; // time dependent Deck concrete model
 
+   // Material model for railing system concrete
    std::auto_ptr<matConcreteBase> m_pRailingConc[2]; // index is pgsTypes::TrafficBarrierOrientation
 
    // callback IDs for the status callbacks we register

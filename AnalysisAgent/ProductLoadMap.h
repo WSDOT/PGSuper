@@ -23,23 +23,23 @@
 
 #include <IFace\AnalysisResults.h>
 
-// Mapping between ProductForceType contants and consistent human-readable name
+// Mapping between pgsTypes::ProductForceType contants and consistent human-readable name
 class CProductLoadMap
 {
 public:
    CProductLoadMap();
-   ProductForceType GetProductForceType(CComBSTR bstrLoadGroupName);
-   CComBSTR GetGroupLoadName(ProductForceType pfType);
-   LoadCaseIDType GetLoadCaseID(ProductForceType pfType);
+   pgsTypes::ProductForceType GetProductForceType(CComBSTR bstrLoadGroupName);
+   CComBSTR GetGroupLoadName(pgsTypes::ProductForceType pfType);
+   LoadCaseIDType GetLoadCaseID(pgsTypes::ProductForceType pfType);
    LoadCaseIDType GetMaxLoadCaseID();
 
-   static std::vector<ProductForceType> GetProductForces(IBroker* pBroker,LoadingCombinationType combo);
+   static std::vector<pgsTypes::ProductForceType> GetProductForces(IBroker* pBroker,LoadingCombinationType combo);
 
 private:
-   void AddLoadItem(ProductForceType pfType,CComBSTR bstrLoadGroupName,LoadCaseIDType lcid);
+   void AddLoadItem(pgsTypes::ProductForceType pfType,CComBSTR bstrLoadGroupName,LoadCaseIDType lcid);
 
-   std::map<ProductForceType,CComBSTR> m_ProductForceTypeToLoadName;
-   std::map<CComBSTR,ProductForceType> m_LoadNameToProductForceType;
-   std::map<ProductForceType,LoadCaseIDType> m_ProductForceTypeToLoadCaseID;
+   std::map<pgsTypes::ProductForceType,CComBSTR> m_ProductForceTypeToLoadName;
+   std::map<CComBSTR,pgsTypes::ProductForceType> m_LoadNameToProductForceType;
+   std::map<pgsTypes::ProductForceType,LoadCaseIDType> m_ProductForceTypeToLoadCaseID;
    LoadCaseIDType m_LoadCaseID;
 };

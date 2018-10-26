@@ -242,7 +242,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    std::_tstring strSpecName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
-   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
+   GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
    if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;

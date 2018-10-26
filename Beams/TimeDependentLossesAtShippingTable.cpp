@@ -216,17 +216,25 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
    if ( !pDetails->pLosses->IgnoreInitialRelaxation() )
+   {
          (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
+   }
 
    Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
    Float64 fpLTH = pDetails->pLosses->PermanentStrand_TimeDependentLossesAtShipping();
-   Float64 fpH = pDetails->pLosses->PermanentStrand_AtShipping();
+   Float64 fpp = 0;
+   if ( m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
+   {
+      fpp = pDetails->pLosses->GetDeltaFpp();
+   }
+   Float64 fpH = pDetails->pLosses->PermanentStrand_AtShipping(); // this is time dependent only
+   fpH += fpES + fpp; // need to add elastic effects to get total change in effective prestress at hauling
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
    (*this)(row+rowOffset,col++) << stress.SetValue(fpLTH);
    if ( m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
-      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
+      (*this)(row+rowOffset,col++) << stress.SetValue(fpp);
    }
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpH);
@@ -234,7 +242,9 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    if ( m_bTemporaryStrands )
    {
       if ( !pDetails->pLosses->IgnoreInitialRelaxation() )
+      {
          (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer());
+      }
 
       (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses());
       (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping());

@@ -252,21 +252,21 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
 
       pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-      delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi, bat, rtCumulative, false )
-               + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi, bat, rtCumulative, false );
+      delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative, false )
+               + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative, false );
 
-      delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey, poi, bat, rtCumulative, false );
+      delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative, false );
       
-      delta_ol = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi, bat, rtCumulative, false );
+      delta_ol = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative, false );
 
-      delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtCumulative, false );
-      delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtCumulative, false );
+      delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );
+      delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );
 
-      Float64 delta_dcu = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDC, poi, bat, rtCumulative, false);
-      delta_dcu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pftUserDC, poi, bat, rtCumulative, false);
+      Float64 delta_dcu = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
+      delta_dcu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
 
-      Float64 delta_dwu = pProductForces->GetDeflection(castDeckIntervalIdx,pftUserDW, poi, bat, rtCumulative, false);
-      delta_dwu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pftUserDW, poi, bat, rtCumulative, false);
+      Float64 delta_dwu = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
+      delta_dwu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
 
       pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true, false, &delta_ll, &temp );
 

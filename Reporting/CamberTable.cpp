@@ -281,38 +281,38 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
 
-      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
+      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtIncremental,false);
       Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
 
       //Dps1       = pCamber->GetPrestressDeflection( poi, false );
       //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
+      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,poi,bat,rtCumulative,false);
+      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,poi,bat,rtCumulative,false);
       //Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
       //Float64 Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
+      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
       Float64 Dcreep1    = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
-      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
-              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,erectedPoi,bat, rtCumulative, false);
       Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
       // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
       ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
@@ -558,30 +558,30 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
 
       // NOTE: Get the creep deflection from the ICamber interface because it takes the construction rate 
       // into account. Getting creep deflection as a product load assumes the maximum construction rate
-      //Float64 Dcreep       = pProduct->GetDeflection(storageIntervalIdx,pftCreep,storagePoi,bat,rtCumulative,false);
+      //Float64 Dcreep       = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftCreep,storagePoi,bat,rtCumulative,false);
       Float64 Dcreep       = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDeck, constructionRate );
 
-      Float64 Ddiaphragm   = pProduct->GetDeflection(castDeckIntervalIdx,pftDiaphragm,erectedPoi,bat, rtCumulative, false);
-      Float64 Dshearkey    = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
-      Float64 Ddeck        = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false)
-                           + pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser1       = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                           + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser2       = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                           + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Dbarrier     = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Dsidewalk    = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay     = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+      Float64 Ddiaphragm   = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftDiaphragm,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey    = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck        = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false)
+                           + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser1       = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                           + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2       = pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                           + pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier     = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk    = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay     = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
       // Table 1a
       col = 0;
@@ -824,33 +824,33 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
 
       // NOTE: Get the creep deflection from the ICamber interface because it takes the construction rate 
       // into account. Getting creep deflection as a product load assumes the maximum construction rate
-      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
+      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtIncremental,false);
       Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
 
       Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
-              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
-      Float64 Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPanel,erectedPoi,bat, rtCumulative, false);
-      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPanel,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false);
       Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
 
       // Table 1a
@@ -1097,27 +1097,27 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
 
       Float64 Dcreep     = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDeck, constructionRate );
-      Float64 Ddiaphragm = pProduct->GetDeflection(castDeckIntervalIdx,pftDiaphragm,erectedPoi,bat, rtCumulative, false);
-      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
-      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
-              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
-      Float64 Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPanel,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+      Float64 Ddiaphragm = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftDiaphragm,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dpanel     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPanel,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
 
 
       // Table 1a
@@ -1360,30 +1360,30 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
 
-      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
+      //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtIncremental,false);
       Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
 
       Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
-      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
-              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pftSlabPad,erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false);
+      Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false);
+              Ddeck     += pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,erectedPoi,bat, rtCumulative, false);
       Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
       Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate );
 
       // Table 1a
@@ -1625,25 +1625,25 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
-      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
-      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,erectedPoi,bat,rtCumulative,false);
 
       Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,      erectedPoi,bat, rtCumulative, false);
+      Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,      erectedPoi,bat, rtCumulative, false);
       Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(castDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDC,erectedPoi,bat, rtCumulative, false) 
-                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pftUserDW,erectedPoi,bat, rtCumulative, false);
-      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pftSidewalk,      erectedPoi,bat, rtCumulative, false);
-      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
-      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+      Float64 Duser1     = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Duser2     = pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
+                         + pProduct->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
+      Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
+      Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
+      Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
       Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate );
 
       // Table 1a

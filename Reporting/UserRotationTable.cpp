@@ -149,12 +149,12 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDC,   poi, minBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDW,   poi, minBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserDC,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserDC,   poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserDW,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserDW,   poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false ) );
          }
          else
          {
@@ -170,9 +170,9 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserDC,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserDW,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
          }
          else
          {

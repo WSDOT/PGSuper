@@ -29,13 +29,11 @@
 // LongSteelPage.h : header file
 //
 
-#if !defined NOGRID
 // for the grid
 #ifndef _GXALL_H_
 #include "gxwnd.h"
 #include "gxctrl.h"
 #endif
-#endif // NOGRID
 
 #include "LongSteelGrid.h"
 #include <Units\Measure.h>

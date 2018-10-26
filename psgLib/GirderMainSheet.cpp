@@ -104,8 +104,8 @@ void CGirderMainSheet::UpdatePropertyPages(CLSID clsidBeamFamily)
    else
    {
       AddPage(&m_GirderDimensionsPage);
-      AddPage(&m_GirderHarpedStrandPage);   // straight and harped strands
-      AddPage(&m_GirderStraightStrandPage); // temporary strands
+      AddPage(&m_GirderPermanentStrandPage);   // straight and harped strands
+      AddPage(&m_GirderTemporaryStrandPage); // temporary strands
       AddPage(&m_FlexureDesignPage);
       AddPage(&m_ShearDesignPage);
       AddPage(&m_HarpPointPage);
@@ -129,8 +129,8 @@ void CGirderMainSheet::Init()
    // Turn on help for the property sheet
    m_psh.dwFlags                            |= PSH_HASHELP | PSH_NOAPPLYNOW;
    m_GirderDimensionsPage.m_psp.dwFlags     |= PSP_HASHELP;
-   m_GirderHarpedStrandPage.m_psp.dwFlags   |= PSP_HASHELP;
-   m_GirderStraightStrandPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_GirderPermanentStrandPage.m_psp.dwFlags   |= PSP_HASHELP;
+   m_GirderTemporaryStrandPage.m_psp.dwFlags |= PSP_HASHELP;
    m_LongSteelPage.m_psp.dwFlags            |= PSP_HASHELP;
    m_ShearSteelPage.m_psp.dwFlags           |= PSP_HASHELP;
    m_HarpPointPage.m_psp.dwFlags            |= PSP_HASHELP;
@@ -280,11 +280,11 @@ bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
       Float64 heightStart = m_Entry.GetBeamHeight(pgsTypes::metStart);
       Float64 heightEnd   = m_Entry.GetBeamHeight(pgsTypes::metEnd);
 
-      ROWCOL nrows = m_GirderStraightStrandPage.m_TemporaryGrid.GetRowCount();
+      ROWCOL nrows = m_GirderTemporaryStrandPage.m_TemporaryGrid.GetRowCount();
       for (ROWCOL i=1; i<=nrows; i++)
       {
          Float64 x,y;
-         if (m_GirderStraightStrandPage.m_TemporaryGrid.GetRowData(i,&x,&y))
+         if (m_GirderTemporaryStrandPage.m_TemporaryGrid.GetRowData(i,&x,&y))
          {
             // values are in display units - must convert to system
             x = ::ConvertToSysUnits(x, pDisplayUnits->ComponentDim.UnitOfMeasure);
@@ -303,7 +303,7 @@ bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
             CString msg;
             msg.Format(_T("Error - Incomplete data in row %d"),i);
             AfxMessageBox(msg);
-		      pDX->PrepareCtrl(m_GirderStraightStrandPage.m_TemporaryGrid.GridWnd()->GetDlgCtrlID());
+		      pDX->PrepareCtrl(m_GirderTemporaryStrandPage.m_TemporaryGrid.GridWnd()->GetDlgCtrlID());
             return false;
          }
       }
@@ -335,7 +335,7 @@ void CGirderMainSheet::UploadTemporaryStrandData()
       new_temp_strands->Add(p);
    }
 
-   m_GirderStraightStrandPage.m_TemporaryGrid.FillGrid(new_temp_strands);
+   m_GirderTemporaryStrandPage.m_TemporaryGrid.FillGrid(new_temp_strands);
 }
 
 bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
@@ -414,7 +414,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
       m_Entry.m_PermanentStrands.clear();
 
       // grab a reference to grid's internal data to save typing
-      CGirderGlobalStrandGrid::EntryCollectionType& grid_collection =  m_GirderHarpedStrandPage.m_MainGrid.m_Entries;
+      CGirderGlobalStrandGrid::EntryCollectionType& grid_collection =  m_GirderPermanentStrandPage.m_MainGrid.m_Entries;
 
       CollectionIndexType g_cnt = grid_collection.size();
       StrandIndexType num_straight=0;
@@ -513,7 +513,7 @@ void CGirderMainSheet::UploadStrandData()
    }
 
    // we have data structure built - now fill grid
-   m_GirderHarpedStrandPage.m_MainGrid.FillGrid(grid_collection);
+   m_GirderPermanentStrandPage.m_MainGrid.FillGrid(grid_collection);
 }
 
 void CGirderMainSheet::UploadLongitudinalData()

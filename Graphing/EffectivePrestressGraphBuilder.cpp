@@ -115,7 +115,7 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
       const unitmgtForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
       m_pYFormat = new ForceTool(forceUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      m_Graph.SetYAxisTitle(_T("P (")+m_pYFormat->UnitTag()+_T(")"));
+      m_Graph.SetYAxisTitle(_T("Fpe (")+m_pYFormat->UnitTag()+_T(")"));
    }
 }
 
@@ -156,7 +156,8 @@ void CEffectivePrestressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Gir
    CString strGraphSubTitle;
    if ( ductIdx == INVALID_INDEX )
    {
-      strGraphSubTitle.Format(_T("Group %d Girder %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx));
+      bool bPermanent = ((CEffectivePrestressGraphController*)m_pGraphController)->IsPermanentStrands();
+      strGraphSubTitle.Format(_T("Group %d Girder %s %s Strands"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),(bPermanent ? _T("Permanent") : _T("Temporary")));
    }
    else
    {
@@ -313,6 +314,9 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    GET_IFACE(IIntervals,pIntervals);
 
    bool bStresses = ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph();
+   bool bPermanent = ((CEffectivePrestressGraphController*)m_pGraphController)->IsPermanentStrands();
+   pgsTypes::StrandType strandType = (bPermanent ? pgsTypes::Permanent : pgsTypes::Temporary);
+
 
    IntervalIndexType firstIntervalIdx = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetLastInterval();
@@ -344,41 +348,58 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          IntervalIndexType stressStrandIntervalIdx = pIntervals->GetStressStrandInterval(thisSegmentKey);
          IntervalIndexType releaseIntervalIdx      = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
 
+         IntervalIndexType stressTempStrandIntervalIdx       = pIntervals->GetTemporaryStrandStressingInterval(thisSegmentKey);
+         IntervalIndexType tempStrandInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(thisSegmentKey);
+         IntervalIndexType tempStrandRemovalIntervalIdx      = pIntervals->GetTemporaryStrandRemovalInterval(thisSegmentKey);
+
+         if ( !bPermanent && // plotting for temporary strands - AND -
+               ((tempStrandInstallationIntervalIdx == INVALID_INDEX) || // temp strands not installed - OR -
+               (intervalIdx < stressTempStrandIntervalIdx || tempStrandRemovalIntervalIdx < intervalIdx)) // temp strands don't exist in this interval
+            )
+         {
+            continue; // continue
+         }
+
          Float64 X = *xIter;
 
+         // Plot for Permanent Strands
          pgsTypes::IntervalTimeType time = pgsTypes::End; // always plot fpe at end of interval
-         if (intervalIdx == stressStrandIntervalIdx || intervalIdx == releaseIntervalIdx)
+         if ( (bPermanent && (intervalIdx == stressStrandIntervalIdx || intervalIdx == releaseIntervalIdx))
+               ||
+               (!bPermanent && (intervalIdx == stressTempStrandIntervalIdx || intervalIdx == tempStrandInstallationIntervalIdx))
+            )
          {
             time = pgsTypes::Start; // except if this is the strand stress or release intervals
                                     // we want to capture fpj and strand stress just before
                                     // release so there isn't any elastic shortening effect, only initial relaxation
          }
 
-#pragma Reminder("UPDATE: add plot for temporary strands if they are modeled")
-         
          if ( bStresses )
          {
-            Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,time);
+            Float64 fpe = pPSForce->GetEffectivePrestress(poi,strandType,intervalIdx,time);
             AddGraphPoint(dataSeries,X,fpe);
          }
          else
          {
-            Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,time,true/*include elastic effects*/);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi,strandType,intervalIdx,time,true/*include elastic effects*/);
             AddGraphPoint(dataSeries,X,Fpe);
          }
 
-         if ( intervalIdx == releaseIntervalIdx )
+         if ( (bPermanent && intervalIdx == releaseIntervalIdx)
+              ||
+              (!bPermanent && intervalIdx == tempStrandInstallationIntervalIdx)
+            )
          {
             // if this is at release, also plot at the end of the interval so we capture the
             // elastic shortening that occurs during this interval
             if ( bStresses )
             {
-               Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+               Float64 fpe = pPSForce->GetEffectivePrestress(poi,strandType,intervalIdx,pgsTypes::End);
                AddGraphPoint(dataSeries2,X,fpe);
             }
             else
             {
-               Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+               Float64 Fpe = pPSForce->GetPrestressForce(poi,strandType,intervalIdx,pgsTypes::End);
                AddGraphPoint(dataSeries2,X,Fpe);
             }
          }

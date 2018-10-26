@@ -80,7 +80,6 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGirderDescGeneralPage)
-	afx_msg void OnCopyMaterial();
 	virtual BOOL OnInitDialog();
    afx_msg void OnUserEci();
    afx_msg void OnUserEc();

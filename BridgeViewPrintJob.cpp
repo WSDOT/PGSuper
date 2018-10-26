@@ -54,7 +54,7 @@ CBridgeViewPrintJob::CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBri
 	m_csFtPrint = "Arial";
 	m_iFtPrint = 120;
 
-	strTitle = "Bridge Model View";
+	strTitle = "Bridge View";
 }
 
 CBridgeViewPrintJob::~CBridgeViewPrintJob()

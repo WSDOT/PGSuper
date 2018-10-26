@@ -188,7 +188,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   GET_IFACE2_NOCHECK(pBroker,IAllowableConcreteStress,pAllowable);
 
    // create and set up table
    const ColumnIndexType add_cols = 2;
@@ -296,11 +296,10 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    Float64 allowable_tension;
    Float64 allowable_tension_with_rebar;
 
-   if (stressType==pgsTypes::Tension && ((intervalIdx != compositeDeckIntervalIdx) || (intervalIdx != compositeDeckIntervalIdx && pAllowable->CheckFinalDeadLoadTensionStress())) )
+   if (stressType==pgsTypes::Tension && ((intervalIdx != compositeDeckIntervalIdx) || (intervalIdx == compositeDeckIntervalIdx && pAllowable->CheckFinalDeadLoadTensionStress())) )
    {
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0 );
       allowable_tension = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
-      ATLASSERT(IsEqual(allowable_tension,pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder)));
       allowable_tension_with_rebar = pFactoredGdrArtifact->GetCapacityWithRebar(intervalIdx,limitState,pgsTypes::TopGirder);
    }
 
@@ -504,7 +503,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       if ( intervalIdx == releaseIntervalIdx || 
            intervalIdx == tsRemovalIntervalIdx || 
            intervalIdx == castDeckIntervalIdx || 
-          (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
+           intervalIdx == compositeDeckIntervalIdx || 
+          (intervalIdx == liveLoadIntervalIdx && (limitState == pgsTypes::ServiceI || limitState == pgsTypes::ServiceIA || limitState == pgsTypes::FatigueI))
          )
       {
          bool bPassed;

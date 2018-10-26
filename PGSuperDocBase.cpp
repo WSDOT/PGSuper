@@ -1385,11 +1385,6 @@ void CPGSuperDocBase::OnCloseDocument()
    CEAFCustomReports reports = GetCustomReports();
    pPGSuperAppPlugin->SetCustomReports(reports);
 
-   // Put the main frame icon back the way it was
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
-   pFrame->SetIcon(m_hMainFrameBigIcon,TRUE);
-   pFrame->SetIcon(m_hMainFrameSmallIcon,FALSE);
-
    CEAFBrokerDocument::OnCloseDocument();
 
    CBeamFamilyManager::Reset();
@@ -1497,7 +1492,7 @@ BOOL CPGSuperDocBase::CreateBroker()
    }
 
    // map old PGSuper (pre version 3.0) CLSID to current CLSID
-   // CLSID's where changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
+   // CLSID's were changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
    CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
    clsidMap->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
    clsidMap->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
@@ -1509,6 +1504,12 @@ BOOL CPGSuperDocBase::CreateBroker()
    clsidMap->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
 
    return TRUE;
+}
+
+HINSTANCE CPGSuperDocBase::GetResourceInstance()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return AfxGetInstanceHandle();
 }
 
 BOOL CPGSuperDocBase::OnOpenDocument(LPCTSTR lpszPathName)
@@ -1823,14 +1824,6 @@ BOOL CPGSuperDocBase::Init()
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
-
-   // Put our icon on the main frame window
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
-   m_hMainFrameBigIcon = pFrame->GetIcon(TRUE);
-   m_hMainFrameSmallIcon = pFrame->GetIcon(FALSE);
-   HICON hIcon = AfxGetApp()->LoadIcon(pTemplate->GetResourceID());
-   pFrame->SetIcon(hIcon,TRUE);
-   pFrame->SetIcon(hIcon,FALSE);
 
    return TRUE;
 }

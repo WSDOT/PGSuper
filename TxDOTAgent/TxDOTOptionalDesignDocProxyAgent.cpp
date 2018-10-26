@@ -78,6 +78,7 @@ STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::RegInterfaces()
    CComQIPtr<IBrokerInitEx2> pBrokerInit(m_pBroker);
    pBrokerInit->RegInterface( IID_IUpdateTemplates, this );
    pBrokerInit->RegInterface( IID_ISelection,       this );
+   pBrokerInit->RegInterface( IID_IDocumentType,    this );
    pBrokerInit->RegInterface( IID_IVersionInfo,     this );
    pBrokerInit->RegInterface( IID_IGetTogaData,     this );
    pBrokerInit->RegInterface( IID_IGetTogaResults,  this );
@@ -131,8 +132,11 @@ bool CTxDOTOptionalDesignDocProxyAgent::UpdatingTemplates()
 // NOTE: Not really utilizing this interface - just appealing functions that need it.
 CSelection CTxDOTOptionalDesignDocProxyAgent::GetSelection()
 {
-   ATLASSERT(false); // not using this method
-   return CSelection();
+   CSelection selection;
+   selection.Type = CSelection::Girder;
+   selection.GroupIdx = TOGA_SPAN;
+   selection.GirderIdx = TOGA_FABR_GDR;
+   return selection;
 }
 
 void CTxDOTOptionalDesignDocProxyAgent::ClearSelection()

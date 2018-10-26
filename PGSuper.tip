@@ -62,6 +62,6 @@ PGSuper can design debonded strands.
 You can quickly copy prestressing, transverse reinforcement, and handling information from one girder to another. Chose Project | Copy Girder Properties.
 Use the Girder Comparison Report to compare prestressing, transverse reinforcement, and handling information from different girders in a span.
 Lifting and hauling effects are often the critical limit states for very long girders. PGSuper considers both stress effects and non-linear strength effects for lifting and hauling.
-You can select the alignment, slab and girders in the Bridge Model View. You can edit an item by double clicking on it.
-Right click on an item in the Bridge Model View to activate its context menu. The context menu is full of the most common commands.
+You can select the alignment, slab and girders in the Bridge View. You can edit an item by double clicking on it.
+Right click on an item in the Bridge View to activate its context menu. The context menu is full of the most common commands.
 You can publish your own libraries and templates on the Internet. Post a message to the Alternate Route Project Peer-to-Peer mailing list and ask for details.

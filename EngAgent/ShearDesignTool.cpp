@@ -379,19 +379,22 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
    // Compute maximum possible bar spacing for design
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    Float64 S_over;
-#pragma Reminder("BUG: need to get the real dv value")
-   // The original code for this tool has a bug in it. It only got the max spacing values
-   // without looking at the limitations on the max spacing values. The limitations are
+#pragma Reminder("UPDATE: need to get the real dv value")
+   // The original code for this tool had a bug in it. It only got the basic max spacing values
+   // without looking at the upper limit on the max spacing values. The limitations are
    // in LRFD Equations 5.8.2.7-1 and -2. The m_SMaxMax cannot be more than 0.8dv 
    // and S_over cannot be more than 0.4dv.
+   //
    // When updating for LRFD 7th Edition, 2014, the GetMaxStirrupSpacing function was
    // updated to take in the dv parameter and consider the limiting spacing values.
-   // Since this method never look at the limitations before, we are going to assume
-   // that it is still ok.
+   //
    // To fix this bug, we need to get dv. However, which dv? The one for the current girder or
-   // the one based on the flexural design?
-   Float64 dv = 99999;
-   pTransverseReinforcementSpec->GetMaxStirrupSpacing(dv,&m_SMaxMax, &S_over); // includes user-input limit
+   // the one based on the flexural design? It is expensive and complicated to get dv
+   //
+   // Since this method never looked at the limitations before, we are going to assume
+   // that it is still ok.
+   Float64 dv = 99999; // use a huge dv value so that the upper limits never control
+   pTransverseReinforcementSpec->GetMaxStirrupSpacing(dv,&m_SMaxMax, &S_over);
    m_SMaxMax = min( m_SMaxMax, m_AvailableBarSpacings.back() );
 
    // Compute splitting zone lengths if we need them
@@ -2280,9 +2283,6 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
 
 Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 {
-#pragma Reminder("REVIEW: RDP changes of 4/30/2012, CVS File Version 1.11, not merged here")
-// RDP made some changes but I could not figure out how to merge them and/or if my re-coding
-// of this method is just a different way to resolve the issue he was resolving
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 

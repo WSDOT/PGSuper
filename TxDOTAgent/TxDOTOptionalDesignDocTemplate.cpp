@@ -96,7 +96,7 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
       strItemName = strFileName;
 
    // top level icon
-   HICON hIcon = AfxGetApp()->LoadIcon(IDI_TXDOT);
+   HICON hIcon = AfxGetApp()->LoadIcon(IDR_TXDOTOPTIONALDESIGN);
    m_TemplateGroup.SetIcon(hIcon);
    m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,NULL,hIcon) );
 

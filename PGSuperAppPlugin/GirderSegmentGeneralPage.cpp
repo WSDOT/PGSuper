@@ -12,7 +12,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 
-#include "ConcreteDetailsDlg.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
 #include <Material\Material.h>

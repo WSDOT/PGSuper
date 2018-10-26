@@ -644,23 +644,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\AASHTOConcretePage.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\AboutDlg.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\AbutmentConnectionsPage.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ACIConcretePage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ACIParametersDlg.cpp"
 				>
 			</File>
 			<File
@@ -804,14 +792,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CEBFIPConcretePage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CEBFIPParamatersDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\ChildFrm.cpp"
 				>
 			</File>
@@ -840,14 +820,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ConcreteDetailsDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ConcreteGeneralPage.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\ConfigurePGSuperDlg.cpp"
 				>
 			</File>
@@ -865,10 +837,6 @@
 			</File>
 			<File
 				RelativePath="..\convert.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CopyConcreteEntry.cpp"
 				>
 			</File>
 			<File
@@ -1754,23 +1722,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\AASHTOConcretePage.h"
-				>
-			</File>
-			<File
 				RelativePath=".\AboutDlg.h"
 				>
 			</File>
 			<File
 				RelativePath="..\AbutmentConnectionsPage.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ACIConcretePage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ACIParametersDlg.h"
 				>
 			</File>
 			<File
@@ -1914,14 +1870,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CEBFIPConcretePage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CEBFIPParametersDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="..\ChildFrm.h"
 				>
 			</File>
@@ -1950,14 +1898,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ConcreteDetailsDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConcreteGeneralPage.h"
-				>
-			</File>
-			<File
 				RelativePath="..\ConfigurePGSuperDlg.h"
 				>
 			</File>
@@ -1975,10 +1915,6 @@
 			</File>
 			<File
 				RelativePath="..\convert.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CopyConcreteEntry.h"
 				>
 			</File>
 			<File
@@ -2402,11 +2338,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2760,11 +2696,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2940,11 +2876,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3148,11 +3084,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3160,11 +3096,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

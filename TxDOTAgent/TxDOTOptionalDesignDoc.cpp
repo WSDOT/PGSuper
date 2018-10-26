@@ -35,6 +35,7 @@
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 
 #include "PGSuperCatCom.h"
+#include "TogaCatCom.h"
 #include <WBFLReportManagerAgent_i.c>
 #include <WBFLGraphManagerAgent_i.c>
 
@@ -281,7 +282,8 @@ CATID CTxDOTOptionalDesignDoc::GetAgentCategoryID()
 
 CATID CTxDOTOptionalDesignDoc::GetExtensionAgentCategoryID()
 {
-   return CATID_PGSuperExtensionAgent; // if you want extension agents
+   //return CATID_PGSuperExtensionAgent; // if you want extension agents
+   return CATID_TogaExtensionAgent; // we only want our extensions to PGSuper (which is just the TxDOT PGSuper Extension Agent)
 }
 
 void CTxDOTOptionalDesignDoc::OnCreateInitialize()
@@ -604,7 +606,6 @@ HRESULT CTxDOTOptionalDesignDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
    //return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
 }
 
-
 void CTxDOTOptionalDesignDoc::OnFileSave()
 {
    // First, Get data from active input view if there is one
@@ -790,6 +791,33 @@ void CTxDOTOptionalDesignDoc::RecreateBroker()
    }
 }
 
+BOOL CTxDOTOptionalDesignDoc::CreateBroker()
+{
+   if ( !CEAFBrokerDocument::CreateBroker() )
+   {
+      return FALSE;
+   }
+
+   // map old PGSuper (pre version 3.0) CLSID to current CLSID
+   // CLSID's were changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
+   CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
+   clsidMap->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   clsidMap->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   clsidMap->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   clsidMap->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   clsidMap->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   clsidMap->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   clsidMap->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   clsidMap->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+
+   return TRUE;
+}
+
+HINSTANCE CTxDOTOptionalDesignDoc::GetResourceInstance()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return AfxGetInstanceHandle();
+}
 
 IBroker* CTxDOTOptionalDesignDoc::GetClassicBroker()
 {
@@ -825,9 +853,19 @@ SpecLibrary* CTxDOTOptionalDesignDoc::GetSpecLibrary()
 void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 {
    // Use same master library as PGSuper
+#if defined _BETA_VERSION
    CAutoRegistry autoReg(_T("PGSuper"));
+#else
+   CAutoRegistry autoReg(_T("PGSuperV3"));
+#endif
+
    CEAFApp* pApp = EAFGetApp();
+
+#if defined _BETA_VERSION
+   CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache2"));
+#else
    CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"));
+#endif
    if (strMasterLibaryFile.IsEmpty())
    {
       // PGSuper's installer should take care of this, but just in case:
@@ -837,11 +875,20 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
       throw exc;
    }
 
+#if defined _BETA_VERSION
+   CString strURL   = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL2"));
+#else
    CString strURL   = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL"));
+#endif
+
    if (strURL.IsEmpty())
       strURL = strMasterLibaryFile;
 
+#if defined _BETA_VERSION
+   CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer2"));
+#else
    CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer"));
+#endif
 
     // Hard-coded file location
 //   CString strMasterLibaryFile = GetTOGAFolder() + CString(_T("\\")) + _T("MasterLibrary.lbr");
@@ -1064,22 +1111,22 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    bool is_adjacent = std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniformAdjacent) != sbs.end();
 
    if (!is_spread && !is_adjacent)
-      {
-         TxDOTBrokerRetrieverException exc;
+   {
+      TxDOTBrokerRetrieverException exc;
       exc.Message = _T("Fatal Error - Selected girder type must support uniform spread or adjacent spacing.");
-         throw exc;
-      }
+      throw exc;
+   }
 
    // Spacing cannot be less than girder width for any case
    const Float64 Tol=0.001; // millimeter
    Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
    if (spacing < gdr_width+Tol)
-      {
+   {
       gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
-         TxDOTBrokerRetrieverException exc;
+      TxDOTBrokerRetrieverException exc;
       exc.Message.Format(_T("The girder spacing must be greater than or equal to the girder width of %f feet"),gdr_width);
-         throw exc;
-      }
+      throw exc;
+   }
 
    if (is_adjacent)
    {
@@ -1200,8 +1247,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pDeck->GrossDepth = slab_thick;
    pDeck->SacrificialDepth = 0.0;
    pDeck->OverhangEdgeDepth = slab_thick;
-   pLftPier->GetGirderGroup(pgsTypes::Ahead)->SetSlabOffset(pgsTypes::Ahead, slab_thick);
-   pRgtPier->GetGirderGroup(pgsTypes::Back )->SetSlabOffset(pgsTypes::Back,  slab_thick);
+   bridgeDesc.SetSlabOffset(slab_thick);
+   bridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
 
    // Slab material properties
    pDeck->Concrete.Ec = m_ProjectData.GetEcSlab();
@@ -1245,6 +1292,31 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    std::_tstring curr_entry = m_ProjectData.GetSelectedProjectCriteriaLibrary();
    pSpec->SetSpecification(curr_entry);
 
+   // Now set girders' data
+   SetGirderData(m_ProjectData.GetOriginalDesignGirderData(), TOGA_ORIG_GDR, gdr_name, pGdrEntry,
+                 m_ProjectData.GetEcBeam(),pGroup);
+
+   SetGirderData(m_ProjectData.GetPrecasterDesignGirderData(), TOGA_FABR_GDR, gdr_name, pGdrEntry,
+                 m_ProjectData.GetEcBeam(),pGroup);
+
+   // Applied dead loads
+   // Overlay load must be applied before setting the bridge description
+
+   // w overlay 
+   // Hack: Apply this as a user-defined future overlay
+   Float64 w = m_ProjectData.GetWCompDw();
+   Float64 wl = w / spacing;
+
+   pDeck->WearingSurface = pgsTypes::wstFutureOverlay;
+   pDeck->bInputAsDepthAndDensity = false;
+   pDeck->OverlayWeight = wl;
+
+   // Set bridge data... this must be done before adding the other loads
+   // because the timeline manager from bridgeDesc will replace the one 
+   // in PGSuper. When the loads are added below, the timeline manager 
+   // in PGSuper will be updated.
+   pBridgeDesc->SetBridgeDescription(bridgeDesc);
+
    // Applied dead loads
    // First delete any distributed loads
    CollectionIndexType ndl = pUserDefinedLoadData->GetDistributedLoadCount();
@@ -1263,8 +1335,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    const Float64 SMALL_LOAD = ::ConvertToSysUnits(0.1,unitMeasure::NewtonPerMeter);
 
    // w non-comp, dc
-   Float64 w = m_ProjectData.GetWNonCompDc();
-   w = w==0.0 ? SMALL_LOAD : w; 
+   w = m_ProjectData.GetWNonCompDc();
+   w = IsZero(w) ? SMALL_LOAD : w; 
    CDistributedLoadData wncdc;
    wncdc.m_Description = _T("w non-comp, dc");
    wncdc.m_Type = UserLoads::Uniform;
@@ -1283,7 +1355,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
    // w comp, dc
    w = m_ProjectData.GetWCompDc();
-   w = w==0.0 ? SMALL_LOAD : w; 
+   w = IsZero(w) ? SMALL_LOAD : w; 
    CDistributedLoadData wcdc;
    wcdc.m_Description = _T("w comp, dc");
    wcdc.m_Type = UserLoads::Uniform;
@@ -1299,16 +1371,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
    wcdc.m_SpanKey.girderIndex = TOGA_FABR_GDR;
    pUserDefinedLoadData->AddDistributedLoad(wcdc);
-
-   // w overlay 
-   // Hack: Apply this as a user-defined future overlay
-   w = m_ProjectData.GetWCompDw();
-   Float64 wl = w / spacing;
-
-   pDeck->WearingSurface = pgsTypes::wstFutureOverlay;
-   pDeck->bInputAsDepthAndDensity = false;
-   pDeck->OverlayWeight = wl;
-
 
    // Now we can deal with girder data for original and precaster optional designs
    // First check concrete - it's possible to not input this and go straight to anlysis
@@ -1339,17 +1401,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       exc.Message = _T("You must enter f'ci for the Fabricator Optional girder");
       throw exc;
    }
-
-   // Now set girders' data
-   SetGirderData(m_ProjectData.GetOriginalDesignGirderData(), TOGA_ORIG_GDR, gdr_name, pGdrEntry,
-                 m_ProjectData.GetEcBeam(),pGroup);
-
-   SetGirderData(m_ProjectData.GetPrecasterDesignGirderData(), TOGA_FABR_GDR, gdr_name, pGdrEntry,
-                 m_ProjectData.GetEcBeam(),pGroup);
-
-
-   // Set bridge data
-   pBridgeDesc->SetBridgeDescription(bridgeDesc);
 
 }
 

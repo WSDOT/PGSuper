@@ -31,7 +31,7 @@
 #include "PGSuperDoc.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDlg.h"
-#include "ConcreteDetailsDlg.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
 #include "UIHintsDlg.h"
 #include "Hints.h"

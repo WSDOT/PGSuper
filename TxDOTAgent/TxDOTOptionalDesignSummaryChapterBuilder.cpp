@@ -148,7 +148,6 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
    // interfaces
-   GET_IFACE2(pBroker, IStrandGeometry,    pStrandGeometry );
    GET_IFACE2(pBroker, IMaterials,         pMaterial);
    GET_IFACE2(pBroker, IBridge,            pBridge);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
@@ -286,7 +285,6 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IMaterials, pMaterial);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
@@ -350,6 +348,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
          (*p_table)(row++,1) << ndb;
       }
 
+      GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 span2 = pBridge->GetSegmentSpanLength(segmentKey)/2.0;
       pgsPointOfInterest midpoi(segmentKey,span2);
 
@@ -415,7 +414,6 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph;
@@ -479,7 +477,6 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph;

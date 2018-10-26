@@ -93,11 +93,10 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    *pChapter << pPara;
 
    GET_IFACE2(pBroker, IEAFDisplayUnits,   pDisplayUnits);
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    GET_IFACE2(pBroker, IGirder,            pGirder);
-   GET_IFACE2(pBroker, IBarriers,          pBarriers);
    GET_IFACE2(pBroker, IBridge,            pBridge);
-   GET_IFACE2(pBroker, IDocumentType,      pDocType);
+   GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
+   GET_IFACE2_NOCHECK(pBroker, IDocumentType,      pDocType);
    GET_IFACE2_NOCHECK(pBroker, IIntervals,         pIntervals); // not always used... depends on if the segment is prismatic
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           l2,   pDisplayUnits->GetAreaUnit(),            false );
@@ -115,6 +114,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    if (!m_SimplifiedVersion)
    {
       // Write out traffic barrier properties
+      GET_IFACE2(pBroker, IBarriers,          pBarriers);
+
       pPara = new rptParagraph();
       *pChapter << pPara;
       l2.ShowUnitTag( true );
@@ -237,6 +238,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    if ( !m_SimplifiedVersion )
    {
+      GET_IFACE2(pBroker, ISectionProperties, pSectProp);
       for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
       {
          const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
@@ -250,8 +252,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             Float64 startStation = pBridge->GetPierStation((PierIndexType)spanIdx);
             Float64 endStation   = pBridge->GetPierStation((PierIndexType)spanIdx+1);
-            Float64 XbStart = pBridge->GetDistanceFromStartOfBridge(startStation);
-            Float64 XbEnd   = pBridge->GetDistanceFromStartOfBridge(endStation);
+            Float64 XbStart = pPoi->ConvertRouteToBridgeLineCoordinate(startStation);
+            Float64 XbEnd   = pPoi->ConvertRouteToBridgeLineCoordinate(endStation);
             Float64 Xb = 0.5*(XbStart + XbEnd);
 
             (*pPara) << _T("Bending Stiffness of Entire Bridge Section at center of Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
@@ -335,6 +337,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             }
             else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
             {
+               GET_IFACE2(pBroker, ISectionProperties, pSectProp);
                //GET_IFACE2(pBroker,ILossParameters,pLossParams);
                //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                //{

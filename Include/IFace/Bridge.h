@@ -170,14 +170,6 @@ interface IBridge : IUnknown
    // Returns the indices of the girder groups on either side of a pier (could be the same girder group)
    virtual void GetGirderGroupIndex(PierIndexType pierIdx,GroupIndexType* pBackGroupIdx,GroupIndexType* pAheadGroupIdx) = 0;
 
-   // Returns the distance along the alignment from the start of the bridge to a particular station
-   virtual Float64 GetDistanceFromStartOfBridge(Float64 station) = 0;
-
-   // Returns the distance along the alignment from the start of the bridge to
-   // the station where a line normal to the alignment, passing through the POI
-   // intersects the alignment
-   virtual Float64 GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi) = 0;
-
    // Returns the span length for the specified girder in the specified span
    // measured along the CL girder. The span length is measured between the CL Piers except at
    // group boundaries where a hinge or roller boundary condition is used, in which case the
@@ -191,7 +183,7 @@ interface IBridge : IUnknown
    // from/to the CL-Bearing.
    virtual Float64 GetFullSpanLength(const CSpanKey& spanKey) = 0;
 
-   // returns the length of a spliced girder measured along the centerline of its segments between backs of pavement seats
+   // returns the layout length of a girder
    virtual Float64 GetGirderLayoutLength(const CGirderKey& girderKey) = 0;
 
    // returns the length of the girder measured along the centerline of its segments between the CL-Bearing
@@ -334,10 +326,15 @@ interface IBridge : IUnknown
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) = 0;
 
    // returns girder spacing at a pier. The vector will contain nGirders-1 spaces
-   virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType) = 0;
+   virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,
+                                                 pgsTypes::MeasurementLocation measureLocation,
+                                                 pgsTypes::MeasurementType measureType) = 0;
+
+   // Returns the offset from the offset measure datum to the specified girder, measured along the CL pier
+   virtual Float64 GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::OffsetMeasurementType offsetMeasureDatum) = 0;
 
    // Returns the left and right girder spacing for a point along a girder. If the girder is an exterior girder
-   // the slab overhang is returned on the exterior side of the girder.
+   // the slab overhang is returned on the exterior side of the girder. The spacing is measured normal to the girder
    virtual void GetSpacingAlongGirder(const CGirderKey& girderKey,Float64 Xg,Float64* leftSpacing,Float64* rightSpacing) = 0;
    virtual void GetSpacingAlongGirder(const pgsPointOfInterest& poi,Float64* leftSpacing,Float64* rightSpacing) = 0;
 
@@ -400,9 +397,9 @@ interface IBridge : IUnknown
    virtual Float64 GetPanelDepth(const pgsPointOfInterest& poi) = 0;
 
    // Returns distance from the left exterior girder to the edge of slab, measured normal to the alignment
-   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // Xb is measured in Bridge Line Coordinates and can be easily determined by station
    // at the section where the overhang is desired and the station of pier 0
-   virtual Float64 GetLeftSlabOverhang(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetLeftSlabOverhang(Float64 Xb) = 0;
    // distFromStartOfSpan is measured along the alignment and can be easily determined by station
    // at the section where the overhang is desired and the station of the pier at the start of the span
    virtual Float64 GetLeftSlabOverhang(SpanIndexType spanIdx,Float64 distFromStartOfSpan) = 0;
@@ -410,9 +407,9 @@ interface IBridge : IUnknown
    virtual Float64 GetLeftSlabOverhang(PierIndexType pierIdx) = 0;
 
    // Returns distance from the right exterior girder to the edge of slab, measured normal to the alignment
-   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // Xb is measured in Bridge Line Coordinates and can be easily determined by station
    // at the section where the overhang is desired and the station of pier 0
-   virtual Float64 GetRightSlabOverhang(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetRightSlabOverhang(Float64 Xb) = 0;
    // distFromStartOfSpan is measured along the alignment and can be easily determined by station
    // at the section where the overhang is desired and the station of the pier at the start of the span
    virtual Float64 GetRightSlabOverhang(SpanIndexType spanIdx,Float64 distFromStartOfSpan) = 0;
@@ -420,16 +417,16 @@ interface IBridge : IUnknown
    virtual Float64 GetRightSlabOverhang(PierIndexType pierIdx) = 0;
 
    // Returns distance from the alignment to the left slab edge, measured normal to the alignment
-   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // Xb is measured in Bridge Line Coordinates and can be easily determined by station
    // at the section where the end offset is desired and the station of pier 0
-   virtual Float64 GetLeftSlabEdgeOffset(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetLeftSlabEdgeOffset(Float64 Xb) = 0;
    // returns the edge offset at the location where the CL Pier intserects the alignment
    virtual Float64 GetLeftSlabEdgeOffset(PierIndexType pierIdx) = 0;
 
    // Returns distance from the alignment to the right slab edge, measured normal to the alignment
-   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // Xb is measured in Bridge Line Coordinates and can be easily determined by station
    // at the section where the end offset is desired and the station of pier 0
-   virtual Float64 GetRightSlabEdgeOffset(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetRightSlabEdgeOffset(Float64 Xb) = 0;
    // returns the edge offset at the location where the CL Pier intserects the alignment
    virtual Float64 GetRightSlabEdgeOffset(PierIndexType pierIdx) = 0;
 
@@ -437,18 +434,18 @@ interface IBridge : IUnknown
    // passing through the POI
    virtual Float64 GetCurbToCurbWidth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetCurbToCurbWidth(const CSegmentKey& segmentKey,Float64 distFromStartOfSpan) = 0;
-   // Returns the curb-to-curb width of the deck measured at distFromStartOfBridge along the alignment.
-   // distFromStartOfBridge can be easily determined by station at the section where the end offset is
+   // Returns the curb-to-curb width of the deck measured at Xb.
+   // Xb is in Bridge Line Coordinates can be easily determined by station at the section where the end offset is
    // desired and the station of pier 0
-   virtual Float64 GetCurbToCurbWidth(Float64 distFromStartOfBridge) = 0;
-   // Returns the offset from the alignment to the left curb line measured at distFromStartOfBridge along the alignment.
-   // distFromStartOfBridge can be easily determined by station at the section where the end offset is
+   virtual Float64 GetCurbToCurbWidth(Float64 Xb) = 0;
+   // Returns the offset from the alignment to the left curb line measured at Xb.
+   // Xb is measured in Bridge Line Coordinates and can be easily determined by station at the section where the end offset is
    // desired and the station of pier 0
-   virtual Float64 GetLeftCurbOffset(Float64 distFromStartOfBridge) = 0;
-   // Returns the offset from the alignment to the right curb line measured at distFromStartOfBridge along the alignment.
-   // distFromStartOfBridge can be easily determined by station at the section where the end offset is
+   virtual Float64 GetLeftCurbOffset(Float64 Xb) = 0;
+   // Returns the offset from the alignment to the right curb line measured at Xb.
+   // Xb is measured in Bridge Line Coordinates and can be easily determined by station at the section where the end offset is
    // desired and the station of pier 0
-   virtual Float64 GetRightCurbOffset(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetRightCurbOffset(Float64 Xb) = 0;
    // Returns the offset from the alignment to the left curb line measured at distFromStartOfSpan along the alignment.
    // distFromStartOfSpan can be easily determined by station at the section where the offset is
    // desired and the station of the pier at the start of the span.
@@ -465,11 +462,12 @@ interface IBridge : IUnknown
    virtual Float64 GetRightCurbOffset(PierIndexType pierIdx) = 0;
 
    // Offset distances to curbline of interior barrier or sidewalk curb if present
-   virtual Float64 GetLeftInteriorCurbOffset(Float64 distFromStartOfBridge) = 0;
-   virtual Float64 GetRightInteriorCurbOffset(Float64 distFromStartOfBridge) = 0;
+   // Xb is in Bridge Line Coordinates
+   virtual Float64 GetLeftInteriorCurbOffset(Float64 Xb) = 0;
+   virtual Float64 GetRightInteriorCurbOffset(Float64 Xb) = 0;
    // this are the locations that the overlay butts up to
-   virtual Float64 GetLeftOverlayToeOffset(Float64 distFromStartOfBridge) = 0;
-   virtual Float64 GetRightOverlayToeOffset(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetLeftOverlayToeOffset(Float64 Xb) = 0;
+   virtual Float64 GetRightOverlayToeOffset(Float64 Xb) = 0;
    virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi) = 0;
 
@@ -500,7 +498,7 @@ interface IBridge : IUnknown
    virtual pgsTypes::BoundaryConditionType GetBoundaryConditionType(PierIndexType pierIdx) = 0;
 
    // Returns the segment connection type at a pier (only valid if IsInteriorPier returns true)
-   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx) = 0;
+   virtual pgsTypes::PierSegmentConnectionType GetPierSegmentConnectionType(PierIndexType pierIdx) = 0;
 
    virtual bool IsAbutment(PierIndexType pierIdx) = 0; // returns true if pier is an end abutment
    virtual bool IsPier(PierIndexType pierIdx) = 0; // returns true if pier is an intermediate pier
@@ -577,12 +575,14 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointFc28(const CSegmentKey& closureKey) = 0;
    virtual Float64 GetDeckFc28() = 0;
    virtual Float64 GetRailingSystemFc28(pgsTypes::TrafficBarrierOrientation orientation) = 0;
+   virtual Float64 GetPierFc28(IndexType pierIdx) = 0;
 
    // Returns the secant modulus at an age of 28 days
    virtual Float64 GetSegmentEc28(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetClosureJointEc28(const CSegmentKey& closureKey) = 0;
    virtual Float64 GetDeckEc28() = 0;
    virtual Float64 GetRailingSystemEc28(pgsTypes::TrafficBarrierOrientation orientation) = 0;
+   virtual Float64 GetPierEc28(IndexType pierIdx) = 0;
 
    // Returns the weight density of the material at the specified interval. If the component has not
    // been added to the system yet, this method returns 0
@@ -691,6 +691,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetDeckShrinkageK1() = 0;
    virtual Float64 GetDeckShrinkageK2() = 0;
    virtual const matConcreteBase* GetDeckConcrete() = 0;
+
 
    // Prestressing Strand
    virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
@@ -894,12 +895,17 @@ interface IStrandGeometry : IUnknown
    // Returns the distance from the top of the girder to the geometric CG of the strand in Girder Section Coordinates
    virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx) = 0;
 
-   // Returns the steepest slope of the harped strands. Slope is in the for 1:n (rise:run). This method returns n.
+   // Returns the steepest slope at a point of interest for the harped strands. Slope is in the form 1:n (rise:run). This method returns n.
    // Slopes upward to the right have positive value (Slope is < 0 at left end of girder and > 0 at right end of girder
    // for normal configuration of harped strands)
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi) = 0;
 
-   // Returns the average slope of the harped strands. Slope is in the for 1:n (rise:run). This method returns n.
+   // Returns the steepest slope of the harped strands. Slope is in the form 1:n (rise:run). This method returns n.
+   // Slopes upward to the right have positive value (Slope is < 0 at left end of girder and > 0 at right end of girder
+   // for normal configuration of harped strands)
+   virtual Float64 GetMaxStrandSlope(const CSegmentKey& segmentKey) = 0;
+
+   // Returns the average slope of the harped strands. Slope is in the form 1:n (rise:run). This method returns n.
    // Slopes upward to the right have positive value (Slope is < 0 at left end of girder and > 0 at right end of girder
    // for normal configuration of harped strands)
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi) = 0;
@@ -1427,8 +1433,6 @@ interface IGirder : public IUnknown
    // Area of shear key. uniform portion assumes no joint, section is per joint spacing.
    virtual bool HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType)=0;
    virtual void GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
-
-   virtual void GetSegment(const CGirderKey& girderKey,Float64 Xg,SegmentIndexType* pSegIdx,Float64* pXs) = 0;
 
    // Returns the shape of the segment profile. If bIncludeClosure is true, the segment shape
    // includes its projection into the closure joint. Y=0 is at the top of the segment

@@ -75,12 +75,8 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnViewSettings();
-//	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-//   afx_msg BOOL OnMouseWheel(UINT nFlags,short zDelta,CPoint pt);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
-//   afx_msg void OnZoom();
-//   afx_msg void OnScaleToFit();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -31,6 +31,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\AnalysisResults.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 

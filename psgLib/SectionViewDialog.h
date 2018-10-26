@@ -71,6 +71,7 @@ protected:
 
    void DrawShape(CDC* pDC,grlibPointMapper& Mapper);
    void DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape);
+   void DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush);
    void DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool isEnd);
    StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index);
 

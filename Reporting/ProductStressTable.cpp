@@ -206,46 +206,46 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       std::vector<Float64> fTopMinPermitSpecialLL, fBotMinPermitSpecialLL;
       std::vector<Float64> dummy1, dummy2;
 
-      pForces2->GetStress( erectSegmentIntervalIdx, pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
-      pForces2->GetStress( castDeckIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
+      pForces2->GetStress( erectSegmentIntervalIdx, pgsTypes::pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
+      pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
 
-      pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
-      pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
+      pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
+      pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
 
-      pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
-      pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
+      pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
+      pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
 
       if ( bConstruction )
       {
-         pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
-         pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
+         pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
+         pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
       }
 
       if ( bDeckPanels )
       {
-         pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
-         pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
+         pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
+         pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
       }
 
       if ( bSidewalk )
       {
-         pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk);
-         pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk);
+         pForces2->GetStress( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk);
+         pForces2->GetStress( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk);
       }
 
       if ( bShearKey )
       {
-         pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey);
-         pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey);
+         pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey);
+         pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey);
       }
 
-      pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
-      pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
+      pForces2->GetStress( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
+      pForces2->GetStress( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
       if ( bHasOverlay )
       {
-         pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay);
-         pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay);
+         pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay);
+         pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay);
       }
 
       if ( bPedLoading )

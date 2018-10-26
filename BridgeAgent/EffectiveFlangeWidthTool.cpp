@@ -1063,11 +1063,11 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    GET_IFACE2(pBroker,IGirder,pGirder);
    if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) )
    {
-    ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+      ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
    }
    else
    {
-    ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
+      ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(pBroker,bridge,segmentKey,leftGdrID,gdrID,rightGdrID,pChapter,pDisplayUnits);
    }
 }
 

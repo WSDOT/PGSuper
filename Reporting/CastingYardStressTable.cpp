@@ -120,7 +120,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*p_table)(row,0) << location.SetValue( poiAttribute, poi );
 
       Float64 fTop, fBot;
-      pProductForces->GetStress(intervalIdx, pftGirder, poi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
+      pProductForces->GetStress(intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );
 

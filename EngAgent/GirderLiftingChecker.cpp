@@ -314,13 +314,11 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 #if defined _DEBUG
 bool pgsGirderLiftingChecker::AssertValid() const
 {
-//#pragma Reminder("TODO: Implement the AssertValid method for pgsGirderLiftingChecker")
    return true;
 }
 
 void pgsGirderLiftingChecker::Dump(dbgDumpContext& os) const
 {
-//#pragma Reminder("TODO: Implement the Dump method for pgsGirderLiftingChecker")
    os << "Dump for pgsGirderLiftingChecker" << endl;
 }
 #endif // _DEBUG
@@ -330,7 +328,6 @@ bool pgsGirderLiftingChecker::TestMe(dbgLog& rlog)
 {
    TESTME_PROLOGUE("pgsGirderLiftingChecker");
 
-//#pragma Reminder("TODO: Implement the TestMe method for pgsGirderLiftingChecker")
    TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsGirderLiftingChecker");
 
    TESTME_EPILOG("GirderHandlingChecker");

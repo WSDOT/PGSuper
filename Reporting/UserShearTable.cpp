@@ -116,14 +116,14 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
       std::vector<sysSectionValue> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, maxBAT, rtIncremental );
-      minDC = pForces2->GetShear( intervalIdx, pftUserDC, vPoi, minBAT, rtIncremental );
+      maxDC = pForces2->GetShear( intervalIdx, pgsTypes::pftUserDC, vPoi, maxBAT, rtIncremental );
+      minDC = pForces2->GetShear( intervalIdx, pgsTypes::pftUserDC, vPoi, minBAT, rtIncremental );
 
-      maxDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, maxBAT, rtIncremental );
-      minDW = pForces2->GetShear( intervalIdx, pftUserDW, vPoi, minBAT, rtIncremental );
+      maxDW = pForces2->GetShear( intervalIdx, pgsTypes::pftUserDW, vPoi, maxBAT, rtIncremental );
+      minDW = pForces2->GetShear( intervalIdx, pgsTypes::pftUserDW, vPoi, minBAT, rtIncremental );
 
-      maxLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental );
-      minLLIM = pForces2->GetShear( intervalIdx, pftUserLLIM, vPoi, minBAT, rtIncremental );
+      maxLLIM = pForces2->GetShear( intervalIdx, pgsTypes::pftUserLLIM, vPoi, maxBAT, rtIncremental );
+      minLLIM = pForces2->GetShear( intervalIdx, pgsTypes::pftUserLLIM, vPoi, minBAT, rtIncremental );
 
       // Fill up the table
       IndexType index = 0;

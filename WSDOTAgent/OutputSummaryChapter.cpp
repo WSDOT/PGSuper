@@ -386,14 +386,14 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pftSlab, poi, bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pftDiaphragm, poi, bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pftShearKey, poi, bat, rtIncremental, false );
+   delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtIncremental, false )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental, false )
+            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental, false );
 
-   delta_overlay = pProductForces->GetDeflection(overlayIntervalIdx, pftOverlay, poi, bat, rtIncremental, false );
+   delta_overlay = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental, false );
 
-   delta_sidl = pProductForces->GetDeflection(railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtIncremental, false );
-   delta_sidewalk = pProductForces->GetDeflection(railingSystemIntervalIdx, pftSidewalk, poi, bat, rtIncremental, false );
+   delta_sidl = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, false );
+   delta_sidewalk = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental, false );
 
    pProductForces->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, poi, bat, true, false, &delta_ll, &temp );
 

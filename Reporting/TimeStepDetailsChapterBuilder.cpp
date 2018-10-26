@@ -343,7 +343,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       for ( int i = 0; i < nLoads; i++, rowIdx++ )
       {
          colIdx = 0;
-         ProductForceType pfType = (ProductForceType)i;
+         pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
          (*pLayoutTable)(rowIdx,colIdx++) << pProductLoads->GetProductLoadName(pfType);
          (*pLayoutTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.dPi[pfType]);
          (*pLayoutTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.dMi[pfType]);

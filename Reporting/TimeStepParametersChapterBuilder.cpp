@@ -611,8 +611,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          Float64 dM = 0;
          for ( int i = 0; i < N; i++ )
          {
-            ProductForceType pfType = (ProductForceType)i;
-            if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
+            pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
+            if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
             {
                continue;
             }
@@ -1256,7 +1256,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    //   for ( int i = 0; i < N; i++ )
    //   {
-   //      ProductForceType pfType = (ProductForceType)i;
+   //      pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
    //      LPCTSTR strName = pProdLoads->GetProductLoadName(pfType);
 
    //      pStressTable->SetColumnSpan(0,col,2);
@@ -1276,7 +1276,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    //      for ( int i = 0; i < N; i++ )
    //      {
-   //         ProductForceType pfType = (ProductForceType)i;
+   //         pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
 
    //         Float64 dfTop = tsDetails.Girder.f[pgsTypes::TopGirder][pfType][rtIncremental];
    //         Float64 fTop  = tsDetails.Girder.f[pgsTypes::TopGirder][pfType][rtCumulative];
@@ -1316,7 +1316,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    //   for ( int i = 0; i < N; i++ )
    //   {
-   //      ProductForceType pfType = (ProductForceType)i;
+   //      pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
    //      LPCTSTR strName = pProdLoads->GetProductLoadName(pfType);
 
    //      pDeflectionTable->SetColumnSpan(0,col,2);
@@ -1341,7 +1341,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    //      for ( int i = 0; i < N; i++ )
    //      {
-   //         ProductForceType pfType = (ProductForceType)i;
+   //         pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
    //         Float64 dD = tsDetails.dD[pfType];
    //         Float64 D  = tsDetails.D[pfType];
    //         (*pDeflectionTable)(row,col++) << deflection.SetValue(dD);

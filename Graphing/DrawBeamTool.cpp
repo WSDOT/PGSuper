@@ -112,7 +112,6 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,a
    CBrush closure_brush(CLOSURE_FILL_COLOR);
    CPen closure_pen(PS_SOLID,1,CLOSURE_BORDER_COLOR);
 
-
    CBrush* pOldBrush = pDC->SelectObject(&segment_brush);
    CPen* pOldPen     = pDC->SelectObject(&segment_pen);
 

@@ -116,14 +116,14 @@ rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& gird
       std::vector<Float64> minLLIM, maxLLIM;
 
 
-      maxDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, maxBAT, rtCumulative, false );
-      minDC = pForces2->GetDeflection( intervalIdx, pftUserDC, vPoi, minBAT, rtCumulative, false );
+      maxDC = pForces2->GetDeflection( intervalIdx, pgsTypes::pftUserDC, vPoi, maxBAT, rtCumulative, false );
+      minDC = pForces2->GetDeflection( intervalIdx, pgsTypes::pftUserDC, vPoi, minBAT, rtCumulative, false );
 
-      maxDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, maxBAT, rtCumulative, false );
-      minDW = pForces2->GetDeflection( intervalIdx, pftUserDW, vPoi, minBAT, rtCumulative, false );
+      maxDW = pForces2->GetDeflection( intervalIdx, pgsTypes::pftUserDW, vPoi, maxBAT, rtCumulative, false );
+      minDW = pForces2->GetDeflection( intervalIdx, pgsTypes::pftUserDW, vPoi, minBAT, rtCumulative, false );
 
-      maxLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, maxBAT, rtCumulative, false );
-      minLLIM = pForces2->GetDeflection( intervalIdx, pftUserLLIM, vPoi, minBAT, rtCumulative, false );
+      maxLLIM = pForces2->GetDeflection( intervalIdx, pgsTypes::pftUserLLIM, vPoi, maxBAT, rtCumulative, false );
+      minLLIM = pForces2->GetDeflection( intervalIdx, pgsTypes::pftUserLLIM, vPoi, minBAT, rtCumulative, false );
 
       // Fill up the table
       IndexType index = 0;

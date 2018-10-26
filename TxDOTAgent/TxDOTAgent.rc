@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,36
- PRODUCTVERSION 3,0,0,36
+ FILEVERSION 3,0,0,37
+ PRODUCTVERSION 3,0,0,37
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.36"
+            VALUE "FileVersion", "3.0.0.37"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.36"
+            VALUE "ProductVersion", "3.0.0.37"
         END
     END
     BLOCK "VarFileInfo"
@@ -386,7 +386,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_TXDOT               ICON                    "res\\txdot.ico"
+IDR_TXDOTOPTIONALDESIGN               ICON                    "res\\txdot.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

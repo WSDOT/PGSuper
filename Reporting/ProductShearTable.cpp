@@ -133,29 +133,29 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<sysSectionValue> girder    = pForces2->GetShear(erectSegmentIntervalIdx, pftGirder,   vPoi,maxBAT, rtCumulative);
-      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pftDiaphragm,vPoi,maxBAT, rtCumulative);
+      std::vector<sysSectionValue> girder    = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
+      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative);
 
       std::vector<sysSectionValue> minSlab, maxSlab;
       std::vector<sysSectionValue> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, rtCumulative );
-      minSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, minBAT, rtCumulative );
+      maxSlab = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative );
+      minSlab = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative );
 
-      maxSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, rtCumulative );
-      minSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, rtCumulative );
+      maxSlabPad = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative );
+      minSlabPad = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative );
 
       std::vector<sysSectionValue> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         maxConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, rtCumulative );
-         minConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, rtCumulative );
+         maxConstruction = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative );
+         minConstruction = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative );
       }
 
       std::vector<sysSectionValue> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         maxDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtCumulative );
-         minDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, rtCumulative );
+         maxDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative );
+         minDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative );
       }
 
       std::vector<sysSectionValue> dummy;
@@ -190,23 +190,23 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       
       if ( bSidewalk )
       {
-         maxSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, rtCumulative );
-         minSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, rtCumulative );
+         maxSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative );
+         minSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative );
       }
 
       if ( bShearKey )
       {
-         maxShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, rtCumulative );
-         minShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, rtCumulative );
+         maxShearKey = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative );
+         minShearKey = pForces2->GetShear( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative );
       }
 
-      maxTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtCumulative );
-      minTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtCumulative );
+      maxTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative );
+      minTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative );
 
       if ( bHasOverlay )
       {
-         maxOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, rtCumulative );
-         minOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, rtCumulative );
+         maxOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative );
+         minOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative );
       }
 
       if ( bPedLoading )

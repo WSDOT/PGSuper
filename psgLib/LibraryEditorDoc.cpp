@@ -112,6 +112,12 @@ CATID CLibraryEditorDoc::GetDocumentPluginCATID()
    return CATID_PGSuperLibraryManagerPlugin;
 }
 
+HINSTANCE CLibraryEditorDoc::GetResourceInstance()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return AfxGetInstanceHandle();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEditorDoc diagnostics
 

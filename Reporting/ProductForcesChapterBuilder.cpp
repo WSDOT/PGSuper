@@ -83,7 +83,7 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   ProductForceType forceType = pftGirder;
+   pgsTypes::ProductForceType forceType = pgsTypes::pftGirder;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -144,13 +144,13 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
       ATLASSERT(analysisType == pgsTypes::Continuous);
       pgsTypes::BridgeAnalysisType bat = pgsTypes::ContinuousSpan;
 
-      std::vector<Float64> Mgirder( pProductForces->GetMoment(intervalIdx,pftGirder,vPOI,bat) );
-      std::vector<Float64> Mslab( pProductForces->GetMoment(intervalIdx,pftSlab,vPOI,bat) );
-      std::vector<Float64> Mdia( pProductForces->GetMoment(intervalIdx,pftDiaphragm,vPOI,bat) );
-      std::vector<Float64> Mbarrier( pProductForces->GetMoment(intervalIdx,pftTrafficBarrier,vPOI,bat) );
-      std::vector<Float64> Moverlay( pProductForces->GetMoment(intervalIdx,pftOverlay,vPOI,bat) );
-      std::vector<Float64> Mptt( pProductForces->GetMoment(intervalIdx,pftPostTensioning,vPOI,bat) );
-      std::vector<Float64> Mpts( pProductForces->GetMoment(intervalIdx,pftSecondaryEffects,vPOI,bat) );
+      std::vector<Float64> Mgirder( pProductForces->GetMoment(intervalIdx,pgsTypes::pftGirder,vPOI,bat) );
+      std::vector<Float64> Mslab( pProductForces->GetMoment(intervalIdx,pgsTypes::pftSlab,vPOI,bat) );
+      std::vector<Float64> Mdia( pProductForces->GetMoment(intervalIdx,pgsTypes::pftDiaphragm,vPOI,bat) );
+      std::vector<Float64> Mbarrier( pProductForces->GetMoment(intervalIdx,pgsTypes::pftTrafficBarrier,vPOI,bat) );
+      std::vector<Float64> Moverlay( pProductForces->GetMoment(intervalIdx,pgsTypes::pftOverlay,vPOI,bat) );
+      std::vector<Float64> Mptt( pProductForces->GetMoment(intervalIdx,pgsTypes::pftPostTensioning,vPOI,bat) );
+      std::vector<Float64> Mpts( pProductForces->GetMoment(intervalIdx,pgsTypes::pftSecondaryEffects,vPOI,bat) );
 
       std::vector<Float64> MMaxLL, MMinLL;
       if ( intervalIdx == liveLoadIntervalIdx )

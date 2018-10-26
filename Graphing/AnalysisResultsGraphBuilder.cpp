@@ -212,9 +212,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       } // next segIdx
    } // next groupIdx
 
-   CGirderKey dummyGirderKey(0,0);
-   CSegmentKey dummySegmentKey(dummyGirderKey,0);
-
    // Get intervals for reporting
    GET_IFACE(IIntervals,pIntervals);
 
@@ -222,14 +219,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    std::vector<IntervalIndexType> vSpecCheckIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
 
    // initial intervals
-#pragma Reminder("REVIEW: using dummy segment keys could be problematic")
    IntervalIndexType nIntervals               = pIntervals->GetIntervalCount();
-   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(dummySegmentKey);
-   IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(dummySegmentKey);
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(dummySegmentKey);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+   IntervalIndexType storageIntervalIdx       = pIntervals->GetFirstStorageInterval(girderKey);
+   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(girderKey);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+
    std::vector<IntervalIndexType> vInitialIntervals;
    vInitialIntervals.push_back(releaseIntervalIdx);
    vInitialIntervals.push_back(storageIntervalIdx);
@@ -318,7 +315,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    // girder self-weight
    std::vector<IntervalIndexType> intervals( AddTSRemovalIntervals(erectSegmentIntervalIdx,vInitialIntervals,vTempSupportRemovalIntervals) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftGirder), pftGirder, vAllIntervals, ACTIONS_ALL));
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftGirder), pgsTypes::pftGirder, vAllIntervals, ACTIONS_ALL));
 
 
    intervals.clear();
@@ -326,37 +323,37 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    GET_IFACE(IUserDefinedLoadData,pUserLoads);
    if ( !IsZero(pUserLoads->GetConstructionLoad()) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftConstruction), pftConstruction,  vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftConstruction), pgsTypes::pftConstruction,  vAllIntervals, ACTIONS_ALL) );
    }
 
    // slab dead load
-   CAnalysisResultsGraphDefinition slabGraphDef(graphID++, pProductLoads->GetProductLoadName(pftSlab),   pftSlab,    vAllIntervals, ACTIONS_ALL);
+   CAnalysisResultsGraphDefinition slabGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlab),   pgsTypes::pftSlab,    vAllIntervals, ACTIONS_ALL);
    slabGraphDef.AddIntervals(vTempSupportRemovalIntervals);
    m_pGraphDefinitions->AddGraphDefinition(slabGraphDef);
 
-   CAnalysisResultsGraphDefinition haunchGraphDef(graphID++, pProductLoads->GetProductLoadName(pftSlabPad), pftSlabPad, vAllIntervals, ACTIONS_ALL);
+   CAnalysisResultsGraphDefinition haunchGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), pgsTypes::pftSlabPad, vAllIntervals, ACTIONS_ALL);
    haunchGraphDef.AddIntervals(vTempSupportRemovalIntervals);
    m_pGraphDefinitions->AddGraphDefinition(haunchGraphDef);
 
    if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
    {
-      CAnalysisResultsGraphDefinition slabPanelGraphDef(graphID++, pProductLoads->GetProductLoadName(pftSlabPanel), pftSlabPanel, vAllIntervals, ACTIONS_ALL);
+      CAnalysisResultsGraphDefinition slabPanelGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel), pgsTypes::pftSlabPanel, vAllIntervals, ACTIONS_ALL);
       slabPanelGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition( slabPanelGraphDef );
    }
 
-   CAnalysisResultsGraphDefinition diaphragmGraphDef(graphID++, pProductLoads->GetProductLoadName(pftDiaphragm), pftDiaphragm, vAllIntervals, ACTIONS_ALL);
+   CAnalysisResultsGraphDefinition diaphragmGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm), pgsTypes::pftDiaphragm, vAllIntervals, ACTIONS_ALL);
    diaphragmGraphDef.AddIntervals(vTempSupportRemovalIntervals);
    m_pGraphDefinitions->AddGraphDefinition( diaphragmGraphDef );
 
    if (bShearKey)
    {
-      CAnalysisResultsGraphDefinition shearKeyGraphDef(graphID++, pProductLoads->GetProductLoadName(pftShearKey), pftShearKey, vAllIntervals, ACTIONS_ALL);
+      CAnalysisResultsGraphDefinition shearKeyGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShearKey), pgsTypes::pftShearKey, vAllIntervals, ACTIONS_ALL);
       shearKeyGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition(shearKeyGraphDef);
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPretension),    pftPretension,   vAllIntervals,   ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension),    pgsTypes::pftPretension,   vAllIntervals,   ACTIONS_ALL) );
 
    // Deck shrinkage is different animal
    GET_IFACE(ILosses, pLosses);
@@ -368,19 +365,19 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPostTensioning), pftPostTensioning, vAllIntervals, ACTIONS_ALL) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSecondaryEffects),      pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSecondaryEffects),      pgsTypes::pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS) );
    }
 
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftTrafficBarrier), pftTrafficBarrier, vAllIntervals, ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), pgsTypes::pftTrafficBarrier, vAllIntervals, ACTIONS_ALL) );
 
    if ( bSidewalk )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSidewalk), pftSidewalk, vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), pgsTypes::pftSidewalk, vAllIntervals, ACTIONS_ALL) );
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftOverlay), pftOverlay, vAllIntervals, ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), pgsTypes::pftOverlay, vAllIntervals, ACTIONS_ALL) );
 
 
    GET_IFACE(ILibrary,pLib);
@@ -388,18 +385,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftCreep),      pftCreep,      vAllIntervals, ACTIONS_ALL) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftShrinkage),  pftShrinkage,  vAllIntervals, ACTIONS_ALL) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftRelaxation), pftRelaxation, vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftCreep),      pgsTypes::pftCreep,      vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage),  pgsTypes::pftShrinkage,  vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), pgsTypes::pftRelaxation, vAllIntervals, ACTIONS_ALL) );
    }
 
    // User Defined Static Loads
-#pragma Reminder("UPDATE: user defined load intervals")
-   // use intervals when first user defined load is applied (for each type, dc, dw, llim) and all 
-   // intervals thereafter
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftUserDC),   pftUserDC,   vAllIntervals,  ACTIONS_ALL) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftUserDW),   pftUserDW,   vAllIntervals,  ACTIONS_ALL) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftUserLLIM), pftUserLLIM, vAllIntervals,  ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserDC),   pgsTypes::pftUserDC,   vAllIntervals,  ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserDW),   pgsTypes::pftUserDW,   vAllIntervals,  ACTIONS_ALL) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), pgsTypes::pftUserLLIM, vAllIntervals,  ACTIONS_ALL) );
 
 
    ////////////////////////////////////////////////////////
@@ -1423,7 +1417,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
 
 void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear)
 {
-   ProductForceType pfType(graphDef.m_LoadType.ProductLoadType);
+   pgsTypes::ProductForceType pfType(graphDef.m_LoadType.ProductLoadType);
 
    ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
    ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
@@ -2479,7 +2473,7 @@ void CAnalysisResultsGraphBuilder::GetSupportXValues(const CGirderKey& girderKey
 
 void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey,SegmentIndexType segIdx)
 {
-   ProductForceType pfType(graphDef.m_LoadType.ProductLoadType);
+   pgsTypes::ProductForceType pfType(graphDef.m_LoadType.ProductLoadType);
 
    ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
    ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
@@ -3026,11 +3020,6 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
 
    int penWeight = 3;
 
-//#pragma Reminder("UPDATE: allowable stress plotting is now the same for all intervals")
-//   // Need to look at applicability top and bottom for tension and compression
-//   // Need to plot allowable top, allowable bottom, or just allowable if same for both
-//   // Don't plot allowables in the "not applicable" areas
-//
    // data series min/max capacity(allowable)
    IndexType max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,penWeight,c);
    IndexType min_data_series = m_Graph.CreateDataSeries(_T(""),      PS_SOLID,penWeight,c);

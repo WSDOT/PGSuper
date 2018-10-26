@@ -513,8 +513,9 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
 
       const CUserData& userData = dynamic_cast<const CUserData&>(style.GetUserAttribute(0));
 
-      GetStyleRowCol(nRow, DEBOND_CHECK_COL, style);
-      if ( style.GetValue() == _T("1") )
+      CGXStyle debondCheckColStyle;
+      GetStyleRowCol(nRow, DEBOND_CHECK_COL, debondCheckColStyle);
+      if ( debondCheckColStyle.GetValue() == _T("1") )
       {
          // Strand is debonded
          Float64 leftDebond(0.0), rightDebond(0.0);

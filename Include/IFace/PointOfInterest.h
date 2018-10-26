@@ -180,6 +180,15 @@ interface IPointOfInterest : public IUnknown
    // Converts Span Point to Segment Path Coordiante
    virtual void ConvertSpanPointToSegmentPathCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXsp) = 0;
    virtual void ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xsp,CSpanKey* pSpanKey,Float64* pXspan) = 0;
+
+   // Converts a Route Coordinate (station) to a Bridge Line Coordinate (distance from start of bridge)
+   virtual Float64 ConvertRouteToBridgeLineCoordinate(Float64 station) = 0;
+   virtual Float64 ConvertBridgeLineToRouteCoordinate(Float64 Xb) = 0;
+
+   // Returns the Bridge Line Coordinate for a poi. (distance along the alignment from 
+   // the start of the bridge to the station where a line normal to the alignment, 
+   // passing through the POI intersects the alignment)
+   virtual Float64 ConvertPoiToBridgeLineCoordinate(const pgsPointOfInterest& poi) = 0;
 };
 
 /*****************************************************************************

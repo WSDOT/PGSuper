@@ -27,6 +27,8 @@ class txnTransaction;
 interface IEditBridgeCallback;
 interface IEditSplicedGirderCallback;
 
+class CPierData2;
+
 struct EditBridgeExtension
 {
    IDType callbackID;
@@ -58,6 +60,7 @@ struct EditSplicedGirderExtension
 // Extend the Edit Pier Dialog
 interface IEditPierData
 {
+   virtual CPierData2* GetPierData() = 0;
    virtual PierIndexType GetPierCount() = 0;
    virtual PierIndexType GetPier() = 0;
    virtual pgsTypes::BoundaryConditionType GetConnectionType() = 0;

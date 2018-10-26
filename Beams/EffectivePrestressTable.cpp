@@ -30,6 +30,11 @@
 #include <PgsExt\GirderData.h>
 #include <PgsExt\LoadFactors.h>
 
+#if defined _DEBUG
+#include <IFace\Intervals.h>
+#include <IFace\PrestressForce.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -52,8 +57,8 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(5); // -99.9
-   scalar.SetPrecision(1);
+   scalar.SetWidth(6); // -99.9
+   scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 }
 
@@ -65,31 +70,28 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   bool bPTTempStrand = pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? true : false;
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
-
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
-
-   GET_IFACE2(pBroker,ILosses, pLosses);
-   bool bDeckShrinkage = pLosses->IsDeckShrinkageApplicable();
+   bool bTempStrands = (0 < NtMax ? true : false);
 
    // Create and configure the table
-   ColumnIndexType numColumns = 9;
-   if ( bUseGrossProperties )
-   {
-      numColumns++;
-   }
+   ColumnIndexType numColumns = 12;
 
    if ( !bIgnoreInitialRelaxation )
    {
       numColumns++;
    }
 
-   if ( bDeckShrinkage )
+   if ( bPTTempStrand )
+   {
+      numColumns++;
+   }
+
+   if ( bTempStrands )
    {
       numColumns++;
    }
@@ -97,8 +99,8 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   table->m_bIsDeckShinkageApplied = bDeckShrinkage;
-   table->m_bUseGrossProperties = bUseGrossProperties;
+   table->m_bPTTempStrand = bPTTempStrand;
+   table->m_bTempStrands = bTempStrands;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -110,10 +112,14 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   table->m_gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+   table->m_gLL_ServiceI   = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceI];
+   table->m_gLL_ServiceIII = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
 
-   std::_tostringstream os;
-   os << table->m_gLL;
+   std::_tostringstream os1;
+   os1 << table->m_gLL_ServiceI;
+
+   std::_tostringstream os3;
+   os3 << table->m_gLL_ServiceIII;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -128,36 +134,33 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-      if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
+      if ( bPTTempStrand )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
       }
 
-      if ( 0 < NtMax )
+      if ( bTempStrands )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("ptr")) << _T(" + ");
       }
 
-      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << rptNewLine;
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT"));
+      *pParagraph << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pED"));
+      *pParagraph << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSIDL"));
 
+      *pParagraph << rptNewLine;
 
       // fpe
-      *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL"));
-      if ( bDeckShrinkage )
-      {
-         *pParagraph << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pSS"));
-      }
+      *pParagraph << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT"));
       *pParagraph << rptNewLine;
-      *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL"));
-      if ( bUseGrossProperties )
-      {
-         *pParagraph << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pSS"));
-      }
-      *pParagraph << _T(" + ") << _T("(") << os.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine;
+
+      // fpe with live load service I
+      *pParagraph << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT"));
+      *pParagraph << _T(" + ") << _T("(") << os1.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << _T(" (Service I)") << rptNewLine;
+
+      // fpe with live load service III
+      *pParagraph << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT"));
+      *pParagraph << _T(" + ") << _T("(") << os3.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << _T(" (Service III)") << rptNewLine;
    }
    else
    {
@@ -172,19 +175,29 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
+
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if ( bDeckShrinkage )
+
+   if ( bPTTempStrand )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if ( bTempStrands )
+   {
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << _T("Xfer") << rptNewLine << _T("Length") << rptNewLine << _T("Factor");
+   (*table)(0,col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")) << rptNewLine << _T("with Live Load"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FPE << rptNewLine << _T("with Live Load") << rptNewLine << _T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FPE << rptNewLine << _T("with Live Load") << rptNewLine << _T("Service III"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
@@ -194,46 +207,77 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    ColumnIndexType col = 1;
    Float64 fpj = pDetails->pLosses->GetFpjPermanent();
 
+   // Long Term Time Dependent Losses
    Float64 fpLT = pDetails->pLosses->TimeDependentLosses();   // LT = SR + CR + R1 + SD + CD + R2
+
+   // Total Time Dependent Losses
+   // Later, we will added elastic effects to this to get the total loss (delta_fpT from LRFD 5.9.5.1)
    Float64 fpT  = pDetails->pLosses->PermanentStrand_Final(); // R0 + SR + CR + R1 + SD + CD + R2 = LT + R0
 
    Float64 fpR0   = pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer(); // R0
    Float64 fpES   = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses(); // ES
-   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
-   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
-   Float64 fpSS   = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
-   Float64 fpLL   = pDetails->pLosses->ElasticGainDueToLiveLoad();
+   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(); // ED
+   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(); // SIDL
+   Float64 fpLL   = pDetails->pLosses->ElasticGainDueToLiveLoad(); // LL
 
-   fpT += fpES; // T = R0 + ES + LT
+   Float64 fpp = 0;
+   if ( m_bPTTempStrand )
+   {
+      fpp = pDetails->pLosses->GetDeltaFpp();
+   }
 
-   // fpT includes elastic gains due to permanent loads
-   // elastic gains are subtracted when computing fpT so add them back
-   // in so we are left with just time dependent losses (see below)
+   Float64 fptr = 0;
+   if ( m_bTempStrands )
+   {
+      fptr = pDetails->pLosses->GetDeltaFptr();
+   }
 
+
+   // Add in elastic effects - this is now delta_fpT from LRFD 5.9.5.1
+   fpT += fpES + fptr + fpp - fpED - fpSIDL;
+
+   // Effective prestress is jacking minus total loss (which is total change in prestress)
+   Float64 fpe = fpj - fpT;
+
+   GET_IFACE2(pBroker,IPretensionForce,pPrestressForce);
+   Float64 adj = pPrestressForce->GetXferLengthAdjustment(poi,pgsTypes::Permanent);
+   fpe *= adj;
+
+#if defined _DEBUG
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
+   Float64 _fpe_ = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+   ATLASSERT(IsEqual(fpe,_fpe_));
+#endif
+
+   // Fill up the table row
    (*this)(row,col++) << stress.SetValue(fpj);
    if ( !m_bIgnoreInitialRelaxation )
    {
       (*this)(row,col++) << stress.SetValue(fpR0);
    }
+   
    (*this)(row,col++) << stress.SetValue(fpES);
+   
+   if ( m_bPTTempStrand )
+   {
+      (*this)(row,col++) << stress.SetValue(fpp);
+   }
+   
+   if ( m_bTempStrands )
+   {
+      (*this)(row,col++) << stress.SetValue(fptr);
+   }
+
    (*this)(row,col++) << stress.SetValue(fpLT);
-   (*this)(row,col++) << stress.SetValue(fpT);
    (*this)(row,col++) << stress.SetValue(fpED);
    (*this)(row,col++) << stress.SetValue(fpSIDL);
-   if ( m_bIsDeckShinkageApplied )
-   {
-      (*this)(row,col++) << stress.SetValue(fpSS);
-   }
 
-   Float64 fpe = fpj - fpT + fpED + fpSIDL;
-   if ( m_bUseGrossProperties )
-   {
-      fpe += fpSS;
-   }
-
+   (*this)(row,col++) << stress.SetValue(fpT);
+   (*this)(row,col++) << scalar.SetValue(adj);
    (*this)(row,col++) << stress.SetValue(fpe);
 
    (*this)(row,col++) << stress.SetValue(fpLL);
-   fpe += m_gLL*fpLL; // add elastic gain due to live load
-   (*this)(row,col++) << stress.SetValue(fpe);
+   (*this)(row,col++) << stress.SetValue(fpe + m_gLL_ServiceI*fpLL);
+   (*this)(row,col++) << stress.SetValue(fpe + m_gLL_ServiceIII*fpLL);
 }

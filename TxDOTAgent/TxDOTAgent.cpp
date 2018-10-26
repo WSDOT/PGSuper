@@ -49,6 +49,7 @@
 
 #include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
+#include "TogaCatCom.h"
 #include <System\ComCatMgr.h>
 
 #include <EAF\EAFUIIntegration.h>
@@ -108,6 +109,12 @@ HRESULT Register(bool bRegister)
    // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
    // other features
    hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   // The TxDOT Agent extends the functionality of Toga by adding custom reporting and
+   // other features
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_TogaExtensionAgent,bRegister);
    if ( FAILED(hr) )
       return hr;
 

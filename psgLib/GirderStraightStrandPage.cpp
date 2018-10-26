@@ -36,27 +36,27 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CGirderStraightStrandPage property page
+// CGirderTemporaryStrandPage property page
 
-IMPLEMENT_DYNCREATE(CGirderStraightStrandPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CGirderTemporaryStrandPage, CPropertyPage)
 
-CGirderStraightStrandPage::CGirderStraightStrandPage() : 
-CPropertyPage(CGirderStraightStrandPage::IDD),
+CGirderTemporaryStrandPage::CGirderTemporaryStrandPage() : 
+CPropertyPage(CGirderTemporaryStrandPage::IDD),
 m_TemporaryGrid(this)
 {
-	//{{AFX_DATA_INIT(CGirderStraightStrandPage)
+	//{{AFX_DATA_INIT(CGirderTemporaryStrandPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 }
 
-CGirderStraightStrandPage::~CGirderStraightStrandPage()
+CGirderTemporaryStrandPage::~CGirderTemporaryStrandPage()
 {
 }
 
-void CGirderStraightStrandPage::DoDataExchange(CDataExchange* pDX)
+void CGirderTemporaryStrandPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CGirderStraightStrandPage)
+	//{{AFX_DATA_MAP(CGirderTemporaryStrandPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
@@ -69,8 +69,8 @@ void CGirderStraightStrandPage::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CGirderStraightStrandPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CGirderStraightStrandPage)
+BEGIN_MESSAGE_MAP(CGirderTemporaryStrandPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CGirderTemporaryStrandPage)
 	ON_BN_CLICKED(IDC_ADD_TEMPORARY_STRAND, OnAddTemporaryStrand)
 	ON_BN_CLICKED(IDC_DEL_TEMPORARY_STRAND, OnDelTemporaryStrand)
 	ON_BN_CLICKED(IDC_APPEND_TEMPORARY_STRAND, OnAppendTemporaryStrand)
@@ -79,26 +79,26 @@ BEGIN_MESSAGE_MAP(CGirderStraightStrandPage, CPropertyPage)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CGirderStraightStrandPage message handlers
+// CGirderTemporaryStrandPage message handlers
 
-void CGirderStraightStrandPage::OnAddTemporaryStrand() 
+void CGirderTemporaryStrandPage::OnAddTemporaryStrand() 
 {
 	m_TemporaryGrid.Insertrow();
 }
 
-void CGirderStraightStrandPage::OnDelTemporaryStrand() 
+void CGirderTemporaryStrandPage::OnDelTemporaryStrand() 
 {
 	m_TemporaryGrid.Removerows();
 }
 
-void CGirderStraightStrandPage::OnEnableDelete(const CGirderStrandGrid* pgrid, bool canDelete)
+void CGirderTemporaryStrandPage::OnEnableDelete(const CGirderStrandGrid* pgrid, bool canDelete)
 {
    CWnd* pdel = GetDlgItem(IDC_DEL_TEMPORARY_STRAND);
    ASSERT(pdel);
    pdel->EnableWindow(canDelete);
 }
 
-BOOL CGirderStraightStrandPage::OnNcActivate(BOOL bActive)
+BOOL CGirderTemporaryStrandPage::OnNcActivate(BOOL bActive)
 {
 	if (GXDiscardNcActivate())
 		return TRUE;
@@ -106,7 +106,7 @@ BOOL CGirderStraightStrandPage::OnNcActivate(BOOL bActive)
 	return CPropertyPage::OnNcActivate(bActive);
 }
 
-BOOL CGirderStraightStrandPage::OnInitDialog() 
+BOOL CGirderTemporaryStrandPage::OnInitDialog() 
 {
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
@@ -125,12 +125,12 @@ BOOL CGirderStraightStrandPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CGirderStraightStrandPage::OnAppendTemporaryStrand() 
+void CGirderTemporaryStrandPage::OnAppendTemporaryStrand() 
 {
 	m_TemporaryGrid.Appendrow();
 }
 
-LRESULT CGirderStraightStrandPage::OnCommandHelp(WPARAM, LPARAM lParam)
+LRESULT CGirderTemporaryStrandPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_TEMPORARY_STRANDS_TAB );
    return TRUE;

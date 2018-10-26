@@ -184,8 +184,8 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
             *pChapter << pPara;
             *pPara << _T("Time-Dependent Effects = change in strand stress due to creep, shrinkage, and relaxation") << rptNewLine;
-            *pPara << _T("Elastic Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
-            *pPara << Sub2(_T("f"),_T("pe")) << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects + Elastic Effects") << rptNewLine;
+            *pPara << _T("Instantaneous Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
+            *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects - Instantaneous Effects") << rptNewLine;
          } // segIdx
       } // gdrIdx
    } // spanIdx

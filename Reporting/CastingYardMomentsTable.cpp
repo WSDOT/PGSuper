@@ -120,8 +120,8 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
       const pgsPointOfInterest& poi = *i;
       (*p_table)(row,0) << location.SetValue( poiAttribute, poi );
 
-      (*p_table)(row,1) << moment.SetValue( pProductForces->GetMoment( intervalIdx, pftGirder, poi, bat, rtCumulative ) );
-      (*p_table)(row,2) << shear.SetValue(  pProductForces->GetShear(  intervalIdx, pftGirder, poi, bat, rtCumulative ) );
+      (*p_table)(row,1) << moment.SetValue( pProductForces->GetMoment( intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
+      (*p_table)(row,2) << shear.SetValue(  pProductForces->GetShear(  intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
 
       row++;
    }

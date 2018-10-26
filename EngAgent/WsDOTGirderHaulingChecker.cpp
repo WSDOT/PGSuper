@@ -328,13 +328,11 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 #if defined _DEBUG
 bool pgsWsdotGirderHaulingChecker::AssertValid() const
 {
-//#pragma Reminder("TODO: Implement the AssertValid method for pgsWsdotGirderHaulingChecker")
    return true;
 }
 
 void pgsWsdotGirderHaulingChecker::Dump(dbgDumpContext& os) const
 {
-//#pragma Reminder("TODO: Implement the Dump method for pgsWsdotGirderHaulingChecker")
    os << "Dump for pgsWsdotGirderHaulingChecker" << endl;
 }
 #endif // _DEBUG
@@ -344,7 +342,6 @@ bool pgsWsdotGirderHaulingChecker::TestMe(dbgLog& rlog)
 {
    TESTME_PROLOGUE("pgsWsdotGirderHaulingChecker");
 
-//#pragma Reminder("TODO: Implement the TestMe method for pgsWsdotGirderHaulingChecker")
    TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsWsdotGirderHaulingChecker");
 
    TESTME_EPILOG("GirderHandlingChecker");

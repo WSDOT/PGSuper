@@ -241,7 +241,7 @@ bool ProductForcesReactionAdapter::DoReportAtPier(PierIndexType pierIdx,const CG
    return true; // always report pier reactions for all piers
 }
 
-Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
+Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
 {
    ATLASSERT(rLocation.Face == rftMid);
    return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,pfType,bat,rtCumulative);
@@ -284,7 +284,7 @@ bool BearingDesignProductReactionAdapter::DoReportAtPier(PierIndexType pierIdx,c
    return DoDoReportAtPier(m_IntervalIdx, pierIdx, girderKey, m_pBearingDesign);
 }
 
-Float64 BearingDesignProductReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,ProductForceType type,pgsTypes::BridgeAnalysisType bat)
+Float64 BearingDesignProductReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType type,pgsTypes::BridgeAnalysisType bat)
 {
    ATLASSERT(rLocation.Face != rftMid); // bearings are on sides
 

@@ -155,6 +155,9 @@ protected:
    //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   virtual BOOL CreateBroker();
+   virtual HINSTANCE GetResourceInstance();
+
    // our data
 public:
    CTxDOTOptionalDesignData m_ProjectData;

@@ -1550,6 +1550,7 @@
 #define IDC_STRENGTH_I_PS               1844
 #define IDC_D_UNIT                      1844
 #define IDC_EC_LABEL                    1846
+#define IDC_EC_LABEL2                   1847
 #define IDC_PIER_MODEL_LABEL            1849
 #define IDC_DIMENSIONS_NOTE             1850
 #define IDC_LOAD_RATING_EVENT_LABEL     1851

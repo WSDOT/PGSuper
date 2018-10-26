@@ -122,14 +122,14 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
       std::vector<Float64> fTopMaxLLIM, fBotMaxLLIM;
       std::vector<Float64> fTopMinLLIM, fBotMinLLIM;
 
-      pForces2->GetStress(intervalIdx, pftUserDC, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxDC, &fBotMaxDC);
-      pForces2->GetStress(intervalIdx, pftUserDC, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinDC, &fBotMinDC);
+      pForces2->GetStress(intervalIdx, pgsTypes::pftUserDC, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxDC, &fBotMaxDC);
+      pForces2->GetStress(intervalIdx, pgsTypes::pftUserDC, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinDC, &fBotMinDC);
 
-      pForces2->GetStress(intervalIdx, pftUserDW, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxDW, &fBotMaxDW);
-      pForces2->GetStress(intervalIdx, pftUserDW, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinDW, &fBotMinDW);
+      pForces2->GetStress(intervalIdx, pgsTypes::pftUserDW, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxDW, &fBotMaxDW);
+      pForces2->GetStress(intervalIdx, pgsTypes::pftUserDW, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinDW, &fBotMinDW);
 
-      pForces2->GetStress(intervalIdx, pftUserLLIM, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxLLIM, &fBotMaxLLIM);
-      pForces2->GetStress(intervalIdx, pftUserLLIM, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinLLIM, &fBotMinLLIM);
+      pForces2->GetStress(intervalIdx, pgsTypes::pftUserLLIM, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxLLIM, &fBotMaxLLIM);
+      pForces2->GetStress(intervalIdx, pgsTypes::pftUserLLIM, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinLLIM, &fBotMinLLIM);
 
       std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());

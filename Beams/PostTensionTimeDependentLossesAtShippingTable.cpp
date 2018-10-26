@@ -74,6 +74,8 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       pParagraph = new rptParagraph;
       *pChapter << pParagraph;
 
+      *pParagraph << rptRcImage(strImagePath + _T("PTLossAtHauling.png")) << rptNewLine;
+
       *pParagraph << table << rptNewLine;
 
       (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
@@ -83,8 +85,6 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pt avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-      *pParagraph << rptRcImage(strImagePath + _T("PTLossAtHauling.png")) << rptNewLine;
    }
 
    return table;

@@ -39,26 +39,26 @@ static char THIS_FILE[] = __FILE__;
 
 
 /////////////////////////////////////////////////////////////////////////////
-// CGirderHarpedStrandPage property page
+// CGirderPermanentStrandPage property page
 
-IMPLEMENT_DYNCREATE(CGirderHarpedStrandPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CGirderPermanentStrandPage, CPropertyPage)
 
-CGirderHarpedStrandPage::CGirderHarpedStrandPage() : 
-CPropertyPage(CGirderHarpedStrandPage::IDD,IDS_GIRDER_STRAND),
+CGirderPermanentStrandPage::CGirderPermanentStrandPage() : 
+CPropertyPage(CGirderPermanentStrandPage::IDD,IDS_GIRDER_STRAND),
 m_MainGrid(this)
 {
-	//{{AFX_DATA_INIT(CGirderHarpedStrandPage)
+	//{{AFX_DATA_INIT(CGirderPermanentStrandPage)
 	//}}AFX_DATA_INIT
 }
 
-CGirderHarpedStrandPage::~CGirderHarpedStrandPage()
+CGirderPermanentStrandPage::~CGirderPermanentStrandPage()
 {
 }
 
-void CGirderHarpedStrandPage::DoDataExchange(CDataExchange* pDX)
+void CGirderPermanentStrandPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CGirderHarpedStrandPage)
+	//{{AFX_DATA_MAP(CGirderPermanentStrandPage)
 	//}}AFX_DATA_MAP
 
 	DDV_GXGridWnd(pDX, &m_MainGrid);
@@ -69,8 +69,8 @@ void CGirderHarpedStrandPage::DoDataExchange(CDataExchange* pDX)
       pDX->Fail();
 }
 
-BEGIN_MESSAGE_MAP(CGirderHarpedStrandPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CGirderHarpedStrandPage)
+BEGIN_MESSAGE_MAP(CGirderPermanentStrandPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CGirderPermanentStrandPage)
 	ON_BN_CLICKED(IDC_DEL_HARPED_STRAND, OnDelGlobalStrand)
 	ON_BN_CLICKED(IDC_ADD_HARPED_STRAND, OnAddGlobalStrand)
 	ON_BN_CLICKED(IDC_APPEND_HARPED_STRAND, OnAppendGlobalStrand)
@@ -88,14 +88,14 @@ BEGIN_MESSAGE_MAP(CGirderHarpedStrandPage, CPropertyPage)
 
    ON_BN_CLICKED(IDC_REVERSE_HARPED_STRAND_ORDER,OnReverseHarpedStrandOrder)
    ON_BN_CLICKED(IDC_GENERATE,OnGenerateStrandPositions)
-   ON_CBN_SELCHANGE(IDC_WEB_STRAND_TYPE_COMBO, &CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo)
-   ON_BN_CLICKED(IDC_ALLOW_STR_ADJUST, &CGirderHarpedStrandPage::OnClickStraightAdjust)
+   ON_CBN_SELCHANGE(IDC_WEB_STRAND_TYPE_COMBO, &CGirderPermanentStrandPage::OnCbnSelchangeWebStrandTypeCombo)
+   ON_BN_CLICKED(IDC_ALLOW_STR_ADJUST, &CGirderPermanentStrandPage::OnClickStraightAdjust)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CGirderHarpedStrandPage message handlers
+// CGirderPermanentStrandPage message handlers
 
-BOOL CGirderHarpedStrandPage::OnInitDialog() 
+BOOL CGirderPermanentStrandPage::OnInitDialog() 
 {
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
@@ -128,7 +128,7 @@ BOOL CGirderHarpedStrandPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CGirderHarpedStrandPage::OnEnableDelete(bool canDelete)
+void CGirderPermanentStrandPage::OnEnableDelete(bool canDelete)
 {
    int ctrls[] = {IDC_DEL_HARPED_STRAND, IDC_ADD_HARPED_STRAND, IDC_EDIT_STRAND, IDC_MOVEUP_HARPED_STRAND, IDC_MOVEDOWN_HARPED_STRAND, -1};
 
@@ -144,7 +144,7 @@ void CGirderHarpedStrandPage::OnEnableDelete(bool canDelete)
 }
 
 
-BOOL CGirderHarpedStrandPage::OnNcActivate(BOOL bActive)
+BOOL CGirderPermanentStrandPage::OnNcActivate(BOOL bActive)
 {
 	if (GXDiscardNcActivate())
 		return TRUE;
@@ -152,17 +152,17 @@ BOOL CGirderHarpedStrandPage::OnNcActivate(BOOL bActive)
 	return CPropertyPage::OnNcActivate(bActive);
 }
 
-void CGirderHarpedStrandPage::OnAddGlobalStrand() 
+void CGirderPermanentStrandPage::OnAddGlobalStrand() 
 {
 	m_MainGrid.InsertSelectedRow();
 }
 
-void CGirderHarpedStrandPage::OnDelGlobalStrand() 
+void CGirderPermanentStrandPage::OnDelGlobalStrand() 
 {
 	m_MainGrid.RemoveSelectedRow();
 }
 
-void CGirderHarpedStrandPage::OnClickHarpedBox() 
+void CGirderPermanentStrandPage::OnClickHarpedBox() 
 {
    m_MainGrid.OnChangeUseHarpedGrid();
 
@@ -171,7 +171,7 @@ void CGirderHarpedStrandPage::OnClickHarpedBox()
    pw->EnableWindow( DoUseHarpedGrid() ? TRUE : FALSE);
 }
 
-bool CGirderHarpedStrandPage::DoUseHarpedGrid()
+bool CGirderPermanentStrandPage::DoUseHarpedGrid()
 {
    if (pgsTypes::asStraight        == GetAdjustableStrandType() ||
       pgsTypes::asStraightOrHarped == GetAdjustableStrandType())
@@ -187,49 +187,49 @@ bool CGirderHarpedStrandPage::DoUseHarpedGrid()
    }
 }
 
-LRESULT CGirderHarpedStrandPage::OnCommandHelp(WPARAM, LPARAM lParam)
+LRESULT CGirderPermanentStrandPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_HARPED_STRANDS_TAB );
 
    return TRUE;
 }
 
-void CGirderHarpedStrandPage::OnAppendGlobalStrand() 
+void CGirderPermanentStrandPage::OnAppendGlobalStrand() 
 {
 	m_MainGrid.AppendSelectedRow();
 }
 
-void CGirderHarpedStrandPage::OnEditGlobalStrand() 
+void CGirderPermanentStrandPage::OnEditGlobalStrand() 
 {
 	m_MainGrid.EditSelectedRow();
 }
 
-void CGirderHarpedStrandPage::OnMoveUpGlobalStrand()
+void CGirderPermanentStrandPage::OnMoveUpGlobalStrand()
 {
    m_MainGrid.MoveUpSelectedRow();
 }
 
-void CGirderHarpedStrandPage::OnMoveDownGlobalStrand()
+void CGirderPermanentStrandPage::OnMoveDownGlobalStrand()
 {
    m_MainGrid.MoveDownSelectedRow();
 }
 
-void CGirderHarpedStrandPage::OnClickHpAdjust()
+void CGirderPermanentStrandPage::OnClickHpAdjust()
 {
    UpdateHpAdjust();
 }
 
-void CGirderHarpedStrandPage::OnClickEndAdjust()
+void CGirderPermanentStrandPage::OnClickEndAdjust()
 {
    UpdateEndAdjust();
 }
 
-void CGirderHarpedStrandPage::OnClickStraightAdjust()
+void CGirderPermanentStrandPage::OnClickStraightAdjust()
 {
    UpdateStraightAdjust();
 }
 
-void CGirderHarpedStrandPage::UpdateHpAdjust()
+void CGirderPermanentStrandPage::UpdateHpAdjust()
 {
    BOOL enable = pgsTypes::asStraight!=GetAdjustableStrandType() ? TRUE : FALSE;
 
@@ -241,7 +241,7 @@ void CGirderHarpedStrandPage::UpdateHpAdjust()
    UpdateAdjustCtls(enable, IDC_ALLOW_HP_ADJUST, ctrls);
 }
 
-void CGirderHarpedStrandPage::UpdateEndAdjust()
+void CGirderPermanentStrandPage::UpdateEndAdjust()
 {
    BOOL enable = pgsTypes::asStraight!=GetAdjustableStrandType() ? TRUE : FALSE;
 
@@ -253,7 +253,7 @@ void CGirderHarpedStrandPage::UpdateEndAdjust()
    UpdateAdjustCtls(enable, IDC_ALLOW_END_ADJUST, ctrls);
 }
 
-void CGirderHarpedStrandPage::UpdateStraightAdjust()
+void CGirderPermanentStrandPage::UpdateStraightAdjust()
 {
    BOOL enable = pgsTypes::asHarped!=GetAdjustableStrandType() ? TRUE : FALSE;
 
@@ -264,7 +264,7 @@ void CGirderHarpedStrandPage::UpdateStraightAdjust()
    UpdateAdjustCtls(enable, IDC_ALLOW_STR_ADJUST, ctrls);
 }
 
-void CGirderHarpedStrandPage::UpdateAdjustCtls(BOOL enableGroup, int checkCtrl, int ctrls[])
+void CGirderPermanentStrandPage::UpdateAdjustCtls(BOOL enableGroup, int checkCtrl, int ctrls[])
 {
    CButton* pbut = (CButton*)GetDlgItem(checkCtrl);
    ASSERT(pbut);
@@ -284,7 +284,7 @@ void CGirderHarpedStrandPage::UpdateAdjustCtls(BOOL enableGroup, int checkCtrl, 
    }
 }
 
-void CGirderHarpedStrandPage::OnEndview() 
+void CGirderPermanentStrandPage::OnEndview() 
 {
    if ( !UpdateData(TRUE) )
       return;
@@ -293,7 +293,7 @@ void CGirderHarpedStrandPage::OnEndview()
    pDad->m_GirderDimensionsPage.ViewSection(true);
 }
 
-void CGirderHarpedStrandPage::OnMidview() 
+void CGirderPermanentStrandPage::OnMidview() 
 {
    if ( !UpdateData(TRUE) )
       return;
@@ -302,13 +302,13 @@ void CGirderHarpedStrandPage::OnMidview()
    pDad->m_GirderDimensionsPage.ViewSection(false);
 }
 
-pgsTypes::AdjustableStrandType CGirderHarpedStrandPage::GetAdjustableStrandType()
+pgsTypes::AdjustableStrandType CGirderPermanentStrandPage::GetAdjustableStrandType()
 {
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_WEB_STRAND_TYPE_COMBO);
    return (pgsTypes::AdjustableStrandType)pcb->GetCurSel();
 }
 
-void CGirderHarpedStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)
+void CGirderPermanentStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)
 {
    CString str;
    str.Format(_T("# Straight Strands = %d"), ns);
@@ -336,17 +336,17 @@ void CGirderHarpedStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 n
    pw->SetWindowText(str);
 }
 
-void CGirderHarpedStrandPage::OnReverseHarpedStrandOrder()
+void CGirderPermanentStrandPage::OnReverseHarpedStrandOrder()
 {
    m_MainGrid.ReverseHarpedStrandOrder();
 }
 
-void CGirderHarpedStrandPage::OnGenerateStrandPositions()
+void CGirderPermanentStrandPage::OnGenerateStrandPositions()
 {
    m_MainGrid.GenerateStrandPositions();
 }
 
-void CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo()
+void CGirderPermanentStrandPage::OnCbnSelchangeWebStrandTypeCombo()
 {
    pgsTypes::AdjustableStrandType adj_type = GetAdjustableStrandType();
    BOOL use_diffgrid = pgsTypes::asHarped == adj_type;

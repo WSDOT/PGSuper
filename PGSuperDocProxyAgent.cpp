@@ -451,7 +451,6 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_IUpdateTemplates,    this );
    pBrokerInit->RegInterface( IID_IVersionInfo,        this );
    pBrokerInit->RegInterface( IID_IRegisterViewEvents, this );
-   pBrokerInit->RegInterface( IID_IExtendUI,           this );
    pBrokerInit->RegInterface( IID_IExtendPGSuperUI,    this );
    pBrokerInit->RegInterface( IID_IExtendPGSpliceUI,   this );
    pBrokerInit->RegInterface( IID_IDocumentType,       this );

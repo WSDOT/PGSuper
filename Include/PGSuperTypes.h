@@ -606,8 +606,40 @@ typedef struct pgsTypes
       sitPush,
       sitPull
    } StrandInstallationType;
-} pgsTypes;
 
+   typedef enum ProductForceType 
+   { 
+      // externaly applied loads
+      pftGirder,
+      pftConstruction,
+      pftSlab, 
+      pftSlabPad, 
+      pftSlabPanel, 
+      pftDiaphragm, 
+      pftOverlay,
+      pftSidewalk,
+      pftTrafficBarrier, 
+      pftUserDC, 
+      pftUserDW, 
+      pftUserLLIM,
+      pftShearKey,
+
+      // pseudo externally applied loads (really internal loads)
+      pftPretension,       // P*e for pretension
+      pftPostTensioning,   // P*e for post-tension
+      pftSecondaryEffects,
+
+      // time-depending effects
+      pftCreep,
+      pftShrinkage,
+      pftRelaxation,
+
+      // special cases
+      pftOverlayRating,
+
+      pftProductForceTypeCount
+   } ProductForceType;
+} pgsTypes;
 
 //-----------------------------------------------------------------------------
 // Struct for stirrup information.

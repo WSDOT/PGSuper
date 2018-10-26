@@ -1035,10 +1035,11 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    Float64 station = m_pFrame->GetCurrentCutLocation();
 
-   Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
    Float64 left_offset, right_offset;
-   left_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
-   right_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
+   left_offset  = pBridge->GetLeftOverlayToeOffset(Xb);
+   right_offset = pBridge->GetRightOverlayToeOffset(Xb);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    CComPtr<IPoint2dCollection> surfacePoints;
@@ -1111,6 +1112,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1204,10 +1206,10 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    // place sockets at curb line so we can do a curb-to-curb dimension line
    CComQIPtr<iConnectable> left_connectable(left_dispObj);
    CComQIPtr<iConnectable> right_connectable(right_dispObj);
-   Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(m_pFrame->GetCurrentCutLocation());
+   Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(m_pFrame->GetCurrentCutLocation());
    Float64 left_offset, right_offset;
-   left_offset  = pBridge->GetLeftCurbOffset(dist_from_start_of_bridge);
-   right_offset = pBridge->GetRightCurbOffset(dist_from_start_of_bridge);
+   left_offset  = pBridge->GetLeftCurbOffset(Xb);
+   right_offset = pBridge->GetRightCurbOffset(Xb);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    Float64 left_elev  = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),left_offset);
@@ -1232,8 +1234,8 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    pl.CoCreateInstance(CLSID_Point2d);
    pr.CoCreateInstance(CLSID_Point2d);
 
-   left_offset = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
-   right_offset = pBridge->GetRightSlabEdgeOffset(dist_from_start_of_bridge);
+   left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
+   right_offset = pBridge->GetRightSlabEdgeOffset(Xb);
 
    if ( left_shape )
    {  
@@ -1286,8 +1288,8 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
       socket2.Release();
 
       Float64 left_icb_offset, right_icb_offset;
-      left_icb_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
-      right_icb_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
+      left_icb_offset  = pBridge->GetLeftOverlayToeOffset(Xb);
+      right_icb_offset = pBridge->GetRightOverlayToeOffset(Xb);
 
       pl->put_X(left_icb_offset);
       pl->put_Y(elev);
@@ -1315,6 +1317,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    GroupIndexType grpIdx = GetGroupIndex();
 
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1332,7 +1335,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girder_list);
 
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
-   Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(cut_station);
+   Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(cut_station);
 
    // get length unit so section can be labelled
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
@@ -1590,7 +1593,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       //
       // Create Left Slab Overhang Dimension Line
       //
-      Float64 leftOverhang = pBridge->GetLeftSlabOverhang(distFromStartOfBridge);
+      Float64 leftOverhang = pBridge->GetLeftSlabOverhang(Xb);
       if ( 0 <= leftOverhang )
       {
          CComPtr<iDimensionLine> leftOverhangDimLine;
@@ -1642,7 +1645,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       //
       // Create Right Overhang Dimension Line
       //
-      Float64 rightOverhang = pBridge->GetRightSlabOverhang(distFromStartOfBridge);
+      Float64 rightOverhang = pBridge->GetRightSlabOverhang(Xb);
       if ( 0 <= rightOverhang )
       {
          CComPtr<iDimensionLine> rightOverhangDimLine;
@@ -1729,7 +1732,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       ccText->SetBkMode(TRANSPARENT);
 
-      Float64 ccWidth = pBridge->GetCurbToCurbWidth( distFromStartOfBridge );
+      Float64 ccWidth = pBridge->GetCurbToCurbWidth( Xb );
       CString strCurb = FormatDimension(ccWidth,rlen);
       ccText->SetText(strCurb);
 
@@ -1921,8 +1924,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    if (doLeftTB && pBridge->HasOverlay())
    {
       Float64 left_icb_offset, right_icb_offset;
-      left_icb_offset  = pBridge->GetLeftOverlayToeOffset(distFromStartOfBridge);
-      right_icb_offset = pBridge->GetRightOverlayToeOffset(distFromStartOfBridge);
+      left_icb_offset  = pBridge->GetLeftOverlayToeOffset(Xb);
+      right_icb_offset = pBridge->GetRightOverlayToeOffset(Xb);
 
       Float64 width = right_icb_offset-left_icb_offset;
       if ( 0 < width )

@@ -25,7 +25,6 @@
 #define IDD_GIRDER_INPUT_PAGE           202
 #define IDC_GIRDER                      203
 #define IDC_EXTENDED                    204
-#define IDI_TXDOT                       205
 #define IDC_REPORT_COMBO                205
 #define IDC_ERROR_STATIC                206
 #define IDC_BRIDGE                      208

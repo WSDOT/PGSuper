@@ -281,9 +281,9 @@ bool CStabilityGraphBuilder::UpdateNow()
          {
             pProgress->UpdateMessage(_T("Working..."));
 
-   #pragma Reminder("REVIEW: Equal overhangs")
-            // this is probably the best thing to do with this view... but... give it some thought
-            // could do the interaction surface that Dave Chapman showed me
+            // NOTE: assuming equal overhangs is probably the best thing to do with this view... 
+            // but... give it some thought. could do the interaction surface that Dave Chapman showed me
+
             const pgsHaulingAnalysisArtifact* artifact_base = pArtifact->CreateHaulingAnalysisArtifact(segmentKey,loc,loc);
             // Only works for wsdot analysis
             const pgsWsdotHaulingAnalysisArtifact* pArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);

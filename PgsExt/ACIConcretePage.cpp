@@ -23,11 +23,11 @@
 // ACIConcretePage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin.h"
-#include "ACIConcretePage.h"
-#include "ConcreteDetailsDlg.h"
-#include "PGSuperAppPlugin\ACIParametersDlg.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include <PgsExt\ACIConcretePage.h>
+#include <PgsExt\ConcreteDetailsDlg.h>
+#include "ACIParametersDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <Material\ACI209Concrete.h>
@@ -39,9 +39,10 @@
 IMPLEMENT_DYNAMIC(CACIConcretePage, CPropertyPage)
 
 CACIConcretePage::CACIConcretePage()
-	: CPropertyPage(CACIConcretePage::IDD)
+	: CPropertyPage()
 {
-
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   Construct(IDD_ACI_CONCRETE);
 }
 
 CACIConcretePage::~CACIConcretePage()

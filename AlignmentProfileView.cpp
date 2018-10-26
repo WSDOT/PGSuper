@@ -70,12 +70,8 @@ BEGIN_MESSAGE_MAP(CAlignmentProfileView, CDisplayView)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
-//   ON_WM_KEYDOWN()
-//   ON_WM_MOUSEWHEEL()
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
-////   ON_COMMAND(ID_ZOOM,OnZoom)
-////   ON_COMMAND(ID_SCALETOFIT,OnScaleToFit)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -232,134 +228,9 @@ void CAlignmentProfileView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CAlignmentProfileView::OnViewSettings() 
 {
-   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PLAN);
+   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PROFILE);
 }
-//
-//void CAlignmentProfileView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-//{
-//   if ( nChar == VK_LEFT || nChar == VK_RIGHT )
-//   {
-//      CComPtr<iDisplayMgr> dispMgr;
-//      GetDisplayMgr(&dispMgr);
-//      DisplayObjectContainer selObjs;
-//      dispMgr->GetSelectedObjects(&selObjs);
-//      bool bSectionCutSelected = false;
-//      if ( 0 < selObjs.size() )
-//      {
-//         CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
-//         if ( pDO->GetID() == SECTION_CUT_ID )
-//         {
-//            bSectionCutSelected = true;
-//         }
-//      }
-//
-//      if ( ::GetKeyState(VK_CONTROL) < 0 || bSectionCutSelected )
-//      {
-//         CBridgeModelViewChildFrame* pFrame = GetFrame();
-//         if ( nChar == VK_LEFT )
-//         {
-//            pFrame->CutAtPrev();
-//         }
-//         else if ( nChar == VK_RIGHT )
-//         {
-//            pFrame->CutAtNext();
-//         }
-//         return; // don't send this on to the display view
-//      }
-//      else
-//      {
-//         // otherwise select a pier
-//         if ( selObjs.size() == 0 )
-//         {
-//            CComPtr<IBroker> pBroker;
-//            EAFGetBroker(&pBroker);
-//            GET_IFACE2(pBroker,IBridge,pBridge);
-//
-//            PierIndexType nPiers = pBridge->GetPierCount();
-//
-//            if (nChar == VK_LEFT)
-//            {
-//               m_pFrame->SelectPier(nPiers-1);
-//            }
-//            else
-//            {
-//               m_pFrame->SelectPier(0);
-//            }
-//
-//            return;
-//         }
-//      }
-//   }
-//   else if (nChar == VK_UP || nChar == VK_DOWN )
-//   {
-//      if ( nChar == VK_DOWN && ::GetKeyState(VK_CONTROL) < 0 )
-//      {
-//         // CTRL + down arrow... put focus in Bridge Section View
-//         m_pFrame->GetBridgeSectionView()->SetFocus();
-//      }
-//      else
-//      {
-//         CComPtr<iDisplayMgr> dispMgr;
-//         GetDisplayMgr(&dispMgr);
-//         DisplayObjectContainer selObjs;
-//         dispMgr->GetSelectedObjects(&selObjs);
-//         if ( 0 == selObjs.size() )
-//         {
-//            SelectAlignment(true);
-//            return;
-//         }
-//      }
-//   }
-//
-//   CDisplayView::OnKeyDown(nChar,nRepCnt,nFlags);
-//}
-//
-//BOOL CAlignmentProfileView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
-//{
-//   CComPtr<IBroker> pBroker;
-//   EAFGetBroker(&pBroker);
-//
-//   CComPtr<iDisplayMgr> dispMgr;
-//   GetDisplayMgr(&dispMgr);
-//   DisplayObjectContainer selObjs;
-//   dispMgr->GetSelectedObjects(&selObjs);
-//   bool bLeftRight = true;
-//   if ( 0 < selObjs.size() )
-//   {
-//      CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
-//      CComPtr<iDisplayList> pDispList;
-//      pDO->GetDisplayList(&pDispList);
-//      IDType dispListID = pDispList->GetID();
-//      if ( pDO->GetID() == SECTION_CUT_ID )
-//      {
-//         bLeftRight = true;
-//      }
-//      else if ( dispListID == SPAN_DISPLAY_LIST || dispListID == PIER_DISPLAY_LIST || dispListID == SLAB_DISPLAY_LIST )
-//      {
-//         bLeftRight = true;
-//      }
-//      else
-//      {
-//         // a girder or the alignment is selected
-//         bLeftRight = false;
-//      }
-//   }
-//
-//   UINT nChar;
-//   if ( bLeftRight )
-//   {
-//      nChar = (zDelta < 0 ? VK_RIGHT : VK_LEFT);
-//   }
-//   else
-//   {
-//      nChar = (zDelta < 0 ? VK_DOWN : VK_UP);
-//   }
-//
-//   OnKeyDown(nChar, 1, nFlags);
-//
-//   return TRUE;
-//}
-//
+
 void CAlignmentProfileView::UpdateDisplayObjects()
 {
    CWaitCursor wait;
@@ -428,13 +299,13 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    CComPtr<iPolyLineDisplayObject> doLeftCurb;
    doLeftCurb.CoCreateInstance(CLSID_PolyLineDisplayObject);
    doLeftCurb->put_Width(1);
-   doLeftCurb->put_Color(GREEN);
+   doLeftCurb->put_Color(RED);
    doLeftCurb->put_PointType(plpNone);
 
    CComPtr<iPolyLineDisplayObject> doRightCurb;
    doRightCurb.CoCreateInstance(CLSID_PolyLineDisplayObject);
    doRightCurb->put_Width(1);
-   doRightCurb->put_Color(ORANGE);
+   doRightCurb->put_Color(GREEN);
    doRightCurb->put_PointType(plpNone);
 
    // Register an event sink with the alignment object so that we can handle Float64 clicks
@@ -616,6 +487,15 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
 
          CreateStationLabel(label_list,station,elevation,_T("BVC"));
 
+         //CComPtr<IProfilePoint> pntPVI;
+         //vc->get_PVI(&pntPVI);
+         //objStation.Release();
+         //pntPVI->get_Station(&objStation);
+         //objStation->get_Value(&station);
+         //pntPVI->get_Elevation(&elevation);
+
+         //CreateStationLabel(label_list,station,elevation,_T("PVI"));
+
          CComPtr<IProfilePoint> pntEVC;
          vc->get_EVC(&pntEVC);
          objStation.Release();
@@ -655,14 +535,6 @@ void CAlignmentProfileView::UpdateDrawingScale()
    title_display_list->HideDisplayObjects(false);
 }
 
-//void CAlignmentProfileView::ClearSelection()
-//{
-//   CComPtr<iDisplayMgr> dispMgr;
-//   GetDisplayMgr(&dispMgr);
-//
-//   dispMgr->ClearSelectedObjects();
-//}
-
 void CAlignmentProfileView::OnSetFocus(CWnd* pOldWnd) 
 {
 	CDisplayView::OnSetFocus(pOldWnd);
@@ -674,25 +546,6 @@ void CAlignmentProfileView::OnKillFocus(CWnd* pNewWnd)
 	CDisplayView::OnKillFocus(pNewWnd);
    DrawFocusRect();
 }
-//
-//void CAlignmentProfileView::OnZoom()
-//{
-//   CComPtr<iDisplayMgr> dispMgr;
-//   GetDisplayMgr(&dispMgr);
-//
-//   CComPtr<iTaskFactory> taskFactory;
-//   dispMgr->GetTaskFactory(&taskFactory);
-//
-//   CComPtr<iTask> task;
-//   taskFactory->CreateZoomTask(this,NULL,LIGHTSTEELBLUE,&task);
-//
-//   dispMgr->SetTask(task);
-//}
-//
-//void CAlignmentProfileView::OnScaleToFit()
-//{
-//   UpdateDrawingScale();
-//}
 
 int CAlignmentProfileView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {

@@ -219,40 +219,40 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
 
-   std::vector<ProductForceType> vProductForces;
-   vProductForces.push_back(pftGirder);
-   //vProductForces.push_back(pftConstruction);
-   //vProductForces.push_back(pftSlab);
-   //vProductForces.push_back(pftSlabPad);
-   //vProductForces.push_back(pftSlabPanel);
-   //vProductForces.push_back(pftDiaphragm); 
-   //vProductForces.push_back(pftOverlay);
-   //vProductForces.push_back(pftSidewalk);
-   //vProductForces.push_back(pftTrafficBarrier);
+   std::vector<pgsTypes::ProductForceType> vProductForces;
+   vProductForces.push_back(pgsTypes::pftGirder);
+   //vProductForces.push_back(pgsTypes::pftConstruction);
+   //vProductForces.push_back(pgsTypes::pftSlab);
+   //vProductForces.push_back(pgsTypes::pftSlabPad);
+   //vProductForces.push_back(pgsTypes::pftSlabPanel);
+   //vProductForces.push_back(pgsTypes::pftDiaphragm); 
+   //vProductForces.push_back(pgsTypes::pftOverlay);
+   //vProductForces.push_back(pgsTypes::pftSidewalk);
+   //vProductForces.push_back(pgsTypes::pftTrafficBarrier);
    if ( pUserLoads->DoUserLoadsExist(segmentKey,0,intervalIdx,IUserDefinedLoads::userDC) )
    {
-      vProductForces.push_back(pftUserDC);
+      vProductForces.push_back(pgsTypes::pftUserDC);
    }
 
    if ( pUserLoads->DoUserLoadsExist(segmentKey,0,intervalIdx,IUserDefinedLoads::userDW) )
    {
-      vProductForces.push_back(pftUserDW);
+      vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
    if ( pUserLoads->DoUserLoadsExist(segmentKey,0,intervalIdx,IUserDefinedLoads::userLL_IM) )
    {
-      vProductForces.push_back(pftUserLLIM);
+      vProductForces.push_back(pgsTypes::pftUserLLIM);
    }
-   //vProductForces.push_back(pftShearKey);
-   //vProductForces.push_back(pftSecondaryEffects);
-   //vProductForces.push_back(pftPostTensioning);
-   vProductForces.push_back(pftPretension);
+   //vProductForces.push_back(pgsTypes::pftShearKey);
+   //vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+   //vProductForces.push_back(pgsTypes::pftPostTensioning);
+   vProductForces.push_back(pgsTypes::pftPretension);
 
    if ( storageIntervalIdx < intervalIdx )
    {
-      vProductForces.push_back(pftCreep);
-      vProductForces.push_back(pftShrinkage);
-      vProductForces.push_back(pftRelaxation);
+      vProductForces.push_back(pgsTypes::pftCreep);
+      vProductForces.push_back(pgsTypes::pftShrinkage);
+      vProductForces.push_back(pgsTypes::pftRelaxation);
    }
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
@@ -266,12 +266,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
 
    ColumnIndexType col = 0;
    (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-   std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
    int i = 0;
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
-      ProductForceType pfType = *pfIter;
+      pgsTypes::ProductForceType pfType = *pfIter;
       LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
       (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -291,8 +291,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
 
       (*pTable)(row,col++) << location.SetValue( poiReference, poi );
 
-      std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-      std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
       int k = 0;
       for ( ; pfIter != pfIterEnd; pfIter++, k++ )
       {
@@ -332,45 +332,45 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
 
-   std::vector<ProductForceType> vProductForces;
-   vProductForces.push_back(pftGirder);
+   std::vector<pgsTypes::ProductForceType> vProductForces;
+   vProductForces.push_back(pgsTypes::pftGirder);
    if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
    {
-      vProductForces.push_back(pftConstruction);
+      vProductForces.push_back(pgsTypes::pftConstruction);
    }
-   //vProductForces.push_back(pftSlab);
-   //vProductForces.push_back(pftSlabPad);
-   //vProductForces.push_back(pftSlabPanel);
-   vProductForces.push_back(pftDiaphragm); 
-   //vProductForces.push_back(pftOverlay);
-   //vProductForces.push_back(pftSidewalk);
-   //vProductForces.push_back(pftTrafficBarrier);
+   //vProductForces.push_back(pgsTypes::pftSlab);
+   //vProductForces.push_back(pgsTypes::pftSlabPad);
+   //vProductForces.push_back(pgsTypes::pftSlabPanel);
+   vProductForces.push_back(pgsTypes::pftDiaphragm); 
+   //vProductForces.push_back(pgsTypes::pftOverlay);
+   //vProductForces.push_back(pgsTypes::pftSidewalk);
+   //vProductForces.push_back(pgsTypes::pftTrafficBarrier);
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,castDeckIntervalIdx-1,IUserDefinedLoads::userDC) )
    {
-      vProductForces.push_back(pftUserDC);
+      vProductForces.push_back(pgsTypes::pftUserDC);
    }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,castDeckIntervalIdx-1,IUserDefinedLoads::userDW) )
    {
-      vProductForces.push_back(pftUserDW);
+      vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,castDeckIntervalIdx-1,IUserDefinedLoads::userLL_IM) )
    {
-      vProductForces.push_back(pftUserLLIM);
+      vProductForces.push_back(pgsTypes::pftUserLLIM);
    }
-   //vProductForces.push_back(pftShearKey);
+   //vProductForces.push_back(pgsTypes::pftShearKey);
 
    if ( firstTendonStressingIntervalIdx < castDeckIntervalIdx )
    {
-      vProductForces.push_back(pftSecondaryEffects);
-      vProductForces.push_back(pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
    }
 
-   vProductForces.push_back(pftPretension);
-   vProductForces.push_back(pftCreep);
-   vProductForces.push_back(pftShrinkage);
-   vProductForces.push_back(pftRelaxation);
+   vProductForces.push_back(pgsTypes::pftPretension);
+   vProductForces.push_back(pgsTypes::pftCreep);
+   vProductForces.push_back(pgsTypes::pftShrinkage);
+   vProductForces.push_back(pgsTypes::pftRelaxation);
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections prior to slab casting"));
 
@@ -378,12 +378,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
 
    ColumnIndexType col = 0;
    (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-   std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
    int i = 0;
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
-      ProductForceType pfType = *pfIter;
+      pgsTypes::ProductForceType pfType = *pfIter;
       LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
       (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -413,8 +413,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
       (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       Float64 D = 0;
-      std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-      std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
       int k = 0;
       for ( ; pfIter != pfIterEnd; pfIter++, k++ )
       {
@@ -462,68 +462,68 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
 
-   std::vector<ProductForceType> vProductForces;
-   vProductForces.push_back(pftGirder);
+   std::vector<pgsTypes::ProductForceType> vProductForces;
+   vProductForces.push_back(pgsTypes::pftGirder);
 
    if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
    {
-      vProductForces.push_back(pftConstruction);
+      vProductForces.push_back(pgsTypes::pftConstruction);
    }
 
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      vProductForces.push_back(pftSlab);
-      vProductForces.push_back(pftSlabPad);
+      vProductForces.push_back(pgsTypes::pftSlab);
+      vProductForces.push_back(pgsTypes::pftSlabPad);
    }
 
    if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
    {
-      vProductForces.push_back(pftSlabPanel);
+      vProductForces.push_back(pgsTypes::pftSlabPanel);
    }
 
-   vProductForces.push_back(pftDiaphragm); 
+   vProductForces.push_back(pgsTypes::pftDiaphragm); 
 
    if ( pIntervals->GetOverlayInterval() <= liveLoadIntervalIdx )
    {
-      vProductForces.push_back(pftOverlay);
+      vProductForces.push_back(pgsTypes::pftOverlay);
    }
 
    if ( pProductLoads->HasSidewalkLoad(girderKey) )
    {
-      vProductForces.push_back(pftSidewalk);
+      vProductForces.push_back(pgsTypes::pftSidewalk);
    }
 
-   vProductForces.push_back(pftTrafficBarrier);
+   vProductForces.push_back(pgsTypes::pftTrafficBarrier);
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,liveLoadIntervalIdx,IUserDefinedLoads::userDC) )
    {
-      vProductForces.push_back(pftUserDC);
+      vProductForces.push_back(pgsTypes::pftUserDC);
    }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,liveLoadIntervalIdx,IUserDefinedLoads::userDW) )
    {
-      vProductForces.push_back(pftUserDW);
+      vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,liveLoadIntervalIdx,IUserDefinedLoads::userLL_IM) )
    {
-      vProductForces.push_back(pftUserLLIM);
+      vProductForces.push_back(pgsTypes::pftUserLLIM);
    }
 
    if ( pProductLoads->HasShearKeyLoad(girderKey) )
    {
-      vProductForces.push_back(pftShearKey);
+      vProductForces.push_back(pgsTypes::pftShearKey);
    }
 
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
-      vProductForces.push_back(pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
    }
 
-   vProductForces.push_back(pftPretension);
-   vProductForces.push_back(pftCreep);
-   vProductForces.push_back(pftShrinkage);
-   vProductForces.push_back(pftRelaxation);
+   vProductForces.push_back(pgsTypes::pftPretension);
+   vProductForces.push_back(pgsTypes::pftCreep);
+   vProductForces.push_back(pgsTypes::pftShrinkage);
+   vProductForces.push_back(pgsTypes::pftRelaxation);
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections from slab casting to service (Screed Camber)"));
 
@@ -532,12 +532,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    ColumnIndexType col = 0;
    (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-   std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
    int i = 0;
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
-      ProductForceType pfType = *pfIter;
+      pgsTypes::ProductForceType pfType = *pfIter;
       LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
       (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -571,8 +571,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
       (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       Float64 C = 0;
-      std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-      std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
       int k = 0;
       for ( ; pfIter != pfIterEnd; pfIter++, k++ )
       {
@@ -679,69 +679,69 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
 
-   std::vector<ProductForceType> vProductForces;
-   vProductForces.push_back(pftGirder);
+   std::vector<pgsTypes::ProductForceType> vProductForces;
+   vProductForces.push_back(pgsTypes::pftGirder);
 
    if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
    {
-      vProductForces.push_back(pftConstruction);
+      vProductForces.push_back(pgsTypes::pftConstruction);
    }
 
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      vProductForces.push_back(pftSlab);
-      vProductForces.push_back(pftSlabPad);
+      vProductForces.push_back(pgsTypes::pftSlab);
+      vProductForces.push_back(pgsTypes::pftSlabPad);
    }
 
    if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
    {
-      vProductForces.push_back(pftSlabPanel);
+      vProductForces.push_back(pgsTypes::pftSlabPanel);
    }
 
-   vProductForces.push_back(pftDiaphragm); 
+   vProductForces.push_back(pgsTypes::pftDiaphragm); 
 
    if ( pIntervals->GetOverlayInterval() != INVALID_INDEX )
    {
-      vProductForces.push_back(pftOverlay);
+      vProductForces.push_back(pgsTypes::pftOverlay);
    }
 
    if ( pProductLoads->HasSidewalkLoad(girderKey) )
    {
-      vProductForces.push_back(pftSidewalk);
+      vProductForces.push_back(pgsTypes::pftSidewalk);
    }
 
-   vProductForces.push_back(pftTrafficBarrier);
+   vProductForces.push_back(pgsTypes::pftTrafficBarrier);
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,IUserDefinedLoads::userDC) )
    {
-      vProductForces.push_back(pftUserDC);
+      vProductForces.push_back(pgsTypes::pftUserDC);
    }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,IUserDefinedLoads::userDW) )
    {
-      vProductForces.push_back(pftUserDW);
+      vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,IUserDefinedLoads::userLL_IM) )
    {
-      vProductForces.push_back(pftUserLLIM);
+      vProductForces.push_back(pgsTypes::pftUserLLIM);
    }
 
    if ( pProductLoads->HasShearKeyLoad(girderKey) )
    {
-      vProductForces.push_back(pftShearKey);
+      vProductForces.push_back(pgsTypes::pftShearKey);
    }
 
-   vProductForces.push_back(pftPretension);
+   vProductForces.push_back(pgsTypes::pftPretension);
 
    if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
    {
-      vProductForces.push_back(pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
    }
 
-   vProductForces.push_back(pftCreep);
-   vProductForces.push_back(pftShrinkage);
-   vProductForces.push_back(pftRelaxation);
+   vProductForces.push_back(pgsTypes::pftCreep);
+   vProductForces.push_back(pgsTypes::pftShrinkage);
+   vProductForces.push_back(pgsTypes::pftRelaxation);
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Final Deflections"));
 
@@ -749,12 +749,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
    ColumnIndexType col = 0;
    (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-   std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+   std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
    int i = 0;
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
-      ProductForceType pfType = *pfIter;
+      pgsTypes::ProductForceType pfType = *pfIter;
       LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
       (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -781,8 +781,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
       (*pTable)(row,col++) << location.SetValue( POI_SPAN, poi );
 
-      std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-      std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
+      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
       int k = 0;
       for ( ; pfIter != pfIterEnd; pfIter++, k++ )
       {

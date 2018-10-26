@@ -9,9 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#if !defined NOGRID
 #include "grid\gxresrc.h"
-#endif
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -40,9 +38,7 @@ END
 BEGIN
     "#include ""afxres.h""\r\n"
     "#include ""EAF\\EAFResources.h""\r\n"
-    "#if !defined NOGRID\r\n"
     "#include ""grid\\gxresrc.h""\r\n"
-    "#endif\0"
 END
 
 3 TEXTINCLUDE 
@@ -60,9 +56,7 @@ BEGIN
     "#include ""res\\psgLib.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-    "#if !defined NOGRID\r\n"
     "#include ""grid\\gxres.rc""               // Objective Grid resources\r\n"
-    "#endif\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -74,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,36
- PRODUCTVERSION 3,0,0,36
+ FILEVERSION 3,0,0,37
+ PRODUCTVERSION 3,0,0,37
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.36"
+            VALUE "FileVersion", "3.0.0.37"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.36"
+            VALUE "ProductVersion", "3.0.0.37"
         END
     END
     BLOCK "VarFileInfo"
@@ -273,18 +267,6 @@ BEGIN
     PUSHBUTTON      "OK",IDOK,116,264,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,176,264,50,14
     PUSHBUTTON      "Help",ID_HELP,236,264,50,14
-END
-
-IDD_GIRDER_MAIN DIALOG  0, 0, 463, 310
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Edit Girder Template"
-FONT 8, "MS Sans Serif"
-BEGIN
-    PUSHBUTTON      "Draw to Scale",IDC_DRAW_GIRDER,104,289,70,14
-    PUSHBUTTON      "OK",IDOK,188,289,50,14
-    PUSHBUTTON      "Help",9,308,289,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,248,289,50,14
-    CONTROL         "Tab1",IDC_GIRDER_TAB,"SysTabControl32",0x0,7,0,449,283
 END
 
 IDD_GIRDER_DIMENSIONS DIALOGEX 0, 0, 491, 372
@@ -749,7 +731,7 @@ BEGIN
     LTEXT           "Tension",IDC_STATIC,13,232,26,8
 END
 
-IDD_HARP_STRAND DIALOGEX 0, 0, 484, 365
+IDD_GIRDER_PERMANENT_STRANDS DIALOGEX 0, 0, 484, 365
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Permanent Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -808,7 +790,7 @@ BEGIN
     PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,141,246,90,14
     COMBOBOX        IDC_WEB_STRAND_TYPE_COMBO,17,19,133,33,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Adjustable Strand Settings",IDC_STATIC,7,7,467,55
-    LTEXT           "Note: User can select adjustable strand type at design time.",IDC_ADJUSTABLE_NOTE,24,48,210,8
+    LTEXT           "Note: User can over-ride adjustable strand type at design time.",IDC_ADJUSTABLE_NOTE,182,47,210,8
     CONTROL         "Adj. Straight Strands along Girder",IDC_ALLOW_STR_ADJUST,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,340,120,10
     EDITTEXT        IDC_STR_LSL,215,336,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -820,6 +802,7 @@ BEGIN
     LTEXT           "From",IDC_STR_USL_S,407,341,16,8
     COMBOBOX        IDC_COMBO_STR_USL,427,338,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "N/A",IDC_STATIC,146,340,14,8
+    LTEXT           "Adjustable strands are the strands whose position in the cross section can be altered to control tensile stresses at release.",IDC_STATIC,18,33,146,26
 END
 
 IDD_RENAME_LIBRARY_ENTRY DIALOG  0, 0, 187, 95
@@ -892,7 +875,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,34,150,10
 END
 
-IDD_STRAIGHT_STRAND DIALOGEX 0, 0, 307, 222
+IDD_GIRDER_TEMPORARY_STRANDS DIALOGEX 0, 0, 307, 222
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Temporary Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -971,57 +954,57 @@ BEGIN
     PUSHBUTTON      "Help",IDHELP,228,225,50,14
 END
 
-IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 278
+IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 273
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Limits and Warnings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,7,7,251,8
-    GROUPBOX        "Concrete Limits",IDC_STATIC,7,22,310,164
-    LTEXT           "Normal Weight",IDC_STATIC,85,30,48,8
-    LTEXT           "Lightweight",IDC_STATIC,163,30,37,8
-    LTEXT           "Slab f'c",IDC_STATIC,51,47,24,8
-    EDITTEXT        IDC_NWC_FC_SLAB,89,45,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_FC_SLAB_UNIT,131,47,29,8
-    EDITTEXT        IDC_LWC_FC_SLAB,160,45,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_FC_SLAB_UNIT,202,47,29,8
-    LTEXT           "Precast Element f'ci",IDC_STATIC,12,64,63,8
-    EDITTEXT        IDC_NWC_GIRDER_FCI,89,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_GIRDER_FCI_UNIT,131,64,29,8
-    EDITTEXT        IDC_LWC_GIRDER_FCI,160,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_GIRDER_FCI_UNIT,202,64,29,8
-    LTEXT           "Precast Element f'c",IDC_STATIC,13,81,62,8
-    EDITTEXT        IDC_NWC_GIRDER_FC,89,79,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_GIRDER_FC_UNIT,131,81,29,8
-    EDITTEXT        IDC_LWC_GIRDER_FC,160,79,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_GIRDER_FC_UNIT,202,81,29,8
-    LTEXT           "Closure Joint f'ci",IDC_STATIC,23,99,52,8
-    EDITTEXT        IDC_NWC_CLOSURE_FCI,90,97,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_CLOSURE_FCI_UNIT,132,99,29,8
-    EDITTEXT        IDC_LWC_CLOSURE_FCI,160,97,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_CLOSURE_FCI_UNIT,202,99,29,8
-    LTEXT           "Closure Joint f'c",IDC_STATIC,25,116,50,8
-    EDITTEXT        IDC_NWC_CLOSURE_FC,90,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_CLOSURE_FC_UNIT,132,116,29,8
-    EDITTEXT        IDC_LWC_CLOSURE_FC,160,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_CLOSURE_FC_UNIT,202,116,29,8
-    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,150,69,8
-    EDITTEXT        IDC_NWC_UNIT_WEIGHT,89,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_UNIT_WEIGHT_UNIT,132,150,29,8
-    EDITTEXT        IDC_LWC_UNIT_WEIGHT,160,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,150,29,8
-    LTEXT           "Max Aggregate Size",IDC_STATIC,14,168,64,8
-    EDITTEXT        IDC_NWC_AGG_SIZE,89,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,168,29,8
-    EDITTEXT        IDC_LWC_AGG_SIZE,160,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,168,29,8
-    GROUPBOX        "General Warnings",IDC_STATIC,7,191,310,80
+    GROUPBOX        "General Warnings",IDC_STATIC,7,22,310,75
     CONTROL         "Warn if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,212,291,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,43,291,10
     CONTROL         "Warn if there is a potential for girders to sag under dead load effects",IDC_CHECK_GIRDER_SAG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,230,229,10
-    LTEXT           "Base sag detection on",IDC_STATIC,42,245,72,8
-    COMBOBOX        IDC_SAG_OPTIONS,116,243,170,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,61,229,10
+    LTEXT           "Base sag detection on",IDC_STATIC,42,76,72,8
+    COMBOBOX        IDC_SAG_OPTIONS,116,74,170,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Concrete Limits",IDC_STATIC,7,102,310,164
+    LTEXT           "Normal Weight",IDC_STATIC,85,110,48,8
+    LTEXT           "Lightweight",IDC_STATIC,163,110,37,8
+    LTEXT           "Slab f'c",IDC_STATIC,51,127,24,8
+    EDITTEXT        IDC_NWC_FC_SLAB,89,125,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_FC_SLAB_UNIT,131,127,29,8
+    EDITTEXT        IDC_LWC_FC_SLAB,160,125,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_FC_SLAB_UNIT,202,127,29,8
+    LTEXT           "Precast Element f'ci",IDC_STATIC,12,144,63,8
+    EDITTEXT        IDC_NWC_GIRDER_FCI,89,142,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_GIRDER_FCI_UNIT,131,144,29,8
+    EDITTEXT        IDC_LWC_GIRDER_FCI,160,142,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_GIRDER_FCI_UNIT,202,144,29,8
+    LTEXT           "Precast Element f'c",IDC_STATIC,13,161,62,8
+    EDITTEXT        IDC_NWC_GIRDER_FC,89,159,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_GIRDER_FC_UNIT,131,161,29,8
+    EDITTEXT        IDC_LWC_GIRDER_FC,160,159,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_GIRDER_FC_UNIT,202,161,29,8
+    LTEXT           "Closure Joint f'ci",IDC_STATIC,23,179,52,8
+    EDITTEXT        IDC_NWC_CLOSURE_FCI,90,177,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_CLOSURE_FCI_UNIT,132,179,29,8
+    EDITTEXT        IDC_LWC_CLOSURE_FCI,160,177,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_CLOSURE_FCI_UNIT,202,179,29,8
+    LTEXT           "Closure Joint f'c",IDC_STATIC,25,196,50,8
+    EDITTEXT        IDC_NWC_CLOSURE_FC,90,193,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_CLOSURE_FC_UNIT,132,196,29,8
+    EDITTEXT        IDC_LWC_CLOSURE_FC,160,193,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_CLOSURE_FC_UNIT,202,196,29,8
+    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,230,69,8
+    EDITTEXT        IDC_NWC_UNIT_WEIGHT,89,228,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_UNIT_WEIGHT_UNIT,132,230,29,8
+    EDITTEXT        IDC_LWC_UNIT_WEIGHT,160,228,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,230,29,8
+    LTEXT           "Max Aggregate Size",IDC_STATIC,14,248,64,8
+    EDITTEXT        IDC_NWC_AGG_SIZE,89,246,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,248,29,8
+    EDITTEXT        IDC_LWC_AGG_SIZE,160,246,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,248,29,8
 END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 372
@@ -1060,7 +1043,7 @@ BEGIN
     LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,23,150,140,8
     EDITTEXT        IDC_MIN_LIFTING_POINT,177,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MIN_LIFTING_POINT_UNIT,220,150,19,8
-    LTEXT           "(Enter value or H)",IDC_STATIC,244,150,56,8
+    LTEXT           "(Enter value or H)",IDC_STATIC,233,150,56,8
     LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,316,150,31,8
     EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,351,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,395,150,19,8
@@ -1070,7 +1053,7 @@ BEGIN
     LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,23,205,149,8
     EDITTEXT        IDC_MIN_TRUCK_SUPPORT,177,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,220,205,19,8
-    LTEXT           "(Enter value of H)",IDC_STATIC,244,205,56,8
+    LTEXT           "(Enter value of H)",IDC_STATIC,233,205,56,8
     LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,316,205,31,8
     EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,351,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,395,205,19,8
@@ -1085,12 +1068,12 @@ BEGIN
     CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,278,45,10
     LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,201,279,84,8
     EDITTEXT        IDC_DEFLECTION_LIMIT,281,276,40,14,ES_AUTOHSCROLL
-    GROUPBOX        "Strand Fill Order to be Used for Automated Harped Pattern Design",IDC_STATIC,12,321,462,44
-    CONTROL         "Add Strands Using the Permanent Strand Grid Fill Order",IDC_RADIO_FILL_PERMANENT,
+    GROUPBOX        "Harped Strand Design",IDC_STATIC,12,321,462,44
+    CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,23,337,193,10
     CONTROL         "Minimize Number of Harped Strands (*)",IDC_RADIO2,
                     "Button",BS_AUTORADIOBUTTON,23,352,137,10
-    CTEXT           "* Strand Grid is defined in the Girder Library. If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,342,220,22
+    LTEXT           "* If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,342,220,22
     LTEXT           "(For Kansas method only)",IDC_STATIC,184,219,80,8
     LTEXT           "Bottom Flange Clearance",IDC_STATIC,25,296,80,8
     CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,296,37,10
@@ -1792,14 +1775,6 @@ BEGIN
         HORZGUIDE, 138
     END
 
-    IDD_GIRDER_MAIN, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 456
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 303
-    END
-
     IDD_GIRDER_DIMENSIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1891,7 +1866,7 @@ BEGIN
         BOTTOMMARGIN, 283
     END
 
-    IDD_HARP_STRAND, DIALOG
+    IDD_GIRDER_PERMANENT_STRANDS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 477
@@ -1915,7 +1890,7 @@ BEGIN
         BOTTOMMARGIN, 190
     END
 
-    IDD_STRAIGHT_STRAND, DIALOG
+    IDD_GIRDER_TEMPORARY_STRANDS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 300
@@ -1952,7 +1927,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 317
         TOPMARGIN, 7
-        BOTTOMMARGIN, 271
+        BOTTOMMARGIN, 266
     END
 
     IDD_SPEC_DESIGN, DIALOG
@@ -2136,7 +2111,7 @@ BEGIN
     0
 END
 
-IDD_HARP_STRAND DLGINIT
+IDD_GIRDER_PERMANENT_STRANDS DLGINIT
 BEGIN
     IDC_COMBO_HP_LSL, 0x403, 4, 0
 0x6f54, 0x0070, 
@@ -2414,8 +2389,8 @@ BEGIN
     IDS_SLOPE_O6_SI         "Max Strand Slope for 15.24d mm Strands"
     IDS_SLOPE_O7_SI         "Max Strand Slope for 17.78d mm Strands"
     IDS_SLOPE_O7_US         "Max Strand Slope for 0.7d inch Strands"
-    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
-    IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Lightweight."
+    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nThe concrete will be treated as Normal Weight."
+    IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
     IDS_SPEC_LOSS           "Losses"
     IDS_SPEC_ANALYSIS       "Structural Analysis"
     IDS_GIRDER_HARPPOINT    "Harping Points"
@@ -2503,9 +2478,8 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
-#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

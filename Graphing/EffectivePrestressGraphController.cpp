@@ -49,6 +49,7 @@ m_DuctIdx(INVALID_INDEX)
 BEGIN_MESSAGE_MAP(CEffectivePrestressGraphController, CMultiIntervalGirderGraphControllerBase)
 	//{{AFX_MSG_MAP(CEffectivePrestressGraphController)
    ON_CBN_SELCHANGE( IDC_DUCT, OnDuctChanged )
+   ON_CONTROL_RANGE( BN_CLICKED, IDC_PERMANENT, IDC_TEMPORARY, OnRadioButton)
    ON_CONTROL_RANGE( BN_CLICKED, IDC_STRESS, IDC_FORCE, OnRadioButton)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -58,6 +59,7 @@ BOOL CEffectivePrestressGraphController::OnInitDialog()
    CMultiIntervalGirderGraphControllerBase::OnInitDialog();
 
    FillDuctCtrl();
+   CheckRadioButton(IDC_PERMANENT,IDC_TEMPORARY,IDC_PERMANENT);
    CheckRadioButton(IDC_STRESS,IDC_FORCE,IDC_STRESS);
 
    return TRUE;
@@ -90,6 +92,18 @@ bool CEffectivePrestressGraphController::IsStressGraph()
    }
 }
 
+bool CEffectivePrestressGraphController::IsPermanentStrands()
+{
+   if ( GetSafeHwnd() == NULL )
+   {
+      return true;
+   }
+   else
+   {
+      return GetCheckedRadioButton(IDC_PERMANENT,IDC_TEMPORARY) == IDC_PERMANENT ? true : false;
+   }
+}
+
 void CEffectivePrestressGraphController::OnRadioButton(UINT nIDC)
 {
    UpdateGraph();
@@ -114,6 +128,13 @@ void CEffectivePrestressGraphController::OnDuctChanged()
    {
       m_DuctIdx = ductIdx;
       FillIntervalCtrl();
+
+      // only show Permanent/Temporary radio buttons if
+      // pre-tensioning is selected
+      int swShow = (m_DuctIdx == INVALID_INDEX ? SW_SHOW : SW_HIDE);
+      GetDlgItem(IDC_PERMANENT)->ShowWindow(swShow);
+      GetDlgItem(IDC_TEMPORARY)->ShowWindow(swShow);
+
       UpdateGraph();
    }
 }

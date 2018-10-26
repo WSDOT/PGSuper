@@ -22,72 +22,55 @@
 
 #pragma once
 
-// ConcreteGeneralPage.h : header file
+#include <PgsExt\PgsExtExp.h>
+
+// AASHTOConcretePage.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// CConcreteGeneralPage dialog
+// CAASHTOConcretePage dialog
 
-class CConcreteGeneralPage : public CPropertyPage
+class PGSEXTCLASS CAASHTOConcretePage : public CPropertyPage
 {
 // Construction
 public:
-	CConcreteGeneralPage();
+	CAASHTOConcretePage();
 
 // Dialog Data
-	//{{AFX_DATA(CConcreteGeneralPage)
-	enum { IDD = IDD_CONCRETE_DETAILS };
-	CStatic	m_ctrlStrengthDensityUnit;
-	CStatic	m_ctrlStrengthDensityTitle;
+	//{{AFX_DATA(CAASHTOConcretePage)
 	//}}AFX_DATA
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CConcreteGeneralPage)
+	//{{AFX_VIRTUAL(CAASHTOConcretePage)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-	CEdit	m_ctrlEc;
-	CButton m_ctrlEcCheck;
-	CEdit	m_ctrlFc;
-	CEdit	m_ctrlStrengthDensity;
-
-   CComPtr<IBroker> m_pBroker;
-   Float64 m_MinNWCDensity;
-   Float64 m_MaxLWCDensity;
-   bool m_bErrorInDDX;
+	CEdit	m_ctrlK1;
+	CEdit	m_ctrlK2;
 
    CString m_strFct;
 
 public:
-   CString m_strUserEc;
-   Float64 m_Ds;
-   Float64 m_Dw;
-   Float64 m_AggSize;
-   pgsTypes::ConcreteType m_Type;
+   Float64 m_EccK1;
+   Float64 m_EccK2;
+   Float64 m_CreepK1;
+   Float64 m_CreepK2;
+   Float64 m_ShrinkageK1;
+   Float64 m_ShrinkageK2;
+   bool m_bHasFct;
+   Float64 m_Fct;
 
    // Implementation
 protected:
-   void UpdateEc();
-   void ShowStrengthDensity(bool enable);
-
 	// Generated message map functions
-	//{{AFX_MSG(CConcreteGeneralPage)
+	//{{AFX_MSG(CAASHTOConcretePage)
 	virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive();
+   afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	afx_msg void OnHelp();
-   afx_msg void OnUserEc();
-	afx_msg void OnChangeFc();
-	afx_msg void OnChangeDs();
-	afx_msg void OnCopyMaterial();
-   afx_msg void OnConcreteType();
+   afx_msg void OnAggSplittingStrengthClicked();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-public:
-   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-
-protected:
-   virtual void OnOK();
-   pgsTypes::ConcreteType GetConreteType();
-   bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
 };

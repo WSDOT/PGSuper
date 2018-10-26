@@ -228,28 +228,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
 
    if ( compshape )
    {
-      CollectionIndexType count;
-      compshape->get_Count(&count);
-
-      for ( CollectionIndexType idx = 0; idx < count; idx++ )
-      {
-         CComPtr<ICompositeShapeItem> item;
-         compshape->get_Item(idx,&item);
-
-         VARIANT_BOOL bVoid;
-         item->get_Void(&bVoid);
-
-         CComPtr<IShape> shape;
-         item->get_Shape(&shape);
-
-
-         if ( bVoid == VARIANT_TRUE )
-            pDC->SelectObject(&void_brush);
-         else
-            pDC->SelectObject(&shape_brush);
-
-         DrawShape(pDC,Mapper,shape);
-      }
+      DrawShape(pDC,Mapper,compshape,shape_brush,void_brush);
    }
    else
    {
@@ -257,6 +236,42 @@ void CSectionViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
    }
 
    pDC->SelectObject(pOldBrush);
+}
+
+void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush)
+{
+   CollectionIndexType nShapes;
+   pCompositeShape->get_Count(&nShapes);
+   for ( CollectionIndexType idx = 0; idx < nShapes; idx++ )
+   {
+      CComPtr<ICompositeShapeItem> item;
+      pCompositeShape->get_Item(idx,&item);
+
+      CComPtr<IShape> shape;
+      item->get_Shape(&shape);
+
+      VARIANT_BOOL bVoid;
+      item->get_Void(&bVoid);
+
+      if ( bVoid == VARIANT_TRUE )
+      {
+         pDC->SelectObject(&voidBrush);
+      }
+      else
+      {
+         pDC->SelectObject(&solidBrush);
+      }
+
+      CComQIPtr<ICompositeShape> composite(shape);
+      if ( composite )
+      {
+         DrawShape(pDC,mapper,composite,solidBrush,voidBrush);
+      }
+      else
+      {
+         DrawShape(pDC,mapper,shape);
+      }
+   }
 }
 
 void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape)

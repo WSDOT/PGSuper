@@ -52,7 +52,7 @@ public:
    union LoadType 
    {
       pgsTypes::LimitState         LimitStateType;
-      ProductForceType             ProductLoadType;
+      pgsTypes::ProductForceType             ProductLoadType;
       LoadingCombinationType       CombinedLoadType;
       pgsTypes::LiveLoadType       LiveLoadType;
    } m_LoadType;
@@ -75,7 +75,7 @@ public:
    
    // constructor for product loads
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,
-                ProductForceType type,
+                pgsTypes::ProductForceType type,
                 const std::vector<IntervalIndexType>& intervals,int actions);
    
    // constructor for live loads

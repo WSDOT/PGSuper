@@ -27,6 +27,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\Allowables.h>
+#include <IFace\AnalysisResults.h>
 
 bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {

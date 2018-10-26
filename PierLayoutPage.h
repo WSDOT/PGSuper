@@ -58,6 +58,10 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
+	CEdit	m_ctrlEc;
+	CButton m_ctrlEcCheck;
+	CEdit	m_ctrlFc;
+   CString m_strUserEc;
 
 // Implementation
 protected:
@@ -65,6 +69,9 @@ protected:
 	//{{AFX_MSG(CPierLayoutPage)
 	virtual BOOL OnInitDialog();
    afx_msg void OnHelp();
+   afx_msg void OnChangeFc();
+   afx_msg void OnUserEc();
+   afx_msg void OnMoreProperties();
    afx_msg void OnPierModelTypeChanged();
    afx_msg void OnColumnShapeChanged();
    afx_msg void OnColumnCountChanged(NMHDR* pNMHDR, LRESULT* pResult);
@@ -81,12 +88,15 @@ protected:
    void FillTransverseLocationComboBox();
 
    void UpdateColumnSpacingControls();
+   void UpdateEcControls();
 
    CPierData2* m_pPier;
    PierIndexType m_PierIdx;
 
    pgsTypes::PierModelType m_PierModelType;
-   Float64 m_Ec;
+
+   void UpdateConcreteTypeLabel();
+   void UpdateEc();
 
    ColumnIndexType m_nColumns;
    ColumnIndexType m_RefColumnIdx;

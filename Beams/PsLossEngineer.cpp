@@ -1574,14 +1574,14 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CCreepAtFinalTable*          pCD = CCreepAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CRelaxationAtFinalTable*     pR2 = CRelaxationAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-
-   CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CElasticGainDueToDeckShrinkageTable*   pSS   = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
 
    CTimeDependentLossFinalTable* pLTdf = CTimeDependentLossFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CTimeDependentLossesTable*    pLT   = CTimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+
+   CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
 
    CEffectivePrestressTable*     pPE   = CEffectivePrestressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CTotalPrestressLossTable*     pT    = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
@@ -1660,10 +1660,10 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       ReportRow(pSD,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pCD,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pR2,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pSS,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pED,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pSIDL,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pLLIM,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pSS,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
 
       ReportRow(pLTdf,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pLT,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
@@ -2748,7 +2748,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-   *pMdlg  = pProdForces->GetMoment( releaseIntervalIdx, pftGirder, poi, bat, rtCumulative);
+   *pMdlg  = pProdForces->GetMoment( releaseIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative);
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
 
@@ -2790,16 +2790,16 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    }
    else
    {
-      *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pftSlab,      poi, bat, rtCumulative ) +
-                K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPad,   poi, bat, rtCumulative ) + 
-                K_dia     *(pProdForces->GetMoment( castDeckIntervalIdx, pftDiaphragm, poi, bat, rtCumulative ) + 
-                            pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, bat, rtCumulative )) + 
-                K_userdc1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC,    poi, bat, rtCumulative ) +
-                K_userdw1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW,    poi, bat, rtCumulative );
+      *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlab,      poi, bat, rtCumulative ) +
+                K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPad,   poi, bat, rtCumulative ) + 
+                K_dia     *(pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative ) + 
+                            pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftShearKey,  poi, bat, rtCumulative )) + 
+                K_userdc1 * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftUserDC,    poi, bat, rtCumulative ) +
+                K_userdw1 * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftUserDW,    poi, bat, rtCumulative );
 
       if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
       {
-         *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel, poi, bat, rtCumulative );
+         *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative );
       }
    }
 
@@ -2813,10 +2813,10 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       *pMadlg += K_slabpad*Mslabpad;
    }
 
-   *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat, rtCumulative ) +
-                          pProdForces->GetMoment( railingSystemIntervalIdx, pftSidewalk,       poi, bat, rtCumulative )) +
-             K_userdc2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDC,         poi, bat, rtCumulative ) +
-             K_userdw2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDW,         poi, bat, rtCumulative );
+   *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative ) +
+                          pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtCumulative )) +
+             K_userdc2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pgsTypes::pftUserDC,         poi, bat, rtCumulative ) +
+             K_userdw2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pgsTypes::pftUserDW,         poi, bat, rtCumulative );
 
    // include the overlay dead load. even future overlays contribute dead load and creep effects
    // from the time it is installed until final. we don't know when "future" is and it is conservative
@@ -2824,7 +2824,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    // See PCI BDM Example 9.1a that supports this approach
    if ( pBridge->HasOverlay() && overlayIntervalIdx != INVALID_INDEX )
    {
-      *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pftOverlay, poi, bat, rtCumulative );
+      *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative );
    }
    
    Float64 Mmin, Mmax;

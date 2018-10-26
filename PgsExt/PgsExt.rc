@@ -8,9 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#if !defined NOGRID
 #include "grid/gxresrc.h"
-#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -37,9 +36,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
-    "#if !defined NOGRID\r\n"
     "#include ""grid/gxresrc.h""\r\n"
-    "#endif\0"
 END
 
 3 TEXTINCLUDE 
@@ -56,9 +53,7 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-    "#if !defined NOGRID\r\n"
     "#include ""grid/gxres.rc""               // Objective Grid resources\r\n"
-    "#endif\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -70,8 +65,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,36
- PRODUCTVERSION 3,0,0,36
+ FILEVERSION 3,0,0,37
+ PRODUCTVERSION 3,0,0,37
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -89,12 +84,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.36"
+            VALUE "FileVersion", "3.0.0.37"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.36"
+            VALUE "ProductVersion", "3.0.0.37"
         END
     END
     BLOCK "VarFileInfo"
@@ -154,6 +149,145 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,12,116,149,10
 END
 
+IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 230, 137
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "General"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_CONCRETE_TYPE,113,6,77,99,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Strength - f'c",IDC_FC_LABEL,22,28,41,8
+    EDITTEXT        IDC_FC,135,22,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_FC_UNIT,195,28,28,8
+    LTEXT           "Unit Weight\n(used to compute Ec)",IDC_DS_TITLE,22,41,122,18
+    EDITTEXT        IDC_DS,135,40,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_DS_UNIT,195,46,28,8
+    LTEXT           "Unit Weight with Reinforcement\n(used to compute dead load)",IDC_STATIC,22,60,101,16
+    EDITTEXT        IDC_DW,135,59,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_DW_UNIT,195,62,28,8
+    CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,81,74,10
+    EDITTEXT        IDC_EC,135,78,55,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_EC_UNIT,195,81,28,8
+    LTEXT           "Max. Aggregate Size",IDC_STATIC,22,96,66,8
+    EDITTEXT        IDC_AGG_SIZE,135,94,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_AGG_SIZE_UNIT,195,98,28,8
+    PUSHBUTTON      "Copy from library...",IDC_COPY_MATERIAL,42,117,141,13
+    LTEXT           "Type",IDC_STATIC,22,11,17,8
+END
+
+IDD_AASHTO_CONCRETE DIALOGEX 0, 0, 217, 146
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "AASHTO LRFD"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Averaging Factor, K1",IDC_EC_K1_LABEL,37,16,71,8
+    EDITTEXT        IDC_EC_K1,114,12,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Bounding Factor, K2",IDC_EC_K2_LABEL,37,33,71,8
+    EDITTEXT        IDC_EC_K2,114,29,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Creep",IDC_STATIC,9,47,20,8
+    LTEXT           "Averaging Factor, K1",IDC_CREEP_K1_LABEL,37,56,71,8
+    EDITTEXT        IDC_CREEP_K1,114,52,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Bounding Factor, K2",IDC_CREEP_K2_LABEL,37,72,71,8
+    EDITTEXT        IDC_CREEP_K2,114,69,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Shrinkage",IDC_STATIC,9,85,33,8
+    LTEXT           "Averaging Factor, K1",IDC_SHRINKAGE_K1_LABEL,37,95,71,8
+    EDITTEXT        IDC_SHRINKAGE_K1,114,91,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Bounding Factor, K2",IDC_SHRINKAGE_K2_LABEL,37,111,71,8
+    EDITTEXT        IDC_SHRINKAGE_K2,114,108,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Agg Splitting Strength, fct",IDC_HAS_AGG_STRENGTH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,127,101,10
+    EDITTEXT        IDC_AGG_STRENGTH,113,125,53,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_AGG_STRENGTH_T,175,127,35,8
+    LTEXT           "Modulus of Elasticity",IDC_STATIC,7,4,66,8
+END
+
+IDD_ACI_CONCRETE DIALOGEX 0, 0, 188, 121
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ACI 209R-92"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Use time parameters from ACI 209R-92, Prediction of Creep, Shrinkage, and Temperature Effects in Concrete Structures",IDC_USER,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,7,178,28
+    LTEXT           "Cure Method",IDC_CURE_METHOD_LABEL,7,39,42,8
+    COMBOBOX        IDC_CURE_METHOD,7,55,66,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Cement Type",IDC_CEMENT_TYPE_LABEL,93,40,44,8
+    COMBOBOX        IDC_CEMENT_TYPE,88,55,65,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "a",IDC_ALPHA_LABEL,7,76,8,8
+    EDITTEXT        IDC_ALPHA,20,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Beta",IDC_BETA_LABEL,91,77,16,8
+    EDITTEXT        IDC_BETA,110,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ALPHA_UNIT,63,76,19,8
+    PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,7,100,174,14
+    LTEXT           "For use in Eq'n 2-1",IDC_STATIC,7,89,60,8
+END
+
+IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 111
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CEB-FIP"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Use time parameters from CEB-FIP Model Code",IDC_USER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,166,10
+    LTEXT           "Cement Type",IDC_STATIC,7,26,44,8
+    COMBOBOX        IDC_CEMENT_TYPE,61,24,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "S",IDC_S_LABEL,7,49,8,8
+    EDITTEXT        IDC_S,27,46,40,14,ES_AUTOHSCROLL
+    LTEXT           "For use in Eq'n 2.1-54",IDC_STATIC,7,62,71,8
+    LTEXT           "Beta SC",IDC_BETA_SC_LABEL,112,49,26,8
+    EDITTEXT        IDC_BETA_SC,155,46,40,14,ES_AUTOHSCROLL
+    LTEXT           "For use in Eq'n 2.1-76",IDC_STATIC,112,62,71,8
+    PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,28,90,174,14
+END
+
+IDD_ACI_PARAMETERS DIALOGEX 0, 0, 316, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Compute ACI 209R-92 Time Parameters"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
+    LTEXT           "Concrete Strength at Time of Initial Loading",IDC_T1,7,7,255,8
+    LTEXT           "f'ci",IDC_STATIC,7,29,10,8
+    EDITTEXT        IDC_FCI,21,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FCI_UNIT,66,28,19,8
+    LTEXT           "Concrete Strength at t = 28 days",IDC_STATIC,7,49,108,8
+    LTEXT           "f'c",IDC_STATIC,7,65,8,8
+    EDITTEXT        IDC_FC,22,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FC_UNIT,66,66,19,8
+    LTEXT           "Static",IDC_RESULT,7,106,220,8
+END
+
+IDD_CEBFIP_PARAMETERS DIALOGEX 0, 0, 316, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Compute CEB-FIP Model Code Time Parameters"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
+    LTEXT           "Concrete Strength at Time of Initial Loading",IDC_T1,7,7,255,8
+    LTEXT           "f'ci",IDC_STATIC,7,29,10,8
+    EDITTEXT        IDC_FCI,21,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FCI_UNIT,66,28,19,8
+    LTEXT           "Concrete Strength at t = 28 days",IDC_STATIC,7,49,108,8
+    LTEXT           "f'c",IDC_STATIC,7,65,8,8
+    EDITTEXT        IDC_FC,22,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FC_UNIT,66,66,19,8
+    LTEXT           "Static",IDC_RESULT,7,106,220,8
+END
+
+IDD_COPY_CONC_ENTRY DIALOGEX 0, 0, 246, 113
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Copy Concrete Properties"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,34,92,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,98,92,50,14
+    COMBOBOX        IDC_CONC_ENTRIES,7,33,232,153,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Select Concrete Library Entry To Be Copied",IDC_LABEL,7,18,138,8
+    ICON            IDI_WARNING2,IDC_WARNING,22,57,20,20,SS_NOTIFY
+    LTEXT           "Note that the concrete strength at release, f'c, is not specified by the library entry. You must specify it manually after you close this dialog.",IDC_WARNOTE,50,55,184,29
+    PUSHBUTTON      "Help",IDHELP,162,92,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -165,6 +299,18 @@ IDB_ROLLERS             BITMAP                  "res\\Rollers.bmp"
 IDB_CONTINUOUS          BITMAP                  "res\\Continuous.bmp"
 IDB_IP_HINGES              BITMAP                  "res\\InteriorPierHinges.bmp"
 IDB_IP_ROLLERS             BITMAP                  "res\\InteriorPierRollers.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nThe concrete will be treated as Normal Weight."
+    IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -189,6 +335,65 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 187
     END
+
+    IDD_CONCRETE_DETAILS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 223
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 130
+    END
+
+    IDD_AASHTO_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 139
+    END
+
+    IDD_ACI_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 181
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 114
+    END
+
+    IDD_ACI_PARAMETERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+
+    IDD_CEBFIP_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_CEBFIP_PARAMETERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+
+
+    IDD_COPY_CONC_ENTRY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 239
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 106
+    END
+
+
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -225,9 +430,7 @@ LANGUAGE 9, 1
 #endif
 #include "afxres.rc"         // Standard components
 #endif
-#if !defined NOGRID
 #include "grid/gxres.rc"               // Objective Grid resources
-#endif
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

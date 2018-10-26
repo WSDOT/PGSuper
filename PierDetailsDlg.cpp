@@ -66,14 +66,8 @@ INT_PTR CPierDetailsDlg::DoModal()
    INT_PTR result = CPropertySheet::DoModal();
    if ( result == IDOK )
    {
-      if ( 0 < m_BridgeExtensionPages.size() )
-      {
-         NotifyBridgeExtensionPages();
-      }
-      else
-      {
-         NotifyExtensionPages();
-      }
+      NotifyExtensionPages();
+      NotifyBridgeExtensionPages();
    }
 
    return result;

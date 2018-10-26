@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <PgsExt\PgsExtExp.h>
+
 #include "ConcreteGeneralPage.h"
 #include "AASHTOConcretePage.h"
 #include "ACIConcretePage.h"
@@ -33,11 +35,11 @@
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteDetailsDlg dialog
 
-class CConcreteDetailsDlg : public CPropertySheet
+class PGSEXTCLASS CConcreteDetailsDlg : public CPropertySheet
 {
 // Construction
 public:
-	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,CWnd* pParent = NULL,UINT iSelectPage=0);
+	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,bool bEnableCopyFromLibrary = true,CWnd* pParent = NULL,UINT iSelectPage=0);
 
    // text strings to in in display units... Ec comes out in display units
    static CString UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
@@ -51,8 +53,10 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CConcreteDetailsDlg)
 	//}}AFX_VIRTUAL
-   bool m_bFinalProperties;
-   bool m_bEnableComputeTimeParamters;
+   bool m_bFinalProperties; // if true, properties are based on f'c28 otherwise they are based on f'ci
+   bool m_bEnableComputeTimeParamters; // if true, interface will be provided that allows the user to input f'ci and f'c and
+   // time parameters to fit the f'c(t) function through f'ci and f'c will be computed
+   bool m_bEnableCopyFromLibrary; // if true, the Copy From Library button is displayed in the UI
 
    // Common to all property pages
    Float64 m_TimeAtInitialStrength; // time when initial strength (fci) is reached

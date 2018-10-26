@@ -25,10 +25,6 @@
 #include "GrapherBase.h"
 
 // Interfaces
-//#include <IFace\Project.h>
-//#include <IFace\Bridge.h>
-//#include <EAF\EAFDisplayUnits.h>
-//#include <IFace\StatusCenter.h>
 #include <IGraphManager.h>
 
 // Graph Builders
@@ -40,9 +36,6 @@
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
 
-#if defined _DEBUG || defined _BETA_VERSION
-#include <Graphing\InitialStrainGraphBuilder.h>
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,10 +54,6 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
-
-#if defined _DEBUG || defined _BETA_VERSION
-   //pGraphMgr->AddGraphBuilder(new CInitialStrainGraphBuilder);
-#endif
 }
 
 STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)

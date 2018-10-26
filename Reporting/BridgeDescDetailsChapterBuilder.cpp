@@ -389,7 +389,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -429,7 +429,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       (*pTable1)(0,col++) << COLHDR(_T("Overlay")<<rptNewLine<<_T("Toe-Toe")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_SPAN) );
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
    std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
    std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
    RowIndexType row(1);
@@ -439,29 +439,29 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       pgsPointOfInterest& poi = *iter;
       Float64 station, offset;
       pBridge->GetStationAndOffset(poi,&station,&offset);
-      Float64 dist_from_start = pBridge->GetDistanceFromStartOfBridge(station);
+      Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
 
       (*pTable1)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*pTable1)(row,col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat() );
 
-       Float64 lft_off = pBridge->GetLeftSlabEdgeOffset(dist_from_start);
-       Float64 rgt_off = pBridge->GetRightSlabEdgeOffset(dist_from_start);
+       Float64 lft_off = pBridge->GetLeftSlabEdgeOffset(Xb);
+       Float64 rgt_off = pBridge->GetRightSlabEdgeOffset(Xb);
       (*pTable1)(row,col++) << dim.SetValue(rgt_off-lft_off);
 
-       Float64 width = pBridge->GetCurbToCurbWidth(dist_from_start);
+       Float64 width = pBridge->GetCurbToCurbWidth(Xb);
       (*pTable1)(row,col++) << dim.SetValue(width);
 
       if (has_sw)
       {
-         lft_off = pBridge->GetLeftInteriorCurbOffset(dist_from_start);
-         rgt_off = pBridge->GetRightInteriorCurbOffset(dist_from_start);
+         lft_off = pBridge->GetLeftInteriorCurbOffset(Xb);
+         rgt_off = pBridge->GetRightInteriorCurbOffset(Xb);
          (*pTable1)(row,col++) << dim.SetValue(rgt_off-lft_off);
       }
 
       if (has_overlay)
       {
-         lft_off = pBridge->GetLeftOverlayToeOffset(dist_from_start);
-         rgt_off = pBridge->GetRightOverlayToeOffset(dist_from_start);
+         lft_off = pBridge->GetLeftOverlayToeOffset(Xb);
+         rgt_off = pBridge->GetRightOverlayToeOffset(Xb);
          (*pTable1)(row,col++) << dim.SetValue(rgt_off-lft_off);
       }
 

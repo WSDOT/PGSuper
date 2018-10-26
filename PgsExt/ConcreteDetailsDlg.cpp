@@ -33,9 +33,9 @@
 // If changes are made here, the same changes are likely needed in
 // the other location.
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
-#include "ConcreteDetailsDlg.h"
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
 #include <Lrfd\ConcreteUtil.h>
@@ -52,7 +52,7 @@ static char THIS_FILE[] = __FILE__;
 // CConcreteDetailsDlg dialog
 
 
-CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters,CWnd* pParent /*=NULL*/,UINT iSelectPage/*=0*/)
+CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters,bool bEnableCopyFromLibrary,CWnd* pParent /*=NULL*/,UINT iSelectPage/*=0*/)
 	: CPropertySheet(_T("Concrete Details"),pParent, iSelectPage)
 {
 	//{{AFX_DATA_INIT(CConcreteDetailsDlg)
@@ -60,6 +60,7 @@ CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties,bool bEnableCompu
 	//}}AFX_DATA_INIT
    m_bFinalProperties = bFinalProperties;
    m_bEnableComputeTimeParamters = bEnableComputeTimeParameters;
+   m_bEnableCopyFromLibrary = bEnableCopyFromLibrary;
    Init();
 }
 
@@ -88,15 +89,20 @@ void CConcreteDetailsDlg::Init()
    m_General.m_psp.dwFlags  |= PSP_HASHELP;
    m_AASHTO.m_psp.dwFlags   |= PSP_HASHELP;
    m_ACI.m_psp.dwFlags      |= PSP_HASHELP;
-   m_CEBFIP.m_psp.dwFlags    |= PSP_HASHELP;
+   m_CEBFIP.m_psp.dwFlags   |= PSP_HASHELP;
 
    AddPage( &m_General );
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   CComPtr<ILossParameters> pLossParameters;
+   HRESULT hr = pBroker->GetInterface(IID_ILossParameters,(IUnknown**)&pLossParameters);
+   
+   pgsTypes::LossMethod loss_method = pgsTypes::AASHTO_REFINED_2005;
+   if ( SUCCEEDED(hr) )
+   {
+      loss_method = pLossParameters->GetLossMethod();
+   }
 
    if ( loss_method != pgsTypes::TIME_STEP )
    {
