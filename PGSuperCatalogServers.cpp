@@ -23,6 +23,7 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperCatalogServers.h"
+#include "intsafe.h" // for SHORT_MAX
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -101,22 +102,65 @@ bool CPGSuperCatalogServers::IsServerDefined(const CString& strName) const
 void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
 {
    m_Servers.clear();
-   int count = theApp->GetProfileInt(_T("Servers"),_T("Count"),-1);
-   if ( count > 0 )
+
+   HKEY hAppKey = theApp->GetAppRegistryKey();
+   HKEY hSecKey;
+   if ( ::RegOpenKey(hAppKey,_T("Servers"),&hSecKey) == ERROR_SUCCESS )
    {
-      for ( int i = 0; i < count; i++ )
+      // Load in old format
+      int count = theApp->GetProfileInt(_T("Servers"),_T("Count"),-1);
+      if ( count > 0 )
       {
-         CString key(TCHAR(i+_T('A')));
-         CString strValue = theApp->GetProfileString(_T("Servers"),key);
-
-         CPGSuperCatalogServer* pserver = CreateCatalogServer(strValue);
-
-         if (pserver!=NULL) // this is not good, but an assert should fire in CreateCatalogServer to help debugging
+         for ( int i = 0; i < count; i++ )
          {
-            m_Servers.insert( ServerPtr(pserver) );
+            CString key(TCHAR(i+_T('A')));
+            CString strValue = theApp->GetProfileString(_T("Servers"),key);
+
+            CPGSuperCatalogServer* pserver = CreateCatalogServer(strValue);
+
+            if (pserver!=NULL) // this is not good, but an assert should fire in CreateCatalogServer to help debugging
+            {
+               m_Servers.insert( ServerPtr(pserver) );
+            }
          }
       }
+
+      // Delete the "Servers" section from the registry (no longer using it)
+      ::RegCloseKey(hSecKey);
+
+      SaveToRegistry(theApp); // save in new format
+
+      // delete the old key
+      ::RegDeleteKey(hAppKey,_T("Servers"));
    }
+   else
+   {
+      hSecKey = theApp->GetSectionKey(_T("CatalogServers"));
+      if ( hSecKey )
+      {
+         DWORD dwIndex = 0;
+         TCHAR serverName[SHORT_MAX];
+         TCHAR serverString[SHORT_MAX];
+         DWORD serverNameSize = sizeof(serverName);
+         DWORD serverStringSize = sizeof(serverString);
+         DWORD type;
+         while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,NULL,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
+         {
+            CPGSuperCatalogServer* pServer = CreateCatalogServer(serverName,serverString);
+            if ( pServer )
+            {
+               m_Servers.insert( ServerPtr(pServer) );
+            }
+
+            serverNameSize = sizeof(serverName);
+            serverStringSize = sizeof(serverString);
+         };
+
+         ::RegCloseKey(hSecKey);
+      }
+   }
+
+   ::RegCloseKey(hAppKey);
 
    // Always have a WSDOT and TxDOT server
    if (!IsServerDefined(_T("WSDOT")))
@@ -128,14 +172,14 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
 void CPGSuperCatalogServers::SaveToRegistry(CWinApp* theApp) const
 {
-   theApp->WriteProfileInt(_T("Servers"),_T("Count"),m_Servers.size());
    Servers::const_iterator iter;
    long i = 0;
    for ( iter = m_Servers.begin(); iter != m_Servers.end(); iter++, i++ )
    {
-      CString server_creation_string = GetCreationString(iter->get());
+      const CPGSuperCatalogServer* pServer = iter->get();
+      CString server_creation_string = GetCreationString(pServer);
 
-      CString key(TCHAR(i+_T('A')));
-      theApp->WriteProfileString(_T("Servers"), key, server_creation_string);
+      CString key(pServer->GetServerName());
+      theApp->WriteProfileString(_T("CatalogServers"), key, server_creation_string);
    }
 }
