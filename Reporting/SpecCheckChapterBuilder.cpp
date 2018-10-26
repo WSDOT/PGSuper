@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -174,13 +174,28 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    StrandIndexType Nt    = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary);
 
-//   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,pgsTypes::ServiceI);
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckTemporaryStresses() )
+   {
+      //CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,pgsTypes::ServiceI);
 
-   if ( 0 < NtMax && 0 < Nt )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI);
+      if ( 0 < NtMax && 0 < Nt )
+         CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI,   pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
+   }
+
+   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
+   {
+      // tension and compression together
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI);
+   }
+   else
+   {
+      // compression only
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI,   pgsTypes::Compression);
+   }
+
    CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceI,   pgsTypes::Compression);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
@@ -370,6 +385,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,span,girder,pDisplayUnits);
+
+   // Bottom Flange Clearance Check
+   CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,span,girder,pDisplayUnits);
 
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -352,6 +352,9 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       *pPara <<_T("Girder was cured using Accelerated method")<<rptNewLine;
    else
       CHECK(0);
+   
+   *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
+   *pPara << rptNewLine;
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
@@ -594,6 +597,14 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
 void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+
+   if ( !pAllowableConcreteStress->CheckTemporaryStresses() )
+   {
+      // not checking stresses here so nothing to report
+      return;
+   }
+
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Temporary Strand Removal Criteria")<<rptNewLine;
@@ -602,8 +613,6 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
    *pChapter << pPara;
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -620,11 +629,11 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
          
          pgsPointOfInterest poi(spanIdx,gdrIdx,0.0);
          Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI, pgsTypes::Compression);
-         *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
+         *pPara<<_T("Allowable Compressive Concrete Stresses")<<rptNewLine;
          *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
          Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI, pgsTypes::Tension);
-         *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
+         *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
          *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
       }
    }
@@ -632,6 +641,14 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
 
 void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+
+   if ( !pAllowableConcreteStress->CheckTemporaryStresses() )
+   {
+      // not checking stresses here so nothing to report
+      return;
+   }
+
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Deck and Diaphragm Placement Stage (Bridge Site 1) Criteria")<<rptNewLine;
@@ -640,8 +657,6 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    *pChapter << pPara;
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -658,11 +673,11 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
          
          pgsPointOfInterest poi(spanIdx,gdrIdx,0.0);
          Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::BridgeSite1,pgsTypes::ServiceI, pgsTypes::Compression);
-         *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
+         *pPara<<_T("Allowable Compressive Concrete Stresses")<<rptNewLine;
          *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
          Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::BridgeSite1,pgsTypes::ServiceI, pgsTypes::Tension);
-         *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
+         *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
          *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
       }
    }
@@ -716,6 +731,13 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
          Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::BridgeSite2,pgsTypes::ServiceI, pgsTypes::Compression);
          *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
          *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
+
+         if ( pAllowableConcreteStress->CheckFinalDeadLoadTensionStress() )
+         {
+            Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::BridgeSite2,pgsTypes::ServiceI, pgsTypes::Tension);
+            *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
+            *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
+         }
       }
    }
 
@@ -1000,10 +1022,6 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
    Float64 Cfactor = pSpecEntry->GetCamberVariability();
    *pPara << _T("Variability between upper and lower bound camber : ") << 100*Cfactor << rptNewLine;
-
-   *pPara << rptNewLine << rptNewLine;
-
-   *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
 }
 
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 #include <IFace\Project.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\Allowables.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -804,6 +805,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
 void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits)
 {
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if ( !pAllowable->CheckTemporaryStresses() )
+   {
+      return;
+   }
+
+
    pgsTypes::Stage stage = pgsTypes::BridgeSite1;
 
    rptParagraph* p = new rptParagraph;
@@ -1063,6 +1071,23 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    else
       (*pTable)(row,4) << RPT_FAIL;
    row++;
+
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
+   {
+      pStresses = pArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetDistFromStart()));
+      pStresses->GetDemand( &fTop, &fBot );
+      fAllow = pStresses->GetCapacity();
+      (*pTable)(row,0) << _T("Bottom of girder at mid-span");
+      (*pTable)(row,1) << _T("Service I");
+      (*pTable)(row,2) << stress.SetValue( fBot );
+      (*pTable)(row,3) << stress.SetValue( fAllow );
+      if ( pStresses->BottomPassed() )
+         (*pTable)(row,4) << RPT_PASS;
+      else
+         (*pTable)(row,4) << RPT_FAIL;
+      row++;
+   }
 
    if ( h_right.GetID() != INVALID_ID )
    {

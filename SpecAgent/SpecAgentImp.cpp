@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -517,7 +517,10 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,p
       break;
 
    case pgsTypes::BridgeSite2:
-      ATLASSERT( false ); // should never get here!!!
+      ATLASSERT( ls == pgsTypes::ServiceI );
+      ATLASSERT( this->CheckFinalDeadLoadTensionStress() ); // if this fires, why are you asking for this if they aren't being used?
+      x = pSpec->GetBs2MaxConcreteTens();
+      pSpec->GetBs2AbsMaxConcreteTens(&bCheckMax,&fmax);
       break;
 
    case pgsTypes::BridgeSite3:
@@ -620,6 +623,18 @@ Float64 CSpecAgentImp::GetCastingYardAllowableTensionStressCoefficientWithRebar(
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetCyMaxConcreteTensWithRebar();
+}
+
+bool CSpecAgentImp::CheckTemporaryStresses()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->CheckTemporaryStresses();
+}
+
+bool CSpecAgentImp::CheckFinalDeadLoadTensionStress()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->CheckBs2Tension();
 }
 
 /////////////////////////////////////////////////////////////////////////////

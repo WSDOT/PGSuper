@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -939,7 +939,7 @@ CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDes
 
          num_strands = x_strand==0.0 ? 1 : 2; // two strands if x>0.0
       }
-      else if (strand_type==GirderLibraryEntry::stHarped)
+      else if (strand_type==GirderLibraryEntry::stAdjustable)
       {
          Float64 Xhp, Yhp, Xend, Yend;
          pGdrEntry->GetHarpedStrandCoordinates(i_local, &x_strand, &y_strand, &Xhp, &Yhp, &Xend, &Yend); // all locations assumed same
@@ -1231,7 +1231,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
                   // Create strand location and add it to global fill in clone
                   StrandIndexType nhnew = pCloneGdrEntry->AddHarpedStrandCoordinates(end_x, end_y, cl_x, cl_y, end_x, end_y);
 
-                  pCloneGdrEntry->AddStrandToPermStrandGrid(GirderLibraryEntry::stHarped, nhnew-1);
+                  pCloneGdrEntry->AddStrandToPermStrandGrid(GirderLibraryEntry::stAdjustable, nhnew-1);
 
                   incr_cl.WasFilled = true;  // unavailable after this point
                   incr_end.WasFilled = true;
@@ -1307,7 +1307,7 @@ void CTxDOTOptionalDesignGirderData::GetGlobalStrandCoordinate(const GirderLibra
    }
    else
    {
-      ASSERT(type==GirderLibraryEntry::stHarped);
+      ASSERT(type==GirderLibraryEntry::stAdjustable);
 
       Float64 xend, yend, xstart, ystart;
       pGdrEntry->GetHarpedStrandCoordinates(local_idx, &xstart, &ystart, pX, pY, &xend, &yend); 

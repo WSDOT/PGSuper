@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -274,7 +274,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      std::_tstring label( (areHarpedStraight ? _T("Straight-Web Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
+      std::_tstring label( (areHarpedStraight ? _T("Adjustable Straight Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
 
       rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),label);
       *pPara << p_table;

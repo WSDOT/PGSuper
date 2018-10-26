@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -340,18 +340,18 @@ void CSpanGirderReportDlg::InitFromRptSpec()
 {
    if ( m_Mode == SpanAndChapters )
    {
-      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::shared_dynamic_cast<CSpanReportSpecification>(m_pInitRptSpec);
+      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CSpanReportSpecification>(m_pInitRptSpec);
       m_Span = pRptSpec->GetSpan();
    }
    else if ( m_Mode == SpanGirderAndChapters )
    {
-      boost::shared_ptr<CSpanGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CSpanGirderReportSpecification>(m_pInitRptSpec);
+      boost::shared_ptr<CSpanGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification>(m_pInitRptSpec);
       m_Span   = pRptSpec->GetSpan();
       m_Girder = pRptSpec->GetGirder();
    }
    else if ( m_Mode == GirderAndChapters )
    {
-      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderReportSpecification>(m_pInitRptSpec);
+      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification>(m_pInitRptSpec);
       m_Girder = pRptSpec->GetGirder();
    }
    else if ( m_Mode == ChaptersOnly )

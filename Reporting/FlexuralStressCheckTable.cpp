@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
+#include <IFace\Allowables.h>
 
 
 #ifdef _DEBUG
@@ -257,6 +258,8 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
 
    case pgsTypes::BridgeSite2:
       c = pSpecEntry->GetBs2CompStress();
+      t = pSpecEntry->GetBs2MaxConcreteTens();
+      pSpecEntry->GetBs2AbsMaxConcreteTens(&b_t_max,&t_max);
       break;
 
    case pgsTypes::BridgeSite3:
@@ -279,15 +282,17 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
 //   else if ( stage == pgsTypes::GirderPlacement && stressType == pgsTypes::Tension )
 //      article = _T("[5.9.4.2.2]");
    else if ( stage == pgsTypes::TemporaryStrandRemoval && stressType == pgsTypes::Compression )
-      article = _T("[5.9.4.2.1]");
+      article = _T(""); // not an LRFD requirement
    else if ( stage == pgsTypes::TemporaryStrandRemoval && stressType == pgsTypes::Tension )
-      article = _T("[5.9.4.2.2]");
+      article = _T(""); // not an LRFD requirement
    else if ( stage == pgsTypes::BridgeSite1 && stressType == pgsTypes::Compression )
-      article = _T("[5.9.4.2.1]");
+      article = _T(""); // not an LRFD requirement
    else if ( stage == pgsTypes::BridgeSite1 && stressType == pgsTypes::Tension )
-      article = _T("[5.9.4.2.2]");
+      article = _T(""); // not an LRFD requirement
    else if ( stage == pgsTypes::BridgeSite2 && stressType == pgsTypes::Compression )
       article = _T("[5.9.4.2.1]");
+   else if ( stage == pgsTypes::BridgeSite2 && stressType == pgsTypes::Tension )
+      article = _T(""); // not an LRFD requirement
    else if ( stage == pgsTypes::BridgeSite3 && stressType == pgsTypes::Compression )
       article = (limitState == pgsTypes::ServiceIA ? _T("[5.9.4.2.1]") : _T("[5.5.3.1]"));
    else if ( stage == pgsTypes::BridgeSite3 && stressType == pgsTypes::Tension )
@@ -325,7 +330,8 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    Float64 allowable_tension_with_rebar;
    Float64 allowable_compression;
 
-   if (stressType==pgsTypes::Tension && (stage != pgsTypes::BridgeSite2))
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   if (stressType==pgsTypes::Tension && ((stage != pgsTypes::BridgeSite2) || (stage == pgsTypes::BridgeSite2 && pAllowable->CheckFinalDeadLoadTensionStress())) )
    {
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
       allowable_tension = pArtifact->GetCapacity();
@@ -404,11 +410,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+
    // create and set up table
    rptRcTable* p_table;
    if (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
       p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
-   else if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3)
+   else if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress() ) || stage == pgsTypes::BridgeSite3)
       p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    else if (stage == pgsTypes::CastingYard )
       p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
@@ -497,7 +505,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
    Float64 allowable_tension;
    Float64 allowable_compression;
 
-   if (stressType==pgsTypes::Tension && (stage != pgsTypes::BridgeSite2))
+   if (stressType==pgsTypes::Tension && ((stage != pgsTypes::BridgeSite2) || (stage == pgsTypes::BridgeSite2 && pAllowable->CheckFinalDeadLoadTensionStress())) )
    {
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
       allowable_tension = pArtifact->GetCapacity();
@@ -512,14 +520,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 
    if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
    {
-      if ( stage == pgsTypes::BridgeSite2 || (stage == pgsTypes::BridgeSite3 && limitState != pgsTypes::ServiceIII) )
-      {
-         p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,SKIP_CELL);
-         (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
-      }
-
-      if ( stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII )
+      if ( (stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress()) || (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII) )
       {
          p_table->SetRowSpan(0,col1,2);
          p_table->SetRowSpan(1,col2++,SKIP_CELL);
@@ -528,6 +529,13 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
             (*p_table)(0,col1) << rptNewLine << _T("(C/D)");
 
          col1++;
+      }
+
+      if ( stage == pgsTypes::BridgeSite2 || (stage == pgsTypes::BridgeSite3 && limitState != pgsTypes::ServiceIII) )
+      {
+         p_table->SetRowSpan(0,col1,2);
+         p_table->SetRowSpan(1,col2++,SKIP_CELL);
+         (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
    }
    else if ( stage == pgsTypes::CastingYard )
@@ -573,7 +581,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       (*p_table)(row,col) << location.SetValue( stage, poi, end_size );
 
       const pgsFlexuralStressArtifact* pOtherArtifact=0;
-      if(stage==pgsTypes::BridgeSite2 || stage==pgsTypes::BridgeSite3)
+      if( (stage==pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress()) || stage==pgsTypes::BridgeSite3)
       {
          pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,stressType,poi.GetDistFromStart()) );
          ATLASSERT( pArtifact != NULL );
@@ -651,10 +659,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 //           stage == pgsTypes::GirderPlacement || 
            stage == pgsTypes::TemporaryStrandRemoval || 
            stage == pgsTypes::BridgeSite1 || 
+           (stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress() ) ||
           (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
          )
       {
-         bool bPassed = (limitState == pgsTypes::ServiceIII ? pArtifact->BottomPassed() : pArtifact->Passed());
+         bool bPassed = (((stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI) || (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)) ? pArtifact->BottomPassed() : pArtifact->Passed());
 	      if ( bPassed )
 		     (*p_table)(row,++col) << RPT_PASS;
 	      else
@@ -662,7 +671,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 
          if ( !IsZero(allowable_tension) )
          {
-            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+            Float64 f = (((stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI) || (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)) ? fBot : max(fBot,fTop));
            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
       }
@@ -677,7 +686,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
          )
       {
          bool bPassed;
-         if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
+         if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress()) || stage == pgsTypes::BridgeSite3 )
          {
             bPassed = pArtifact->Passed();
          }

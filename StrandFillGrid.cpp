@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -334,7 +334,7 @@ void CStrandFillGrid::FillGrid()
          m_pGdrEntry->GetStraightStrandCoordinates(localIdx, &xs, &ys, &xe, &ye, &canDebond);
          oneOrTwo = (xs==0.0 && xe==0.0) ? 1 : 2;
       }
-      else if (strandType==GirderLibraryEntry::stHarped)
+      else if (strandType==GirderLibraryEntry::stAdjustable)
       {
          Float64 xs, ys, xh, yh, xe, ye;
          m_pGdrEntry->GetHarpedStrandCoordinates(localIdx, &xs, &ys, &xh, &yh, &xe, &ye);
@@ -364,10 +364,10 @@ void CStrandFillGrid::FillGrid()
          else
             strType = _T("S");
       }
-      else if (strandType==GirderLibraryEntry::stHarped)
+      else if (strandType==GirderLibraryEntry::stAdjustable)
       {
-         if(m_pGdrEntry->IsForceHarpedStrandsStraight())
-            strType = _T("S-W");
+         if(m_pParent->m_AdjustableStrandType==pgsTypes::asStraight)
+            strType = _T("A-S");
          else
             strType = _T("H");
       }
@@ -965,7 +965,7 @@ bool CStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType strand
    {
       return m_pParent->m_DirectFilledStraightStrands.IsStrandFilled(idxStrandGrid);
    }
-   if (strandType==GirderLibraryEntry::stHarped)
+   if (strandType==GirderLibraryEntry::stAdjustable)
    {
       return m_pParent->m_DirectFilledHarpedStrands.IsStrandFilled(idxStrandGrid);
    }

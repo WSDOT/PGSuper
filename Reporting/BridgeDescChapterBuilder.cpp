@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1375,7 +1375,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << strFillType;
          row++;
 
-         (*pTable)(row,0) << _T("Type of Web Strands");
+         (*pTable)(row,0) << _T("Type of Adjustable Web Strands");
          (*pTable)(row,1) << LABEL_HARP_TYPE(harpedAreStraight);
          row++;
 
@@ -1432,31 +1432,31 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          {
             if( pgirderData->PrestressData.HsoEndMeasurement==hsoLEGACY)
             {    // Method used pre-version 6.0
-               endoff = _T("Distance from top-most location in Straight-Web strand grid to top-most Straight-Web strand");
+               endoff = _T("Distance from top-most location in Adjustable strand grid to top-most Adjustable Straight strand");
             }
             else if( pgirderData->PrestressData.HsoEndMeasurement==hsoCGFROMTOP)
             {
-               endoff = _T("Distance from top of girder to CG of Straight-Web strands");
+               endoff = _T("Distance from top of girder to CG of Adjustable Straight strands");
             }
             else if( pgirderData->PrestressData.HsoEndMeasurement==hsoCGFROMBOTTOM)
             {
-               endoff = _T("Distance from bottom of girder to CG of Straight-Web strands");
+               endoff = _T("Distance from bottom of girder to CG of Adjustable Straight strands");
             }
             else if( pgirderData->PrestressData.HsoEndMeasurement==hsoTOP2TOP)
             {
-               endoff = _T("Distance from top of girder to top-most Straight-Web strand");
+               endoff = _T("Distance from top of girder to top-most Adjustable Straight strand");
             }
             else if( pgirderData->PrestressData.HsoEndMeasurement==hsoTOP2BOTTOM)
             {
-               endoff = _T("Distance from bottom of girder to top-most Straight-Web strand");
+               endoff = _T("Distance from bottom of girder to top-most Adjustable Straight strand");
             }
             else if( pgirderData->PrestressData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
             {
-               endoff = _T("Distance from bottom of girder to lowest Straight-Web strand");
+               endoff = _T("Distance from bottom of girder to lowest Adjustable Straight strand");
             }
             else if( pgirderData->PrestressData.HsoEndMeasurement==hsoECCENTRICITY)
             {
-               endoff = _T("Eccentricity of Straight-Web strand group");
+               endoff = _T("Eccentricity of Adjustable Straight strand group");
             }
             else
                ATLASSERT(0);

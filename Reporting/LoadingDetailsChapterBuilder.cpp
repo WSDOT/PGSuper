@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\BridgeDescription.h>
+#include <PgsExt\GirderData.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -154,6 +155,9 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IBarriers,pBarriers);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
    SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
@@ -717,8 +721,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
          // Shear key loads
          GET_IFACE2(pBroker,IGirder,pGirder);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
 
          bool has_shear_key = pGirder->HasShearKey(spanIdx, gdrIdx, spacingType);
@@ -1587,7 +1589,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
          Float64 Ml,Mr,Nl,Nr,Xl,Xr;
          pCamber->GetHarpedStrandEquivLoading(spanIdx,gdrIdx,&Ml, &Mr, &Nl, &Nr, &Xl, &Xr);
-         *pPara << Bold(_T("Harped Strands")) << rptNewLine;
+
+         pgsTypes::AdjustableStrandType adj_type = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderData(gdrIdx).PrestressData.GetAdjustableStrandType();
+
+         if (pgsTypes::asHarped == adj_type)
+         {
+            *pPara << Bold(_T("Harped Strands")) << rptNewLine;
+         }
+         else
+         {
+            *pPara << Bold(_T("Adjustable Straight Strands")) << rptNewLine;
+         }
+
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
          *pPara << _T("End moments, M = ") << moment.SetValue(Ml);
          *pPara << _T(" and ") << moment.SetValue(Mr) << rptNewLine;

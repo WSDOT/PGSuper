@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 
 #include <PgsExt\DesignArtifact.h>
 #include <PgsExt\GirderData.h>
+#include <PgsExt\GirderLabel.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -59,6 +60,8 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData& rsdata);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData& rsdata);
 void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsDesignArtifact::DesignNote>& notes);
+void write_design_failures(rptParagraph* pParagraph, const pgsDesignArtifact* pArtifact);
+
 
 // Function to compute columns in table that attempts to group all girders in a span per table
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
@@ -273,6 +276,10 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
+   CHECK(vPoi.size()==1);
+   pgsPointOfInterest poiMS = *vPoi.begin();
 
    arDesignOptions options = pArtifact->GetDesignOptions();
 
@@ -282,6 +289,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
                                             pArtifact->GetFinalDesignState().GetAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actShear;
    bool doNotes = (design_success && pArtifact->GetDoDesignFlexure()!=dtNoDesign) || 
                   conc_strength_controlled_by_shear || 
+                  pArtifact->DoPreviouslyFailedDesignsExist() ||
                   pArtifact->DoDesignNotesExist();
 
    rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
@@ -307,19 +315,21 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       *pChapter << pParagraph;
       *pParagraph << _T("Flexure Design:");
 
-      // Make note if original strands were filled using direct input
-      if (pgirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
-      {
-         pParagraph = new rptParagraph();
-         *pChapter << pParagraph;
-         *pParagraph << color(Blue)<<_T("Note that current strands are filled using direct selection.") << color(Black);
-      }
+      pParagraph = new rptParagraph();
+      *pChapter << pParagraph;
 
-      // see if fill order type was changed
-      if (options.doStrandFillType==ftGridOrder)
+      // Design strategy
+      *pParagraph << color(Blue)<< _T("A ")<<GetDesignTypeName(options.doDesignForFlexure)<< _T(" design strategy was used.") << color(Black);
+
+      // Fill type
+      if (options.doStrandFillType==ftDirectFill)
       {
-         StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
+         *pParagraph << color(Blue)<< _T("Strands for design will be filled using direct selection.") << color(Black);
+      }
+      else
+      {
          // we asked design to fill using grid, but this may be a non-standard design - let's check
+         StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
          GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
          StrandIndexType ns, nh;
@@ -327,9 +337,11 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          {
             if (ns!=pArtifact->GetNumStraightStrands() )
             {
-               pParagraph = new rptParagraph();
-               *pChapter << pParagraph;
-               *pParagraph << color(Blue)<<_T("Note that strand fill order has been changed from ")<<Bold(_T("Number of Permanent"))<<_T(" to ")<< Bold(_T("Number of Straight and Number of Harped")) << _T(" strands.") << color(Black);
+               *pParagraph << color(Blue)<<_T(" Strands for design were filled using Number of Straight and Number of Harped strands.") << color(Black);
+            }
+            else
+            {
+               *pParagraph << color(Blue)<<_T(" Strands for design were filled using the Permanent fill order defined in the girder library.") << color(Black);
             }
          }
       }
@@ -404,47 +416,19 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          row++;
       }
 
-      if (config.PrestressConfig.GetNStrands(pgsTypes::Harped) > 0)
+      const CGirderTypes* pGirderTypes = pIBridgeDesc->GetBridgeDescription()->GetSpan(span)->GetGirderTypes();
+
+      if (config.PrestressConfig.GetNStrands(pgsTypes::Harped) > 0 && 
+          options.doDesignForFlexure == dtDesignForHarping &&
+          !options.doForceHarpedStrandsStraight)
       {
          HarpedStrandOffsetType HsoEnd = pgirderData->PrestressData.HsoEndMeasurement;
 
-         if(options.doForceHarpedStrandsStraight)
-         {
-            switch( HsoEnd )
-            {
-            case hsoCGFROMTOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of Straight-Web strands");
-               break;
+         std::_tstring gdrName = pGirderTypes->GetGirderName(gdr);
 
-            case hsoCGFROMBOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of Straight-Web strands");
-               break;
+         bool doAdjust = pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
 
-            case hsoLEGACY:
-               // convert legacy to display TOP 2 TOP
-               HsoEnd = hsoTOP2TOP;
-
-            case hsoTOP2TOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top-most Straight-Web strand");
-               break;
-
-            case hsoTOP2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top-most Straight-Web strand");
-               break;
-
-            case hsoBOTTOM2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to lowest Straight-Web strand");
-               break;
-
-            case hsoECCENTRICITY:
-               (*pTable)(row,0) << _T("Eccentricity of Straight-Web strand group");
-               break;
-
-            default:
-               ATLASSERT(false); // should never get here
-            }
-         }
-         else
+         if (doAdjust)
          {
             switch( HsoEnd )
             {
@@ -480,26 +464,37 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             default:
                ATLASSERT(false); // should never get here
             }
+
+            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asHarped,
+                                                                                confvec_design, 
+                                                                                HsoEnd, 
+                                                                                pArtifact->GetHarpStrandOffsetEnd());
+            (*pTable)(row,1) << length.SetValue(offset);
+
+            if (pGirderTypes->GetGirderData(gdr).PrestressData.GetAdjustableStrandType() == pgsTypes::asHarped)
+            {
+               ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, pgirderData->PrestressData.GetNstrands(pgsTypes::Harped));
+
+               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, confvec_current, 
+                                                                            HsoEnd, abs_offset_end);
+
+               (*pTable)(row,2) << length.SetValue(offset);
+            }
+            else
+            {
+               // old design was straight - offset not applicable
+               (*pTable)(row,2) << _T("N/A");
+            }
+
+            row++;
          }
 
-         const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+         // At harping points
+         doAdjust = pStrandGeometry->GetHarpedHpOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
 
-         Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
-                                                                             confvec_design, 
-                                                                             HsoEnd, 
-                                                                             pArtifact->GetHarpStrandOffsetEnd());
-         (*pTable)(row,1) << length.SetValue(offset);
-
-         ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, pgirderData->PrestressData.GetNstrands(pgsTypes::Harped));
-
-         offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, confvec_current, 
-                                                                      HsoEnd, abs_offset_end);
-
-         (*pTable)(row,2) << length.SetValue(offset);
-
-         row++;
-
-         if(!options.doForceHarpedStrandsStraight)
+         if (doAdjust)
          {
             HarpedStrandOffsetType HsoHp = pgirderData->PrestressData.HsoHpMeasurement;
             switch( HsoHp )
@@ -537,22 +532,42 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
                ATLASSERT(false); // should never get here
             }
 
+            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
-                                                                        confvec_design, 
-                                                                        HsoHp, 
-                                                                        pArtifact->GetHarpStrandOffsetHp());
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asHarped,
+                                                                                confvec_design, 
+                                                                                HsoHp, 
+                                                                                pArtifact->GetHarpStrandOffsetHp());
 
             (*pTable)(row,1) << length.SetValue(offset);
 
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
-                                                                        confvec_current, 
-                                                                        HsoHp, abs_offset_hp);
-            (*pTable)(row,2) << length.SetValue(offset);
+            if (pGirderTypes->GetGirderData(gdr).PrestressData.GetAdjustableStrandType() == pgsTypes::asHarped)
+            {
+               ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, pgirderData->PrestressData.GetNstrands(pgsTypes::Harped));
+
+               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asHarped,
+                                                                           confvec_current, 
+                                                                           HsoHp, abs_offset_hp);
+               (*pTable)(row,2) << length.SetValue(offset);
+            }
+            else
+            {
+               // old design was straight - offset not applicable
+               (*pTable)(row,2) << _T("N/A");
+            }
 
             row++;
          }
       }
+
+      Float64 neff;
+      Float64 ecc_design  = pStrandGeometry-> GetEccentricity(poiMS, config.PrestressConfig, false, &neff);
+      Float64 ecc_current = pStrandGeometry-> GetEccentricity(poiMS, false, &neff);
+
+      (*pTable)(row,0) << _T("Eccentricity of Permanent Strands at Midspan");
+      (*pTable)(row,1) << length.SetValue(ecc_design);
+      (*pTable)(row,2) << length.SetValue(ecc_current);
+      row++;
 
       (*pTable)(row,0) << RPT_FCI;
       (*pTable)(row,1) << stress.SetValue(pArtifact->GetReleaseStrength());
@@ -566,8 +581,6 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       if ( options.doDesignSlabOffset && (pBridge->GetDeckType()!=pgsTypes::sdtNone) )
       {
-         const CGirderTypes* pGirderTypes = pIBridgeDesc->GetBridgeDescription()->GetSpan(span)->GetGirderTypes();
-
          // the computed slab offset will be applied according to the current slab offset mode
          if ( pIBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
          {
@@ -721,6 +734,11 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    // End up with some notes about Design
    if ( doNotes )
    {
+      if (pArtifact->DoPreviouslyFailedDesignsExist())
+      {
+         write_design_failures(pNotesParagraph, pArtifact);
+      }
+
       // Explicit notes created during design
       if (pArtifact->DoDesignNotesExist())
       {
@@ -746,15 +764,10 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          }
 
          // Negative camber is not technically a spec check, but a warning
-         GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-         std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
-         CHECK(vPoi.size()==1);
-         pgsPointOfInterest poi = *vPoi.begin();
-
          GDRCONFIG config = pArtifact->GetGirderConfiguration();
 
          GET_IFACE2(pBroker,ICamber,pCamber);
-         Float64 excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poiMS,config,CREEP_MAXTIME);
          if ( excess_camber < 0 )
          {
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -974,38 +987,38 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
    write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }
 
-std::wstring GetDesignNoteString(pgsDesignArtifact::DesignNote note)
+std::_tstring GetDesignNoteString(pgsDesignArtifact::DesignNote note)
 {
    switch (note)
    {
    case pgsDesignArtifact::dnShearRequiresStrutAndTie:
-      return std::wstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD 5.8.3.2. This design will fail a spec check."));
+      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD 5.8.3.2. This design will fail a spec check."));
       break;
 
    case pgsDesignArtifact::dnExistingShearDesignPassedSpecCheck:
-      return std::wstring(_T("The existing stirrup input data passed the shear specification check. No design modificatons were made."));
+      return std::_tstring(_T("The existing stirrup input data passed the shear specification check. No design modificatons were made."));
       break;
 
    case pgsDesignArtifact::dnStrandsAddedForLongReinfShear:
-      return std::wstring(_T("The number of strands was controlled by longitudinal reinforcement for shear requirements."));
+      return std::_tstring(_T("The number of strands was controlled by longitudinal reinforcement for shear requirements."));
       break;
 
    case pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionCy:
-      return std::wstring(_T("Refer to the casting yard \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
+      return std::_tstring(_T("Refer to the casting yard \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
 
    case pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionLifting:
-      return std::wstring(_T("Refer to the lifting \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
+      return std::_tstring(_T("Refer to the lifting \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
 
    case pgsDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionHauling:
-      return std::wstring(_T("Refer to the hauling \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
+      return std::_tstring(_T("Refer to the hauling \"Rebar Requirements for Tensile Stress Limit\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
 
    default:
       ATLASSERT(0);
    }
-   return std::wstring();
+   return std::_tstring();
 }
 
 void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsDesignArtifact::DesignNote>& notes)
@@ -1019,6 +1032,14 @@ void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsDesignArt
    }
 }
 
+void write_design_failures(rptParagraph* pParagraph, const pgsDesignArtifact* pArtifact)
+{
+   std::vector<arFlexuralDesignType> failures = pArtifact->GetPreviouslyFailedFlexuralDesigns();
+   for(std::vector<arFlexuralDesignType>::iterator itf=failures.begin(); itf!=failures.end(); itf++)
+   {
+      *pParagraph <<color(Blue)<<_T("Design attempt for a: ")<< GetDesignTypeName( *itf )<<_T(" design strategy - Failed") <<color(Black)<<rptNewLine;
+   }
+}
 
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
                      IBroker* pBroker,std::vector<SpanGirderHashType>& girderList,rptChapter* pChapter,
@@ -1030,6 +1051,8 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // Since girder types, design info, etc can be different for each girder, process information for all
    // artifacts to get control data
@@ -1072,7 +1095,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       (*pTable)(row++,0) << _T("Number of Straight Strands");
 
       if (is_harped)
-         (*pTable)(row++,0) << _T("Number of Harped Strands");
+      {
+         (*pTable)(row++,0) << _T("Number of Adjustable Strands");
+         (*pTable)(row++,0) << _T("Adjustable Strand Type");
+      }
 
       if (is_temporary)
          (*pTable)(row++,0) << _T("Number of Temporary Strands");
@@ -1084,6 +1110,8 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       if (is_temporary)
          (*pTable)(row++,0) << _T("Temporary Strand Jacking Force");
+
+      (*pTable)(row++,0) << _T("Eccentricity of Permanent Strands at Midspan");
 
       if (is_harped)
       {
@@ -1121,6 +1149,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       GirderIndexType gdr;
       UnhashSpanGirder(hash,&span,&gdr);
 
+      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
+      CHECK(vPoi.size()==1);
+      pgsPointOfInterest poiMS = *vPoi.begin();
+
       row = 0;
 
       (*pTable)(row++,col) << _T("Span ") << span+1 <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(gdr);
@@ -1139,15 +1171,26 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       if (did_flexure)
       {
-         (*pTable)(row++,col) << pArtifact->GetNumStraightStrands();
+         GDRCONFIG config = pArtifact->GetGirderConfiguration();
 
+         (*pTable)(row,col) << pArtifact->GetNumStraightStrands();
+         // Debond into
+         StrandIndexType ddb = config.PrestressConfig.Debond[pgsTypes::Straight].size();
+         if(ddb > 0)
+         {
+            (*pTable)(row,col) << _T("(") << ddb << _T(")");
+         }
+         row++;
+
+         pgsTypes::AdjustableStrandType adjType = pArtifact->GetAdjustableStrandType();
          if (is_harped)
+         {
             (*pTable)(row++,col) << pArtifact->GetNumHarpedStrands();
+            (*pTable)(row++,col) << ABR_LABEL_HARP_TYPE(adjType==pgsTypes::asStraight);
+         }
 
          if (is_temporary)
             (*pTable)(row++,col) << pArtifact->GetNumTempStrands();
-
-         GDRCONFIG config = pArtifact->GetGirderConfiguration();
 
          // jacking forces
          (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Straight]);
@@ -1158,24 +1201,47 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          if (is_temporary)
             (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Temporary]);
 
+         Float64 neff;
+         Float64 ecc_design  = pStrandGeometry-> GetEccentricity(poiMS, config.PrestressConfig, false, &neff);
+         (*pTable)(row++,col) << length.SetValue(ecc_design);
+
          if (is_harped)
          {
-            if (pArtifact->GetNumHarpedStrands()>0)
+            if (adjType==pgsTypes::asHarped && pArtifact->GetNumHarpedStrands()>0)
             {
+               const CGirderTypes* pGirderTypes = pIBridgeDesc->GetBridgeDescription()->GetSpan(span)->GetGirderTypes();
+
+               std::_tstring gdrName = pGirderTypes->GetGirderName(gdr);
+
                const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
+               bool doAdjust = pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
+               if (doAdjust)
+               {
+                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
+                                                                                      confvec_design, 
+                                                                                      hsoTOP2BOTTOM, 
+                                                                                      pArtifact->GetHarpStrandOffsetEnd());
+                  (*pTable)(row++,col) << length.SetValue(offset);
+               }
+               else
+               {
+                  (*pTable)(row++,col) << _T("-");
+               }
 
-               Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
-                                                                                   confvec_design, 
-                                                                                   hsoTOP2BOTTOM, 
-                                                                                   pArtifact->GetHarpStrandOffsetEnd());
-               (*pTable)(row++,col) << length.SetValue(offset);
-
-               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
-                                                                           confvec_design, 
-                                                                           hsoBOTTOM2BOTTOM, 
-                                                                           pArtifact->GetHarpStrandOffsetHp());
-               (*pTable)(row++,col) << length.SetValue(offset);
+               doAdjust = pStrandGeometry->GetHarpedHpOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
+               if (doAdjust)
+               {
+                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
+                                                                              confvec_design, 
+                                                                              hsoBOTTOM2BOTTOM, 
+                                                                              pArtifact->GetHarpStrandOffsetHp());
+                  (*pTable)(row++,col) << length.SetValue(offset);
+               }
+               else
+               {
+                  (*pTable)(row++,col) << _T("-");
+               }
             }
             else
             {

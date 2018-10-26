@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -130,7 +130,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	CHECK(pmid.size() == 1);
 
    // Determine type of output and number of strands
-   bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(span, gdr, pgsTypes::Harped);
+   bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(span,gdr) &&
+                        0 < pStrandGeometry->GetMaxStrands(span, gdr, pgsTypes::Harped);
 
    StrandIndexType harpedCount   = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Harped);
    StrandIndexType straightCount = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Straight);

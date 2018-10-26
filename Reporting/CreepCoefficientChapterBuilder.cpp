@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -165,7 +165,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
             *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                   << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+                   << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          }
@@ -197,7 +197,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
             {
                *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+                      << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
             }
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
@@ -355,7 +355,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
             *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                   << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+                   << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          }
@@ -387,7 +387,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                     << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+                     << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
            }
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
@@ -495,7 +495,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
            *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                  << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+                  << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
            *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;
         }
@@ -527,7 +527,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                     << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
+                     << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
            }
            *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;

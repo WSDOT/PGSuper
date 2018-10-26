@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -189,34 +189,34 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    // Permanent Strand Force Column
    row = dataStartRow;
    ColumnIndexType col = 1;
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::Jacking) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::BeforeXfer) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::Jacking,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::BeforeXfer,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer,pgsTypes::ServiceI) );
 
    if ( bTempStrands && pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting )
    {
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
    }
    
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AtLifting) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AtLifting,pgsTypes::ServiceI) );
 
    if ( bTempStrands && (pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting || pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping))
    {
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
    }
    
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AtShipping) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AtShipping,pgsTypes::ServiceI) );
    
    if ( bTempStrands )
    {
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval) );
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandRemoval) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandRemoval,pgsTypes::ServiceI) );
    }
    
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII) );
 
    ///////////////////////////////////
    // Permanent Strand Loss Column
@@ -248,39 +248,39 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent) );
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetSIDLLosses(poi,pgsTypes::Permanent) );
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Permanent) );
-   (*p_table)(row++,col) << stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent) );
+   (*p_table)(row++,col) << stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII) );
 
    
    ///////////////////////////////////
    // Permanent Strand Stress Column
    row = dataStartRow;
    col++;
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::Jacking) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::BeforeXfer) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterXfer) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::Jacking,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::BeforeXfer,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterXfer,pgsTypes::ServiceI) );
 
    if ( bTempStrands && pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting )
    {
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
    }
    
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AtLifting) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AtLifting,pgsTypes::ServiceI) );
 
    if ( bTempStrands && (pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting || pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping))
    {
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
    }
 
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AtShipping) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AtShipping,pgsTypes::ServiceI) );
    if ( bTempStrands )
    {
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval) );
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandRemoval) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterTemporaryStrandRemoval,pgsTypes::ServiceI) );
    }
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterDeckPlacement,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI) );
+   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII) );
 
    if ( bTempStrands )
    {
@@ -290,39 +290,39 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       col++;
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::Jacking) );
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer) );
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterXfer) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::Jacking,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterXfer,pgsTypes::ServiceI) );
       }
       else
       {
-         (*p_table)(row++,col) << _T(""); //force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::Jacking) );
-         (*p_table)(row++,col) << _T(""); //force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer) );
-         (*p_table)(row++,col) << _T(""); //force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterXfer) );
+         (*p_table)(row++,col) << _T(""); //force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::Jacking,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << _T(""); //force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << _T(""); //force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterXfer,pgsTypes::ServiceI) );
       }
       
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting )
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
       }
 
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting || pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
          (*p_table)(row++,col) << _T("");
       else
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtLifting,pgsTypes::ServiceI) );
 
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting || pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
       }
    
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtShipping) );
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval) );
-      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandRemoval) );
-      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterDeckPlacement) );
-      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterSIDL) );
-      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLosses) );
-      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AtShipping,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandRemoval,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterDeckPlacement,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterSIDL,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLosses,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII) );
 
       ///////////////////////////////////
       // Temporary Strand Loss Column
@@ -363,7 +363,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetDeckPlacementLosses(poi,pgsTypes::Temporary) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetSIDLLosses(poi,pgsTypes::Temporary) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Temporary) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) );
+      (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary,pgsTypes::ServiceIII) );
    
       ///////////////////////////////////
       // Temporary Strand Stress Column
@@ -371,39 +371,39 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       col++;
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::Jacking) );
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer) );
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterXfer) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::Jacking,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterXfer,pgsTypes::ServiceI) );
       }
       else
       {
-         (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::Jacking) );
-         (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer) );
-         (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterXfer) );
+         (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::Jacking,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::BeforeXfer,pgsTypes::ServiceI) );
+         (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterXfer,pgsTypes::ServiceI) );
       }
 
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting )
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
       }
    
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting || pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
          (*p_table)(row++,col) << _T("");
       else
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AtLifting) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AtLifting,pgsTypes::ServiceI) );
 
       if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting || pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandInstallation,pgsTypes::ServiceI) );
       }
 
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AtShipping) );
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandRemoval) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterDeckPlacement) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterSIDL) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLosses) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AtShipping,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandRemoval,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterDeckPlacement,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterSIDL,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLosses,pgsTypes::ServiceI) );
+      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad,pgsTypes::ServiceIII) );
    }
 
    return p_table;

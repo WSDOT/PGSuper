@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -165,12 +165,14 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+
    // create and set up table
    const ColumnIndexType add_cols = 2;
    rptRcTable* p_table;
    if (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
       p_table = pgsReportStyleHolder::CreateDefaultTable(5+1,_T(""));
-   else if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3)
+   else if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress() ) || stage == pgsTypes::BridgeSite3)
       p_table = pgsReportStyleHolder::CreateDefaultTable(8+add_cols,_T(""));
    else if (stage == pgsTypes::CastingYard )
       p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
@@ -262,7 +264,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    Float64 allowable_tension_with_rebar;
    Float64 allowable_compression;
 
-   if (stressType==pgsTypes::Tension && (stage != pgsTypes::BridgeSite2))
+   if (stressType==pgsTypes::Tension && ((stage != pgsTypes::BridgeSite2) || (stage == pgsTypes::BridgeSite2 && pAllowable->CheckFinalDeadLoadTensionStress())) )
    {
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
       allowable_tension = pFactoredStressArtifact->GetCapacity();
@@ -285,7 +287,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
 
-      if ( stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII )
+      if ( (stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress()) || (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII) )
       {
          p_table->SetRowSpan(0,col1,2);
          p_table->SetRowSpan(1,col2++,SKIP_CELL);
@@ -425,6 +427,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 //           stage == pgsTypes::GirderPlacement || 
            stage == pgsTypes::TemporaryStrandRemoval || 
            stage == pgsTypes::BridgeSite1 || 
+          (stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress() ) ||
           (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
          )
       {
@@ -471,7 +474,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          )
       {
          bool bPassed;
-         if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
+         if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress()) || stage == pgsTypes::BridgeSite3 )
          {
             bPassed = pFactoredStressArtifact->Passed();
          }

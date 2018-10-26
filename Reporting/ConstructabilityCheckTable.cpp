@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -436,6 +436,46 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    *pBody << pTable;
 }
 
+void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
+   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
+   
+   if ( !pArtifact->IsBottomFlangeClearnceApplicable() )
+   {
+      return;
+   }
+
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   *pTitle << _T("Bottom Flange Clearance");
+
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+
+   (*pTable)(0,0) << COLHDR(_T("Clearance"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0,1) << COLHDR(_T("Min. Clearance"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0,2) << _T("Status");
+
+   Float64 C, Cmin;
+   pArtifact->GetBottomFlangeClearanceParameters(&C,&Cmin);
+
+   (*pTable)(1,0) << dim.SetValue(C);
+   (*pTable)(1,1) << dim.SetValue(Cmin);
+
+   if ( pArtifact->BottomFlangeClearancePassed() )
+      (*pTable)(1,2) << RPT_PASS;
+   else
+      (*pTable)(1,2) << RPT_FAIL;
+   
+   *pBody << pTable;
+}
 
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================

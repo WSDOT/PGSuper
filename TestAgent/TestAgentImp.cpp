@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1265,10 +1265,10 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       //if ( poi.IsFlexureStress(pgsTypes::BridgeSite3) )
       //{
          // force and stress in prestressing strands
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterXfer), unitMeasure::MPa)) <<         _T(",15, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50003, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer), unitMeasure::Newton)) <<       _T(",15, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50004, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses), unitMeasure::MPa)) <<  _T(",15, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50005, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterXfer,pgsTypes::ServiceI), unitMeasure::MPa)) <<         _T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50003, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterXfer,pgsTypes::ServiceI), unitMeasure::Newton)) <<       _T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50004, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI), unitMeasure::MPa)) <<  _T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50005, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
 
          // stresses due to external loads
          // casting yards
@@ -1376,7 +1376,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          pShearCapacity->GetShearCapacityDetails(pgsTypes::StrengthI, pgsTypes::BridgeSite3, poi,&scd);
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50031, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(scd.Aps , unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50032, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(scd.As , unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50033, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval), unitMeasure::MPa)) <<_T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50033, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::BeforeTemporaryStrandRemoval,pgsTypes::ServiceI), unitMeasure::MPa)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50038, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(scd.As,unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(scd.pVn , unitMeasure::Newton)) <<    _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(scd.Vn , unitMeasure::Newton)) <<     _T(",15, ")<<gdr<<std::endl;
@@ -1720,17 +1720,25 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    // get design options from spec. Do shear and flexure
    GET_IFACE(ISpecification,pSpecification);
-   arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
-
-   des_options.doDesignForShear = true;
-   des_options.doDesignStirrupLayout = slLayoutStirrups; // always layout zones from scratch
-
    GET_IFACE(IArtifact,pIArtifact);
-   const pgsDesignArtifact* pArtifact;
+   const pgsDesignArtifact* pArtifact(NULL);
+
+   std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(span,gdr);
+   IndexType do_cnt = des_options_coll.size();
+   IndexType do_idx = 1;
+
+   // Add shear design to options
+   for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
+   {
+      arDesignOptions& des_options = *it;
+
+      des_options.doDesignForShear = true;
+      des_options.doDesignStirrupLayout = slLayoutStirrups; // always layout zones from scratch
+   }
 
    try
    {
-      pArtifact = pIArtifact->CreateDesignArtifact( span,gdr, des_options);
+      pArtifact = pIArtifact->CreateDesignArtifact( span,gdr, des_options_coll);
    }
    catch(...)
    {

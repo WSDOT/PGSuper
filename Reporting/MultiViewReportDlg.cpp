@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -253,7 +253,7 @@ void CMultiViewReportDlg::InitChapterListFromSpec()
 
 void CMultiViewReportDlg::InitFromRptSpec()
 {
-   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
+   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
    if (pRptSpec)
    {
       m_GirderList.clear();
