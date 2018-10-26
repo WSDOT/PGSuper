@@ -25,6 +25,7 @@
 #include "HtmlHelp\HelpTopics.hh"
 #include "MultiGirderSelectDlg.h"
 #include <IFace\Bridge.h>
+#include "PGSuperAppPlugin\resource.h"
 
 // CMultiGirderSelectDlg dialog
 
@@ -52,6 +53,8 @@ void CMultiGirderSelectDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CMultiGirderSelectDlg, CDialog)
+   ON_BN_CLICKED(IDC_SELECT_ALL, &CMultiGirderSelectDlg::OnBnClickedSelectAll)
+   ON_BN_CLICKED(IDC_CLEAR_ALL, &CMultiGirderSelectDlg::OnBnClickedClearAll)
 END_MESSAGE_MAP()
 
 BOOL CMultiGirderSelectDlg::OnInitDialog()
@@ -109,3 +112,12 @@ BOOL CMultiGirderSelectDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+void CMultiGirderSelectDlg::OnBnClickedSelectAll()
+{
+   m_pGrid->SetAllValues(true);
+}
+
+void CMultiGirderSelectDlg::OnBnClickedClearAll()
+{
+   m_pGrid->SetAllValues(false);
+}

@@ -71,4 +71,6 @@ public:
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
+   afx_msg void OnBnClickedSelectAll();
+   afx_msg void OnBnClickedClearAll();
 };

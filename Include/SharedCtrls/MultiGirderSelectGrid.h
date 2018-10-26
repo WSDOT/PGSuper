@@ -79,6 +79,7 @@ public:
    void CustomInit(const SpanGirderOnCollection& spanGirderOnCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType));
 
    bool GetCellValue(ROWCOL nRow, ROWCOL nCol);
+   void SetAllValues(bool val);
 
    // Vector of girders turned on (checked)
    std::vector<SpanGirderHashType> GetData();

@@ -330,7 +330,10 @@
 #define IDC_BUTTON1                     1163
 #define IDC_SELECT_GIRDERS              1163
 #define IDC_LLDF_FILL2                  1163
+#define IDC_SELECT_ALL                  1163
 #define IDC_PRINT                       1164
+#define IDC_SELECT_ALL2                 1164
+#define IDC_CLEAR_ALL                   1164
 #define IDC_VIEWDETAILS                 1165
 #define IDC_COPY_MATERIAL               1166
 #define IDC_EDIT_LOAD                   1167

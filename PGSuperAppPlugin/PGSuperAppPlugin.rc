@@ -2077,7 +2077,9 @@ BEGIN
     CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,19,20,278,103
     DEFPUSHBUTTON   "OK",IDOK,145,159,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,205,159,50,14
-    GROUPBOX        "Select Girders",IDC_STATIC,7,7,302,128
+    GROUPBOX        "Select Girders",IDC_STATIC,7,7,302,138
+    PUSHBUTTON      "Select All",IDC_SELECT_ALL,193,127,50,14
+    PUSHBUTTON      "Clear All",IDC_CLEAR_ALL,248,127,50,14
 END
 
 IDD_LLDF_FILL DIALOGEX 0, 0, 347, 294
@@ -2119,8 +2121,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,0,5
- PRODUCTVERSION 2,5,0,5
+ FILEVERSION 2,5,0,6
+ PRODUCTVERSION 2,5,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2137,12 +2139,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.5.0.5"
+            VALUE "FileVersion", "2.5.0.6"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.5.0.5"
+            VALUE "ProductVersion", "2.5.0.6"
         END
     END
     BLOCK "VarFileInfo"

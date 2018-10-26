@@ -10172,7 +10172,7 @@ struct PoiBefore
       if ( m_SpanIdx != poi.GetSpan() || m_GirderIdx != poi.GetGirder() )
          return false;
 
-      return poi.GetDistFromStart() < PoiBefore::m_Before; 
+      return poi.GetDistFromStart() < PoiBefore::m_Before && !IsEqual(PoiBefore::m_Before,poi.GetDistFromStart()); 
    }
    static SpanIndexType m_SpanIdx;
    static GirderIndexType m_GirderIdx;
@@ -10189,7 +10189,7 @@ struct PoiAfter
       if ( m_SpanIdx != poi.GetSpan() || m_GirderIdx != poi.GetGirder() )
          return false;
 
-      return PoiAfter::m_After < poi.GetDistFromStart(); 
+      return PoiAfter::m_After < poi.GetDistFromStart() && !IsEqual(PoiAfter::m_After,poi.GetDistFromStart()); 
    }
    static SpanIndexType m_SpanIdx;
    static GirderIndexType m_GirderIdx;

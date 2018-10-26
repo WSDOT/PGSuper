@@ -51,4 +51,6 @@ public:
    virtual BOOL OnInitDialog();
 
    std::vector<SpanGirderHashType> m_SelGdrs;
+   afx_msg void OnBnClickedSelectAll();
+   afx_msg void OnBnClickedClearAll();
 };
