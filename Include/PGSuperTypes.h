@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1418,6 +1418,26 @@ inline CComBSTR GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
       bstrName += CComBSTR(" - Operating");
 
    return bstrName;
+}
+
+inline bool IsTopStressLocation(pgsTypes::StressLocation stressLocation)
+{
+   return (stressLocation == pgsTypes::TopDeck || stressLocation == pgsTypes::TopGirder);
+}
+
+inline bool IsBottomStressLocation(pgsTypes::StressLocation stressLocation)
+{
+   return !IsTopStressLocation(stressLocation);
+}
+
+inline bool IsGirderStressLocation(pgsTypes::StressLocation stressLocation)
+{
+   return (stressLocation == pgsTypes::TopGirder || stressLocation == pgsTypes::BottomGirder);
+}
+
+inline bool IsDeckStressLocation(pgsTypes::StressLocation stressLocation)
+{
+   return !IsGirderStressLocation(stressLocation);
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

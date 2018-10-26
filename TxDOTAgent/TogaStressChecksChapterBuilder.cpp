@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -287,7 +287,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0 );
       allowable_tension = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
       ATLASSERT(IsEqual(allowable_tension,pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder)));
-      allowable_tension_with_rebar = pFactoredGdrArtifact->GetCapacityWithRebar(intervalIdx,limitState,pgsTypes::GirderTop);
+      allowable_tension_with_rebar = pFactoredGdrArtifact->GetCapacityWithRebar(intervalIdx,limitState,pgsTypes::TopGirder);
    }
 
    if (stressType==pgsTypes::Compression || intervalIdx != liveLoadIntervalIdx)
@@ -432,7 +432,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
           (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
          )
       {
-         bool bPassed = (limitState == pgsTypes::ServiceIII ? pFactoredStressArtifact->BottomPassed() : pFactoredStressArtifact->Passed());
+         bool bPassed = (limitState == pgsTypes::ServiceIII ? pFactoredStressArtifact->Passed(pgsTypes::BottomGirder) : pFactoredStressArtifact->BeamPassed());
 	      if ( bPassed )
 		     (*p_table)(row,++col) << RPT_PASS;
 	      else
@@ -484,11 +484,11 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          bool bPassed;
          if ( intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx )
          {
-            bPassed = pFactoredStressArtifact->Passed();
+            bPassed = pFactoredStressArtifact->BeamPassed();
          }
          else
          {
-            bPassed = pFactoredOtherStressArtifact->Passed();
+            bPassed = pFactoredOtherStressArtifact->BeamPassed();
             fTop = pFactoredOtherStressArtifact->GetDemand(pgsTypes::TopGirder);
             fBot = pFactoredOtherStressArtifact->GetDemand(pgsTypes::BottomGirder);
          }

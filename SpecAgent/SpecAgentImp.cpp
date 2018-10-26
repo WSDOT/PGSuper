@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -288,7 +288,7 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CGirderKey& girderKey)
 /////////////////////////////////////////////////////////////////////////////
 // IAllowableConcreteStress
 //
-Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone)
+Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone)
 {
    ATLASSERT(IsStressCheckApplicable(intervalIdx,ls,type));
 
@@ -326,17 +326,25 @@ Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi,Interval
       // This is a design/check case, so use the regular specifications
       GET_IFACE(IMaterials,pMaterials);
       Float64 fc;
-      if (poi.HasAttribute(POI_CLOSURE))
-         fc = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
-      else
-         fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
 
-      Float64 fAllow = GetAllowableStress(poi,intervalIdx,ls,type,fc,bWithBondededReinforcement,bInPrecompressedTensileZone);
+      if ( IsGirderStressLocation(stressLocation) )
+      {
+         if (poi.HasAttribute(POI_CLOSURE))
+            fc = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
+         else
+            fc = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
+      }
+      else
+      {
+         fc = pMaterials->GetDeckFc(intervalIdx);
+      }
+
+      Float64 fAllow = GetAllowableStress(poi,stressLocation,intervalIdx,ls,type,fc,bWithBondededReinforcement,bInPrecompressedTensileZone);
       return fAllow;
    }
 }
 
-std::vector<Float64> CSpecAgentImp::GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone)
+std::vector<Float64> CSpecAgentImp::GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone)
 {
    ATLASSERT(IsStressCheckApplicable(intervalIdx,ls,type));
 
@@ -346,13 +354,13 @@ std::vector<Float64> CSpecAgentImp::GetAllowableStress(const std::vector<pgsPoin
    for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
-      vStress.push_back( GetAllowableStress(poi,intervalIdx,ls,type,bWithBondededReinforcement,bInPrecompressedTensileZone));
+      vStress.push_back( GetAllowableStress(poi,stressLocation,intervalIdx,ls,type,bWithBondededReinforcement,bInPrecompressedTensileZone));
    }
 
    return vStress;
 }
 
-Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
+Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
 {
    ATLASSERT(IsStressCheckApplicable(intervalIdx,ls,type));
 
@@ -361,11 +369,11 @@ Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi,Interval
    switch( type )
    {
    case pgsTypes::Tension:
-      fAllow = GetAllowableTensileStress(poi,intervalIdx,ls,fc,bWithBondedReinforcement,bInPrecompressedTensileZone);
+      fAllow = GetAllowableTensileStress(poi,stressLocation,intervalIdx,ls,fc,bWithBondedReinforcement,bInPrecompressedTensileZone);
       break;
 
    case pgsTypes::Compression:
-      fAllow = GetAllowableCompressiveStress(poi,intervalIdx,ls,fc);
+      fAllow = GetAllowableCompressiveStress(poi,stressLocation,intervalIdx,ls,fc);
       break;
    }
 
@@ -440,7 +448,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType c
    return pSpec->GetHaulingModulusOfRuptureFactor(concType);
 }
 
-Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
 {
    ATLASSERT(IsStressCheckApplicable(intervalIdx,ls,pgsTypes::Compression));
 
@@ -461,62 +469,86 @@ Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(const pgsPointOf
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-   if ( poi.HasAttribute(POI_CLOSURE) )
+   if ( IsGirderStressLocation(stressLocation) )
    {
-      if ( intervalIdx < compositeDeckIntervalIdx )
+      if ( poi.HasAttribute(POI_CLOSURE) )
       {
-         x = pSpec->GetAtStressingCompressingStressFactor();
-      }
-      else if ( liveLoadIntervalIdx <= intervalIdx )
-      {
-         if (ls == pgsTypes::ServiceIA || ls == pgsTypes::FatigueI )
+         if ( intervalIdx < compositeDeckIntervalIdx )
          {
-            x = pSpec->GetClosureFatigueCompressionStressFactor();
+            x = pSpec->GetAtStressingCompressingStressFactor();
+         }
+         else if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            if (ls == pgsTypes::ServiceIA || ls == pgsTypes::FatigueI )
+            {
+               x = pSpec->GetClosureFatigueCompressionStressFactor();
+            }
+            else
+            {
+               x = pSpec->GetAtServiceWithLiveLoadCompressingStressFactor();
+            }
          }
          else
          {
-            x = pSpec->GetAtServiceWithLiveLoadCompressingStressFactor();
+            // after the deck is composite, but before open to traffic (basically final dead load only)
+            x = pSpec->GetAtServiceCompressingStressFactor(); // without live load
          }
       }
       else
       {
-         // after the deck is composite, but before open to traffic (basically final dead load only)
-         x = pSpec->GetAtServiceCompressingStressFactor(); // without live load
+         if ( intervalIdx == releaseIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetAtReleaseCompressionStressFactor();
+         }
+         else if ( intervalIdx == liftIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetLiftingCompressionStressFactor();
+         }
+         else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetAtReleaseCompressionStressFactor();
+         }
+         else if ( intervalIdx == haulIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetHaulingCompressionStressFactor();
+         }
+         else if ( intervalIdx == tempStrandRemovalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetTempStrandRemovalCompressionStressFactor();
+         }
+         else if ( intervalIdx == erectSegmentIdx || (tempStrandRemovalIdx < intervalIdx && intervalIdx < compositeDeckIntervalIdx) )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetErectionCompressionStressFactor();
+         }
+         else if ( compositeDeckIntervalIdx <= intervalIdx && intervalIdx < liveLoadIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
+         }
+         else if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            ATLASSERT( (ls == pgsTypes::ServiceI) || (ls == pgsTypes::ServiceIA) || (ls == pgsTypes::FatigueI));
+            x = (ls == pgsTypes::ServiceI ? pSpec->GetFinalWithLiveLoadCompressionStressFactor() : pSpec->GetFatigueCompressionStressFactor());
+         }
+         else
+         {
+            ATLASSERT(false); // unexpected interval
+         }
       }
    }
    else
    {
-      if ( intervalIdx == releaseIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetAtReleaseCompressionStressFactor();
-      }
-      else if ( intervalIdx == liftIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetLiftingCompressionStressFactor();
-      }
-      else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetAtReleaseCompressionStressFactor();
-      }
-      else if ( intervalIdx == haulIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetHaulingCompressionStressFactor();
-      }
-      else if ( intervalIdx == tempStrandRemovalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetTempStrandRemovalCompressionStressFactor();
-      }
-      else if ( intervalIdx == erectSegmentIdx || (tempStrandRemovalIdx < intervalIdx && intervalIdx < compositeDeckIntervalIdx) )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetErectionCompressionStressFactor();
-      }
-      else if ( compositeDeckIntervalIdx <= intervalIdx && intervalIdx < liveLoadIntervalIdx )
+      // Deck Allowable Stress Coefficient
+      // Only applicable for intervals after the deck is composite with the structure
+#pragma Reminder("REVIEW: consider having a separate set of allowable stress coefficients in the spec library for deck")
+      // this is where those coefficients would be used
+      if ( compositeDeckIntervalIdx <= intervalIdx && intervalIdx < liveLoadIntervalIdx )
       {
          ATLASSERT( ls == pgsTypes::ServiceI );
          x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
@@ -535,7 +567,7 @@ Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(const pgsPointOf
    return x;
 }
 
-void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
+void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
 {
    ATLASSERT(IsStressCheckApplicable(intervalIdx,ls,pgsTypes::Tension));
 
@@ -558,99 +590,133 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInteres
    IntervalIndexType castDeckIntervalIdx  = pIntervals->GetCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
-   if ( poi.HasAttribute(POI_CLOSURE) )
+   if ( IsGirderStressLocation(stressLocation) )
    {
-      if ( intervalIdx < liveLoadIntervalIdx )
+      if ( poi.HasAttribute(POI_CLOSURE) )
       {
-         if ( bInPrecompressedTensileZone )
+         if ( intervalIdx < liveLoadIntervalIdx )
          {
-            if ( bWithBondedReinforcement )
-               x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar();
+            if ( bInPrecompressedTensileZone )
+            {
+               if ( bWithBondedReinforcement )
+                  x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar();
+               else
+                  x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactor();
+            }
             else
-               x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactor();
+            {
+               if ( bWithBondedReinforcement )
+                  x = pSpec->GetAtStressingOtherLocationTensionStressFactorWithRebar();
+               else
+                  x = pSpec->GetAtStressingOtherLocationTensionStressFactor();
+            }
          }
          else
          {
-            if ( bWithBondedReinforcement )
-               x = pSpec->GetAtStressingOtherLocationTensionStressFactorWithRebar();
+            if ( bInPrecompressedTensileZone )
+            {
+               if ( bWithBondedReinforcement )
+                  x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar();
+               else
+                  x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactor();
+            }
             else
-               x = pSpec->GetAtStressingOtherLocationTensionStressFactor();
+            {
+               if ( bWithBondedReinforcement )
+                  x = pSpec->GetAtServiceOtherLocationTensionStressFactorWithRebar();
+               else
+                  x = pSpec->GetAtServiceOtherLocationTensionStressFactor();
+            }
          }
       }
       else
       {
-         if ( bInPrecompressedTensileZone )
+         if ( intervalIdx == releaseIntervalIdx )
          {
+            ATLASSERT( ls == pgsTypes::ServiceI );
             if ( bWithBondedReinforcement )
-               x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar();
+            {
+               x = pSpec->GetAtReleaseTensionStressFactorWithRebar();
+            }
             else
-               x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactor();
+            {
+               x = pSpec->GetAtReleaseTensionStressFactor();
+               pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+            }
+         }
+         else if ( intervalIdx == liftIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetLiftingTensionStressFactor();
+            pSpec->GetLiftingMaximumTensionStress(&bCheckMax,&fmax);
+         }
+         else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetAtReleaseTensionStressFactor();
+            pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+         }
+         else if ( intervalIdx == haulIntervalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetHaulingTensionStressFactor();
+            pSpec->GetHaulingMaximumTensionStress(&bCheckMax,&fmax);
+         }
+         else if ( intervalIdx == tempStrandRemovalIdx )
+         {
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetTempStrandRemovalTensionStressFactor();
+            pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
+         }
+         else if ( intervalIdx == erectSegmentIdx || (tempStrandRemovalIdx < intervalIdx && intervalIdx < liveLoadIntervalIdx) )
+         {
+            // any interval after temporary strands are removed and before the bridge is open to traffic
+            ATLASSERT( ls == pgsTypes::ServiceI );
+            x = pSpec->GetErectionTensionStressFactor();
+            pSpec->GetErectionMaximumTensionStress(&bCheckMax,&fmax);
+         }
+         else if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            ATLASSERT( (ls == pgsTypes::ServiceIII)  );
+            int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
+            x = pSpec->GetFinalTensionStressFactor(exposureCondition);
+            pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
          }
          else
          {
-            if ( bWithBondedReinforcement )
-               x = pSpec->GetAtServiceOtherLocationTensionStressFactorWithRebar();
-            else
-               x = pSpec->GetAtServiceOtherLocationTensionStressFactor();
+            ATLASSERT(false); // unexpected interval
          }
       }
    }
    else
    {
-      if ( intervalIdx == releaseIntervalIdx )
+      // Deck Allowable Stress Coefficient
+      // Only applicable for intervals after the deck is composite with the structure
+#pragma Reminder("REVIEW: consider having a separate set of allowable stress coefficients in the spec library for deck")
+      // this is where those coefficients would be used
+
+#pragma Reminder("REVIEW: allow tension for deck")
+      // this will be reported for all intervals. stress checks are only applicable after the deck is made composite
+      // with the rest of the structure. furthermore, there are tension limits during tendon stressing and different
+      // tension limits while "in-service".
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      ATLASSERT(compositeDeckIntervalIdx <= intervalIdx);
+      if ( intervalIdx < liveLoadIntervalIdx )
       {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         if ( bWithBondedReinforcement )
-         {
-            x = pSpec->GetAtReleaseTensionStressFactorWithRebar();
-         }
-         else
-         {
-            x = pSpec->GetAtReleaseTensionStressFactor();
-            pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
-         }
-      }
-      else if ( intervalIdx == liftIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetLiftingTensionStressFactor();
-         pSpec->GetLiftingMaximumTensionStress(&bCheckMax,&fmax);
-      }
-      else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetAtReleaseTensionStressFactor();
-         pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
-      }
-      else if ( intervalIdx == haulIntervalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetHaulingTensionStressFactor();
-         pSpec->GetHaulingMaximumTensionStress(&bCheckMax,&fmax);
-      }
-      else if ( intervalIdx == tempStrandRemovalIdx )
-      {
-         ATLASSERT( ls == pgsTypes::ServiceI );
-         x = pSpec->GetTempStrandRemovalTensionStressFactor();
-         pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
-      }
-      else if ( intervalIdx == erectSegmentIdx || (tempStrandRemovalIdx < intervalIdx && intervalIdx < liveLoadIntervalIdx) )
-      {
-         // any interval after temporary strands are removed and before the bridge is open to traffic
+#pragma Reminder("REVIEW: is this the right tension coefficients?")
+         // we need to look at if this is a loading stage or a PT-stressing stage
+         // that governs if we use the before losses or after losses coefficients
+         // see LRFD 5.14.1.3.3
          ATLASSERT( ls == pgsTypes::ServiceI );
          x = pSpec->GetErectionTensionStressFactor();
          pSpec->GetErectionMaximumTensionStress(&bCheckMax,&fmax);
       }
-      else if ( liveLoadIntervalIdx <= intervalIdx )
+      else
       {
          ATLASSERT( (ls == pgsTypes::ServiceIII)  );
          int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
          x = pSpec->GetFinalTensionStressFactor(exposureCondition);
          pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
-      }
-      else
-      {
-         ATLASSERT(false); // unexpected interval
       }
    }
 
@@ -1528,19 +1594,19 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(pgsTypes::ConcreteType type)
 
 ////////////////////
 // Private methods
-Float64 CSpecAgentImp::GetAllowableCompressiveStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
+Float64 CSpecAgentImp::GetAllowableCompressiveStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
 {
-   Float64 x = GetAllowableCompressiveStressCoefficient(poi,intervalIdx,ls);
+   Float64 x = GetAllowableCompressiveStressCoefficient(poi,stressLocation,intervalIdx,ls);
    // Add a minus sign because compression is negative
    return -x*fc;
 }
 
-Float64 CSpecAgentImp::GetAllowableTensileStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc, bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
+Float64 CSpecAgentImp::GetAllowableTensileStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc, bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
 {
    Float64 x;
    bool bCheckMax;
    Float64 fmax; // In system units
-   GetAllowableTensionStressCoefficient(poi,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone,&x,&bCheckMax,&fmax);
+   GetAllowableTensionStressCoefficient(poi,stressLocation,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone,&x,&bCheckMax,&fmax);
 
    Float64 f = x * sqrt( fc );
    if ( bCheckMax )

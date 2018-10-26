@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -314,19 +314,19 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          break;
 
       case YTop:
-         value = pSectProps->GetYt(sectPropType,intervalIdx,poi);
+         value = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
          break;
 
       case YBottom:
-         value = pSectProps->GetYb(sectPropType,intervalIdx,poi);
+         value = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
 
       case TopSectionModulus:
-         value = pSectProps->GetSt(sectPropType,intervalIdx,poi);
+         value = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopDeck);
          break;
 
       case BottomSectionModulus:
-         value = pSectProps->GetSb(sectPropType,intervalIdx,poi);
+         value = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
 
       case TopKernPoint:

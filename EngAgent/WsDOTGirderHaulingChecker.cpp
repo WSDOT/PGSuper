@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -455,7 +455,7 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegment
    Float64 roll_hgt = pGirderHaulingSpecCriteria->GetHeightOfTruckRollCenterAboveRoadway();
    Float64 gb_hgt =  pGirderHaulingSpecCriteria->GetHeightOfGirderBottomAboveRoadway();
    Float64 camber_factor = 1.0 + pGirderHaulingSpecCriteria->GetIncreaseInCgForCamber();
-   Float64 ycgb = pSectProp->GetYb(haulSegmentIntervalIdx,pgsPointOfInterest(segmentKey,0.0));
+   Float64 ycgb = pSectProp->GetY(haulSegmentIntervalIdx,pgsPointOfInterest(segmentKey,0.0),pgsTypes::BottomGirder);
    Float64 e_hgt = (gb_hgt+ycgb-roll_hgt) * camber_factor;
    pArtifact->SetHeightOfRollCenterAboveRoadway(roll_hgt);
    pArtifact->SetHeightOfCgOfGirderAboveRollCenter(e_hgt);
@@ -530,6 +530,7 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
                                                       const std::vector<Float64>& momVec,
                                                       pgsWsdotHaulingAnalysisArtifact* pArtifact)
 {
+   GET_IFACE(IBridge, pBridge);
    GET_IFACE(IPretensionForce,pPrestressForce);
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
@@ -569,7 +570,7 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec);
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pBridge, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec, true/*girder stresses*/);
 
    IndexType psiz = rpoiVec.size();
    IndexType msiz = momVec.size();
@@ -588,15 +589,15 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
       {
          ag     = pSectProps->GetAg(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig.Fc);
          iy     = pSectProps->GetIy(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig.Fc);
-         stg    = pSectProps->GetSt(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig.Fc);
-         sbg    = pSectProps->GetSb(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig.Fc);
+         stg    = pSectProps->GetS(haulSegmentIntervalIdx,poi,pgsTypes::TopGirder,   haulConfig.GdrConfig.Fc);
+         sbg    = pSectProps->GetS(haulSegmentIntervalIdx,poi,pgsTypes::BottomGirder,haulConfig.GdrConfig.Fc);
       }
       else
       {
          ag     = pSectProps->GetAg(haulSegmentIntervalIdx,poi);
          iy     = pSectProps->GetIy(haulSegmentIntervalIdx,poi);
-         stg    = pSectProps->GetSt(haulSegmentIntervalIdx,poi);
-         sbg    = pSectProps->GetSb(haulSegmentIntervalIdx,poi);
+         stg    = pSectProps->GetS(haulSegmentIntervalIdx,poi,pgsTypes::TopGirder);
+         sbg    = pSectProps->GetS(haulSegmentIntervalIdx,poi,pgsTypes::BottomGirder);
       }
 
       pgsWsdotHaulingStressAnalysisArtifact haul_artifact;

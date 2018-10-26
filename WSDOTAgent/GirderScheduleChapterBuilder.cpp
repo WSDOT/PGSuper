@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -406,7 +406,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(row  ,1) << _T("#");
    }
 
-   Float64 ybg = pSectProp->GetYb(releaseIntervalIdx,poiMidSpan);
+   Float64 ybg = pSectProp->GetY(releaseIntervalIdx,poiMidSpan,pgsTypes::BottomGirder);
    Float64 nEff;
    Float64 sse = pStrandGeometry->GetSsEccentricity(releaseIntervalIdx,poiMidSpan, &nEff);
    (*p_table)(++row,0) << _T("E");
@@ -425,7 +425,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          (*p_table)(row,1) << RPT_NA;
 
 
-      Float64 ytg = pSectProp->GetYtGirder(releaseIntervalIdx,poiStart);
+      Float64 ytg = pSectProp->GetY(releaseIntervalIdx,poiStart,pgsTypes::TopGirder);
       Float64 hss = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,poiStart, &nEff);
       (*p_table)(++row,0) << Sub2(_T("F"),_T("o"));
       if (0 < Nh)

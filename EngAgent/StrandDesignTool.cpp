@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1590,7 +1590,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( stressType == pgsTypes::Compression )
    {
-      Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,intervalIdx,ls);
+      Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls);
       fc_reqd = fControl/c;
       LOG(c << _T("F demand (compression) = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd,unitMeasure::KSI) << _T(" KSI"));
    }
@@ -1602,7 +1602,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          Float64 t, fmax;
          bool bfMax;
 
-         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,intervalIdx,ls,false/*without rebar*/,false,&t,&bfMax,&fmax);
+         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls,false/*without rebar*/,false,&t,&bfMax,&fmax);
          if (0 < t)
          {
             LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
@@ -1617,7 +1617,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
                   bool bCheckMaxAlt;
                   Float64 fMaxAlt;
                   Float64 talt;
-                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
                   fc_reqd = pow(fControl/talt,2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
@@ -4399,10 +4399,10 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
 
       // Section properties of beam - non-prismatic
       // using release interval because we are computing stress on the girder due to prestress which happens in this interval
-      Float64 Yb = pSectProp->GetYb(releaseIntervalIdx,demand.m_Poi);
+      Float64 Yb = pSectProp->GetY(releaseIntervalIdx,demand.m_Poi,pgsTypes::BottomGirder);
       Float64 Ag = pSectProp->GetAg(releaseIntervalIdx,demand.m_Poi);
-      Float64 St = pSectProp->GetStGirder(releaseIntervalIdx, demand.m_Poi);
-      Float64 Sb = pSectProp->GetSb(releaseIntervalIdx, demand.m_Poi);
+      Float64 St = pSectProp->GetS(releaseIntervalIdx, demand.m_Poi, pgsTypes::TopGirder);
+      Float64 Sb = pSectProp->GetS(releaseIntervalIdx, demand.m_Poi, pgsTypes::BottomGirder);
 
       if (demand.m_TopStress>allowTens || demand.m_BottomStress<allowComp)
       {

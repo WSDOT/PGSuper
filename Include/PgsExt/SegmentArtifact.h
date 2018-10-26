@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -119,30 +119,34 @@ public:
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
    // Returns true if flexural stress checks are applicable anywhere along the segment
-   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const;
+   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const;
 
    // returns true if the allowable tension capacity with adequate reinforcement
    // was used at any POI in this segment. If attribute = 0, only segments are checked
    // if attribute is POI_CLOSURE, only closure joints are checked
-   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,PoiAttributeType attribute = 0) const;
+   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
 
    // returns one of the PTZ flags that indicate where the precompressed tensile zone
    // is on this segment
-   void GetPrecompressedTensileZone(IntervalIndexType intervalIdx,int* ptzTop,int* ptzBottom) const;
+   int GetPrecompressedTensileZone(IntervalIndexType intervalIdx,pgsTypes::StressLocation stressLocation) const;
 
-   void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,Float64 fAllow);
-   Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const;
+   void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow);
+   Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
 
    pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
    const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
    
    bool Passed() const;
 
-   bool DidFlexuralStressesPass() const;
+   bool DidSegmentFlexuralStressesPass() const;
+   bool DidDeckFlexuralStressesPass() const;
 
-   Float64 GetRequiredConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
-   Float64 GetRequiredConcreteStrength() const;
    Float64 GetRequiredReleaseStrength() const;
+
+   Float64 GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredSegmentConcreteStrength() const;
+   Float64 GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredDeckConcreteStrength() const;
 
    const CSegmentKey& GetSegmentKey() const;
 
@@ -211,6 +215,6 @@ private:
 
    pgsDebondArtifact m_DebondArtifact[3];
    
-   mutable std::map<StressKey,Float64> m_AllowableWithRebar[2]; // allowable tensile stress with required mild rebar (access array with pgsTypes::GirderFace)
-   Float64& GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const;
+   mutable std::map<StressKey,Float64> m_AllowableWithRebar[4]; // allowable tensile stress with required mild rebar (access array with pgsTypes::StressLocation)
+   Float64& GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
 };

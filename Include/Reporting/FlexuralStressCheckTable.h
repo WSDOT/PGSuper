@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,8 @@ public:
                       const pgsGirderArtifact* pGirderArtifact,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls
+                      pgsTypes::LimitState ls,
+                      bool bGirderStresses
                       ) const;
 
    //------------------------------------------------------------------------
@@ -75,7 +76,8 @@ public:
                       SegmentIndexType segIdx,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls
+                      pgsTypes::LimitState ls,
+                      bool bGirderStresses
                       ) const;
 
    /* Dummy */
@@ -96,7 +98,8 @@ public:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls) const;
+                   pgsTypes::LimitState ls,
+                   bool bGirderStresses) const;
 
    /* Dummy */
    void BuildNotes(rptChapter* pChapter, 
@@ -115,7 +118,8 @@ public:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls) const;
+                   pgsTypes::LimitState ls,
+                   bool bGirderStresses) const;
 
 protected:
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
@@ -128,7 +132,8 @@ protected:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls) const;
+                   pgsTypes::LimitState ls,
+                   bool bGirderStresses) const;
 
    void BuildAllowStressInformation(rptChapter* pChapter, 
                    IBroker* pBroker,
@@ -136,15 +141,32 @@ protected:
                    SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
                    IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls) const;
+                   pgsTypes::LimitState ls,
+                   bool bGirderStresses) const;
 
-   void BuildAllowStressInformation(rptParagraph* pPara, 
-                                    IBroker* pBroker,
-                                    const pgsSegmentArtifact* pSegmentArtifact,
-                                    IndexType artifactIdx,
-                                    IEAFDisplayUnits* pDisplayUnits,
-                                    IntervalIndexType intervalIdx,
-                                    pgsTypes::LimitState limitState) const;
+   void BuildAllowGirderStressInformation(rptChapter* pChapter, 
+                                          IBroker* pBroker,
+                                          const pgsGirderArtifact* pGirderArtifact,
+                                          SegmentIndexType segIdx,
+                                          IEAFDisplayUnits* pDisplayUnits,
+                                          IntervalIndexType intervalIdx,
+                                          pgsTypes::LimitState ls) const;
+
+   void BuildAllowDeckStressInformation(rptChapter* pChapter, 
+                                        IBroker* pBroker,
+                                        const pgsGirderArtifact* pGirderArtifact,
+                                        SegmentIndexType segIdx,
+                                        IEAFDisplayUnits* pDisplayUnits,
+                                        IntervalIndexType intervalIdx,
+                                        pgsTypes::LimitState ls) const;
+
+   void BuildAllowSegmentStressInformation(rptParagraph* pPara, 
+                                           IBroker* pBroker,
+                                           const pgsSegmentArtifact* pSegmentArtifact,
+                                           IndexType artifactIdx,
+                                           IEAFDisplayUnits* pDisplayUnits,
+                                           IntervalIndexType intervalIdx,
+                                           pgsTypes::LimitState limitState) const;
 
 
 private:

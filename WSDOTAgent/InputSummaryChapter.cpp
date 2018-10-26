@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -543,8 +543,8 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    //    bundle" and the actual definition of the harped strands at the harping point represents
    //    a bundle. In general, this might not be true.
 
-   Float64 Fo  = pSectProp->GetYtGirder(releaseIntervalIdx,poi) + ehe;
-   Float64 Yb  = pSectProp->GetYb(releaseIntervalIdx,poi);
+   Float64 Fo  = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::TopGirder) + ehe;
+   Float64 Yb  = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
    Float64 Fcl = Yb - eh;
    Float64 Fb  = Yb - eh2;
    Float64 E   = Yb - es;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,6 +53,7 @@
 #include <IFace\Allowables.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -105,6 +106,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -120,10 +122,12 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
-   IntervalIndexType lastIntervalIdx = vIntervals.back();
-   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType liftingIntervalIdx   = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType haulingIntervalIdx   = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType lastIntervalIdx          = vIntervals.back();
+   IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
@@ -143,7 +147,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // report the required concrete strengths for the current bridge configuration
    rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   p->SetName(_T("Girder Stresses"));
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      p->SetName(_T("Girder Stresses"));
+   }
+   else
+   {
+      p->SetName(_T("Segment Stresses"));
+   }
    *p << p->GetName() << rptNewLine;
    *pChapter << p;
 
@@ -153,7 +164,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
 
    Float64 fci_reqd = pGirderArtifact->GetRequiredReleaseStrength();
-   Float64 fc_reqd  = pGirderArtifact->GetRequiredConcreteStrength();
+   Float64 fc_reqd  = pGirderArtifact->GetRequiredGirderConcreteStrength();
    if ( 0 <= fci_reqd )
    {
       Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
@@ -162,19 +173,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
    else
    {
+      ATLASSERT(fci_reqd != -99999);
       *p << _T("Required ") << RPT_FCI << _T(" = Regardless of the release strength, the stress requirements will not be satisfied.") << rptNewLine;
-   }
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      CSegmentKey segmentKey(girderKey,segIdx);
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      if ( 1 < nSegments)
-      {
-         *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(": ");
-      }
-      *p << _T("Actual ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx)) << rptNewLine;
    }
 
    *p << rptNewLine;
@@ -187,17 +187,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
    else
    {
+      ATLASSERT(fc_reqd != -99999);
       *p << _T("Required ") << RPT_FC << _T(" = Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
-   }
-
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      CSegmentKey segmentKey(girderKey,segIdx);
-      if ( 1 < nSegments)
-      {
-         *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(": ");
-      }
-      *p << _T("Actual ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(segmentKey,lastIntervalIdx)) << rptNewLine;
    }
 
    // information about continuity and how it impacts the analysis
@@ -223,21 +214,58 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
               pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension)
             )
          {
-            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState);
+            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,true/*girder stresses*/);
          }
+      } // next limit state
+   } // next interval
+
+
+   if ( compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx )
+   {
+      rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      p->SetName(_T("Deck Stresses"));
+      *p << p->GetName() << rptNewLine;
+      *pChapter << p;
+
+      p = new rptParagraph;
+      *pChapter << p;
+
+      Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength();
+      if ( 0 <= fc_reqd )
+      {
+         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+         *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
+         *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
+      }
+      else
+      {
+         *p << _T("Required ") << RPT_FC << _T(" = Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
       }
 
-      //// Deck Stresses
-      //if ( pGirderArtifact->DeckStresses() )
-      //{
-      //   p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-      //   p->SetName(_T("Deck Stresses"));
-      //   *p << p->GetName() << rptNewLine;
-      //   *pChapter << p;
+      // report flexural stresses at various intervals
+      std::vector<IntervalIndexType>::iterator iter = vIntervals.begin();
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
 
-      //   CDeckStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState);
-      //}
-   } // next interval
+         // skipping everything before the deck is composite
+         if ( intervalIdx < compositeDeckIntervalIdx )
+            continue;
+
+         std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
+         std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
+         for ( ; lsIter != lsIterEnd; lsIter++ )
+         {
+            pgsTypes::LimitState limitState = *lsIter;
+            if ( pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Compression) ||
+                 pAllowableConcreteStress->IsStressCheckApplicable(intervalIdx,limitState,pgsTypes::Tension)
+               )
+            {
+               CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,false/*deck stresses*/);
+            }
+         } // next limit state
+      } // next interval
+   }
 
    // Flexural Capacity
    p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );

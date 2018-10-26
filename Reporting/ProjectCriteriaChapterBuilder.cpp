@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -373,13 +373,18 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fccy = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression,false,false);
-   Float64 ftcy = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension,false,false);
-   Float64 ft   = pAllowableConcreteStress->GetAllowableStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, true /*with bonded rebar*/,false); 
+   // can use TopGirder or BottomGirder to get allowable stress... 
+   // we just need to designate that we want the allowable stress for the girder and
+   // not the deck
+   Float64 fccy = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression,false,false);
+   Float64 ftcy = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension,false,false);
+   Float64 ft   = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, true /*with bonded rebar*/,false); 
    *pPara << _T("Allowable Concrete Stresses - Service I (5.8.4.1.1)") << rptNewLine;
    *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+
+#pragma Reminder("UPDATE: if this is a spliced girder, report the deck allowables too")
 
    if (pSpecEntry->IsSplittingCheckEnabled())
    {
@@ -585,11 +590,11 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
     IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
       
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
+   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
-   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Tension,false,false);
+   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, tsRemovalIntervalIdx,pgsTypes::ServiceI, pgsTypes::Tension,false,false);
    *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
 }
@@ -611,11 +616,11 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression,false,false);
+   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara << _T("Allowable Compressive Concrete Stresses (5.9.4.2.1)") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fcsp) << rptNewLine;
 
-   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension,false,false);
+   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, castDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension,false,false);
    *pPara << _T("Allowable Tensile Concrete Stresses (5.9.4.2.2)") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
 }
@@ -655,7 +660,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, compositeDeckIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
+   Float64 fcsp = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, compositeDeckIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
@@ -700,23 +705,23 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    pgsPointOfInterest poi(segmentKey,0.0);
 
-   Float64 fcsl = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
+   Float64 fcsl = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, liveLoadIntervalIdx,pgsTypes::ServiceI, pgsTypes::Compression,false,false);
    *pPara<<_T("Allowable Compressive Concrete Stresses (5.9.4.2.1)")<<rptNewLine;
    *pPara<<_T("- Service I (permanent + live load) = ")<<stress.SetValue(fcsl)<<rptNewLine;
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      Float64 fcsa = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIA, pgsTypes::Compression,false,false);
+      Float64 fcsa = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, liveLoadIntervalIdx,pgsTypes::ServiceIA, pgsTypes::Compression,false,false);
       *pPara<<_T("- Service IA (one-half of permanent + live load) = ")<<stress.SetValue(fcsa)<<rptNewLine;
    }
 
-   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIII, pgsTypes::Tension,false,false);
+   Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, liveLoadIntervalIdx,pgsTypes::ServiceIII, pgsTypes::Tension,false,false);
    *pPara<<_T("Allowable Tensile Concrete Stresses (5.9.4.2.2)")<<rptNewLine;
    *pPara<<_T("- Service III = ")<<stress.SetValue(fts)<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      Float64 ftf = pAllowableConcreteStress->GetAllowableStress(poi, liveLoadIntervalIdx,pgsTypes::FatigueI, pgsTypes::Compression,false,false);
+      Float64 ftf = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TopGirder, liveLoadIntervalIdx,pgsTypes::FatigueI, pgsTypes::Compression,false,false);
       *pPara<<_T("Allowable Compressive Concrete Stresses (5.5.3.1)")<<rptNewLine;
       *pPara<<_T("- Fatigue I = ")<<stress.SetValue(ftf)<<rptNewLine;
    }

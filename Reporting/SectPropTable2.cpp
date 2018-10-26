@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -158,8 +158,8 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
          end_size = 0;
 
       Float64 Yt, Yb, depth;
-      Yt = pSectProp->GetYt(intervalIdx,poi);
-      Yb = pSectProp->GetYb(intervalIdx,poi);
+      Yt = pSectProp->GetY(intervalIdx,poi,pgsTypes::TopDeck);
+      Yb = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
       depth = Yt + Yb;
 
       (*xs_table)(row,col++) << location.SetValue( POI_RELEASED_SEGMENT, poi, end_size );
@@ -171,18 +171,18 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
       if ( compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck )
       {
-         (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetYtGirder(intervalIdx,poi));
+         (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(intervalIdx,poi,pgsTypes::TopGirder));
       }
 
       (*xs_table)(row,col++) << l1.SetValue(Yb);
-      (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetSt(intervalIdx,poi));
+      (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck));
 
       if ( compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck )
       {
-         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetStGirder(intervalIdx,poi));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::TopGirder));
       }
 
-      (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetSb(intervalIdx,poi));
+      (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder));
 
       if ( intervalIdx <= compositeDeckIntervalIdx )
       {

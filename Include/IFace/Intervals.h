@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -130,13 +130,13 @@ interface IIntervals : IUnknown
    // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
    virtual IntervalIndexType GetInstallRailingSystemInterval() = 0;
 
-   // returns the index of the interval when the first tendon is stressed
+   // returns the index of the first interval when tendon stressin occors
    // note that this tendon in all girders in the group are assumed to be stressed at the same time
-   virtual IntervalIndexType GetStressFirstTendonInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey) = 0;
 
-   // returns the index of the interval when the last tendon is stressed
+   // returns the index of the last interval when tendon stressin occors
    // note that this tendon in all girders in the group are assumed to be stressed at the same time
-   virtual IntervalIndexType GetStressLastTendonInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) = 0;
 
    // returns the index of the interval when the specified tendon is stressed
    // note that this tendon in all girders in the group are assumed to be stressed at the same time

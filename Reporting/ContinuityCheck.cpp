@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,7 +86,6 @@ void CContinuityCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   pTitle->SetName(_T("Continuity"));
    *pTitle << _T("Continuity [5.14.1.4.5]");
 
    rptParagraph* pPara = new rptParagraph;

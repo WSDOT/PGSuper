@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -502,7 +502,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    // at the CG
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsPointOfInterest poi(segmentKey,0.00); // start of girder
-   Float64 Yb = pSectProp->GetYb(releaseIntervalIdx,poi);
+   Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
 
    // get the shape of the girder in profile
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -953,7 +953,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(prev_poi.GetSegmentKey());
 
       Float64 hg  = pSectProp->GetHg(releaseIntervalIdx,prev_poi);
-      Float64 ybg = pSectProp->GetYb(releaseIntervalIdx,prev_poi);
+      Float64 ybg = pSectProp->GetY(releaseIntervalIdx,prev_poi,pgsTypes::BottomGirder);
       Float64 nEff;
       Float64 ex = pStrandGeometry->GetEccentricity(releaseIntervalIdx, prev_poi, false, &nEff);
       from_y = ybg - ex - hg;
@@ -965,7 +965,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
          releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
 
          hg  = pSectProp->GetHg(releaseIntervalIdx,poi);
-         ybg = pSectProp->GetYb(releaseIntervalIdx,poi);
+         ybg = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
          ex = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, false, &nEff);
          to_y = ybg - ex - hg;
 

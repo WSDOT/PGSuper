@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,8 +40,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsFlexuralStressArtifact::pgsFlexuralStressArtifact():
-m_FcReqd(-99999)
+pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
 {
    for ( int i = 0; i < 4; i++ )
    {
@@ -53,10 +52,7 @@ m_FcReqd(-99999)
       m_fDemand[stressLocation]       = 0.0;
       m_fAllowable[stressLocation]    = 0.0;
       m_bIsInPTZ[stressLocation]      = false;
-   }
 
-   for ( int i = 0; i < 2; i++ )
-   {
       m_Yna[i]                           = 0.0;
       m_At[i]                            = 0.0;
       m_T[i]                             = 0.0;
@@ -64,12 +60,13 @@ m_FcReqd(-99999)
       m_AsRequired[i]                    = 0.0;
       m_fAltAllowableStress[i]           = 0.0;
       m_bIsAltTensileStressApplicable[i] = false;
+
+      m_FcReqd[i] = -99999;
    }
 }
 
 pgsFlexuralStressArtifact::pgsFlexuralStressArtifact(const pgsPointOfInterest& poi):
-m_Poi(poi),
-m_FcReqd(-99999)
+m_Poi(poi)
 {
    for ( int i = 0; i < 4; i++ )
    {
@@ -81,10 +78,7 @@ m_FcReqd(-99999)
       m_fDemand[stressLocation]       = 0.0;
       m_fAllowable[stressLocation]    = 0.0;
       m_bIsInPTZ[stressLocation]      = false;
-   }
 
-   for ( int i = 0; i < 2; i++ )
-   {
       m_Yna[i]                           = 0.0;
       m_At[i]                            = 0.0;
       m_T[i]                             = 0.0;
@@ -92,6 +86,8 @@ m_FcReqd(-99999)
       m_AsRequired[i]                    = 0.0;
       m_fAltAllowableStress[i]           = 0.0;
       m_bIsAltTensileStressApplicable[i] = false;
+
+      m_FcReqd[i] = -99999;
    }
 }
 
@@ -220,84 +216,78 @@ Float64 pgsFlexuralStressArtifact::GetCapacity(pgsTypes::StressLocation stressLo
    return m_fAllowable[stressLocation];
 }
 
-void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(Float64 fcReqd)
+
+void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation,Float64 fcReqd)
 {
-   m_FcReqd = fcReqd;
+   m_FcReqd[stressLocation] = fcReqd;
 }
 
-Float64 pgsFlexuralStressArtifact::GetRequiredConcreteStrength() const
+Float64 pgsFlexuralStressArtifact::GetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation) const
 {
-   return m_FcReqd;
+   return m_FcReqd[stressLocation];
 }
 
-void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(pgsTypes::GirderFace face,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fHigherAllow)
+Float64 pgsFlexuralStressArtifact::GetRequiredBeamConcreteStrength() const
 {
-   m_Yna[face]                 = Yna;
-   m_At[face]                  = At;
-   m_T[face]                   = T;
-   m_AsProvided[face]          = AsProvided;
-   m_AsRequired[face]          = AsRequired;
-   m_fAltAllowableStress[face] = fHigherAllow;
+   return Max(m_FcReqd[pgsTypes::TopGirder],m_FcReqd[pgsTypes::BottomGirder]);
 }
 
-void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(pgsTypes::GirderFace face,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const
+Float64 pgsFlexuralStressArtifact::GetRequiredDeckConcreteStrength() const
 {
-   *Yna        = m_Yna[face];
-   *At         = m_At[face];
-   *T          = m_T[face];
-   *AsProvided = m_AsProvided[face];
-   *AsRequired = m_AsRequired[face];
+   return Max(m_FcReqd[pgsTypes::TopDeck],m_FcReqd[pgsTypes::BottomDeck]);
 }
 
-Float64 pgsFlexuralStressArtifact::GetAlternativeAllowableTensileStress(pgsTypes::GirderFace face) const
+void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fHigherAllow)
 {
-   return m_fAltAllowableStress[face];
+   m_Yna[stressLocation]                 = Yna;
+   m_At[stressLocation]                  = At;
+   m_T[stressLocation]                   = T;
+   m_AsProvided[stressLocation]          = AsProvided;
+   m_AsRequired[stressLocation]          = AsRequired;
+   m_fAltAllowableStress[stressLocation] = fHigherAllow;
 }
 
-bool pgsFlexuralStressArtifact::WasWithRebarAllowableStressUsed(pgsTypes::GirderFace face) const
+void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const
+{
+   *Yna        = m_Yna[stressLocation];
+   *At         = m_At[stressLocation];
+   *T          = m_T[stressLocation];
+   *AsProvided = m_AsProvided[stressLocation];
+   *AsRequired = m_AsRequired[stressLocation];
+}
+
+Float64 pgsFlexuralStressArtifact::GetAlternativeAllowableTensileStress(pgsTypes::StressLocation stressLocation) const
+{
+   return m_fAltAllowableStress[stressLocation];
+}
+
+bool pgsFlexuralStressArtifact::WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const
 {
    // If na<0.0, then section was in compression
-   return (0.0 < m_Yna[face]) && (m_AsRequired[face] <= m_AsProvided[face]) ? true : false;
+   return (0.0 < m_Yna[stressLocation]) && (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation]) ? true : false;
 }
 
-
-bool pgsFlexuralStressArtifact::TopPassed() const
+bool pgsFlexuralStressArtifact::Passed(pgsTypes::StressLocation stressLocation) const
 {
-   bool bPassed = true;
-   Float64 fTop = GetDemand(pgsTypes::TopGirder);
-   Float64 fBot = GetDemand(pgsTypes::BottomGirder);
-
-   bPassed = StressedPassed(fTop,pgsTypes::GirderTop);
-
-   return bPassed;
+   return StressedPassed(stressLocation);
 }
 
-bool pgsFlexuralStressArtifact::BottomPassed() const
+bool pgsFlexuralStressArtifact::StressedPassed(pgsTypes::StressLocation stressLocation) const
 {
-   bool bPassed = true;
-   Float64 fTop = GetDemand(pgsTypes::TopGirder);
-   Float64 fBot = GetDemand(pgsTypes::BottomGirder);
-
-   bPassed = StressedPassed(fBot,pgsTypes::GirderBottom);
-
-   return bPassed;
-}
-
-bool pgsFlexuralStressArtifact::StressedPassed(Float64 fStress,pgsTypes::GirderFace face) const
-{
+   Float64 fStress = GetDemand(stressLocation);
    if ( m_StressType == pgsTypes::Compression )
    {
-      if ( face == pgsTypes::GirderTop && m_bIsApplicable[pgsTypes::TopGirder] )
+      if ( IsTopStressLocation(stressLocation) && m_bIsApplicable[stressLocation] )
       {
-         if ( (fStress < m_fAllowable[pgsTypes::TopGirder] && !IsEqual(m_fAllowable[pgsTypes::TopGirder],fStress,0.001)) )
+         if ( (fStress < m_fAllowable[stressLocation] && !IsEqual(m_fAllowable[stressLocation],fStress,0.001)) )
          {
             return false;
          }
       }
 
-      if ( face == pgsTypes::GirderBottom && m_bIsApplicable[pgsTypes::BottomGirder] )
+      if ( IsBottomStressLocation(stressLocation) && m_bIsApplicable[stressLocation] )
       {
-         if ( (fStress < m_fAllowable[pgsTypes::BottomGirder] && !IsEqual(m_fAllowable[pgsTypes::BottomGirder],fStress,0.001)) )
+         if ( (fStress < m_fAllowable[stressLocation] && !IsEqual(m_fAllowable[stressLocation],fStress,0.001)) )
          {
             return false;
          }
@@ -311,11 +301,11 @@ bool pgsFlexuralStressArtifact::StressedPassed(Float64 fStress,pgsTypes::GirderF
       if (m_AsRequired <= m_AsProvided)
       {
         // If we have adequate rebar, we can use higher limit
-         return TensionPassedWithRebar(fStress,face); 
+         return TensionPassedWithRebar(fStress,stressLocation); 
       }
       else
       {
-         return TensionPassedWithoutRebar(fStress,face);
+         return TensionPassedWithoutRebar(fStress,stressLocation);
       }
    }
 
@@ -323,19 +313,11 @@ bool pgsFlexuralStressArtifact::StressedPassed(Float64 fStress,pgsTypes::GirderF
    return false;
 }
 
-bool pgsFlexuralStressArtifact::TensionPassedWithRebar(Float64 fTens,pgsTypes::GirderFace face) const
+bool pgsFlexuralStressArtifact::TensionPassedWithRebar(Float64 fTens,pgsTypes::StressLocation stressLocation) const
 {
-   if ( face == pgsTypes::GirderTop && m_bIsApplicable[pgsTypes::TopGirder] )
+   if ( m_bIsApplicable[stressLocation] )
    {
-      if ( (m_fAltAllowableStress[pgsTypes::GirderTop] < fTens && !IsEqual(m_fAltAllowableStress[pgsTypes::GirderTop],fTens,0.001) ) )
-      {
-         return false;
-      }
-   }
-
-   if ( face == pgsTypes::GirderBottom && m_bIsApplicable[pgsTypes::BottomGirder]  )
-   {
-      if ( (m_fAltAllowableStress[pgsTypes::GirderBottom] < fTens && !IsEqual(m_fAltAllowableStress[pgsTypes::GirderBottom],fTens,0.001) ) )
+      if ( (m_fAltAllowableStress[stressLocation] < fTens && !IsEqual(m_fAltAllowableStress[stressLocation],fTens,0.001) ) )
       {
          return false;
       }
@@ -344,44 +326,55 @@ bool pgsFlexuralStressArtifact::TensionPassedWithRebar(Float64 fTens,pgsTypes::G
    return true;
 }
 
-bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(Float64 fTens,pgsTypes::GirderFace face) const
+bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(Float64 fTens,pgsTypes::StressLocation stressLocation) const
 {
-   if ( face == pgsTypes::GirderTop && m_bIsApplicable[pgsTypes::TopGirder] )
+   if ( m_bIsApplicable[stressLocation] )
    {
-      if ( ( m_fAllowable[pgsTypes::TopGirder] < fTens && !IsEqual(m_fAllowable[pgsTypes::TopGirder],fTens,0.001)) )
+      if ( ( m_fAllowable[stressLocation] < fTens && !IsEqual(m_fAllowable[stressLocation],fTens,0.001)) )
       {
          return false;
       }
    }
 
-   if ( face == pgsTypes::GirderBottom && m_bIsApplicable[pgsTypes::BottomGirder] )
-   {
-      if ( (m_fAllowable[pgsTypes::BottomGirder] < fTens && !IsEqual(m_fAllowable[pgsTypes::BottomGirder],fTens,0.001)) )
-      {
-         return false;
-      }
-   }
-
-   // if top and bottom are applicable and both pass... or
-   // if top and bottom are not applicable... it can't fail so it must be pass
    return true;
 }
 
-bool pgsFlexuralStressArtifact::Passed() const
+bool pgsFlexuralStressArtifact::BeamPassed() const
 {
-   if ( !TopPassed() )
+   if ( !Passed(pgsTypes::TopGirder) )
       return false;
 
-   if ( !BottomPassed() )
+   if ( !Passed(pgsTypes::BottomGirder) )
       return false;
 
    return true;
 }
 
-Float64 pgsFlexuralStressArtifact::GetCDRatio() const
+bool pgsFlexuralStressArtifact::DeckPassed() const
 {
-   Float64 cdr_top = GetTopCDRatio();
-   Float64 cdr_bot = GetBottomCDRatio();
+   if ( !Passed(pgsTypes::TopDeck) )
+      return false;
+
+   if ( !Passed(pgsTypes::BottomDeck) )
+      return false;
+
+   return true;
+}
+
+Float64 pgsFlexuralStressArtifact::GetBeamCDRatio() const
+{
+   return GetCDRatio(pgsTypes::TopGirder,pgsTypes::BottomGirder);
+}
+
+Float64 pgsFlexuralStressArtifact::GetDeckCDRatio() const
+{
+   return GetCDRatio(pgsTypes::TopDeck,pgsTypes::BottomDeck);
+}
+
+Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation) const
+{
+   Float64 cdr_top = GetCDRatio(topStressLocation);
+   Float64 cdr_bot = GetCDRatio(botStressLocation);
 
    Float64 cdr;
 
@@ -392,9 +385,9 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio() const
       if ( cdr_top == cdr_bot )
          return cdr_top;
 
-      if ( m_bIsApplicable[pgsTypes::TopGirder] && !m_bIsApplicable[pgsTypes::BottomGirder] )
+      if ( m_bIsApplicable[topStressLocation] && !m_bIsApplicable[botStressLocation] )
          return cdr_top;
-      else if ( !m_bIsApplicable[pgsTypes::TopGirder] && m_bIsApplicable[pgsTypes::BottomGirder] )
+      else if ( !m_bIsApplicable[topStressLocation] && m_bIsApplicable[botStressLocation] )
          return cdr_bot;
       else
          return Min(cdr_top,cdr_bot);
@@ -417,8 +410,10 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio() const
 
    // deal with case where round-off gives a CD Ratio of 1.0
    // but the spec check doesn't actually pass
-   if ( IsEqual(cdr,1.0) && !Passed() )
+   if ( IsEqual(cdr,1.0) && !(Passed(topStressLocation) && Passed(botStressLocation)) )
+   {
       cdr = 0.99;
+   }
 
    return cdr;
 }
@@ -446,50 +441,31 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(Float64 c,Float64 d) const
    return cdr;
 }
 
-Float64 pgsFlexuralStressArtifact::GetTopCDRatio() const
+Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation stressLocation) const
 {
-   if ( !m_bIsApplicable[pgsTypes::TopGirder] )
+   if ( !m_bIsApplicable[stressLocation] )
       return CDR_NA;
 
-   Float64 d = m_fDemand[pgsTypes::TopGirder];
+   Float64 d = m_fDemand[stressLocation];
    Float64 c;
-   if ( WasWithRebarAllowableStressUsed(pgsTypes::GirderTop) )
+   if ( WasWithRebarAllowableStressUsed(stressLocation) )
    {
-      c = m_fAltAllowableStress[pgsTypes::GirderTop];
+      c = m_fAltAllowableStress[stressLocation];
    }
    else
    {
-      c = m_fAllowable[pgsTypes::TopGirder];
+      c = m_fAllowable[stressLocation];
    }
 
    return GetCDRatio(c,d);
 }
 
-Float64 pgsFlexuralStressArtifact::GetBottomCDRatio() const
-{
-   if ( !m_bIsApplicable[pgsTypes::BottomGirder] )
-      return CDR_NA;
-
-   Float64 d = m_fDemand[pgsTypes::BottomGirder];
-   Float64 c;
-   if ( WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom) )
-   {
-      c = m_fAltAllowableStress[pgsTypes::GirderBottom];
-   }
-   else
-   {
-      c = m_fAllowable[pgsTypes::BottomGirder];
-   }
-
-   return GetCDRatio(c,d);
-}
 
 void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther)
 {
    m_Poi                 = rOther.m_Poi;
    m_LimitState          = rOther.m_LimitState;
    m_StressType          = rOther.m_StressType;
-   m_FcReqd              = rOther.m_FcReqd;
 
    for ( int i = 0; i < 4; i++ )
    {
@@ -501,16 +477,15 @@ void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther
       m_fDemand[stressLocation]       = rOther.m_fDemand[stressLocation];
       m_fAllowable[stressLocation]    = rOther.m_fAllowable[stressLocation];
       m_bIsInPTZ[stressLocation]      = rOther.m_bIsInPTZ[stressLocation];
-   }
 
-   for ( int i = 0; i < 2; i++ )
-   {
       m_Yna[i]                 = rOther.m_Yna[i];
       m_At[i]                  = rOther.m_At[i];
       m_T[i]                   = rOther.m_T[i];
       m_AsProvided[i]          = rOther.m_AsProvided[i];
       m_AsRequired[i]          = rOther.m_AsRequired[i];
       m_fAltAllowableStress[i] = rOther.m_fAltAllowableStress[i];
+
+      m_FcReqd[i]              = rOther.m_FcReqd[i];
    }
 }
 

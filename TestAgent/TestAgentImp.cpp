@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -700,16 +700,16 @@ bool CTestAgentImp::RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofs
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25001, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetVolume(segmentKey), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25002, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetSurfaceArea(segmentKey), unitMeasure::Millimeter2)) <<_T(", 4, ")<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25004, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetIx(releaseIntervalIdx,poi), unitMeasure::Millimeter4)) <<_T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25005, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetYb(releaseIntervalIdx,poi), unitMeasure::Millimeter)) << _T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25006, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetSb(releaseIntervalIdx,poi), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25007, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetStGirder(releaseIntervalIdx,poi), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25005, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::Millimeter)) << _T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25006, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetS(releaseIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25007, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetS(releaseIntervalIdx,poi,pgsTypes::TopGirder), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
 
    // composite girder
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25008, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetIx(compositeDeckIntervalIdx,poi), unitMeasure::Millimeter4)) << _T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25009, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetYb(compositeDeckIntervalIdx,poi), unitMeasure::Millimeter)) <<  _T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25010, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetSb(compositeDeckIntervalIdx,poi), unitMeasure::Millimeter3)) << _T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25011, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetStGirder(compositeDeckIntervalIdx,poi), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25012, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetSt(compositeDeckIntervalIdx,poi), unitMeasure::Millimeter3)) << _T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25009, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetY(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::Millimeter)) <<  _T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25010, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::Millimeter3)) << _T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25011, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25012, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopDeck), unitMeasure::Millimeter3)) << _T(", 4, ")<<gdrIdx<<std::endl;
 
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25031, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetAcBottomHalf(poi),unitMeasure::Millimeter2)) <<_T(", 4, 1")<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25033, 0.0, ")<< QUITE(::ConvertFromSysUnits(pGdr->GetHeight(poi), unitMeasure::Millimeter)) <<_T(", 4, 1")<<std::endl;
@@ -1680,36 +1680,35 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
 
          pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,poi.GetID());
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStressArtifact->TopPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed(pgsTypes::TopGirder)?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
 
          pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
 
          pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
 
          pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
 
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
@@ -1718,7 +1717,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
             if ( pStressArtifact )
             {
                ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
             }
          }
          else
@@ -1727,7 +1726,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
             if ( pStressArtifact )
             {
                ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
             }
          }
       //}
@@ -1932,7 +1931,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<", "<<pid<<", 123015, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(tj, unitMeasure::Newton)) <<   ", 101, "<<gdrIdx<<std::endl;
 
    GET_IFACE(ISectionProperties, pSectProp );
-   Float64 ybg = pSectProp->GetYb(releaseIntervalIdx,pois);
+   Float64 ybg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder);
    Float64 nEff;
    Float64 sse = pStrandGeometry->GetSsEccentricity(releaseIntervalIdx,pois, &nEff);
    if (0 < ns)
@@ -1951,11 +1950,11 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillvec);
 
       Float64 eh2 = pStrandGeometry->GetHsEccentricity( releaseIntervalIdx,pmid[0], config, &nEff );
-      Float64 Fb  = pSectProp->GetYb(releaseIntervalIdx,pois) - eh2;
+      Float64 Fb  = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder) - eh2;
       resultsFile<<bridgeId<<", "<<pid<<", 123018, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(Fb, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
    }
 
-   Float64 ytg = pSectProp->GetYtGirder(releaseIntervalIdx,pois);
+   Float64 ytg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::TopGirder);
    Float64 hss = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,pois, &nEff);
    if (0 < nh)
       resultsFile<<bridgeId<<", "<<pid<<", 123019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(ytg+hss, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;

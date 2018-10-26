@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -112,18 +112,18 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,castDeckIntervalIdx,     pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI);
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI, true /*girder stress*/);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,castDeckIntervalIdx,     pgsTypes::ServiceI, true /*girder stress*/);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI, true /*girder stress*/);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI, true /*girder stress*/);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA, true /*girder stress*/);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII, true /*girder stress*/);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI, true /*girder stress*/);
 
 
     return pChapter;

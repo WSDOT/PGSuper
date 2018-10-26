@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -112,22 +112,23 @@ DEFINE_GUID(IID_IAllowableConcreteStress,
 0x8d24a46e, 0x7dad, 0x11d2, 0x88, 0x57, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IAllowableConcreteStress : IUnknown
 {
-   // Returns the allowable concrete stress at a point of interest or for a specified concrete strength. 
+   // Returns the allowable concrete stress at a point of interest. 
    // If bWithBondedReinforcement is true, the allowable tensile stress for the "with bonded reinforcement" 
    // case is returned. bWithBondedReinforcement is ignored if the stress type is pgsTypes::Compression 
    // and intervals that occur after shipping. If bInPrecompressedTensileZone is true and the stress type
    // is pgsTypes::Tension, the allowable stress for the precompressed tensile zone is returned, otherwise
    // the allowable for locations other than the precompressed tensile zone is returned.
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
-   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
+   // The stressLocation parameter is used to discriminate between requests for girder allowables and requests for deck allowables
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
 
    // Returns the coefficient for allowable compressive stress (x*fc)
-   virtual Float64 GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
 
    // Returns the coefficient for allowable tension stress (x*sqrt(fc)), a boolean value indicating if the allowable tension stress has a maximum value
    // and the maxiumum value
-   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
 
    // Returns a vector of limit states that are to be spec-checked in for service stresses
    virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates() = 0;

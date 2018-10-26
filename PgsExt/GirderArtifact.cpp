@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -222,15 +222,15 @@ const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(
    return &m_DeflectionCheckArtifact[idx];
 }
 
-bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const
+bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
    std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
    std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
    for ( ; iter != end; iter++ )
    {
       const pgsSegmentArtifact& artifact = *iter;
-      if ( artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,face,0) ||
-           artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,face,POI_CLOSURE) )
+      if ( artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,stressLocation,0) ||
+           artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,stressLocation,POI_CLOSURE) )
       {
          return true;
       }
@@ -238,14 +238,14 @@ bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType interv
    return false;
 }
 
-bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const
+bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
 {
    std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
    std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
    for ( ; iter != end; iter++ )
    {
       const pgsSegmentArtifact& artifact = *iter;
-      if ( artifact.IsFlexuralStressCheckApplicable(intervalIdx,ls,stressType,face) )
+      if ( artifact.IsFlexuralStressCheckApplicable(intervalIdx,ls,stressType,stressLocation) )
       {
          return true;
       }
@@ -253,7 +253,7 @@ bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType interv
    return false;
 }
 
-Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
+Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
    std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
@@ -261,7 +261,64 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
    for ( ; iter != end; iter++ )
    {
       const pgsSegmentArtifact& artifact = *iter;
-      Float64 required = artifact.GetRequiredConcreteStrength();
+      Float64 required = artifact.GetRequiredSegmentConcreteStrength(intervalIdx,limitState);
+      if ( required < 0 )
+         return required;
+
+      f = Max(f,required);
+   }
+   return f;
+}
+
+Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
+{
+   Float64 f = 0;
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      Float64 required = artifact.GetRequiredSegmentConcreteStrength();
+      if ( required < 0 )
+      {
+         ATLASSERT(required != -99999);
+         return required;
+      }
+
+      f = Max(f,required);
+   }
+   return f;
+}
+
+Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
+{
+   Float64 f = 0;
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      Float64 required = artifact.GetRequiredDeckConcreteStrength(intervalIdx,limitState);
+      if ( required < 0 )
+      {
+         ATLASSERT(required != -99999);
+         return required;
+      }
+
+      f = Max(f,required);
+   }
+   return f;
+}
+
+Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength() const
+{
+   Float64 f = 0;
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      Float64 required = artifact.GetRequiredDeckConcreteStrength();
       if ( required < 0 )
          return required;
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -210,7 +210,7 @@ const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact
    return m_pHaulingAnalysisArtifact;
 }
 
-bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const
+bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
 {
    std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,stressType));
    std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
@@ -218,16 +218,14 @@ bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType inter
    for ( ; iter != iterEnd; iter++ )
    {
       pgsFlexuralStressArtifact& artifact(*iter);
-      bool bIsApplicableTop = artifact.IsApplicable(pgsTypes::TopGirder);
-      bool bIsApplicableBot = artifact.IsApplicable(pgsTypes::BottomGirder);
-      if ( (face == pgsTypes::GirderTop && bIsApplicableTop) || (face == pgsTypes::GirderBottom && bIsApplicableBot) )
+      if ( artifact.IsApplicable(stressLocation) )
          return true;
    }
 
    return false;
 }
 
-bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,PoiAttributeType attribute) const
+bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
 {
    std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
    std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
@@ -241,7 +239,7 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
            (attribute == 0           && !bIsClosure)    // test if attribute is 0 and artifact is not for a closure
           )
       {
-         if ( artifact.WasWithRebarAllowableStressUsed(face) )
+         if ( artifact.WasWithRebarAllowableStressUsed(stressLocation) )
             return true;
       }
    }
@@ -249,10 +247,9 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
    return false;
 }
 
-void pgsSegmentArtifact::GetPrecompressedTensileZone(IntervalIndexType intervalIdx,int* ptzTop,int* ptzBottom) const
+int pgsSegmentArtifact::GetPrecompressedTensileZone(IntervalIndexType intervalIdx,pgsTypes::StressLocation stressLocation) const
 {
-   *ptzTop    = 0;
-   *ptzBottom = 0;
+   int ptzFlag = 0;
 
    for ( int ls = 0; ls < 2; ls++ )
    {
@@ -263,30 +260,36 @@ void pgsSegmentArtifact::GetPrecompressedTensileZone(IntervalIndexType intervalI
       for ( ; iter != iterEnd; iter++ )
       {
          const pgsFlexuralStressArtifact& artifact(*iter);
-         bool bPTZTop    = artifact.IsInPrecompressedTensileZone(pgsTypes::TopGirder);
-         bool bPTZBottom = artifact.IsInPrecompressedTensileZone(pgsTypes::BottomGirder);
+         bool bIsInPTZ = artifact.IsInPrecompressedTensileZone(stressLocation);
 
-         if ( bPTZTop )
-            *ptzTop |= PTZ_TOP_YES;
+         if ( IsTopStressLocation(stressLocation) )
+         {
+            if ( bIsInPTZ )
+               ptzFlag |= PTZ_TOP_YES;
+            else
+               ptzFlag |= PTZ_TOP_NO;
+         }
          else
-            *ptzTop |= PTZ_TOP_NO;
-
-         if ( bPTZBottom )
-            *ptzBottom |= PTZ_BOTTOM_YES;
-         else
-            *ptzBottom |= PTZ_BOTTOM_NO;
+         {
+            if ( bIsInPTZ )
+               ptzFlag |= PTZ_BOTTOM_YES;
+            else
+               ptzFlag |= PTZ_BOTTOM_NO;
+         }
       }
    }
+
+   return ptzFlag;
 }
 
-void pgsSegmentArtifact::SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face,Float64 fAllow)
+void pgsSegmentArtifact::SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow)
 {
-   GetAllowableWithRebar(intervalIdx,ls,face) = fAllow;
+   GetAllowableWithRebar(intervalIdx,ls,stressLocation) = fAllow;
 }
 
-Float64 pgsSegmentArtifact::GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const
+Float64 pgsSegmentArtifact::GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
-   return GetAllowableWithRebar(intervalIdx,ls,face);
+   return GetAllowableWithRebar(intervalIdx,ls,stressLocation);
 }
 
 pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact(pgsTypes::StrandType strandType)
@@ -307,7 +310,8 @@ bool pgsSegmentArtifact::Passed() const
    bPassed &= m_HoldDownForceArtifact.Passed();
    bPassed &= m_StrandSlopeArtifact.Passed();
    bPassed &= m_StrandStressArtifact.Passed();
-   bPassed &= DidFlexuralStressesPass();
+   bPassed &= DidSegmentFlexuralStressesPass();
+   bPassed &= DidDeckFlexuralStressesPass();
 
    bPassed &= m_StirrupCheckArtifact.Passed();
 
@@ -325,7 +329,7 @@ bool pgsSegmentArtifact::Passed() const
    return bPassed;
 }
 
-bool pgsSegmentArtifact::DidFlexuralStressesPass() const
+bool pgsSegmentArtifact::DidSegmentFlexuralStressesPass() const
 {
    bool bPassed = true;
 
@@ -338,14 +342,34 @@ bool pgsSegmentArtifact::DidFlexuralStressesPass() const
       for ( ; iter != end; iter++ )
       {
          const pgsFlexuralStressArtifact& artifact(*iter);
-         bPassed &= artifact.Passed();
+         bPassed &= artifact.BeamPassed();
       }
    }
 
    return bPassed;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsSegmentArtifact::DidDeckFlexuralStressesPass() const
+{
+   bool bPassed = true;
+
+   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator  i2;
+   for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
+   {
+      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *i2;
+      std::vector<pgsFlexuralStressArtifact>::const_iterator iter(item.second.begin());
+      std::vector<pgsFlexuralStressArtifact>::const_iterator end(item.second.end());
+      for ( ; iter != end; iter++ )
+      {
+         const pgsFlexuralStressArtifact& artifact(*iter);
+         bPassed &= artifact.DeckPassed();
+      }
+   }
+
+   return bPassed;
+}
+
+Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    Float64 fc_reqd = 0;
 
@@ -363,13 +387,24 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength(IntervalIndexType interv
          for ( ; artifactIter != artifactIterEnd; artifactIter++ )
          {
             const pgsFlexuralStressArtifact& artifact(*artifactIter);
-            Float64 fc = artifact.GetRequiredConcreteStrength();
+            for ( int i = 0; i < 2; i++ )
+            {
+               pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
+               if ( artifact.IsApplicable(stressLocation) )
+               {
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
 
-            if ( fc < 0 ) 
-               return fc;
+                  if ( fc < 0 ) 
+                  {
+                     return fc;
+                  }
 
-            if ( 0 < fc )
-               fc_reqd = Max(fc,fc_reqd);
+                  if ( 0 < fc )
+                  {
+                     fc_reqd = Max(fc,fc_reqd);
+                  }
+               }
+            }
          }
       }
    }
@@ -377,7 +412,50 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength(IntervalIndexType interv
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
+Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+{
+   Float64 fc_reqd = 0;
+
+   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
+   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
+      const StressKey& key = item.first;
+
+      if ( key.intervalIdx == intervalIdx && key.ls == ls )
+      {
+         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
+         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
+         for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+         {
+            const pgsFlexuralStressArtifact& artifact(*artifactIter);
+            for ( int i = 0; i < 2; i++ )
+            {
+               pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
+               if ( artifact.IsApplicable(stressLocation) )
+               {
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+
+                  if ( fc < 0 ) 
+                  {
+                     return fc;
+                  }
+
+                  if ( 0 < fc )
+                  {
+                     fc_reqd = Max(fc,fc_reqd);
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   return fc_reqd;
+}
+
+Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 {
    Float64 fc_reqd = 0;
 
@@ -401,30 +479,25 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
       for ( ; artifactIter != artifactIterEnd; artifactIter++ )
       {
          const pgsFlexuralStressArtifact& artifact(*artifactIter);
-         Float64 fc = artifact.GetRequiredConcreteStrength();
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder );
+            if ( artifact.IsApplicable(stressLocation) )
+            {
+               Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
 
-         if ( fc < 0 ) 
-            return fc;
+               if ( fc < 0 ) 
+               {
+                  return fc;
+               }
 
-         if ( 0 < fc )
-            fc_reqd = Max(fc,fc_reqd);
+               if ( 0 < fc )
+               {
+                  fc_reqd = Max(fc,fc_reqd);
+               }
+            }
+         }
       }
-   }
-
-#pragma Reminder("REVIEW: why is lifting used to determine f'c")
-   // This came from the merge of RDP's code for mild rebar for tension
-   // Why is lifting being considered for final strength? Lifting controls release strength
-   if (m_pLiftingAnalysisArtifact != NULL)
-   {
-      Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
-      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
-
-      Float64 fc_reqd_Lifting = Max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
-
-      if ( fc_reqd_Lifting < 0 ) // there is no concrete strength that will work
-         return fc_reqd_Lifting;
-
-      fc_reqd = Max(fc_reqd,fc_reqd_Lifting);
    }
 
    if (m_pHaulingAnalysisArtifact != NULL)
@@ -435,9 +508,60 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
       Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
+      {
          return fc_reqd_hauling;
+      }
 
       fc_reqd = Max(fc_reqd,fc_reqd_hauling);
+   }
+
+   return fc_reqd;
+}
+
+Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
+{
+   Float64 fc_reqd = 0;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
+   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
+      const StressKey& key = item.first;
+
+      if ( key.intervalIdx < compositeDeckIntervalIdx )
+         continue; // don't check if this is before the deck is composite.
+
+      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
+      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
+      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+      {
+         const pgsFlexuralStressArtifact& artifact(*artifactIter);
+
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
+            if ( artifact.IsApplicable(stressLocation) )
+            {
+               Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+
+               if ( fc < 0 ) 
+               {
+                  return fc;
+               }
+
+               if ( 0 < fc )
+               {
+                  fc_reqd = Max(fc,fc_reqd);
+               }
+            }
+         }
+      }
    }
 
    return fc_reqd;
@@ -467,7 +591,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
       for ( ; artifactIter != artifactIterEnd; artifactIter++ )
       {
          const pgsFlexuralStressArtifact& artifact(*artifactIter);
-         Float64 fc = artifact.GetRequiredConcreteStrength();
+         Float64 fc = artifact.GetRequiredBeamConcreteStrength();
 
          if ( fc < 0 ) 
             return fc;
@@ -510,8 +634,10 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_pLiftingAnalysisArtifact = rOther.m_pLiftingAnalysisArtifact;
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
-   m_AllowableWithRebar[pgsTypes::GirderTop]    = rOther.m_AllowableWithRebar[pgsTypes::GirderTop];
-   m_AllowableWithRebar[pgsTypes::GirderBottom] = rOther.m_AllowableWithRebar[pgsTypes::GirderBottom];
+   for ( int i = 0; i < 4; i++ )
+   {
+      m_AllowableWithRebar[i] = rOther.m_AllowableWithRebar[i];
+   }
 
    for ( Uint16 i = 0; i < 3; i++ )
       m_DebondArtifact[i] = rOther.m_DebondArtifact[i];
@@ -539,16 +665,16 @@ std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArt
    return found->second;
 }
 
-Float64& pgsSegmentArtifact::GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const
+Float64& pgsSegmentArtifact::GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
    StressKey key;
    key.intervalIdx = intervalIdx;
    key.ls = ls;
    key.stress = pgsTypes::Tension;
-   std::map<StressKey,Float64>::iterator found(m_AllowableWithRebar[face].find(key));
-   if ( found == m_AllowableWithRebar[face].end() )
+   std::map<StressKey,Float64>::iterator found(m_AllowableWithRebar[stressLocation].find(key));
+   if ( found == m_AllowableWithRebar[stressLocation].end() )
    {
-      std::pair<std::map<StressKey,Float64>::iterator,bool> result(m_AllowableWithRebar[face].insert(std::make_pair(key,-1.0)));
+      std::pair<std::map<StressKey,Float64>::iterator,bool> result(m_AllowableWithRebar[stressLocation].insert(std::make_pair(key,-1.0)));
       found = result.first;
    }
 

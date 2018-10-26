@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -500,7 +500,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
    Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi);
    A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
-   Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   Yt = pSectProp->GetY(pgsTypes::sptGross,releaseIntervalIdx,poi,pgsTypes::TopGirder);
 
    plldf->PossionRatio = 0.2;
 

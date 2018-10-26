@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
+#include <IFace\Intervals.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
@@ -813,30 +814,30 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& gird
       FailureList failures;
 
       // Allowable stress checks
-      list_stress_failures(pBroker,failures,pGirderArtifact,false);
+      ListStressFailures(pBroker,failures,pGirderArtifact,false);
 
       // Moment Capacity Checks
-      list_momcap_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
+      ListMomentCapacityFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_momcap_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+         ListMomentCapacityFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
       //Stirrup Checks
-      list_vertical_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
+      ListVerticalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_vertical_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+         ListVerticalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
-      list_horizontal_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
+      ListHorizontalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_horizontal_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+         ListHorizontalShearFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
-      list_stirrup_detailing_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
+      ListStirrupDetailingFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_stirrup_detailing_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
+         ListStirrupDetailingFailures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
-      list_debonding_failures(pBroker,failures,pGirderArtifact);
-      list_splitting_zone_failures(pBroker,failures,pGirderArtifact);
-      list_confinement_zone_failures(pBroker,failures,pGirderArtifact);
-      list_various_failures(pBroker,failures,pGirderArtifact,false);
+      ListDebondingFailures(pBroker,failures,pGirderArtifact);
+      ListSplittingZoneFailures(pBroker,failures,pGirderArtifact);
+      ListConfinementZoneFailures(pBroker,failures,pGirderArtifact);
+      ListVariousFailures(pBroker,failures,pGirderArtifact,false);
 
       // Put failures into report
       for (FailureListIterator it=failures.begin(); it!=failures.end(); it++)

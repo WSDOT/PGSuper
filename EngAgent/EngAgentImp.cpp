@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -3404,10 +3404,10 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
-   Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI);
+   Float64 c = -pAllowStress->GetAllowableCompressiveStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI);
    Float64 t, fmax;
    bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,false,&t,&bfMax,&fmax);
+   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,false,&t,&bfMax,&fmax);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
@@ -3424,7 +3424,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
             bool bCheckMaxAlt;
             Float64 fMaxAlt;
             Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,releaseIntervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
             fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
          }
       }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -3310,7 +3310,7 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
       switch(connectionType)
       {
       case pgsTypes::psctContinousClosureJoint:
-         strConnection = _T("C-CP");
+         strConnection = _T("C-CJ");
          break;
 
       case pgsTypes::psctContinuousSegment:
@@ -3318,7 +3318,7 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
          break;
 
       case pgsTypes::psctIntegralClosureJoint:
-         strConnection = _T("I-CP");
+         strConnection = _T("I-CJ");
          break;
 
       case pgsTypes::psctIntegralSegment:

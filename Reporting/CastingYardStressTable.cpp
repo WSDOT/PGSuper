@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,7 +118,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
 
       Float64 fTop, fBot;
-      pProductForces->GetStress(releaseIntervalIdx, pftGirder, poi, bat, &fTop, &fBot);
+      pProductForces->GetStress(releaseIntervalIdx, pftGirder, poi, bat, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -115,7 +115,7 @@ rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec
    //      CollectionIndexType cpIdx;
    //      ::UnhashGirderSegment(cpPoi.GetSuperstructureMemberID(),&gdrIdx,&cpIdx);
 
-   //      (*pTable)(row,2) << _T("(") << cpPoi.GetID() << _T(") ") << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" CP ") << LABEL_SEGMENT(cpIdx);
+   //      (*pTable)(row,2) << _T("(") << cpPoi.GetID() << _T(") ") << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" CJ ") << LABEL_SEGMENT(cpIdx);
    //      (*pTable)(row,3) << loc.SetValue(cpPoi.GetDistFromStart());
    //   }
    }

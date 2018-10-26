@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -343,12 +343,12 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 ept = (IsZero(Ppt) ? 0 : Pe/Ppt);
 
    // girder only props
-   Float64 Ybg = pSectProp->GetYb(castDeckIntervalIdx,poi);
+   Float64 Ybg = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::BottomGirder);
    Float64 I   = pSectProp->GetIx(castDeckIntervalIdx,poi);
    Float64 A   = pSectProp->GetAg(castDeckIntervalIdx,poi);
 
    Float64 Hg  = pSectProp->GetHg(castDeckIntervalIdx,poi);
-   Float64 Ybc = pSectProp->GetYb(finalIntervalIdx,poi);
+   Float64 Ybc = pSectProp->GetY(finalIntervalIdx,poi,pgsTypes::BottomGirder);
 
    Float64 c   = Ybg - Min(Hg,Ybc);
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -165,8 +165,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    row = xs_table->GetNumberOfHeaderRows();
 
    Float64 Yt, Yb;
-   Yt = pSectProp->GetYt(constructionIntervalIdx,poi);
-   Yb = fabs(pSectProp->GetYb(constructionIntervalIdx,poi));
+   Yt = pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::TopDeck);
+   Yb = fabs(pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::BottomGirder));
    Float64 depth = Yt + Yb;
 
    Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
@@ -187,8 +187,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKt(constructionIntervalIdx,poi)) );
    (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKb(constructionIntervalIdx,poi)) );
 
-   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetSt(constructionIntervalIdx,poi)) );
-   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetSb(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopDeck)) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
 
    if ( bComposite )
    {
@@ -208,22 +208,22 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       // Write composite properties
       row = xs_table->GetNumberOfHeaderRows();
 
-      Yt = pSectProp->GetYt(compositeIntervalIdx,poi);
-      Yb = fabs(pSectProp->GetYb(compositeIntervalIdx,poi));
+      Yt = pSectProp->GetY(compositeIntervalIdx,poi,pgsTypes::TopDeck);
+      Yb = fabs(pSectProp->GetY(compositeIntervalIdx,poi,pgsTypes::BottomGirder));
       depth = Yt + Yb;
 
       (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(compositeIntervalIdx,poi) );
       (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIx(compositeIntervalIdx,poi) );
       (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIy(compositeIntervalIdx,poi) );
       (*xs_table)(row++,2) << l1.SetValue( depth );
-      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetYtGirder(compositeIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(compositeIntervalIdx,poi,pgsTypes::TopGirder) );
       (*xs_table)(row++,2) << l1.SetValue( Yt );
       (*xs_table)(row++,2) << l1.SetValue( Yb );
       (*xs_table)(row++,2) << _T("-");
       (*xs_table)(row++,2) << _T("-");
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetStGirder(compositeIntervalIdx,poi)) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetSb(compositeIntervalIdx,poi) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetSt(compositeIntervalIdx,poi)) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder)) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetS(compositeIntervalIdx,poi,pgsTypes::TopDeck)) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetQSlab(poi) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetEffectiveFlangeWidth(poi) );
       (*xs_table)(row++,2) << _T("-");

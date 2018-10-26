@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -184,16 +184,18 @@ public:
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Constructor
-   pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IGirder* pGirder,
+   pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IBridge* pBridge,IGirder* pGirder,
                                          IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
                                          IMaterials* pMaterials,bool bLimitBarStress,
-                                         bool bSISpec);
+                                         bool bSISpec,
+                                         bool bGirderStresses);
 
    //------------------------------------------------------------------------
    // Destructor
    virtual ~pgsAlternativeTensileStressCalculator()
    {;}
 
+   // if true, the stress in the mild reinforcement is limited to 30 ksi, otherwise it is not.
    void LimitBarStress(bool bLimit);
    bool LimitBarStress() const;
 
@@ -213,6 +215,7 @@ private:
    // GROUP: DATA MEMBERS
 
    // these are weak references
+   IBridge* m_pBridge;
    IGirder* m_pGirder;
    IShapes* m_pShapes;
    ISectionProperties* m_pSectProps;
@@ -220,6 +223,7 @@ private:
    IMaterials* m_pMaterials;
    bool m_bLimitBarStress;
    bool m_bSISpec;
+   bool m_bGirderStresses;
    IntervalIndexType m_IntervalIdx;
 };
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1210,7 +1210,7 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    // Get the section moduli
    if ( bPositiveMoment )
    {
-      Sbc = pSectProp->GetSb(intervalIdx,poi);
+      Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder);
       if ( poi.HasAttribute(POI_CLOSURE) )
       {
          Sb = Sbc;
@@ -1219,12 +1219,12 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
       {
          GET_IFACE(IIntervals,pIntervals);
          IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-         Sb  = pSectProp->GetSb(castDeckIntervalIdx,poi);
+         Sb  = pSectProp->GetS(castDeckIntervalIdx,poi,pgsTypes::BottomGirder);
       }
    }
    else
    {
-      Sbc = pSectProp->GetSt(intervalIdx,poi);
+      Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck);
       Sb  = Sbc;
    }
 
@@ -1244,12 +1244,12 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-      Sb  = pSectProp->GetSb(castDeckIntervalIdx,poi,config.Fc);
-      Sbc = pSectProp->GetSb(intervalIdx,poi,config.Fc);
+      Sb  = pSectProp->GetS(castDeckIntervalIdx,poi,pgsTypes::BottomGirder,config.Fc);
+      Sbc = pSectProp->GetS(intervalIdx,        poi,pgsTypes::BottomGirder,config.Fc);
    }
    else
    {
-      Sbc = pSectProp->GetSt(intervalIdx,poi,config.Fc);
+      Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck,config.Fc);
       Sb  = Sbc;
    }
 

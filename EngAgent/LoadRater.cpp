@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -447,6 +447,9 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
+   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+   pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
+
    GET_IFACE(ICombinedForces2,pCombinedForces);
    GET_IFACE(IProductForces2,pProductForces);
    if ( analysisType == pgsTypes::Envelope )
@@ -458,13 +461,13 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
 
       if ( vehicleIdx == INVALID_INDEX )
       {
-         pProductForces->GetLiveLoadStress(llType,liveLoadIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,&vTruckIndexTopMin, &vUnusedIndex1, &vTruckIndexBotMin, &vUnusedIndex2);
-         pProductForces->GetLiveLoadStress(llType,liveLoadIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,&vUnusedIndex1, &vTruckIndexTopMax, &vUnusedIndex2, &vTruckIndexBotMax);
+         pProductForces->GetLiveLoadStress(llType,liveLoadIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,&vTruckIndexTopMin, &vUnusedIndex1, &vTruckIndexBotMin, &vUnusedIndex2);
+         pProductForces->GetLiveLoadStress(llType,liveLoadIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,&vUnusedIndex1, &vTruckIndexTopMax, &vUnusedIndex2, &vTruckIndexBotMax);
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,liveLoadIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,NULL,NULL,NULL,NULL);
-         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,liveLoadIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,liveLoadIntervalIdx,vPOI,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,liveLoadIntervalIdx,vPOI,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,NULL,NULL,NULL,NULL);
       }
 
       pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPOI, pgsTypes::MaxSimpleContinuousEnvelope, &vUnused1,  &vPLTopMax, &vUnused2, &vPLBotMax );
@@ -481,9 +484,9 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
       vDWBotMax = vDWBotMin;
 
       if ( vehicleIdx == INVALID_INDEX )
-         pProductForces->GetLiveLoadStress(llType,liveLoadIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,&vTruckIndexTopMin, &vTruckIndexTopMax, &vTruckIndexBotMin, &vTruckIndexBotMax);
+         pProductForces->GetLiveLoadStress(llType,liveLoadIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,&vTruckIndexTopMin, &vTruckIndexTopMax, &vTruckIndexBotMin, &vTruckIndexBotMax);
       else
-         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,liveLoadIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,NULL,NULL,NULL,NULL);
+         pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,liveLoadIntervalIdx,vPOI,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,NULL,NULL,NULL,NULL);
 
       pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPOI, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &vPLTopMin, &vPLTopMax,  &vPLBotMin, &vPLBotMax );
    }
@@ -551,12 +554,12 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,pgsTypes::LoadRating
             AxleConfiguration MinAxleConfigTop, MinAxleConfigBot, MaxAxleConfigTop, MaxAxleConfigBot, DummyAxleConfigTop, DummyAxleConfigBot;
             if ( analysisType == pgsTypes::Envelope )
             {
-               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
-               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
+               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
+               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
             }
             else
             {
-               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
+               pProductForce->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
             gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
@@ -647,6 +650,9 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+   pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
+
    // Create artifacts
    GET_IFACE(IPretensionForce,pPrestressForce);
    GET_IFACE(ISectionProperties,pSectProp);
@@ -721,12 +727,12 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
             AxleConfiguration MinAxleConfigTop, MinAxleConfigBot, MaxAxleConfigTop, MaxAxleConfigBot, DummyAxleConfigTop, DummyAxleConfigBot;
             if ( analysisType == pgsTypes::Envelope )
             {
-               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
-               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
+               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MinSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fMinTop,&fDummyTop,&fMinBot,&fDummyBot,&MinAxleConfigTop,&DummyAxleConfigTop,&MinAxleConfigBot,&DummyAxleConfigBot);
+               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,pgsTypes::MaxSimpleContinuousEnvelope,true,true,topLocation,botLocation,&fDummyTop,&fMaxTop,&fDummyBot,&fMaxBot,&DummyAxleConfigTop,&MaxAxleConfigTop,&DummyAxleConfigBot,&MaxAxleConfigBot);
             }
             else
             {
-               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
+               pProductForces->GetVehicularLiveLoadStress(llType,truck_index,liveLoadIntervalIdx,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
             gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
@@ -755,7 +761,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,pgsTyp
       {
          // negative moment - compute stress in deck rebar for uncracked section
          Float64 I = pSectProp->GetIx(liveLoadIntervalIdx,poi);
-         Float64 y = pSectProp->GetYt(liveLoadIntervalIdx,poi);
+         Float64 y = pSectProp->GetY(liveLoadIntervalIdx,poi,pgsTypes::TopDeck);
          
          y -= top_slab_cover; 
 

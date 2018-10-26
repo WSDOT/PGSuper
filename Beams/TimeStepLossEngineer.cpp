@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -518,7 +518,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    // TRANSFORMED PROPERTIES OF COMPOSITE SECTION (all parts are transformed to equivalent girder concrete)
    tsDetails.Atr = pSectProp->GetAg(pgsTypes::sptTransformed,intervalIdx,poi);
    tsDetails.Itr = pSectProp->GetIx(pgsTypes::sptTransformed,intervalIdx,poi);
-   tsDetails.Ytr = pSectProp->GetYtGirder(pgsTypes::sptTransformed,intervalIdx,poi); // Zero elevation is at top of girder
+   tsDetails.Ytr = pSectProp->GetY(pgsTypes::sptTransformed,intervalIdx,poi,pgsTypes::TopGirder); // Zero elevation is at top of girder
 
    // SEGMENT PARAMETERS
 

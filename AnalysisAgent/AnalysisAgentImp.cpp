@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2036,7 +2036,7 @@ Float64 CAnalysisAgentImp::GetSectionStress(SegmentModels& models,pgsTypes::Stre
    if (poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_BOUNDARY_PIER) )
       return 0; // there isn't a closure joint in these segment models.... return 0.0 stress
 
-   if ( loc == pgsTypes::TopDeck )
+   if ( loc == pgsTypes::TopDeck || loc == pgsTypes::BottomDeck )
       return 0.0; // the slab isn't cast yet
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -2060,14 +2060,8 @@ Float64 CAnalysisAgentImp::GetSectionStress(SegmentModels& models,pgsTypes::Stre
    ATLASSERT(SUCCEEDED(hr));
 
    GET_IFACE(ISectionProperties, pSectProp);
-   Float64 A, S;
-
-   if ( loc == pgsTypes::TopGirder )
-      S = pSectProp->GetStGirder(intervalIdx,poi);
-   else
-      S = pSectProp->GetSb(intervalIdx,poi);
-
-   A = pSectProp->GetAg(intervalIdx,poi);
+   Float64 A = pSectProp->GetAg(intervalIdx,poi);
+   Float64 S = pSectProp->GetS(intervalIdx,poi,loc);
 
    Float64 stress = (IsZero(A) || IsZero(S) ? 0 : fx/A + mz/S);
    stress = IsZero(stress) ? 0 : stress;
@@ -6016,7 +6010,6 @@ PoiIDType CAnalysisAgentImp::AddPointOfInterest(ModelData* pModelData,const pgsP
 void CAnalysisAgentImp::AddPoiStressPoints(const pgsPointOfInterest& poi,IStage* pStage,IPOIStressPoints* pPOIStressPoints)
 {
    GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(IBridge,pBridge);
 
    CComBSTR bstrStage;
    pStage->get_Name(&bstrStage);
@@ -6029,77 +6022,43 @@ void CAnalysisAgentImp::AddPoiStressPoints(const pgsPointOfInterest& poi,IStage*
    rightStressPoints.CoCreateInstance(CLSID_StressPoints);
 
    Float64 Ag = pSectProp->GetAg(intervalIdx,poi);
-   Float64 Sb = pSectProp->GetSb(intervalIdx,poi);
-   Float64 St = pSectProp->GetStGirder(intervalIdx,poi);
-   Float64 Sts = pSectProp->GetSt(intervalIdx,poi);
 
-   // Bottom of Girder
-   Float64 Sa, Sm;
-   if ( IsZero(Ag) )
-      Sa = 0;
-   else
-      Sa = 1/Ag;
-
-   if ( IsZero(Sb) )
-      Sm = 0;
-   else
-      Sm = 1/Sb;
-
-   CComPtr<IStressPoint> spBottomGirder;
-   spBottomGirder.CoCreateInstance(CLSID_StressPoint);
-   spBottomGirder->put_Sa(Sa);
-   spBottomGirder->put_Sm(Sm);
-
-   leftStressPoints->Add(spBottomGirder);
-   rightStressPoints->Add(spBottomGirder);
-
-   // Top of Girder
-   if ( IsZero(St) )
-      Sm = 0;
-   else
-      Sm = 1/St;
-
-   CComPtr<IStressPoint> spTopGirder;
-   spTopGirder.CoCreateInstance(CLSID_StressPoint);
-   spTopGirder->put_Sa(Sa);
-   spTopGirder->put_Sm(Sm);
-
-   leftStressPoints->Add(spTopGirder);
-   rightStressPoints->Add(spTopGirder);
-
-   // Top of Slab
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckInterval = pIntervals->GetCompositeDeckInterval();
-   if ( intervalIdx < compositeDeckInterval )
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   GET_IFACE(IBridge,pBridge);
+   bool bIsCompositeDeck = pBridge->IsCompositeDeck();
+
+   for ( int i = 0; i < 4; i++ )
    {
-      // before the deck is composite... deck can't take any load yet
-      // use zero values so top of slab stresses come out zero
-      Sa = 0;
-      Sm = 0;
-   }
-   else
-   {
-      if ( pBridge->IsCompositeDeck() )
+      pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
+      Float64 S = pSectProp->GetS(intervalIdx,poi,stressLocation);
+
+      Float64 Sa = IsZero(Ag) ? 0 : 1/Ag;
+      Float64 Sm = IsZero(S)  ? 0 : 1/S;
+
+      if ( stressLocation == pgsTypes::TopDeck || stressLocation == pgsTypes::BottomDeck )
       {
-         if ( IsZero(Sts) )
+         if (  !bIsCompositeDeck || intervalIdx < compositeDeckIntervalIdx )
+         {
+            // if the deck is not composite or this is an interval before 
+            // the composite deck becomes composite, the deck can't take any
+            // load so use zero values to stresses come out zero.
+            Sa = 0;
             Sm = 0;
-         else
-            Sm = 1/Sts;
+         }
       }
-      else
-      {
-         Sm = 0;
-      }
+
+
+      CComPtr<IStressPoint> stressPoint;
+      stressPoint.CoCreateInstance(CLSID_StressPoint);
+
+      stressPoint->put_Sa(Sa);
+      stressPoint->put_Sm(Sm);
+
+      leftStressPoints->Add(stressPoint);
+      rightStressPoints->Add(stressPoint);
    }
-
-   CComPtr<IStressPoint> spTopSlab;
-   spTopSlab.CoCreateInstance(CLSID_StressPoint);
-   spTopSlab->put_Sa(Sa);
-   spTopSlab->put_Sm(Sm);
-
-   leftStressPoints->Add(spTopSlab);
-   rightStressPoints->Add(spTopSlab);
-
 
    pPOIStressPoints->Insert(bstrStage,leftStressPoints,rightStressPoints);
 }
@@ -6229,13 +6188,13 @@ Float64 CAnalysisAgentImp::GetReaction(IntervalIndexType intervalIdx,ProductForc
    }
 }
 
-void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pfTop,Float64* pfBot)
+void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> fTop,fBot;
-   GetStress(intervalIdx,type,vPoi,bat,&fTop,&fBot);
+   GetStress(intervalIdx,type,vPoi,bat,topLocation,botLocation,&fTop,&fBot);
 
    ATLASSERT(fTop.size() == 1);
    ATLASSERT(fBot.size() == 1);
@@ -7948,14 +7907,14 @@ void CAnalysisAgentImp::GetLiveLoadReaction(pgsTypes::LiveLoadType llType,Interv
    }
 }
 
-void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,VehicleIndexType* pTopMinConfig,VehicleIndexType* pTopMaxConfig,VehicleIndexType* pBotMinConfig,VehicleIndexType* pBotMaxConfig)
+void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,VehicleIndexType* pTopMinConfig,VehicleIndexType* pTopMaxConfig,VehicleIndexType* pBotMinConfig,VehicleIndexType* pBotMaxConfig)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
    std::vector<VehicleIndexType> topMinConfig, topMaxConfig, botMinConfig, botMaxConfig;
-   GetLiveLoadStress(llType,intervalIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&topMinConfig, &topMaxConfig, &botMinConfig, &botMaxConfig);
+   GetLiveLoadStress(llType,intervalIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,topLocation,botLocation,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&topMinConfig, &topMaxConfig, &botMinConfig, &botMaxConfig);
 
    ATLASSERT(fTopMin.size() == 1);
    ATLASSERT(fTopMax.size() == 1);
@@ -8250,14 +8209,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadReaction(pgsTypes::LiveLoadType llTy
    }
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop,AxleConfiguration* pMaxAxleConfigTop,AxleConfiguration* pMinAxleConfigBot,AxleConfiguration* pMaxAxleConfigBot)
+void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop,AxleConfiguration* pMaxAxleConfigTop,AxleConfiguration* pMinAxleConfigBot,AxleConfiguration* pMaxAxleConfigBot)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
    std::vector<AxleConfiguration> minAxleConfigTop,maxAxleConfigTop,minAxleConfigBot,maxAxleConfigBot;
-   GetVehicularLiveLoadStress(llType,vehicleIndex,intervalIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&minAxleConfigTop,&maxAxleConfigTop,&minAxleConfigBot,&maxAxleConfigBot);
+   GetVehicularLiveLoadStress(llType,vehicleIndex,intervalIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,topLocation,botLocation,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&minAxleConfigTop,&maxAxleConfigTop,&minAxleConfigBot,&maxAxleConfigBot);
 
    ATLASSERT(fTopMin.size() == 1);
    ATLASSERT(fTopMax.size() == 1);
@@ -8412,8 +8371,8 @@ void CAnalysisAgentImp::GetDesignSlabPadStressAdjustment(Float64 fcgdr,Float64 s
 
 #pragma Reminder("REVIEW: should the section properties be based on fcgdr?")
    // originally the section properties are not based on fcgdr, but this looks suspicous
-   Float64 Sbg = pSectProp->GetSb(castDeckInterval,poi);
-   Float64 Stg = pSectProp->GetSt(castDeckInterval,poi);
+   Float64 Sbg = pSectProp->GetS(castDeckInterval,poi,pgsTypes::BottomGirder);
+   Float64 Stg = pSectProp->GetS(castDeckInterval,poi,pgsTypes::TopGirder);
 
    *pfTop = M/Stg;
    *pfBot = M/Sbg;
@@ -8516,8 +8475,8 @@ void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,F
 
    GET_IFACE(ISectionProperties,pProps);
    Float64 A  = pProps->GetAg(compositeIntervalIdx,poi);
-   Float64 St = pProps->GetStGirder(compositeIntervalIdx,poi);
-   Float64 Sb = pProps->GetSb(compositeIntervalIdx,poi);
+   Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder);
+   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder);
 
    *pftop = P/A + M/St;
    *pfbot = P/A + M/Sb;
@@ -9500,10 +9459,15 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
    }
 }
 
-void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
+void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
 {
    USES_CONVERSION;
    GET_IFACE(IBridge,pBridge);
+
+   // stress locations must be either both girder or both deck
+   ATLASSERT( (IsGirderStressLocation(topLocation) && IsGirderStressLocation(botLocation))
+              ||
+              (IsDeckStressLocation(topLocation) && IsDeckStressLocation(botLocation)));
 
    pfTop->clear();
    pfBot->clear();
@@ -9511,34 +9475,44 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType
    try
    {
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+      IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(vPoi.front().GetSegmentKey());
       IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(vPoi.front().GetSegmentKey());
       IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
       if (intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx )
       {
-         std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-         std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-         for ( ; iter != end; iter++ )
+         if ( IsGirderStressLocation(topLocation) )
          {
-            const pgsPointOfInterest& poi = *iter;
-            const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-            ValidateAnalysisModels(segmentKey.girderIndex);
-
-            Float64 top_results(0);
-            Float64 bot_results(0);
-
-#pragma Reminder("UPDATE: storage stresses should be based on stress increment")
-            // the current implementation computes storage stress based only on storage model... it should
-            // be the stress at release plus the stress due the change in moment between storage and release
-            if ( type == pftGirder )
+            std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+            for ( ; iter != end; iter++ )
             {
-               top_results = GetSectionStress( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), pgsTypes::TopGirder,    poi );
-               bot_results = GetSectionStress( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), pgsTypes::BottomGirder, poi );
-            }
+               const pgsPointOfInterest& poi = *iter;
+               const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-            pfTop->push_back( top_results );
-            pfBot->push_back( bot_results );
+               ValidateAnalysisModels(segmentKey.girderIndex);
+
+               Float64 top_results(0);
+               Float64 bot_results(0);
+
+   #pragma Reminder("UPDATE: storage stresses should be based on stress increment")
+               // the current implementation computes storage stress based only on storage model... it should
+               // be the stress at release plus the stress due the change in moment between storage and release
+               if ( type == pftGirder )
+               {
+                  top_results = GetSectionStress( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), pgsTypes::TopGirder,    poi );
+                  bot_results = GetSectionStress( (intervalIdx == releaseIntervalIdx ? m_ReleaseModels : m_StorageModels), pgsTypes::BottomGirder, poi );
+               }
+
+               pfTop->push_back( top_results );
+               pfBot->push_back( bot_results );
+            }
+         }
+         else
+         {
+            pfTop->insert(pfTop->begin(),vPoi.size(),0.0);
+            pfBot->insert(pfBot->begin(),vPoi.size(),0.0);
+            std::vector<Float64> results;
+            results.insert(results.begin(),vPoi.size(),0.0);
          }
       }
       else if ( intervalIdx < erectionIntervalIdx )
@@ -9551,139 +9525,151 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType
       }
       else
       {
-         ModelData* pModelData = UpdateLBAMPois(vPoi);
-
-         bool bSecondaryEffects = false;
-         if ( type == pftSecondaryEffects || type == pftPrimaryPostTensioning )
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         if ( IsDeckStressLocation(topLocation) && intervalIdx < compositeDeckIntervalIdx )
          {
-            type = pftTotalPostTensioning;
-            bSecondaryEffects = true;
-         }
-
-
-         CComBSTR bstrLoadGroup( GetLoadGroupName(type) );
-         CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
-
-         CComPtr<ISectionStressResults> min_results, max_results, results;
-         if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
-         {
-            pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &max_results);
-            pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &min_results);
-         }
-         else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
-         {
-            pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &max_results);
-            pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &min_results);
+            // deck isn't composite yet so it doesn't have any stress
+            pfTop->insert(pfTop->begin(),vPoi.size(),0.0);
+            pfBot->insert(pfBot->begin(),vPoi.size(),0.0);
+            std::vector<Float64> results;
+            results.insert(results.begin(),vPoi.size(),0.0);
          }
          else
          {
-            pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &results);
-         }
-      
-         CollectionIndexType stress_point_index_top = GetStressPointIndex(pgsTypes::TopGirder);
-         CollectionIndexType stress_point_index_bot = GetStressPointIndex(pgsTypes::BottomGirder);
+            ModelData* pModelData = UpdateLBAMPois(vPoi);
 
-         GET_IFACE(ISectionProperties,pSectionProperties);
+            bool bSecondaryEffects = false;
+            if ( type == pftSecondaryEffects || type == pftPrimaryPostTensioning )
+            {
+               type = pftTotalPostTensioning;
+               bSecondaryEffects = true;
+            }
 
-         std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-         std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-         for ( ; iter != end; iter++ )
-         {
-            const pgsPointOfInterest& poi = *iter;
-            CollectionIndexType idx = iter - vPoi.begin();
 
-            const CSegmentKey& segmentKey = poi.GetSegmentKey();
+            CComBSTR bstrLoadGroup( GetLoadGroupName(type) );
+            CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
-            Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-            Float64 dist_from_start = poi.GetDistFromStart();
-
-            Float64 fTop, fBot;
-
+            CComPtr<ISectionStressResults> min_results, max_results, results;
             if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
             {
-               CComPtr<ISectionStressResult> top_stresses;
-               max_results->get_Item(idx,&top_stresses);
-
-               CComPtr<ISectionStressResult> bot_stresses;
-               min_results->get_Item(idx,&bot_stresses);
-
-               if ( IsZero(dist_from_start - end_size) )
-               {
-                  top_stresses->GetRightResult(stress_point_index_top,&fTop);
-                  bot_stresses->GetRightResult(stress_point_index_bot,&fBot);
-               }
-               else
-               {
-                  top_stresses->GetLeftResult(stress_point_index_top,&fTop);
-                  bot_stresses->GetLeftResult(stress_point_index_bot,&fBot);
-               }
+               pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &max_results);
+               pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &min_results);
             }
             else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
             {
-               CComPtr<ISectionStressResult> top_stresses;
-               min_results->get_Item(idx,&top_stresses);
-
-               CComPtr<ISectionStressResult> bot_stresses;
-               max_results->get_Item(idx,&bot_stresses);
-
-               if ( IsZero(dist_from_start - end_size) )
-               {
-                  top_stresses->GetRightResult(stress_point_index_top,&fTop);
-                  bot_stresses->GetRightResult(stress_point_index_bot,&fBot);
-               }
-               else
-               {
-                  top_stresses->GetLeftResult(stress_point_index_top,&fTop);
-                  bot_stresses->GetLeftResult(stress_point_index_bot,&fBot);
-               }
+               pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &max_results);
+               pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &min_results);
             }
             else
             {
-               CComPtr<ISectionStressResult> stresses;
-               results->get_Item(idx,&stresses);
+               pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, rsIncremental, &results);
+            }
+         
+            CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
+            CollectionIndexType stress_point_index_bot = GetStressPointIndex(botLocation);
 
-               if ( IsZero(dist_from_start - end_size) )
+            GET_IFACE(ISectionProperties,pSectionProperties);
+
+            std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+            for ( ; iter != end; iter++ )
+            {
+               const pgsPointOfInterest& poi = *iter;
+               CollectionIndexType idx = iter - vPoi.begin();
+
+               const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+               Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+               Float64 dist_from_start = poi.GetDistFromStart();
+
+               Float64 fTop, fBot;
+
+               if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
                {
-                  stresses->GetRightResult(stress_point_index_top,&fTop);
-                  stresses->GetRightResult(stress_point_index_bot,&fBot);
+                  CComPtr<ISectionStressResult> top_stresses;
+                  max_results->get_Item(idx,&top_stresses);
+
+                  CComPtr<ISectionStressResult> bot_stresses;
+                  min_results->get_Item(idx,&bot_stresses);
+
+                  if ( IsZero(dist_from_start - end_size) )
+                  {
+                     top_stresses->GetRightResult(stress_point_index_top,&fTop);
+                     bot_stresses->GetRightResult(stress_point_index_bot,&fBot);
+                  }
+                  else
+                  {
+                     top_stresses->GetLeftResult(stress_point_index_top,&fTop);
+                     bot_stresses->GetLeftResult(stress_point_index_bot,&fBot);
+                  }
+               }
+               else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+               {
+                  CComPtr<ISectionStressResult> top_stresses;
+                  min_results->get_Item(idx,&top_stresses);
+
+                  CComPtr<ISectionStressResult> bot_stresses;
+                  max_results->get_Item(idx,&bot_stresses);
+
+                  if ( IsZero(dist_from_start - end_size) )
+                  {
+                     top_stresses->GetRightResult(stress_point_index_top,&fTop);
+                     bot_stresses->GetRightResult(stress_point_index_bot,&fBot);
+                  }
+                  else
+                  {
+                     top_stresses->GetLeftResult(stress_point_index_top,&fTop);
+                     bot_stresses->GetLeftResult(stress_point_index_bot,&fBot);
+                  }
                }
                else
                {
-                  stresses->GetLeftResult(stress_point_index_top,&fTop);
-                  stresses->GetLeftResult(stress_point_index_bot,&fBot);
+                  CComPtr<ISectionStressResult> stresses;
+                  results->get_Item(idx,&stresses);
+
+                  if ( IsZero(dist_from_start - end_size) )
+                  {
+                     stresses->GetRightResult(stress_point_index_top,&fTop);
+                     stresses->GetRightResult(stress_point_index_bot,&fBot);
+                  }
+                  else
+                  {
+                     stresses->GetLeftResult(stress_point_index_top,&fTop);
+                     stresses->GetLeftResult(stress_point_index_bot,&fBot);
+                  }
                }
+
+               if ( bSecondaryEffects )
+               {
+                  // need to subtract out stress caused by primary prestress moment 
+   #pragma Reminder("UPDATE: add adjustment to get secondary effects")
+               }
+
+               // Adjust girder stress for release & storage
+               if ( IsGirderStressLocation(topLocation) && type == pftGirder && !poi.HasAttribute(POI_CLOSURE) )
+               {
+                  ValidateAnalysisModels(vPoi.front().GetSegmentKey().girderIndex);
+
+                  Float64 fReleaseTop = GetSectionStress( m_ReleaseModels, pgsTypes::TopGirder,    poi );
+                  Float64 fReleaseBot = GetSectionStress( m_ReleaseModels, pgsTypes::BottomGirder, poi );
+
+                  Float64 fStorageTop = GetSectionStress( m_StorageModels, pgsTypes::TopGirder,    poi );
+                  Float64 fStorageBot = GetSectionStress( m_StorageModels, pgsTypes::BottomGirder, poi );
+
+                  Float64 StopErection = pSectionProperties->GetS(erectionIntervalIdx,poi,pgsTypes::TopGirder);
+                  Float64 SbotErection = pSectionProperties->GetS(erectionIntervalIdx,poi,pgsTypes::BottomGirder);
+                  Float64 StopRelease  = pSectionProperties->GetS(releaseIntervalIdx, poi,pgsTypes::TopGirder);
+                  Float64 SbotRelease  = pSectionProperties->GetS(releaseIntervalIdx, poi,pgsTypes::BottomGirder);
+                  Float64 StopStorage  = pSectionProperties->GetS(storageIntervalIdx, poi,pgsTypes::TopGirder);
+                  Float64 SbotStorage  = pSectionProperties->GetS(storageIntervalIdx, poi,pgsTypes::BottomGirder);
+
+                  fTop += fReleaseTop*(1-StopRelease/StopStorage) + fStorageTop*(1-StopStorage/StopErection);
+                  fBot += fReleaseBot*(1-SbotRelease/SbotStorage) + fStorageBot*(1-SbotStorage/SbotErection);
+               }
+
+               pfTop->push_back(fTop);
+               pfBot->push_back(fBot);
             }
-
-            if ( bSecondaryEffects )
-            {
-               // need to subtract out stress caused by primary prestress moment 
-#pragma Reminder("UPDATE: add adjustment to get secondary effects")
-            }
-
-            // Adjust girder stress for release & storage
-            if ( type == pftGirder && !poi.HasAttribute(POI_CLOSURE) )
-            {
-               ValidateAnalysisModels(vPoi.front().GetSegmentKey().girderIndex);
-
-               Float64 fReleaseTop = GetSectionStress( m_ReleaseModels, pgsTypes::TopGirder,    poi );
-               Float64 fReleaseBot = GetSectionStress( m_ReleaseModels, pgsTypes::BottomGirder, poi );
-
-               Float64 fStorageTop = GetSectionStress( m_StorageModels, pgsTypes::TopGirder,    poi );
-               Float64 fStorageBot = GetSectionStress( m_StorageModels, pgsTypes::BottomGirder, poi );
-
-               Float64 StopErection = pSectionProperties->GetStGirder(erectionIntervalIdx,poi);
-               Float64 SbotErection = pSectionProperties->GetSb(erectionIntervalIdx,poi);
-               Float64 StopRelease  = pSectionProperties->GetStGirder(releaseIntervalIdx,poi);
-               Float64 SbotRelease  = pSectionProperties->GetSb(releaseIntervalIdx,poi);
-               Float64 StopStorage  = pSectionProperties->GetStGirder(storageIntervalIdx,poi);
-               Float64 SbotStorage  = pSectionProperties->GetSb(storageIntervalIdx,poi);
-
-               fTop += fReleaseTop*(1-StopRelease/StopStorage) + fStorageTop*(1-StopStorage/StopErection);
-               fBot += fReleaseBot*(1-SbotRelease/SbotStorage) + fStorageBot*(1-SbotStorage/SbotErection);
-            }
-
-            pfTop->push_back(fTop);
-            pfBot->push_back(fBot);
          }
       }
    }
@@ -10012,9 +9998,15 @@ void CAnalysisAgentImp::GetLiveLoadRotation(pgsTypes::LiveLoadType llType,Interv
    }
 }
 
-void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex,std::vector<VehicleIndexType>* pTopMaxIndex,std::vector<VehicleIndexType>* pBotMinIndex,std::vector<VehicleIndexType>* pBotMaxIndex)
+void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex,std::vector<VehicleIndexType>* pTopMaxIndex,std::vector<VehicleIndexType>* pBotMinIndex,std::vector<VehicleIndexType>* pBotMaxIndex)
 {
    USES_CONVERSION;
+
+   // stress locations must be either both girder or both deck
+   ATLASSERT( (IsGirderStressLocation(topLocation) && IsGirderStressLocation(botLocation))
+              ||
+              (IsDeckStressLocation(topLocation) && IsDeckStressLocation(botLocation)));
+
 
    GET_IFACE(IBridge,pBridge);
 
@@ -10334,9 +10326,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,
    }
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigTop,std::vector<AxleConfiguration>* pMaxAxleConfigTop,std::vector<AxleConfiguration>* pMinAxleConfigBot,std::vector<AxleConfiguration>* pMaxAxleConfigBot)
+void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigTop,std::vector<AxleConfiguration>* pMaxAxleConfigTop,std::vector<AxleConfiguration>* pMinAxleConfigBot,std::vector<AxleConfiguration>* pMaxAxleConfigBot)
 {
    USES_CONVERSION;
+
+   // stress locations must be either both girder or both deck
+   ATLASSERT( (IsGirderStressLocation(topLocation) && IsGirderStressLocation(botLocation))
+              ||
+              (IsDeckStressLocation(topLocation) && IsDeckStressLocation(botLocation)));
 
    pfTopMin->clear();
    pfTopMax->clear();
@@ -11354,12 +11351,12 @@ void CAnalysisAgentImp::GetStress(LoadingCombination combo,IntervalIndexType int
                Float64 fStorageTop = GetSectionStress( m_StorageModels, pgsTypes::TopGirder,    poi );
                Float64 fStorageBot = GetSectionStress( m_StorageModels, pgsTypes::BottomGirder, poi );
 
-               Float64 StopErection = pSectionProperties->GetStGirder(erectionIntervalIdx,poi);
-               Float64 SbotErection = pSectionProperties->GetSb(erectionIntervalIdx,poi);
-               Float64 StopRelease  = pSectionProperties->GetStGirder(releaseIntervalIdx,poi);
-               Float64 SbotRelease  = pSectionProperties->GetSb(releaseIntervalIdx,poi);
-               Float64 StopStorage  = pSectionProperties->GetStGirder(storageIntervalIdx,poi);
-               Float64 SbotStorage  = pSectionProperties->GetSb(storageIntervalIdx,poi);
+               Float64 StopErection = pSectionProperties->GetS(erectionIntervalIdx,poi,pgsTypes::TopGirder);
+               Float64 SbotErection = pSectionProperties->GetS(erectionIntervalIdx,poi,pgsTypes::BottomGirder);
+               Float64 StopRelease  = pSectionProperties->GetS(releaseIntervalIdx, poi,pgsTypes::TopGirder);
+               Float64 SbotRelease  = pSectionProperties->GetS(releaseIntervalIdx, poi,pgsTypes::BottomGirder);
+               Float64 StopStorage  = pSectionProperties->GetS(storageIntervalIdx, poi,pgsTypes::TopGirder);
+               Float64 SbotStorage  = pSectionProperties->GetS(storageIntervalIdx, poi,pgsTypes::BottomGirder);
 
                fTop += fReleaseTop*(1-StopRelease/StopStorage) + fStorageTop*(1-StopStorage/StopErection);
                fBot += fReleaseBot*(1-SbotRelease/SbotStorage) + fStorageBot*(1-SbotStorage/SbotErection);
@@ -12146,7 +12143,7 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,IntervalIndexType inte
       GetStressElastic(ls,intervalIdx,vPoi,loc,bIncludePrestress,bat,pMin,pMax);
 }
 
-void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
+void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
 {
    ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
 
@@ -12186,11 +12183,14 @@ void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexT
       Float64 fPS(0), fPT(0);
       if ( bIncludePrestress )
       {
-         fPS = GetStress(intervalIdx,poi,loc);
-         fPT = GetStress(intervalIdx,poi,loc,ALL_DUCTS);
+         fPS = GetStress(intervalIdx,poi,stressLocation);
+         fPT = GetStress(intervalIdx,poi,stressLocation,ALL_DUCTS);
       }
 
-      if ( loc == pgsTypes::TopDeck )
+#pragma Reminder("UPDATE: this four cases are basically the same... simplify and combine the code")
+      // somehow refactor TIME_STEP_DETAILS so that stresses are stored using the pgsTypes::StressLocation constant
+      // then we can look them up here using the value of stressLocation
+      if ( stressLocation == pgsTypes::TopDeck )
       {
          for ( int i = 0; i < 15; i++ )
          {
@@ -12230,7 +12230,47 @@ void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexT
          fPSMax += tsDetails.Deck.fTop[pftRelaxation][ctCummulative];
          fLLMax += tsDetails.Deck.fTopLLMax;
       }
-      else if ( loc == pgsTypes::TopGirder )
+      else if ( stressLocation == pgsTypes::BottomDeck )
+      {
+         for ( int i = 0; i < 15; i++ )
+         {
+            ProductForceType pfType = (ProductForceType)i;
+            if ( pfType == pftOverlay || pfType == pftUserDW )
+            {
+               // Product force is a DW load
+               fDWMin += tsDetails.Deck.fBot[i][ctCummulative];
+               fDWMax += tsDetails.Deck.fBot[i][ctCummulative];
+            }
+            else if ( pfType == pftUserLLIM )
+            {
+               // Product force is a LL
+               fLLMin += tsDetails.Deck.fBot[i][ctCummulative];
+               fLLMax += tsDetails.Deck.fBot[i][ctCummulative];
+            }
+            else
+            {
+               // Product force is a DC load
+
+               // if the product force is a prestress and we are not included prestress, skip this load
+               if ( (pfType == pftPrestress || pfType == pftTotalPostTensioning) && !bIncludePrestress )
+                  continue;
+
+               fDCMin += tsDetails.Deck.fBot[i][ctCummulative];
+               fDCMax += tsDetails.Deck.fBot[i][ctCummulative];
+            }
+         }
+
+         fCRMin += tsDetails.Deck.fBot[pftCreep][ctCummulative];
+         fSHMin += tsDetails.Deck.fBot[pftShrinkage][ctCummulative];
+         fPSMin += tsDetails.Deck.fBot[pftRelaxation][ctCummulative];
+         fLLMin += tsDetails.Deck.fBotLLMin;
+
+         fCRMax += tsDetails.Deck.fBot[pftCreep][ctCummulative];
+         fSHMax += tsDetails.Deck.fBot[pftShrinkage][ctCummulative];
+         fPSMax += tsDetails.Deck.fBot[pftRelaxation][ctCummulative];
+         fLLMax += tsDetails.Deck.fBotLLMax;
+      }
+      else if ( stressLocation == pgsTypes::TopGirder )
       {
          for ( int i = 0; i < 15; i++ )
          {
@@ -12270,7 +12310,7 @@ void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexT
          fPSMax += tsDetails.Girder.fTop[pftRelaxation][ctCummulative];
          fLLMax += tsDetails.Girder.fTopLLMax;
       }
-      else if ( loc == pgsTypes::BottomGirder )
+      else if ( stressLocation == pgsTypes::BottomGirder )
       {
          for ( int i = 0; i < 15; i++ )
          {
@@ -12317,6 +12357,9 @@ void CAnalysisAgentImp::GetStressTimeStep(pgsTypes::LimitState ls,IntervalIndexT
 
       Float64 fMin = gDCMin*fDCMin + gDWMin*fDWMin + gLLMin*fLLMin + gCRMin*fCRMin + gSHMin*fSHMin + gPSMin*fPSMin + gPS*(fPS + fPT);
       Float64 fMax = gDCMax*fDCMax + gDWMax*fDWMax + gLLMax*fLLMax + gCRMax*fCRMax + gSHMax*fSHMax + gPSMax*fPSMax + gPS*(fPS + fPT);
+
+      fMin = IsZero(fMin) ? 0 : fMin;
+      fMax = IsZero(fMax) ? 0 : fMax;
 
       pMin->push_back(fMin);
       pMax->push_back(fMax);
@@ -12932,6 +12975,7 @@ std::vector<Float64> CAnalysisAgentImp::GetReaction(IntervalIndexType intervalId
 void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax)
 {
    // Computes design-time stresses due to external loads
+   ATLASSERT(IsGirderStressLocation(loc)); // expecting stress location to be on the girder
 
    // figure out which stage the girder loading is applied
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -12959,11 +13003,11 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
 
    GET_IFACE(ISectionProperties,pSectProp);
 
-   Float64 Stc = pSectProp->GetStGirder(compositeDeckIntervalIdx,poi);
-   Float64 Sbc = pSectProp->GetSb(compositeDeckIntervalIdx,poi);
+   Float64 Stc = pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder);
+   Float64 Sbc = pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder);
 
-   Float64 Stop = pSectProp->GetStGirder(compositeDeckIntervalIdx,poi,fcgdr);
-   Float64 Sbot = pSectProp->GetSb(compositeDeckIntervalIdx,poi,fcgdr);
+   Float64 Stop = pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::TopGirder,   fcgdr);
+   Float64 Sbot = pSectProp->GetS(compositeDeckIntervalIdx,poi,pgsTypes::BottomGirder,fcgdr);
 
    Float64 k_top = Stc/Stop; // scale factor that converts top stress of composite section to a section with this f'c
    Float64 k_bot = Sbc/Sbot; // scale factor that converts bot stress of composite section to a section with this f'c
@@ -12985,7 +13029,7 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    Float64 ft,fb;
 
    // Erect Segment Interval
-   GetStress(erectSegmentIntervalIdx,pftGirder,poi,bat,&ft,&fb);
+   GetStress(erectSegmentIntervalIdx,pftGirder,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 = dc*ft;   fbot1 = dc*fb;
 
    if ( erectSegmentIntervalIdx <= intervalIdx && intervalIdx < castDeckIntervalIdx )
@@ -13012,19 +13056,19 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    }
 
    // Bridge Site Stage 1
-   GetStress(castDeckIntervalIdx,pftConstruction,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftConstruction,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftSlab,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftSlab,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftSlabPad,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftSlabPad,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftSlabPanel,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftSlabPanel,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
@@ -13032,19 +13076,19 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftDiaphragm,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftDiaphragm,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftShearKey,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftShearKey,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftUserDC,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftUserDC,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dc*ft;   
    fbot1 += dc*fb;
 
-   GetStress(castDeckIntervalIdx,pftUserDW,poi,bat,&ft,&fb);
+   GetStress(castDeckIntervalIdx,pftUserDW,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop1 += dw*ft;   
    fbot1 += dw*fb;
 
@@ -13070,11 +13114,11 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    }
 
    // Bridge Site Stage 2
-   GetStress(trafficBarrierIntervalIdx,pftTrafficBarrier,poi,bat,&ft,&fb);
+   GetStress(trafficBarrierIntervalIdx,pftTrafficBarrier,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop2 = dc*k_top*ft;   
    fbot2 = dc*k_bot*fb;
 
-   GetStress(trafficBarrierIntervalIdx,pftSidewalk,poi,bat,&ft,&fb);
+   GetStress(trafficBarrierIntervalIdx,pftSidewalk,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop2 += dc*k_top*ft;   
    fbot2 += dc*k_bot*fb;
 
@@ -13082,16 +13126,16 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
 
    if ( overlayIntervalIdx != INVALID_INDEX && !pBridge->IsFutureOverlay() )
    {
-      GetStress(overlayIntervalIdx,pftOverlay,poi,bat,&ft,&fb);
+      GetStress(overlayIntervalIdx,pftOverlay,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop2 += dw*k_top*ft;   
       fbot2 += dw*k_bot*fb;
    }
 
-   GetStress(compositeDeckIntervalIdx,pftUserDC,poi,bat,&ft,&fb);
+   GetStress(compositeDeckIntervalIdx,pftUserDC,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop2 += dc*k_top*ft;   
    fbot2 += dc*k_bot*fb;
 
-   GetStress(compositeDeckIntervalIdx,pftUserDW,poi,bat,&ft,&fb);
+   GetStress(compositeDeckIntervalIdx,pftUserDW,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop2 += dw*k_top*ft;   
    fbot2 += dw*k_bot*fb;
 
@@ -13119,7 +13163,7 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    // Bridge Site Stage 3
    if (overlayIntervalIdx != INVALID_INDEX && pBridge->IsFutureOverlay() )
    {
-      GetStress(overlayIntervalIdx,pftOverlay,poi,bat,&ft,&fb);
+      GetStress(overlayIntervalIdx,pftOverlay,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop3Min = ftop3Max = dw*k_top*ft;   
       fbot3Min = fbot3Max = dw*k_bot*fb;   
    }
@@ -13134,14 +13178,20 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
 
    Float64 fc_lldf = fcgdr;
    if ( pGirderMaterial->Concrete.bUserEc )
+   {
       fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+   }
 
 
    Float64 ftMin,ftMax,fbMin,fbMax;
    if ( ls == pgsTypes::FatigueI )
-      GetLiveLoadStress(pgsTypes::lltFatigue, liveLoadIntervalIdx,poi,bat,true,true,&ftMin,&ftMax,&fbMin,&fbMax);
+   {
+      GetLiveLoadStress(pgsTypes::lltFatigue, liveLoadIntervalIdx,poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
+   }
    else
-      GetLiveLoadStress(pgsTypes::lltDesign,  liveLoadIntervalIdx,poi,bat,true,true,&ftMin,&ftMax,&fbMin,&fbMax);
+   {
+      GetLiveLoadStress(pgsTypes::lltDesign,  liveLoadIntervalIdx,poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
+   }
 
    ftop3Min += ll*k_top*ftMin;   
    fbot3Min += ll*k_bot*fbMin;
@@ -13149,7 +13199,7 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    ftop3Max += ll*k_top*ftMax;   
    fbot3Max += ll*k_bot*fbMax;
 
-   GetLiveLoadStress(pgsTypes::lltPedestrian,  liveLoadIntervalIdx,poi,bat,true,true,&ftMin,&ftMax,&fbMin,&fbMax);
+   GetLiveLoadStress(pgsTypes::lltPedestrian,  liveLoadIntervalIdx,poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
 
    ftop3Min += ll*k_top*ftMin;   
    fbot3Min += ll*k_bot*fbMin;
@@ -13157,7 +13207,7 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    ftop3Max += ll*k_top*ftMax;   
    fbot3Max += ll*k_bot*fbMax;
 
-   GetStress(liveLoadIntervalIdx,pftUserLLIM,poi,bat,&ft,&fb);
+   GetStress(liveLoadIntervalIdx,pftUserLLIM,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
    ftop3Min += ll*k_top*ft;   
    fbot3Min += ll*k_bot*fb;
 
@@ -13180,7 +13230,9 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,IntervalIndexTyp
    }
 
    if (*pMax < *pMin )
+   {
       std::swap(*pMin,*pMax);
+   }
 
    *pMax = (IsZero(*pMax) ? 0 : *pMax);
    *pMin = (IsZero(*pMin) ? 0 : *pMin);
@@ -13213,8 +13265,6 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
    GET_IFACE(IPosttensionForce,  pPTForce);
    GET_IFACE(IIntervals,         pIntervals);
 
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-
    DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
    if ( nDucts == 0 )
       return 0;
@@ -13231,7 +13281,7 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
       Float64 P = pPTForce->GetTendonForce(poi,intervalIdx,pgsTypes::End,idx);
 
       Float64 f = 0;
-      if ( ptIntervalIdx < compositeDeckIntervalIdx )
+      if ( intervalIdx < ptIntervalIdx )
          f = 0;
       else
          f = GetStress(ptIntervalIdx,poi,loc,P,e);
@@ -14378,7 +14428,7 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
 {
    // Stress in the girder due to prestressing
 
-   if ( loc == pgsTypes::TopDeck )
+   if ( loc == pgsTypes::TopDeck || loc == pgsTypes::BottomDeck )
       return 0.0; // pretensioning does not cause stress in the slab
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -14422,7 +14472,7 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
 
 Float64 CAnalysisAgentImp::GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e)
 {
-   if ( loc == pgsTypes::TopDeck )
+   if ( loc == pgsTypes::TopDeck || loc == pgsTypes::BottomDeck )
       return 0.0; // pretensioning does not cause stress in deck
 
    GET_IFACE(IIntervals,pIntervals);
@@ -14432,7 +14482,7 @@ Float64 CAnalysisAgentImp::GetStress(const pgsPointOfInterest& poi,pgsTypes::Str
 
    // using release interval because we are computing stress on the girder due to prestress which happens in this stage
    Float64 A = pSectProp->GetAg(releaseIntervalIdx, poi);
-   Float64 S = (loc == pgsTypes::TopGirder ? pSectProp->GetStGirder(releaseIntervalIdx, poi) : pSectProp->GetSb(releaseIntervalIdx, poi) );
+   Float64 S = pSectProp->GetS(releaseIntervalIdx, poi, loc);
 
    Float64 f = (IsZero(A) || IsZero(S) ? 0 : -P/A - P*e/S);
 
@@ -15829,13 +15879,13 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 
       if ( continuity_interval[i] == castDeckIntervalIdx )
       {
-         GetStress(castDeckIntervalIdx,pftSlab,poi,bat,&fTop,&fBottom);
+         GetStress(castDeckIntervalIdx,pftSlab,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
          fbSlab = fBottom;
 
-         GetStress(castDeckIntervalIdx,pftSlabPad,poi,bat,&fTop,&fBottom);
+         GetStress(castDeckIntervalIdx,pftSlabPad,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
          fbSlabPad = fBottom;
 
-         GetStress(castDeckIntervalIdx,pftConstruction,poi,bat,&fTop,&fBottom);
+         GetStress(castDeckIntervalIdx,pftConstruction,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
          fbConstruction = fBottom;
       }
       else
@@ -15845,15 +15895,15 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
          fbConstruction = 0;
       }
 
-      GetStress(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat,&fTop,&fBottom);
+      GetStress(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
       fbTrafficBarrier = fBottom;
 
-      GetStress(railingSystemIntervalIdx,pftSidewalk,poi,bat,&fTop,&fBottom);
+      GetStress(railingSystemIntervalIdx,pftSidewalk,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
       fbSidewalk = fBottom;
 
       if ( overlayIntervalIdx != INVALID_INDEX )
       {
-         GetStress(overlayIntervalIdx,pftOverlay,poi,bat,&fTop,&fBottom);
+         GetStress(overlayIntervalIdx,pftOverlay,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
          fbOverlay = fBottom;
       }
       else
@@ -15862,13 +15912,13 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
       }
 
 #pragma Reminder("UPDATE: need all user load stages")
-      GetStress(compositeDeckIntervalIdx,pftUserDC,poi,bat,&fTop,&fBottom);
+      GetStress(compositeDeckIntervalIdx,pftUserDC,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
       fbUserDC = fBottom;
 
-      GetStress(compositeDeckIntervalIdx,pftUserDW,poi,bat,&fTop,&fBottom);
+      GetStress(compositeDeckIntervalIdx,pftUserDW,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
       fbUserDW = fBottom;
 
-      GetStress(compositeDeckIntervalIdx,pftUserLLIM,poi,bat,&fTop,&fBottom);
+      GetStress(compositeDeckIntervalIdx,pftUserLLIM,poi,bat,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTop,&fBottom);
       fbUserLLIM = fBottom;
 
       Float64 fTopMin,fTopMax,fBotMin,fBotMax;
@@ -15896,6 +15946,29 @@ bool CAnalysisAgentImp::IsInPrecompressedTensileZone(IntervalIndexType stressing
       return IsDeckInPrecompressedTensileZone(stressingIntervalIdx,poi,stressLocation,bat);
    else
       return IsGirderInPrecompressedTensileZone(stressingIntervalIdx,poi,stressLocation,bat,pConfig);
+}
+
+bool CAnalysisAgentImp::IsDeckPrecompressed(const CGirderKey& girderKey)
+{
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   if ( compositeDeckIntervalIdx == INVALID_INDEX )
+      return false; // this happens when there is not a deck
+
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      if ( compositeDeckIntervalIdx <= stressTendonIntervalIdx )
+      {
+         // this tendon is stressed after the deck is composite so the deck is considered precompressed
+         return true;
+      }
+   }
+
+   // didn't find a tendon that is stressed after the deck is composite... deck not precompressed
+   return false;
 }
 
 /////////////////////////////////////////////////
@@ -17545,28 +17618,14 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
    return dfType;
 }
 
-Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e)
+Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)
 {
    Float64 A, S; 
    GET_IFACE(ISectionProperties,pSectProp);
    A = pSectProp->GetAg(intervalIdx,poi);
-   switch( loc )
-   {
-   case pgsTypes::TopGirder:
-      S = pSectProp->GetStGirder(intervalIdx,poi);
-      break;
+   S = pSectProp->GetS(intervalIdx,poi,stressLocation);
 
-   case pgsTypes::BottomGirder:
-      S = pSectProp->GetSb(intervalIdx,poi);
-      break;
-
-   case pgsTypes::TopDeck:
-      S = pSectProp->GetSt(intervalIdx,poi);
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here
-   }
+   ATLASSERT( !IsZero(S) );
 
    Float64 f = -P/A - P*e/S;
 
@@ -18308,7 +18367,7 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(IntervalIndexType str
    // Consider the bottom of the girder to be in a precompressed tensile zone
    GET_IFACE(IBridge,pBridge);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
-   if ( segmentKey.segmentIndex == 0 )
+   if ( segmentKey.segmentIndex == 0 ) // start of first segment (end of last segment is below)
    {
       bool bModelStartCantilever,bModelEndCantilever;
       pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
@@ -18328,6 +18387,7 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(IntervalIndexType str
       }
    }
 
+   // end of last segment
    SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
    if ( segmentKey.segmentIndex == nSegments-1 )
    {

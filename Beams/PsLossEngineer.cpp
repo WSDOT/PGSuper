@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2647,10 +2647,10 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pPerimeter = pSectProp->GetPerimeter(poi);
    *pAg  = pSectProp->GetAg( spType, erectIntervalIdx, poi );
    *pIg  = pSectProp->GetIx( spType, erectIntervalIdx, poi );
-   *pYbg = pSectProp->GetYb( spType, erectIntervalIdx, poi );
+   *pYbg = pSectProp->GetY(  spType, erectIntervalIdx, poi, pgsTypes::BottomGirder );
    *pAc  = pSectProp->GetAg( spType, liveLoadIntervalIdx, poi, config.Fc );
    *pIc  = pSectProp->GetIx( spType, liveLoadIntervalIdx, poi, config.Fc );
-   *pYbc = pSectProp->GetYb( spType, liveLoadIntervalIdx, poi, config.Fc );
+   *pYbc = pSectProp->GetY(  spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, config.Fc );
 
    *pVolume = pSectProp->GetVolume(segmentKey);
    *pSurfaceArea = pSectProp->GetSurfaceArea(segmentKey);
@@ -2689,7 +2689,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    }
 
    // eccentricity of deck
-   *ped  = pSectProp->GetYtGirder( compositeDeckIntervalIdx, poi, config.Fc ) 
+   *ped  = pSectProp->GetY( compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, config.Fc ) 
          + pBridge->GetStructuralSlabDepth(poi)/2;
    *ped *= -1;
 

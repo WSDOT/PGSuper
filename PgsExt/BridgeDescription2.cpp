@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1877,7 +1877,7 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID
       CClosureJointData* pClosure = pTS->GetClosureJoint(0);
       if ( pClosure )
       {
-         m_TimelineManager.GetCastClosureJointEventIndex(pClosure->GetID());
+         castClosureJointEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure->GetID());
       }
 
       RemoveTemporarySupportByID(tsID);
@@ -2115,7 +2115,7 @@ void CBridgeDescription2::SetGirderCount(GirderIndexType nGirders)
          pGroup->SetGirderCount(m_nGirders);
 
          CSpanData2* pStartSpan = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
-         CSpanData2* pEndSpan   = pGroup->GetPier(pgsTypes::metEnd)->GetPrevSpan();
+         CSpanData2* pEndSpan   = pGroup->GetPier(pgsTypes::metEnd)->GetNextSpan();
          bool bDone = false;
          CSpanData2* pSpan = pStartSpan;
          while ( !bDone )
@@ -3040,9 +3040,30 @@ bool CBridgeDescription2::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Fl
    if ( IsZero(deltaStation) )
       return false;
 
+   if ( pPier->GetPrevSpan() )
+   {
+      CPierData2* pPrevPier = pPier->GetPrevSpan()->GetPrevPier();
+      if ( newStation <= pPrevPier->GetStation() )
+      {
+         ATLASSERT(false); // moving the pier too far
+         return false;
+      }
+   }
+
+   if ( pPier->GetNextSpan() )
+   {
+      CPierData2* pNextPier = pPier->GetNextSpan()->GetNextPier();
+      if ( pNextPier->GetStation() <= newStation )
+      {
+         ATLASSERT(false); // moving the pier too far
+         return false;
+      }
+   }
+
    pPier->SetStation(pPier->GetStation() + deltaStation);
 
-#pragma Reminder("UPDATE: do the temporary supports need to be adjusted")
+   // since the overall length of the bridge doesn't change, there is no need to adjust
+   // the location of the temporary supports
 
    return true;
 }

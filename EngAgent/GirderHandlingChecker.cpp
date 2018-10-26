@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -200,10 +200,12 @@ CLASS
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
-pgsAlternativeTensileStressCalculator::pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IGirder* pGirder,
+pgsAlternativeTensileStressCalculator::pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
+                                                                             IBridge* pBridge,IGirder* pGirder,
                                          IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
                                          IMaterials* pMaterials,bool bLimitBarStress,
-                                         bool bSISpec) :
+                                         bool bSISpec,bool bGirderStresses) :
+m_pBridge(pBridge),
 m_pGirder(pGirder),
 m_pShapes(pShapes),
 m_pSectProps(pSectProps),
@@ -213,6 +215,7 @@ m_pMaterials(pMaterials)
    m_IntervalIdx = intervalIdx;
    m_bLimitBarStress = bLimitBarStress;
    m_bSISpec = bSISpec;
+   m_bGirderStresses = bGirderStresses;
 }
 
 void pgsAlternativeTensileStressCalculator::LimitBarStress(bool bLimit)
@@ -232,30 +235,53 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
                                         Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                         Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar)
 {
+#pragma Reminder("UDPATE: need to consider which component has tension... girder or deck")
+   // fTop and fBot could be for the girder or for the deck
+   // if for the deck, deck properties and deck steel is needed. 
+   // this method doesn't do that yet (see case for slAllTens... uses girder area only)
+
    // Determine neutral axis location and mild steel requirement for alternative tensile stress
    typedef enum {slAllTens, slAllComp, slTopTens, slBotTens} StressLocation;
    StressLocation stressLoc;
    Float64 Yna = -1;
-   Float64 H = m_pGirder->GetHeight(poi);
+
+   Float64 H;
+   if ( m_bGirderStresses )
+   {
+      H = m_pGirder->GetHeight(poi);
+   }
+   else
+   {
+      H = m_pBridge->GetStructuralSlabDepth(poi);
+   }
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Determine bar stress
    Float64 Es, fy, fu;
-   if ( poi.HasAttribute(POI_CLOSURE) )
+   if ( m_bGirderStresses )
    {
-      m_pMaterials->GetClosureJointLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+      if ( poi.HasAttribute(POI_CLOSURE) )
+      {
+         m_pMaterials->GetClosureJointLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+      }
+      else
+      {
+         m_pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+      }
    }
    else
    {
-      m_pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+      m_pMaterials->GetDeckRebarProperties(&Es,&fy,&fu);
    }
 
    // Max bar stress for computing higher allowable temporary tensile (5.9.4.1.2)
    Float64 allowable_bar_stress = 0.5*fy;
    Float64 fsMax = (m_bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
    if ( m_bLimitBarStress && fsMax < allowable_bar_stress )
+   {
        allowable_bar_stress = fsMax;
+   }
 
    if ( fTop <= TOLERANCE && fBot <= TOLERANCE )
    {
@@ -273,7 +299,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
       stressLoc = 0.0 <= fBot ? slBotTens : slTopTens;
 
-      // Location of neutral axis from Bottom of Girder
+      // Location of neutral axis from Bottom of Girder/Deck
       Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
 
       ATLASSERT( 0 <= Yna );
@@ -291,7 +317,15 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    else if ( stressLoc == slAllTens )
    {
        // Tension over entire cross section
-       AreaTens = m_pSectProps->GetAg(m_IntervalIdx,poi);
+      if ( m_bGirderStresses )
+      {
+         AreaTens = m_pSectProps->GetAg(m_IntervalIdx,poi);
+      }
+      else
+      {
+         AreaTens = m_pSectProps->GetTributaryDeckArea(poi);
+      }
+
        Float64 fAvg = (fTop + fBot)/2;
        T = fAvg * AreaTens;
 
@@ -299,60 +333,81 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    }
    else
    {
-      // Clip shape to determine concrete tension area
-      CComPtr<IShape> shape;
-      m_pShapes->GetSegmentShape(m_IntervalIdx,poi,false,pgsTypes::scGirder,&shape);
-
-      CComQIPtr<IXYPosition> position(shape);
-      CComPtr<IPoint2d> bc;
-      position->get_LocatorPoint(lpBottomCenter,&bc);
-      Float64 Y;
-      bc->get_Y(&Y);
-
-      CComPtr<ILine2d> line;
-      line.CoCreateInstance(CLSID_Line2d);
-      CComPtr<IPoint2d> p1, p2;
-      p1.CoCreateInstance(CLSID_Point2d);
-      p2.CoCreateInstance(CLSID_Point2d);
-      p1->Move(-10000,Y+Yna);
-      p2->Move( 10000,Y+Yna);
-
-      Float64 fAvg;
-
-      if ( stressLoc == slTopTens )
+      if (m_bGirderStresses )
       {
-          // Tension top, compression bottom
-          // line needs to go right to left
-         line->ThroughPoints(p2,p1);
+         // Clip shape to determine concrete tension area
+         CComPtr<IShape> shape;
+         m_pShapes->GetSegmentShape(m_IntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
-         fAvg = fTop / 2;
+         CComQIPtr<IXYPosition> position(shape);
+         CComPtr<IPoint2d> bc;
+         position->get_LocatorPoint(lpBottomCenter,&bc);
+         Float64 Y;
+         bc->get_Y(&Y);
+
+         CComPtr<ILine2d> line;
+         line.CoCreateInstance(CLSID_Line2d);
+         CComPtr<IPoint2d> p1, p2;
+         p1.CoCreateInstance(CLSID_Point2d);
+         p2.CoCreateInstance(CLSID_Point2d);
+         p1->Move(-10000,Y+Yna);
+         p2->Move( 10000,Y+Yna);
+
+         Float64 fAvg;
+
+         if ( stressLoc == slTopTens )
+         {
+             // Tension top, compression bottom
+             // line needs to go right to left
+            line->ThroughPoints(p2,p1);
+
+            fAvg = fTop / 2;
+         }
+         else
+         {
+            // Compression Top, Tension Bottom
+            // line needs to go left to right
+            ATLASSERT(stressLoc==slBotTens);
+            line->ThroughPoints(p1,p2);
+
+            fAvg = fBot / 2;
+         }
+
+         CComPtr<IShape> clipped_shape;
+         shape->ClipWithLine(line,&clipped_shape);
+
+         if ( clipped_shape )
+         {
+            CComPtr<IShapeProperties> props;
+            clipped_shape->get_ShapeProperties(&props);
+
+            props->get_Area(&AreaTens);
+         }
+         else
+         {
+            AreaTens = 0.0;
+         }
+
+         T = fAvg * AreaTens;
       }
       else
       {
-         // Compression Top, Tension Bottom
-         // line needs to go left to right
-         ATLASSERT(stressLoc==slBotTens);
-         line->ThroughPoints(p1,p2);
+         Float64 fAvg;
+         Float64 Weff = m_pSectProps->GetTributaryFlangeWidth(poi);
+         if ( stressLoc == slTopTens )
+         {
+            AreaTens = (H-Yna)*Weff;
+            fAvg = fTop/2;
+         }
+         else
+         {
+            AreaTens = Yna*Weff;
+            fAvg = fBot/2;
+         }
 
-         fAvg = fBot / 2;
+         T = fAvg * AreaTens;
       }
 
-      CComPtr<IShape> clipped_shape;
-      shape->ClipWithLine(line,&clipped_shape);
-
-      if ( clipped_shape )
-      {
-         CComPtr<IShapeProperties> props;
-         clipped_shape->get_ShapeProperties(&props);
-
-         props->get_Area(&AreaTens);
-      }
-      else
-      {
-         AreaTens = 0.0;
-      }
-
-      T = fAvg * AreaTens;
 
       ATLASSERT( T != 0 );
    }
@@ -368,80 +423,117 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    Float64 AsProvd = 0.0; // As provided
    if ( stressLoc != slAllComp )
    {
-      CComPtr<IRebarSection> rebar_section;
-      m_pRebarGeom->GetRebars(poi,&rebar_section);
+      if (m_bGirderStresses )
+      {
+         CComPtr<IRebarSection> rebar_section;
+         m_pRebarGeom->GetRebars(poi,&rebar_section);
 
-      pgsTypes::ConcreteType conc_type;
-      Float64 fci, fct;
-      bool isfct;
-      if (pConfig!=NULL)
-      {
-         fci       = pConfig->Fci;
-         conc_type = pConfig->ConcType;
-         isfct     = pConfig->bHasFct;
-         fct       = pConfig->Fct;
-      }
-      else
-      {
-         if ( poi.HasAttribute(POI_CLOSURE) )
+         pgsTypes::ConcreteType conc_type;
+         Float64 fci, fct;
+         bool isfct;
+         if (pConfig!=NULL)
          {
-            fci       = m_pMaterials->GetClosureJointFc(segmentKey,m_IntervalIdx);
-            conc_type = m_pMaterials->GetClosureJointConcreteType(segmentKey);
-            isfct     = m_pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(segmentKey);
-            fct       = isfct ? m_pMaterials->GetClosureJointConcreteAggSplittingStrength(segmentKey) : 0.0;
+            fci       = pConfig->Fci;
+            conc_type = pConfig->ConcType;
+            isfct     = pConfig->bHasFct;
+            fct       = pConfig->Fct;
          }
          else
          {
-            fci       = m_pMaterials->GetSegmentFc(segmentKey,m_IntervalIdx);
-            conc_type = m_pMaterials->GetSegmentConcreteType(segmentKey);
-            isfct     = m_pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
-            fct       = isfct ? m_pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
-         }
-      }
-
-      CComPtr<IEnumRebarSectionItem> enumItems;
-      rebar_section->get__EnumRebarSectionItem(&enumItems);
-
-      CComPtr<IRebarSectionItem> item;
-      while ( enumItems->Next(1,&item,NULL) != S_FALSE )
-      {
-         CComPtr<IRebar> rebar;
-         item->get_Rebar(&rebar);
-         Float64 as;
-         rebar->get_NominalArea(&as);
-
-         Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
-
-         if ( IsGE(1.0,dev_length_factor) ) // Bars must be fully developed before higher 
-                                            // allowable stress can be used.
-                                            // Apply a small tolerance.
-         {
-            if (stressLoc == slAllTens)
+            if ( poi.HasAttribute(POI_CLOSURE) )
             {
-               // all bars in tension - just add
-               AsProvd += as;
+               fci       = m_pMaterials->GetClosureJointFc(segmentKey,m_IntervalIdx);
+               conc_type = m_pMaterials->GetClosureJointConcreteType(segmentKey);
+               isfct     = m_pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(segmentKey);
+               fct       = isfct ? m_pMaterials->GetClosureJointConcreteAggSplittingStrength(segmentKey) : 0.0;
             }
             else
             {
-               CComPtr<IPoint2d> location;
-               item->get_Location(&location);
-
-               Float64 x,y;
-               location->get_X(&x);
-               location->get_Y(&y);
-               // Add bar if it's on right side of NA
-               if ( stressLoc == slTopTens && Yna < y)
-               {
-                  AsProvd += as;
-               }
-               else if ( stressLoc == slBotTens && y < Yna)
-               {
-                  AsProvd += as;
-               }
+               fci       = m_pMaterials->GetSegmentFc(segmentKey,m_IntervalIdx);
+               conc_type = m_pMaterials->GetSegmentConcreteType(segmentKey);
+               isfct     = m_pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+               fct       = isfct ? m_pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
             }
          }
 
-         item.Release();
+         CComPtr<IEnumRebarSectionItem> enumItems;
+         rebar_section->get__EnumRebarSectionItem(&enumItems);
+
+         CComPtr<IRebarSectionItem> item;
+         while ( enumItems->Next(1,&item,NULL) != S_FALSE )
+         {
+            CComPtr<IRebar> rebar;
+            item->get_Rebar(&rebar);
+            Float64 as;
+            rebar->get_NominalArea(&as);
+
+            Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
+
+            if ( IsGE(1.0,dev_length_factor) ) // Bars must be fully developed before higher 
+                                               // allowable stress can be used.
+                                               // Apply a small tolerance.
+            {
+               if (stressLoc == slAllTens)
+               {
+                  // all bars in tension - just add
+                  AsProvd += as;
+               }
+               else
+               {
+                  CComPtr<IPoint2d> location;
+                  item->get_Location(&location);
+
+                  Float64 x,y;
+                  location->get_X(&x);
+                  location->get_Y(&y);
+                  // Add bar if it's on right side of NA
+                  if ( stressLoc == slTopTens && Yna < y)
+                  {
+                     AsProvd += as;
+                  }
+                  else if ( stressLoc == slBotTens && y < Yna)
+                  {
+                     AsProvd += as;
+                  }
+               }
+            }
+
+            item.Release();
+         }
+      }
+      else
+      {
+         // deck stresses
+#pragma Reminder("UPDATE: need to account for development length")
+         if ( stressLoc == slAllTens )
+         {
+            AsProvd += m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+            AsProvd += m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+         }
+         else if ( stressLoc == slTopTens )
+         {
+            if ( Yna <= m_pRebarGeom->GetTopMatLocation(poi,ILongRebarGeometry::All) )
+            {
+               AsProvd += m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+            }
+
+            if ( Yna <= m_pRebarGeom->GetBottomMatLocation(poi,ILongRebarGeometry::All) )
+            {
+               AsProvd += m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+            }
+         }
+         else if ( stressLoc == slBotTens )
+         {
+            if ( m_pRebarGeom->GetTopMatLocation(poi,ILongRebarGeometry::All) <= Yna )
+            {
+               AsProvd += m_pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+            }
+
+            if ( m_pRebarGeom->GetBottomMatLocation(poi,ILongRebarGeometry::All) <= Yna )
+            {
+               AsProvd += m_pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+            }
+         }
       }
    }
 

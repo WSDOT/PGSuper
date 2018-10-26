@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 {
-   return TEXT("Casting Yard Tensile Reinforcement Requirements");
+   return TEXT("Allowable Tension Reinforcement Requirements");
 }
 
 rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -70,108 +70,317 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   rptParagraph* pPara = new rptParagraph;
+   *pChapter << pPara;
+   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete [5.9.4][C5.9.4.1.2]") << rptNewLine;
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   // Report for Girder Segments
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      *pChapter << pPara;
+      *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+      CSegmentKey segmentKey(girderKey,segIdx);
+
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      BuildTable(pBroker,pPara,segmentKey,releaseIntervalIdx);
+   } // next segment
+
+   // Report for Closure Joints
+   // need to report for all spec-check intervals after a closure joint
+   // is composite with the girder
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   std::vector<IntervalIndexType> vSpecCheckIntervals = pIntervals->GetSpecCheckIntervals(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
+   {
+      CClosureKey closureKey(girderKey,segIdx);
+      IntervalIndexType compositeClosureJointIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
+
+      std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(closureKey,POI_CLOSURE));
+      ATLASSERT(vPoi.size() == 1);
+      pgsPointOfInterest poi(vPoi.front());
+      ATLASSERT(poi.GetID() != INVALID_ID);
+      ATLASSERT(poi.HasAttribute(POI_CLOSURE));
+
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      *pChapter << pPara;
+      *pPara << _T("Closure Joint Between Segment ") << LABEL_SEGMENT(segIdx) << _T(" and Segment ") << LABEL_SEGMENT(segIdx+1) << rptNewLine;
+
+      std::vector<IntervalIndexType>::iterator iter(vSpecCheckIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vSpecCheckIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( compositeClosureJointIntervalIdx <= intervalIdx )
+         {
+            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            *pChapter << pPara;
+            *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+
+            pPara = new rptParagraph;
+            *pChapter << pPara;
+
+            BuildTable(pBroker,pPara,poi,intervalIdx);
+         }
+      }
+   }
+
+   // Report for Deck
+   // need to report for all intervals when post-tensioning occurs after the
+   // deck is composite
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   std::set<IntervalIndexType> vIntervals;
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      IntervalIndexType intervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      if ( compositeDeckIntervalIdx <= intervalIdx )
+      {
+         vIntervals.insert(intervalIdx);
+      }
+   }
+
+   if ( 0 < vIntervals.size() )
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      *pChapter << pPara;
+      *pPara << _T("Deck") << rptNewLine;
+
+      std::set<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::set<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         *pChapter << pPara;
+         *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+
+         pPara = new rptParagraph;
+         *pChapter << pPara;
+
+         BuildTable(pBroker,pPara,girderKey,intervalIdx);
+      }
+   }
+
+   return pChapter;
+}
+
+
+CChapterBuilder* CCastingYardRebarRequirementChapterBuilder::Clone() const
+{
+   return new CCastingYardRebarRequirementChapterBuilder;
+}
+
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const
+{
+   pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
+   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   rptRcTable* pTable = CreateTable(segmentKey,topLocation,botLocation,pDisplayUnits);
+   *pPara << pTable << rptNewLine;
+
+   pgsPointOfInterest poi;
+   poi.SetSegmentKey(segmentKey);
+   FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
+
+   *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the bottom of the girder") << rptNewLine;
+}
+
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
+{
+   pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
+   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   rptRcTable* pTable = CreateTable(poi.GetSegmentKey(),topLocation,botLocation,pDisplayUnits);
+   *pPara << pTable << rptNewLine;
+
+   FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
+
+   *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the bottom of the closure joint") << rptNewLine;
+}
+
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx) const
+{
+   pgsTypes::StressLocation botLocation = pgsTypes::BottomDeck;
+   pgsTypes::StressLocation topLocation = pgsTypes::TopDeck;
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   rptRcTable* pTable = CreateTable(girderKey,topLocation,botLocation,pDisplayUnits);
+   *pPara << pTable << rptNewLine;
+
+   CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,ALL_SEGMENTS);
+   pgsPointOfInterest poi;
+   poi.SetSegmentKey(segmentKey);
+
+   FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
+
+   *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the bottom of the deck") << rptNewLine;
+}
+
+rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const
+{
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,_T("Reinforcement requirements for Tensile Stress Limit [C5.9.4.1.2]"));
+
+   pTable->SetNumberOfHeaderRows(2);
+
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   ColumnIndexType col = 0;
+   // build first heading row
+   pTable->SetRowSpan(0,col,2);
+   (*pTable)(0,col++) << COLHDR(RPT_GDR_END_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+   pTable->SetRowSpan(0,col,2);
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("Y"),_T("na")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+   pTable->SetColumnSpan(0,col, 5);
+   if ( IsGirderStressLocation(topLocation) )
+   {
+      (*pTable)(0,col++) << _T("Top Girder");
+   }
+   else
+   {
+      (*pTable)(0,col++) << _T("Top Deck");
+   }
+
+   pTable->SetColumnSpan(0,col, 5);
+   if ( IsGirderStressLocation(botLocation) )
+   {
+      (*pTable)(0,col++) << _T("Bottom Girder");
+   }
+   else
+   {
+      (*pTable)(0,col++) << _T("Bottom Deck");
+   }
+
+   ColumnIndexType i;
+   for ( i = col; i < pTable->GetNumberOfColumns(); i++ )
+   {
+      pTable->SetColumnSpan(0,i,SKIP_CELL);
+   }
+
+   // build second hearing row
+   col = 0;
+   pTable->SetRowSpan(1,col++,SKIP_CELL);
+   pTable->SetRowSpan(1,col++,SKIP_CELL);
+   (*pTable)(1,col++) << COLHDR(RPT_STRESS(_T("t")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(RPT_STRESS(_T("b")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+
+   return pTable;
+}
+
+void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptRcTable* pTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+{
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   // allowable tension stresses are check in the Service I limit state before live load is applied and in the
+   // Service III limit state after live load is applied
+   pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
+
    rptRcScalar scalar;
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
    scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
    scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),        false );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       false );
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   *pChapter << pTitle;
-   *pTitle << _T("Details for Tensile Reinforcement Requirement for Allowable Tension Stress in At Release [5.9.4][C5.9.4.1.2]")<<rptNewLine;
-
-   rptParagraph* p = new rptParagraph;
-   *pChapter << p;
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+   SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
+   SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
+
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
    {
-      *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+      CSegmentKey thisSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segIdx);
+      const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(thisSegmentKey);
 
-      CSegmentKey segmentKey(girderKey,segIdx);
-
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-      const pgsSegmentArtifact* segmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,_T("Reinforcement requirements for Tensile Stress Limit [C5.9.4.1.2]"));
-      *p << pTable << rptNewLine;
-
-      pTable->SetNumberOfHeaderRows(2);
-
-      if ( segmentKey.groupIndex == ALL_GROUPS )
+      CollectionIndexType nArtifacts;
+      if ( poi.GetID() == INVALID_ID )
       {
-         pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         // reporting for all pois
+         nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension);
       }
-
-      ColumnIndexType col = 0;
-      // build first heading row
-      pTable->SetRowSpan(0,col,2);
-      (*pTable)(0,col++) << COLHDR(RPT_GDR_END_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-
-      pTable->SetRowSpan(0,col,2);
-      (*pTable)(0,col++) << COLHDR(Sub2(_T("Y"),_T("na")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-
-      pTable->SetColumnSpan(0,col, 5);
-      (*pTable)(0,col++) << _T("Girder Top");
-
-      pTable->SetColumnSpan(0,col, 5);
-      (*pTable)(0,col++) << _T("Girder Bottom");
-
-      ColumnIndexType i;
-      for ( i = col; i < pTable->GetNumberOfColumns(); i++ )
-         pTable->SetColumnSpan(0,i,SKIP_CELL);
-
-      // build second hearing row
-      col = 0;
-      pTable->SetRowSpan(1,col++,SKIP_CELL);
-      pTable->SetRowSpan(1,col++,SKIP_CELL);
-      (*pTable)(1,col++) << COLHDR(Sub2(_T("f"),_T("t")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*pTable)(1,col++) << COLHDR(Sub2(_T("f"),_T("b")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(1,col++)<< COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*pTable)(1,col++)<< COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-
-      RowIndexType row = pTable->GetNumberOfHeaderRows();
-      CollectionIndexType nArtifacts = segmentArtifact->GetFlexuralStressArtifactCount(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension);
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      else
       {
-         const pgsFlexuralStressArtifact* pArtifact = segmentArtifact->GetFlexuralStressArtifact( releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,idx );
+         // reporting for a specific POI
+         nArtifacts = 1;
+      }
+      for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
+      {
+         const pgsFlexuralStressArtifact* pArtifact;
+         if ( poi.GetID() == INVALID_ID )
+         {
+            pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx );
+         }
+         else
+         {
+            pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Tension,poi.GetID());
+         }
 
          ATLASSERT(pArtifact != NULL);
          if ( pArtifact == NULL )
+         {
+            // safety net just incase we get a NULL pointer during release builds
             continue;
+         }
 
-         const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
+         const pgsPointOfInterest& thisPoi(pArtifact->GetPointOfInterest());
 
-         (*pTable)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
+         (*pTable)(row,0) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, thisPoi );
 
          Float64 Yna,At,T,AsProvided,AsRequired;
-         pArtifact->GetAlternativeTensileStressParameters(pgsTypes::GirderBottom,&Yna,&At,&T,&AsProvided,&AsRequired);
+         pArtifact->GetAlternativeTensileStressParameters(botLocation,&Yna,&At,&T,&AsProvided,&AsRequired);
 
          if (Yna < 0 )
          {
             // Entire section is in compression
             for ( ColumnIndexType ic = 1; ic < pTable->GetNumberOfColumns(); ic++ )
             {
-               (*pTable)(row,ic) << _T("-");
+               (*pTable)(row,ic) << RPT_NA;
             }
          }
          else
@@ -179,8 +388,8 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             (*pTable)(row,1) << dim.SetValue(Yna);
 
             // We have a neutral axis. See which side is in tension
-            Float64 fTop = pArtifact->GetDemand(pgsTypes::TopGirder);
-            Float64 fBot = pArtifact->GetDemand(pgsTypes::BottomGirder);
+            Float64 fTop = pArtifact->GetDemand(topLocation);
+            Float64 fBot = pArtifact->GetDemand(botLocation);
 
             // Half of the table is always n/a. Determine which half to fill
             ColumnIndexType dataStart, dataEnd;
@@ -205,9 +414,10 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             (*pTable)(row,7) << stress.SetValue(fBot);
 
             // Fill in compression columns with n/a's first
+            ColumnIndexType col;
             for (col = blankStart; col < blankEnd; col++)
             {
-                (*pTable)(row,col) << RPT_NA;
+               (*pTable)(row,col) << RPT_NA;
             }
 
             // Now fill in tension side with data
@@ -221,15 +431,5 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
          row++;
       } // next artifact
-
-      *p << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
    } // next segment
-
-   return pChapter;
-}
-
-
-CChapterBuilder* CCastingYardRebarRequirementChapterBuilder::Clone() const
-{
-   return new CCastingYardRebarRequirementChapterBuilder;
 }

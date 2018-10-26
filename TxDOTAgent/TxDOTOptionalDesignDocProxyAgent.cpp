@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -502,13 +502,20 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             // Compute and store required concrete strength
             if ( ststype[icase] == pgsTypes::Compression )
             {
-               Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,intervals[icase],lstates[icase]);
+               Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,pgsTypes::TopGirder,intervals[icase],lstates[icase]);
                Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
                   fc_reqd = 0;
 
-               pFabrStressArtifact->SetRequiredConcreteStrength(fc_reqd);
+               if ( MinIndex(fTop,fBot) == 0 )
+               {
+                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::TopGirder,fc_reqd);
+               }
+               else
+               {
+                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::BottomGirder,fc_reqd);
+               }
             }
             else
             {
@@ -516,7 +523,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                bool bCheckMax;
                Float64 fmax;
 
-               pAllowable->GetAllowableTensionStressCoefficient(poi,intervals[icase],lstates[icase],false/*without rebar*/,false,&t,&bCheckMax,&fmax);
+               pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,intervals[icase],lstates[icase],false/*without rebar*/,false,&t,&bCheckMax,&fmax);
 
                // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
                // otherwise, take the controlling tension
@@ -540,7 +547,15 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                   // too bad... this isn't going to work
                   fc_reqd = -1;
                }
-               pFabrStressArtifact->SetRequiredConcreteStrength(fc_reqd);
+
+               if ( MaxIndex(fTop,fBot) == 0 )
+               {
+                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::TopGirder,fc_reqd);
+               }
+               else
+               {
+                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::BottomGirder,fc_reqd);
+               }
             }
          }
       }
@@ -565,8 +580,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_RequiredUltimateMoment = Max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
 
       // Required concrete strengths - fabricator model
-      m_RequiredFci =  Max(m_GirderArtifact.GetRequiredReleaseStrength(),  ::ConvertToSysUnits(4.0, unitMeasure::KSI));
-      m_RequiredFc  =  Max(m_GirderArtifact.GetRequiredConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
+      m_RequiredFci =  Max(m_GirderArtifact.GetRequiredReleaseStrength(),        ::ConvertToSysUnits(4.0, unitMeasure::KSI));
+      m_RequiredFc  =  Max(m_GirderArtifact.GetRequiredGirderConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
 
       // Get camber from fabricator model
       m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderSchedule(fabr_ms_poi,CREEP_MAXTIME);

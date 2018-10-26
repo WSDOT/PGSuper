@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -277,66 +277,69 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    std::vector<Float64> fTopMinPermitSpecialLL, fBotMinPermitSpecialLL;
    std::vector<Float64> dummy1, dummy2;
 
-   pForces2->GetStress( erectSegmentIntervalIdx, pftGirder, vPoi, maxBAT, &fTopGirder, &fBotGirder);
-   pForces2->GetStress( castDeckIntervalIdx, pftDiaphragm, vPoi, maxBAT, &fTopDiaphragm, &fBotDiaphragm);
+   pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+   pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
 
-   pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, &fTopMaxSlab, &fBotMaxSlab );
-   pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, minBAT, &fTopMinSlab, &fBotMinSlab );
+   pForces2->GetStress( erectSegmentIntervalIdx, pftGirder, vPoi, maxBAT, topLocation, botLocation, &fTopGirder, &fBotGirder);
+   pForces2->GetStress( castDeckIntervalIdx, pftDiaphragm, vPoi, maxBAT, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
 
-   pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, &fTopMaxSlabPad, &fBotMaxSlabPad );
-   pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, &fTopMinSlabPad, &fBotMinSlabPad );
+   pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
+   pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, minBAT, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
+
+   pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
+   pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
 
    if ( bConstruction )
    {
-      pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, &fTopMaxConstruction, &fBotMaxConstruction );
-      pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, &fTopMinConstruction, &fBotMinConstruction );
+      pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
+      pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
    }
 
    if ( bDeckPanels )
    {
-      pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
-      pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, &fTopMinSlabPanel, &fBotMinSlabPanel );
+      pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
+      pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
    }
 
    if ( bSidewalk )
    {
-      pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, &fTopMaxSidewalk, &fBotMaxSidewalk);
-      pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, &fTopMinSidewalk, &fBotMinSidewalk);
+      pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk);
+      pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk);
    }
 
    if ( bShearKey )
    {
-      pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, &fTopMaxShearKey, &fBotMaxShearKey);
-      pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, &fTopMinShearKey, &fBotMinShearKey);
+      pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey);
+      pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey);
    }
 
-   pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
-   pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
+   pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
+   pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
-   pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, &fTopMaxOverlay, &fBotMaxOverlay);
-   pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, &fTopMinOverlay, &fBotMinOverlay);
+   pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay);
+   pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay);
 
    if ( bPedLoading )
    {
-      pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, maxBAT, true, true, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
-      pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, minBAT, true, true, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
+      pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, maxBAT, true, true, topLocation, botLocation, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
+      pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, minBAT, true, true, topLocation, botLocation, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
    }
 
    if ( bDesign )
    {
-      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
-      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
+      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
+      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
       }
 
       if ( bPermit )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxPermitLL, &dummy2, &fBotMaxPermitLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinPermitLL, &dummy1, &fBotMinPermitLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitLL, &dummy2, &fBotMaxPermitLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitLL, &dummy1, &fBotMinPermitLL, &dummy2);
       }
    }
 
@@ -344,32 +347,32 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    {
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxLegalRoutineLL, &dummy2, &fBotMaxLegalRoutineLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinLegalRoutineLL, &dummy1, &fBotMinLegalRoutineLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalRoutineLL, &dummy2, &fBotMaxLegalRoutineLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalRoutineLL, &dummy1, &fBotMinLegalRoutineLL, &dummy2);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxLegalSpecialLL, &dummy2, &fBotMaxLegalSpecialLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinLegalSpecialLL, &dummy1, &fBotMinLegalSpecialLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalSpecialLL, &dummy2, &fBotMaxLegalSpecialLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalSpecialLL, &dummy1, &fBotMinLegalSpecialLL, &dummy2);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxPermitRoutineLL, &dummy2, &fBotMaxPermitRoutineLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinPermitRoutineLL, &dummy1, &fBotMinPermitRoutineLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitRoutineLL, &dummy2, &fBotMaxPermitRoutineLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitRoutineLL, &dummy1, &fBotMinPermitRoutineLL, &dummy2);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy1, &fTopMaxPermitSpecialLL, &dummy2, &fBotMaxPermitSpecialLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &fTopMinPermitSpecialLL, &dummy1, &fBotMinPermitSpecialLL, &dummy2);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitSpecialLL, &dummy2, &fBotMaxPermitSpecialLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitSpecialLL, &dummy1, &fBotMinPermitSpecialLL, &dummy2);
       }
    }
 

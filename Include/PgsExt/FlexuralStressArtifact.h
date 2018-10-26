@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,19 +123,23 @@ public:
    void SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fAllowable);
    Float64 GetCapacity(pgsTypes::StressLocation stressLocation) const;
 
-   void SetRequiredConcreteStrength(Float64 fcReqd);
-   Float64 GetRequiredConcreteStrength() const;
+   void SetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation,Float64 fcReqd);
+   Float64 GetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation) const;
+   Float64 GetRequiredBeamConcreteStrength() const;
+   Float64 GetRequiredDeckConcreteStrength() const;
 
-   void SetAlternativeTensileStressParameters(pgsTypes::GirderFace face,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fAllowableWithRebar);
-   void GetAlternativeTensileStressParameters(pgsTypes::GirderFace face,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
-   Float64 GetAlternativeAllowableTensileStress(pgsTypes::GirderFace face) const;
-   bool WasWithRebarAllowableStressUsed(pgsTypes::GirderFace face) const;
+   void SetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fAllowableWithRebar);
+   void GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
+   Float64 GetAlternativeAllowableTensileStress(pgsTypes::StressLocation stressLocation) const;
+   bool WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const;
 
-   bool TopPassed() const;
-   bool BottomPassed() const;
-   bool Passed() const;
+   bool Passed(pgsTypes::StressLocation stressLocation) const;
+   bool BeamPassed() const;
+   bool DeckPassed() const;
 
-   Float64 GetCDRatio() const;
+   Float64 GetCDRatio(pgsTypes::StressLocation stressLocation) const;
+   Float64 GetBeamCDRatio() const;
+   Float64 GetDeckCDRatio() const;
 
 
 protected:
@@ -158,26 +162,25 @@ private:
    pgsTypes::StressType m_StressType;
 
    // Alternative tensile stress parameters
-   // access array with pgsTypes::GirderFace constant
-   bool   m_bIsAltTensileStressApplicable[2];
-   Float64 m_Yna[2];
-   Float64 m_At[2];
-   Float64 m_T[2];
-   Float64 m_AsProvided[2];
-   Float64 m_AsRequired[2];
-   Float64 m_fAltAllowableStress[2];
+   // access array with pgsTypes::StressLocation constant
+   bool   m_bIsAltTensileStressApplicable[4];
+   Float64 m_Yna[4];
+   Float64 m_At[4];
+   Float64 m_T[4];
+   Float64 m_AsProvided[4];
+   Float64 m_AsRequired[4];
+   Float64 m_fAltAllowableStress[4];
 
    // Other
-   Float64 m_FcReqd; // concrete strenght required to satisfy allowable for this section
-                    // No concrete strength work if < 0
+   Float64 m_FcReqd[4]; // concrete strenght required to satisfy allowable for this section
+                        // No concrete strength work if < 0
 
-   bool StressedPassed(Float64 fStress,pgsTypes::GirderFace face) const;
-   bool TensionPassedWithRebar(Float64 fTens,pgsTypes::GirderFace face) const;
-   bool TensionPassedWithoutRebar(Float64 fTens,pgsTypes::GirderFace face) const;
+   bool StressedPassed(pgsTypes::StressLocation stressLocation) const;
+   bool TensionPassedWithRebar(Float64 fTens,pgsTypes::StressLocation stressLocation) const;
+   bool TensionPassedWithoutRebar(Float64 fTens,pgsTypes::StressLocation stressLocation) const;
 
    Float64 GetCDRatio(Float64 c,Float64 d) const;
-   Float64 GetTopCDRatio() const;
-   Float64 GetBottomCDRatio() const;
+   Float64 GetCDRatio(pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation) const;
 };
 
 #endif // INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_

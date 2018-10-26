@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -127,19 +127,22 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
       std::vector<Float64> fTopMaxLL3, fBotMaxLL3;
       std::vector<Float64> fTopMinLL3, fBotMinLL3;
 
-      pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC1, &fBotMaxDC1);
-      pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC1, &fBotMinDC1);
-      pForces2->GetStress(railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC2, &fBotMaxDC2);
-      pForces2->GetStress(railingSystemIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC2, &fBotMinDC2);
+      pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
+      pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
 
-      pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW1, &fBotMaxDW1);
-      pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW1, &fBotMinDW1);
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, maxBAT, topLocation, botLocation, &fTopMaxDC1, &fBotMaxDC1);
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, minBAT, topLocation, botLocation, &fTopMinDC1, &fBotMinDC1);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT, topLocation, botLocation, &fTopMaxDC2, &fBotMaxDC2);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDC, vPoi, minBAT, topLocation, botLocation, &fTopMinDC2, &fBotMinDC2);
 
-      pForces2->GetStress(railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW2, &fBotMaxDW2);
-      pForces2->GetStress(railingSystemIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW2, &fBotMinDW2);
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, maxBAT, topLocation, botLocation, &fTopMaxDW1, &fBotMaxDW1);
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, minBAT, topLocation, botLocation, &fTopMinDW1, &fBotMinDW1);
 
-      pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT, &fTopMaxLL3, &fBotMaxLL3);
-      pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT, &fTopMinLL3, &fBotMinLL3);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT, topLocation, botLocation, &fTopMaxDW2, &fBotMaxDW2);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDW, vPoi, minBAT, topLocation, botLocation, &fTopMinDW2, &fBotMinDW2);
+
+      pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT, topLocation, botLocation, &fTopMaxLL3, &fBotMaxLL3);
+      pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT, topLocation, botLocation, &fTopMinLL3, &fBotMinLL3);
 
       std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());

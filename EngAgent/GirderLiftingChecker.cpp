@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -403,7 +403,7 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
    pArtifact->SetOverhangs(Loh,Roh);
 
    Float64 bracket_hgt = pGirderLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
-   Float64 ycgt = pSectProp->GetYtGirder(liftSegmentIntervalIdx,pgsPointOfInterest(segmentKey,0.00));
+   Float64 ycgt = pSectProp->GetY(liftSegmentIntervalIdx,pgsPointOfInterest(segmentKey,0.00),pgsTypes::TopGirder);
    Float64 e_hgt = bracket_hgt+ycgt;
    pArtifact->SetVerticalDistanceFromPickPointToGirderCg(e_hgt);
 
@@ -485,6 +485,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
    
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+   GET_IFACE(IBridge, pBridge);
    GET_IFACE(IGirder,pGirder);
    GET_IFACE(ISectionProperties,pSectProps);
    GET_IFACE(IShapes,pShapes);
@@ -532,7 +533,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, liftSegmentIntervalIdx, pGirder, pShapes,pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec);
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, liftSegmentIntervalIdx, pBridge, pGirder, pShapes,pSectProps, pRebarGeom, pMaterials, true/*limit bar stress*/, bSISpec, true /*girder stresses*/);
 
    Float64 AsMax = 0;
    Float64 As = 0;
@@ -544,14 +545,14 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
       {
          ag  = pSectProps->GetAg(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig.Fci);
-         stg = pSectProps->GetSt(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig.Fci);
-         sbg = pSectProps->GetSb(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig.Fci);
+         stg = pSectProps->GetS(liftSegmentIntervalIdx,poi,pgsTypes::TopGirder,   liftConfig.GdrConfig.Fci);
+         sbg = pSectProps->GetS(liftSegmentIntervalIdx,poi,pgsTypes::BottomGirder,liftConfig.GdrConfig.Fci);
       }
       else
       {
          ag  = pSectProps->GetAg(liftSegmentIntervalIdx,poi);
-         stg = pSectProps->GetSt(liftSegmentIntervalIdx,poi);
-         sbg = pSectProps->GetSb(liftSegmentIntervalIdx,poi);
+         stg = pSectProps->GetS(liftSegmentIntervalIdx,poi,pgsTypes::TopGirder);
+         sbg = pSectProps->GetS(liftSegmentIntervalIdx,poi,pgsTypes::BottomGirder);
       }
 
       Float64 dist_from_start = poi.GetDistFromStart();

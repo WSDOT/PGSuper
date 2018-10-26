@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1532,7 +1532,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
             pgsPointOfInterest prev_poi = *iter;
             iter++;
 
-            Float64 Ybg = pSectProp->GetYb(intervalIdx,prev_poi);
+            Float64 Ybg = pSectProp->GetY(intervalIdx,prev_poi,pgsTypes::BottomGirder);
             Float64 Hg  = pSectProp->GetHg(intervalIdx,prev_poi);
             Float64 nEff;
             Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, false, &nEff);
@@ -1543,7 +1543,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
             {
                pgsPointOfInterest& poi = *iter;
             
-               Ybg = pSectProp->GetYb(intervalIdx,poi);
+               Ybg = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
                Hg  = pSectProp->GetHg(intervalIdx,poi);
                ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, false, &nEff);
                to_y = Ybg - (Hg+ecc);

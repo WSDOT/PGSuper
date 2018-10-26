@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -702,12 +702,8 @@ public:
    virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetIx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetIy(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetYt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetYb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetSt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetSb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetYtGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetStGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
+   virtual Float64 GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location);
+   virtual Float64 GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location);
    virtual Float64 GetKt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetKb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetEIx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
@@ -715,22 +711,14 @@ public:
    virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
    virtual Float64 GetIx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
    virtual Float64 GetIy(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
-   virtual Float64 GetYt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
-   virtual Float64 GetYb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
-   virtual Float64 GetSt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
-   virtual Float64 GetSb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
-   virtual Float64 GetYtGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
-   virtual Float64 GetStGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr);
+   virtual Float64 GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr);
+   virtual Float64 GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr);
 
    virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetIy(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetYt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetYb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetSt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetSb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetYtGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
-   virtual Float64 GetStGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
+   virtual Float64 GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location);
+   virtual Float64 GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location);
    virtual Float64 GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetKb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetEIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
@@ -738,12 +726,8 @@ public:
    virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
    virtual Float64 GetIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
    virtual Float64 GetIy(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
-   virtual Float64 GetYt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
-   virtual Float64 GetYb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
-   virtual Float64 GetSt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
-   virtual Float64 GetSb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
-   virtual Float64 GetYtGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
-   virtual Float64 GetStGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc);
+   virtual Float64 GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fc);
+   virtual Float64 GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fc);
 
    virtual Float64 GetNetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetNetIg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
@@ -943,8 +927,8 @@ public:
    virtual IntervalIndexType GetLiveLoadInterval();
    virtual IntervalIndexType GetOverlayInterval();
    virtual IntervalIndexType GetInstallRailingSystemInterval();
-   virtual IntervalIndexType GetStressFirstTendonInterval(const CGirderKey& girderKey);
-   virtual IntervalIndexType GetStressLastTendonInterval(const CGirderKey& girderKey);
+   virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey);
+   virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID);
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey);
@@ -999,9 +983,10 @@ private:
 
       SectProp() { YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
    } SectProp;
-   typedef std::map<PoiIntervalKey,SectProp> SectPropContainer;
-   SectPropContainer m_SectProps[4]; // Key = PoiIntervalKey object, index = one of the SPT_xxxx constants
+   typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
+   SectPropContainer m_SectProps[4]; // index = one of the SPT_xxxx constants
    SectProp GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,int sectPropType);
+   Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps);
 
    // Points of interest for precast segments (precast girders/spliced girder segments)
    pgsPoiMgr m_PoiMgr;

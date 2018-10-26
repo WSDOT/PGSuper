@@ -1392,6 +1392,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GirderArtifactTool.cpp"
+				>
+			</File>
+			<File
 				RelativePath="GirderData.cpp"
 				>
 				<FileConfiguration

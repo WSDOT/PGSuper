@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -493,7 +493,7 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi,true, &nEff);
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   Float64 Yb = pSectProp->GetYb(releaseIntervalIdx,poi);
+   Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
@@ -639,7 +639,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    Float64 height = pGirder->GetHeight(poi);
    Float64 nEff;
    Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true, &nEff);
-   Float64 yps = pSectProp->GetYb(releaseIntervalIdx,poi) - ecc;
+   Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
    CString strDim;
    CComPtr<iTextBlock> textBlock;

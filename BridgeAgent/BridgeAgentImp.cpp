@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -10600,7 +10600,7 @@ Float64 CBridgeAgentImp::GetHsEccentricity(IntervalIndexType intervalIdx,const p
 
          cg = cg / (Float64)num_strand_positions;
 
-         Float64 Yb = GetYb(releaseIntervalIdx,poi);
+         Float64 Yb = GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
          Float64 Hg = GetHg(releaseIntervalIdx,poi);
          ecc = Yb-(Hg+cg);
       }
@@ -10791,7 +10791,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(IntervalIndexType intervalIdx,const p
       {
          cg = cg/num_eff_strands;
 
-         Float64 Yb = GetYb(releaseIntervalIdx,poi);
+         Float64 Yb = GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
          Float64 Hg = GetHg(releaseIntervalIdx,poi);
 
          Float64 ecc = Yb - (Hg+cg);
@@ -10881,7 +10881,7 @@ Float64 CBridgeAgentImp::GetTempEccentricity(IntervalIndexType intervalIdx,const
 
       cg = cg / (Float64)num_strands_positions;
 
-      Float64 Yb = GetYb(releaseIntervalIdx,poi);
+      Float64 Yb = GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
       Float64 Hg = GetHg(releaseIntervalIdx,poi);
       ecc = Yb-(Hg+cg);
 
@@ -11115,7 +11115,7 @@ Float64 CBridgeAgentImp::GetHsEccentricity(pgsTypes::SectionPropertyType spType,
 
          cg = cg / (Float64)nStrandPoints;
 
-         Float64 Yb = GetYb(spType,intervalIdx,poi);
+         Float64 Yb = GetY(spType,intervalIdx,poi,pgsTypes::BottomGirder);
          Float64 Hg = GetHg(intervalIdx,poi);
          ecc = Yb - (Hg+cg);
       }
@@ -11224,7 +11224,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(pgsTypes::SectionPropertyType spType,
       {
          cg = cg/num_eff_strands;
 
-         Float64 Yb = GetYb(spType,intervalIdx,poi);
+         Float64 Yb = GetY(spType,intervalIdx,poi,pgsTypes::BottomGirder);
          Float64 Hg = GetHg(intervalIdx,poi);
 
          Float64 ecc = Yb - (Hg+cg);
@@ -11305,7 +11305,7 @@ Float64 CBridgeAgentImp::GetTempEccentricity(pgsTypes::SectionPropertyType spTyp
 
       cg = cg / (Float64)num_strand_positions;
 
-      Float64 Yb = GetYb(spType,intervalIdx,poi);
+      Float64 Yb = GetY(spType,intervalIdx,poi,pgsTypes::BottomGirder);
       Float64 Hg = GetHg(intervalIdx,poi);
 
       Float64 ecc = Yb - (Hg+cg);
@@ -13204,7 +13204,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segme
          else if (measurementType==hsoECCENTRICITY)
          {
             IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 Yb = GetYb(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0));
+            Float64 Yb = GetY(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0),pgsTypes::BottomGirder);
             Float64 ecc = Yb - (HgHp1+cg);
 
             result = ecc - offset;
@@ -13548,7 +13548,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(const CSegmentKey& segmen
          else if (measurementType==hsoECCENTRICITY)
          {
             IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 Yb = GetYb(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0));
+            Float64 Yb = GetY(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0),pgsTypes::BottomGirder);
             Float64 ecc = Yb - (HgHp1+cg);
 
             result = ecc - offset;
@@ -14495,58 +14495,22 @@ Float64 CBridgeAgentImp::GetIy(IntervalIndexType intervalIdx,const pgsPointOfInt
    return GetIy(sectPropType,intervalIdx,poi);
 }
 
-Float64 CBridgeAgentImp::GetYt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+Float64 CBridgeAgentImp::GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location)
 {
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetYt(sectPropType,intervalIdx,poi);
+   return GetY(sectPropType,intervalIdx,poi,location);
 }
 
-Float64 CBridgeAgentImp::GetYb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+Float64 CBridgeAgentImp::GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location)
 {
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetYb(sectPropType,intervalIdx,poi);
-}
-
-Float64 CBridgeAgentImp::GetSt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetSt(sectPropType,intervalIdx,poi);
-}
-
-Float64 CBridgeAgentImp::GetSb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetSb(sectPropType,intervalIdx,poi);
-}
-
-Float64 CBridgeAgentImp::GetYtGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetYtGirder(sectPropType,intervalIdx,poi);
-}
-
-Float64 CBridgeAgentImp::GetStGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetStGirder(sectPropType,intervalIdx,poi);
+   return GetS(sectPropType,intervalIdx,poi,location);
 }
 
 Float64 CBridgeAgentImp::GetKt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
@@ -14603,58 +14567,22 @@ Float64 CBridgeAgentImp::GetIy(IntervalIndexType intervalIdx,const pgsPointOfInt
    return GetIy(sectPropType,intervalIdx,poi,fcgdr);
 }
 
-Float64 CBridgeAgentImp::GetYt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
+Float64 CBridgeAgentImp::GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr)
 {
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetYt(sectPropType,intervalIdx,poi,fcgdr);
+   return GetY(sectPropType,intervalIdx,poi,location,fcgdr);
 }
 
-Float64 CBridgeAgentImp::GetYb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
+Float64 CBridgeAgentImp::GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr)
 {
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetYb(sectPropType,intervalIdx,poi,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetSt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetSt(sectPropType,intervalIdx,poi,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetSb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetSb(sectPropType,intervalIdx,poi,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetYtGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetYtGirder(sectPropType,intervalIdx,poi,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetStGirder(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
-   return GetStGirder(sectPropType,intervalIdx,poi,fcgdr);
+   return GetS(sectPropType,intervalIdx,poi,location,fcgdr);
 }
 
 Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
@@ -14681,77 +14609,68 @@ Float64 CBridgeAgentImp::GetIy(pgsTypes::SectionPropertyType spType,IntervalInde
    return iyy;
 }
 
-Float64 CBridgeAgentImp::GetYt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location)
 {
    SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   Float64 yt;
-   props.ShapeProps->get_Ytop(&yt);
-   return yt;
+
+   Float64 Y;
+   switch (location )
+   {
+   case pgsTypes::TopGirder:
+   case pgsTypes::BottomDeck:
+      // top of girder and bottom of deck are at the same location
+      Y = props.YtopGirder;
+      break;
+
+   case pgsTypes::BottomGirder:
+      props.ShapeProps->get_Ybottom(&Y);
+      break;
+
+   case pgsTypes::TopDeck:
+      {
+         IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+         if ( compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
+         {
+            props.ShapeProps->get_Ytop(&Y);
+         }
+         else
+         {
+            Y = props.YtopGirder;
+         }
+      }
+   }
+
+   return Y;
 }
 
-Float64 CBridgeAgentImp::GetYb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location)
 {
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   Float64 yb;
-   props.ShapeProps->get_Ybottom(&yb);
-   return yb;
-}
-
-Float64 CBridgeAgentImp::GetSt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-
-   Float64 ixx;
-   props.ShapeProps->get_Ixx(&ixx);
+   Float64 Ix = GetIx(spType,intervalIdx,poi);
+   Float64 Y  = GetY(spType,intervalIdx,poi,location);
    
-   Float64 yt;
-   props.ShapeProps->get_Ytop(&yt);
+   Float64 S = (IsZero(Y) ? 0 : Ix/Y);
 
-   Float64 St = (IsZero(yt) ? 0 : -ixx/yt);
+   // S is negative above the neutral axis that way
+   // M/S results in compression top for positive moment (compression is < 0)
+   if ( location != pgsTypes::BottomGirder )
+   {
+      S *= -1;
+   }
 
    IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
-   if ( compositeDeckInterval <= intervalIdx && IsCompositeDeck() )
+   if ( (location == pgsTypes::TopDeck || location == pgsTypes::BottomDeck) && // want S for deck
+         compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
+      )
    {
-      // if there is a composite deck and the deck is on, return St (Stop deck) in terms of deck material
+      // make S be in terms of deck material
       Float64 Eg = (poi.HasAttribute(POI_CLOSURE) ? GetClosureJointEc(poi.GetSegmentKey(),intervalIdx) : GetSegmentEc(poi.GetSegmentKey(),intervalIdx));
       Float64 Es = GetDeckEc(intervalIdx);
 
       Float64 n = Eg/Es;
-      St *= n;
+      S *= n;
    }
 
-   return St;
-}
-
-Float64 CBridgeAgentImp::GetSb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   
-   Float64 ixx;
-   props.ShapeProps->get_Ixx(&ixx);
-   
-   Float64 yb;
-   props.ShapeProps->get_Ybottom(&yb);
-
-   Float64 Sb = (IsZero(yb) ? 0 : ixx/yb);
-
-   return Sb;
-}
-
-Float64 CBridgeAgentImp::GetYtGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   return props.YtopGirder;
-}
-
-Float64 CBridgeAgentImp::GetStGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
-{
-   SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   Float64 Yt = props.YtopGirder;
-   Float64 Ix;
-   props.ShapeProps->get_Ixx(&Ix);
-   Float64 St = (IsZero(Yt) ? 0 : -Ix/Yt);
-   return St;
+   return S;
 }
 
 Float64 CBridgeAgentImp::GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
@@ -14864,7 +14783,7 @@ Float64 CBridgeAgentImp::GetIy(pgsTypes::SectionPropertyType spType,IntervalInde
    return Iy;
 }
 
-Float64 CBridgeAgentImp::GetYt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
+Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -14875,40 +14794,54 @@ Float64 CBridgeAgentImp::GetYt(pgsTypes::SectionPropertyType spType,IntervalInde
    // don't do a bunch of extra work. Return the properties for the real girder
    if ( !bEcChanged )
    {
-      return GetYt(spType,intervalIdx,poi);
+      return GetY(spType,intervalIdx,poi,location);
    }
 
    CComPtr<IShapeProperties> sprops;
    GetShapeProperties(spType,intervalIdx,poi,E,&sprops);
 
-   Float64 yt;
-   sprops->get_Ytop(&yt);
-   return yt;
-}
+   Float64 Xs = ConvertPoiToSegmentCoordinate(poi); // needs to be in the generic bridge segment coordinate system
+   CComPtr<ISegment> segment;
+   GetSegment(segmentKey,&segment);
+   CComPtr<IShape> shape;
+   segment->get_PrimaryShape(Xs,&shape);
+   CComPtr<IShapeProperties> beamprops;
+   shape->get_ShapeProperties(&beamprops);
 
-Float64 CBridgeAgentImp::GetYb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
+   Float64 Y;
+   switch (location)
    {
-      return GetYb(spType,intervalIdx,poi);
+   case pgsTypes::TopGirder:
+   case pgsTypes::TopDeck:
+   case pgsTypes::BottomDeck:
+      {
+         IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+         if ( location == pgsTypes::TopDeck && compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
+         {
+            // top of composite deck that has been installed
+            sprops->get_Ytop(&Y);
+         }
+         else
+         {
+            // top girder, bottom deck, (and top deck if deck not composite or installed yet)
+            // are all at the same location
+            Y = ComputeYtopGirder(sprops,beamprops);
+         }
+      }
+      break;
+
+   case pgsTypes::BottomGirder:
+      sprops->get_Ybottom(&Y);
+      break;
+
+   default:
+      ATLASSERT(false);
    }
 
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(spType,intervalIdx,poi,E,&sprops);
-
-   Float64 yb;
-   sprops->get_Ybottom(&yb);
-   return yb;
+   return Y;
 }
 
-Float64 CBridgeAgentImp::GetSt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
+Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -14919,7 +14852,7 @@ Float64 CBridgeAgentImp::GetSt(pgsTypes::SectionPropertyType spType,IntervalInde
    // don't do a bunch of extra work. Return the properties for the real girder
    if ( !bEcChanged )
    {
-      return GetSt(spType,intervalIdx,poi);
+      return GetS(spType,intervalIdx,poi,location);
    }
 
    CComPtr<IShapeProperties> sprops;
@@ -14927,92 +14860,39 @@ Float64 CBridgeAgentImp::GetSt(pgsTypes::SectionPropertyType spType,IntervalInde
    Float64 ixx;
    sprops->get_Ixx(&ixx);
    
-   Float64 yt;
-   sprops->get_Ytop(&yt);
+   Float64 y;
+   if ( location == pgsTypes::BottomGirder )
+   {
+      sprops->get_Ybottom(&y);
+   }
+   else
+   {
+      sprops->get_Ytop(&y);
+   }
 
-   Float64 St = (IsZero(yt) ? 0 : -ixx/yt);
+   Float64 S = (IsZero(y) ? 0 : ixx/y);
+
+   // S is negative above the neutral axis that way
+   // M/S results in compression top for positive moment (compression is < 0)
+   if ( location != pgsTypes::BottomGirder )
+   {
+      S *= -1;
+   }
 
    IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
-   if ( compositeDeckInterval <= intervalIdx && IsCompositeDeck() )
+   if ( (location == pgsTypes::TopDeck || location == pgsTypes::BottomDeck) && // want S for deck
+         compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
+      )
    {
-      // if there is a composite deck and the deck is on, return St (Stop deck) in terms of deck material
+      // make S be in terms of deck material
       Float64 Eg = E;
       Float64 Es = GetDeckEc(intervalIdx);
 
       Float64 n = Eg/Es;
-      St *= n;
+      S *= n;
    }
 
-   return St;
-}
-
-Float64 CBridgeAgentImp::GetSb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
-   {
-      return GetSb(spType,intervalIdx,poi);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(intervalIdx,poi,E,&sprops);
-
-   Float64 ixx;
-   sprops->get_Ixx(&ixx);
-   
-   Float64 yb;
-   sprops->get_Ybottom(&yb);
-
-   Float64 Sb = (IsZero(yb) ? 0 : ixx/yb);
-
-   return Sb;
-}
-
-Float64 CBridgeAgentImp::GetYtGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
-   {
-      return GetYtGirder(spType,intervalIdx,poi);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(intervalIdx,poi,E,&sprops);
-
-   IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
-   Float64 YtopGirder;
-   if ( intervalIdx < compositeDeckInterval )
-   {
-      sprops->get_Ytop(&YtopGirder);
-   }
-   else
-   {
-      IntervalIndexType castDeckInterval = m_IntervalManager.GetCastDeckInterval();
-      Float64 Hg = GetHg(castDeckInterval,poi);
-      Float64 Yb = GetYb(spType,intervalIdx,poi,fcgdr);
-      YtopGirder = Hg - Yb;
-   }
-
-   return YtopGirder;
-}
-
-Float64 CBridgeAgentImp::GetStGirder(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr)
-{
-   Float64 Ixx = GetIx(spType,intervalIdx,poi,fcgdr);
-   Float64 Yt  = GetYtGirder(spType,intervalIdx,poi,fcgdr);
-   return (IsZero(Yt) ? 0 : -Ixx/Yt);
+   return S;
 }
 
 Float64 CBridgeAgentImp::GetNetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
@@ -18251,7 +18131,7 @@ Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgs
    }
 
    // Get Ytop
-   Float64 Ytop = GetYt(intervalIdx,poi); // distance from CG to top of girder
+   Float64 Ytop = GetY(intervalIdx,poi,pgsTypes::TopGirder); // distance from CG to top of girder
 
    Float64 ecc = -(duct_offset + Ytop);
 
@@ -18586,7 +18466,7 @@ IntervalIndexType CBridgeAgentImp::GetInstallRailingSystemInterval()
    return m_IntervalManager.GetInstallRailingSystemInterval();
 }
 
-IntervalIndexType CBridgeAgentImp::GetStressFirstTendonInterval(const CGirderKey& girderKey)
+IntervalIndexType CBridgeAgentImp::GetFirstTendonStressingInterval(const CGirderKey& girderKey)
 {
    VALIDATE(BRIDGE);
 
@@ -18604,7 +18484,7 @@ IntervalIndexType CBridgeAgentImp::GetStressFirstTendonInterval(const CGirderKey
    return m_IntervalManager.GetInterval(ptEventIdx);
 }
 
-IntervalIndexType CBridgeAgentImp::GetStressLastTendonInterval(const CGirderKey& girderKey)
+IntervalIndexType CBridgeAgentImp::GetLastTendonStressingInterval(const CGirderKey& girderKey)
 {
    VALIDATE(BRIDGE);
 
@@ -19101,25 +18981,31 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
    //
    SectProp props; 
 
-   IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType releaseIntervalIdx       = GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
 
    // if the POI is at a closure joint and the closure joint isn't composite with the girder yet, then
    // the POI is at a non-structural section so the section properties are zero
    bool bIsSection = true;
    if ( (poi.HasAttribute(POI_CLOSURE) && intervalIdx < GetCompositeClosureJointInterval(segmentKey)) )
+   {
       bIsSection = false; // at a non-structural section
+   }
 
    // if net deck properties are requested and the interval is before the deck is made composite
    // then the deck is not yet structural and its section properties are taken to be zero
    bool bIsDeckComposite = true;
    if ( sectPropType == SPT_NET_DECK && intervalIdx < compositeDeckIntervalIdx )
+   {
       bIsDeckComposite = false;
+   }
 
-   // if the girder concrete has been cured yet, then the properties are taken to be zero
+   // if the girder concrete has not been cured yet, then the properties are taken to be zero
    bool bIsGirderConcreteCured = true;
    if ( intervalIdx < releaseIntervalIdx )
+   {
       bIsGirderConcreteCured = false;
+   }
 
    // if we can compute properties do it... otherwise the properties are taken to be zero
    if ( bIsGirderConcreteCured && bIsDeckComposite && bIsSection )
@@ -19191,11 +19077,7 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
          // Ytop Girder
          CComPtr<IShapeProperties> beamprops;
          shape->get_ShapeProperties(&beamprops);
-         Float64 Ytbeam, Ybbeam;
-         beamprops->get_Ytop(&Ytbeam);
-         beamprops->get_Ybottom(&Ybbeam);
-         Float64 hg = Ytbeam + Ybbeam;
-         props.YtopGirder = hg - Yb;
+         props.YtopGirder = ComputeYtopGirder(shapeprops,beamprops);
 
          // Create clipping line through beam/slab interface
          CComPtr<ILine2d> line;
@@ -19322,6 +19204,21 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
    ATLASSERT(found == m_SectProps[sectPropType].find(poiKey));
    ATLASSERT(found != m_SectProps[sectPropType].end());
    return (*found).second;
+}
+
+Float64 CBridgeAgentImp::ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps)
+{
+   Float64 Ybc;
+   compositeProps->get_Ybottom(&Ybc);
+
+   Float64 Yb, Yt;
+   beamProps->get_Ytop(&Yt);
+   beamProps->get_Ybottom(&Yb);
+   Float64 Hg = Yb + Yt;
+
+   Float64 YtopGirder = Hg - Ybc;
+
+   return YtopGirder;
 }
 
 Float64 CBridgeAgentImp::GetHalfElevation(const pgsPointOfInterest& poi)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -608,7 +608,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
    fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-   if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom))
+   if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
    {
       (*pTable)(row,0) << _T("Top of girder tension at prestress transfer length from left end (w/ mild rebar) ");
    }
@@ -620,7 +620,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllowTop );
-   if ( pArtifact->TopPassed() )
+   if ( pArtifact->Passed(pgsTypes::TopGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -635,7 +635,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -648,7 +648,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-      if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom))
+      if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
       {
          (*pTable)(row,0) << _T("Top of girder tension at h from left end (w/ mild rebar) ");
       }
@@ -660,7 +660,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllowTop );
-      if ( pArtifact->TopPassed() )
+      if ( pArtifact->Passed(pgsTypes::TopGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -675,7 +675,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -690,7 +690,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
          fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-         if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom))
+         if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
          {
             (*pTable)(row,0) << _T("Top of girder tension at harping point (w/ mild rebar)");
          }
@@ -702,7 +702,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllowTop );
-         if ( pArtifact->TopPassed() )
+         if ( pArtifact->Passed(pgsTypes::TopGirder) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -715,7 +715,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
-         if ( pArtifact->BottomPassed() )
+         if ( pArtifact->Passed(pgsTypes::BottomGirder) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -727,7 +727,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
          fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-         if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom))
+         if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
          {
             (*pTable)(row,0) << _T("Top of girder tension at left harping point (w/ mild rebar)");
          }
@@ -739,7 +739,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
-         if ( pArtifact->TopPassed() )
+         if ( pArtifact->Passed(pgsTypes::TopGirder) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -752,7 +752,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
-         if ( pArtifact->BottomPassed() )
+         if ( pArtifact->Passed(pgsTypes::BottomGirder) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -762,7 +762,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
          fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-         if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom))
+         if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
          {
             (*pTable)(row,0) << _T("Top of girder tension at right harping point (w/ mild rebar)");
          }
@@ -774,7 +774,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllowTop );
-         if ( pArtifact->TopPassed() )
+         if ( pArtifact->Passed(pgsTypes::TopGirder) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -787,7 +787,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
          (*pTable)(row,1) << _T("Service I");
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllowBot );
-         if ( pArtifact->BottomPassed() )
+         if ( pArtifact->Passed(pgsTypes::BottomGirder) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -801,7 +801,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
-      if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::GirderBottom))
+      if (pArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
       {
          (*pTable)(row,0) << _T("Top of girder tension at h from right end (w/ mild rebar)");
       }
@@ -813,7 +813,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllowTop );
-      if ( pArtifact->TopPassed() )
+      if ( pArtifact->Passed(pgsTypes::TopGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -826,7 +826,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -920,7 +920,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllowTop );
-   if ( pArtifact->TopPassed() )
+   if ( pArtifact->Passed(pgsTypes::TopGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -933,7 +933,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -947,7 +947,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllowTop );
-   if ( pArtifact->TopPassed() )
+   if ( pArtifact->Passed(pgsTypes::TopGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -960,7 +960,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -976,7 +976,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllowTop );
-   if ( pArtifact->TopPassed() )
+   if ( pArtifact->Passed(pgsTypes::TopGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -989,7 +989,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1080,7 +1080,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
         (*pTable)(row,4) << RPT_PASS;
       else
         (*pTable)(row,4) << RPT_FAIL;
@@ -1094,7 +1094,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllowTop );
-   if ( pArtifact->TopPassed() )
+   if ( pArtifact->Passed(pgsTypes::TopGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1109,7 +1109,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1202,7 +1202,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1217,7 +1217,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1232,7 +1232,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1247,7 +1247,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllowTop );
-   if ( pArtifact->TopPassed() )
+   if ( pArtifact->Passed(pgsTypes::TopGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1262,7 +1262,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllowTop );
-      if ( pArtifact->TopPassed() )
+      if ( pArtifact->Passed(pgsTypes::TopGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1277,7 +1277,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllowTop );
-      if ( pArtifact->TopPassed() )
+      if ( pArtifact->Passed(pgsTypes::TopGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1291,7 +1291,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service III");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1307,7 +1307,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,1) << _T("Service I");
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllowBot );
-   if ( pArtifact->BottomPassed() )
+   if ( pArtifact->Passed(pgsTypes::BottomGirder) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1323,7 +1323,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Service IA");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1339,7 +1339,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*pTable)(row,1) << _T("Fatigue I");
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllowBot );
-      if ( pArtifact->BottomPassed() )
+      if ( pArtifact->Passed(pgsTypes::BottomGirder) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;

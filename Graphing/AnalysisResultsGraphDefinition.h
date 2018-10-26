@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -59,7 +59,8 @@ public:
    std::set<IntervalIndexType> m_IntervalApplicability; // intervals that this graph is applicable to
    int m_ApplicableActions; // 0 = all, 1 = Forces Only, 2 = Stress Only
    VehicleIndexType m_VehicleIndex;
-   COLORREF m_Color;
+   COLORREF m_Color1;
+   COLORREF m_Color2;
 
    CAnalysisResultsGraphDefinition();
    
@@ -83,7 +84,7 @@ public:
                 const std::vector<IntervalIndexType>& intervals,int actions,COLORREF c);
    
    // constructor for prestress
-   CAnalysisResultsGraphDefinition(IDType id,const CString name,GraphType type,const std::vector<IntervalIndexType>& intervals,COLORREF c);
+   CAnalysisResultsGraphDefinition(IDType id,const CString name,GraphType type,const std::vector<IntervalIndexType>& intervals,COLORREF c1,COLORREF c2);
    
    // constructor for demands
    CAnalysisResultsGraphDefinition(IDType id,const CString name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,COLORREF c);

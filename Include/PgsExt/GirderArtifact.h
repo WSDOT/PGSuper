@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,13 +89,16 @@ public:
 
 
    // Returns true if a "with rebar" allowable tension stress was used anywhere along the girder
-   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::GirderFace face) const;
+   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
 
    // Returns true if a flexural stress check is applicable anywhere along the girder
-   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::GirderFace face) const;
+   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const;
 
 
-   Float64 GetRequiredConcreteStrength() const;
+   Float64 GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
+   Float64 GetRequiredGirderConcreteStrength() const;
+   Float64 GetRequiredDeckConcreteStrength() const;
+   Float64 GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
    Float64 GetRequiredReleaseStrength() const;
 
    bool Passed() const;
