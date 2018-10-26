@@ -54,7 +54,7 @@ Haunch Shape | Select the shape of the slab haunch. This setting is for graphica
 Fillet<sup>*</sup> | Enter the depth of the slab fillet. Note that a single Fillet can be defined for the whole bridge, per span, or per girder. 
 Slab Offset ("A" Dimensions) | Enter the slab offset dimension for the bridge. Note that a single Slab Offset can be defined for the whole bridge, per bearing line, or per girder. 
 
-<sup>*</sup>The Fillet is the least allowable haunch depth along a girder, and is used by PGSuper to compute the required “A” dimension during a specification check and design, and if selected, may be used when computing the load due to the haunch. Refer to @ref tg_slab_offset and the Slab Haunch loading section of @ref tg_structural_analysis_models for more information.
+<sup>*</sup>The Fillet is the least allowable haunch depth along a girder, and is used by PGSuper to compute the required “A” dimension during a specification check and design; and if the parabolic haunch load option is selected, the fillet be used when computing the load due to the haunch. Refer to @ref tg_slab_offset and the Slab Haunch loading section of @ref tg_structural_analysis_models for more information.
 
 Material
 --------------

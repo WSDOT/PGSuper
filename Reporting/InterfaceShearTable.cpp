@@ -81,8 +81,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pPara << _T("Horizontal Interface Shears/Length for ") << pProductLoads->GetLimitStateName(ls) << _T(" Limit State [5.8.4]") << rptNewLine;
+   *pPara << _T("Horizontal Interface Shears/Length for ") << GetLimitStateString(ls) << _T(" Limit State [5.8.4]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;

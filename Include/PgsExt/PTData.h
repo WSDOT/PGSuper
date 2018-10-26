@@ -120,6 +120,13 @@ public:
    // gets a specific point
    void GetPoint(CollectionIndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
 
+   // removes all points from the duct definition that are beyond Lmax
+   // for a girder whose length is Lg (Lg only used if mesaurement type is AlongGirder
+   void RemovePoints(Float64 Lmax,Float64 Lg);
+
+   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
+   void RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx);
+
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 
@@ -162,6 +169,8 @@ protected:
       }
    };
    std::vector<PointRecord> m_Points;
+
+   friend bool RemoveBeyondLmax(const CLinearDuctGeometry::PointRecord& pointRecord);
 };
 
 
@@ -572,5 +581,5 @@ private:
 
    void AddToTimeline(DuctIndexType ductIdx,EventIndexType stressTendonEventIdx);
    void RemoveFromTimeline(DuctIndexType ductIdx);
-   void UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx);
+   void UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx,EventIndexType defaultEventIdx);
 };

@@ -38,6 +38,9 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 
+#include <IFace\AgeAdjustedMaterial.h>
+#include <Beams\Helper.h>
+
 #include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\StatusCenter.h>
@@ -136,10 +139,10 @@ HRESULT CBulbTeeFactory::FinalConstruct()
 
 void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
-   CComPtr<IBulbTeeSection> gdrsection;
-   gdrsection.CoCreateInstance(CLSID_BulbTeeSection);
+   CComPtr<IBulbTeeSection> gdrSection;
+   gdrSection.CoCreateInstance(CLSID_BulbTeeSection);
    CComPtr<IBulbTee> beam;
-   gdrsection->get_Beam(&beam);
+   gdrSection->get_Beam(&beam);
 
    Float64 c1;
    Float64 d1,d2,d3,d4,d5,d6,d7,d8;
@@ -184,7 +187,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType stat
    beam->put_T1(t1);
    beam->put_T2(t2);
 
-   gdrsection.QueryInterface(ppSection);
+   gdrSection.QueryInterface(ppSection);
 }
 
 void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
@@ -228,7 +231,16 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
 {
    CComPtr<ISuperstructureMemberSegment> segment;
 
-   bool bPrismatic = IsPrismatic(pBroker,segmentKey);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
+
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   bool bPrismatic = IsPrismatic(dimensions);
    if ( bPrismatic )
    {
       // prismatic
@@ -243,29 +255,31 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
    ATLASSERT(segment != NULL);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
    // Beam materials
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   material.CoCreateInstance(CLSID_Material);
-
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
-      Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
-      Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
-
-      material->put_E(intervalIdx,E);
-      material->put_Density(intervalIdx,D);
+      CComPtr<IAgeAdjustedMaterial> aaMaterial;
+      BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
+      aaMaterial.QueryInterface(&material);
    }
+   else
+   {
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      material.CoCreateInstance(CLSID_Material);
 
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+      {
+         Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+         Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
+         material->put_E(intervalIdx,E);
+         material->put_Density(intervalIdx,D);
+      }
+   }
 
    if ( bPrismatic )
    {
@@ -313,7 +327,13 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
-   if ( !IsPrismatic(pBroker,segmentKey) )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   if ( !IsPrismatic(dimensions) )
    {
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,1*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,2*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
@@ -702,19 +722,13 @@ IBeamFactory::Dimensions CBulbTeeFactory::LoadSectionDimensions(sysIStructuredLo
    return dimensions;
 }
 
-bool CBulbTeeFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CBulbTeeFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
 {
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
    Float64 d8 = GetDimension(dimensions,_T("D8"));
-
    return IsZero(d8) ? true : false;
 }
 
-bool CBulbTeeFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CBulbTeeFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
 {
    return true;
 }

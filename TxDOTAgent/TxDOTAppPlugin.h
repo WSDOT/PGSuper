@@ -21,9 +21,12 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+
 #include <EAF\EAFAppPlugin.h>
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\EAFAppPluginDocumentationImpl.h>
+#include <PgsExt\CatalogServerAppMixin.h>
+#include "TxDOTAgent_i.h"
 #include "resource.h"
 
 class CTxDOTAppPlugin;
@@ -34,6 +37,7 @@ public:
    CMyCmdTarget() {};
 
    afx_msg void OnManagePlugins();
+   afx_msg void OnUpdateTemplates();
 
    CTxDOTAppPlugin* m_pMyAppPlugin;
 
@@ -41,6 +45,7 @@ public:
 };
 
 class ATL_NO_VTABLE CTxDOTAppPlugin : 
+   public CCatalogServerAppMixin,
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CTxDOTAppPlugin, &CLSID_TxDOTAppPlugin>,
    public IEAFAppPlugin,
@@ -64,7 +69,23 @@ END_COM_MAP()
 BEGIN_CONNECTION_POINT_MAP(CTxDOTAppPlugin)
 END_CONNECTION_POINT_MAP()
 
+   HRESULT FinalConstruct();
+   void FinalRelease();
+
+
    CMyCmdTarget m_MyCmdTarget;
+
+   virtual CString GetAppName() const  { return CString("TOGA"); }
+   virtual CString GetDefaultCatalogServerName() const  { return CString("TxDOT"); }
+   virtual CString GetDefaultCatalogName()  const  { return CString("TxDOT"); }
+
+   virtual CString GetTemplateFileExtension();
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
+   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;
+   virtual void CTxDOTAppPlugin::UpdateDocTemplates();
+
+   virtual CString GetDefaultMasterLibraryFile();
+   virtual CString GetDefaultWorkgroupTemplateFolder();
 
 // IEAFAppPlugin
 public:
@@ -90,6 +111,9 @@ public:
    virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
    virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
    virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+
+public:
+   void UpdateTemplates();
 
 private:
    CEAFAppPluginDocumentationImpl m_DocumentationImpl;

@@ -178,6 +178,7 @@
 #define ID_VIEW_SECTIONCUTLOCATION      36879
 #define ID_VIEW_GIRDERVIEWSETTINGS      36880
 #define ID_STATUSCENTER_VIEW            36881
+#define ID_UPDATE_TOGA_TEMPLATE         37201
 
 // Next default values for new objects
 // 

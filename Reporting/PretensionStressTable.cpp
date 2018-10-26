@@ -85,15 +85,26 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    //gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
    //spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
 
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   bool bTimeStepAnalysis = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false;
+
    // for transformed section analysis, stresses are computed with prestress force P at the start of the interval because elastic effects are intrinsic to the stress analysis
    // for gross section analysis, stresses are computed with prestress force P at the end of the interval because the elastic effects during the interval must be included in the prestress force
    GET_IFACE2(pBroker,ISectionProperties,pSectProps);
-   pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed ? pgsTypes::Start : pgsTypes::End);
+   pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed && !bTimeStepAnalysis ? pgsTypes::Start : pgsTypes::End);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
    IntervalIndexType nIntervals = vIntervals.size();
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   if ( bTimeStepAnalysis )
+   {
+      // for time step analysis, we want the stress in the girder due to pretensioning
+      // at release (see description below)
+      loadRatingIntervalIdx = releaseIntervalIdx;
+   }
 
    ColumnIndexType nColumns;
    if ( bDesign )
@@ -179,6 +190,15 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
          for ( ; iter != end; iter++ )
          {
             IntervalIndexType intervalIdx = *iter;
+            if ( bTimeStepAnalysis )
+            {
+               // if we are doing a time-step analysis the stress in the girder
+               // due to pretensioning is that at release. Girder stresses already
+               // include time-dependent effects (CR, SH, RE). We don't want to
+               // report stresses in the girder computed using an effective prestress
+               // that also includes (is reduced by) creep, shrinkage, and relaxation
+               intervalIdx = releaseIntervalIdx;
+            }
 
             Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime);
             Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime);

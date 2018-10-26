@@ -123,6 +123,11 @@ BOOL CReportingApp::InitInstance()
    // Initialize the report styles when the DLL loads
    rptStyleManager::InitStyles();
 
+   rptFontStyleLibrary* pStyleLib = rptFontStyleLibrary::Instance();
+
+   rptRiStyle style = pStyleLib->GetNamedStyle(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   style.SetVerticalAlignment( rptRiStyle::BOTTOM );
+   pStyleLib->AddNamedStyle(_T("BottomAlignCellStyle"), style);
 	return TRUE;
 }
 

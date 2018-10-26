@@ -34,6 +34,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\GirderHandling.h>
 #include <PgsExt\GirderArtifact.h>
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -130,7 +131,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       return pChapter;
    }
 
-   if ( !factory->IsSymmetric(pBroker,segmentKey) )
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrLibEntry->GetDimensions();
+   if ( !factory->IsSymmetric(dimensions) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pPara << _T("WSDOT girder schedules can only be created for constant depth sections.") << rptNewLine;
@@ -170,7 +172,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << _T("The Specification Check was Successful") << rptNewLine;
+      *pPara << color(Green) << _T("The Specification Check was Successful") << color(Black) << rptNewLine;
    }
    else
    {
@@ -181,6 +183,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        true );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,          pDisplayUnits->GetAngleUnit(),         true );
+   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring,   pDisplayUnits->GetMomentPerAngleUnit(), true );
 
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetSpanLengthUnit(),   true, true );
@@ -229,35 +232,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row,  1) << pGirder->GetGirderName();
    }
 
-   (*pTable)(++row,0) << _T("End 1 Type");
-   (*pTable)(row  ,1) << _T("*");
-
-   (*pTable)(++row,0) << _T("End 2 Type");
-   (*pTable)(row  ,1) << _T("*");
-
-   if ( familyCLSID == CLSID_DeckBulbTeeBeamFamily )
-   {
-      GET_IFACE2(pBroker,IGirder,pIGirder);
-      Float64 B = pIGirder->GetTopWidth(poiMidSpan);
-      (*pTable)(++row,0) << _T("B");
-      (*pTable)(row,1) << glength.SetValue(B);
-   }
-   else
-   {
-      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
-      {
-         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearings");
-         (*pTable)(row,  1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
-      }
-      else
-      {
-         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
-         (*pTable)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
-
-         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
-         (*pTable)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
-      }
-   }
+   (*pTable)(++row,0) << _T("Plan Length (Along Girder Grade)");
+   (*pTable)(row  ,1) << glength.SetValue(pBridge->GetSegmentPlanLength(segmentKey));
 
    if ( familyCLSID == CLSID_WFBeamFamily )
    {
@@ -266,27 +242,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row,  1) << _T("**");
    }
 
-   const pgsLiftingAnalysisArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingAnalysisArtifact();
-   if (pLiftArtifact!=NULL)
-   {
-      Float64 L = (pLiftArtifact->GetGirderLength() - pLiftArtifact->GetClearSpanBetweenPickPoints())/2.0;
-      (*pTable)(++row,0) << _T("Location of Lifting Loops, L");
-      (*pTable)(row  ,1) << glength.SetValue(L);
-   }
+   (*pTable)(++row,0) << _T("End 1 Type");
+   (*pTable)(row  ,1) << _T("*");
+
+   (*pTable)(++row,0) << _T("End 2 Type");
+   (*pTable)(row  ,1) << _T("*");
 
    (*pTable)(++row,0) << Sub2(_T("L"),_T("d"));
    (*pTable)(row,  1) << _T("***");
-
-   const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
-   if ( pHaulingArtifact != NULL )
-   {
-      Float64 L = pHaulingArtifact->GetLeadingOverhang();
-      (*pTable)(++row,0) << _T("Location of Lead Shipping Support, ") << Sub2(_T("L"),_T("L"));
-      (*pTable)(row  ,1) << glength.SetValue(L);
-      L = pHaulingArtifact->GetTrailingOverhang();
-      (*pTable)(++row,0) << _T("Location of Trailing Shipping Support, ") << Sub2(_T("L"),_T("T"));
-      (*pTable)(row  ,1) << glength.SetValue(L);
-   }
 
    CComPtr<IAngle> objAngle1, objAngle2;
    pBridge->GetSegmentSkewAngle(segmentKey,pgsTypes::metStart,&objAngle1);
@@ -333,9 +296,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row  ,1) << gdim.SetValue(P2);
    }
 
-   (*pTable)(++row,0) << _T("Plan Length (Along Girder Grade)");
-   (*pTable)(row  ,1) << glength.SetValue(pBridge->GetSegmentPlanLength(segmentKey));
-
    GET_IFACE2(pBroker, IMaterials, pMaterial);
    (*pTable)(++row,0) << RPT_FC << _T(" (at 28 days)");
    (*pTable)(row  ,1) << stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey,finalIntervalIdx));
@@ -352,7 +312,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( CLSID_SlabBeamFamily != familyCLSID )
       {
-         StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+         StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
          if ( nDebonded != 0 )
          {
             (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -532,6 +492,30 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
+   if ( familyCLSID == CLSID_DeckBulbTeeBeamFamily )
+   {
+      GET_IFACE2(pBroker,IGirder,pIGirder);
+      Float64 B = pIGirder->GetTopWidth(poiMidSpan);
+      (*pTable)(++row,0) << _T("B");
+      (*pTable)(row,1) << glength.SetValue(B);
+   }
+   else
+   {
+      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+      {
+         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearings");
+         (*pTable)(row,  1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
+      }
+      else
+      {
+         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
+         (*pTable)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
+
+         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
+         (*pTable)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
+      }
+   }
+
    Float64 C = 0;
    if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
@@ -556,15 +540,23 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    (*pTable)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
    if ( Dmin_LowerBound < 0 )
+   {
       (*pTable)(row,1) << color(Red) << gdim.SetValue(Dmin_LowerBound) << color(Black);
+   }
    else
+   {
       (*pTable)(row,1) << gdim.SetValue(Dmin_LowerBound);
+   }
 
    (*pTable)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
    if ( Dmax_UpperBound < 0 )
+   {
       (*pTable)(row,1) << color(Red) << gdim.SetValue(Dmax_UpperBound) << color(Black);
+   }
    else
+   {
       (*pTable)(row,1) << gdim.SetValue(Dmax_UpperBound);
+   }
 
    // Stirrups
    Float64 z1Spacing, z1Length;
@@ -627,6 +619,69 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          Hg = pSectProp->GetHg(releaseIntervalIdx,poiEnd);
          H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
+      }
+   }
+
+   const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
+   if (pLiftArtifact!=NULL)
+   {
+      GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+      Float64 L = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
+      (*pTable)(++row,0) << _T("Location of Lifting Loops, L");
+      (*pTable)(row  ,1) << glength.SetValue(L);
+   }
+
+   const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
+   if ( pHaulingArtifact != NULL )
+   {
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+
+      GET_IFACE2(pBroker,IProductForces,pProduct);
+      pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+      GET_IFACE2(pBroker,ISegmentHauling, pSegmentHauling);
+      Float64 trailingOverhang = pSegmentHauling->GetTrailingOverhang(segmentKey);
+      Float64 leadingOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
+
+      (*pTable)(++row,0) << _T("Location of Lead Shipping Support, ") << Sub2(_T("L"),_T("1"));
+      (*pTable)(row  ,1) << glength.SetValue(leadingOverhang);
+      
+      (*pTable)(++row,0) << _T("Location of Trailing Shipping Support, ") << Sub2(_T("L"),_T("2"));
+      (*pTable)(row  ,1) << glength.SetValue(trailingOverhang);
+
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,poiMidSpan,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,poiMidSpan,bat,rtCumulative,false);
+      Float64 Di = DpsRelease + DgdrRelease;
+      (*pTable)(++row,0) << _T("Camber at release");
+      (*pTable)(row,  1) << gdim.SetValue(Di);
+
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,poiMidSpan,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poiMidSpan,bat,rtCumulative,false);
+      Float64 Dcreep1a   = pCamber->GetCreepDeflection( poiMidSpan, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage );
+      Float64 Des = DpsStorage + DgdrStorage + Dcreep1a; // camber at end of storage
+      (*pTable)(++row,0) << _T("Camber at shipping");
+      (*pTable)(row,  1) << gdim.SetValue(Des);
+
+      (*pTable)(++row,0) << _T("Minimum shipping support rotational spring constant, ") << Sub2(_T("K"),symbol(theta));
+      if ( pSegment->HandlingData.pHaulTruckLibraryEntry )
+      {
+         (*pTable)(row,  1) << spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
+      }
+      else
+      {
+         (*pTable)(row,  1) << _T("++");
+      }
+
+      (*pTable)(++row,0) << _T("Minimum shipping support cntr-to-cntr wheel spacing, ") << Sub2(_T("W"),_T("cc"));
+      if ( pSegment->HandlingData.pHaulTruckLibraryEntry )
+      {
+         (*pTable)(row,  1) << gdim.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth());
+      }
+      else
+      {
+         (*pTable)(row,  1) << _T("++");
       }
    }
 
@@ -731,6 +786,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    else if ( reinfDetailsResult < 0 )
    {
       *p << _T("### Reinforcement details could not be listed.") << rptNewLine;
+   }
+
+   if ( pSegment->HandlingData.pHaulTruckLibraryEntry == NULL )
+   {
+      *p << _T("++ Shipping analysis not performed") << rptNewLine;
    }
 
    return pChapter;

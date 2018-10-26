@@ -448,7 +448,7 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
    // do nothing if nGirders == m_Girders.size()
 
    ATLASSERT(nGirders == m_Girders.size());
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CGirderGroupData::Initialize(GirderIndexType nGirders)
@@ -538,7 +538,7 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
    m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->RemoveGirders(nGirdersToRemove);
    m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->RemoveGirders(nGirdersToRemove);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
@@ -892,7 +892,7 @@ GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrI
 
    m_GirderTypeGroups = gdrGroups;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return newGroupIdx;
 }
@@ -905,7 +905,7 @@ void CGirderGroupData::ExpandAll()
    {
       m_GirderTypeGroups.push_back(std::make_pair(gdrIdx,gdrIdx));
    }
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
@@ -929,7 +929,7 @@ void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
       GirderTypeGroup group(gdrIdx,gdrIdx);
       pos = m_GirderTypeGroups.insert(pos,group);
    }
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 
@@ -962,7 +962,7 @@ void CGirderGroupData::JoinAll(GirderIndexType gdrIdx)
       pGirder->SetGirderName(strName.c_str());
       pGirder->SetGirderLibraryEntry(pGdrEntry);
    }
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx,GirderIndexType gdrIdx)
@@ -1034,7 +1034,7 @@ void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrI
 
    // finally replace the data member with the local girder groups
    m_GirderTypeGroups = gdrGroups;
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 GroupIndexType CGirderGroupData::GetGirderTypeGroupCount() const
@@ -1111,7 +1111,7 @@ void CGirderGroupData::SetGirderName(GroupIndexType grpIdx,LPCTSTR strName)
    GirderIndexType firstGdrIdx, lastGdrIdx;
    GetGirderTypeGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&strGirder);
 
-   for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+  for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
    {
       m_Girders[gdrIdx]->SetGirderName(strName);
    }

@@ -158,7 +158,7 @@ BOOL CPsgLibApp::InitInstance()
    // This call will initialize the grid library
 	GXInit();
 
-   sysComCatMgr::CreateCategory(L"PGS Library Editor Components",CATID_PGSuperLibraryManagerPlugin);
+   sysComCatMgr::CreateCategory(L"PGSLibrary Editor Components",CATID_PGSuperLibraryManagerPlugin);
 
    return CWinApp::InitInstance();
 }
@@ -329,6 +329,11 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
         return false;
      }
 
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetHaulTruckLibrary(), *(projectMgr.GetHaulTruckLibrary()), _T("Haul Truck Library"), HaulTruckLibraryEntry(),isImported,bForceUpdate))
+     {
+        return false;
+     }
+
    return true;
 }
 
@@ -404,8 +409,14 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
       return false;
    }
 
-   // duct specification
+   // ducts
    if (!do_make_saveable_copy( *(libMgr.GetDuctLibrary()), ptempManager->GetDuctLibrary()))
+   {
+      return false;
+   }
+
+   // hauling trucks
+   if (!do_make_saveable_copy( *(libMgr.GetHaulTruckLibrary()), ptempManager->GetHaulTruckLibrary()))
    {
       return false;
    }

@@ -417,7 +417,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType startIntervalIdx = 0;
-   if ( m_XAxisType == X_AXIS_AGE_LINEAR  || m_XAxisType == X_AXIS_AGE_LOG )
+   if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG || m_XAxisType == X_AXIS_TIME_LOG )
    {
       if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
       {
@@ -523,9 +523,9 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
             {
                // shrinkage strain is a "compressive" strain so it's value is less than zero
                // for plotting, we like it to be > 0 so multiple by -1e6 (this makes it micro strains)
-               startValue  = -1e6*pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Start);
-               middleValue = -1e6*pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
-               endValue    = -1e6*pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::End);
+               startValue  = -1e6*pMaterials->GetTotalSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetTotalSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetTotalSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {
@@ -558,9 +558,9 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
             }
             else if ( m_GraphType == GRAPH_TYPE_SH )
             {
-               startValue  = -1e6*pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Start);
-               middleValue = -1e6*pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Middle);
-               endValue    = -1e6*pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::End);
+               startValue  = -1e6*pMaterials->GetTotalClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetTotalClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetTotalClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {
@@ -593,9 +593,9 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
             }
             else if ( m_GraphType == GRAPH_TYPE_SH )
             {
-               startValue  = -1e6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Start);
-               middleValue = -1e6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Middle);
-               endValue    = -1e6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
+               startValue  = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {

@@ -9,6 +9,13 @@ Girder Dimensions | Each of the girder dimensions are defined on the accompanyin
 [View Section at Ends...] | Displays the basic girder section at the left end of the girder including the location of prestressing strands
 [View Section at Mid-Span...] | Displays the basic girder section at the mid-point of the girder including the location of prestressing strands
 
+Other Parameters
+-------------------
+
+Item | Description
+----|-----
+Drag Coefficient | Enter the drag coefficient for the bare girder. This parameter is used to determine wind pressure loading from wind speed for the lifting and hauling analysis. Typical values are 1.5 for U-beams and 2.2 for all other beams. (See University of Florida research http://ufdc.ufl.edu/UFE0045616/00001)
+
 Variable Depth Sections
 ------------------------
 This input is shown for girder types that support variable depth sections. Variable depth sections are often used as pier segments. The specific variations in the section depth depend on the girder type. There will be descriptive text that lists the dimensions that can be altered by the user to modify the section depth. Check the "Section depth can vary" box to permit section depth variations.

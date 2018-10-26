@@ -46,6 +46,7 @@ CHandlingData::CHandlingData()
    RightLiftPoint       = 0;
    LeadingSupportPoint  = 0;
    TrailingSupportPoint = 0;
+   pHaulTruckLibraryEntry = NULL;
 }
 
 CHandlingData::CHandlingData(const CHandlingData& rOther)
@@ -109,6 +110,11 @@ bool CHandlingData::operator==(const CHandlingData& rOther) const
       return false;
    }
 
+   if ( HaulTruckName != rOther.HaulTruckName )
+   {
+      return false;
+   }
+
    return true;
 }
 
@@ -163,6 +169,14 @@ HRESULT CHandlingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("TrailingSupportPoint"),&var);
       TrailingSupportPoint = var.dblVal;
 
+      if ( 3 < version )
+      {
+         // added in version 4
+         var.vt = VT_BSTR;
+         hr = pStrLoad->get_Property(_T("HaulTruck"),&var);
+         HaulTruckName = OLE2T(var.bstrVal);
+      }
+
       hr = pStrLoad->EndUnit(); // HandlingData
    }
    catch (HRESULT)
@@ -178,7 +192,7 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("HandlingData"),3.0);
+   pStrSave->BeginUnit(_T("HandlingData"),4.0);
    pStrSave->put_Property(_T("LeftReleasePoint"),CComVariant(LeftReleasePoint)); // added in version 3
    pStrSave->put_Property(_T("RightReleasePoint"),CComVariant(RightReleasePoint)); // added in version 3
    pStrSave->put_Property(_T("LeftStoragePoint"),CComVariant(LeftStoragePoint)); // added in version 2
@@ -187,6 +201,7 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("RightLiftPoint"),CComVariant(RightLiftPoint));
    pStrSave->put_Property(_T("LeadingSupportPoint"),CComVariant(LeadingSupportPoint));
    pStrSave->put_Property(_T("TrailingSupportPoint"),CComVariant(TrailingSupportPoint));
+   pStrSave->put_Property(_T("HaulTruck"),CComVariant(HaulTruckName.c_str())); // added in version 4
    pStrSave->EndUnit(); // HandlingData
 
    return hr;
@@ -194,14 +209,16 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CHandlingData::MakeCopy(const CHandlingData& rOther)
 {
-   LeftReleasePoint     = rOther.LeftReleasePoint;
-   RightReleasePoint    = rOther.RightReleasePoint;
-   LeftStoragePoint     = rOther.LeftStoragePoint;
-   RightStoragePoint    = rOther.RightStoragePoint;
-   LeftLiftPoint        = rOther.LeftLiftPoint;
-   RightLiftPoint       = rOther.RightLiftPoint;
-   LeadingSupportPoint  = rOther.LeadingSupportPoint;
-   TrailingSupportPoint = rOther.TrailingSupportPoint;
+   LeftReleasePoint       = rOther.LeftReleasePoint;
+   RightReleasePoint      = rOther.RightReleasePoint;
+   LeftStoragePoint       = rOther.LeftStoragePoint;
+   RightStoragePoint      = rOther.RightStoragePoint;
+   LeftLiftPoint          = rOther.LeftLiftPoint;
+   RightLiftPoint         = rOther.RightLiftPoint;
+   LeadingSupportPoint    = rOther.LeadingSupportPoint;
+   TrailingSupportPoint   = rOther.TrailingSupportPoint;
+   HaulTruckName          = rOther.HaulTruckName;
+   pHaulTruckLibraryEntry = rOther.pHaulTruckLibraryEntry;
 }
 
 void CHandlingData::MakeAssignment(const CHandlingData& rOther)

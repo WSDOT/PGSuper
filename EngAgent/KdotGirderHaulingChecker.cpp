@@ -97,13 +97,15 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
 
       pgsKdotHaulingAnalysisArtifact* kart = dynamic_cast<pgsKdotHaulingAnalysisArtifact*>(artifact.get()); // eating our own dog food here
 
-      bool didpass = kart->Passed();
+      bool didpass = kart->Passed(pgsTypes::CrownSlope);
 
       // Next run design to get overhang limits
       GET_IFACE(IBridge,pBridge);
       GET_IFACE(ISegmentHaulingPointsOfInterest, pPOId);
 
-      GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
+      HANDLINGCONFIG config;
+      config.bIgnoreGirderConfig = false;
+      config.GdrConfig = pBridge->GetSegmentConfiguration(segmentKey);
       bool success;
 
       // Design
@@ -226,7 +228,7 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
    ComputeHaulingStresses(segmentKey, bUseConfig, haulConfig, vPoi, vMoment, pArtifact);
 }
 
-pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE)
+pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
 {
    LOG(_T("Entering pgsKdotGirderHaulingChecker::DesignHauling"));
 
@@ -264,10 +266,6 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
 
    Float64 loc = hardMinHaulingDistance;
 
-   HANDLINGCONFIG shipping_config;
-   shipping_config.bIgnoreGirderConfig = false;
-   shipping_config.GdrConfig = config;
-
    bool did_pass(false);
    while ( loc < max_overhang )
    {
@@ -277,7 +275,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
 
       this->AnalyzeHauling(segmentKey, true, shipping_config, pPOId, &temp_artifact);
 
-      bool passed = temp_artifact.Passed();
+      bool passed = temp_artifact.Passed(pgsTypes::CrownSlope);
 
       if(passed)
       {
@@ -342,6 +340,8 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
       }
    }
 
+   shipping_config.LeftOverhang = loc;
+   shipping_config.RightOverhang = loc;
    pArtifact->SetOverhangs(loc, loc);
    pArtifact->SetDesignOverhang(loc);
 
@@ -529,7 +529,8 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pBridge, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, bSISpec, true/*girder stresses*/);
+   Float64 fsMax = (bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
+   pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pBridge, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, fsMax, true/*girder stresses*/);
 
    Float64 AsMax = 0;
 

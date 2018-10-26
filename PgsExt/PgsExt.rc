@@ -64,8 +64,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,53
- PRODUCTVERSION 3,0,0,53
+ FILEVERSION 3,0,0,54
+ PRODUCTVERSION 3,0,0,54
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -83,12 +83,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.53"
+            VALUE "FileVersion", "3.0.0.54"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.53"
+            VALUE "ProductVersion", "3.0.0.54"
         END
     END
     BLOCK "VarFileInfo"
@@ -311,6 +311,62 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,323,97,50,14
 END
 
+IDD_CONFIGUREPGSUPER DIALOGEX 0, 0, 403, 210
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Configure PGSuper"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Use the default configuration",IDC_GENERIC,"Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,239,45,126,10
+    CONTROL         "Use a configuration published on a Configuration Server",IDC_DOWNLOAD,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,7,45,190,10
+    COMBOBOX        IDC_SERVERS,19,66,133,95,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Manage",IDC_ADD,156,66,37,12
+    LISTBOX         IDC_PUBLISHERS,21,93,172,59,LBS_NOINTEGRALHEIGHT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_UPDATE_FREQUENCY,21,184,172,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT,7,7,389,25,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    LTEXT           "Select a Configuration Server",IDC_SERVERS_STATIC,21,56,120,9
+    LTEXT           "Select a Configuration",IDC_SERVERS_STATIC2,19,81,172,8
+    LTEXT           "Check for configuration updates:",IDC_UPDATES_STATIC,21,172,174,8
+    PUSHBUTTON      "More about this configuration...",IDC_PUBLISHER_HYPERLINK,35,155,155,14
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,15,153,20,20
+    LTEXT           "A default configuration is installed on your computer. It should only be used when a Configuration Server is not available. This configuration may be out of date with current standards.",IDC_STATIC,253,55,132,46
+END
+
+IDD_SERVERDATA DIALOGEX 0, 0, 294, 206
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configuration Server Definition"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LTEXT           "Name",IDC_STATIC,7,7,20,8
+    EDITTEXT        IDC_NAME,7,20,170,14,ES_AUTOHSCROLL
+    LTEXT           "Server Type",IDC_STATIC,9,45,40,8
+    COMBOBOX        IDC_SERVER_TYPE,7,57,233,59,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Server Address (URL)",IDC_URL_STATIC,7,81,70,8
+    EDITTEXT        IDC_LIBRARY_FILE_LOCATION,7,91,271,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_URL,7,98,280,14,ES_AUTOHSCROLL
+    LTEXT           "Path to Template Files",IDC_TEMPLATE_STATIC,7,116,258,8
+    EDITTEXT        IDC_WORKGROUP_TEMPLATE_LOCATION,7,128,271,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Test Server Connection",IDC_TEST_SERVER,19,157,85,15
+    DEFPUSHBUTTON   "OK",IDOK,134,185,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,186,185,50,14
+    PUSHBUTTON      "Help",ID_HELP,237,185,50,14
+END
+
+IDD_CATALOGSERVER DIALOGEX 0, 0, 265, 145
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+CAPTION "Configuration Servers"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "A configuration server provides configuration settings for the software",IDC_TITLE,7,7,251,15
+    LISTBOX         IDC_SERVERS,7,22,195,92,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add",IDC_ADD,208,21,50,14
+    PUSHBUTTON      "Edit",IDC_EDIT,208,38,50,14
+    PUSHBUTTON      "Delete",IDC_DELETE,208,56,50,14
+    DEFPUSHBUTTON   "OK",IDOK,101,124,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,154,124,50,14
+    PUSHBUTTON      "Help",IDC_HELP,208,124,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -325,6 +381,15 @@ IDB_IP_ROLLERS          BITMAP                  "res\\InteriorPierRollers.bmp"
 IDB_COLUMN_FIXITY       BITMAP                  "res\\ColumnFixity.bmp"
 IDB_HAUNCH_SQUARE       BITMAP                  "res\\HaunchSquare.bmp"
 IDB_HAUNCH_FILLETED     BITMAP                  "res\\HaunchFilleted.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_EARTH               ICON                    "res\\Globe.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -421,8 +486,47 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 111
     END
+
+    IDD_CONFIGUREPGSUPER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 396
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 204
+    END
+
+    IDD_SERVERDATA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 287
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 199
+    END
+
+    IDD_CATALOGSERVER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 258
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 138
+    END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_ADD_DELETE_POPUP MENU 
+BEGIN
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "&Insert Row",                 ID_EDIT_INSERTROW
+        MENUITEM "&Delete Row",                 ID_EDIT_REMOVEROWS
+    END
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

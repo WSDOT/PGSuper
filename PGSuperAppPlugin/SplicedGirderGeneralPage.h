@@ -93,4 +93,5 @@ public:
 
    void OnDuctChanged();
    afx_msg void OnHelp();
+   afx_msg void OnChangedGirderName();
 };

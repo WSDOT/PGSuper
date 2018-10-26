@@ -409,11 +409,15 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
 
 IntervalIndexType CEffectivePrestressGraphBuilder::GetBeamDrawInterval()
 {
-   std::vector<IntervalIndexType> vIntervals(((CEffectivePrestressGraphController*)m_pGraphController)->GetSelectedIntervals());
+   CEffectivePrestressGraphController* pMyGraphController = (CEffectivePrestressGraphController*)m_pGraphController;
+   std::vector<IntervalIndexType> vIntervals(pMyGraphController->GetSelectedIntervals());
    if ( 0 < vIntervals.size() )
    {
       return vIntervals.back();
    }
 
-   return 0;
+   CGirderKey girderKey = pMyGraphController->GetGirderKey();
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+   return intervalIdx;
 }

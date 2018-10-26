@@ -73,6 +73,7 @@ bool SetCBItemData( CWnd* pWnd, int nIDC, T itemdata )
    return succ;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckDetailsPage property page
 
@@ -536,7 +537,11 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
-
+   // If girder spacing is adjacent, force haunch shape to square
+   if ( IsAdjacentSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) )
+   {
+      pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape = pgsTypes::hsSquare;
+   }
 
    CPropertyPage::OnInitDialog();
 
@@ -609,20 +614,9 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
    GetDlgItem(IDC_OVERHANG_TAPER)->EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
-   BOOL show_fillet = deckType == pgsTypes::sdtNone ? FALSE:TRUE;
-
-   GetDlgItem(IDC_HAUNCH_SHAPE2)->EnableWindow(show_fillet);
-   GetDlgItem(IDC_HAUNCH_SHAPE_LABEL)->EnableWindow(show_fillet);
-   if ( !show_fillet )
-   {
-      SetCBItemData(this, IDC_HAUNCH_SHAPE2, pgsTypes::hsSquare);
-   }
 
    UpdateFilletControls();
    UpdateSlabOffsetControls();
-
-   GetDlgItem(IDC_SAMESLABOFFSET)->EnableWindow( show_fillet );
-   GetDlgItem(IDC_FILLETTYPE)->EnableWindow( show_fillet );
 
    GetDlgItem(IDC_SLAB_FC_LABEL)->EnableWindow( deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_SLAB_FC)->EnableWindow(       deckType != pgsTypes::sdtNone);
@@ -1135,6 +1129,7 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 
    BOOL bEnable = (deckType != pgsTypes::sdtNone) ? TRUE : FALSE; // if enabled, disable if deck type is none
 
+   GetDlgItem(IDC_SAMESLABOFFSET)->EnableWindow( bEnable );
    GetDlgItem(IDC_ADIM_LABEL)->ShowWindow(ShowInput);
    GetDlgItem(IDC_ADIM)->ShowWindow(ShowInput);
    GetDlgItem(IDC_ADIM_UNIT)->ShowWindow(ShowInput);
@@ -1148,23 +1143,31 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 
 void CBridgeDescDeckDetailsPage::UpdateFilletControls()
 {
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   // haunch shape not applicable to adjacent beams
+   BOOL enableShape = ::IsAdjacentSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) ? FALSE:TRUE;
+
    // Which controls to show
    int ShowInput  = m_FilletType==pgsTypes::fttBridge ? SW_SHOW : SW_HIDE;
    int ShowButton = ShowInput == SW_HIDE ?  SW_SHOW : SW_HIDE;
 
    // enable/disable slab offset controls
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
    BOOL bEnable = (deckType != pgsTypes::sdtNone) ? TRUE : FALSE; // if enabled, disable if deck type is none
 
+   GetDlgItem(IDC_FILLETTYPE)->EnableWindow( bEnable );
    GetDlgItem(IDC_FILLET_LABEL)->ShowWindow(ShowInput);
    GetDlgItem(IDC_FILLET)->ShowWindow(ShowInput);
    GetDlgItem(IDC_FILLET_UNIT)->ShowWindow(ShowInput);
    GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_FILLET)->EnableWindow(bEnable);
    GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_HAUNCH_SHAPE2)->EnableWindow(enableShape);
+   GetDlgItem(IDC_HAUNCH_SHAPE_LABEL)->EnableWindow(enableShape);
 
    GetDlgItem(IDC_EDIT_HAUNCH_BUTTON2)->ShowWindow(ShowButton);
    GetDlgItem(IDC_EDIT_HAUNCH_BUTTON2)->EnableWindow(bEnable);

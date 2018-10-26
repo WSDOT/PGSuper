@@ -7,3 +7,6 @@ IDH_LICENSE=license.html
 IDH_VIEW_SETTINGS=ui_girder_view_tab.html
 IDH_NO_PROJ_CRIT=installation.html
 IDH_GIRDER_DIRECT_STRAND_FILL=ui_select_strands_dialog.html
+IDH_CONFIGURE_PGSUPER=ug_dialogs_configure.html
+IDH_CONFIGURATION_SERVERS=ug_dialogs_configuration_servers.html
+IDH_CONFIGURATION_SERVER_DEFINITION=ug_dialogs_configuration_server_definition.html

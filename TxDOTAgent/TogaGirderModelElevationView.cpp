@@ -561,7 +561,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
    Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
    Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
-   Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+   Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
 
    std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 

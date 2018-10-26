@@ -16,7 +16,7 @@ The assumed construction events are:
 Certain construction activities are assumed to take place during each construction event. For example, in the Construct Girders Event the following activities take place:
 1. Tension the strand
 2. Cast the girder
-3. Wait for girder to cure
+3. Wait for the concrete to cure
 4. Release the prestressing
 5. Lift the girder and move it to storage
 6. Wait to ship the girder to the bridge site.
@@ -24,8 +24,8 @@ Certain construction activities are assumed to take place during each constructi
 Erecting the girders consists of:
 1. Ship the girders to the bridge site
 2. Erect the girders onto their permanent bearings
-3. Cast diaphragms
-4. Remove temporary strands
+3. Remove temporary strands
+4. Cast diaphragms
 
 The construction activities generate analysis intervals. The analysis intervals model the intervals of time over which changes occur. For example, while the girder is in storage, creep and shrinkage are happening. Boundary conditions change during lifting and shipping so there are new states of stresses to analyze.
 

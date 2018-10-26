@@ -119,8 +119,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << pProductLoads->GetLimitStateName(ls) << _T(") [5.8.4.1]") << rptNewLine;
+   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << GetLimitStateString(ls) << _T(") [5.8.4.1]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;

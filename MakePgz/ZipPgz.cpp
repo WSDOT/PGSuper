@@ -61,7 +61,7 @@ int ListPGZ(_TCHAR* fileName)
 }
 
 
-int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension)
+int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension,_TCHAR* lpszTemplateExtensionAlt)
 {
   HZIP hz;
   hz = CreateZip(pgzFileName,0);
@@ -96,6 +96,10 @@ int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_T
   else
   {
      retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtension);
+     if ( retval != -1 && lpszTemplateExtensionAlt!=NULL)
+     {
+        retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtensionAlt);
+     }
   }
 
   FindClose(hFind);

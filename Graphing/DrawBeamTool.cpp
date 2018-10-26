@@ -439,22 +439,34 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    }
 
    // Draw support at end of segment
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
-   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType liftingIntervalIdx  = pIntervals->GetLiftSegmentInterval(segmentKey);
+   IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType haulingIntervalIdx  = pIntervals->GetHaulSegmentInterval(segmentKey);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
    PoiAttributeType poiReference;
-   if ( intervalIdx == releaseIntervalIdx )
+   if ( releaseIntervalIdx <= intervalIdx && intervalIdx < liftingIntervalIdx )
+   {
       poiReference = POI_RELEASED_SEGMENT;
-   else if ( intervalIdx == liftingIntervalIdx )
+   }
+   else if ( liftingIntervalIdx <= intervalIdx && intervalIdx < storageIntervalIdx)
+   {
       poiReference = POI_LIFT_SEGMENT;
-   else if ( intervalIdx == storageIntervalIdx )
+   }
+   else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulingIntervalIdx )
+   {
       poiReference = POI_STORAGE_SEGMENT;
-   else if ( intervalIdx == haulingIntervalIdx )
+   }
+   else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx )
+   {
       poiReference = POI_HAUL_SEGMENT;
+   }
    else
+   {
+      ATLASSERT(erectionIntervalIdx <= intervalIdx);
       poiReference = POI_ERECTED_SEGMENT;
+   }
 
    PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
    std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,poiReference | attribute,POIFIND_AND));
@@ -462,40 +474,6 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    pgsPointOfInterest poiCLBrg(vPoi.front());
 
    Float64 Xg = pIPoi->ConvertPoiToGirderlineCoordinate(poiCLBrg);
-
-   if ( intervalIdx == releaseIntervalIdx )
-   {
-      Float64 left_support, right_support;
-      GET_IFACE(IGirder,pGirder);
-      pGirder->GetSegmentReleaseSupportLocations(segmentKey,&left_support,&right_support);
-
-      Xg += (endType == pgsTypes::metStart ? left_support : -right_support);
-   }
-   else if ( intervalIdx == liftingIntervalIdx )
-   {
-      //GET_IFACE(ISegmentLifting,pSegmentLifting);
-      //Float64 leftOverhang  = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
-      //Float64 rightOverhang = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
-
-      //Xg += (endType == pgsTypes::metStart ? leftOverhang : -rightOverhang);
-   }
-   else if ( intervalIdx == storageIntervalIdx )
-   {
-      //Float64 left_support, right_support;
-      //GET_IFACE(IGirder,pGirder);
-      //pGirder->GetSegmentStorageSupportLocations(segmentKey,&left_support,&right_support);
-
-      //Xg += (endType == pgsTypes::metStart ? left_support : -right_support);
-   }
-   else if ( intervalIdx == haulingIntervalIdx )
-   {
-      //GET_IFACE(ISegmentHauling,pSegmentHauling);
-      //Float64 leftOverhang  = pSegmentHauling->GetTrailingOverhang(segmentKey);
-      //Float64 rightOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
-
-      //Xg += (endType == pgsTypes::metStart ? leftOverhang : -rightOverhang);
-   }
-
    Float64 X = m_pUnitConverter->Convert(Xg+beamShift);
 
    GET_IFACE(ISectionProperties,pSectProp);

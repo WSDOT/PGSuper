@@ -4,7 +4,7 @@ The concrete material models used in PGSplice are time-dependent. The concrete s
 
 > TIP: We define concrete age the time since the concrete was cast.
 
-The specific time-dependent concrete models are discussed in @ref tg_concrete_models in the @ref technical_guide. Here we will discuss how to define the concrete model input parameters for a precast-segment.
+The specific time-dependent concrete models are discussed in @ref tg_time_dependent_material_models in the @ref technical_guide. Here we will discuss how to define the concrete model input parameters for a precast-segment.
 
 > NOTE: The information present here is applicable to all concrete components in the bridge.
 

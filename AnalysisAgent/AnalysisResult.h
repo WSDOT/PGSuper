@@ -27,23 +27,26 @@
 class CAnalysisResult
 {
 public:
-   CAnalysisResult() : m_Result(S_OK){};
-   CAnalysisResult(HRESULT hr) {ProcessHResult(hr);}
+   CAnalysisResult(LPCTSTR lpszFile,long line) : m_File(lpszFile),m_Line(line),m_Result(S_OK){};
+   CAnalysisResult(LPCTSTR lpszFile,long line,HRESULT hr) : m_File(lpszFile),m_Line(line),m_Result(hr) {ProcessHResult();}
 
-   HRESULT operator=(HRESULT hr) { return ProcessHResult(hr); }
+   HRESULT operator=(HRESULT hr) { m_Result = hr; return ProcessHResult(); }
 
    operator HRESULT() { return m_Result; }
 
 private:
-   HRESULT ProcessHResult(HRESULT hr)
+   HRESULT ProcessHResult()
    {
-      m_Result = hr;
-      if ( FAILED(hr) )
+      if ( FAILED(m_Result) )
       {
          ATLASSERT(false); // attention grabber
-         THROW_UNWIND(_T("An error occured during the structural analysis"),-1);
+         CString strMsg;
+         strMsg.Format(_T("An error occured during the structural analysis (%d)\n%s, Line %d"),m_Result,m_File,m_Line);
+         THROW_UNWIND(strMsg,-1);
       }
-      return hr;
+      return m_Result;
    }
    HRESULT m_Result;
+   CString m_File;
+   long m_Line;
 };

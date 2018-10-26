@@ -715,7 +715,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
             bool st = sysTokenizer::ParseDouble(strval, &leftDebond);
             if(!st && doCheckData)
             {
-               AfxMessageBox( _T("Debond length is not a number - must be a postive number"), MB_ICONEXCLAMATION);
+               AfxMessageBox( _T("Debond length is not a number - value must be zero or greater"), MB_ICONEXCLAMATION);
                this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
                return false;
             }
@@ -725,6 +725,13 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 
          if (m_pParent->m_bSymmetricDebond)
          {
+            if (leftDebond <= 0.0)
+            {
+               AfxMessageBox( _T("Debond length must be greater than zero"), MB_ICONEXCLAMATION);
+               this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+               return false;
+            }
+
             rightDebond = leftDebond;
          }
          else
@@ -736,20 +743,28 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
                bool st = sysTokenizer::ParseDouble(strval, &rightDebond);
                if(!st && doCheckData)
                {
-                  AfxMessageBox( _T("Debond length is not a number - must be a postive number"), MB_ICONEXCLAMATION);
+                  AfxMessageBox( _T("Debond length is not a number - must be zero or greater"), MB_ICONEXCLAMATION);
                   this->SetCurrentCell(nRow,LAST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
                   return false;
                }
 
                rightDebond = ::ConvertToSysUnits(rightDebond, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+
+               if (leftDebond < 0.0 || rightDebond < 0.0)
+               {
+                  AfxMessageBox( _T("Debond length must be zero or greater"), MB_ICONEXCLAMATION);
+                  this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+                  return false;
+               }
+
             }
          }
 
          if (doCheckData)
          {
-            if (leftDebond <= 0.0 || rightDebond <= 0.0)
+            if (leftDebond <= 0.0 && rightDebond <= 0.0)
             {
-               AfxMessageBox( _T("Debond lengths must be greater than zero."), MB_ICONEXCLAMATION);
+               AfxMessageBox( _T("Debond length must be greater than zero."), MB_ICONEXCLAMATION);
                return false;
             }
             else if (m_pParent->m_MaxDebondLength < leftDebond || 

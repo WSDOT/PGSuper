@@ -785,8 +785,9 @@ class SortObject
 public:
    static CComPtr<IUserDefinedLoadData> m_pUdl;
    static bool m_bSortAscending;
+   static const CTimelineManager* m_pTimelineMgr;
    static int CALLBACK SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort);
-   static std::_tstring GetEvent(LPARAM lParam);
+   static EventIndexType GetEvent(LPARAM lParam);
    static UserLoads::LoadCase GetLoadCase(LPARAM lParam);
    static SpanIndexType GetSpan(LPARAM lParam);
    static GirderIndexType GetGirder(LPARAM lParam);
@@ -796,32 +797,34 @@ public:
 };
 
 CComPtr<IUserDefinedLoadData> SortObject::m_pUdl;
+const CTimelineManager* SortObject::m_pTimelineMgr = NULL;
 bool SortObject::m_bSortAscending = true;
 
-std::_tstring SortObject::GetEvent(LPARAM lParam)
+EventIndexType SortObject::GetEvent(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
    WORD load_idx  = HIWORD(lParam);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-
+   IDType loadID = INVALID_ID;
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(pLoadData->m_ID) );
+      loadID = pLoadData->m_ID;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(pLoadData->m_ID) );
+      loadID = pLoadData->m_ID;
    }
    else
    {
       const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
-      return std::_tstring( pEventMap->GetEventName(pLoadData->m_ID) );
+      loadID = pLoadData->m_ID;
    }
+
+   ATLASSERT(loadID != INVALID_ID);
+   EventIndexType eventIdx = m_pTimelineMgr->FindUserLoadEventIndex(loadID);
+   return eventIdx;
 }
 
 UserLoads::LoadCase SortObject::GetLoadCase(LPARAM lParam)
@@ -1047,7 +1050,10 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
 
    GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
    SortObject::m_pUdl = pUdl;
- 
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   SortObject::m_pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
    m_LoadsListCtrl.SortItems(SortObject::SortFunc,columnIdx);
 
    // remove old header image

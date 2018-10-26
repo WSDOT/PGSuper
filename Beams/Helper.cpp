@@ -22,6 +22,8 @@
 
 #include "stdafx.h"
 #include <Beams\Helper.h>
+#include <IFace\Bridge.h>
+#include "AgeAdjustedMaterial.h"
 
 
 #ifdef _DEBUG
@@ -199,4 +201,83 @@ void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor:
 
    (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
    (*pPara) << _T("g = ") << _T("(") << rd.m <<_T(")(")<< rd.Nl << _T("/") << rd.Nb << _T(") = ") << scalar.SetValue(rd.mg) << rptNewLine;
+}
+
+
+void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial)
+{
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   bool bHasClosure[2] = {
+                           pSegment->GetStartClosure()  != NULL, 
+                           pSegment->GetEndClosure() != NULL
+                         };
+
+   // If this is the first segment of a girder and there is a previous group -OR-
+   // if this is the last segment of a girder and there is next group, 
+   // then there is a cast-in-place diaphragm between the groups. Use the deck concrete as the closure joint
+   // concrete in this case.
+   bool bPierDiaphragm[2] = { 
+                              (pSegment->GetPrevSegment() == NULL && pGirder->GetGirderGroup()->GetPrevGirderGroup() != NULL),
+                              (pSegment->GetNextSegment() == NULL && pGirder->GetGirderGroup()->GetNextGirderGroup() != NULL)   
+                            };
+
+
+   // NOTE: TRICKY CODE FOR SPLICED GIRDER BEAMS
+   // We need to model the material with an age adjusted modulus. The age adjusted modulus
+   // is E/(1+XY) where XY is the age adjusted creep coefficient. In order to get the creep coefficient
+   // we need the Volume and Surface Area of the segment (for the V/S ratio). This method
+   // gets called during the creation of the bridge model. The bridge model is not
+   // ready to compute V or S. Calling IMaterial::GetSegmentAgeAdjustedEc() will cause
+   // recusion and validation errors. Using the age adjusted material object we can
+   // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
+   // is validated.
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+
+   CComObject<CAgeAdjustedMaterial>* pSegmentMaterial;
+   CComObject<CAgeAdjustedMaterial>::CreateInstance(&pSegmentMaterial);
+   CComPtr<IAgeAdjustedMaterial> segmentMaterial = pSegmentMaterial;
+   segmentMaterial->InitSegment(segmentKey,pMaterials);
+
+   segmentMaterial.CopyTo(ppMaterial);
+
+   CComQIPtr<ISplicedGirderSegment> pSplicedSegment(segment);
+   if ( pSplicedSegment )
+   {
+      for ( int i = 0; i < 2; i++ )
+      {
+         EndType endType = (EndType)i;
+         if ( bHasClosure[endType] )
+         {
+            CClosureKey closureKey;
+            if ( endType == etStart )
+            {
+               closureKey = CClosureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
+            }
+            else
+            {
+               closureKey = segmentKey;
+            }
+
+            CComObject<CAgeAdjustedMaterial>* pClosureMaterial;
+            CComObject<CAgeAdjustedMaterial>::CreateInstance(&pClosureMaterial);
+            CComPtr<IAgeAdjustedMaterial> closureMaterial = pClosureMaterial;
+            closureMaterial->InitClosureJoint(closureKey,pMaterials);
+
+            pSplicedSegment->put_ClosureJointForegroundMaterial(endType,closureMaterial);
+            pSplicedSegment->put_ClosureJointBackgroundMaterial(endType,NULL);
+         }
+         else if ( bPierDiaphragm[endType] )
+         {
+            CGirderKey girderKey(segmentKey);
+            CComObject<CAgeAdjustedMaterial>* pDiaphragmMaterial;
+            CComObject<CAgeAdjustedMaterial>::CreateInstance(&pDiaphragmMaterial);
+            CComPtr<IAgeAdjustedMaterial> diaphragmMaterial = pDiaphragmMaterial;
+            diaphragmMaterial->InitDeck(girderKey,pMaterials);
+
+            pSplicedSegment->put_ClosureJointForegroundMaterial(endType,diaphragmMaterial);
+            pSplicedSegment->put_ClosureJointBackgroundMaterial(endType,NULL);
+         }
+      }
+   }
 }

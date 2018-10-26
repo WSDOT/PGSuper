@@ -144,7 +144,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
                                               std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection)
 {
    CComPtr<IFem2dModel> pModel;
-   pgsPoiMap poiMap;
+   pgsPoiPairMap poiMap;
 
    // need left and right support locations measured from the left end of the girder
    Float64 leftSupportLocation = leftOH;
@@ -165,8 +165,8 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
    {
       const pgsPointOfInterest& poi = *poiIter;
       Float64 fx,fy,mz;
-      PoiIDType femPoiID = poiMap.GetModelPoi(poi);
-      HRESULT hr = results->ComputePOIForces(lcid,femPoiID,mftLeft,lotMember,&fx,&fy,&mz);
+      PoiIDPairType femPoiID = poiMap.GetModelPoi(poi);
+      HRESULT hr = results->ComputePOIForces(lcid,femPoiID.first,mftLeft,lotMember,&fx,&fy,&mz);
       ATLASSERT(SUCCEEDED(hr));
       pmomVec->push_back(mz);
 
@@ -177,7 +177,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
          // poi should be at the half-way point between the supports
          ATLASSERT( IsEqual(poi.GetDistFromStart(),leftOH + (glen-leftOH-rightOH)/2,0.001) );
 
-         hr = results->ComputePOIDeflections(lcid,femPoiID,lotMember,&dx,&dy,&rz);
+         hr = results->ComputePOIDeflections(lcid,femPoiID.first,lotMember,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
 
          *pMidSpanDeflection = dy;

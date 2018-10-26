@@ -31,6 +31,7 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
 
 #include <Lrfd\RebarPool.h>
 
@@ -379,7 +380,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       // print straight debond information if exists
       CollectionIndexType ddb = config.PrestressConfig.Debond[pgsTypes::Straight].size();
-      StrandIndexType pdb = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+      StrandIndexType pdb = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
       if (0 < ddb || 0 < pdb)
       {
          (*pTable)(row,1) << _T(" (")<<ddb<<_T(" debonded)");
@@ -668,6 +669,15 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetTrailingOverhang() );
          (*pTable)(row,2) << distance.SetValue( pSegmentHauling->GetTrailingOverhang(segmentKey) );
          row++;
+
+         GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+         if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+         {
+            (*pTable)(row,0) << _T("Haul Truck");
+            (*pTable)(row,1) << pArtifact->GetHaulTruck();
+            (*pTable)(row,2) << pSegmentHauling->GetHaulTruck(segmentKey);
+            row++;
+         }
       }
    }
    else
@@ -1371,8 +1381,9 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
 
       pArtifacts[ia] = pIArtifact->GetDesignArtifact(girderKey);
 
-#pragma Reminder("UPDATE: assuming precast girder bridge") // the one and only segment is segIdx = 0
-      const pgsSegmentDesignArtifact* pSegmentDesignArtifact = pArtifacts[ia]->GetSegmentDesignArtifact(0);
+#pragma Reminder("UPDATE: assuming precast girder bridge")
+      SegmentIndexType segIdx = 0; // the one and only segment is segIdx = 0
+      const pgsSegmentDesignArtifact* pSegmentDesignArtifact = pArtifacts[ia]->GetSegmentDesignArtifact(segIdx);
       arDesignOptions options = pSegmentDesignArtifact->GetDesignOptions();
 
       if (options.doDesignForFlexure != dtNoDesign)
@@ -1406,12 +1417,12 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
       }
 
       // report harped information if we have any harped designs or, if we have harped strands
-      if (options.doDesignForFlexure == dtDesignForHarping || pSegmentDesignArtifact->GetNumHarpedStrands() > 0)
+      if (options.doDesignForFlexure == dtDesignForHarping || 0 < pSegmentDesignArtifact->GetNumHarpedStrands() )
       {
          isHarped = true;
       }
 
-      if (options.doDesignForFlexure != dtNoDesign && pSegmentDesignArtifact->GetNumTempStrands() > 0)
+      if (options.doDesignForFlexure != dtNoDesign && 0 < pSegmentDesignArtifact->GetNumTempStrands() )
       {
          isTemporary = true;
       }

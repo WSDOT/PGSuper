@@ -46,6 +46,9 @@
 #include <WBFLFem2d.h>
 #include <WBFLFem2d_i.c>
 
+#include <WBFLTools.h>
+#include <WBFLTools_i.c>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -122,6 +125,7 @@ CPGSuperExt theApp;
 
 BOOL CPGSuperExt::InitInstance()
 {
+   ::GXInit();
    CWinApp::InitInstance();
 
 	return TRUE;

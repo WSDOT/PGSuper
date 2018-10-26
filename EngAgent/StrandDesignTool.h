@@ -361,6 +361,9 @@ public:
    void SetTruckSupportLocations(Float64 left,Float64 right);
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;
+   
+   void SetHaulTruck(LPCTSTR lpszHaulTruck);
+   LPCTSTR GetHaulTruck() const;
 
    void SetOutcome(pgsSegmentDesignArtifact::Outcome outcome);
 

@@ -215,8 +215,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+   *pParagraph << GetLimitStateString(ls) << rptNewLine;
 
    // tables of details
    rptParagraph* ppar1 = create_table1_design(pBroker, intervalIdx, ls, pGirderArtifact, pDisplayUnits, level);
@@ -389,7 +388,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pParagraph;
          GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-         *pParagraph << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+         *pParagraph << GetLimitStateString(ls) << rptNewLine;
 
          // tables of details
          rptParagraph* ppar1 = create_table1_rating(pBroker, intervalIdx, ls, shearRatings, pDisplayUnits, level);

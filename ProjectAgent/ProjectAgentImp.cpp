@@ -100,10 +100,12 @@ void use_library_entry( pgsLibraryEntryObserver* pObserver, const std::_tstring&
 
    // First check and see if it is already in the project library
    const EntryType* pProjectEntry = prjLib.LookupEntry( key.c_str() );
-   ATLASSERT(pProjectEntry !=0);
 
    *ppEntry = pProjectEntry; // Reference count has been added.
-   (*ppEntry)->Attach( pObserver );
+   if ( *ppEntry )
+   {
+      (*ppEntry)->Attach( pObserver );
+   }
    return;
 }
 
@@ -4443,18 +4445,23 @@ void CProjectAgentImp::UseGirderLibraryEntries()
    {
       // Girders
       const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
-      const GirderLibraryEntry* pEntry;
+      const GirderLibraryEntry* pGirderEntry;
 
       use_library_entry( &m_LibObserver,
                          m_BridgeDescription.GetGirderName(), 
-                         &pEntry, 
+                         &pGirderEntry, 
                          girderLibrary);
-      m_BridgeDescription.SetGirderLibraryEntry(pEntry);
+      m_BridgeDescription.SetGirderLibraryEntry(pGirderEntry);
 
-      if ( pEntry )
+#if defined _DEBUG
+      if ( pGirderEntry )
       {
          ATLASSERT(m_BridgeDescription.GetGirderName() == m_BridgeDescription.GetGirderLibraryEntry()->GetName());
       }
+#endif
+
+      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+      const HaulTruckLibraryEntry* pHaulTruckEntry;
 
       GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -4471,11 +4478,11 @@ void CProjectAgentImp::UseGirderLibraryEntries()
             {
                use_library_entry(&m_LibObserver,
                                  strGirderName,
-                                 &pEntry,
+                                 &pGirderEntry,
                                  girderLibrary);
 
                CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-               pGirder->SetGirderLibraryEntry(pEntry);
+               pGirder->SetGirderLibraryEntry(pGirderEntry);
 
                SegmentIndexType nSegments = pGirder->GetSegmentCount();
                for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -4495,6 +4502,9 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                   {
                      pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
                   }
+
+                  use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
+                  pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
                }// segment loop
             }// girder loop
          }// girder type loop
@@ -4590,6 +4600,8 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
       
       }
 
+      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+
       GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
@@ -4600,6 +4612,14 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
             CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
             release_library_entry(&m_LibObserver,pGirder->GetGirderLibraryEntry(),girderLibrary);
             pGirder->SetGirderLibraryEntry(NULL);
+
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               release_library_entry(&m_LibObserver,pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+               pSegment->HandlingData.pHaulTruckLibraryEntry = NULL;
+            }
          }
       }
 
@@ -4642,6 +4662,8 @@ void CProjectAgentImp::UpdateConcreteMaterial()
    bool bAfter2015 = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
    // starting with LRFD 2016, AllLightweight is not a valid concrete type. Concrete is either Normal weight or lightweight.
    // We are using SandLightweight to mean lightweight so updated the concrete type if needed.
+
+   // Also, LRFD changed the equation for modulus of elasticity. If Mod E is computed, recompute the value
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -4710,6 +4732,63 @@ void CProjectAgentImp::UpdateConcreteMaterial()
          pDeck->Concrete.Type = pgsTypes::SandLightweight;
       }
    }
+}
+
+void CProjectAgentImp::UpdateTimeDependentMaterials()
+{
+   // The spec was changed from one that did not use time-step analysis to
+   // one that does. We want to keep the concrete parameters the same so
+   // update them here
+   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            EventIndexType eventIdx = m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(pSegment->GetID());
+            const CTimelineEvent* pEvent = m_BridgeDescription.GetTimelineManager()->GetEventByIndex(eventIdx);
+            Float64 ti = pEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+
+            pSegment->Material.Concrete.bBasePropertiesOnInitialValues = false;
+
+            pSegment->Material.Concrete.bACIUserParameters = true;
+            matACI209Concrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.A,&pSegment->Material.Concrete.B);
+            pSegment->Material.Concrete.A = ::ConvertToSysUnits(pSegment->Material.Concrete.A,unitMeasure::Day);
+
+            pSegment->Material.Concrete.bCEBFIPUserParameters = true;
+            matCEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
+
+            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            ATLASSERT(pClosureJoint == NULL); // we can't go from a non-time step method to a time-step method unless we have a regular precast girder bridge. For a regular precast girder bridge, there aren't any closure joints
+         }
+      }
+   }
+
+   // There isn't an f'ci for the deck so we can't curve fit the time-dependent model
+   // Do nothing and use the default values...
+   //CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
+   //if ( pDeck )
+   //{
+   //   EventIndexType eventIdx = m_BridgeDescription.GetTimelineManager()->GetCastDeckEventIndex();
+   //   const CTimelineEvent* pEvent = m_BridgeDescription.GetTimelineManager()->GetEventByIndex(eventIdx);
+   //   Float64 ti = pEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+
+   //   pDeck->Concrete.bBasePropertiesOnInitialValues = false;
+
+   //   pDeck->Concrete.bACIUserParameters = true;
+   //   matACI209Concrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.A,&pDeck->Concrete.B);
+   //   pDeck->Concrete.A = ::ConvertToSysUnits(pDeck->Concrete.A,unitMeasure::Day);
+
+   //   pDeck->Concrete.bCEBFIPUserParameters = true;
+   //   matCEBFIPConcrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.S);
+   //}
 }
 
 void CProjectAgentImp::UpdateStrandMaterial()
@@ -4998,6 +5077,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       m_LldfRangeOfApplicabilityAction = pTempSpecEntry->IgnoreRangeOfApplicabilityRequirements() ? roaIgnore : roaEnforce;
    }
 
+   // get the old haul truck configuration here because we have the library entry
+   // though we aren't going to use it until later
+   // want to release the library entry, so it doesn't have a bad ref count if we leave this method early
+   const COldHaulTruck* pOldHaulTruck = pTempSpecEntry->GetOldHaulTruck();
+
    pTempSpecEntry->Release();
 
    // resolve library name conflicts and update references
@@ -5177,7 +5261,82 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       std::_tstring strSpecName = keys.front();
       InitRatingSpecification(strSpecName);
    }
+#pragma Reminder("UPDATE: review the need for this code") // it stops the regression tests
+/*
+   DuctLibrary* pDuctLibrary = GetDuctLibrary();
+   nEntries = pDuctLibrary->GetCount();
+   nMinEntries = pDuctLibrary->GetMinCount();
+   if ( nEntries < nMinEntries )
+   {
+      CString strMsg;
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pDuctLibrary->GetDisplayName().c_str(),nMinEntries);
+      AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      {
+         pDuctLibrary->NewEntry(pDuctLibrary->GetUniqueEntryName().c_str());
+      }
 
+      bUpdateLibraryUsage = true;
+
+      libKeyListType keys;
+      pDuctLibrary->KeyList(keys);
+      std::_tstring strDuctName = keys.front();
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPTData = pGirder->GetPostTensioning();
+            DuctIndexType nDucts = pPTData->GetDuctCount();
+            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            {
+               CDuctData* pDuct = pPTData->GetDuct(ductIdx);
+               pDuct->Name = strDuctName;
+            }
+         }
+      }
+   }
+
+   HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
+   nEntries = pHaulTruckLibrary->GetCount();
+   nMinEntries = pHaulTruckLibrary->GetMinCount();
+   if ( nEntries < nMinEntries )
+   {
+      CString strMsg;
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pHaulTruckLibrary->GetDisplayName().c_str(),nMinEntries);
+      AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      {
+         pHaulTruckLibrary->NewEntry(pHaulTruckLibrary->GetUniqueEntryName().c_str());
+      }
+
+
+      bUpdateLibraryUsage = true;
+
+      libKeyListType keys;
+      pHaulTruckLibrary->KeyList(keys);
+      std::_tstring strHaulTruckName = keys.front();
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               pSegment->HandlingData.HaulTruckName = strHaulTruckName;
+            }
+         }
+      }
+   }
+*/
    LiveLoadLibrary* pLiveLoadLib = GetLiveLoadLibrary();
    ATLASSERT(pLiveLoadLib->GetMinCount() == 0); // did this change???
 
@@ -5208,6 +5367,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    ValidateBridgeModel();
 
    ASSERTVALID;
+
+   if ( pOldHaulTruck )
+   {
+      UpdateHaulTruck(pOldHaulTruck);
+   }
 
    Fire_BridgeChanged();
 
@@ -5809,12 +5973,16 @@ void CProjectAgentImp::SetGirder(const CGirderKey& girderKey,const CSplicedGirde
    CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    if ( *pGirder != girder )
    {
+      ReleaseGirderLibraryEntries();
+
       ATLASSERT(pGirder->GetSegmentCount() == girder.GetSegmentCount() );
 
       // copy data only. Don't alter ID or Index
       pGirder->CopySplicedGirderData(&girder);
 
-      Fire_BridgeChanged();
+      UseGirderLibraryEntries();
+
+      Fire_GirderChanged(girderKey,0/*no hint*/);
    }
 }
 
@@ -5832,7 +6000,7 @@ void CProjectAgentImp::SetPostTensioning(const CGirderKey& girderKey,const CPTDa
    if ( *pPTData != ptData )
    {
       *pPTData = ptData;
-      Fire_BridgeChanged();
+      Fire_GirderChanged(girderKey,GCH_POSTTENSIONING_CONFIGURATION);
    }
 }
 
@@ -5852,9 +6020,16 @@ void CProjectAgentImp::SetPrecastSegmentData(const CSegmentKey& segmentKey,const
    if ( *pSegment != segment )
    {
       // copy only data. don't alter ID or Index
+      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+      release_library_entry(&m_LibObserver,pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+
       pSegment->CopySegmentData(&segment,true);
 
-      Fire_BridgeChanged();
+      const HaulTruckLibraryEntry* pHaulTruckEntry;
+      use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
+      pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+
+      Fire_GirderChanged(segmentKey,0/*no hint*/);
    }
 }
 
@@ -5881,7 +6056,7 @@ void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const C
    {
       // copy only data. don't alter ID or Index
       pClosure->CopyClosureJointData(&closure);
-      Fire_BridgeChanged();
+      Fire_GirderChanged(closureKey,0/*no hint*/);
    }
 }
 
@@ -7030,7 +7205,14 @@ void CProjectAgentImp::SetHandlingData(const CSegmentKey& segmentKey,const CHand
    CPrecastSegmentData* pSegment = GetSegment(segmentKey);
    if ( pSegment->HandlingData != handling )
    {
+      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+
+      release_library_entry(&m_LibObserver,pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+
       pSegment->HandlingData = handling;
+
+      use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+
       Fire_GirderChanged(segmentKey,GCH_LIFTING_CONFIGURATION | GCH_SHIPPING_CONFIGURATION);
    }
 }
@@ -7262,6 +7444,30 @@ void CProjectAgentImp::SetTruckSupportLocations(const CSegmentKey& segmentKey,Fl
    {
       pSegment->HandlingData.TrailingSupportPoint = trailing;
       pSegment->HandlingData.LeadingSupportPoint = leading;
+      Fire_GirderChanged(segmentKey,GCH_SHIPPING_CONFIGURATION);
+   }
+}
+
+LPCTSTR CProjectAgentImp::GetHaulTruck(const CSegmentKey& segmentKey)
+{
+   CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+   return pSegment->HandlingData.HaulTruckName.c_str();
+}
+
+void CProjectAgentImp::SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHaulTruck)
+{
+   CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+   if ( pSegment->HandlingData.HaulTruckName != std::_tstring(lpszHaulTruck) )
+   {
+      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+      release_library_entry(&m_LibObserver,pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+
+      pSegment->HandlingData.HaulTruckName = lpszHaulTruck;
+
+      const HaulTruckLibraryEntry* pHaulTruckEntry;
+      use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
+      pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+
       Fire_GirderChanged(segmentKey,GCH_SHIPPING_CONFIGURATION);
    }
 }
@@ -7833,16 +8039,16 @@ Float64 CProjectAgentImp::GetReactionServiceLiveLoadFactor(PierIndexType pierIdx
       }
       CGirderKey girderKey(grpIdx,gdrIdx);
 
-      Float64 Rmin, Rmax;
+      REACTION Rmin, Rmax;
       AxleConfiguration minAxleConfig, maxAxleConfig;
       if ( vehicleIdx == INVALID_INDEX )
       {
          IndexType minVehicleIdx, maxVehicleIdx;
-         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
+         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,pgsTypes::fetFy, &Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
          
-         Float64 rmin,rmax;
+         REACTION rmin,rmax;
          pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,maxVehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&rmin,&rmax,NULL,&maxAxleConfig);
-         ATLASSERT(IsEqual(Rmax,rmax));
+         ATLASSERT(Rmax == rmax);
       }
       else
       {
@@ -7866,7 +8072,18 @@ void CProjectAgentImp::SetSpecification(const std::_tstring& spec)
 {
    if ( m_Spec != spec )
    {
+      bool oldSpecTimeStepMethod = m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP ? true : false;
+      
       InitSpecification(spec);
+      
+      bool newSpecTimeStepMethod = m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP ? true : false;
+
+      if ( oldSpecTimeStepMethod == false && newSpecTimeStepMethod == true )
+      {
+         // must do this before calling SpecificationChanged
+         UpdateTimeDependentMaterials();
+      }
+      
       SpecificationChanged(true);
    }
 }
@@ -8086,6 +8303,12 @@ void CProjectAgentImp::EnumDuctNames( std::vector<std::_tstring>* pNames ) const
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
+void CProjectAgentImp::EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const
+{
+   const HaulTruckLibrary& prj_lib = *(m_pLibMgr->GetHaulTruckLibrary());
+   psglibCreateLibNameEnum( pNames, prj_lib);
+}
+
 void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames )
 {
    USES_CONVERSION;
@@ -8289,6 +8512,11 @@ DuctLibrary* CProjectAgentImp::GetDuctLibrary()
    return m_pLibMgr->GetDuctLibrary();
 }
 
+HaulTruckLibrary* CProjectAgentImp::GetHaulTruckLibrary()
+{
+   return m_pLibMgr->GetHaulTruckLibrary();
+}
+
 RatingLibrary* CProjectAgentImp::GetRatingLibrary()
 {
    return m_pLibMgr->GetRatingLibrary();
@@ -8342,6 +8570,20 @@ const DuctLibraryEntry* CProjectAgentImp::GetDuctEntry( LPCTSTR lpszName ) const
 {
    const DuctLibraryEntry* pEntry;
    const DuctLibrary* prj_lib = m_pLibMgr->GetDuctLibrary();
+   pEntry = prj_lib->LookupEntry( lpszName );
+
+   if (pEntry!=0)
+   {
+      pEntry->Release();
+   }
+
+   return pEntry;
+}
+
+const HaulTruckLibraryEntry* CProjectAgentImp::GetHaulTruckEntry(LPCTSTR lpszName) const
+{
+   const HaulTruckLibraryEntry* pEntry;
+   const HaulTruckLibrary* prj_lib = m_pLibMgr->GetHaulTruckLibrary();
    pEntry = prj_lib->LookupEntry( lpszName );
 
    if (pEntry!=0)
@@ -9966,7 +10208,22 @@ HRESULT CProjectAgentImp::FireContinuityRelatedSpanChange(const CSpanKey& spanKe
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       const CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+      if (NULL==pSpan)
+      {
+         // Events should not be coming for non-existent spans, but let's avoid crashing...
+         ATLASSERT(0);
+         Fire_BridgeChanged();
+         continue;
+      }
+
       const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(pSpan);
+      if (NULL==pGroup)
+      {
+         ATLASSERT(0);
+         Fire_BridgeChanged();
+         continue;
+      }
+
       GroupIndexType grpIdx = pGroup->GetIndex();
 
       GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex;
@@ -10091,10 +10348,10 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // NOTE: The actual timing doesn't matter since we aren't doing a true time-step analysis
    // We will just use reasonable times so the sequence is correct
 
-   // Casting yard stage... starts at day 0 when strands are stressed
+   // Casting yard stage... starts at day 1 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
    CTimelineEvent* pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay(0);
+   pTimelineEvent->SetDay(1);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
    pTimelineEvent->GetConstructSegmentsActivity().SetAgeAtRelease(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
@@ -10285,4 +10542,134 @@ bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const 
 bool CProjectAgentImp::HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType)
 {
    return m_LoadManager.HasUserLoad(girderKey,lcType);
+}
+
+void CProjectAgentImp::UpdateHaulTruck(const COldHaulTruck* pOldHaulTruck)
+{
+   // The spec library that is used with this file was stored in an older format.
+   // The haul truck definition was part of the spec. We now have a Haul Truck library
+   // that has multiple haul truck definitions. We have to update the bridge model
+   // so that each segment references a haul truck library entry
+
+   if ( pOldHaulTruck->m_TruckRollStiffnessMethod == ROLLSTIFFNESS_LUMPSUM )
+   {
+      // the truck roll stiffness was specified directly...
+
+      // first see if an entry in the Haul Truck Library matches the old haul truck
+      HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
+      const HaulTruckLibraryEntry* pEntry = FindHaulTruckLibraryEntry(pOldHaulTruck);
+      if ( pEntry == NULL )
+      {
+         // Nope... create a new entry
+         std::_tstring strName = pHaulTruckLibrary->GetUniqueEntryName(_T("Old Haul Truck -"));
+         VERIFY(pHaulTruckLibrary->NewEntry(strName.c_str()));
+         pEntry = (const HaulTruckLibraryEntry*)pHaulTruckLibrary->GetEntry(strName.c_str());
+         HaulTruckLibraryEntry* pncEntry = const_cast<HaulTruckLibraryEntry*>(pEntry);
+         pOldHaulTruck->InitEntry(pncEntry);
+      }
+
+      ATLASSERT(pEntry != NULL);
+      std::_tstring strName = pEntry->GetName();
+
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               pSegment->HandlingData.HaulTruckName = strName;
+
+               const HaulTruckLibraryEntry* pHaulTruckEntry;
+               use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
+               pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+            }
+         }
+      }
+   }
+   else
+   {
+      // truck roll stiffness is a function of the girder weight
+      HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
+      GET_IFACE(ISectionProperties,pSectProps);
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+               Float64 W = pSectProps->GetSegmentWeight(segmentKey);
+               int nAxles = int(W / pOldHaulTruck->m_AxleWeightLimit) + 1;
+               Float64 ktheta = Max(nAxles * pOldHaulTruck->m_AxleStiffness, pOldHaulTruck->m_MinRollStiffness);
+
+               const HaulTruckLibraryEntry* pEntry = FindHaulTruckLibraryEntry(ktheta,pOldHaulTruck);
+               if ( pEntry == NULL )
+               {
+                  // Nope... create a new entry
+                  std::_tstring strName = pHaulTruckLibrary->GetUniqueEntryName(_T("Old Haul Truck-"));
+                  VERIFY(pHaulTruckLibrary->NewEntry(strName.c_str()));
+                  pEntry = (const HaulTruckLibraryEntry*)pHaulTruckLibrary->GetEntry(strName.c_str());
+                  HaulTruckLibraryEntry* pncEntry = const_cast<HaulTruckLibraryEntry*>(pEntry);
+                  pOldHaulTruck->InitEntry(ktheta,pncEntry);
+               }
+
+               ATLASSERT(pEntry != NULL);
+               std::_tstring strName = pEntry->GetName();
+
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               pSegment->HandlingData.HaulTruckName = strName;
+               const HaulTruckLibraryEntry* pHaulTruckEntry;
+               use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
+               pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+            }
+         }
+      }
+   }
+}
+
+const HaulTruckLibraryEntry* CProjectAgentImp::FindHaulTruckLibraryEntry(const COldHaulTruck* pOldHaulTruck)
+{
+   HaulTruckLibrary* pLib = GetHaulTruckLibrary();
+   IndexType nEntries = pLib->GetCount();
+   std::vector<std::_tstring> vKeys;
+   pLib->KeyList(vKeys);
+   for ( IndexType entryIdx = 0; entryIdx < nEntries; entryIdx++ )
+   {
+      const HaulTruckLibraryEntry* pEntry = (const HaulTruckLibraryEntry*)pLib->GetEntry(vKeys[entryIdx].c_str());
+      if ( pOldHaulTruck->IsEqual(pEntry) )
+      {
+         return pEntry;
+      }
+   }
+
+   return NULL;
+}
+
+const HaulTruckLibraryEntry* CProjectAgentImp::FindHaulTruckLibraryEntry(Float64 kTheta,const COldHaulTruck* pOldHaulTruck)
+{
+   HaulTruckLibrary* pLib = GetHaulTruckLibrary();
+   IndexType nEntries = pLib->GetCount();
+   std::vector<std::_tstring> vKeys;
+   pLib->KeyList(vKeys);
+   for ( IndexType entryIdx = 0; entryIdx < nEntries; entryIdx++ )
+   {
+      const HaulTruckLibraryEntry* pEntry = (const HaulTruckLibraryEntry*)pLib->GetEntry(vKeys[entryIdx].c_str());
+      if ( pOldHaulTruck->IsEqual(kTheta,pEntry) )
+      {
+         return pEntry;
+      }
+   }
+
+   return NULL;
 }

@@ -242,8 +242,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
             const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
             Float64 cure = pACIConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t - cure;
-            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(segmentKey,intervalIdx);
-            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(segmentKey,intervalIdx,pgsTypes::End);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalSegmentFreeShrinkageStrain(segmentKey,intervalIdx);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalSegmentFreeShrinkageStrain(segmentKey,intervalIdx,pgsTypes::End);
          }
          else
          {
@@ -263,8 +263,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
                const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
                Float64 cure = pACIConcrete->GetCureTime();
                (*pTable)(rowIdx,colIdx++) << t - cure;
-               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
-               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
+               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
+               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
             }
             else
             {
@@ -283,8 +283,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
          Float64 cure = pACIConcrete->GetCureTime();
          (*pTable)(rowIdx,colIdx++) << t - cure;
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
       }
       else
       {

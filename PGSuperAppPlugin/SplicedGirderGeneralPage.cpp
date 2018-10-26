@@ -135,13 +135,23 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
 
+   int sameGirderType = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription()->UseSameGirderForEntireBridge() ? 0 : 1;
+   DDX_CBIndex(pDX,IDC_CB_SAMEGIRDER,sameGirderType);
    std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
    DDX_CBStringExactCase(pDX,IDC_GIRDER_NAME,strGirderName);
    if ( pDX->m_bSaveAndValidate )
    {
-      GirderIndexType gdrIdx = pParent->m_pGirder->GetIndex();
-      GroupIndexType girderTypeGroupIdx = pParent->m_pGirder->GetGirderGroup()->CreateGirderTypeGroup(gdrIdx,gdrIdx);
-      pParent->m_pGirder->GetGirderGroup()->SetGirderName(girderTypeGroupIdx,strGirderName.c_str());
+      pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription()->UseSameGirderForEntireBridge(sameGirderType == 0 ? true : false);
+      if ( sameGirderType == 0 )
+      {
+         pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription()->SetGirderName(strGirderName.c_str());
+      }
+      else
+      {
+         GirderIndexType gdrIdx = pParent->m_pGirder->GetIndex();
+         GroupIndexType girderTypeGroupIdx = pParent->m_pGirder->GetGirderGroup()->CreateGirderTypeGroup(gdrIdx,gdrIdx);
+         pParent->m_pGirder->GetGirderGroup()->SetGirderName(girderTypeGroupIdx,strGirderName.c_str());
+      }
    }
 
    DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
@@ -150,39 +160,20 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_FilletGrid(pDX,IDC_FILLET_GRID);
 
-   Float64 conditionFactor;
-   pgsTypes::ConditionFactorType conditionFactorType;
-   pgsTypes::DuctType ductType;
-   pgsTypes::StrandInstallationType installationType;
+   Float64 conditionFactor = pParent->m_pGirder->GetConditionFactor();
+   pgsTypes::ConditionFactorType conditionFactorType = pParent->m_pGirder->GetConditionFactorType();
+   pgsTypes::DuctType ductType   = pParent->m_pGirder->GetPostTensioning()->DuctType; 
+   pgsTypes::StrandInstallationType installationType = pParent->m_pGirder->GetPostTensioning()->InstallationType;
+   DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
+   DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
+   DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
+   DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType );
    if ( pDX->m_bSaveAndValidate )
    {
-      // data coming out of dialog
-
-      DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
-      DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
-
       pParent->m_pGirder->SetConditionFactor(conditionFactor);
       pParent->m_pGirder->SetConditionFactorType(conditionFactorType);
-
-      DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
       pParent->m_pGirder->GetPostTensioning()->DuctType = ductType;
-
-      DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType );
       pParent->m_pGirder->GetPostTensioning()->InstallationType = installationType;
-   }
-   else
-   {
-      // data going into of dialog
-      conditionFactor     = pParent->m_pGirder->GetConditionFactor();
-      conditionFactorType = pParent->m_pGirder->GetConditionFactorType();
-      DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
-      DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
-
-      ductType = pParent->m_pGirder->GetPostTensioning()->DuctType;
-      DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
-
-      installationType = pParent->m_pGirder->GetPostTensioning()->InstallationType;
-      DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType);
    }
 
    // NOTE: must come after DDX for strand installation type
@@ -222,6 +213,7 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_CB_SLABOFFSET,OnChangeSlabOffsetType)
    ON_CBN_SELCHANGE(IDC_CB_FILLETTYPE, OnChangeFilletType)
    ON_CBN_SELCHANGE(IDC_CB_SAMEGIRDER,OnChangeGirderType)
+   ON_CBN_SELCHANGE(IDC_GIRDER_NAME, &CSplicedGirderGeneralPage::OnChangedGirderName)
 END_MESSAGE_MAP()
 
 
@@ -276,6 +268,10 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
+   CComboBox* pcbSameGirder = (CComboBox*)GetDlgItem(IDC_CB_SAMEGIRDER);
+   pcbSameGirder->AddString(_T("Use same girder type for entire bridge"));
+   pcbSameGirder->AddString(_T("Use a unique girder type for each girder"));
+
    CPropertyPage::OnInitDialog();
 
    CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
@@ -287,13 +283,13 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
    if ( m_SlabOffsetTypeOriginal == pgsTypes::sotPier )
    {
-      pcbSlabOffsetType->AddString(_T("A unique SlabOffset is used at each Pier"));
+      pcbSlabOffsetType->AddString(_T("A unique Slab Offset is used at each Pier"));
    }
    else
    {
-      pcbSlabOffsetType->AddString(_T("A single SlabOffset is used for the entire bridge"));
+      pcbSlabOffsetType->AddString(_T("A single Slab Offset is used for the entire bridge"));
    }
-   pcbSlabOffsetType->AddString(_T("SlabOffsets are defined girder by girder"));
+   pcbSlabOffsetType->AddString(_T("Slab Offsets are defined girder by girder"));
    pcbSlabOffsetType->SetCurSel(m_SlabOffsetTypeOriginal==pgsTypes::sotGirder ? 1:0);
 
    UpdateSlabOffsetControls();
@@ -313,11 +309,6 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    pcbFilletType->SetCurSel(m_FilletTypeOriginal==pgsTypes::fttGirder ? 1:0);
 
    UpdateFilletControls();
-
-   CComboBox* pcbSameGirder = (CComboBox*)GetDlgItem(IDC_CB_SAMEGIRDER);
-   pcbSameGirder->AddString(_T("Use same segment type for entire bridge"));
-   pcbSameGirder->AddString(_T("Use unique segment type for each girder"));
-   pcbSameGirder->SetCurSel(pBridge->UseSameGirderForEntireBridge() ? 0:1);
 
    UpdateGirderTypeControls();
 
@@ -723,4 +714,37 @@ void CSplicedGirderGeneralPage::UpdateGirderTypeControls()
 
    pWnd->SetWindowText(pParent->m_pGirder->GetGirderName());
 
+}
+
+void CSplicedGirderGeneralPage::OnChangedGirderName()
+{
+   CComboBox* pcbGirderName = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
+   int curSel = pcbGirderName->GetCurSel();
+   CString strName;
+   pcbGirderName->GetLBText(curSel,strName);
+
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   if ( pParent->m_pGirder->GetGirderName() != strName )
+   {
+      pParent->m_pGirder->SetGirderName(strName);
+
+      // make sure the segment variation type is valid
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,ILibrary,pLib);
+      const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strName);
+      pParent->m_pGirder->SetGirderLibraryEntry(pGirderEntry);
+
+      SegmentIndexType nSegments = pParent->m_pGirder->GetSegmentCount();
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CPrecastSegmentData* pSegment = pParent->m_pGirder->GetSegment(segIdx);
+         std::vector<pgsTypes::SegmentVariationType> segmentVariations(pParent->m_pGirder->GetSupportedSegmentVariations(pGirderEntry));
+         std::vector<pgsTypes::SegmentVariationType>::iterator found = std::find(segmentVariations.begin(),segmentVariations.end(),pSegment->GetVariationType());
+         if ( found == segmentVariations.end() )
+         {
+            pSegment->SetVariationType(segmentVariations.front());
+         }
+      } // next segment
+   }
 }

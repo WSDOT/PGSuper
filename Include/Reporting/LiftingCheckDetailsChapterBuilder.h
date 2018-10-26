@@ -25,7 +25,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
-#include <PgsExt\LiftingAnalysisArtifact.h>
+#include <PgsExt\LiftHaulConstants.h>
 
 /*****************************************************************************
 CLASS 
@@ -54,9 +54,6 @@ public:
 
    virtual LPCTSTR GetName() const;
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-
-   void BuildRebarTable(IBroker* pBroker, rptChapter* pChapter, const CSegmentKey& segmentKey, 
-                        ImpactDir dir) const;
 
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;

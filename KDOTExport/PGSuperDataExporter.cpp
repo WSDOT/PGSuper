@@ -637,7 +637,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          gd.StraightStrandCoordinates(strCoords);
 
          // Debonding
-         gd.NumberOfDebondedStraightStrands( pStrandGeom->GetNumDebondedStrands(segmentKey, pgsTypes::Straight) );
+         gd.NumberOfDebondedStraightStrands( pStrandGeom->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither) );
 
          KDOT::GirderDataType::StraightStrandDebonding_sequence debonds;
 

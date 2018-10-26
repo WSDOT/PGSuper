@@ -91,6 +91,8 @@
 
 #include <Reporting\MultiGirderHaunchGeometryChapterBuilder.h>
 
+#include <Reporting\PierReactionChapterBuilder.h>
+
 #include <IReportManager.h>
 #include <IFace\Project.h>
 
@@ -117,6 +119,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateSpecChecReport();
    CreateDistributionFactorSummaryReport();
    CreateTimeStepDetailsReport();
+   CreatePierReactionsReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
    // these are just some testing/debugging reports
@@ -376,7 +379,7 @@ void CReporterBase::CreateStageByStageDetailsReport()
    GET_IFACE(IReportManager,pRptMgr);
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
 
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("(DEBUG) Stage by Stage Details Report"));
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("(DEBUG) Interval by Interval Details Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -431,6 +434,22 @@ void CReporterBase::CreateMultiHaunchGeometryReport()
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CMultiGirderHaunchGeometryChapterBuilder(true)) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+void CReporterBase::CreatePierReactionsReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+
+   boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(new CGirderLineReportSpecificationBuilder(m_pBroker) );
+
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Pier Reactions Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPierReactionChapterBuilder(true)) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 

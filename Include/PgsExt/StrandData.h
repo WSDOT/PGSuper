@@ -157,12 +157,12 @@ DESCRIPTION
 class PGSEXTCLASS CStrandData
 {
 public:
-   enum StrandDefinitionType { 
+   typedef enum StrandDefinitionType { 
       sdtTotal, // input is total number of permanent strands
       sdtStraightHarped, // input is number of harped and number of straight strands
       sdtDirectSelection, // input is a fill array of strand positions in the girder strand grid
       sdtDirectInput // input is direct input by user. the strand grid in the girder library is ignored
-   };
+   } StrandDefinitionType;
 
 public:
    CStrandData();

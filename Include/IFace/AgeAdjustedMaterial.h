@@ -23,8 +23,9 @@
 #pragma once
 
 #include <WBFLGenericBridge.h>
-#include <IFace\BeamFactory.h> // for IStages
-#include <IFace\Bridge.h>
+
+interface IStages;
+interface IMaterials;
 
 /*****************************************************************************
 INTERFACE

@@ -63,8 +63,20 @@ public:
 
    bool operator<(const PrestressWithLiveLoadSubKey& rOther) const
    {
-      if ( m_Strand < rOther.m_Strand ) return true;
-      if ( rOther.m_Strand < m_Strand ) return false;
+      if ( m_Strand < rOther.m_Strand ) 
+      {
+         return true;
+      }
+
+      if ( rOther.m_Strand < m_Strand ) 
+      {
+         return false;
+      }
+
+      if ( m_LimitState < rOther.m_LimitState )
+      {
+         return true;
+      }
 
       return false;
    }
@@ -327,11 +339,11 @@ public:
 public:
    virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey);
-   virtual const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey);
+   virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey);
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
    virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& design);
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey);
-   virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
+   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact);
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc);
    virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
 
@@ -477,7 +489,7 @@ private:
    std::map<CSpanKey,HAUNCHDETAILS> m_HaunchDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
-   std::map<CSegmentKey, std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less> > m_LiftingArtifacts;
+   std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
    std::map<CSegmentKey, std::map<Float64,boost::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> > m_HaulingArtifacts;
 
    // Event Sink Cookies

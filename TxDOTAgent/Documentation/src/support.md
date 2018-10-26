@@ -13,8 +13,4 @@ Contact Information
 --------------------
 To request technical support or to report problems contact:
 
-Texas Department of Transportation<br>
-Bridge Division<br>
-Timothy E. Bradberry, P.E.<br>
-E-Mail: [Tim.Bradberry@dot.state.tx.us](mailto:Tim.Bradberry@dot.state.tx.us)<br>
-Phone: 512-416-2179
+BRG_TxDOT_PGSuperHelp@txdot.gov

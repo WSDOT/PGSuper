@@ -73,11 +73,17 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
+      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3][5.9.4.1]")<<rptNewLine;
+
       rptParagraph* p = new rptParagraph;
       *pChapter << p;
+
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
    }
    else
@@ -85,14 +91,37 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       GET_IFACE2(pBroker,IArtifact,pArtifacts);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+      GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx );
+      for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
       {
-         CSegmentKey segmentKey(girderKey,segIdx);
-   
-         // Artifact does heavy lifting
-         const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
-         pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
-      }
+         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+         GirderIndexType firstGdrIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+         GirderIndexType lastGdrIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGdrIdx);
+         for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+         {
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CSegmentKey segmentKey(girderKey,segIdx);
+         
+               if ( 1 < nSegments )
+               {
+                  rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle() );
+                  *pChapter << pTitle;
+                  *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+
+                  rptParagraph* p = new rptParagraph;
+                  *pChapter << p;
+               }
+
+               // Artifact does heavy lifting
+               const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+               pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
+            } // next segment
+         } // next girder
+      } // next group
    }
 
 

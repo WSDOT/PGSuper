@@ -134,6 +134,12 @@ interface IIntervals : IUnknown
    // retuns the interval when a closure joint becomes composite with the girder
    virtual IntervalIndexType GetCompositeClosureJointInterval(const CClosureKey& closureKey) = 0;
 
+   // returns the interval when the first closure joint becomes composite for this girder
+   virtual IntervalIndexType GetFirstCompositeClosureJointInterval(const CGirderKey& girderKey) = 0;
+
+   // returns the interval when the last closure joint becomes composite for this girder
+   virtual IntervalIndexType GetLastCompositeClosureJointInterval(const CGirderKey& girderKey) = 0;
+
    // returns the interval when continuity occurs at a pier
    virtual void GetContinuityInterval(const CGirderKey& girderKey,PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
 

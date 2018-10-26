@@ -398,7 +398,7 @@ void CTemporarySupportData::MakeCopy(const CTemporarySupportData& rOther,bool bC
    m_Spacing                      = rOther.m_Spacing;
    m_Spacing.SetTemporarySupport(this);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTemporarySupportData::MakeAssignment(const CTemporarySupportData& rOther)
@@ -518,7 +518,7 @@ void CTemporarySupportData::SetOrientation(LPCTSTR strOrientation)
 void CTemporarySupportData::SetSpan(CSpanData2* pSpan)
 {
    m_pSpan = pSpan;
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 CSpanData2* CTemporarySupportData::GetSpan()

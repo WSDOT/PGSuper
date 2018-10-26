@@ -105,7 +105,7 @@ public:
    bool IsAlignmentSelected();
 
    void GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
-   void SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx);
+   void SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,bool bUpdate = true);
 
    virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
    virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);

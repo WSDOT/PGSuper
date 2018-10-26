@@ -40,6 +40,7 @@
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
 #include <Plugins\BeamFactoryCATID.h>
+#include <Plugins\BeamFamilyCLSID.h>
 #include <Plugins\Beams.h>
 
 #include <MathEx.h>
@@ -89,7 +90,8 @@ static char THIS_FILE[] = __FILE__;
 // from 23   to 24   Added Prestressed design strategies (2.9), Added option for variable depth girders (3.0)
 // from 24   to 25   Added Publisher Contact Information
 // from 25   to 26   Added haunch checking and camber multiplication factors
-#define CURRENT_VERSION 26.0
+// from 26   to 27   Added drag coefficient
+#define CURRENT_VERSION 27.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) 
@@ -163,7 +165,8 @@ m_MaxDebondLengthByHardDistance(-1.0),
 m_MinFilletValue(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
 m_DoCheckMinHaunchAtBearingLines(false),
 m_MinHaunchAtBearingLines(0.0),
-m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
+m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
+m_DragCoefficient(2.2)
 {
 	CWaitCursor cursor;
 
@@ -672,6 +675,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    }
    pSave->EndUnit(); // CamberMultipliers
 
+   pSave->Property(_T("DragCoefficient"),m_DragCoefficient); // added version 27
 
    pSave->EndUnit();
 
@@ -771,9 +775,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         strCLSID = TranslateCLSID(strCLSID);
+         std::_tstring strNewCLSID = TranslateCLSID(strCLSID);
 
-         HRESULT hr = CreateBeamFactory(strCLSID);
+         HRESULT hr = CreateBeamFactory(strNewCLSID);
          if ( FAILED(hr) )
          {
             CString strMsg;
@@ -2728,6 +2732,27 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if ( 26 < version )
+      {
+         // added version 27
+         if ( !pLoad->Property(_T("DragCoefficient"),&m_DragCoefficient) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+      else
+      {
+         // default for U-Beams is 1.5, otherwise 2.2
+         if ( m_pBeamFactory->GetFamilyCLSID() == CLSID_UBeamFamily || m_pBeamFactory->GetFamilyCLSID() == CLSID_SplicedUBeamFamily )
+         {
+            m_DragCoefficient = 1.5;
+         }
+         else
+         {
+            m_DragCoefficient = 2.2;
+         }
+      }
+
 
       if(!pLoad->EndUnit())
       {
@@ -3096,6 +3121,12 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
          RETURN_ON_DIFFERENCE;
          vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Camber Multipliers are different"),_T(""),_T("")));
       }
+   }
+
+   if ( !::IsEqual(m_DragCoefficient,rOther.m_DragCoefficient) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Drag Coefficients are different"),_T(""),_T("")));
    }
 
    //
@@ -3587,11 +3618,12 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    }
 
    // Design Algorithm strategies
-   bool cant_straight = pgsTypes::asHarped   ==  GetAdjustableStrandType() && 
-                                                 GetNumHarpedStrandCoordinates() > 0 &&
-                                                 IsDifferentHarpedGridAtEndsUsed();
+   bool cant_straight = pgsTypes::asHarped   ==  GetAdjustableStrandType() && IsDifferentHarpedGridAtEndsUsed();
    bool cant_harp     = pgsTypes::asStraight ==  GetAdjustableStrandType();
    bool cant_debond   = pgsTypes::asHarped   ==  GetAdjustableStrandType() || !CanDebondStraightStrands();
+
+   // NOTE: It is ok to have a harped adjustable strategy without harped strands. This would be the case of straight only with no adjustable straight strands
+   // or a straight/harped girder that doesn't have any harped strands defined.
 
    // Find any incompatible strategies and remove them
    PrestressDesignStrategyConstIterator it = m_PrestressDesignStrategies.begin();
@@ -3609,14 +3641,6 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       {
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("A harped strand flexural design algorithm strategy is selected and harped strands are not allowed - The strategy has been removed.") ));
-
-         it = m_PrestressDesignStrategies.erase(it);
-         continue;
-      }
-      else if ( dtDesignForHarping==it->m_FlexuralDesignType &&  GetNumHarpedStrandCoordinates()==0)
-      {
-         pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
-                         _T("A harped strand flexural design algorithm strategy is selected and no harped strands exist - The strategy has been removed.") ));
 
          it = m_PrestressDesignStrategies.erase(it);
          continue;
@@ -4598,6 +4622,8 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
 
    m_CamberMultipliers                    = rOther.m_CamberMultipliers;
 
+   m_DragCoefficient = rOther.m_DragCoefficient;
+
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -5126,6 +5152,7 @@ void GirderLibraryEntry::SetDefaultPrestressDesignStrategy()
    }
 
    m_PrestressDesignStrategies.push_back(ds);
+   ATLASSERT(0 < m_PrestressDesignStrategies.size());
 }
 
 Float64 GirderLibraryEntry::GetMinFilletValue() const
@@ -5172,6 +5199,16 @@ void GirderLibraryEntry::SetCamberMultipliers(CamberMultipliers& factors)
 CamberMultipliers GirderLibraryEntry::GetCamberMultipliers() const
 {
    return m_CamberMultipliers;
+}
+
+void GirderLibraryEntry::SetDragCoefficient(Float64 Cd)
+{
+   m_DragCoefficient = Cd;
+}
+
+Float64 GirderLibraryEntry::GetDragCoefficient() const
+{
+   return m_DragCoefficient;
 }
 
 //======================== ACCESS     =======================================

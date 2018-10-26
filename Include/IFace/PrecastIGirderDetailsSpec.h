@@ -66,15 +66,15 @@ interface IPrecastIGirderDetailsSpec : IUnknown
 {
    //------------------------------------------------------------------------
    // Minimum Top Flange thickness
-   virtual Float64 GetMinTopFlangeThickness() const=0;
+   virtual Float64 GetMinTopFlangeThickness() = 0;
 
    //------------------------------------------------------------------------
    // Minimum web thickness
-   virtual Float64 GetMinWebThickness() const=0;
+   virtual Float64 GetMinWebThickness() = 0;
 
    //------------------------------------------------------------------------
    // Minimum Bottom Flange thickness
-   virtual Float64 GetMinBottomFlangeThickness() const=0;
+   virtual Float64 GetMinBottomFlangeThickness() = 0;
 };
 
 #endif // INCLUDED_IFACE_PRECASTIGIRDERDETAILSSPEC_H_

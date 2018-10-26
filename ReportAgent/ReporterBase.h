@@ -56,4 +56,6 @@ protected:
    void CreateStageByStageDetailsReport();
    void CreateTimeStepDetailsReport();
    void CreatePointOfInterestReport();
+
+   void CreatePierReactionsReport();
 };

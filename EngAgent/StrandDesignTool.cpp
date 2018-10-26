@@ -223,7 +223,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
       m_AbsoluteMinimumSlabOffset = tSlab + min_haunch;
 
-      Float64 defaultA = max( m_AbsoluteMinimumSlabOffset, 1.5*tSlab );
+      Float64 defaultA = Max( m_AbsoluteMinimumSlabOffset, 1.5*tSlab );
 
       m_pArtifact->SetSlabOffset( pgsTypes::metStart, defaultA);
       m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
@@ -231,13 +231,23 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
    // Set initial design fillet here
    Float64 fillet = pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
-   if ( m_DesignOptions.doDesignSlabOffset == sodAandFillet)
+   if ( m_DesignOptions.doDesignSlabOffset == sodAandFillet )
    {
-      Float64 min_fillet = m_pGirderEntry->GetMinFilletValue();
-      if (fillet < min_fillet)
+      pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
+      if (IsAdjacentSpacing(spacingType))
       {
-         LOG(_T("Setting fillet value from = ") << ::ConvertFromSysUnits(fillet,unitMeasure::Inch) << _T("in to minimum required value of ")<< ::ConvertFromSysUnits(min_fillet,unitMeasure::Inch) << _T("in") );
-         fillet = min_fillet;
+         // set fillet to zero for adjacently spaced systems
+         LOG(_T("Setting fillet value to zero from = ") << ::ConvertFromSysUnits(fillet,unitMeasure::Inch)<<_T("in") );
+         fillet = 0.0;
+      }
+      else
+      {
+         Float64 min_fillet = m_pGirderEntry->GetMinFilletValue();
+         if (fillet < min_fillet)
+         {
+            LOG(_T("Setting fillet value from = ") << ::ConvertFromSysUnits(fillet,unitMeasure::Inch) << _T("in to minimum required value of ")<< ::ConvertFromSysUnits(min_fillet,unitMeasure::Inch) << _T("in") );
+            fillet = min_fillet;
+         }
       }
    }
 
@@ -1222,7 +1232,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
          Float64 neff;
          Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx,mid_pois[0],config,pgsTypes::Permanent,&neff);
          LOG(_T("Computed ecc = ")<<ecc<<_T(" for ns=")<<ns<<_T(" nh=")<<nh);
-         if (0. < ecc)
+         if ( ::IsGT(0.0,ecc) )
          {
             if (nIter == 0)
             {
@@ -2135,6 +2145,17 @@ Float64 pgsStrandDesignTool::GetTrailingOverhang() const
    return m_pArtifact->GetTrailingOverhang();
 }
 
+void pgsStrandDesignTool::SetHaulTruck(LPCTSTR lpszHaulTruck)
+{
+   LOG(_T("** Haul Truck set to ") << lpszHaulTruck);
+   m_pArtifact->SetHaulTruck(lpszHaulTruck);
+   m_bConfigDirty = true; // cache is dirty
+}
+
+LPCTSTR pgsStrandDesignTool::GetHaulTruck() const
+{
+   return m_pArtifact->GetHaulTruck();
+}
 
 Float64 pgsStrandDesignTool::GetConcreteStrength() const
 {
@@ -3942,7 +3963,17 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
          Int16 num_to_db = (db_iter->second == INVALID_INDEX) ? 1 : 2;
          // first check percentage of total
          Float64 percent_of_total = Float64(num_debonded+num_to_db) / nextnum;
-         if ( db_max_percent_total < percent_of_total )
+
+         // can't debond strands out of order
+         if ( nextnum-currnum==1 && db_iter->first+1  > nextnum  || // one strand to debond
+              nextnum-currnum==2 && db_iter->second+1 > nextnum )   // two to debond
+         {
+            // not enough total straight strands yet. continue
+            // break from inner loop because we need more strands
+            LOG(_T("Debonding of strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" cannot occur until more strands are added in fill order."));
+            break;
+         }
+         else if ( db_max_percent_total < percent_of_total )
          {
             // not enough total straight strands yet. continue
             // break from inner loop because we need more strands
@@ -4039,7 +4070,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
 
       DebondLevel db_level;
       db_level.MinTotalStrandsRequired = tl.MinStrandsForLevel;
-      // starnds for each debond level are cummulative
+      // starnds for each debond level are cumulative
       db_level.StrandsDebonded.assign(running_debonds.begin(), running_debonds.end());
 
       // compute values for each debond level

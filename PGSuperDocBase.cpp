@@ -26,6 +26,8 @@
 
 #include "PGSuperAppPlugin\PGSuperApp.h"
 
+#include <BridgeLink.h>
+
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
 
@@ -1501,13 +1503,10 @@ void CPGSDocBase::OnCloseDocument()
 
 void CPGSDocBase::InitProjectProperties()
 {
-   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-
-   CString engineer_name = pPGSuper->GetEngineerName();
-   CString company       = pPGSuper->GetEngineerCompany();
+   CBridgeLinkApp* pApp = (CBridgeLinkApp*)EAFGetApp();
+   IBridgeLink* pBL = (IBridgeLink*)pApp;
+   CString engineer_name, company;
+   pBL->GetUserInfo(&engineer_name,&company);
 
    GET_IFACE( IProjectProperties, pProjProp );
 
@@ -2612,8 +2611,8 @@ void CPGSDocBase::OnLoadsLoadModifiers()
                            &newLoadModifiers.ImportanceFactor,&i);
 
       newLoadModifiers.DuctilityLevel  = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
-      newLoadModifiers.RedundancyLevel = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
-      newLoadModifiers.ImportanceLevel = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+      newLoadModifiers.RedundancyLevel = (r == 0 ? ILoadModifiers::High : (r == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+      newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::High : (i == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
 
       txnEditLoadModifiers* pTxn = new txnEditLoadModifiers(loadModifiers,newLoadModifiers);
       GET_IFACE(IEAFTransactions,pTransactions);
@@ -2699,7 +2698,8 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
             pTemplate->GetPlugin(&pAppPlugin);
             CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
-            pPGSuper->UpdateProgramSettings(TRUE);
+#pragma Reminder("WORKING HERE - start up") // need a replacement for the call below
+            //pPGSuper->UpdateProgramSettings(TRUE);
             strFile = pPGSuper->GetCachedMasterLibraryFile();
          }
          else
@@ -3007,35 +3007,9 @@ void CPGSDocBase::OnCopyGirderProps()
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CCopyGirderDlg dlg(m_pBroker);
-   if ( dlg.DoModal() == IDOK )
-   {
-      pgsMacroTxn* pMacro = new pgsMacroTxn;
-      pMacro->Name(_T("Copy Girder Properties"));
-
-      std::vector<IDType> callbackIDs = dlg.GetCallbackIDs();
-      std::vector<IDType>::iterator iter(callbackIDs.begin());
-      std::vector<IDType>::iterator end(callbackIDs.end());
-      for ( ; iter != end; iter++ )
-      {
-         IDType callbackID = *iter;
-         std::map<IDType,ICopyGirderPropertiesCallback*>::iterator found(m_CopyGirderPropertiesCallbacks.find(callbackID));
-         ATLASSERT(found != m_CopyGirderPropertiesCallbacks.end());
-         ICopyGirderPropertiesCallback* pCallback = found->second;
-
-         txnTransaction* pTxn = pCallback->CreateCopyTransaction(dlg.m_FromGirderKey,dlg.m_ToGirderKeys);
-         if ( pTxn )
-         {
-            pMacro->AddTransaction(pTxn);
-         }
-      }
-
-      if ( 0 < pMacro->GetTxnCount() )
-      {
-         GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(pMacro);
-      }
-   }
+   // dialog takes care of transactions. This might make pgsplice's implementation worse
+   CCopyGirderDlg dlg(m_pBroker,m_CopyGirderPropertiesCallbacks);
+   dlg.DoModal();
 }
 
 void CPGSDocBase::OnImportProjectLibrary() 
@@ -3497,24 +3471,32 @@ void CPGSDocBase::OnEditSpan()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
-   CString strItems;
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   if (nSpans>1)
    {
-      CString strItem;
-      strItem.Format(_T("Span %d\n"),LABEL_SPAN(spanIdx));
+      CString strItems;
+      for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+      {
+         CString strItem;
+         strItem.Format(_T("Span %d\n"),LABEL_SPAN(spanIdx));
 
-      strItems += strItem;
+         strItems += strItem;
+      }
+
+      CSelectItemDlg dlg;
+      dlg.m_strTitle = _T("Select span to edit");
+      dlg.m_strItems = strItems;
+      dlg.m_strLabel = _T("Select span to edit");
+      dlg.m_ItemIdx = m_Selection.SpanIdx;
+
+      if ( dlg.DoModal() == IDOK )
+      {
+         EditSpanDescription(dlg.m_ItemIdx,ESD_GENERAL);
+      }
    }
-
-   CSelectItemDlg dlg;
-   dlg.m_strTitle = _T("Select span to edit");
-   dlg.m_strItems = strItems;
-   dlg.m_strLabel = _T("Select span to edit");
-   dlg.m_ItemIdx = m_Selection.SpanIdx;
-
-   if ( dlg.DoModal() == IDOK )
+   else
    {
-      EditSpanDescription(dlg.m_ItemIdx,ESD_GENERAL);
+      // No reason to ask which span if there is only one
+      EditSpanDescription(0,ESD_GENERAL);
    }
 }
 

@@ -145,7 +145,7 @@ private:
    Float64 GetReaction(IntervalIndexType intervalIdx,LoadCaseIDType lcid,PierIndexType pierIdx,const CGirderKey& girderKey);
 
 
-   PoiIDType AddPointOfInterest(CSegmentModelData* pModelData,const pgsPointOfInterest& poi);
+   PoiIDPairType AddPointOfInterest(CSegmentModelData* pModelData,const pgsPointOfInterest& poi);
    void ZeroResults(const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
 
 

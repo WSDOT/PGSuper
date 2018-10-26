@@ -283,7 +283,9 @@ typedef struct pgsTypes
    typedef enum PrestressDeflectionDatum
    {
       pddRelease, // relative to support locations at release
+      pddLifting, // relative to support locations at lifting
       pddStorage, // relative to support locations during storage
+      pddHauling, // relative to support locations at hauling
       pddErected  // relative to support locations after erection
    } PrestressDeflectionDatum;
 
@@ -338,6 +340,14 @@ typedef struct pgsTypes
       metStart = 0,  // start of member
       metEnd   = 1   // end of member
    } MemberEndType;
+
+   // Debonding can be at either, end, or start
+   typedef enum DebondMemberEndType
+   {
+      dbetStart = 1,  // start of member
+      dbetEnd   = 2,  // end of member
+      dbetEither  = 3 // either end
+   } DebondMemberEndType;
 
    typedef enum PierFaceType
    {
@@ -676,6 +686,17 @@ typedef struct pgsTypes
       pftProductForceTypeCount
    } ProductForceType;
 
+   typedef enum ForceEffectType
+   {
+      fetFx = 0,
+      fetFy = 1,
+      fetMz = 2,
+
+      fetDx = 0,
+      fetDy = 1,
+      fetRz = 2
+   } ForceEffectType;
+
    typedef enum LimitStateConcreteStrength
    {
       lscStrengthAtTimeOfLoading, // use f'ci and f'c from the time-strength curve
@@ -687,6 +708,38 @@ typedef struct pgsTypes
       hsSquare,    // Haunch is square (vertical from edge of girder)
       hsFilleted   // Haunch cut at 45 degrees (like WSDOT)
    } HaunchShapeType;
+
+   // method of dealing with camber for stability analysis
+   typedef enum CamberMethod
+   {
+      cmApproximate, // camber is approximated with a percent increase of CG from roll axis
+      cmDirect // a value for camber is computed
+   } CamberMethod;
+
+   typedef enum WindType
+   {
+      Speed,
+      Pressure
+   } WindType;
+
+   typedef enum CFType // centrifugal force type
+   {
+      Adverse, // CF is towards the left (increases lateral deflection and roll over)
+      Favorable // CF is towards the right
+   } CFType;
+
+   typedef enum HaulingImpact
+   {
+      NormalCrown, // impact applied only to the normal crown condition
+      MaxSuper,    // impact applied only to the max superelevation condition   
+      Both         // impact applied to both conditions
+   } HaulingImpact;
+
+   typedef enum HaulingSlope
+   {
+      CrownSlope, // hauling at normal crown slope
+      Superelevation // hauling at maximum superelevation
+   } HaulingSlope;
 
 } pgsTypes;
 
@@ -1221,14 +1274,18 @@ virtual void MakeAssignment( const GDRCONFIG& rOther )
 
 };
 
-
+class HaulTruckLibraryEntry;
 struct HANDLINGCONFIG
 {
+   HANDLINGCONFIG() { pHaulTruckEntry = NULL; }
+
    bool bIgnoreGirderConfig; // set true, the GdrConfig is ignored and the current parameters are used
                              // only the overhang parameters are used from this config.
    GDRCONFIG GdrConfig;
    Float64 LeftOverhang;
    Float64 RightOverhang;  // overhang closest to cab of truck when used from hauling
+
+   const HaulTruckLibraryEntry* pHaulTruckEntry;
 };
 
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,

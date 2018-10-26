@@ -89,6 +89,8 @@ interface ISegmentHauling : IUnknown
    virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey)=0;
    virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey)=0;
    virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leading,Float64 trailing)=0;
+   virtual LPCTSTR GetHaulTruck(const CSegmentKey& segmentKey) = 0;
+   virtual void SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHaulTruck) = 0;
 };
 
 #endif // INCLUDED_IFACE_GIRDERHANDLING_H_

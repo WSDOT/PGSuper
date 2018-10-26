@@ -212,9 +212,9 @@ public:
    // GROUP: OPERATIONS
    // virtual functions
    virtual bool Passed() const;
-   virtual bool PassedStressCheck() const;
-
-   virtual void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
+   virtual bool Passed(pgsTypes::HaulingSlope slope) const;
+   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const;
 
    virtual Float64 GetLeadingOverhang() const;
    virtual Float64 GetTrailingOverhang() const;

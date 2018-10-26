@@ -266,10 +266,8 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 {
    pgsTypes::LimitState limitState = GetLimitState();
 
-   GET_IFACE(IProductLoads,pProductLoads);
-
    CString strGraphTitle;
-   strGraphTitle.Format(_T("Stress History (%s - Without Live Load)"),pProductLoads->GetLimitStateName(limitState));
+   strGraphTitle.Format(_T("Stress History (%s - Without Live Load)"),GetLimitStateString(limitState));
    m_Graph.SetTitle(strGraphTitle);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());

@@ -41,7 +41,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 55.0 // jumped to version 50 for PGSplice development... this leaves a gap
+#define CURRENT_VERSION 56.0 
+// jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 // when loading data that was added after version 44 it is ok for the load to fail for now.
 // once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
@@ -87,7 +88,8 @@ m_CyDoTensStressLiftingMax(false),
 m_CyTensStressLiftingMax(0),
 m_CyTensStressServWithRebar( ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_TensStressLiftingWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
-m_TensStressHaulingWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
+m_TensStressHaulingWithRebarNormalCrown(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
+m_TensStressHaulingWithRebarMaxSuper(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_SplittingZoneLengthFactor(4.0),
 m_LiftingUpwardImpact(0),
 m_LiftingDownwardImpact(0),
@@ -102,26 +104,25 @@ m_EnableHaulingCheck(true),
 m_EnableHaulingDesign(true),
 m_HaulingAnalysisMethod(pgsTypes::hmWSDOT),
 m_MaxGirderSweepHauling(0),
-m_HaulingSupportDistance(ConvertToSysUnits(200.0,unitMeasure::Feet)),
 m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
-m_HaulingCamberPercentEstimate(2.0),
+m_HaulingCamberMethod(pgsTypes::cmApproximate),
+m_HaulingCamberPercentEstimate(0.02), // 2%
+m_LiftingCamberMethod(pgsTypes::cmDirect),
+m_LiftingCamberPercentEstimate(0.02), // 2%
 m_LiftingLoopTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_MinCableInclination(ConvertToSysUnits(90.,unitMeasure::Degree)),
-m_MaxGirderWgt(ConvertToSysUnits(200.0,unitMeasure::Kip)),
 m_CompStressHauling(0.6),
-m_TensStressHauling(0),
-m_DoTensStressHaulingMax(false),
-m_TensStressHaulingMax(0),
+m_TensStressHaulingNormalCrown(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
+m_DoTensStressHaulingMaxNormalCrown(false),
+m_TensStressHaulingMaxNormalCrown(0),
+m_TensStressHaulingMaxSuper(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
+m_DoTensStressHaulingMaxMaxSuper(false),
+m_TensStressHaulingMaxMaxSuper(::ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_HaulingCrackFs(1.0),
 m_HaulingRollFs(1.5),
-m_TruckRollStiffnessMethod(1),
-m_TruckRollStiffness(ConvertToSysUnits(40000.,unitMeasure::KipInchPerRadian)),
-m_AxleWeightLimit(ConvertToSysUnits(18.,unitMeasure::Kip)),
-m_AxleStiffness(ConvertToSysUnits(4000.,unitMeasure::KipInchPerRadian)),
-m_MinRollStiffness(ConvertToSysUnits(28000.,unitMeasure::KipInchPerRadian)),
-m_TruckGirderHeight(ConvertToSysUnits(108.0,unitMeasure::Inch)),
-m_TruckRollCenterHeight(ConvertToSysUnits(24.0,unitMeasure::Inch)),
-m_TruckAxleWidth(ConvertToSysUnits(36.0,unitMeasure::Inch)),
+m_bHasOldHaulTruck(false),
+m_HaulingImpactUsage(pgsTypes::NormalCrown),
+m_RoadwayCrownSlope(0.0),
 m_RoadwaySuperelevation(0.06),
 m_TempStrandRemovalCompStress(0.45),
 m_TempStrandRemovalTensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
@@ -164,7 +165,7 @@ m_LossMethod(LOSSES_AASHTO_REFINED),
 m_BeforeXferLosses(0),
 m_AfterXferLosses(0),
 m_LiftingLosses(0),
-m_TimeDependentModel(TDM_ACI209),
+m_TimeDependentModel(TDM_AASHTO),
 m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
 m_FinalLosses(0),
 m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
@@ -240,7 +241,15 @@ m_DuctAreaPullRatio(2.5),
 m_DuctDiameterRatio(0.4),
 m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading),
 m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
-m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch))
+m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
+m_LiftingWindType(pgsTypes::Speed),
+m_LiftingWindLoad(0),
+m_LiftingStressesPlumbGirder(true),
+m_HaulingWindType(pgsTypes::Speed),
+m_HaulingWindLoad(0),
+m_CentrifugalForceType(pgsTypes::Favorable),
+m_HaulingSpeed(0),
+m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -494,32 +503,56 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("LiftingLoopTolerance"),m_LiftingLoopTolerance);
    pSave->Property(_T("MinCableInclination"),m_MinCableInclination);
    pSave->Property(_T("MaxGirderSweepLifting"), m_MaxGirderSweepLifting);
+   pSave->Property(_T("LiftingCamberMethod"),(Int32)m_LiftingCamberMethod); // added version 56
+   pSave->Property(_T("LiftingCamberPercentEstimate"),m_LiftingCamberPercentEstimate); // added version 56
+   pSave->Property(_T("LiftingWindType"),(Int32)m_LiftingWindType); // added in version 56
+   pSave->Property(_T("LiftingWindLoad"),m_LiftingWindLoad); // added in version 56
+   pSave->Property(_T("LiftingStressesPlumbGirder"),m_LiftingStressesPlumbGirder); // added in version 56
    pSave->Property(_T("EnableHaulingCheck"), m_EnableHaulingCheck);
    pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
    pSave->Property(_T("HaulingAnalysisMethod"), (Int32)m_HaulingAnalysisMethod); // added version 43
    pSave->Property(_T("MaxGirderSweepHauling"), m_MaxGirderSweepHauling);
-   pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance);
-   pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang);
+   //pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance); // removed version 56
+   //pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang); // removed version 56
    pSave->Property(_T("HaulingSupportPlacementTolerance"),m_HaulingSupportPlacementTolerance);
+   pSave->Property(_T("HaulingCamberMethod"),(Int32)m_HaulingCamberMethod); // added version 56
    pSave->Property(_T("HaulingCamberPercentEstimate"),m_HaulingCamberPercentEstimate);
+   pSave->Property(_T("HaulingWindType"),(Int32)m_HaulingWindType); // added in version 56
+   pSave->Property(_T("HaulingWindLoad"),m_HaulingWindLoad); // added in version 56
+   pSave->Property(_T("CentrifugalForceType"),(Int32)m_CentrifugalForceType); // added in version 56
+   pSave->Property(_T("HaulingSpeed"),m_HaulingSpeed); // added in version 56
+   pSave->Property(_T("TurningRadius"),m_TurningRadius); // added in version 56
    pSave->Property(_T("CompStressHauling"), m_CompStressHauling);
-   pSave->Property(_T("TensStressHauling"),m_TensStressHauling);
-   pSave->Property(_T("DoTensStressHaulingMax"),m_DoTensStressHaulingMax); 
-   pSave->Property(_T("TensStressHaulingMax"), m_TensStressHaulingMax);
+
+   //pSave->Property(_T("TensStressHauling"),m_TensStressHauling); // removed in version 56
+   //pSave->Property(_T("DoTensStressHaulingMax"),m_DoTensStressHaulingMax);  // removed in version 56
+   //pSave->Property(_T("TensStressHaulingMax"), m_TensStressHaulingMax); // removed in version 56
+
+   pSave->Property(_T("TensStressHaulingNormalCrown"),m_TensStressHaulingNormalCrown); // added in version 56
+   pSave->Property(_T("DoTensStressHaulingMaxNormalCrown"),m_DoTensStressHaulingMaxNormalCrown);  // added in version 56
+   pSave->Property(_T("TensStressHaulingMaxNormalCrown"), m_TensStressHaulingMaxNormalCrown); // added in version 56
+
+   pSave->Property(_T("TensStressHaulingMaxSuper"),m_TensStressHaulingMaxSuper); // added in version 56
+   pSave->Property(_T("DoTensStressHaulingMaxMaxSuper"),m_DoTensStressHaulingMaxMaxSuper);  // added in version 56
+   pSave->Property(_T("TensStressHaulingMaxMaxSuper"), m_TensStressHaulingMaxMaxSuper); // added in version 56
+
    pSave->Property(_T("HeHaulingCrackFs"), m_HaulingCrackFs);
    pSave->Property(_T("HeHaulingFailFs"), m_HaulingRollFs);
+   pSave->Property(_T("HaulingImpactUsage"), (Int32)m_HaulingImpactUsage); // added in version 56
+   pSave->Property(_T("RoadwayCrownSlope"),m_RoadwayCrownSlope); // added in version 56
    pSave->Property(_T("RoadwaySuperelevation"), m_RoadwaySuperelevation);
-   pSave->Property(_T("TruckRollStiffnessMethod"), (long)m_TruckRollStiffnessMethod);
-   pSave->Property(_T("TruckRollStiffness"), m_TruckRollStiffness);
-   pSave->Property(_T("AxleWeightLimit"), m_AxleWeightLimit);
-   pSave->Property(_T("AxleStiffness"),m_AxleStiffness);
-   pSave->Property(_T("MinRollStiffness"),m_MinRollStiffness);
-   pSave->Property(_T("TruckGirderHeight"), m_TruckGirderHeight);
-   pSave->Property(_T("TruckRollCenterHeight"), m_TruckRollCenterHeight);
-   pSave->Property(_T("TruckAxleWidth"), m_TruckAxleWidth);
+
+   //pSave->Property(_T("TruckRollStiffnessMethod"), (long)m_TruckRollStiffnessMethod); // removed version 56
+   //pSave->Property(_T("TruckRollStiffness"), m_TruckRollStiffness); // removed version 56
+   //pSave->Property(_T("AxleWeightLimit"), m_AxleWeightLimit); // removed version 56
+   //pSave->Property(_T("AxleStiffness"),m_AxleStiffness); // removed version 56
+   //pSave->Property(_T("MinRollStiffness"),m_MinRollStiffness); // removed version 56
+   //pSave->Property(_T("TruckGirderHeight"), m_TruckGirderHeight); // removed version 56
+   //pSave->Property(_T("TruckRollCenterHeight"), m_TruckRollCenterHeight); // removed version 56
+   //pSave->Property(_T("TruckAxleWidth"), m_TruckAxleWidth); // removed version 56
    //pSave->Property(_T("HeErectionCrackFs"), m_HeErectionCrackFs); // removed in version 55.0
    //pSave->Property(_T("HeErectionFailFs"), m_HeErectionFailFs); // removed in version 55.0
-   pSave->Property(_T("MaxGirderWgt"),m_MaxGirderWgt);
+   //pSave->Property(_T("MaxGirderWgt"),m_MaxGirderWgt); // removed version 56
 
    // Added at version 53
    pSave->Property(_T("LimitStateConcreteStrength"),m_LimitStateConcreteStrength);
@@ -544,7 +577,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    // Added at version 4.0
    pSave->Property(_T("CastingYardTensileStressLimitWithMildRebar"),m_CyTensStressServWithRebar);
    pSave->Property(_T("LiftingTensileStressLimitWithMildRebar"),m_TensStressLiftingWithRebar);
-   pSave->Property(_T("HaulingTensileStressLimitWithMildRebar"),m_TensStressHaulingWithRebar);
+   //pSave->Property(_T("HaulingTensileStressLimitWithMildRebar"),m_TensStressHaulingWithRebar); // removed in version 56
+   pSave->Property(_T("HaulingTensileStressLimitWithMildRebarNormalCrown"),m_TensStressHaulingWithRebarNormalCrown); // added in version 56
+   pSave->Property(_T("HaulingTensileStressLimitWithMildRebarMaxSuper"),m_TensStressHaulingWithRebarMaxSuper); // added in version 56
 
    // Added at version 30
    pSave->Property(_T("TempStrandRemovalCompStress") ,     m_TempStrandRemovalCompStress);
@@ -1275,6 +1310,38 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
+      if ( 55 < version )
+      {
+         // added in version 56
+         Int32 temp;
+         if ( !pLoad->Property(_T("LiftingCamberMethod"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_LiftingCamberMethod = (pgsTypes::CamberMethod)temp;
+
+         if ( !pLoad->Property(_T("LiftingCamberPercentEstimate"),&m_LiftingCamberPercentEstimate) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("LiftingWindType"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_LiftingWindType = (pgsTypes::WindType)temp;
+
+         if ( !pLoad->Property(_T("LiftingWindLoad"),&m_LiftingWindLoad) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("LiftingStressesPlumbGirder"),&m_LiftingStressesPlumbGirder) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
       if (version<11)
       {
          m_EnableHaulingCheck = true;
@@ -1318,21 +1385,27 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("HaulingSupportDistance"), &m_HaulingSupportDistance))
+      if ( version < 56 )
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
-      }
+         m_bHasOldHaulTruck = true;
 
-      if ( 2.0 <= version )
-      {
-         if(!pLoad->Property(_T("MaxHaulingOverhang"), &m_MaxHaulingOverhang))
+         // removed in version 56
+         if(!pLoad->Property(_T("HaulingSupportDistance"), &m_OldHaulTruck.m_Lmax))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
-      }
-      else
-      {
-         m_MaxHaulingOverhang = ::ConvertToSysUnits(15.0,unitMeasure::Feet);
+
+         if ( 2.0 <= version )
+         {
+            if(!pLoad->Property(_T("MaxHaulingOverhang"), &m_OldHaulTruck.m_MaxOH))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+         else
+         {
+            m_OldHaulTruck.m_MaxOH = ::ConvertToSysUnits(15.0,unitMeasure::Feet);
+         }
       }
 
       if(!pLoad->Property(_T("HaulingSupportPlacementTolerance"), &m_HaulingSupportPlacementTolerance))
@@ -1340,9 +1413,57 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
+      if ( 55 < version )
+      {
+         // added in version 56
+         Int32 temp;
+         if ( !pLoad->Property(_T("HaulingCamberMethod"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_HaulingCamberMethod = (pgsTypes::CamberMethod)temp;
+      }
+
       if(!pLoad->Property(_T("HaulingCamberPercentEstimate"), &m_HaulingCamberPercentEstimate))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+      if ( version < 56 )
+      {
+         // in version 56 this value changed from a whole percentage to a fraction
+         // e.g. 2% became 0.02
+         m_HaulingCamberPercentEstimate /= 100;
+      }
+
+      if ( 55 < version )
+      {
+         Int32 temp;
+         if ( !pLoad->Property(_T("HaulingWindType"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_LiftingWindType = (pgsTypes::WindType)temp;
+
+         if ( !pLoad->Property(_T("HaulingWindLoad"),&m_HaulingWindLoad) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("CentrifugalForceType"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_CentrifugalForceType = (pgsTypes::CFType)temp;
+
+         if (!pLoad->Property(_T("HaulingSpeed"),&m_HaulingSpeed) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (!pLoad->Property(_T("TurningRadius"),&m_TurningRadius) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("CompStressHauling"), &m_CompStressHauling))
@@ -1350,19 +1471,54 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("TensStressHauling"), &m_TensStressHauling))
+      if ( version < 56 )
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
-      }
+         if(!pLoad->Property(_T("TensStressHauling"), &m_TensStressHaulingNormalCrown))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-      if(!pLoad->Property(_T("DoTensStressHaulingMax"),&m_DoTensStressHaulingMax))
-      {
-         THROW_LOAD(InvalidFileFormat,pLoad);
-      }
+         if(!pLoad->Property(_T("DoTensStressHaulingMax"),&m_DoTensStressHaulingMaxNormalCrown))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-      if(!pLoad->Property(_T("TensStressHaulingMax"), &m_TensStressHaulingMax))
+         if(!pLoad->Property(_T("TensStressHaulingMax"), &m_TensStressHaulingMaxNormalCrown))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+      else
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         if(!pLoad->Property(_T("TensStressHaulingNormalCrown"), &m_TensStressHaulingNormalCrown))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if(!pLoad->Property(_T("DoTensStressHaulingMaxNormalCrown"),&m_DoTensStressHaulingMaxNormalCrown))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if(!pLoad->Property(_T("TensStressHaulingMaxNormalCrown"), &m_TensStressHaulingMaxNormalCrown))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if(!pLoad->Property(_T("TensStressHaulingMaxSuper"), &m_TensStressHaulingMaxSuper))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if(!pLoad->Property(_T("DoTensStressHaulingMaxMaxSuper"),&m_DoTensStressHaulingMaxMaxSuper))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if(!pLoad->Property(_T("TensStressHaulingMaxMaxSuper"), &m_TensStressHaulingMaxMaxSuper))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("HeHaulingCrackFs"), &m_HaulingCrackFs))
@@ -1375,64 +1531,85 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
+      if ( 55 < version )
+      {
+         // added in version 56
+         Int32 temp;
+         if ( !pLoad->Property(_T("HaulingImpactUsage"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_HaulingImpactUsage = (pgsTypes::HaulingImpact)temp;
+
+         if ( !pLoad->Property(_T("RoadwayCrownSlope"),&m_RoadwayCrownSlope))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+      }
+
       if(!pLoad->Property(_T("RoadwaySuperelevation"), &m_RoadwaySuperelevation))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( version < 1.9 )
+      if ( version < 56 )
       {
-         if(!pLoad->Property(_T("TruckRollStiffness"), &m_TruckRollStiffness))
+         // removed in version 56
+         if ( version < 1.9 )
+         {
+            if(!pLoad->Property(_T("TruckRollStiffness"), &m_OldHaulTruck.m_TruckRollStiffness))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            m_OldHaulTruck.m_TruckRollStiffnessMethod = 0;
+         }
+         else
+         {
+            long method;
+            if(!pLoad->Property(_T("TruckRollStiffnessMethod"), &method))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            m_OldHaulTruck.m_TruckRollStiffnessMethod = (int)method;
+
+            if(!pLoad->Property(_T("TruckRollStiffness"), &m_OldHaulTruck.m_TruckRollStiffness))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if(!pLoad->Property(_T("AxleWeightLimit"), &m_OldHaulTruck.m_AxleWeightLimit))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if(!pLoad->Property(_T("AxleStiffness"), &m_OldHaulTruck.m_AxleStiffness))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if (!pLoad->Property(_T("MinRollStiffness"),&m_OldHaulTruck.m_MinRollStiffness))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+
+         if(!pLoad->Property(_T("TruckGirderHeight"), &m_OldHaulTruck.m_Hbg))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_TruckRollStiffnessMethod = 0;
-      }
-      else
-      {
-         long method;
-         if(!pLoad->Property(_T("TruckRollStiffnessMethod"), &method))
+         if(!pLoad->Property(_T("TruckRollCenterHeight"), &m_OldHaulTruck.m_Hrc))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_TruckRollStiffnessMethod = (int)method;
-
-         if(!pLoad->Property(_T("TruckRollStiffness"), &m_TruckRollStiffness))
+         if(!pLoad->Property(_T("TruckAxleWidth"), &m_OldHaulTruck.m_Wcc))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
-
-         if(!pLoad->Property(_T("AxleWeightLimit"), &m_AxleWeightLimit))
-         {
-            THROW_LOAD(InvalidFileFormat,pLoad);
-         }
-
-         if(!pLoad->Property(_T("AxleStiffness"), &m_AxleStiffness))
-         {
-            THROW_LOAD(InvalidFileFormat,pLoad);
-         }
-
-         if (!pLoad->Property(_T("MinRollStiffness"),&m_MinRollStiffness))
-         {
-            THROW_LOAD(InvalidFileFormat,pLoad);
-         }
-      }
-
-      if(!pLoad->Property(_T("TruckGirderHeight"), &m_TruckGirderHeight))
-      {
-         THROW_LOAD(InvalidFileFormat,pLoad);
-      }
-
-      if(!pLoad->Property(_T("TruckRollCenterHeight"), &m_TruckRollCenterHeight))
-      {
-         THROW_LOAD(InvalidFileFormat,pLoad);
-      }
-
-      if(!pLoad->Property(_T("TruckAxleWidth"), &m_TruckAxleWidth))
-      {
-         THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( version < 55.0 )
@@ -1452,10 +1629,18 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 1.3 <= version )
       {
-         if (!pLoad->Property(_T("MaxGirderWgt"), &m_MaxGirderWgt))
+         if ( version < 56 )
          {
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            // removed in vesrion 56
+            if (!pLoad->Property(_T("MaxGirderWgt"), &m_OldHaulTruck.m_MaxWeight))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
+      }
+      else
+      {
+         m_OldHaulTruck.m_MaxWeight = ::ConvertToSysUnits(200,unitMeasure::Kip);
       }
 
       if ( 52 < version )
@@ -1547,16 +1732,32 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
              THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if (!pLoad->Property(_T("HaulingTensileStressLimitWithMildRebar"),&m_TensStressHaulingWithRebar) )
+         if ( version < 56 )
          {
-             THROW_LOAD(InvalidFileFormat,pLoad);
+            if (!pLoad->Property(_T("HaulingTensileStressLimitWithMildRebar"),&m_TensStressHaulingWithRebarNormalCrown) )
+            {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+         else
+         {
+            if (!pLoad->Property(_T("HaulingTensileStressLimitWithMildRebarNormalCrown"),&m_TensStressHaulingWithRebarNormalCrown) )
+            {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if (!pLoad->Property(_T("HaulingTensileStressLimitWithMildRebarMaxSuper"),&m_TensStressHaulingWithRebarMaxSuper) )
+            {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
       }
       else
       {
           m_CyTensStressServWithRebar  = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
           m_TensStressLiftingWithRebar = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
-          m_TensStressHaulingWithRebar = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
+          m_TensStressHaulingWithRebarNormalCrown = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
+          m_TensStressHaulingWithRebarMaxSuper = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
       }
 
       // deal with verson 1.1
@@ -4042,7 +4243,13 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         !::IsEqual(m_PickPointHeight      , rOther.m_PickPointHeight) ||
         !::IsEqual(m_LiftingLoopTolerance , rOther.m_LiftingLoopTolerance) ||
         !::IsEqual(m_MaxGirderSweepLifting, rOther.m_MaxGirderSweepLifting) ||
-        !::IsEqual(m_MinCableInclination  , rOther.m_MinCableInclination) )
+        !::IsEqual(m_MinCableInclination  , rOther.m_MinCableInclination) ||
+        m_LiftingCamberMethod != rOther.m_LiftingCamberMethod ||
+        (m_LiftingCamberMethod == pgsTypes::cmApproximate && !::IsEqual(m_LiftingCamberPercentEstimate, rOther.m_LiftingCamberPercentEstimate)) ||
+        m_LiftingWindType != rOther.m_LiftingWindType ||
+        !::IsEqual(m_LiftingWindLoad,rOther.m_LiftingWindLoad) ||
+        m_LiftingStressesPlumbGirder != rOther.m_LiftingStressesPlumbGirder
+     )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Analysis Parameters are different"),_T(""),_T("")));
@@ -4052,7 +4259,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         !::IsEqual(m_CyTensStressLifting        , rOther.m_CyTensStressLifting) ||
         (m_CyDoTensStressLiftingMax != rOther.m_CyDoTensStressLiftingMax || (m_CyDoTensStressLiftingMax == true && !::IsEqual(m_CyTensStressLiftingMax, rOther.m_CyTensStressLiftingMax))) ||
         !::IsEqual(m_TensStressLiftingWithRebar , rOther.m_TensStressLiftingWithRebar) ||
-        !::IsEqual(m_TensStressHaulingWithRebar , rOther.m_TensStressHaulingWithRebar) )
+        !::IsEqual(m_TensStressHaulingWithRebarNormalCrown , rOther.m_TensStressHaulingWithRebarNormalCrown) ||
+        !::IsEqual(m_TensStressHaulingWithRebarMaxSuper , rOther.m_TensStressHaulingWithRebarMaxSuper)
+      )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Allowable Concrete Stresses are different"),_T(""),_T("")));
@@ -4087,44 +4296,21 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
             vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Hauling are different"),_T(""),_T("")));
          }
 
-         bool bRollStiffness = true;
-         if ( m_TruckRollStiffnessMethod != rOther.m_TruckRollStiffnessMethod )
-         {
-            bRollStiffness = false;
-         }
-         else
-         {
-            if ( m_TruckRollStiffnessMethod == 0 ) 
-            {
-               if ( !::IsEqual(m_TruckRollStiffness, rOther.m_TruckRollStiffness) )
-               {
-                  bRollStiffness = false;
-               }
-            }
-            else
-            {
-               if ( !::IsEqual(m_AxleWeightLimit,  rOther.m_AxleWeightLimit) ||
-                    !::IsEqual(m_AxleStiffness,    rOther.m_AxleStiffness) ||
-                    !::IsEqual(m_MinRollStiffness, rOther.m_MinRollStiffness) )
-               {
-                  bRollStiffness = false;
-               }
-            }
-         }
-
          if ( !::IsEqual(m_HaulingUpwardImpact, rOther.m_HaulingUpwardImpact) ||
             !::IsEqual(m_HaulingDownwardImpact, rOther.m_HaulingDownwardImpact) ||
-            !bRollStiffness ||
-            !::IsEqual(m_TruckGirderHeight, rOther.m_TruckGirderHeight) ||
-            !::IsEqual(m_TruckRollCenterHeight, rOther.m_TruckRollCenterHeight) ||
-            !::IsEqual(m_TruckAxleWidth, rOther.m_TruckAxleWidth) ||
-            !::IsEqual(m_HaulingSupportDistance, rOther.m_HaulingSupportDistance) ||
-            !::IsEqual(m_MaxHaulingOverhang, rOther.m_MaxHaulingOverhang) ||
+            m_HaulingImpactUsage != rOther.m_HaulingImpactUsage ||
+            !::IsEqual(m_RoadwayCrownSlope,rOther.m_RoadwayCrownSlope) ||
             !::IsEqual(m_RoadwaySuperelevation, rOther.m_RoadwaySuperelevation) ||
             !::IsEqual(m_MaxGirderSweepHauling, rOther.m_MaxGirderSweepHauling) ||
             !::IsEqual(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance) ||
-            !::IsEqual(m_HaulingCamberPercentEstimate, rOther.m_HaulingCamberPercentEstimate) ||
-            !::IsEqual(m_MaxGirderWgt, rOther.m_MaxGirderWgt) )
+            m_HaulingCamberMethod != rOther.m_HaulingCamberMethod ||
+            (m_HaulingCamberMethod == pgsTypes::cmApproximate && !::IsEqual(m_HaulingCamberPercentEstimate, rOther.m_HaulingCamberPercentEstimate)) ||
+            m_HaulingWindType != rOther.m_HaulingWindType ||
+            !::IsEqual(m_HaulingWindLoad,rOther.m_HaulingWindLoad) ||
+            m_CentrifugalForceType != rOther.m_CentrifugalForceType ||
+            !::IsEqual(m_HaulingSpeed,rOther.m_HaulingSpeed) ||
+            !::IsEqual(m_TurningRadius,rOther.m_TurningRadius)
+           )
          {
             RETURN_ON_DIFFERENCE;
             vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Analysis Parameters are different"),_T(""),_T("")));
@@ -4143,8 +4329,11 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 
       // common to both methods
       if ( !::IsEqual(m_CompStressHauling, rOther.m_CompStressHauling) ||
-           !::IsEqual(m_TensStressHauling, rOther.m_TensStressHauling) ||
-           (m_DoTensStressHaulingMax != rOther.m_DoTensStressHaulingMax  || (m_DoTensStressHaulingMax == true && !::IsEqual(m_TensStressHaulingMax, rOther.m_TensStressHaulingMax))) )
+           !::IsEqual(m_TensStressHaulingNormalCrown, rOther.m_TensStressHaulingNormalCrown) ||
+           !::IsEqual(m_TensStressHaulingMaxSuper, rOther.m_TensStressHaulingMaxSuper) ||
+           (m_DoTensStressHaulingMaxNormalCrown != rOther.m_DoTensStressHaulingMaxNormalCrown || (m_DoTensStressHaulingMaxNormalCrown == true && !::IsEqual(m_TensStressHaulingMaxNormalCrown, rOther.m_TensStressHaulingMaxNormalCrown))) ||
+           (m_DoTensStressHaulingMaxMaxSuper != rOther.m_DoTensStressHaulingMaxMaxSuper || (m_DoTensStressHaulingMaxMaxSuper == true && !::IsEqual(m_TensStressHaulingMaxMaxSuper, rOther.m_TensStressHaulingMaxMaxSuper)))
+        )
       {
          RETURN_ON_DIFFERENCE;
          vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Allowable Concrete Stresses are different"),_T(""),_T("")));
@@ -4923,26 +5112,6 @@ void SpecLibraryEntry::SetHaulingMaximumGirderSweepTolerance(Float64 sweep)
    m_MaxGirderSweepHauling = sweep;
 }
 
-Float64 SpecLibraryEntry::GetHaulingSupportDistance() const
-{
-   return m_HaulingSupportDistance;
-}
-
-void SpecLibraryEntry::SetHaulingSupportDistance(Float64 d)
-{
-   m_HaulingSupportDistance = d;
-}
-
-Float64 SpecLibraryEntry::GetHaulingMaximumLeadingOverhang() const
-{
-   return m_MaxHaulingOverhang;
-}
-
-void SpecLibraryEntry::SetHaulingMaximumLeadingOverhang(Float64 oh)
-{
-   m_MaxHaulingOverhang = oh;
-}
-
 Float64 SpecLibraryEntry::GetHaulingSupportPlacementTolerance() const
 {
    return m_HaulingSupportPlacementTolerance;
@@ -4951,6 +5120,16 @@ Float64 SpecLibraryEntry::GetHaulingSupportPlacementTolerance() const
 void SpecLibraryEntry::SetHaulingSupportPlacementTolerance(Float64 tol)
 {
    m_HaulingSupportPlacementTolerance = tol;
+}
+
+pgsTypes::CamberMethod SpecLibraryEntry::GetHaulingCamberMethod() const
+{
+   return m_HaulingCamberMethod;
+}
+
+void SpecLibraryEntry::SetHaulingCamberMethod(pgsTypes::CamberMethod camberMethod)
+{
+   m_HaulingCamberMethod = camberMethod;
 }
 
 Float64 SpecLibraryEntry::GetHaulingCamberPercentEstimate() const
@@ -4963,6 +5142,18 @@ void SpecLibraryEntry::SetHaulingCamberPercentEstimate(Float64 per)
    m_HaulingCamberPercentEstimate = per;
 }
 
+const COldHaulTruck* SpecLibraryEntry::GetOldHaulTruck() const
+{
+   if ( m_bHasOldHaulTruck )
+   {
+      return &m_OldHaulTruck;
+   }
+   else
+   {
+      return NULL;
+   }
+}
+
 Float64 SpecLibraryEntry::GetHaulingCompressionStressFactor() const
 {
    return m_CompStressHauling;
@@ -4973,26 +5164,48 @@ void SpecLibraryEntry::SetHaulingCompressionStressFactor(Float64 stress)
    m_CompStressHauling = stress;
 }
 
-Float64 SpecLibraryEntry::GetHaulingTensionStressFactor() const
+Float64 SpecLibraryEntry::GetHaulingTensionStressFactorNormalCrown() const
 {
-   return m_TensStressHauling;
+   return m_TensStressHaulingNormalCrown;
 }
 
-void SpecLibraryEntry::SetHaulingTensionStressFactor(Float64 stress)
+void SpecLibraryEntry::SetHaulingTensionStressFactorNormalCrown(Float64 stress)
 {
-   m_TensStressHauling = stress;
+   m_TensStressHaulingNormalCrown = stress;
 }
 
-void SpecLibraryEntry::GetHaulingMaximumTensionStress(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetHaulingMaximumTensionStressNormalCrown(bool* doCheck, Float64* stress) const
 {
-   *doCheck = m_DoTensStressHaulingMax;
-   *stress  = m_TensStressHaulingMax;
+   *doCheck = m_DoTensStressHaulingMaxNormalCrown;
+   *stress  = m_TensStressHaulingMaxNormalCrown;
 }
 
-void SpecLibraryEntry::SetHaulingMaximumTensionStress(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetHaulingMaximumTensionStressNormalCrown(bool doCheck, Float64 stress)
 {
-   m_DoTensStressHaulingMax = doCheck;
-   m_TensStressHaulingMax = stress;
+   m_DoTensStressHaulingMaxNormalCrown = doCheck;
+   m_TensStressHaulingMaxNormalCrown = stress;
+}
+
+Float64 SpecLibraryEntry::GetHaulingTensionStressFactorMaxSuper() const
+{
+   return m_TensStressHaulingMaxSuper;
+}
+
+void SpecLibraryEntry::SetHaulingTensionStressFactorMaxSuper(Float64 stress)
+{
+   m_TensStressHaulingMaxSuper = stress;
+}
+
+void SpecLibraryEntry::GetHaulingMaximumTensionStressMaxSuper(bool* doCheck, Float64* stress) const
+{
+   *doCheck = m_DoTensStressHaulingMaxMaxSuper;
+   *stress  = m_TensStressHaulingMaxMaxSuper;
+}
+
+void SpecLibraryEntry::SetHaulingMaximumTensionStressMaxSuper(bool doCheck, Float64 stress)
+{
+   m_DoTensStressHaulingMaxMaxSuper = doCheck;
+   m_TensStressHaulingMaxMaxSuper = stress;
 }
 
 Float64 SpecLibraryEntry::GetHaulingCrackingFOS() const
@@ -5015,84 +5228,24 @@ void SpecLibraryEntry::SetHaulingFailureFOS(Float64 fs)
    m_HaulingRollFs = fs;
 }
 
-int SpecLibraryEntry::GetTruckRollStiffnessMethod() const
+void SpecLibraryEntry::SetHaulingImpactUsage(pgsTypes::HaulingImpact impactUsage)
 {
-   return m_TruckRollStiffnessMethod;
+   m_HaulingImpactUsage;
 }
 
-void SpecLibraryEntry::SetTruckRollStiffnessMethod(int method)
+pgsTypes::HaulingImpact SpecLibraryEntry::GetHaulingImpactUsage() const
 {
-   m_TruckRollStiffnessMethod = method;
+   return m_HaulingImpactUsage;
 }
 
-Float64 SpecLibraryEntry::GetAxleWeightLimit() const
+Float64 SpecLibraryEntry::GetRoadwayCrownSlope() const
 {
-   return m_AxleWeightLimit;
+   return m_RoadwayCrownSlope;
 }
 
-void SpecLibraryEntry::SetAxleWeightLimit(Float64 limit)
+void SpecLibraryEntry::SetRoadwayCrownSlope(Float64 slope)
 {
-   m_AxleWeightLimit = limit;
-}
-
-Float64 SpecLibraryEntry::GetAxleStiffness() const
-{
-   return m_AxleStiffness;
-}
-
-void SpecLibraryEntry::SetAxleStiffness(Float64 stiffness)
-{
-   m_AxleStiffness = stiffness;
-}
-
-Float64 SpecLibraryEntry::GetMinRollStiffness() const
-{
-   return m_MinRollStiffness;
-}
-
-void SpecLibraryEntry::SetMinRollStiffness(Float64 stiffness)
-{
-   m_MinRollStiffness = stiffness;
-}
-
-Float64 SpecLibraryEntry::GetTruckRollStiffness() const
-{
-   return m_TruckRollStiffness;
-}
-
-void SpecLibraryEntry::SetTruckRollStiffness(Float64 stiff)
-{
-   m_TruckRollStiffness = stiff;
-}
-
-Float64 SpecLibraryEntry::GetTruckGirderHeight() const
-{
-   return m_TruckGirderHeight;
-}
-
-void SpecLibraryEntry::SetTruckGirderHeight(Float64 height)
-{
-   m_TruckGirderHeight = height;
-}
-
-Float64 SpecLibraryEntry::GetTruckRollCenterHeight() const
-{
-   return m_TruckRollCenterHeight;
-}
-
-void SpecLibraryEntry::SetTruckRollCenterHeight(Float64 height)
-{
-   m_TruckRollCenterHeight = height;
-}
-
-Float64 SpecLibraryEntry::GetTruckAxleWidth() const
-{
-   return m_TruckAxleWidth;
-}
-
-void SpecLibraryEntry::SetTruckAxleWidth(Float64 dist)
-{
-   m_TruckAxleWidth = dist;
+   m_RoadwayCrownSlope = slope;
 }
 
 Float64 SpecLibraryEntry::GetRoadwaySuperelevation() const
@@ -5110,6 +5263,56 @@ void SpecLibraryEntry::SetHaulingModulusOfRuptureFactor(Float64 fr,pgsTypes::Con
    m_HaulingModulusOfRuptureCoefficient[type] = fr;
 }
 
+pgsTypes::WindType SpecLibraryEntry::GetHaulingWindType() const
+{
+   return m_HaulingWindType;
+}
+
+void SpecLibraryEntry::SetHaulingWindType(pgsTypes::WindType windType)
+{
+   m_HaulingWindType = windType;
+}
+
+Float64 SpecLibraryEntry::GetHaulingWindLoad() const
+{
+   return m_HaulingWindLoad;
+}
+
+void SpecLibraryEntry::SetHaulingWindLoad(Float64 wl)
+{
+   m_HaulingWindLoad = wl;
+}
+
+pgsTypes::CFType SpecLibraryEntry::GetCentrifugalForceType() const
+{
+   return m_CentrifugalForceType;
+}
+
+void SpecLibraryEntry::SetCentrifugalForceType(pgsTypes::CFType cfType)
+{
+   m_CentrifugalForceType = cfType;
+}
+
+Float64 SpecLibraryEntry::GetHaulingSpeed() const
+{
+   return m_HaulingSpeed;
+}
+
+void SpecLibraryEntry::SetHaulingSpeed(Float64 v)
+{
+   m_HaulingSpeed = v;
+}
+
+Float64 SpecLibraryEntry::GetTurningRadius() const
+{
+   return m_TurningRadius;
+}
+
+void SpecLibraryEntry::SetTurningRadius(Float64 r)
+{
+   m_TurningRadius = r;
+}
+
 Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
    return m_HaulingModulusOfRuptureCoefficient[type];
@@ -5125,14 +5328,54 @@ Float64 SpecLibraryEntry::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteTyp
    return m_LiftingModulusOfRuptureCoefficient[type];
 }
 
-void SpecLibraryEntry::SetMaxGirderWeight(Float64 wgt)
+pgsTypes::CamberMethod SpecLibraryEntry::GetLiftingCamberMethod() const
 {
-   m_MaxGirderWgt = wgt;
+   return m_LiftingCamberMethod;
 }
 
-Float64 SpecLibraryEntry::GetMaxGirderWeight() const
+void SpecLibraryEntry::SetLiftingCamberMethod(pgsTypes::CamberMethod method)
 {
-   return m_MaxGirderWgt;
+   m_LiftingCamberMethod = method;
+}
+
+Float64 SpecLibraryEntry::GetLiftingCamberPercentEstimate() const
+{
+   return m_LiftingCamberPercentEstimate;
+}
+
+void SpecLibraryEntry::SetLiftingCamberPercentEstimate(Float64 per)
+{
+   m_LiftingCamberPercentEstimate = per;
+}
+
+pgsTypes::WindType SpecLibraryEntry::GetLiftingWindType() const
+{
+   return m_LiftingWindType;
+}
+
+void SpecLibraryEntry::SetLiftingWindType(pgsTypes::WindType windType)
+{
+   m_LiftingWindType = windType;
+}
+
+Float64 SpecLibraryEntry::GetLiftingWindLoad() const
+{
+   return m_LiftingWindLoad;
+}
+
+void SpecLibraryEntry::SetLiftingWindLoad(Float64 wl)
+{
+   m_LiftingWindLoad = wl;
+}
+
+bool SpecLibraryEntry::EvaluateLiftingStressesPlumbGirder() const
+{
+   return m_LiftingStressesPlumbGirder;
+}
+
+void SpecLibraryEntry::EvaluateLiftingStressesPlumbGirder(bool bPlumb)
+{
+   m_LiftingStressesPlumbGirder = bPlumb;
 }
 
 Float64 SpecLibraryEntry::GetAtReleaseTensionStressFactorWithRebar() const
@@ -5155,16 +5398,25 @@ void SpecLibraryEntry::SetLiftingTensionStressFactorWithRebar(Float64 stress)
     m_TensStressLiftingWithRebar = stress;
 }
 
-Float64 SpecLibraryEntry::GetHaulingTensionStressFactorWithRebar() const
+Float64 SpecLibraryEntry::GetHaulingTensionStressFactorWithRebarNormalCrown() const
 {
-   return m_TensStressHaulingWithRebar;
+   return m_TensStressHaulingWithRebarNormalCrown;
 }
 
-void SpecLibraryEntry::SetHaulingTensionStressFactorWithRebar(Float64 stress)
+void SpecLibraryEntry::SetHaulingTensionStressFactorWithRebarNormalCrown(Float64 stress)
 {
-    m_TensStressHaulingWithRebar = stress;
+    m_TensStressHaulingWithRebarNormalCrown = stress;
 }
 
+Float64 SpecLibraryEntry::GetHaulingTensionStressFactorWithRebarMaxSuper() const
+{
+   return m_TensStressHaulingWithRebarMaxSuper;
+}
+
+void SpecLibraryEntry::SetHaulingTensionStressFactorWithRebarMaxSuper(Float64 stress)
+{
+    m_TensStressHaulingWithRebarMaxSuper = stress;
+}
 
 Float64 SpecLibraryEntry::GetTempStrandRemovalCompressionStressFactor() const
 {
@@ -6627,14 +6879,28 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_EnableHaulingDesign        = rOther.m_EnableHaulingDesign;
    m_HaulingAnalysisMethod      = rOther.m_HaulingAnalysisMethod;
    m_MaxGirderSweepHauling      = rOther.m_MaxGirderSweepHauling;
-   m_MaxHaulingOverhang         = rOther.m_MaxHaulingOverhang;
-   m_HaulingSupportDistance          = rOther.m_HaulingSupportDistance;
-   m_HaulingSupportPlacementTolerance= rOther.m_HaulingSupportPlacementTolerance;
+   m_HaulingSupportPlacementTolerance = rOther.m_HaulingSupportPlacementTolerance;
+   m_HaulingCamberMethod = rOther.m_HaulingCamberMethod;
    m_HaulingCamberPercentEstimate    = rOther.m_HaulingCamberPercentEstimate;
+   m_LiftingCamberMethod = rOther.m_LiftingCamberMethod;
+   m_LiftingCamberPercentEstimate = rOther.m_LiftingCamberPercentEstimate;
+
+   m_LiftingWindType = rOther.m_LiftingWindType;
+   m_LiftingWindLoad = rOther.m_LiftingWindLoad;
+   m_LiftingStressesPlumbGirder = rOther.m_LiftingStressesPlumbGirder;
+   m_HaulingWindType = rOther.m_HaulingWindType;
+   m_HaulingWindLoad = rOther.m_HaulingWindLoad;
+   m_CentrifugalForceType = rOther.m_CentrifugalForceType;
+   m_HaulingSpeed = rOther.m_HaulingSpeed;
+   m_TurningRadius = rOther.m_TurningRadius;
+
    m_CompStressHauling          = rOther.m_CompStressHauling;
-   m_TensStressHauling          = rOther.m_TensStressHauling;
-   m_DoTensStressHaulingMax     = rOther.m_DoTensStressHaulingMax;
-   m_TensStressHaulingMax       = rOther.m_TensStressHaulingMax;
+   m_TensStressHaulingNormalCrown          = rOther.m_TensStressHaulingNormalCrown;
+   m_DoTensStressHaulingMaxNormalCrown     = rOther.m_DoTensStressHaulingMaxNormalCrown;
+   m_TensStressHaulingMaxNormalCrown       = rOther.m_TensStressHaulingMaxNormalCrown;
+   m_TensStressHaulingMaxSuper          = rOther.m_TensStressHaulingMaxSuper;
+   m_DoTensStressHaulingMaxMaxSuper     = rOther.m_DoTensStressHaulingMaxMaxSuper;
+   m_TensStressHaulingMaxMaxSuper       = rOther.m_TensStressHaulingMaxMaxSuper;
    m_HaulingCrackFs           = rOther.m_HaulingCrackFs;
    m_HaulingRollFs            = rOther.m_HaulingRollFs;
 
@@ -6648,19 +6914,12 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_CyTensStressServWithRebar  = rOther.m_CyTensStressServWithRebar;
    m_TensStressLiftingWithRebar = rOther.m_TensStressLiftingWithRebar;
-   m_TensStressHaulingWithRebar = rOther.m_TensStressHaulingWithRebar;
+   m_TensStressHaulingWithRebarNormalCrown = rOther.m_TensStressHaulingWithRebarNormalCrown;
+   m_TensStressHaulingWithRebarMaxSuper = rOther.m_TensStressHaulingWithRebarMaxSuper;
 
-   m_TruckRollStiffnessMethod   = rOther.m_TruckRollStiffnessMethod;
-   m_TruckRollStiffness         = rOther.m_TruckRollStiffness;
-   m_AxleWeightLimit            = rOther.m_AxleWeightLimit;
-   m_AxleStiffness              = rOther.m_AxleStiffness;
-   m_MinRollStiffness           = rOther.m_MinRollStiffness;
-
-   m_TruckGirderHeight          = rOther.m_TruckGirderHeight;
-   m_TruckRollCenterHeight      = rOther.m_TruckRollCenterHeight;
-   m_TruckAxleWidth             = rOther.m_TruckAxleWidth;
+   m_HaulingImpactUsage         = rOther.m_HaulingImpactUsage;
+   m_RoadwayCrownSlope          = rOther.m_RoadwayCrownSlope;
    m_RoadwaySuperelevation      = rOther.m_RoadwaySuperelevation;
-   m_MaxGirderWgt               = rOther.m_MaxGirderWgt;
 
    m_LimitStateConcreteStrength = rOther.m_LimitStateConcreteStrength;
 

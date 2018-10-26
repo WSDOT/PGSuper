@@ -98,10 +98,10 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    segment->put_EndBlockLength(etStart,endBlockLength);
    segment->put_EndBlockLength(etEnd,endBlockLength);
 
-   CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,statusID,dimensions,-1,-1,&gdrsection);
+   CComPtr<IGirderSection> gdrSection;
+   CreateGirderSection(pBroker,statusID,dimensions,-1,-1,&gdrSection);
 
-   CComQIPtr<IBoxBeamSection> section(gdrsection);
+   CComQIPtr<IBoxBeamSection> section(gdrSection);
 
    CComPtr<IBoxBeam> boxBeamShape;
    section->get_Beam(&boxBeamShape);
@@ -241,19 +241,13 @@ std::vector<const unitLength*> CBoxBeamFactoryImpl::GetDimensionUnits(bool bSIUn
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CBoxBeamFactoryImpl::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CBoxBeamFactoryImpl::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
 {
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
-
    return IsZero(endBlockLength) ? true : false;
 }
 
-bool CBoxBeamFactoryImpl::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CBoxBeamFactoryImpl::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
 {
    return true;
 }

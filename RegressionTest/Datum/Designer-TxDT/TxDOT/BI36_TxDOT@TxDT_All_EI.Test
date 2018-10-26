@@ -1,14 +1,14 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 12.10    5   0.00                     1     1    BI-36          19  0.6  270  11.14   5.83   7.25   7.25                                              4.400  5.100   3.685    -3.693     1843   0.217  0.504   3.444 -0.959 -0.120 -0.426 -1.505  54.33  122.34    1.75    5.00    5.00 
+ 12.10    5   0.00                     1     1    BI-36          19  0.6  270  11.14   5.83   7.25   7.25                                              4.400  5.000   3.677    -3.691     1843   0.217  0.504   3.444 -0.968 -0.121 -0.429 -1.518  54.33  121.84    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
 Girder Dimension Detailing check failed
-Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -20,7 +20,6 @@ The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Girder Dimension Detailing check failed
-Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -32,6 +31,5 @@ The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Girder Dimension Detailing check failed
-Minimum fillet value exceeded for bridge check failed
 
 

@@ -50,11 +50,14 @@ extern CComModule _Module;
 #include <WBFLGenericBridgeTools.h>
 #include <WBFLRCCapacity.h>
 #include <WBFLSTL.h>
+#include <Stability\Stability.h>
 
 #include <System\System.h>
-#include <PgsExt\PgsExt.h>
 #include <Lrfd\Lrfd.h>
 #include <Math\Math.h>
+
+
+//#define MATCH_OLD_ANALYSIS // set to true to match the old stability analysis with the new stability code
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

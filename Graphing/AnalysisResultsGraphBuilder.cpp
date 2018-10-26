@@ -802,7 +802,18 @@ bool CAnalysisResultsGraphBuilder::UpdateNow()
    UpdateYAxisUnits();
    UpdateXAxisTitle();
    UpdateGraphTitle();
+
+   // we want a tighter zero tolerance for rotations
+   ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
+   Float64 tolerance = m_ZeroToleranceY;
+   if ( actionType == actionRotation )
+   {
+      m_ZeroToleranceY = 1e-07;
+   }
+
    UpdateGraphData();
+
+   m_ZeroToleranceY = tolerance;
 
    return true;
 }
@@ -1827,7 +1838,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             {
                if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension) )
                {
-                  std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,intervalIdx,limitState,false,false));
+                  std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,intervalIdx,limitState,false/*without rebar*/,false/*not in PTZ*/));
                   AddGraphPoints(min_girder_capacity_series, xVals, t);
                   m_Graph.SetDataLabel(min_girder_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Girder")));
                }
@@ -1844,7 +1855,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             {
                if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension) )
                {
-                  std::vector<Float64> t(pAllowable->GetDeckAllowableTensionStress(vPoi,intervalIdx,limitState,false));
+                  std::vector<Float64> t(pAllowable->GetDeckAllowableTensionStress(vPoi,intervalIdx,limitState,false/*without rebar*/));
                   AddGraphPoints(min_deck_capacity_series, xVals, t);
                   m_Graph.SetDataLabel(min_deck_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Deck")));
                }
@@ -2677,17 +2688,17 @@ void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const
       }
       else
       {
-         std::vector<Float64> reactions;
+         std::vector<REACTION> reactions;
          reactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pfType,bat[analysisIdx],resultsType);
-         reactions.insert(reactions.begin(),0.0); // matches first point in leftXVals
-         reactions.push_back(0.0); // matches last point in leftXVals
+         reactions.insert(reactions.begin(),REACTION()); // matches first point in leftXVals
+         reactions.push_back(REACTION()); // matches last point in leftXVals
          std::vector<Float64>::iterator leftXValIter(leftXVals.begin());
          std::vector<Float64>::iterator leftXValIterEnd(leftXVals.end());
-         std::vector<Float64>::iterator reactionIter(reactions.begin());
+         std::vector<REACTION>::iterator reactionIter(reactions.begin());
          for ( ; leftXValIter != leftXValIterEnd; leftXValIter++, reactionIter++ )
          {
             AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,0.0);
-            AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,*reactionIter);
+            AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,(*reactionIter).Fy);
             AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,0.0);
          }
       }
@@ -2776,17 +2787,17 @@ void CAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphIdx,cons
       }
       else
       {
-         std::vector<Float64> reactions;
+         std::vector<REACTION> reactions;
          reactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,comboType,bat[analysisIdx],resultsType);
-         reactions.insert(reactions.begin(),0.0); // matches first point in leftXVals
-         reactions.push_back(0.0); // matches last point in leftXVals
+         reactions.insert(reactions.begin(),REACTION()); // matches first point in leftXVals
+         reactions.push_back(REACTION()); // matches last point in leftXVals
          std::vector<Float64>::iterator leftXValIter(leftXVals.begin());
          std::vector<Float64>::iterator leftXValIterEnd(leftXVals.end());
-         std::vector<Float64>::iterator reactionIter(reactions.begin());
+         std::vector<REACTION>::iterator reactionIter(reactions.begin());
          for ( ; leftXValIter != leftXValIterEnd; leftXValIter++, reactionIter++ )
          {
             AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,0.0);
-            AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,*reactionIter);
+            AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,(*reactionIter).Fy);
             AddGraphPoint(data_series_id[analysisIdx],*leftXValIter,0.0);
          }
       }
@@ -2902,7 +2913,7 @@ void CAnalysisResultsGraphBuilder::LimitStateReactionGraph(IndexType graphIdx,co
    }
    else
    {
-      std::vector<Float64> Rmin, Rmax, Rdummy;
+      std::vector<REACTION> Rmin, Rmax, Rdummy;
       if ( analysisType == pgsTypes::Envelope )
       {
          pReactions->GetReaction(girderKey,vSupports,intervalIdx,limitState,pgsTypes::MaxSimpleContinuousEnvelope,bIncludeImpact,&Rdummy,&Rmax);
@@ -2912,22 +2923,22 @@ void CAnalysisResultsGraphBuilder::LimitStateReactionGraph(IndexType graphIdx,co
       {
          pReactions->GetReaction(girderKey,vSupports,intervalIdx,limitState,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,bIncludeImpact,&Rmin,&Rmax);
       }
-      Rmin.insert(Rmin.begin(),0.0); // matches first point in leftXVals
-      Rmin.push_back(0.0); // matches last point in leftXVals
-      Rmax.insert(Rmax.begin(),0.0); // matches first point in leftXVals
-      Rmax.push_back(0.0); // matches last point in leftXVals
+      Rmin.insert(Rmin.begin(),REACTION()); // matches first point in leftXVals
+      Rmin.push_back(REACTION()); // matches last point in leftXVals
+      Rmax.insert(Rmax.begin(),REACTION()); // matches first point in leftXVals
+      Rmax.push_back(REACTION()); // matches last point in leftXVals
       std::vector<Float64>::iterator leftXValIter(leftXVals.begin());
       std::vector<Float64>::iterator leftXValIterEnd(leftXVals.end());
-      std::vector<Float64>::iterator RminIter(Rmin.begin());
-      std::vector<Float64>::iterator RmaxIter(Rmax.begin());
+      std::vector<REACTION>::iterator RminIter(Rmin.begin());
+      std::vector<REACTION>::iterator RmaxIter(Rmax.begin());
       for ( ; leftXValIter != leftXValIterEnd; leftXValIter++, RminIter++, RmaxIter++ )
       {
          AddGraphPoint(max_data_series,*leftXValIter,0.0);
-         AddGraphPoint(max_data_series,*leftXValIter,*RmaxIter);
+         AddGraphPoint(max_data_series,*leftXValIter,(*RmaxIter).Fy);
          AddGraphPoint(max_data_series,*leftXValIter,0.0);
 
          AddGraphPoint(min_data_series,*leftXValIter,0.0);
-         AddGraphPoint(min_data_series,*leftXValIter,*RminIter);
+         AddGraphPoint(min_data_series,*leftXValIter,(*RminIter).Fy);
          AddGraphPoint(min_data_series,*leftXValIter,0.0);
       }
    }
@@ -3073,7 +3084,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    IndexType min_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,penWeight,c);
    IndexType max_data_series = m_Graph.CreateDataSeries(_T(""),PS_SOLID,penWeight,c);
 
-   std::vector<Float64> Rmin, Rmax, Rdummy;
+   std::vector<REACTION> Rmin, Rmax, Rdummy;
    GET_IFACE(IReactions,pReactions);
 
    if ( analysisType == pgsTypes::Envelope )
@@ -3084,11 +3095,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rdummy);
+         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, false, pgsTypes::fetFy, &Rmin, &Rdummy);
       }
 
-      Rmin.insert(Rmin.begin(),0.0);
-      Rmin.push_back(0.0);
+      Rmin.insert(Rmin.begin(),REACTION());
+      Rmin.push_back(REACTION());
 
       if ( vehicleIdx != INVALID_INDEX )
       {
@@ -3096,11 +3107,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rdummy, &Rmax);
+         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, false, pgsTypes::fetFy, &Rdummy, &Rmax);
       }
 
-      Rmax.insert(Rmax.begin(),0.0);
-      Rmax.push_back(0.0);
+      Rmax.insert(Rmax.begin(),REACTION());
+      Rmax.push_back(REACTION());
    }
    else
    {
@@ -3110,28 +3121,28 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax);
+         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, pgsTypes::fetFy, &Rmin, &Rmax);
       }
 
-      Rmin.insert(Rmin.begin(),0.0);
-      Rmin.push_back(0.0);
+      Rmin.insert(Rmin.begin(),REACTION());
+      Rmin.push_back(REACTION());
 
-      Rmax.insert(Rmax.begin(),0.0);
-      Rmax.push_back(0.0);
+      Rmax.insert(Rmax.begin(),REACTION());
+      Rmax.push_back(REACTION());
    }
 
    std::vector<Float64>::iterator XvalIter(Xvals.begin());
    std::vector<Float64>::iterator XvalIterEnd(Xvals.end());
-   std::vector<Float64>::iterator RminIter(Rmin.begin());
-   std::vector<Float64>::iterator RmaxIter(Rmax.begin());
+   std::vector<REACTION>::iterator RminIter(Rmin.begin());
+   std::vector<REACTION>::iterator RmaxIter(Rmax.begin());
    for ( ; XvalIter != XvalIterEnd; XvalIter++, RminIter++, RmaxIter++ )
    {
       AddGraphPoint(max_data_series,*XvalIter,0.0);
-      AddGraphPoint(max_data_series,*XvalIter,*RmaxIter);
+      AddGraphPoint(max_data_series,*XvalIter,(*RmaxIter).Fy);
       AddGraphPoint(max_data_series,*XvalIter,0.0);
 
       AddGraphPoint(min_data_series,*XvalIter,0.0);
-      AddGraphPoint(min_data_series,*XvalIter,*RminIter);
+      AddGraphPoint(min_data_series,*XvalIter,(*RminIter).Fy);
       AddGraphPoint(min_data_series,*XvalIter,0.0);
    }
 }
@@ -3277,7 +3288,10 @@ IntervalIndexType CAnalysisResultsGraphBuilder::GetBeamDrawInterval()
       return vIntervals.back();
    }
 
-   return 0;
+   CGirderKey girderKey = pMyGraphController->GetGirderKey();
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+   return intervalIdx;
 }
 
 void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals,std::vector<pgsPointOfInterest>* pvPoi,std::vector<Float64>* pXvalues)

@@ -121,7 +121,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if ( bPedLoading )
       nCols += 2;
 
- 	p_table = rptStyleManager::CreateDefaultTable(nCols, tableType==PierReactionsTable ?_T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );
+ 	p_table = rptStyleManager::CreateDefaultTable(nCols, tableType==PierReactionsTable ?_T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );
 
    p_table->SetNumberOfHeaderRows(2);
 

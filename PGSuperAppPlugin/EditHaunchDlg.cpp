@@ -213,6 +213,12 @@ BOOL CEditHaunchDlg::OnInitDialog()
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_HAUNCH_SHAPE,m_HaunchShape);
 
+   if ( IsAdjacentSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      m_cbHaunchShape.EnableWindow(FALSE); // cannot change haunch shape for adjacent spacing
+   }
+
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -231,7 +237,16 @@ void CEditHaunchDlg::InitializeData()
 
    // Bridge-wide data
    ///////////////////////////////////
-   m_HaunchShape = pDeck->HaunchShape;
+   // If girder spacing is adjacent, force haunch shape to square
+   if ( IsAdjacentSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      m_HaunchShape = pgsTypes::hsSquare;
+   }
+   else
+   {
+      m_HaunchShape = pDeck->HaunchShape;
+   }
+
    m_HaunchInputData.m_SlabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
 
    // Pier and girder based A data are treated the same for all types

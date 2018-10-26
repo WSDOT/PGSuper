@@ -428,16 +428,14 @@ void write_shear_dimensions_table(IBroker* pBroker,
                              IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-
    // Setup the table
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   pParagraph->SetName(pProductLoads->GetLimitStateName(ls));
-   *pParagraph << _T("Effective Shear Dimensions for ") << pProductLoads->GetLimitStateName(ls) << _T(" [From Article 5.8.2.7]") << rptNewLine;
+   pParagraph->SetName(GetLimitStateString(ls));
+   *pParagraph << _T("Effective Shear Dimensions for ") << GetLimitStateString(ls) << _T(" [From Article 5.8.2.7]") << rptNewLine;
 
    
    CGirderKey girderKey = vPoi.front().GetSegmentKey();
@@ -585,7 +583,7 @@ void write_shear_stress_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strTitle;
-   strTitle.Format(_T("Factored Shear Stresses for %s"),pProductLoads->GetLimitStateName(ls));
+   strTitle.Format(_T("Factored Shear Stresses for %s"),GetLimitStateString(ls));
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,strTitle);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -683,11 +681,11 @@ void write_fpc_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    if ( shear_capacity_method == scmVciVcw )
    {
-      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn 5.8.3.4.3-3] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn 5.8.3.4.3-3] - ") << GetLimitStateString(ls) << rptNewLine;
    }
    else
    {
-      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn C5.8.3.4.2-1] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn C5.8.3.4.2-1] - ") << GetLimitStateString(ls) << rptNewLine;
    }
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Fpc Pic.jpg")) << rptNewLine;
@@ -817,7 +815,7 @@ void write_fpce_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << Sub2(_T("M"),_T("cre")) << pProductLoads->GetLimitStateName(ls) << _T(" [Eqn 5.8.3.4.3-2]") << rptNewLine;
+   *pParagraph << Sub2(_T("M"),_T("cre")) << GetLimitStateString(ls) << _T(" [Eqn 5.8.3.4.3-2]") << rptNewLine;
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcre.png")) << rptNewLine;
    *pParagraph << rptNewLine;
@@ -946,8 +944,7 @@ void write_fpo_table(IBroker* pBroker,
       *pParagraph << _T(" [Eqn C5.8.3.4.2-1]");
    }
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << _T(" - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+   *pParagraph << _T(" - ") << GetLimitStateString(ls) << rptNewLine;
 
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -1170,7 +1167,7 @@ void write_Fe_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn 5.8.3.4.2-3] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+   *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn 5.8.3.4.2-3] - ") << GetLimitStateString(ls) << rptNewLine;
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Fe.png")) << rptNewLine;
 
@@ -1320,8 +1317,7 @@ void write_ex_table(IBroker* pBroker,
       *pParagraph << _T(" [Eqn 5.8.3.4.2-2] ");
    }
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << _T("- ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+   *pParagraph << _T("- ") << GetLimitStateString(ls) << rptNewLine;
 
    if ( bAfter2007 )
    {
@@ -1652,9 +1648,8 @@ void write_btsummary_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strTitle;
-   strTitle.Format(_T("Shear Parameters Summary - %s"),pProductLoads->GetLimitStateName(ls));
+   strTitle.Format(_T("Shear Parameters Summary - %s"),GetLimitStateString(ls));
    *pParagraph << strTitle << rptNewLine;
 
    pParagraph = new rptParagraph();
@@ -1887,8 +1882,7 @@ void write_Vs_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << _T("Shear Resistance Provided By Shear Reinforcement - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+   *pParagraph << _T("Shear Resistance Provided By Shear Reinforcement - ") << GetLimitStateString(ls) << rptNewLine;
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Vs.png")) << rptNewLine;
    *pParagraph << rptNewLine;
@@ -2002,8 +1996,7 @@ void write_Vc_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << _T("Shear Resistance Provided By Tensile Stress in the Concrete - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
+   *pParagraph << _T("Shear Resistance Provided By Tensile Stress in the Concrete - ") << GetLimitStateString(ls) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -2196,8 +2189,7 @@ void write_Vci_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
+   *pParagraph << GetLimitStateString(ls) << _T(" - ");
 
    bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
 
@@ -2340,8 +2332,7 @@ void write_Vcw_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
+   *pParagraph << GetLimitStateString(ls) << _T(" - ");
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web.") << rptNewLine;
 
@@ -2480,8 +2471,7 @@ void write_theta_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
+   *pParagraph << GetLimitStateString(ls) << _T(" - ");
 
    *pParagraph << _T("Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]") << rptNewLine;
 
@@ -2628,9 +2618,8 @@ void write_Vn_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strName;
-   strName.Format(_T("Nominal Shear Resistance - %s"),pProductLoads->GetLimitStateName(ls));
+   strName.Format(_T("Nominal Shear Resistance - %s"),GetLimitStateString(ls));
 
    *pChapter << pParagraph;
 
@@ -2793,9 +2782,8 @@ void write_Avs_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strLabel;
-   strLabel.Format(_T("Required Shear Reinforcement - %s"),pProductLoads->GetLimitStateName(ls));
+   strLabel.Format(_T("Required Shear Reinforcement - %s"),GetLimitStateString(ls));
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pParagraph << strLabel << rptNewLine;
@@ -2919,9 +2907,8 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strLabel;
-   strLabel.Format(_T("Required Stirrup Spacing - %s"),pProductLoads->GetLimitStateName(ls));
+   strLabel.Format(_T("Required Stirrup Spacing - %s"),GetLimitStateString(ls));
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pParagraph << strLabel << rptNewLine;

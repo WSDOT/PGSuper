@@ -25,6 +25,8 @@
 #include "stdafx.h"
 #include "resource.h"
 
+#include <BridgeLink.h>
+
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TxDOTOptionalDesignDoc.h"
 #include "TOGAStatusBar.h"
@@ -468,13 +470,12 @@ BOOL CTxDOTOptionalDesignDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 
    m_ProjectData.SetBeamType(name, false); // don't fire
 
-   // Use pgsuper's engineer name and company if available
-   //CAutoRegistry autoReg(_T("PGSuper"));
-   CEAFApp* pApp = EAFGetApp();
-   CString engName    = pApp->GetProfileString(_T("Options"),_T("EngineerName"));
-   m_ProjectData.SetEngineer(engName);
+   CBridgeLinkApp* pApp = (CBridgeLinkApp*)EAFGetApp();
+   IBridgeLink* pBL = (IBridgeLink*)pApp;
+   CString engName, cmpyName;
+   pBL->GetUserInfo(&engName,&cmpyName);
 
-   CString cmpyName    = pApp->GetProfileString(_T("Options"),_T("CompanyName"));
+   m_ProjectData.SetEngineer(engName);
    m_ProjectData.SetCompany(cmpyName);
 
    // parse template and set project data
@@ -864,31 +865,27 @@ SpecLibrary* CTxDOTOptionalDesignDoc::GetSpecLibrary()
 
 void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 {
-   // Use same master library as PGSuper
-   CAutoRegistry autoReg(_T("PGSuper"));
+   CAutoRegistry autoReg(_T("TOGA"));
 
    CEAFApp* pApp = EAFGetApp();
 
-   CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache2"));
+   CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"));
 
    if (strMasterLibaryFile.IsEmpty())
    {
       // PGSuper's installer should take care of this, but just in case:
       TxDOTBrokerRetrieverException exc;
-      exc.Message = _T("The location of the PGSuper Master Library file is not in the registry. You must run PGSuper at least once before you can run TOGA. All it takes is opening and closing a .pgs file. You can do this now.");
+      exc.Message = _T("The location of the TOGA Master Library file is not in the registry. You must configure TOGA at least once before you can run TOGA. You can do this now.");
       WATCH(exc.Message);
       throw exc;
    }
 
-   CString strURL   = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL2"));
+   CString strURL   = pApp->GetProfileString(_T("Options"),_T("MasterLibraryURL"));
 
    if (strURL.IsEmpty())
       strURL = strMasterLibaryFile;
 
-   CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer2"));
-
-    // Hard-coded file location
-//   CString strMasterLibaryFile = GetTOGAFolder() + CString(_T("\\")) + _T("MasterLibrary.lbr");
+   CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer"));
 
    m_LibMgr.SetName( _T("TOGA PGSuper Library") );
    m_LibMgr.SetMasterLibraryInfo(strServer,strURL);

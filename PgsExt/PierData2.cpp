@@ -1207,7 +1207,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return S_OK;
 }
@@ -1266,7 +1266,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_LLDFs = rOther.m_LLDFs;
    m_bDistributionFactorsFromOlderVersion = rOther.m_bDistributionFactorsFromOlderVersion;
    
-   if ( m_pBridgeDesc )
+   if ( m_pBridgeDesc && rOther.GetBridgeDescription() )
    {
       // If this pier is part of a bridge, use the SetXXXConnectionType method so
       // girder segments are split/joined as necessary for the new connection types
@@ -1284,11 +1284,11 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    else
    {
       // If this pier is not part of a bridge, just capture the data
-      m_BoundaryConditionType    = rOther.m_BoundaryConditionType;
+      m_BoundaryConditionType = rOther.m_BoundaryConditionType;
       m_SegmentConnectionType = rOther.m_SegmentConnectionType;
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CPierData2::MakeAssignment(const CPierData2& rOther)
@@ -1383,12 +1383,12 @@ const CSpanData2* CPierData2::GetSpan(pgsTypes::PierFaceType face) const
 
 CGirderGroupData* CPierData2::GetPrevGirderGroup()
 {
-   return m_pBridgeDesc->GetGirderGroup(m_pPrevSpan);
+   return m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pPrevSpan) : NULL;
 }
 
 CGirderGroupData* CPierData2::GetNextGirderGroup()
 {
-   return m_pBridgeDesc->GetGirderGroup(m_pNextSpan);
+   return m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pNextSpan) : NULL;
 }
 
 CGirderGroupData* CPierData2::GetGirderGroup(pgsTypes::PierFaceType face)
@@ -1398,12 +1398,12 @@ CGirderGroupData* CPierData2::GetGirderGroup(pgsTypes::PierFaceType face)
 
 const CGirderGroupData* CPierData2::GetPrevGirderGroup() const
 {
-   return m_pBridgeDesc->GetGirderGroup(m_pPrevSpan);
+   return (m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pPrevSpan) : NULL);
 }
 
 const CGirderGroupData* CPierData2::GetNextGirderGroup() const
 {
-   return m_pBridgeDesc->GetGirderGroup(m_pNextSpan);
+   return (m_pBridgeDesc ? m_pBridgeDesc->GetGirderGroup(m_pNextSpan) : NULL);
 }
 
 const CGirderGroupData* CPierData2::GetGirderGroup(pgsTypes::PierFaceType face) const
@@ -2061,7 +2061,6 @@ bool CPierData2::IsInteriorPier() const
 {
    // If the girder group on both sides of the pier is the same, then this pier
    // is interior to the group.
-   ATLASSERT(m_pBridgeDesc != NULL); // pier data must be part of a bridge model
    const CGirderGroupData* pPrevGroup = GetPrevGirderGroup();
    const CGirderGroupData* pNextGroup = GetNextGirderGroup();
    if ( pPrevGroup == NULL && pNextGroup == NULL )

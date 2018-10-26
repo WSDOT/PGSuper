@@ -574,7 +574,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
    return hr;
 }
 
@@ -942,7 +942,7 @@ void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSp
       pTimelineEvent->GetErectPiersActivity().AddPier(nextPier->GetID());
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CBridgeDescription2::AppendSpan(const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType pierErectionEventIdx)
@@ -1420,7 +1420,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       pTimelineEvent->GetErectPiersActivity().AddPier(newPierID);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 class RemoveNegMomentRebar
@@ -1617,7 +1617,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
       RenumberGroups();
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx,pgsTypes::MemberEndType end,std::vector<Float64> spanLengths,GirderIndexType nGirders)
@@ -1915,7 +1915,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    RenumberSpans();
    RenumberGroups();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 PierIndexType CBridgeDescription2::GetPierCount() const
@@ -2205,6 +2205,28 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
             pTS->CopyTemporarySupportData(&tsData);
             return tsIdx;
          }
+         else
+         {
+            // temporary support has moved... remove it and re-insert it at the new location
+            CTemporarySupportData* pNewTS = new CTemporarySupportData(tsData);
+            pNewTS->SetID(pTS->GetID()); // maintain its ID
+
+            EventIndexType erectionEventIdx, removeEventIdx;
+            m_TimelineManager.GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removeEventIdx);
+
+            EventIndexType castClosureJointEventIdx = INVALID_INDEX;
+            CClosureJointData* pClosure = pTS->GetClosureJoint(0);
+            if ( pClosure )
+            {
+               castClosureJointEventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure);
+            }
+
+            RemoveTemporarySupportByIndex(tsIdx);
+
+            // LEAVE THE FUNCTION HERE
+            AddTemporarySupport(pNewTS,erectionEventIdx,removeEventIdx,castClosureJointEventIdx);
+            return pNewTS->GetIndex();
+         }
       }
       else
       {
@@ -2265,7 +2287,7 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
 
    UpdateTemporarySupports();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return pTS->GetIndex();
 }
@@ -2341,7 +2363,7 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
    m_TemporarySupports.erase(m_TemporarySupports.begin()+tsIdx);
 
    UpdateTemporarySupports();
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CBridgeDescription2::RemoveTemporarySupportByID(SupportIDType tsID)
@@ -2358,7 +2380,7 @@ void CBridgeDescription2::RemoveTemporarySupportByID(SupportIDType tsID)
          break;
       }
    }
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 SupportIndexType CBridgeDescription2::MoveTemporarySupport(SupportIndexType tsIdx,Float64 newStation)
@@ -2368,7 +2390,7 @@ SupportIndexType CBridgeDescription2::MoveTemporarySupport(SupportIndexType tsId
    CTemporarySupportData tsData = *m_TemporarySupports[tsIdx];
    tsData.SetStation(newStation);
    SupportIndexType idx = SetTemporarySupportByIndex(tsIdx,tsData);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
    return idx;
 }
 
@@ -2846,7 +2868,7 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
 
    CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),m_SlabOffsetType==pgsTypes::sotBridge,m_Fillet==pgsTypes::fttBridge); 
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CBridgeDescription2::MakeAssignment(const CBridgeDescription2& rOther)
@@ -3180,7 +3202,7 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryConditionTypes(PierIndexType pierIdx) const

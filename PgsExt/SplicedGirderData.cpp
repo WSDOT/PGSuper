@@ -343,7 +343,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
       if ( pMyTimelineMgr && pOtherTimelineMgr )
       {
          SegmentIDType segID = pOtherSegment->GetID();
-         ATLASSERT(segID == m_Segments[segIdx]->GetID());
+         ATLASSERT(segIdx == pOtherSegment->GetIndex());
          EventIndexType constructionEventIdx, erectionEventIdx;
          pOtherTimelineMgr->GetSegmentEvents(segID,&constructionEventIdx,&erectionEventIdx);
          pMyTimelineMgr->SetSegmentEvents(segID,constructionEventIdx,erectionEventIdx);
@@ -392,7 +392,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
    m_ConditionFactor     = rOther.m_ConditionFactor;
    m_ConditionFactorType = rOther.m_ConditionFactorType;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 
@@ -662,7 +662,7 @@ void CSplicedGirderData::UpdateLinks()
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CSplicedGirderData::UpdateSegments()
@@ -733,7 +733,7 @@ void CSplicedGirderData::UpdateSegments()
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CSplicedGirderData::SetClosureJoint(CollectionIndexType idx,const CClosureJointData& closure)
@@ -763,13 +763,18 @@ void CSplicedGirderData::SetSegment(SegmentIndexType idx,const CPrecastSegmentDa
 
 std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegmentVariations() const
 {
+   return GetSupportedSegmentVariations(m_pGirderLibraryEntry);
+}
+
+std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegmentVariations(const GirderLibraryEntry* pGirderLibEntry) const
+{
    std::vector<pgsTypes::SegmentVariationType> variations;
    CComPtr<IBeamFactory> factory;
-   m_pGirderLibraryEntry->GetBeamFactory(&factory);
+   pGirderLibEntry->GetBeamFactory(&factory);
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedFactory(factory);
    if ( splicedFactory )
    {
-      variations = splicedFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());
+      variations = splicedFactory->GetSupportedSegmentVariations(pGirderLibEntry->IsVariableDepthSectionEnabled());
    }
    else
    {
@@ -817,7 +822,11 @@ LPCTSTR CSplicedGirderData::GetGirderName() const
 
 void CSplicedGirderData::SetGirderName(LPCTSTR strName)
 {
-   m_GirderType = strName;
+   if ( m_GirderType != strName )
+   {
+      m_GirderType = strName;
+      m_pGirderLibraryEntry = NULL;
+   }
 }
 
 const GirderLibraryEntry* CSplicedGirderData::GetGirderLibraryEntry() const
@@ -861,7 +870,7 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
                std::vector<pgsTypes::SegmentVariationType>::iterator found = std::find(variations.begin(),variations.end(),pSegment->GetVariationType());
                if ( found == variations.end() )
                {
-                  // the current setting fot the segment variation is no longer a valid
+                  // the current setting for the segment variation is no longer a valid
                   // value, so change it to the first available value
                   pSegment->SetVariationType(variations.front());
 
@@ -1162,7 +1171,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
@@ -1552,7 +1561,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
    // Case 5: Split is in the right end block
    //   ??? Similar to case 4
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CSplicedGirderData::AddSegmentToTimelineManager(const CPrecastSegmentData* pSegment,const CPrecastSegmentData* pNewSegment)

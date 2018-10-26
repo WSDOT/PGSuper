@@ -19,7 +19,7 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-#pragma once;
+#pragma once
 
 // SYSTEM INCLUDES
 //
@@ -29,12 +29,8 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\PointOfInterest.h>
-#include <PgsExt\PoiMgr.h>
+#include <PgsExt\PgsExt.h>
 #include <psgLib\GirderLibraryEntry.h>
-
-#include <algorithm>
-#include<list>
-#include<vector>
 
 // LOCAL INCLUDES
 //

@@ -44,13 +44,15 @@ COPYRIGHT
 
 // FORWARD DECLARATIONS
 //
+
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
 class pgsGirderDesignArtifact;
-class pgsLiftingAnalysisArtifact;
-class pgsHaulingAnalysisArtifact;
 
 class pgsRatingArtifact;
+
+class stbLiftingCheckArtifact;
+class pgsHaulingAnalysisArtifact;
 
 // MISCELLANEOUS
 //
@@ -76,7 +78,7 @@ interface IArtifact : IUnknown
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) = 0;
 
    // Returns a LiftingAnalysisArtifact which captures the specification checks related to lifting for an individual segment.
-   virtual const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey) = 0;
+   virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) = 0;
 
    // Returns a HaulingAnalysisArtifact which captures the specification checks related to hauling for an individual segment.
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) = 0;
@@ -88,7 +90,7 @@ interface IArtifact : IUnknown
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) = 0;
 
    // Creates a LiftingAnalysisArtifact for the specified segment based on the specified lifting configuration
-   virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact) = 0;
+   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) = 0;
 
    // Creates a HaulingAnalysisArtifact for the specified segment based on the specified hauling configuration
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) = 0;

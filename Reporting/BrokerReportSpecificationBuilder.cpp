@@ -40,20 +40,33 @@ CBrokerReportSpecificationBuilder::~CBrokerReportSpecificationBuilder(void)
 {
 }
 
-boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,ChaptersOnly,pRptSpec);
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,ChaptersOnly,pOldRptSpec);
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
+      // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+      boost::shared_ptr<CBrokerReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CBrokerReportSpecification>(pOldRptSpec);
+
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CBrokerReportSpecification> pNewGRptSpec = boost::shared_ptr<CBrokerReportSpecification>( new CBrokerReportSpecification(*pOldGRptSpec) );
+
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CBrokerReportSpecification>( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
+      }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-      return pRptSpec;
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();

@@ -141,7 +141,6 @@ protected:
    Float64 m_MaxGirderSpacing;
    Float64 m_GirderSpacingTolerance;
 
-   CDeckDescription2 m_Deck;
    std::vector<CDeckPoint> m_CacheDeckEdgePoints;
 
    CString m_strToolTipText; // buffer for storing tool tip text

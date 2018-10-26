@@ -41,6 +41,8 @@ public:
    void FinalRelease();
 
    virtual CString GetAppName() const { return CString("PGSplice"); }
+   virtual CString GetDefaultCatalogServerName() const  { return CString("WSDOT"); }
+   virtual CString GetDefaultCatalogName()  const  { return CString("WSDOT"); }
    virtual CString GetTemplateFileExtension();
    virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
 

@@ -77,6 +77,14 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
       }
       else
       {
+         if (pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && 
+             pgsTypes::hlcZeroCamber != pSpecEntry->GetHaunchLoadComputationType())
+         {
+            pDX->PrepareCtrl(IDC_SPEC);
+            AfxMessageBox(_T("Haunch load computation must be set to assume \"Zero Camber\" when the Time-Step method is used for losses.\n\nSelect a different project criteria"));
+            pDX->Fail();
+         }
+
          m_Spec = strSpec;
       }
    }

@@ -159,8 +159,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable)(row,col++) << pMaterials->GetSegmentCreepCoefficient(thisSegmentKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
          (*pTable)(row,col++) << pMaterials->GetSegmentAgingCoefficient(thisSegmentKey,intervalIdx);
          (*pTable)(row,col++) << modE.SetValue(pMaterials->GetSegmentAgeAdjustedEc(thisSegmentKey,intervalIdx));
-         (*pTable)(row,col++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(thisSegmentKey,intervalIdx);
-         (*pTable)(row,col++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(thisSegmentKey,intervalIdx,pgsTypes::End);
+         (*pTable)(row,col++) << 1E6*pMaterials->GetIncrementalSegmentFreeShrinkageStrain(thisSegmentKey,intervalIdx);
+         (*pTable)(row,col++) << 1E6*pMaterials->GetTotalSegmentFreeShrinkageStrain(thisSegmentKey,intervalIdx,pgsTypes::End);
       }
 
       rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
@@ -235,8 +235,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             (*pTable)(row,col++) << pMaterials->GetClosureJointCreepCoefficient(closureKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
             (*pTable)(row,col++) << pMaterials->GetClosureJointAgingCoefficient(closureKey,intervalIdx);
             (*pTable)(row,col++) << modE.SetValue(pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx));
-            (*pTable)(row,col++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
-            (*pTable)(row,col++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
+            (*pTable)(row,col++) << 1E6*pMaterials->GetIncrementalClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
+            (*pTable)(row,col++) << 1E6*pMaterials->GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
          }
 
 
@@ -311,8 +311,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
       (*pTable)(row,col++) << pMaterials->GetDeckAgingCoefficient(intervalIdx);
       (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(intervalIdx));
-      (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
-      (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
+      (*pTable)(row,col++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
+      (*pTable)(row,col++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
    }
 
    rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
@@ -675,7 +675,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Girder.PrCreep);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Girder.MrCreep);
-         (*pTable2)(row2,col2++) << tsDetails.Girder.esi;
+         (*pTable2)(row2,col2++) << tsDetails.Girder.Shrinkage.esi;
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Girder.PrShrinkage);
 
          (*pTable2)(row2,col2++) << area.SetValue(tsDetails.Deck.An);
@@ -727,7 +727,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.PrCreep);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Deck.MrCreep);
-         (*pTable2)(row2,col2++) << tsDetails.Deck.esi;
+         (*pTable2)(row2,col2++) << tsDetails.Deck.Shrinkage.esi;
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.PrShrinkage);
 
          //(*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].As);
@@ -756,7 +756,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 #if defined LUMP_STRANDS
             (*pTable2)(row2,col2++) << area.SetValue(tsDetails.Strands[strandType].As);
             (*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.Strands[strandType].Ys);
-            (*pTable2)(row2,col2++) << stress.SetValue(tsDetails.Strands[strandType].fr);
+            (*pTable2)(row2,col2++) << stress.SetValue(tsDetails.Strands[strandType].Relaxation.fr);
             (*pTable2)(row2,col2++) << tsDetails.Strands[strandType].er;
             (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Strands[strandType].PrRelaxation);
 #else
@@ -766,7 +766,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
                const TIME_STEP_STRAND& strand = tsDetails.Strands[strandType][strandIdx];
                (*pTable2)(row2,col2+0) << area.SetValue(strand.As) << rptNewLine;
                (*pTable2)(row2,col2+1) << ecc.SetValue(strand.Ys) << rptNewLine;
-               (*pTable2)(row2,col2+2) << stress.SetValue(strand.fr) << rptNewLine;
+               (*pTable2)(row2,col2+2) << stress.SetValue(strand.Relaxation.fr) << rptNewLine;
                (*pTable2)(row2,col2+3) << strand.er << rptNewLine;
                (*pTable2)(row2,col2+4) << force.SetValue(strand.PrRelaxation) << rptNewLine;
             } // next strand
@@ -779,7 +779,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
             (*pTable2)(row2,col2+0) << area.SetValue(tendon.As) << rptNewLine;
             (*pTable2)(row2,col2+1) << ecc.SetValue(tendon.Ys) << rptNewLine;
-            (*pTable2)(row2,col2+2) << stress.SetValue(tendon.fr) << rptNewLine;
+            (*pTable2)(row2,col2+2) << stress.SetValue(tendon.Relaxation.fr) << rptNewLine;
             (*pTable2)(row2,col2+3) << tendon.er << rptNewLine;
             (*pTable2)(row2,col2+4) << force.SetValue(tendon.PrRelaxation) << rptNewLine;
          }

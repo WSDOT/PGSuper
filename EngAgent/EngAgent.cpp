@@ -30,7 +30,6 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "initguid.h"
-#include <IFace\Artifact.h>
 #include "EngAgent.h"
 
 #include "EngAgent_i.h"

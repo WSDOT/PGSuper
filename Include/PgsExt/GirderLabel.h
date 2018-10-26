@@ -88,4 +88,6 @@ CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* p
 
 CString PGSEXTFUNC ConcreteDescription(const CConcreteMaterial& concrete);
 
-LPCTSTR PGSEXTFUNC GetLimitStateName(pgsTypes::LimitState limitState);
+LPCTSTR PGSEXTFUNC GetLimitStateString(pgsTypes::LimitState limitState);
+LPCTSTR PGSEXTFUNC GetStressLocationString(pgsTypes::StressLocation loc);
+LPCTSTR PGSEXTFUNC GetStressTypeString(pgsTypes::StressType type);

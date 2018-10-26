@@ -9,7 +9,6 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_cast_closure_joints
 * @subpage ug_dialogs_cast_deck
 * @subpage ug_dialogs_closure_joint_details
-* @subpage ug_dialogs_configure
 * @subpage ug_dialogs_configure_prestress_losses
 * @subpage ug_dialogs_configure_reports
 * @subpage ug_dialogs_configuration_servers
@@ -47,6 +46,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_remove_temporary_supports
 * @subpage ug_dialogs_report_options
 * @subpage ug_dialogs_segment_details
+* @subpage ug_dialogs_configure
 * @subpage ug_dialogs_span_description
 * @subpage ug_dialogs_stress_tendons
 * @subpage ug_dialogs_temporary_support

@@ -1782,6 +1782,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\HaulTruckDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\HaulTruckLibraryEntry.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\HorizontalInterfaceZoneData.cpp"
 				>
 			</File>
@@ -2234,6 +2242,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\OldHaulTruck.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\PGSuperLibrary.idl"
@@ -4051,6 +4063,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\HaulTruckDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\HaulTruckLibraryEntry.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\psgLib\HorizontalInterfaceZoneData.h"
 				>
 			</File>
@@ -4132,6 +4152,10 @@
 			</File>
 			<File
 				RelativePath=".\LongSteelPage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\OldHaulTruck.h"
 				>
 			</File>
 			<File
@@ -4420,6 +4444,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\haul_truck.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00001.ico"
 				>
 			</File>
@@ -4428,11 +4456,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
+				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="ico00002.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -4444,11 +4472,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00004.ico"
+				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00004.ico"
+				RelativePath="ico00004.ico"
 				>
 			</File>
 			<File

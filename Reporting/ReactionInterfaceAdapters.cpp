@@ -233,14 +233,17 @@ bool ProductForcesReactionAdapter::DoReportAtPier(PierIndexType pierIdx,const CG
 
 Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
 {
-   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,pfType,bat,rtCumulative);
+   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,pfType,bat,rtCumulative).Fy;
 }
 
 void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                                        bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
-   m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pRmin, pRmax, pMinConfig, pMaxConfig);
+   REACTION Rmin, Rmax;
+   m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pgsTypes::fetFy, &Rmin, &Rmax, pMinConfig, pMaxConfig);
+   *pRmin = Rmin.Fy;
+   *pRmax = Rmax.Fy;
 }
 
 /****************************************************************************
@@ -314,18 +317,18 @@ bool CombinedLsForcesReactionAdapter::DoReportAtPier(PierIndexType pier,const CG
 
 Float64 CombinedLsForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,combo,bat,resultsType);
+   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,combo,bat,resultsType).Fy;
 }
 
 void CombinedLsForcesReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
 {
-   return m_pReactions->GetCombinedLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
+   m_pReactions->GetCombinedLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
 }
 
 // From ILimitStateForces
 void CombinedLsForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax)
 {
-   return m_LsPointer->GetReaction(intervalIdx, limitState, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pMin, pMax);
+   m_LsPointer->GetReaction(intervalIdx, limitState, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pMin, pMax);
 }
 
 /////////////////////////////////////////////

@@ -1024,6 +1024,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PierReactionChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PointOfInterestChapterBuilder.cpp"
 				>
 			</File>
@@ -1769,6 +1773,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\PierGeometryChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\PierReactionChapterBuilder.h"
 				>
 			</File>
 			<File

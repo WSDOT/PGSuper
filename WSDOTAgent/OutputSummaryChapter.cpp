@@ -43,7 +43,6 @@
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
@@ -390,7 +389,14 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
             + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental, false )
             + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental, false );
 
-   delta_overlay = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental, false );
+   if ( overlayIntervalIdx == INVALID_INDEX )
+   {
+      delta_overlay = 0;
+   }
+   else
+   {
+      delta_overlay = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental, false );
+   }
 
    delta_sidl = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, false );
    delta_sidewalk = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental, false );
@@ -910,7 +916,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT);
+   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_SPAN);
    pgsPointOfInterest cl( *vPoi.begin() );
 
    // Get artifacts
@@ -1100,7 +1106,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT);
+   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_SPAN);
    pgsPointOfInterest cl = *vPoi.begin();
 
    // Get artifacts
@@ -1257,7 +1263,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT);
+   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_SPAN);
    ATLASSERT(vPoi.size() == 1);
    iter = vPoi.begin();
    pgsPointOfInterest cl( *iter );
@@ -1599,7 +1605,6 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
    }
 
    std::vector<pgsPointOfInterest> vCsPoi(pIPOI->GetCriticalSections(pgsTypes::StrengthI,segmentKey));
-   ATLASSERT(vPoi.size() == 2); // there better only be 2 for a precast-prestressed girder
    pgsPointOfInterest left_cs( vCsPoi.front() );
    pgsPointOfInterest right_cs( vCsPoi.back() );
 
@@ -1689,7 +1694,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsSegmentArtifact* pSegmentArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
-   const pgsLiftingAnalysisArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingAnalysisArtifact();
+   const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
 
    if (pLiftArtifact == NULL)
    {
@@ -1698,7 +1703,8 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
    }
 
    // unstable girders are a problem
-   if (!pLiftArtifact->IsGirderStable())
+   const stbLiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
+   if ( !liftingResults.bIsStable[stbTypes::NoImpact] || !liftingResults.bIsStable[stbTypes::ImpactUp] || !liftingResults.bIsStable[stbTypes::ImpactUp] )
    {
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
@@ -1730,17 +1736,22 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       (*pTable)(0,2) << _T("Allowable");
       (*pTable)(0,3) << _T("Status");
 
-      Float64 min_stress, max_stress;
-      Float64 minDistFromStart, maxDistFromStart;
-      pLiftArtifact->GetMinMaxStresses(&min_stress, &max_stress, &minDistFromStart, &maxDistFromStart);
-      //Float64 max_all_stress = pLiftArtifact->GetAllowableTensileStress();
-      //Float64 min_all_stress = pLiftArtifact->GetAllowableCompressionStress();
-      //Float64 allow_with_rebar = pLiftArtifact->GetAlternativeTensionAllowableStress();
-      //Float64 AsMin = pLiftArtifact->GetAlterantiveTensileStressAsMax();
       GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-      Float64 max_all_stress  = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
+      Float64 max_all_stress   = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
       Float64 allow_with_rebar = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
-      Float64 min_all_stress     = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+      Float64 min_all_stress   = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+
+      Float64 min_stress,max_stress;
+      if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesPlumbGirder() )
+      {
+         min_stress = liftingResults.MinDirectStress;
+         max_stress = liftingResults.MaxDirectStress;
+      }
+      else
+      {
+         min_stress = liftingResults.MinStress;
+         max_stress = liftingResults.MaxStress;
+      }
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -1785,8 +1796,8 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       row++;
 
 
-      Float64 fs_crack = pLiftArtifact->GetMinFsForCracking();
-      Float64 all_fs_crack = pLiftArtifact->GetAllowableFsForCracking();
+      Float64 fs_crack = liftingResults.MinFScr;
+      Float64 all_fs_crack = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
       (*pTable)(row,0) << _T("F.S. - Cracking");
       (*pTable)(row,1) <<  scalar.SetValue(fs_crack);
       (*pTable)(row,2) <<  scalar.SetValue(all_fs_crack);
@@ -1800,8 +1811,8 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       }
       row++;
 
-      Float64 fs_fail = pLiftArtifact->GetFsFailure();
-      Float64 all_fs_fail = pLiftArtifact->GetAllowableFsForFailure();
+      Float64 fs_fail = liftingResults.MinAdjFsFailure;
+      Float64 all_fs_fail = pSegmentLiftingSpecCriteria->GetLiftingFailureFs();
       (*pTable)(row,0) << _T("F.S. - Failure");
       (*pTable)(row,1) <<  scalar.SetValue(fs_fail);
       (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
@@ -1829,126 +1840,149 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
 
    if (pHaulArtifact == NULL)
    {
-      *p << _T("WSDOT Hauling check not performed because it is not enabled in the library") << rptNewLine;
+      *p << _T("Hauling check not performed because it is not enabled in the Project Criteria") << rptNewLine;
       return;
    }
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Hauling to the Bridge Site"));
-   *p << pTable << rptNewLine;
-
-   // Setup the table
-   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
-
-   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle(3, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
-
-   // Setup up some unit value prototypes
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),  true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
-
-   (*pTable)(0,0) << _T("");
-   (*pTable)(0,1) << _T("Demand");
-   (*pTable)(0,2) << _T("Allowable");
-   (*pTable)(0,3) << _T("Status");
-
-   Float64 min_stress, max_stress;
-   pHaulArtifact->GetMinMaxStresses(&min_stress, &max_stress);
-
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   Float64 max_all_stress  = pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey);
-   Float64 allow_with_rebar = pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey);
-   Float64 min_all_stress     = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   const stbHaulingCheckArtifact& haulingArtifact = pHaulArtifact->GetHaulingCheckArtifact();
+   const stbHaulingResults& haulingResults = haulingArtifact.GetHaulingResults();
+   for ( int s = 0; s < 2; s++ )
+   {
+      pgsTypes::HaulingSlope slope = (pgsTypes::HaulingSlope)s;
 
-   RowIndexType row = 1;
-   (*pTable)(row,0) << _T("Tensile Stress (w/o mild rebar)");
-   (*pTable)(row,1) <<  stress.SetValue(max_stress);
-   (*pTable)(row,2) <<  stress.SetValue(max_all_stress);
-   if (max_stress <= max_all_stress)
-   {
-      (*pTable)(row,3) << RPT_PASS;
-   }
-   else
-   {
-      (*pTable)(row,3) << RPT_FAIL;
-   }
-   row++;
+      rptRcTable* pTable;
+      if ( slope == pgsTypes::CrownSlope )
+      {
+         pTable = rptStyleManager::CreateDefaultTable(4,_T("Hauling to the Bridge Site - Normal Crown Slope"));
+      }
+      else
+      {
+         pTable = rptStyleManager::CreateDefaultTable(4,_T("Hauling to the Bridge Site - Maximum Superelevation"));
+      }
 
-   (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
+      *p << pTable << rptNewLine;
 
-   (*pTable)(row,1) <<  stress.SetValue(max_stress);
-   (*pTable)(row,2) <<  stress.SetValue(allow_with_rebar);
-   if (max_stress <= allow_with_rebar)
-   {
-      (*pTable)(row,3) << RPT_PASS;
-   }
-   else
-   {
-      (*pTable)(row,3) << RPT_FAIL;
-   }
-   row++;
+      // Setup the table
+      pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
+      pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
 
-   (*pTable)(row,0) << _T("Compressive Stress");
-   (*pTable)(row,1) <<  stress.SetValue(min_stress);
-   (*pTable)(row,2) <<  stress.SetValue(min_all_stress);
-   if (min_all_stress <= min_stress)
-   {
-      (*pTable)(row,3) << RPT_PASS;
-   }
-   else
-   {
-      (*pTable)(row,3) << RPT_FAIL;
-   }
-   row++;
+      pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
+      pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle(3, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
-   Float64 fs_crack = pHaulArtifact->GetMinFsForCracking();
-   Float64 all_fs_crack = pHaulArtifact->GetAllowableFsForCracking();
-   (*pTable)(row,0) << _T("F.S. - Cracking");
-   (*pTable)(row,1) <<  scalar.SetValue(fs_crack);
-   (*pTable)(row,2) <<  scalar.SetValue(all_fs_crack);
-   if (all_fs_crack <= fs_crack)
-   {
-      (*pTable)(row,3) << RPT_PASS;
-   }
-   else
-   {
-      (*pTable)(row,3) << RPT_FAIL;
-   }
-   row++;
+      // Setup up some unit value prototypes
+      INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+      INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
+      INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),  true );
+      INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
 
-   Float64 fs_fail = pHaulArtifact->GetFsRollover();
-   Float64 all_fs_fail = pHaulArtifact->GetAllowableFsForRollover();
-   (*pTable)(row,0) << _T("F.S. - Rollover");
-   (*pTable)(row,1) <<  scalar.SetValue(fs_fail);
-   (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
-   if (all_fs_fail <= fs_fail)
-   {
-      (*pTable)(row,3) << RPT_PASS;
-   }
-   else
-   {
-      (*pTable)(row,3) << RPT_FAIL;
-   }
-   row++;
+      (*pTable)(0,0) << _T("");
+      (*pTable)(0,1) << _T("Demand");
+      (*pTable)(0,2) << _T("Allowable");
+      (*pTable)(0,3) << _T("Status");
 
-   Float64 wgt = pHaulArtifact->GetGirderWeight();
-   Float64 maxwgt = pHaulArtifact->GetMaxGirderWgt();
-   (*pTable)(row,0) << _T("Girder Weight");
-   (*pTable)(row,1) <<  force.SetValue(wgt);
-   (*pTable)(row,2) <<  force.SetValue(maxwgt);
-   if (wgt <= maxwgt)
-   {
-      (*pTable)(row,3) << RPT_PASS;
+      Float64 min_stress = haulingResults.MinStress[slope];
+      Float64 max_stress = haulingResults.MaxStress[slope];
+
+      Float64 max_all_stress, allow_with_rebar;
+      if ( slope == pgsTypes::CrownSlope )
+      {
+         max_all_stress   = pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
+         allow_with_rebar = pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStressNormalCrown(segmentKey);
+      }
+      else
+      {
+         max_all_stress   = pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressMaxSuper(segmentKey);
+         allow_with_rebar = pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStressMaxSuper(segmentKey);
+      }
+      Float64 min_all_stress   = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+
+      RowIndexType row = 1;
+      (*pTable)(row,0) << _T("Tensile Stress (w/o mild rebar)");
+      (*pTable)(row,1) <<  stress.SetValue(max_stress);
+      (*pTable)(row,2) <<  stress.SetValue(max_all_stress);
+      if (max_stress <= max_all_stress)
+      {
+         (*pTable)(row,3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+
+      (*pTable)(row,0) << _T("Tensile Stress (if bonded reinforcement sufficient to resist the tensile force in the concrete is provided)");
+
+      (*pTable)(row,1) <<  stress.SetValue(max_stress);
+      (*pTable)(row,2) <<  stress.SetValue(allow_with_rebar);
+      if (max_stress <= allow_with_rebar)
+      {
+         (*pTable)(row,3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+
+      (*pTable)(row,0) << _T("Compressive Stress");
+      (*pTable)(row,1) <<  stress.SetValue(min_stress);
+      (*pTable)(row,2) <<  stress.SetValue(min_all_stress);
+      if (min_all_stress <= min_stress)
+      {
+         (*pTable)(row,3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+
+      Float64 fs_crack = pHaulArtifact->GetMinFsForCracking(slope);
+      Float64 all_fs_crack = pSegmentHaulingSpecCriteria->GetHaulingCrackingFs();
+      (*pTable)(row,0) << _T("F.S. - Cracking");
+      (*pTable)(row,1) <<  scalar.SetValue(fs_crack);
+      (*pTable)(row,2) <<  scalar.SetValue(all_fs_crack);
+      if (all_fs_crack <= fs_crack)
+      {
+         (*pTable)(row,3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+
+      Float64 fs_fail = pHaulArtifact->GetFsFailure(slope);
+      Float64 fs_roll = pHaulArtifact->GetFsRollover(slope);
+      Float64 all_fs_fail = pSegmentHaulingSpecCriteria->GetHaulingRolloverFs();
+      (*pTable)(row,0) << _T("F.S. - Failure");
+      (*pTable)(row,1) <<  scalar.SetValue(fs_fail);
+      (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
+      if (all_fs_fail <= fs_fail)
+      {
+         (*pTable)(row,3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+      (*pTable)(row,0) << _T("F.S. - Rollover");
+      (*pTable)(row,1) <<  scalar.SetValue(fs_roll);
+      (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
+      if (all_fs_fail <= fs_roll)
+      {
+         (*pTable)(row,3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
    }
-   else
-   {
-      (*pTable)(row,3) << RPT_FAIL;
-   }
-   row++;
 }

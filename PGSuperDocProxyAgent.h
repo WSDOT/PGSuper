@@ -290,6 +290,11 @@ public:
    virtual long GetGraphingViewKey();
    virtual long GetLoadsViewKey();
 
+   virtual void GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
+   virtual void SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx);
+   virtual Float64 GetBridgeViewCutStation();
+   virtual void SetBridgeViewCutStation(Float64 station);
+
 // IRegisterViewEvents
 public:
    virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);

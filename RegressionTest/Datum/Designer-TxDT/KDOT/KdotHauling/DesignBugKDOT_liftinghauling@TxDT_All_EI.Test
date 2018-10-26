@@ -1,7 +1,19 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.861 -0.791  0.000 -0.037 -0.828  61.74  168.20    3.75    9.50    9.50 
+ 40.00    6   7.25    K3 Template      1     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.861 -0.791  0.000 -0.037 -0.828  61.74  167.20    3.75    9.50    9.50 
                                                                                                                   4.0    8     2    0   0   0   0   0 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.00    6   7.25    K3 Template      1     2     New     *     22  1/2  270  17.02  10.11  10.75  10.75                                               4  42.0  4.0  4.300  5.000   2.283    -2.844     3233   0.629  0.761   2.484 -0.899  0.000 -0.037 -0.936  52.33  121.15    3.75    7.00    7.00 
 
 
 The Specification Check was Not Successful
@@ -10,22 +22,9 @@ Ultimate moment capacity (positive moment) check failed for Strength II Limit St
 Minimum fillet value exceeded for bridge check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     2     New           26  1/2  270  13.95  13.20  10.75  10.75    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.287    -2.846     3235   0.630  0.761   2.320 -0.890  0.000 -0.037 -0.927  61.24  154.40    3.75    5.00    5.00 
-                                                                                                                  4.0    8     2    0   0   0   0   0 
-
-
-The Specification Check was Not Successful
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Minimum fillet value exceeded for bridge check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     4     New           26  1/2  270  13.95  13.20  10.75  10.75    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.287    -2.846     3235   0.630  0.761   2.320 -0.890  0.000 -0.037 -0.927  61.24  154.40    3.75    5.00    5.00 
-                                                                                                                  4.0    8     2    0   0   0   0   0 
+ 40.00    6   7.25    K3 Template      1     4     New     *     22  1/2  270  17.02  10.11  10.75  10.75                                               4  42.0  4.0  4.300  5.000   2.283    -2.844     3233   0.629  0.761   2.484 -0.899  0.000 -0.037 -0.936  52.33  121.15    3.75    7.00    7.00 
 
 
 The Specification Check was Not Successful
@@ -33,13 +32,12 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
 Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      2     1     New     *     50  1/2  270   8.62   2.22  12.75  12.75                                              32  42.0 32.0  5.400 10.000   3.722    -4.346     4885   0.683  0.683   2.423 -1.455  0.000 -0.071 -1.526 155.84  408.36    0.00    0.00    0.00 
+ 40.00    6   7.25    K3 Template      2     1     New     *     60  1/2  270   4.36   4.36  12.75  12.75                                               0   0.0  0.0  5.500 10.000   3.722    -4.346     4885   0.683  0.683   0.960 -1.455  0.000 -0.071 -1.526 195.53  546.20    0.00    0.00    0.00 
 
 
 Girder design was Not Successful
@@ -50,12 +48,13 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
 Lifting checks failed
+Hauling checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      2     2     New     *     48  1/2  270   9.44   1.94  12.75  12.75                                              30  42.0 30.0  5.800 10.000   3.720    -4.279     4637   0.611  0.761   2.491 -1.578  0.000 -0.068 -1.646 143.86  360.54    0.00    0.00    0.00 
+ 40.00    6   7.25    K3 Template      2     2     New     *     60  1/2  270   4.36   4.36  12.75  12.75                                               0   0.0  0.0  4.000 10.000   3.720    -4.279     4637   0.611  0.761   1.161 -1.578  0.000 -0.068 -1.646 224.94  675.14    3.75   13.50   13.50 
 
 
 Girder design was Not Successful
@@ -66,28 +65,25 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
 Lifting checks failed
+Hauling checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      2     4     New     *     48  1/2  270   9.44   1.94  12.75  12.75                                              30  42.0 30.0  5.800 10.000   3.720    -4.279     4637   0.611  0.761   2.491 -1.578  0.000 -0.068 -1.646 143.86  360.54    0.00    0.00    0.00 
+ 40.00    6   7.25    K3 Template      2     4     New     *     40  1/2  270  12.52   1.52  10.50  10.50                                              22  42.0 22.0  6.000 10.000   3.618    -4.189     4580   0.611  0.761   2.859 -1.492  0.000 -0.068 -1.560 113.02  251.61    3.75   15.50   15.50 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Splitting zone check failed.
-Lifting checks failed
+Hauling checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.861 -0.791  0.000 -0.037 -0.828  61.74  168.20    3.75    9.50    9.50 
+ 40.00    6   7.25    K3 Template      3     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.861 -0.791  0.000 -0.037 -0.828  61.74  167.20    3.75    9.50    9.50 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -97,13 +93,13 @@ Ultimate moment capacity (positive moment) check failed for Strength II Limit St
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Hauling checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     2     New           26  1/2  270  13.95  13.20  10.75  10.75    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.287    -2.846     3235   0.630  0.761   2.320 -0.890  0.000 -0.037 -0.927  61.24  154.40    3.75    5.00    5.00 
-                                                                                                                  4.0    8     2    0   0   0   0   0 
+ 40.00    6   7.25    K3 Template      3     2     New     *     22  1/2  270  17.02  10.11  10.75  10.75                                               4  42.0  4.0  4.300  5.000   2.283    -2.844     3233   0.629  0.761   2.484 -0.899  0.000 -0.037 -0.936  52.33  121.15    3.75    7.00    7.00 
 
 
 The Specification Check was Not Successful
@@ -112,18 +108,15 @@ Ultimate moment capacity (positive moment) check failed for Strength II Limit St
 Minimum fillet value exceeded for bridge check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     4     New           26  1/2  270  13.95  13.20  10.75  10.75    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.287    -2.846     3235   0.630  0.761   2.320 -0.890  0.000 -0.037 -0.927  61.24  154.40    3.75    5.00    5.00 
-                                                                                                                  4.0    8     2    0   0   0   0   0 
+ 40.00    6   7.25    K3 Template      3     4     New     *     22  1/2  270  17.02  10.11  10.75  10.75                                               4  42.0  4.0  4.300  5.000   2.283    -2.844     3233   0.629  0.761   2.484 -0.899  0.000 -0.037 -0.936  52.33  121.15    3.75    7.00    7.00 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Minimum fillet value exceeded for bridge check failed
 

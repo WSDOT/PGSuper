@@ -9,6 +9,7 @@ Compression stress check failed for Service I Limit State in Interval 8 Cast Dec
 Compression stress check failed for Service I Limit State in Interval 9 Install Railing System (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Confinement zone check failed.
+Lifting checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

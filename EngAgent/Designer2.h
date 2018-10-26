@@ -40,6 +40,8 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
 
+#include <PgsExt\PgsExt.h>
+
 #include "StrandDesignTool.h"
 #include "ShearDesignTool.h"
 #include "DesignCodes.h"
@@ -368,7 +370,7 @@ public:
    const pgsGirderArtifact* Check(const CGirderKey& girderKey);
 
    // Creates a lifting analysis artifact
-   const pgsLiftingAnalysisArtifact* CheckLifting(const CSegmentKey& segmentKey);
+   const stbLiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey);
 
    // Creates a hauling analysis artifact
    const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey);
@@ -385,7 +387,7 @@ public:
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
 
    // Returns a lifting analysis artifact if the segment was already checked, otherwise returns NULL
-   const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey);
+   const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey);
 
    // Returns a nauling analysis artifact if the segment was already checked, otherwise returns NULL
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
@@ -400,7 +402,7 @@ protected:
 
 private:
    std::map<CGirderKey,boost::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
-   std::map<CSegmentKey,pgsLiftingAnalysisArtifact> m_LiftingAnalysisArtifacts;
+   std::map<CSegmentKey,stbLiftingCheckArtifact> m_LiftingCheckArtifacts;
    std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
 
    const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE);
@@ -573,6 +575,7 @@ private:
    void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom);
    void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task);
 
+   void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc);
 
    friend pgsLoadRater;
 
@@ -594,6 +597,8 @@ public:
    // otherwise false.
    static bool TestMe(dbgLog& rlog);
    #endif // _UNITTEST
+
+   void DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabilityProblem,const stbLiftingCheckArtifact& artifact,dbgDumpContext& os);
 };
 
 // INLINE METHODS

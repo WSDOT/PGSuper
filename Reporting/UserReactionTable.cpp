@@ -82,7 +82,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    CString strTitle;
    if ( tableType == PierReactionsTable )
    {
-      strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strTitle.Format(_T("Total Girder Line Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
    }
    else
    {

@@ -35,13 +35,16 @@ public:
                                    HMENU hSharedMenu = NULL,
                                    int maxViewCount = -1);
 
+   virtual void SetPlugin(IEAFAppPlugin* pPlugin);
+
    // returns the string that goes at teh bottom of the New dialog
    virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
 
    DECLARE_DYNAMIC(CTxDOTOptionalDesignDocTemplate)
 
-protected:
    void LoadTemplateInformation();
+
+protected:
    void FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon);
    void FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon);
 };

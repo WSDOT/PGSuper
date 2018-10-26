@@ -34,7 +34,7 @@ Press [More Properties...] to open the Concrete Details window and select the AC
 
 ![](Tutorial_General_Concrete_Details.png)
 
-> TIP: AASHTO LRFD does not provide a time-dependent concrete model so the model from ACI 209R-92 is used. See @ref tg_concrete_models in the @ref technical_guide for more information.
+> TIP: AASHTO LRFD does not provide a time-dependent concrete model so the model from ACI 209R-92 is used. See @ref tg_time_dependent_material_models in the @ref technical_guide for more information.
 
 Remove the check from the _Use time parameters from ACI 209R-92..._. This will allow use to enter our own time-parameters. 
 

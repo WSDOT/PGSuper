@@ -76,7 +76,7 @@ protected:
    OutComeType m_OutCome;
 
    Float64   m_SectionSpacing;
-   AxleIndexType   m_NumDebonded;
+   StrandIndexType   m_NumDebonded;
 
    // need strands in rows with sections in row
    struct SectionData
@@ -135,7 +135,7 @@ protected:
 
 inline void TxDOTDebondTool::Compute()
 {
-   m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_SegmentKey,pgsTypes::Straight);
+   m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_SegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
 
    // standard debond increment
    Float64 three_feet = ::ConvertToSysUnits( 3.0,unitMeasure::Feet);

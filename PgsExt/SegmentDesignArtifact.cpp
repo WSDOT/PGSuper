@@ -418,6 +418,16 @@ Float64 pgsSegmentDesignArtifact::GetTrailingOverhang() const
    return m_ShipLocLeft;
 }
 
+void pgsSegmentDesignArtifact::SetHaulTruck(LPCTSTR lpszHaulTruck)
+{
+   m_strHaulTruck = lpszHaulTruck;
+}
+
+LPCTSTR pgsSegmentDesignArtifact::GetHaulTruck() const
+{
+   return m_strHaulTruck.c_str();
+}
+
 pgsTypes::TTSUsage pgsSegmentDesignArtifact::GetTemporaryStrandUsage() const
 {
    return pgsTypes::ttsPretensioned;
@@ -675,50 +685,6 @@ bool pgsSegmentDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditiona
    return m_RequiredAdditionalRebar;
 }
 
-LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   return pProductLoads->GetLimitStateName(limitState);
-}
-
-LPCTSTR StressLocationString(pgsTypes::StressLocation loc)
-{
-   switch(loc)
-   {
-   case pgsTypes::BottomGirder:
-      return _T("Bottom of Girder");
-      break;
-   case pgsTypes::TopGirder:
-      return _T("Top of Girder");
-      break;
-   case pgsTypes::TopDeck:
-      return _T("Top of Slab");
-      break;
-   default:
-      ATLASSERT(false);
-      return _T("Error in StressLocation");
-   }
-}
-
-LPCTSTR StressTypeString(pgsTypes::StressType type)
-{
-   switch(type)
-   {
-   case pgsTypes::Tension:
-      return _T("Tension");
-      break;
-   case pgsTypes::Compression:
-      return _T("Compression");
-      break;
-   default:
-      ATLASSERT(false);
-      return _T("Error in StressType");
-   }
-}
-
-
 std::_tstring pgsSegmentDesignArtifact::ConcreteStrengthDesignState::AsString() const
 {
    CComPtr<IBroker> pBroker;
@@ -733,13 +699,13 @@ std::_tstring pgsSegmentDesignArtifact::ConcreteStrengthDesignState::AsString() 
    else if (m_Action==actStress)
    {
       std::_tostringstream sstr;
-      sstr<< _T("flexural stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(" ") << strDesc << _T(", ") << LimitStateString(m_LimitState)<<_T(", ") << StressTypeString(m_StressType)<<_T(", at ") << StressLocationString(m_StressLocation);
+      sstr<< _T("flexural stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(" ") << strDesc << _T(", ") << GetLimitStateString(m_LimitState)<<_T(", ") << GetStressTypeString(m_StressType)<<_T(", at ") << GetStressLocationString(m_StressLocation);
       return sstr.str();
    }
    else if (m_Action==actShear)
    {
       std::_tostringstream sstr;
-      sstr<< _T("ultimate shear stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(" ") << strDesc << _T(", ") << LimitStateString(m_LimitState);
+      sstr<< _T("ultimate shear stress in Interval ") << LABEL_INTERVAL(m_IntervalIdx) << _T(" ") << strDesc << _T(", ") << GetLimitStateString(m_LimitState);
       return sstr.str();
    }
    else
@@ -813,6 +779,7 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
    m_LiftLocRight        = rOther.m_LiftLocRight;
    m_ShipLocLeft         = rOther.m_ShipLocLeft;
    m_ShipLocRight        = rOther.m_ShipLocRight;
+   m_strHaulTruck        = rOther.m_strHaulTruck;
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -1137,6 +1104,7 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
    {
       pSegmentData->HandlingData.LeadingSupportPoint  = GetLeadingOverhang();
       pSegmentData->HandlingData.TrailingSupportPoint = GetTrailingOverhang();
+      pSegmentData->HandlingData.HaulTruckName        = GetHaulTruck();
    }
 }
 

@@ -38,6 +38,9 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 
+#include <IFace\AgeAdjustedMaterial.h>
+#include <Beams\Helper.h>
+
 #include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\StatusCenter.h>
@@ -116,10 +119,10 @@ HRESULT CMultiWeb2Factory::FinalConstruct()
 
 void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
-   CComPtr<IMultiWebSection2> gdrsection;
-   gdrsection.CoCreateInstance(CLSID_MultiWebSection2);
+   CComPtr<IMultiWebSection2> gdrSection;
+   gdrSection.CoCreateInstance(CLSID_MultiWebSection2);
    CComPtr<IMultiWeb2> beam;
-   gdrsection->get_Beam(&beam);
+   gdrSection->get_Beam(&beam);
 
    Float64 c1,c2;
    Float64 h1,h2,h3;
@@ -173,7 +176,7 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    }
    beam->put_W1(w1);
 
-   gdrsection.QueryInterface(ppSection);
+   gdrSection.QueryInterface(ppSection);
 }
 
 void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
@@ -213,29 +216,42 @@ void CMultiWeb2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
+   const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
+
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
-   CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrsection);
+   CComPtr<IGirderSection> gdrSection;
+   CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
 
    // Beam materials
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   material.CoCreateInstance(CLSID_Material);
-
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
-      Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
-      Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
+      CComPtr<IAgeAdjustedMaterial> aaMaterial;
+      BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
+      aaMaterial.QueryInterface(&material);
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      material.CoCreateInstance(CLSID_Material);
 
-      material->put_E(intervalIdx,E);
-      material->put_Density(intervalIdx,D);
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+      {
+         Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+         Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
+
+         material->put_E(intervalIdx,E);
+         material->put_Density(intervalIdx,D);
+      }
    }
 
-   CComQIPtr<IShape> shape(gdrsection);
+   CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
    segment->AddShape(shape,material,NULL);
 
@@ -588,12 +604,12 @@ IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(sysIStructured
    return dimensions;
 }
 
-bool CMultiWeb2Factory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CMultiWeb2Factory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
 {
    return true;
 }
 
-bool CMultiWeb2Factory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CMultiWeb2Factory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
 {
    return true;
 }

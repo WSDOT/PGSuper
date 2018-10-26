@@ -71,7 +71,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
    bool bDebondedStrands = false;
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      if ( 0 < pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,segIdx),strandType) )
+      if ( 0 < pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,segIdx),strandType,pgsTypes::dbetEither) )
       {
          bDebondedStrands = true;
          break;

@@ -31,7 +31,10 @@ class REPORTINGCLASS CInitialStrainAnalysisReportSpecification :
 {
 public:
 	CInitialStrainAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   CInitialStrainAnalysisReportSpecification(const CInitialStrainAnalysisReportSpecification& rOther);
    ~CInitialStrainAnalysisReportSpecification(void);
+
+   void SetOptions(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
 
    virtual HRESULT Validate() const;
 

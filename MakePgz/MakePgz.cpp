@@ -36,20 +36,30 @@ void PrintCommandLine();
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-   if (argc!=4 && argc!=5)
+   if (argc!=3 && argc!=5 && argc!=6)
    {
      PrintCommandLine();
      return -1;
    }
 
-   if (argc==5)
+   if (argc==5 || argc==6)
    {
+      _TCHAR* altTemp;
+      if (argc==5)
+      {
+         altTemp = NULL;
+      }
+      else
+      {
+         altTemp = argv[5];
+      }
 
       // Zipping master library file and templates
       int st = ZipPGZ(argv[2], // master library file
                       argv[3], // root of workgroup templates
                       argv[1], // pgz file
-                      argv[4]); // file extension
+                      argv[4], // file extension 
+                      altTemp); // file extension alt
       if (st==0)
       {
          _tprintf(_T("Last step is to create MD5 checksum:\n"));
@@ -114,7 +124,6 @@ int _tmain(int argc, _TCHAR* argv[])
    }
 }
 
-
 void PrintCommandLine()
 {
      _tprintf(_T("Error - Invalid Command line!\n"));
@@ -125,10 +134,11 @@ void PrintCommandLine()
      _tprintf(_T("    makepgz FileName.pgz /L\n"));
      _tprintf(_T("\n"));
      _tprintf(_T("To create a PGZ file:\n"));
-     _tprintf(_T("    makepgz FileName.pgz Library.lbr RootTemplateFolder TemplateExtension"));
+     _tprintf(_T("    makepgz FileName.pgz Library.lbr RootTemplateFolder TemplateExtension [TemplateExtension2]"));
      _tprintf(_T("\n"));
      _tprintf(_T("FileName.pgz = the name of the PGZ file to list, uncompress, or create\n"));
      _tprintf(_T("Library.lbr  = the name of the PGSuper Master Library file to add\n"));
      _tprintf(_T("RootTemplateFolder = the name of the root template folder that contains a tree of PGSuper Project Templates to add\n"));
      _tprintf(_T("TemplateExtension = extension of the template files\n"));
+     _tprintf(_T("TemplateExtension2 = extension of alternate other template files\n"));
 }

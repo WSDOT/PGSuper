@@ -33,6 +33,8 @@ public:
 	CTimeStepDetailsReportSpecification(LPCTSTR strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
    ~CTimeStepDetailsReportSpecification(void);
 
+   void SetOptions(bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+
    virtual HRESULT Validate() const;
 
    pgsPointOfInterest GetPointOfInterest() const;

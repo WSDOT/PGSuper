@@ -50,15 +50,25 @@ void CDrawPrecastSegmentControl::OnPaint()
 
    const CSegmentKey& segmentKey = m_pSource->GetSegmentKey();
 
+   CSegmentKey prevSegmentKey(segmentKey);
+   prevSegmentKey.segmentIndex--;
+
+   CSegmentKey nextSegmentKey(segmentKey);
+   nextSegmentKey.segmentIndex++;
+
    CComPtr<IShape> prevShape,shape,nextShape;
    CComPtr<IPoint2dCollection> prevBottomFlange, bottomFlange, nextBottomFlange;
    if ( 0 < segmentKey.segmentIndex )
-      CreateSegmentShape( CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1),&prevShape,&prevBottomFlange);
+   {
+      CreateSegmentShape( prevSegmentKey,&prevShape,&prevBottomFlange);
+   }
 
    CreateSegmentShape( segmentKey,  &shape, &bottomFlange);
 
    if ( segmentKey.segmentIndex < nSegments-1 )
-      CreateSegmentShape(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex+1),&nextShape,&nextBottomFlange);
+   {
+      CreateSegmentShape(nextSegmentKey,&nextShape,&nextBottomFlange);
+   }
 
    // set up the clipping region so we don't draw outside of the client rect
    CRect rClient;
@@ -120,20 +130,65 @@ void CDrawPrecastSegmentControl::OnPaint()
 
 
    CPen this_segment_pen(PS_SOLID,1,SEGMENT_BORDER_COLOR);
-   CBrush this_segment_brush(SEGMENT_FILL_COLOR);
+   CBrush this_segment_brush;
    CPen girder_pen(PS_SOLID,1,SEGMENT_BORDER_COLOR_ADJACENT);
-   CBrush girder_brush(SEGMENT_FILL_COLOR_ADJACENT);
+   CBrush prev_segment_brush;
+   CBrush next_segment_brush;
 
-   CPen* pOldPen = dc.SelectObject(&girder_pen);
-   CBrush* pOldBrush = dc.SelectObject(&girder_brush);
-   DrawShape(&dc,mapper,prevShape);
-   DrawBottomFlange(&dc,mapper,prevBottomFlange);
+   COLORREF clrBadSegment = DARKSLATEGREY;
 
-   dc.SelectObject(&girder_pen);
-   dc.SelectObject(&girder_brush);
-   DrawShape(&dc,mapper,nextShape);
-   DrawBottomFlange(&dc,mapper,nextBottomFlange);
+   CPen* pOldPen     = dc.GetCurrentPen();
+   CBrush* pOldBrush = dc.GetCurrentBrush();
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   if ( prevShape )
+   {
+      Float64 framing_length = pBridge->GetSegmentFramingLength(prevSegmentKey);
+      const CPrecastSegmentData* pSegment = pSplicedGirder->GetSegment(prevSegmentKey.segmentIndex);
+      if ( pSegment->AreSegmentVariationsValid(framing_length) )
+      {
+         prev_segment_brush.CreateSolidBrush(SEGMENT_FILL_COLOR_ADJACENT);
+      }
+      else
+      {
+         prev_segment_brush.CreateHatchBrush(HS_DIAGCROSS,clrBadSegment);
+      }
+      dc.SelectObject(&girder_pen);
+      dc.SelectObject(&prev_segment_brush);
+      DrawShape(&dc,mapper,prevShape);
+      DrawBottomFlange(&dc,mapper,prevBottomFlange);
+   }
+
+   if ( nextShape )
+   {
+      Float64 framing_length = pBridge->GetSegmentFramingLength(nextSegmentKey);
+      const CPrecastSegmentData* pSegment = pSplicedGirder->GetSegment(nextSegmentKey.segmentIndex);
+      if ( pSegment->AreSegmentVariationsValid(framing_length) )
+      {
+         next_segment_brush.CreateSolidBrush(SEGMENT_FILL_COLOR_ADJACENT);
+      }
+      else
+      {
+         next_segment_brush.CreateHatchBrush(HS_DIAGCROSS,clrBadSegment);
+      }
+      dc.SelectObject(&girder_pen);
+      dc.SelectObject(&next_segment_brush);
+      DrawShape(&dc,mapper,nextShape);
+      DrawBottomFlange(&dc,mapper,nextBottomFlange);
+   }
+
+   Float64 framing_length = pBridge->GetSegmentFramingLength(segmentKey);
+   const CPrecastSegmentData* pSegment = pSplicedGirder->GetSegment(segmentKey.segmentIndex);
+   if ( pSegment->AreSegmentVariationsValid(framing_length) )
+   {
+      this_segment_brush.CreateSolidBrush(SEGMENT_FILL_COLOR);
+   }
+   else
+   {
+      this_segment_brush.CreateHatchBrush(HS_DIAGCROSS,clrBadSegment);
+   }
    dc.SelectObject(&this_segment_pen);
    dc.SelectObject(&this_segment_brush);
    DrawShape(&dc,mapper,shape);

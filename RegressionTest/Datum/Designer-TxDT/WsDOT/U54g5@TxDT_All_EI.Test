@@ -1,8 +1,9 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     1    U54G5          82  0.6  270  16.63   3.85  11.75  11.75                                              7.600 13.300   9.118    -5.781    15102   0.724  1.056   5.910 -3.303 -0.214 -0.187 -3.704 393.23  578.76    1.75    5.00    5.00 
+ 46.25    4  12.00                     1     1    U54G5          80  0.6  270  16.71   4.11  11.75  11.75                                              7.400 12.500   9.062    -5.766    14734   0.724  1.056   5.840 -3.407 -0.218 -0.190 -3.815 378.54  554.35    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Hauling checks failed

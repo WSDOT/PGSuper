@@ -174,13 +174,16 @@ void CBridgePlanView::GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* p
    *pEndSpanIdx   = m_EndSpanIdx;
 }
 
-void CBridgePlanView::SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx)
+void CBridgePlanView::SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,bool bUpdate)
 {
    m_StartSpanIdx = startSpanIdx;
    m_EndSpanIdx  = endSpanIdx;
 
-   m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSETTINGSCHANGED,NULL);
-   m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSECTIONCUTCHANGED,NULL);
+   if ( bUpdate )
+   {
+      m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSETTINGSCHANGED,NULL);
+      m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSECTIONCUTCHANGED,NULL);
+   }
 }
 
 bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
@@ -752,7 +755,7 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
       default:
          ATLASSERT(FALSE); // is there a new type of object to be selected?
-         this->ClearSelection();
+         ClearSelection();
          break;
       }
    }
@@ -760,6 +763,11 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CBridgePlanView::UpdateSegmentTooltips()
 {
+   if ( m_SegmentIDs.size() == 0 )
+   {
+      return;
+   }
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -1431,7 +1439,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
    strategy_girder->SetLineStyle(lsCenterline);
 #endif // _SHOW_CL_GIRDER
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
    GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTempSupport); // only gets used if there are temporary supports
@@ -1969,24 +1977,32 @@ void CBridgePlanView::BuildPierDisplayObjects()
       Float64 left_offset = 0;
       Float64 right_offset = 0;
 
-      if ( pPier->GetPrevSpan() )
+      if ( pPier->GetPierModelType() == pgsTypes::pmtIdealized )
       {
-         ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
-         pPier->GetBearingOffset(pgsTypes::Back,&left_offset,&left_brg_offset_measure_type);
-         if ( left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+         if ( pPier->GetPrevSpan() )
          {
-            left_offset /= cos(skew);
+            ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
+            pPier->GetBearingOffset(pgsTypes::Back,&left_offset,&left_brg_offset_measure_type);
+            if ( left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+            {
+               left_offset /= cos(skew);
+            }
+         }
+
+         if ( pPier->GetNextSpan() )
+         {
+            ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
+            pPier->GetBearingOffset(pgsTypes::Ahead,&right_offset,&right_brg_offset_measure_type);
+            if ( right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+            {
+               right_offset /= cos(skew);
+            }
          }
       }
-
-      if ( pPier->GetNextSpan() )
+      else
       {
-         ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
-         pPier->GetBearingOffset(pgsTypes::Ahead,&right_offset,&right_brg_offset_measure_type);
-         if ( right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
-         {
-            right_offset /= cos(skew);
-         }
+         left_offset = pPier->GetXBeamWidth()/2;
+         right_offset = left_offset;
       }
  
       left_offset  = ( IsZero(left_offset)  ? right_offset/2 : left_offset );

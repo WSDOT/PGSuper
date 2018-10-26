@@ -26,7 +26,7 @@
 #include <EAF\EAFGraphControlWindow.h>
 
 #define GT_LIFTING 0
-#define GT_TRANSPORTATION 1
+#define GT_HAULING 1
 
 class CStabilityGraphController : public CEAFGraphControlWindow
 {

@@ -35,7 +35,7 @@ static char THIS_FILE[] = __FILE__;
 pgsSegmentArtifact::pgsSegmentArtifact(const CSegmentKey& segmentKey) :
 m_SegmentKey(segmentKey)
 {
-   m_pLiftingAnalysisArtifact = NULL;
+   m_pLiftingCheckArtifact = NULL;
    m_pHaulingAnalysisArtifact = NULL;
 }
 
@@ -203,14 +203,14 @@ pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact()
    return &m_StabilityArtifact;
 }
 
-void pgsSegmentArtifact::SetLiftingAnalysisArtifact(const pgsLiftingAnalysisArtifact* artifact)
+void pgsSegmentArtifact::SetLiftingCheckArtifact(const stbLiftingCheckArtifact* artifact)
 {
-   m_pLiftingAnalysisArtifact = artifact;
+   m_pLiftingCheckArtifact = artifact;
 }
 
-const pgsLiftingAnalysisArtifact* pgsSegmentArtifact::GetLiftingAnalysisArtifact() const
+const stbLiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
 {
-   return m_pLiftingAnalysisArtifact;
+   return m_pLiftingCheckArtifact;
 }
 
 void pgsSegmentArtifact::SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact* artifact)
@@ -493,14 +493,14 @@ bool pgsSegmentArtifact::Passed() const
 
    bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
 
-   if (m_pLiftingAnalysisArtifact != NULL)
+   if ( m_pLiftingCheckArtifact != NULL )
    {
-      bPassed &= m_pLiftingAnalysisArtifact->Passed();
+      bPassed &= m_pLiftingCheckArtifact->Passed();
    }
-
    if (m_pHaulingAnalysisArtifact != NULL)
    {
-      bPassed &= m_pHaulingAnalysisArtifact->Passed();
+      bPassed &= m_pHaulingAnalysisArtifact->Passed(pgsTypes::CrownSlope);
+      bPassed &= m_pHaulingAnalysisArtifact->Passed(pgsTypes::Superelevation);
    }
 
    for ( Uint16 i = 0; i < 3; i++ )
@@ -760,10 +760,13 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 
    if (m_pHaulingAnalysisArtifact != NULL)
    {
-      Float64 fc_reqd_hauling_comp, fc_reqd_hauling_tens, fc_reqd_hauling_tens_wbar;
-      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens, &fc_reqd_hauling_tens_wbar);
+      Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
+      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_reqd_hauling_comp1,&fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
 
-      Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
+      Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
+      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_reqd_hauling_comp2,&fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+
+      Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar1,fc_reqd_hauling_comp2,fc_reqd_hauling_tens_wbar1,fc_reqd_hauling_comp2);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
       {
@@ -924,10 +927,11 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
       }
    }
  
-   if (m_pLiftingAnalysisArtifact != NULL)
+   if (m_pLiftingCheckArtifact != NULL)
    {
-      Float64 fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar;
-      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens_norebar,&fc_reqd_lifting_tens_withrebar);
+      Float64 fc_reqd_lifting_comp = m_pLiftingCheckArtifact->RequiredFcCompression();
+      Float64 fc_reqd_lifting_tens_norebar = m_pLiftingCheckArtifact->RequiredFcTension();
+      Float64 fc_reqd_lifting_tens_withrebar = m_pLiftingCheckArtifact->RequiredFcTensionWithRebar();
 
       Float64 fc_reqd_lifting = Max(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
 
@@ -954,7 +958,7 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
    m_StabilityArtifact               = rOther.m_StabilityArtifact;
 
-   m_pLiftingAnalysisArtifact = rOther.m_pLiftingAnalysisArtifact;
+   m_pLiftingCheckArtifact    = rOther.m_pLiftingCheckArtifact;
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
    for ( int i = 0; i < 4; i++ )

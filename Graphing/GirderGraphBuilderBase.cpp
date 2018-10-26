@@ -64,6 +64,8 @@ CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(0),
 m_pYFormat(0),
+m_ZeroToleranceX(TOLERANCE),
+m_ZeroToleranceY(TOLERANCE),
 m_pGraphController(0),
 m_bShowBeam(true),
 m_bShift(false)
@@ -75,6 +77,8 @@ CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(0),
 m_pYFormat(0),
+m_ZeroToleranceX(TOLERANCE),
+m_ZeroToleranceY(TOLERANCE),
 m_pGraphController(0),
 m_bShowBeam(other.m_bShowBeam)
 {
@@ -294,9 +298,9 @@ void CGirderGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Floa
    arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
-   x = IsZero(x) ? 0 : x;
+   x = IsZero(x,m_ZeroToleranceX) ? 0 : x;
    Float64 y = pcy->Convert(yval);
-   y = IsZero(y) ? 0 : y;
+   y = IsZero(y,m_ZeroToleranceY) ? 0 : y;
    m_Graph.AddPoint(series, gpPoint2d(x,y));
 }
 

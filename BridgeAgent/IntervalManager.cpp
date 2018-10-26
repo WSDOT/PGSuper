@@ -464,6 +464,47 @@ IntervalIndexType CIntervalManager::GetCastClosureInterval(const CClosureKey& cl
    return found->second;
 }
 
+IntervalIndexType CIntervalManager::GetFirstCastClosureJointInterval(const CGirderKey& girderKey) const
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   IntervalIndexType intervalIdx = INVALID_INDEX;
+   std::map<CClosureKey,IntervalIndexType>::const_iterator iter(m_CastClosureIntervals.begin());
+   std::map<CClosureKey,IntervalIndexType>::const_iterator end(m_CastClosureIntervals.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CClosureKey& closureKey = iter->first;
+      if ( closureKey.groupIndex == girderKey.groupIndex && closureKey.girderIndex == girderKey.girderIndex )
+      {
+         intervalIdx = Min(intervalIdx,iter->second);
+      }
+   }
+
+   return intervalIdx;
+}
+
+IntervalIndexType CIntervalManager::GetLastCastClosureJointInterval(const CGirderKey& girderKey) const
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   IntervalIndexType intervalIdx = 0;
+   std::map<CClosureKey,IntervalIndexType>::const_iterator iter(m_CastClosureIntervals.begin());
+   std::map<CClosureKey,IntervalIndexType>::const_iterator end(m_CastClosureIntervals.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CClosureKey& closureKey = iter->first;
+      if ( closureKey.groupIndex == girderKey.groupIndex && closureKey.girderIndex == girderKey.girderIndex )
+      {
+         intervalIdx = Max(intervalIdx,iter->second);
+      }
+   }
+
+   if ( intervalIdx == 0 )
+   {
+      intervalIdx = INVALID_INDEX;
+   }
+
+   return intervalIdx;
+}
+
 IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const
 {
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
@@ -1107,8 +1148,16 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    bool bNeedNewInterval = true;
    if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
    {
-      // this loads are being applied with the deck, use the deck casting interval
+      // loads are being applied with the deck, use the deck casting interval
       intervalIdx = m_CastDeckIntervalIdx;
+      bNeedNewInterval = false;
+   }
+   else if ( pTimelineEvent->GetCastClosureJointActivity().IsEnabled() )
+   {
+      // loads are being applied with closure joints, use the closure joint casting interval
+      std::vector<CClosureKey> vClosureKeys = GetClosureJoints(pTimelineEvent);
+      ATLASSERT(0 < vClosureKeys.size());
+      intervalIdx = GetCastClosureInterval(vClosureKeys.front());
       bNeedNewInterval = false;
    }
    else
@@ -1365,6 +1414,41 @@ void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent
          m_Intervals.back().Duration = 0;
       }
    } // if bTimeStep
+}
+
+std::vector<CClosureKey> CIntervalManager::GetClosureJoints(const CTimelineEvent* pTimelineEvent)
+{
+   const CCastClosureJointActivity& closureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
+   const CBridgeDescription2* pBridgeDesc = pTimelineEvent->GetTimelineManager()->GetBridgeDescription();
+
+   std::vector<CClosureKey> vClosureKeys;
+   const std::set<PierIDType>& vPierIDs(closureJointActivity.GetPiers());
+   BOOST_FOREACH(PierIDType pierID,vPierIDs)
+   {
+      const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
+      const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Ahead); // shouldn't matter which side
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CClosureJointData* pClosureJoint = pPier->GetClosureJoint(gdrIdx);
+         CClosureKey closureKey(pClosureJoint->GetClosureKey());
+         vClosureKeys.push_back(closureKey);
+      }
+   }
+   const std::set<SupportIDType>& vTempSupportIDs(closureJointActivity.GetTempSupports());
+   BOOST_FOREACH(SupportIDType tsID,vTempSupportIDs)
+   {
+      const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
+      GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(gdrIdx);
+         CClosureKey closureKey(pClosureJoint->GetClosureKey());
+         vClosureKeys.push_back(closureKey);
+      }
+   }
+
+   return vClosureKeys;
 }
 
 #if defined _DEBUG

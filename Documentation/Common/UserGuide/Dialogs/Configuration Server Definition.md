@@ -29,3 +29,8 @@ This type of server is typically used to share a configuration across the intern
 This type of server is typically used to share a configuration across the internet. 
 
 ![](HTTPConfigurationServer.png)
+
+### Local or Network File System Using a .ini File ###
+This type of server uses a network file system and has the ability to use a .ini file and (*.pgz) files. This has advantages over the normal file system server by allowing multiple configurations at one network location, and versioning of the .pgz configurations. Refer to @ref configuration_server_files for information about how to create .ini and .pgz files.
+
+![](FileIniConfigurationServer.png)

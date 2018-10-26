@@ -356,7 +356,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
          (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
       }
 
-      StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight);
+      StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight,pgsTypes::dbetEither);
       if (ndb>0)
       {
          (*p_table)(row,0) << _T("No. Debonded");

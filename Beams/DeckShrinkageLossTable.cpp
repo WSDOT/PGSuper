@@ -231,7 +231,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(1,0) << table->mod_e.SetValue( ptl->GetEp() );
    (*pParamTable)(1,1) << table->mod_e.SetValue( ptl->GetEc() );
    (*pParamTable)(1,2) << table->mod_e.SetValue( ptl->GetEcd() );
-   (*pParamTable)(1,3) << pSpecEntry->GetDeckShrinkageElasticGain();
+   (*pParamTable)(1,3) << (spMode == pgsTypes::spmGross ? pSpecEntry->GetDeckShrinkageElasticGain() : 1.0);
    (*pParamTable)(1,4) << ptl->GetDeckK1Creep();
    (*pParamTable)(1,5) << ptl->GetDeckK2Creep();
    (*pParamTable)(1,6) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());

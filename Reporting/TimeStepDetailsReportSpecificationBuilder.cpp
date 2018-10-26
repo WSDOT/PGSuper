@@ -44,13 +44,13 @@ CTimeStepDetailsReportSpecificationBuilder::~CTimeStepDetailsReportSpecification
 {
 }
 
-boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   boost::shared_ptr<CTimeStepDetailsReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CTimeStepDetailsReportSpecification>(pRptSpec) );
+   boost::shared_ptr<CTimeStepDetailsReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CTimeStepDetailsReportSpecification>(pOldRptSpec) );
 
    pgsPointOfInterest initial_poi;
    if ( pInitRptSpec )
@@ -82,11 +82,23 @@ boost::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuild
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CTimeStepDetailsReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval()) );
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pInitRptSpec)
+      {
+         boost::shared_ptr<CTimeStepDetailsReportSpecification> pNewGRptSpec = boost::shared_ptr<CTimeStepDetailsReportSpecification>( new CTimeStepDetailsReportSpecification(*pInitRptSpec) );
 
-      rptDesc.ConfigureReportSpecification(pRptSpec);
+         pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
 
-      return pRptSpec;
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CTimeStepDetailsReportSpecification>( new CTimeStepDetailsReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval()) );
+      }
+
+      rptDesc.ConfigureReportSpecification(pNewRptSpec);
+
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();

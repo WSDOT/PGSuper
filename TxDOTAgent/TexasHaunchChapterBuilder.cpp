@@ -263,7 +263,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       CGirderKey girderKey(girderList[gdr_idx]);
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_TENTH_POINTS | POI_ERECTED_SEGMENT);
+      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_TENTH_POINTS | POI_SPAN);
       ATLASSERT(vPoi.size()==11);
       const pgsPointOfInterest& poi_0 = vPoi[0];
       const pgsPointOfInterest& poi_2 = vPoi[2];

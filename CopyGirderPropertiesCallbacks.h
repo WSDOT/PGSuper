@@ -46,6 +46,9 @@ private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
    std::vector<std::_tstring> m_strOldNames;
+   std::vector<CStrandData> m_OldPrestressData;
+   std::vector<CShearData2> m_OldShearData;
+   std::vector<CLongitudinalRebarData> m_OldRebarData;
 };
 
 class txnCopyGirderStirrups :  public txnTransaction
@@ -64,6 +67,7 @@ private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
    std::vector<CShearData2> m_OldShearData;
+   std::vector<CLongitudinalRebarData> m_OldRebarData;
 };
 
 class txnCopyGirderPrestressing :  public txnTransaction

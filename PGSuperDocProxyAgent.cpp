@@ -413,6 +413,74 @@ long CPGSuperDocProxyAgent::GetLoadsViewKey()
    return m_LoadsViewKey;
 }
 
+void CPGSuperDocProxyAgent::GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
+{
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
+   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
+   if ( vViews.size() == 0 )
+   {
+      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
+   }
+
+   CView* pView = vViews.front();
+   ASSERT_KINDOF(CBridgePlanView,vViews.front());
+   CBridgePlanView* pPlanView = (CBridgePlanView*)vViews.front();
+   pPlanView->GetSpanRange(pStartSpanIdx,pEndSpanIdx);
+}
+
+void CPGSuperDocProxyAgent::SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
+   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
+   if ( vViews.size() == 0 )
+   {
+      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
+   }
+
+   CView* pView = vViews.front();
+   CFrameWnd* pParentFrame = pView->GetParentFrame();
+   ASSERT_KINDOF(CBridgeModelViewChildFrame,pParentFrame);
+   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
+   CBridgePlanView* pPlanView = pFrame->GetBridgePlanView();
+
+   pPlanView->SetSpanRange(startSpanIdx,endSpanIdx,false);
+}
+
+Float64 CPGSuperDocProxyAgent::GetBridgeViewCutStation()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
+   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
+   if ( vViews.size() == 0 )
+   {
+      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
+   }
+
+   CView* pView = vViews.front();
+   CFrameWnd* pParentFrame = pView->GetParentFrame();
+   ASSERT_KINDOF(CBridgeModelViewChildFrame,pParentFrame);
+   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
+   return pFrame->GetCurrentCutLocation();
+}
+
+void CPGSuperDocProxyAgent::SetBridgeViewCutStation(Float64 station)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
+   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
+   if ( vViews.size() == 0 )
+   {
+      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
+   }
+
+   CView* pView = vViews.front();
+   CFrameWnd* pParentFrame = pView->GetParentFrame();
+   ASSERT_KINDOF(CBridgeModelViewChildFrame,pParentFrame);
+   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
+   pFrame->CutAt(station);
+}
+
 void CPGSuperDocProxyAgent::OnStatusChanged()
 {
    if ( m_pBroker )

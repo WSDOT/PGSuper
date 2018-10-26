@@ -12,7 +12,7 @@ Segment Connection | Select the segment connection type from the drop down list
 Installation Event | Select the event when this closure joint is installed. See NOTE below. 
 Bearing Offset | Distance from the pier line to the centerline bearing. Use the drop down list to select how this parameter is measured.
 End Distance | Locates the end of the segments. Use the drop down list to select how this parameter is measured
-Support Width | Width of the support at the centerline bearing. Measured along the centerline of the segment. 
+Support Width | Total width of the support (bearing). This dimension is always measured along the centerline of the segment. The support is assumed to be centered on the centerline bearing. The face of support for various shear releated computations is located one-half of the total support width from the centerline bearing.
 
 > NOTE: All closure joints at piers are installed during the same construction event. Changing the installation event for this closure joint changes it for all closure joints at this support. 
 

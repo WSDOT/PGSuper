@@ -287,7 +287,7 @@ BOOL CPierLocationPage::OnInitDialog()
       m_ctrlAheadSlabOffset.EnableWindow(FALSE);
    }
 
-   EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierIdx);
+   EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierID);
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_ERECTION_EVENT,eventIdx);
 
@@ -363,6 +363,7 @@ void CPierLocationPage::Init(const CPierData2* pPier)
    const CBridgeDescription2* pBridgeDesc = pPier->GetBridgeDescription();
 
    m_PierIdx = pPier->GetIndex();
+   m_PierID  = pPier->GetID();
 
    m_InitialSlabOffsetType = pBridgeDesc->GetSlabOffsetType();
 

@@ -107,6 +107,7 @@ public:
    const CPrecastSegmentData* GetSegment(SegmentIndexType idx) const;
    void SetSegment(SegmentIndexType idx,const CPrecastSegmentData& segment);
    std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations() const;
+   std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(const GirderLibraryEntry* pGirderLibEntry) const;
 
 
    // =================================================================================

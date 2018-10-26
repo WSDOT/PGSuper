@@ -35,9 +35,13 @@
 #include <System\FileStream.h>
 
 #include <PGSuperTypes.h>
+#include <pgsExt\StrandData.h>
+
 #include <IFace\Bridge.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFApp.h>
+#include <EAF\EAFDocument.h>
+#include "TxDOTAppPlugin.h"
 
 // LOCAL INCLUDES
 //
@@ -71,30 +75,15 @@ LOG
    // Location of template folders
 inline CString GetTOGAFolder()
 {
-   CEAFApp* pApp = EAFGetApp();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)EAFGetDocument()->GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CTxDOTAppPlugin* pAppP = dynamic_cast<CTxDOTAppPlugin*>(pAppPlugin.p);
 
-   CString strAppPath = pApp->GetAppLocation();
-   strAppPath.MakeUpper();
+   CString tfolder;
+   pAppP->GetTemplateFolders(tfolder);
 
-#if defined _DEBUG
-#if defined _WIN64
-   strAppPath.Replace(_T("REGFREECOM\\X64\\DEBUG\\"),_T(""));
-#else
-   strAppPath.Replace(_T("REGFREECOM\\WIN32\\DEBUG\\"),_T(""));
-#endif
-#else
-   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
-#if defined _WIN64
-   strAppPath.Replace(_T("REGFREECOM\\X64\\RELEASE\\"),_T(""));
-#else
-   strAppPath.Replace(_T("REGFREECOM\\WIN32\\RELEASE\\"),_T(""));
-#endif
-#endif
-
-   CString strWorkgroupFolderName = strAppPath + _T("\\TogaTemplates");
-
-   return strWorkgroupFolderName;
+   return tfolder;
 }
 
 
@@ -144,6 +133,12 @@ inline CString get_strand_size( matPsStrand::Size size )
    }
 
    return sz;
+}
+
+// Criteria for NonStandard design
+inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType)
+{
+   return isHarpedDesign && sdtType != CStrandData::sdtTotal && nperm > 0;
 }
 
 

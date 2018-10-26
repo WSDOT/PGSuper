@@ -38,7 +38,6 @@ public:
 
    afx_msg void OnConfigurePlugins();
    afx_msg void OnUpdateTemplates();
-   afx_msg void OnProgramSettings();
 
    CPGSuperAppPlugin* m_pMyAppPlugin;
 
@@ -74,10 +73,12 @@ END_CONNECTION_POINT_MAP()
 DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERAPPPLUGINIMPL)
 
    virtual CString GetAppName() const { return CString("PGSuper"); }
+   virtual CString GetDefaultCatalogServerName() const  { return CString("WSDOT"); }
+   virtual CString GetDefaultCatalogName()  const  { return CString("WSDOT"); }
    virtual CString GetTemplateFileExtension();
    virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
 
-   virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
+   //virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
 
 
    HRESULT FinalConstruct();
@@ -92,7 +93,6 @@ public:
    void ConfigurePlugins();
    void UpdateTemplates();
    bool UpdatingTemplates();
-   void OnProgramSettings();
 
 protected:
    virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;

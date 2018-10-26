@@ -133,6 +133,8 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 #pragma Reminder("STATUS ITEM: If leading overhang exceeds max, post status item")
 //    // this should be done in an agent
 //   // let the user exceed the maximum so as not to limit the program
+
+   DDX_CBStringExactCase(pDX,IDC_HAUL_TRUCKS,pSegment->HandlingData.HaulTruckName);
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescLiftingPage, CPropertyPage)
@@ -146,6 +148,17 @@ END_MESSAGE_MAP()
 // CGirderDescLiftingPage message handlers
 BOOL CGirderDescLiftingPage::OnInitDialog()
 {
+   CComboBox* pcbHaulTrucks = (CComboBox*)GetDlgItem(IDC_HAUL_TRUCKS);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   std::vector<std::_tstring> names;
+   pLibNames->EnumHaulTruckNames( &names );
+   BOOST_FOREACH(std::_tstring& name,names)
+   {
+      pcbHaulTrucks->AddString( name.c_str() );
+   }
+
 	CPropertyPage::OnInitDialog();
 	
    CWnd* pWnd = GetParent();

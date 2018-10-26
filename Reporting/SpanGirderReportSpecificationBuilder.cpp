@@ -49,7 +49,7 @@ CSpanReportSpecificationBuilder::~CSpanReportSpecificationBuilder(void)
 {
 }
 
-boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -64,17 +64,32 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateR
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    GroupIndexType grpIdx = pGroup->GetIndex();
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanAndChapters,pRptSpec); // span only mode
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanAndChapters,pOldRptSpec); // span only mode
    dlg.m_Group = grpIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Group) );
+      // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+      boost::shared_ptr<CSpanReportSpecification> pOldGRptSpec( boost::dynamic_pointer_cast<CSpanReportSpecification>(pOldRptSpec) );
+
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CSpanReportSpecification> pNewGRptSpec = boost::shared_ptr<CSpanReportSpecification>( new CSpanReportSpecification(*pOldGRptSpec) );
+
+         pNewGRptSpec->SetSpan(dlg.m_Group);
+
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CSpanReportSpecification>( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Group) );
+      }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-      return pRptSpec;
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();
@@ -107,7 +122,7 @@ CGirderLineReportSpecificationBuilder::~CGirderLineReportSpecificationBuilder(vo
 {
 }
 
-boost::shared_ptr<CReportSpecification> CGirderLineReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CGirderLineReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -117,18 +132,33 @@ boost::shared_ptr<CReportSpecification> CGirderLineReportSpecificationBuilder::C
    girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,GirderAndChapters,pRptSpec);
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,GirderAndChapters,pOldRptSpec);
    dlg.m_Group  = girderKey.groupIndex;
    dlg.m_Girder = girderKey.girderIndex;
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderLineReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder) );
+      // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+      boost::shared_ptr<CGirderLineReportSpecification> pOldGRptSpec( boost::dynamic_pointer_cast<CGirderLineReportSpecification>(pOldRptSpec) );
+
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CGirderLineReportSpecification> pNewGRptSpec = boost::shared_ptr<CGirderLineReportSpecification>( new CGirderLineReportSpecification(*pOldGRptSpec) );
+
+         pNewGRptSpec->SetGirderIndex(dlg.m_Girder);
+
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CGirderLineReportSpecification>( new CGirderLineReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder) );
+      }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-      return pRptSpec;
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();
@@ -163,7 +193,7 @@ CGirderReportSpecificationBuilder::~CGirderReportSpecificationBuilder(void)
 {
 }
 
-boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -177,7 +207,7 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
       girderKey.girderIndex  = selection.GirderIdx;
    }
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,pRptSpec);
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,pOldRptSpec);
    dlg.m_Group  = girderKey.groupIndex;
    dlg.m_Girder = girderKey.girderIndex;
 
@@ -185,13 +215,27 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
    {
       girderKey.groupIndex  = dlg.m_Group;
       girderKey.girderIndex = dlg.m_Girder;
-   
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderKey) );
+
+      // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+      boost::shared_ptr<CGirderReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification>(pOldRptSpec);
+
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CGirderReportSpecification> pNewGRptSpec = boost::shared_ptr<CGirderReportSpecification>( new CGirderReportSpecification(*pOldGRptSpec) );
+         pNewGRptSpec->SetGirderKey(girderKey);
+
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CGirderReportSpecification>( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderKey) );
+      }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-      return pRptSpec;
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();
@@ -263,46 +307,69 @@ CMultiGirderReportSpecificationBuilder::~CMultiGirderReportSpecificationBuilder(
 {
 }
 
-boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   // Prompt for span, girder, and chapter list
-   GET_IFACE(ISelection,pSelection);
-   CSelection selection = pSelection->GetSelection();
+   std::vector<CGirderKey> girderKeys;
 
-   CGirderKey girderKey;
-   if ( selection.Type == CSelection::Span )
+   // Get information from old spec if we had one
+   boost::shared_ptr<CMultiGirderReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CMultiGirderReportSpecification>(pOldRptSpec);
+   if(pOldGRptSpec)
    {
-      GET_IFACE(IBridge,pBridge);
-      girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
-      girderKey.girderIndex = 0;
-   }
-   else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
-   {
-      girderKey.groupIndex  = selection.GroupIdx;
-      girderKey.girderIndex = selection.GirderIdx;
+      girderKeys = pOldGRptSpec->GetGirderKeys();
    }
    else
    {
-      girderKey.groupIndex  = 0;
-      girderKey.girderIndex = 0;
+      GET_IFACE(ISelection,pSelection);
+      CSelection selection = pSelection->GetSelection();
+
+      CGirderKey girderKey;
+      if ( selection.Type == CSelection::Span )
+      {
+         GET_IFACE(IBridge,pBridge);
+         girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
+         girderKey.girderIndex = 0;
+      }
+      else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
+      {
+         girderKey.groupIndex  = selection.GroupIdx;
+         girderKey.girderIndex = selection.GirderIdx;
+      }
+      else
+      {
+         girderKey.groupIndex  = 0;
+         girderKey.girderIndex = 0;
+      }
+
+      girderKeys.push_back(girderKey);
    }
 
-   std::vector<CGirderKey> girderKeys;
-   girderKeys.push_back(girderKey);
-
-   CMultiGirderReportDlg dlg(m_pBroker,rptDesc,pRptSpec);
+   // Prompt for span, girder, and chapter list
+   CMultiGirderReportDlg dlg(m_pBroker,rptDesc,pOldRptSpec);
    dlg.m_GirderKeys = girderKeys;
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiGirderReportSpecification(rptDesc.GetReportName(),m_pBroker, dlg.m_GirderKeys) );
+      // If possible, get information from old spec. Otherwise header/footer and other info will be lost
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CMultiGirderReportSpecification> pNewGRptSpec = boost::shared_ptr<CMultiGirderReportSpecification>( new CMultiGirderReportSpecification(*pOldGRptSpec) );
+
+         pNewGRptSpec->SetGirderKeys(dlg.m_GirderKeys);
+
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CMultiGirderReportSpecification>( new CMultiGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_GirderKeys) );
+      }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-      return pRptSpec;
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();
@@ -381,14 +448,14 @@ CMultiViewSpanGirderReportSpecificationBuilder::~CMultiViewSpanGirderReportSpeci
 {
 }
 
-boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    // First check if we are getting a CGirderReportSpecification. If so, use our bro to take care of this
-   boost::shared_ptr<CGirderReportSpecification> pGirderRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
+   boost::shared_ptr<CGirderReportSpecification> pGirderRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pOldRptSpec);
    if ( pGirderRptSpec != NULL )
    {
       boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker,pGirderRptSpec->GetGirderKey()) );
-      return pGirderRptSpecBuilder->CreateReportSpec(rptDesc, pRptSpec);
+      return pGirderRptSpecBuilder->CreateReportSpec(rptDesc, pOldRptSpec);
    }
    else
    {
@@ -417,18 +484,33 @@ boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationB
 
       ASSERT_GIRDER_KEY(girderKey);
 
-      CMultiViewReportDlg dlg(m_pBroker,rptDesc,pRptSpec,girderKey);
+      CMultiViewReportDlg dlg(m_pBroker,rptDesc,pOldRptSpec,girderKey);
 
       if ( dlg.DoModal() == IDOK )
       {
          std::vector<CGirderKey> girderKeys = dlg.GetGirderKeys();
 
-         boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiViewSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderKeys) );
+         // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+         boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(pOldRptSpec);
+
+         boost::shared_ptr<CReportSpecification> pNewRptSpec;
+         if(pOldGRptSpec)
+         {
+            boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pNewGRptSpec = boost::shared_ptr<CMultiViewSpanGirderReportSpecification>( new CMultiViewSpanGirderReportSpecification(*pOldGRptSpec) );
+
+            pNewGRptSpec->SetGirderKeys(girderKeys);
+
+            pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         }
+         else
+         {
+            pNewRptSpec = boost::shared_ptr<CMultiViewSpanGirderReportSpecification>( new CMultiViewSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderKeys) );
+         }
 
          std::vector<std::_tstring> chList = dlg.m_ChapterList;
-         rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+         rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-         return pRptSpec;
+         return pNewRptSpec;
       }
 
       return boost::shared_ptr<CReportSpecification>();
@@ -506,7 +588,7 @@ CPointOfInterestReportSpecificationBuilder::~CPointOfInterestReportSpecification
 {
 }
 
-boost::shared_ptr<CReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -538,17 +620,30 @@ boost::shared_ptr<CReportSpecification> CPointOfInterestReportSpecificationBuild
    std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,ALL_SEGMENTS),POI_SPAN | POI_5L) );
    pgsPointOfInterest initial_poi = vPoi.front();
 
-   boost::shared_ptr<CPointOfInterestReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CPointOfInterestReportSpecification>(pRptSpec) );
+   boost::shared_ptr<CPointOfInterestReportSpecification> pOldGRptSpec( boost::dynamic_pointer_cast<CPointOfInterestReportSpecification>(pOldRptSpec) );
 
-   CSelectPointOfInterestDlg dlg(m_pBroker,pInitRptSpec,initial_poi,POI_SPAN);
+   CSelectPointOfInterestDlg dlg(m_pBroker,pOldGRptSpec,initial_poi,POI_SPAN);
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CPointOfInterestReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.GetPointOfInterest()) );
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         // Copy old data from old spec
+         boost::shared_ptr<CPointOfInterestReportSpecification> pNewGRptSpec = boost::shared_ptr<CPointOfInterestReportSpecification>( new CPointOfInterestReportSpecification(*pOldGRptSpec) );
 
-      rptDesc.ConfigureReportSpecification(pRptSpec);
+         pNewGRptSpec->SetPointOfInterest(dlg.GetPointOfInterest());
 
-      return pRptSpec;
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CPointOfInterestReportSpecification>( new CPointOfInterestReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.GetPointOfInterest()) );
+      }
+
+      rptDesc.ConfigureReportSpecification(pNewRptSpec);
+
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();

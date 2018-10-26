@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include "PGSuperBaseCommandLineInfo.h"
+#include "pgsExt\BaseCommandLineInfo.h"
 
 /*****************************************************************************
 CLASS 

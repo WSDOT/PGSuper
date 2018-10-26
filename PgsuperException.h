@@ -56,4 +56,7 @@
 // Closure joint length must be greater than zero
 #define XREASON_INVALID_CLOSURE_JOINT_LENGTH 0x0200
 
+// Segment variations lengths are invalid
+#define XREASON_INVALID_SEGMENT_VARIATION   0x0400
+
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

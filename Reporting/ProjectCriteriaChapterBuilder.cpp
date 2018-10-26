@@ -41,6 +41,7 @@ CLASS
 #include <Lrfd\VersionMgr.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
+#include <PgsExt\PrecastSegmentData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -454,7 +455,7 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Lifting Criteria")<<rptNewLine;
+   *pPara << _T("Lifting Criteria") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -462,21 +463,52 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true );
+   INIT_UV_PROTOTYPE( rptVelocityUnitValue, speed, pDisplayUnits->GetVelocityUnit(), true );
+   INIT_UV_PROTOTYPE( rptPressureUnitValue, pressure, pDisplayUnits->GetWindPressureUnit(), true );
+   INIT_SCALAR_PROTOTYPE( rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
-   *pPara<<_T("Factors of Safety")<<rptNewLine;
-   *pPara<<_T("- Cracking F.S. = ")<< pSpecEntry->GetCrackingFOSLifting()<<rptNewLine;
-   *pPara<<_T("- Failure F.S. = ")<< pSpecEntry->GetLiftingFailureFOS()<<rptNewLine;
+   *pPara << _T("Factors of Safety") << rptNewLine;
+   *pPara << _T("- Cracking F.S. = ") << pSpecEntry->GetCrackingFOSLifting() << rptNewLine;
+   *pPara << _T("- Failure F.S. = ") << pSpecEntry->GetLiftingFailureFOS() << rptNewLine;
 
-   *pPara<<_T("Impact Factors")<<rptNewLine;
-   *pPara<<_T("- Upward   = ")<< pSpecEntry->GetLiftingUpwardImpactFactor()<<rptNewLine;
-   *pPara<<_T("- Downward = ")<< pSpecEntry->GetLiftingDownwardImpactFactor()<<rptNewLine;
+   *pPara << _T("Impact Factors") << rptNewLine;
+   *pPara << _T("- Upward   = ") << percentage.SetValue(pSpecEntry->GetLiftingUpwardImpactFactor())   << rptNewLine;
+   *pPara << _T("- Downward = ") << percentage.SetValue(pSpecEntry->GetLiftingDownwardImpactFactor()) << rptNewLine;
 
-   *pPara<<_T("Height of pick point above top of girder = ")<<dim.SetValue(pSpecEntry->GetPickPointHeight())<<rptNewLine;
-   *pPara<<_T("Lifting loop placement tolerance = ")<<dim.SetValue(pSpecEntry->GetLiftingLoopTolerance())<<rptNewLine;
-   *pPara<<_T("Max. girder sweep tolerance = ")<<pSpecEntry->GetLiftingMaximumGirderSweepTolerance()<<rptNewLine;
-   *pPara<<_T("Min. angle of inclination of lifting cables = ")<<angle.SetValue(pSpecEntry->GetMinCableInclination())<<rptNewLine;
+   *pPara << _T("Height of pick point above top of girder = ") << dim.SetValue(pSpecEntry->GetPickPointHeight()) << rptNewLine;
+   *pPara << _T("Lifting loop placement tolerance = ") << dim.SetValue(pSpecEntry->GetLiftingLoopTolerance()) << rptNewLine;
+
+   if ( pDisplayUnits->GetUnitMode() == eafTypes::umSI )
+   {
+      *pPara<<_T("Sweep tolerance = ") << pSpecEntry->GetLiftingMaximumGirderSweepTolerance() << _T("m/m") << rptNewLine;
+   }
+   else
+   {
+      INT x = (INT)::RoundOff((1.0/(pSpecEntry->GetLiftingMaximumGirderSweepTolerance()*120.0)),1.0);
+      *pPara << _T("Sweel tolerance = ") << x << _T("in/10 ft") << rptNewLine;
+   }
+
+   *pPara << _T("Min. angle of inclination of lifting cables = ") << angle.SetValue(pSpecEntry->GetMinCableInclination()) << rptNewLine;
 
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   if ( pSegmentLiftingSpecCriteria->GetLiftingCamberMethod() == pgsTypes::cmApproximate )
+   {
+      *pPara << _T("Increase girder CG for camber by ") << percentage.SetValue(pSegmentLiftingSpecCriteria->GetLiftingIncreaseInCgForCamber()) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Computed camber is used when locating girder CG") << rptNewLine;
+   }
+
+   *pPara << _T("Wind Loading") << rptNewLine;
+   if ( pSegmentLiftingSpecCriteria->GetLiftingWindType() == pgsTypes::Speed )
+   {
+      *pPara << _T("- Wind Speed = ") << speed.SetValue(pSegmentLiftingSpecCriteria->GetLiftingWindLoad()) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("- Wind Pressure = ") << pressure.SetValue(pSegmentLiftingSpecCriteria->GetLiftingWindLoad()) << rptNewLine;
+   }
 
 
    Float64 fr = pSegmentLiftingSpecCriteria->GetLiftingModulusOfRupture(segmentKey);
@@ -485,17 +517,25 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    Float64 fccy = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
    Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
    Float64 ft   = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
-   *pPara<<_T("Allowable Concrete Stresses - Lifting (5.9.4.1.1)")<<rptNewLine;
-   *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
-   *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
-   *pPara<<_T("- Tensile Stress (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
+   *pPara << _T("Allowable Concrete Stresses - Lifting (5.9.4.1.1)") << rptNewLine;
+   if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesPlumbGirder() )
+   {
+      *pPara << _T("Stresses are evaluated for a plumb girder") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Stresses are evaluated for a tilted girder at equilibrium") << rptNewLine;
+   }
+   *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
 }
 
 void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Hauling Criteria - WSDOT Method")<<rptNewLine;
+   *pPara << _T("Hauling Criteria - WSDOT Method") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -505,48 +545,100 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetSpanLengthUnit(), true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force, pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
+   INIT_UV_PROTOTYPE( rptVelocityUnitValue, speed, pDisplayUnits->GetVelocityUnit(), true );
+   INIT_UV_PROTOTYPE( rptPressureUnitValue, pressure, pDisplayUnits->GetWindPressureUnit(), true );
+   INIT_SCALAR_PROTOTYPE( rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
-   *pPara<<_T("Factors of Safety")<<rptNewLine;
-   *pPara<<_T("- Cracking F.S. = ")<< pSpecEntry->GetHaulingCrackingFOS()<<rptNewLine;
-   *pPara<<_T("- Roll Over F.S. = ")<< pSpecEntry->GetHaulingFailureFOS()<<rptNewLine;
+   *pPara << _T("Factors of Safety") << rptNewLine;
+   *pPara << _T("- Cracking F.S. = ") << pSpecEntry->GetHaulingCrackingFOS() << rptNewLine;
+   *pPara << _T("- Failure & Roll over F.S. = ") << pSpecEntry->GetHaulingFailureFOS() << rptNewLine;
 
-   *pPara<<_T("Impact Factors")<<rptNewLine;
-   *pPara<<_T("- Upward   = ")<< pSpecEntry->GetHaulingUpwardImpactFactor()<<rptNewLine;
-   *pPara<<_T("- Downward = ")<< pSpecEntry->GetHaulingDownwardImpactFactor()<<rptNewLine;
+   *pPara << _T("Impact Factors") << rptNewLine;
+   *pPara << _T("- Upward   = ") << percentage.SetValue(pSpecEntry->GetHaulingUpwardImpactFactor()) << rptNewLine;
+   *pPara << _T("- Downward = ") << percentage.SetValue(pSpecEntry->GetHaulingDownwardImpactFactor()) << rptNewLine;
 
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pHauling);
 
-   if ( pHauling->GetRollStiffnessMethod() == ISegmentHaulingSpecCriteria::LumpSum )
+
+   if ( pDisplayUnits->GetUnitMode() == eafTypes::umSI )
    {
-      *pPara<<_T("Roll stiffness of trailer = ")<<spring.SetValue(pHauling->GetLumpSumRollStiffness())<<rptNewLine;
+      *pPara<<_T("Normal Crown Slope = ") << pHauling->GetNormalCrownSlope() << _T("m/m") << rptNewLine;
+      *pPara<<_T("Max. Superelevation = ") << pHauling->GetMaxSuperelevation() << _T("m/m") << rptNewLine;
+      *pPara<<_T("Sweep tolerance = ") << pHauling->GetHaulingSweepTolerance() << _T("m/m") << rptNewLine;
    }
    else
    {
-      *pPara<<_T("Maximum Weight Per Axle = ")<< force.SetValue(pHauling->GetAxleWeightLimit())<<rptNewLine;
-      *pPara<<_T("Stiffness Per Axle = ")<< spring.SetValue(pHauling->GetAxleStiffness())<<rptNewLine;
-      *pPara<<_T("Minimum Roll Stiffness = ")<< spring.SetValue(pHauling->GetMinimumRollStiffness())<<rptNewLine;
+      *pPara<<_T("Normal Crown Slope = ") << pHauling->GetNormalCrownSlope() << _T("ft/ft") << rptNewLine;
+      *pPara<<_T("Max. Superelevation = ") << pHauling->GetMaxSuperelevation() << _T("ft/ft") << rptNewLine;
+      INT x = (INT)::RoundOff((1.0/(pHauling->GetHaulingSweepTolerance()*120.0)),1.0);
+      *pPara << _T("Sweel tolerance = ") << x << _T("in/10 ft") << rptNewLine;
    }
-   *pPara<<_T("Height of girder bottom above roadway = ")<<dim.SetValue(pHauling->GetHeightOfGirderBottomAboveRoadway())<<rptNewLine;
-   *pPara<<_T("Height of truck roll center above roadway = ")<<dim.SetValue(pHauling->GetHeightOfTruckRollCenterAboveRoadway())<<rptNewLine;
-   *pPara<<_T("C-C distance between truck tires = ")<<dim.SetValue(pHauling->GetAxleWidth())<<rptNewLine;
-   *pPara<<_T("Max. distance between girder supports = ")<<dim2.SetValue(pHauling->GetAllowableDistanceBetweenSupports())<<rptNewLine;
-   *pPara<<_T("Max. leading overhang (nearest truck cab) = ")<<dim2.SetValue(pHauling->GetAllowableLeadingOverhang() )<<rptNewLine;
-   *pPara<<_T("Max. superelevation = ")<<pHauling->GetMaxSuperelevation()<<rptNewLine;
-   *pPara<<_T("Girder sweep tolerance = ")<<pHauling->GetHaulingSweepTolerance()<<rptNewLine;
-   *pPara<<_T("Support placement lateral tolerance = ")<<dim.SetValue(pHauling->GetHaulingSupportPlacementTolerance())<<rptNewLine;
-   *pPara<<_T("Increase of girder camber for CG = ")<<pHauling->GetIncreaseInCgForCamber()<<rptNewLine;
-   *pPara<<_T("Max. girder weight = ")<< force.SetValue(pHauling->GetMaxGirderWgt())<<rptNewLine;
+
+   *pPara << _T("Support placement lateral tolerance = ") << dim.SetValue(pHauling->GetHaulingSupportPlacementTolerance()) << rptNewLine;
+
+   if ( pHauling->GetHaulingCamberMethod() == pgsTypes::cmApproximate )
+   {
+      *pPara << _T("Increase girder CG for camber by ") << percentage.SetValue(pHauling->GetHaulingIncreaseInCgForCamber()) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Computed camber is used when locating girder CG") << rptNewLine;
+   }
+
+   *pPara << _T("Wind Loading") << rptNewLine;
+   if ( pHauling->GetHaulingWindType() == pgsTypes::Speed )
+   {
+      *pPara << _T("- Wind Speed = ") << speed.SetValue(pHauling->GetHaulingWindLoad()) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("- Wind Pressure = ") << pressure.SetValue(pHauling->GetHaulingWindLoad()) << rptNewLine;
+   }
+
+   *pPara << _T("Centrifugal Force") << rptNewLine;
+   if ( pHauling->GetCentrifugalForceType() == pgsTypes::Adverse )
+   {
+      *pPara << _T("- Force is adverse") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("- Force is favorable") << rptNewLine;
+   }
+   *pPara << _T("- Hauling Speed = ") << speed.SetValue(pHauling->GetHaulingSpeed()) << rptNewLine;
+   *pPara << _T("- Turning Radius = ") << dim2.SetValue(pHauling->GetTurningRadius()) << rptNewLine;
+
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   const HaulTruckLibraryEntry* pHaulTruck = pSegment->HandlingData.pHaulTruckLibraryEntry;
+   *pPara << _T("Haul Truck") << rptNewLine;
+   *pPara << _T("- Name = ") << pHaulTruck->GetName() << rptNewLine;
+   *pPara << _T("- Roll Stiffness, ") << Sub2(_T("K"),symbol(theta)) << _T(" = ") << spring.SetValue(pHaulTruck->GetRollStiffness()) << rptNewLine;
+
+   *pPara << _T("- Height of girder bottom above roadway, ") << Sub2(_T("H"),_T("bg")) << _T(" = ") << dim.SetValue(pHaulTruck->GetBottomOfGirderHeight()) << rptNewLine;
+   *pPara << _T("- Height of truck roll center above roadway, ") << Sub2(_T("H"),_T("rc")) << _T(" = ") << dim.SetValue(pHaulTruck->GetRollCenterHeight()) << rptNewLine;
+   *pPara << _T("- Center-to-Center distance between truck tires, ") << Sub2(_T("W"),_T("cc")) << _T(" = ") << dim.SetValue(pHaulTruck->GetAxleWidth()) << rptNewLine;
+   *pPara << _T("- Max. distance between bunk points, ") << Sub2(_T("L"),_T("s")) << _T(" = ") << dim2.SetValue(pHaulTruck->GetMaxDistanceBetweenBunkPoints()) << rptNewLine;
+   *pPara << _T("- Max. leading overhang (nearest truck cab), ") << Sub2(_T("L"),_T("oh")) << _T(" = ") << dim2.SetValue(pHaulTruck->GetMaximumLeadingOverhang()) << rptNewLine;
+   *pPara << _T("- Max. girder weight, ") << Sub2(_T("W"),_T("max")) << _T(" = ") << force.SetValue(pHaulTruck->GetMaxGirderWeight()) << rptNewLine;
 
    Float64 fr = pHauling->GetHaulingModulusOfRupture(segmentKey);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
 
    Float64 fccy = pHauling->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
-   Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey);
-   Float64 ft   = pHauling->GetHaulingWithMildRebarAllowableStress(segmentKey);
-   *pPara<<_T("Allowable Concrete Stresses - Hauling (5.9.4.2.1)")<<rptNewLine;
-   *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
-   *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
-   *pPara<<_T("- Tensile Stress (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
+   Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
+   Float64 ft   = pHauling->GetHaulingWithMildRebarAllowableStressNormalCrown(segmentKey);
+   *pPara << _T("Allowable Concrete Stresses - Hauling (5.9.4.2.1) - Normal Crown Slope") << rptNewLine;
+   *pPara << _T("- Compressive Stress = ")<<stress.SetValue(fccy) << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+
+   ftcy = pHauling->GetHaulingAllowableTensileConcreteStressMaxSuper(segmentKey);
+   ft   = pHauling->GetHaulingWithMildRebarAllowableStressMaxSuper(segmentKey);
+   *pPara << _T("Allowable Concrete Stresses - Hauling (5.9.4.2.1) - Maximum Superelevation") << rptNewLine;
+   *pPara << _T("- Compressive Stress = ")<<stress.SetValue(fccy) << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
 }
 
 void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)

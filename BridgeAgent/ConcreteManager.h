@@ -107,7 +107,9 @@ public:
    Float64 GetDeckFlexureFr(Float64 t);
    Float64 GetDeckShearFr(Float64 t);
    Float64 GetDeckFreeShrinkageStrain(Float64 t);
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(Float64 t);
    Float64 GetDeckCreepCoefficient(Float64 t,Float64 tla);
+   boost::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(Float64 t,Float64 tla);
    Float64 GetDeckAgingCoefficient(Float64 timeOfLoading);
    matConcreteBase* GetDeckConcrete();
 
@@ -117,7 +119,9 @@ public:
    Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t);
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
+   boost::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
    Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading);
    matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey);
 
@@ -127,7 +131,9 @@ public:
    Float64 GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t);
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla);
+   boost::shared_ptr<matConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla);
    Float64 GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading);
    matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey);
 
@@ -135,7 +141,9 @@ public:
    Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
+   boost::shared_ptr<matConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
    Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading);
    matConcreteBase* GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation);
 

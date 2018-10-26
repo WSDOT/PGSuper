@@ -7,7 +7,6 @@ Topics
 * @subpage tg_camber
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
-* @subpage tg_concrete_models
 * @subpage tg_concrete_properties
 * @subpage tg_critical_section_for_shear
 * @subpage tg_epoxy_coated_strands
@@ -33,3 +32,4 @@ Topics
 * @subpage tg_splitting_zone_checks
 * @subpage tg_stability
 * @subpage tg_structural_analysis_models
+* @subpage tg_time_dependent_material_models

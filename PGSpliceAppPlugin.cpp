@@ -43,7 +43,6 @@
 BEGIN_MESSAGE_MAP(CPGSpliceAppCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
    ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates)
-	ON_COMMAND(ID_CONFIGURE_PGSUPER, OnProgramSettings)
 END_MESSAGE_MAP()
 
 void CPGSpliceAppCmdTarget::OnConfigurePlugins()
@@ -56,15 +55,13 @@ void CPGSpliceAppCmdTarget::OnUpdateTemplates()
    m_pMyAppPlugin->UpdateTemplates();
 }
 
-void CPGSpliceAppCmdTarget::OnProgramSettings() 
-{
-   m_pMyAppPlugin->OnProgramSettings();
-}
 
 //////////////////////////////////////////////////////////
 
 CString CPGSpliceAppPlugin::GetTemplateFileExtension()
 { 
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_PGSPLICE_TEMPLATE_FILE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());
@@ -136,9 +133,6 @@ void CPGSpliceAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 
    if ( bIntegrate )
    {
-      // put "Configure PGSplice" the file menu just below "Manage"
-      pFileMenu->InsertMenu(managePos+1,ID_CONFIGURE_PGSUPER,_T("Configure PGSplice..."), this);
-
       // Append to the end of the Manage menu
       pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSplice Plugins and Extensions..."),this);
 
@@ -147,7 +141,6 @@ void CPGSpliceAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    }
    else
    {
-      pFileMenu->RemoveMenu(ID_CONFIGURE_PGSUPER, MF_BYCOMMAND, this);
       pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
 
       pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TEMPLATE,this);
@@ -365,11 +358,6 @@ void CPGSpliceAppPlugin::UpdateTemplates()
 bool CPGSpliceAppPlugin::UpdatingTemplates()
 {
    return m_bUpdatingTemplate;
-}
-
-void CPGSpliceAppPlugin::OnProgramSettings()
-{
-   UpdateProgramSettings(FALSE);
 }
 
 CPGSBaseCommandLineInfo* CPGSpliceAppPlugin::CreateCommandLineInfo() const

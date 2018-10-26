@@ -78,6 +78,7 @@ public:
    void EnableVariableBottomFlangeDepth(bool bEnable);
    bool IsVariableBottomFlangeDepthEnabled() const;
    Float64 GetVariationBottomFlangeDepth(pgsTypes::SegmentZoneType zone) const;
+   bool AreSegmentVariationsValid(Float64 segmentFramingLength) const;
 
    // returns the height of the segment based on the dimensions in the associated
    // library entry.

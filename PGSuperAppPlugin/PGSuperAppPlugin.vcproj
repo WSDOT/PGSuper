@@ -63,7 +63,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm111"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;..\Documentation"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -165,7 +165,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm111"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;..\Documentation"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -267,7 +267,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;..\Documentation"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -369,7 +369,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;..\Documentation"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -477,7 +477,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;..\Documentation"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION;_GXDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -583,7 +583,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;..\Documentation"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION;_GXDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -801,10 +801,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CatalogServerDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\ChildFrm.cpp"
 				>
 			</File>
@@ -834,10 +830,6 @@
 			</File>
 			<File
 				RelativePath="..\ColumnLayoutGrid.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ConfigurePGSuperDlg.cpp"
 				>
 			</File>
 			<File
@@ -1433,23 +1425,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PGSuperBaseCommandLineInfo.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\PGSuperCalculationSheet.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\PGSuperCatalog.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\PGSuperCatalogServer.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\PGSuperCatalogServers.cpp"
 				>
 			</File>
 			<File
@@ -1618,10 +1594,6 @@
 			</File>
 			<File
 				RelativePath="..\SelectItemDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ServerDefinitionDlg.cpp"
 				>
 			</File>
 			<File
@@ -1935,10 +1907,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CatalogServerDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="..\ChildFrm.h"
 				>
 			</File>
@@ -1968,10 +1936,6 @@
 			</File>
 			<File
 				RelativePath="..\ColumnLayoutGrid.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConfigurePGSuperDlg.h"
 				>
 			</File>
 			<File
@@ -2451,23 +2415,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PGSuperBaseCommandLineInfo.h"
-				>
-			</File>
-			<File
 				RelativePath="..\PGSuperCalculationSheet.h"
-				>
-			</File>
-			<File
-				RelativePath="..\PGSuperCatalog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\PGSuperCatalogServer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\PGSuperCatalogServers.h"
 				>
 			</File>
 			<File
@@ -2483,11 +2431,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2679,10 +2627,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ServerDefinitionDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="..\ShearSteelPage2.h"
 				>
 			</File>
@@ -2817,11 +2761,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2997,19 +2941,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
-				>
-			</File>
-			<File
 				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderView.ico"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\globe.ico"
+				RelativePath="..\res\GirderView.ico"
 				>
 			</File>
 			<File
@@ -3209,11 +3149,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3221,11 +3161,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>
@@ -3579,186 +3519,6 @@
 				RelativePath="..\Include\IFace\Views.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="MakePgz"
-			>
-			<Filter
-				Name="Header Files"
-				>
-				<File
-					RelativePath="..\MakePgz\unzip.h"
-					>
-				</File>
-				<File
-					RelativePath="..\MakePgz\UnzipPgz.h"
-					>
-				</File>
-				<File
-					RelativePath="..\MakePgz\zip.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				>
-				<File
-					RelativePath="..\MakePgz\unzip.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Profile|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Profile|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\MakePgz\UnzipPgz.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Profile|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Profile|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\MakePgz\zip.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Profile|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Profile|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="StdAfx.h"
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
 		</Filter>
 		<File
 			RelativePath="..\PGSplice.tip"

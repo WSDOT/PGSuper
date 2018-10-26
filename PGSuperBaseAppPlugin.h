@@ -22,25 +22,22 @@
 
 #pragma once
 
-#include "PGSuperCatalogServers.h"
 #include <EAF\EAFApp.h>
 #include <EAF\EAFCustomReport.h>
 #include <EAF\EAFAppPluginDocumentationImpl.h>
-
-#include "PGSuperBaseCommandLineInfo.h"
+#include "PgsExt\CatalogServers.h"
+#include "PgsExt\CatalogServerAppMixin.h"
+#include "pgsExt\BaseCommandLineInfo.h"
 
 // Base class for all PGS Document-type application plugins
 // Performs common initialization expected by the CPGSDocBase class
 class CPGSAppPluginBase : 
-   public CEAFCustomReportMixin
+   public CEAFCustomReportMixin,
+   public CCatalogServerAppMixin
 {
 public:
    CPGSAppPluginBase();
    virtual ~CPGSAppPluginBase();
-
-   virtual CString GetAppName() const = 0;
-   virtual CString GetTemplateFileExtension() = 0;
-   virtual const CRuntimeClass* GetDocTemplateRuntimeClass() = 0;
 
    virtual HRESULT OnFinalConstruct();
    virtual void OnFinalRelease();
@@ -49,25 +46,9 @@ public:
    virtual void DefaultInit(IEAFAppPlugin* pAppPlugin);
    virtual void DefaultTerminate();
 
-
    void GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem);
 
-   CString GetEngineerName();
-   CString GetEngineerCompany();
-
-   CString GetMasterLibraryFile();
-   CString GetCachedMasterLibraryFile();
-   void GetTemplateFolders(CString& strWorkgroupFolder);
-
-   void SetCacheUpdateFrequency(CacheUpdateFrequency frequence);
-   CacheUpdateFrequency GetCacheUpdateFrequency();
-
-   void SetSharedResourceType(SharedResourceType resType);
-   SharedResourceType GetSharedResourceType();
-
-   CString GetMasterLibraryPublisher() const;
-
-   virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
+   virtual void UpdateDocTemplates();
 
    // CEAFCustomReportMixin
    virtual void LoadCustomReportInformation();
@@ -82,63 +63,14 @@ protected:
    CString m_strAppProfileName; // this is the original app profile name before we mess with it
    // need to hang on to it so we can put it back the way it was
 
-   SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)
-   CacheUpdateFrequency m_CacheUpdateFrequency;
-
-   CString m_CurrentCatalogServer; // name of current catalog server
-   CString m_Publisher;     // Name of publisher in m_CurrentServer
-   CString m_MasterLibraryFileURL; // URL of a published Master library file
-
-   // Cache file/folder for Internet or Local Network resources
-   CString m_MasterLibraryFileCache; 
-   CString m_WorkgroupTemplateFolderCache;
-
-   CString m_UserTemplateFolder;
-
-   CString m_EngineerName;
-   CString m_CompanyName;
-
-   virtual LPCTSTR GetCatalogServerKey();
-   virtual LPCTSTR GetPublisherKey();
-   virtual LPCTSTR GetMasterLibraryCacheKey();
-   virtual LPCTSTR GetMasterLibraryURLKey();
-   virtual LPCTSTR GetWorkgroupTemplatesCacheKey();
-
-   virtual void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
    virtual void LoadRegistryValues();
-   virtual void LoadSettings();
-   virtual void LoadOptions();
    virtual void SaveRegistryValues();
-   virtual void SaveSettings();
-   virtual void SaveOptions();
-
-   bool IsTimeToUpdateCache();
-   bool AreUpdatesPending();
-
-   void UpdateCache(); // only updates if needed
-   bool DoCacheUpdate(); // always does the update
-   sysDate GetLastCacheUpdateDate();
-   void SetLastCacheUpdateDate(const sysDate& date);
-   bool UpdateCatalogCache(IProgressMonitor* pProgress);
-   void RestoreLibraryAndTemplatesToDefault();
-   void DeleteCache(LPCTSTR pstrCache);
-   void RecursiveDelete(LPCTSTR pstr);
-   
-   CString GetDefaultMasterLibraryFile();
-   CString GetDefaultWorkgroupTemplateFolder();
-   virtual CString GetCacheFolder();
-   virtual CString GetSaveCacheFolder();
-
-   const CPGSuperCatalogServers* GetCatalogServers() const;
 
    virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const = 0;
    virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
    virtual void Process1250Testing(const CPGSBaseCommandLineInfo& rCmdInfo);
-   virtual void ProcessLibrarySetUp(const CPGSBaseCommandLineInfo& rCmdInfo);
-
 
 private:
-   CPGSuperCatalogServers m_CatalogServers;
    CComPtr<IAppUnitSystem> m_AppUnitSystem;
    CEAFAppPluginDocumentationImpl m_DocumentationImpl;
 };

@@ -42,7 +42,6 @@
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
    ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates) // need to map this into an accelerator table
-	ON_COMMAND(ID_CONFIGURE_PGSUPER, OnProgramSettings)
 END_MESSAGE_MAP()
 
 void CMyCmdTarget::OnConfigurePlugins()
@@ -55,13 +54,10 @@ void CMyCmdTarget::OnUpdateTemplates()
    m_pMyAppPlugin->UpdateTemplates();
 }
 
-void CMyCmdTarget::OnProgramSettings() 
-{
-   m_pMyAppPlugin->OnProgramSettings();
-}
-
 CString CPGSuperAppPlugin::GetTemplateFileExtension()
 { 
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_PGSUPER_TEMPLATE_FILE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());
@@ -74,29 +70,30 @@ const CRuntimeClass* CPGSuperAppPlugin::GetDocTemplateRuntimeClass()
    return RUNTIME_CLASS(CPGSuperDocTemplate);
 }
 
-BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   BOOL bHandled = CPGSAppPluginBase::UpdateProgramSettings(bFirstRun);
-   if ( bHandled )
-   {
-      // Need to find if the PGSuper Project Importer app-plugin has been loaded.
-      // If so, tell it to re-initialize with the updated program settings
-      CEAFApp* pApp = EAFGetApp();
-
-      CEAFAppPluginManager* pAppPluginMgr = pApp->GetAppPluginManager();
-
-      CComPtr<IEAFAppPlugin> importerPlugin;
-      pAppPluginMgr->GetPlugin(CLSID_PGSuperProjectImporterAppPlugin,&importerPlugin);
-      if ( importerPlugin )
-      {
-         CPGSAppPluginBase* pBasePlugin = dynamic_cast<CPGSAppPluginBase*>(importerPlugin.p);
-         ATLASSERT(pBasePlugin);
-         pBasePlugin->DefaultInit(this);
-      }
-   }
-   return bHandled;
-}
+//BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
+//{
+//   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+//
+//   BOOL bHandled = CPGSAppPluginBase::UpdateProgramSettings(bFirstRun);
+//   if ( bHandled )
+//   {
+//      // Need to find if the PGSuper Project Importer app-plugin has been loaded.
+//      // If so, tell it to re-initialize with the updated program settings
+//      CEAFApp* pApp = EAFGetApp();
+//
+//      CEAFAppPluginManager* pAppPluginMgr = pApp->GetAppPluginManager();
+//
+//      CComPtr<IEAFAppPlugin> importerPlugin;
+//      pAppPluginMgr->GetPlugin(CLSID_PGSuperProjectImporterAppPlugin,&importerPlugin);
+//      if ( importerPlugin )
+//      {
+//         CPGSAppPluginBase* pBasePlugin = dynamic_cast<CPGSAppPluginBase*>(importerPlugin.p);
+//         ATLASSERT(pBasePlugin);
+//         pBasePlugin->DefaultInit(this);
+//      }
+//   }
+//   return bHandled;
+//}
 
 HRESULT CPGSuperAppPlugin::FinalConstruct()
 {
@@ -157,9 +154,6 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 
    if ( bIntegrate )
    {
-      // put "Configure PGSuper" the file menu just below "Manage"
-      pFileMenu->InsertMenu(managePos+1,ID_CONFIGURE_PGSUPER,_T("Configure PGSuper..."), this);
-
       // Append to the end of the Manage menu
       pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSuper Plugins and Extensions..."),this);
 
@@ -168,7 +162,6 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    }
    else
    {
-      pFileMenu->RemoveMenu(ID_CONFIGURE_PGSUPER, MF_BYCOMMAND, this);
       pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
 
       pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TEMPLATE,this);
@@ -388,11 +381,6 @@ void CPGSuperAppPlugin::UpdateTemplates()
 bool CPGSuperAppPlugin::UpdatingTemplates()
 {
    return m_bUpdatingTemplate;
-}
-
-void CPGSuperAppPlugin::OnProgramSettings()
-{
-   UpdateProgramSettings(FALSE);
 }
 
 CPGSBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const

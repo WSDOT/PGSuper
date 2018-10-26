@@ -177,7 +177,7 @@ void CLinearDuctGeometry::ConvertMeasurementType(CLinearDuctGeometry::Measuremen
 {
    if ( m_MeasurementType != mt )
    {
-      // only convert of measurement type is changing
+      // only convert if measurement type is changing
 
       if ( mt == AlongGirder )
       {
@@ -272,6 +272,33 @@ void CLinearDuctGeometry::GetPoint(CollectionIndexType pntIdx,Float64* pLocation
    *pLocation     = record.location;
    *pOffset       = record.offset;
    *pOffsetType   = record.offsetType;
+}
+
+Float64 g_Lmax;
+bool RemoveBeyondLmax(const CLinearDuctGeometry::PointRecord& pointRecord)
+{
+   return (g_Lmax < pointRecord.location ? true : false);
+}
+
+void CLinearDuctGeometry::RemovePoints(Float64 Lmax,Float64 Lg)
+{
+   MeasurementType oldMeasurementType = m_MeasurementType;
+   ConvertMeasurementType(AlongGirder,Lg);
+   g_Lmax = Lmax;
+   m_Points.erase(std::remove_if(m_Points.begin(),m_Points.end(),RemoveBeyondLmax),m_Points.end());
+   ConvertMeasurementType(oldMeasurementType,Lg);
+}
+
+void CLinearDuctGeometry::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
+{
+   // do nothing... the last point is always at the end of the bridge... the duct will stretch
+   // user may have to clean up duct geometry after adding span
+}
+
+void CLinearDuctGeometry::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
+{
+   // need to remove all points after the end of the girder
+   //working here
 }
 
 HRESULT CLinearDuctGeometry::Save(IStructuredSave* pStrSave,IProgress* pProgress)
@@ -457,7 +484,7 @@ void CParabolicDuctGeometry::Init()
    EndPoint.Offset     = gs_DefaultOffset2;
    EndPoint.OffsetType = CDuctGeometry::TopGirder;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 SpanIndexType CParabolicDuctGeometry::GetSpanCount() const
@@ -504,7 +531,7 @@ void CParabolicDuctGeometry::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierF
       LowPoints.push_back(LowPoints.back());
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CParabolicDuctGeometry::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
@@ -529,7 +556,7 @@ void CParabolicDuctGeometry::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType r
       HighPoints.erase(HighPoints.begin()+relPierIdx-1);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CParabolicDuctGeometry::SetStartPoint(Float64 dist,Float64 offset,OffsetType offsetType)
@@ -631,7 +658,7 @@ void CParabolicDuctGeometry::MakeCopy(const CParabolicDuctGeometry& rOther)
    LowPoints  = rOther.LowPoints;
    HighPoints = rOther.HighPoints;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CParabolicDuctGeometry::MakeAssignment(const CParabolicDuctGeometry& rOther)
@@ -786,7 +813,7 @@ HRESULT CParabolicDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
    pStrLoad->EndUnit();
 
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return S_OK;
 }
@@ -1008,6 +1035,14 @@ void CDuctData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
    {
       ParabolicDuctGeometry.InsertSpan(refPierIdx,face);
    }
+   else if ( DuctGeometryType == CDuctGeometry::Linear )
+   {
+      LinearDuctGeometry.InsertSpan(refPierIdx,face);
+   }
+   else
+   {
+      ATLASSERT(false);
+   }
 }
 
 void CDuctData::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
@@ -1015,6 +1050,14 @@ void CDuctData::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
    if ( DuctGeometryType == CDuctGeometry::Parabolic )
    {
       ParabolicDuctGeometry.RemoveSpan(relSpanIdx,relPierIdx);
+   }
+   else if ( DuctGeometryType == CDuctGeometry::Linear )
+   {
+      LinearDuctGeometry.RemoveSpan(relSpanIdx,relPierIdx);
+   }
+   else
+   {
+      ATLASSERT(false);
    }
 }
 
@@ -1153,6 +1196,7 @@ CPTData::CPTData()
 
 CPTData::CPTData(const CPTData& rOther)
 {
+   m_pGirder = NULL;
    MakeCopy(rOther);
 }
 
@@ -1533,6 +1577,28 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CPTData::MakeCopy(const CPTData& rOther)
 {
+   // if the new set of PT data isn't associated with a girder, we can't
+   // set the timeline events for PT. capture the current events for
+   // our current PT data.
+   std::vector<EventIndexType> vEvents;
+   if ( rOther.GetGirder() == NULL )
+   {
+      // capture the timeline events for the current ducts
+      CTimelineManager* pTimelineMgr = GetTimelineManager();
+      if ( m_pGirder && pTimelineMgr )
+      {
+         GirderIDType gdrID = m_pGirder->GetID();
+         DuctIndexType nDucts = GetDuctCount();
+         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         {
+            EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
+            vEvents.push_back(eventIdx);
+         }
+      }
+   }
+
+   vEvents.resize(rOther.GetDuctCount(),vEvents.size() == 0 ? INVALID_INDEX : vEvents.back());
+
    RemoveFromTimeline();
 
    nTempStrands   = rOther.nTempStrands;
@@ -1544,12 +1610,14 @@ void CPTData::MakeCopy(const CPTData& rOther)
    std::vector<CDuctData>::iterator ductIter(m_Ducts.begin());
    std::vector<CDuctData>::iterator ductIterEnd(m_Ducts.end());
    std::vector<CDuctData>::const_iterator otherDuctIter(rOther.m_Ducts.begin());
+   std::vector<EventIndexType>::const_iterator eventIter(vEvents.begin());
    DuctIndexType ductIdx = 0;
-   for ( ; ductIter != ductIterEnd; ductIter++, otherDuctIter++, ductIdx++ )
+   for ( ; ductIter != ductIterEnd; ductIter++, otherDuctIter++, ductIdx++, eventIter++ )
    {
       CDuctData& duct = *ductIter;
       duct.SetGirder(m_pGirder);
-      UpdateTimeline(*otherDuctIter,ductIdx);
+
+      UpdateTimeline(*otherDuctIter,ductIdx,*eventIter);
    }
 
    pStrand = rOther.pStrand;
@@ -1592,7 +1660,10 @@ void CPTData::RemoveFromTimeline()
       {
          EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
          CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-         pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,true/*duct is removed from bridge model*/);
+         if ( pTimelineEvent )
+         {
+            pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,true/*duct is removed from bridge model*/);
+         }
       }
    }
 }
@@ -1605,7 +1676,10 @@ void CPTData::RemoveFromTimeline(DuctIndexType ductIdx)
       GirderIDType gdrID = m_pGirder->GetID();
       EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(gdrID,ductIdx);
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,true/*duct is removed from bridge model*/);
+      if ( pTimelineEvent )
+      {
+         pTimelineEvent->GetStressTendonActivity().RemoveTendon(gdrID,ductIdx,true/*duct is removed from bridge model*/);
+      }
    }
 }
 
@@ -1620,13 +1694,23 @@ void CPTData::AddToTimeline(DuctIndexType ductIdx,EventIndexType stressTendonEve
    }
 }
 
-void CPTData::UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx)
+void CPTData::UpdateTimeline(const CDuctData& otherDuct,DuctIndexType ductIdx,EventIndexType defaultEventIdx)
 {
    CTimelineManager* pTimelineMgr = GetTimelineManager();
    if ( pTimelineMgr )
    {
       const CSplicedGirderData* pOtherGirder = otherDuct.GetGirder();
-      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pOtherGirder->GetID(),ductIdx);
+
+      EventIndexType eventIdx;
+      if( pOtherGirder == NULL )
+      {
+         // the other set of ducts isn't associated with a girder so we'll assume it isn't in the timeline
+         eventIdx = defaultEventIdx;
+      }
+      else
+      {
+         eventIdx = pTimelineMgr->GetStressTendonEventIndex(pOtherGirder->GetID(),ductIdx);
+      }
       CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       pTimelineEvent->GetStressTendonActivity().AddTendon(m_pGirder->GetID(),ductIdx);
    }

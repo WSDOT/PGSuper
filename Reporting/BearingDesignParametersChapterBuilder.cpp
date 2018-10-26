@@ -375,7 +375,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
    int i = 0;
-   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, i++ )
+   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
       col = 0;
 
@@ -407,6 +407,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       (*pTable)(row,col++) << reaction.SetValue( vMinRotation_Reaction[i] );
 
       row++;
+      i++;
    }
 
    ///////////////////////////////////////

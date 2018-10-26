@@ -27,6 +27,8 @@
 #include <EAF\EAFUtilities.h>
 #include <psgLib\LibraryEditorDoc.h>
 
+#include <IFace\DocumentType.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -61,8 +63,17 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
    {
       // doesn't exist - add a new one.
       GirderLibraryEntry::CreateType createType = GirderLibraryEntry::DEFAULT;
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
       CEAFDocument* pEAFDoc = EAFGetDocument();
-      if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
+      if ( pBroker )
+      {
+         CComPtr<IDocumentType> pDocType;
+         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
+         ATLASSERT(pDocType);
+         createType = (pDocType->IsPGSuperDocument() ? GirderLibraryEntry::PRECAST : GirderLibraryEntry::SPLICED);
+      }
+      else if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
       {
          CString strResponses(_T("Precast Girder (PGSuper)\nPrecast Spliced Girder Segment (PGSplice)"));
          int result = AfxRBChoose(_T("Select Girder Type"),_T("What type of girder library entry would you like to create?"),strResponses,0,TRUE);
@@ -101,6 +112,7 @@ libLibraryManager()
    std::auto_ptr<RatingLibrary>          rate_lib(new RatingLibrary(_T("RATING_LIBRARY"), _T("Load Rating Criteria")));
    std::auto_ptr<LiveLoadLibrary>        live_lib(new LiveLoadLibrary(_T("USER_LIVE_LOAD_LIBRARY"), _T("User-Defined Live Loads")));
    std::auto_ptr<DuctLibrary>            duct_lib(new DuctLibrary(_T("DUCT_LIBRARY"), _T("Ducts")));
+   std::auto_ptr<HaulTruckLibrary>       haul_lib(new HaulTruckLibrary(_T("HAUL_TRUCK_LIBRARY"), _T("Haul Trucks")));
 
    live_lib->AddReservedName(_T("HL-93"));
    live_lib->AddReservedName(_T("Fatigue"));
@@ -112,15 +124,16 @@ libLibraryManager()
 
    // don't change the order that the libraries are added to the library manager
    // add new libraries at the end of this list
-   m_ConcLibIdx   = this->AddLibrary(conc_lib.release()); 
-   m_ConnLibIdx   = this->AddLibrary(conn_lib.release());
-   m_GirdLibIdx   = this->AddLibrary(gird_lib.release());
-   m_DiapLibIdx   = this->AddLibrary(diap_lib.release());
-   m_BarrLibIdx   = this->AddLibrary(barr_lib.release());
-   m_SpecLibIdx   = this->AddLibrary(spec_lib.release());
-   m_LiveLibIdx   = this->AddLibrary(live_lib.release());
-   m_RatingLibIdx = this->AddLibrary(rate_lib.release());
-   m_DuctLibIdx   = this->AddLibrary(duct_lib.release());
+   m_ConcLibIdx      = this->AddLibrary(conc_lib.release()); 
+   m_ConnLibIdx      = this->AddLibrary(conn_lib.release());
+   m_GirdLibIdx      = this->AddLibrary(gird_lib.release());
+   m_DiapLibIdx      = this->AddLibrary(diap_lib.release());
+   m_BarrLibIdx      = this->AddLibrary(barr_lib.release());
+   m_SpecLibIdx      = this->AddLibrary(spec_lib.release());
+   m_LiveLibIdx      = this->AddLibrary(live_lib.release());
+   m_RatingLibIdx    = this->AddLibrary(rate_lib.release());
+   m_DuctLibIdx      = this->AddLibrary(duct_lib.release());
+   m_HaulTruckLibIdx = this->AddLibrary(haul_lib.release());
 
    m_strPublisher = _T("Unknown");
    m_strLibFile   = _T("Unknown");
@@ -278,6 +291,22 @@ const DuctLibrary* psgLibraryManager::GetDuctLibrary() const
 {
    const libILibrary* pl = GetLibrary(m_DuctLibIdx);
    const DuctLibrary* pc = dynamic_cast<const DuctLibrary*>(pl);
+   ASSERT(pc);
+   return pc; 
+}
+
+HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary()
+{
+   libILibrary* pl = GetLibrary(m_HaulTruckLibIdx);
+   HaulTruckLibrary* pc = dynamic_cast<HaulTruckLibrary*>(pl);
+   ASSERT(pc);
+   return pc;
+}
+
+const HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary() const
+{
+   const libILibrary* pl = GetLibrary(m_HaulTruckLibIdx);
+   const HaulTruckLibrary* pc = dynamic_cast<const HaulTruckLibrary*>(pl);
    ASSERT(pc);
    return pc; 
 }

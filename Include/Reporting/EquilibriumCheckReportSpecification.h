@@ -31,7 +31,10 @@ class REPORTINGCLASS CEquilibriumCheckReportSpecification :
 {
 public:
 	CEquilibriumCheckReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+	CEquilibriumCheckReportSpecification(const CEquilibriumCheckReportSpecification& rOther);
    ~CEquilibriumCheckReportSpecification(void);
+
+   void SetOptions(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 
    virtual HRESULT Validate() const;
 

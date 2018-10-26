@@ -29,6 +29,13 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <LRFD\LiveLoadDistributionFactorBase.h>
 
+#include <PgsExt\PrecastSegmentData.h>
+#include <PgsExt\SplicedGirderData.h>
+#include <PgsExt\GirderGroupData.h>
+#include <IFace\AgeAdjustedMaterial.h>
+
+class rptParagraph;
+
 void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
@@ -36,3 +43,5 @@ void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistribut
 IndexType BEAMSFUNC GetBeamTypeCount();
 CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);
 CATID BEAMSFUNC GetBeamCATID(IndexType idx);
+
+void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial);

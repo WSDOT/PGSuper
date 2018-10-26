@@ -540,6 +540,7 @@ interface ILibraryNames : IUnknown
    virtual void EnumSpecNames( std::vector<std::_tstring>* pNames) const = 0;
    virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const = 0;
    virtual void EnumDuctNames( std::vector<std::_tstring>* pNames) const = 0;
+   virtual void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const = 0;
 
    virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) = 0;
    virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory) = 0;
@@ -571,6 +572,7 @@ interface ILibrary : IUnknown
    virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const = 0;
    virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const = 0;
    virtual const DuctLibraryEntry* GetDuctEntry( LPCTSTR lpszName ) const = 0;
+   virtual const HaulTruckLibraryEntry* GetHaulTruckEntry(LPCTSTR lpszName) const = 0;
    virtual ConcreteLibrary&        GetConcreteLibrary() = 0;
    virtual ConnectionLibrary&      GetConnectionLibrary() = 0;
    virtual GirderLibrary&          GetGirderLibrary() = 0;
@@ -579,6 +581,7 @@ interface ILibrary : IUnknown
    virtual SpecLibrary*            GetSpecLibrary() = 0;
    virtual LiveLoadLibrary*        GetLiveLoadLibrary() = 0;
    virtual DuctLibrary*            GetDuctLibrary() = 0;
+   virtual HaulTruckLibrary*       GetHaulTruckLibrary() = 0;
 
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
    virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const = 0;
@@ -598,16 +601,17 @@ INTERFACE
 DESCRIPTION
    Callback interface for bridge description events
 *****************************************************************************/
-#define GCH_PRESTRESSING_CONFIGURATION 0x0001
-#define GCH_STRAND_MATERIAL            0x0002
-#define GCH_STIRRUPS                   0x0004
-#define GCH_LONGITUDINAL_REBAR         0x0008
-#define GCH_LIFTING_CONFIGURATION      0x0010
-#define GCH_SHIPPING_CONFIGURATION     0x0020
-#define GCH_LOADING_ADDED              0x0040
-#define GCH_LOADING_REMOVED            0x0080
-#define GCH_LOADING_CHANGED            0x0100
-#define GCH_CONCRETE                   0x0200
+#define GCH_PRESTRESSING_CONFIGURATION   0x0001
+#define GCH_STRAND_MATERIAL              0x0002
+#define GCH_STIRRUPS                     0x0004
+#define GCH_LONGITUDINAL_REBAR           0x0008
+#define GCH_LIFTING_CONFIGURATION        0x0010
+#define GCH_SHIPPING_CONFIGURATION       0x0020
+#define GCH_LOADING_ADDED                0x0040
+#define GCH_LOADING_REMOVED              0x0080
+#define GCH_LOADING_CHANGED              0x0100
+#define GCH_CONCRETE                     0x0200
+#define GCH_POSTTENSIONING_CONFIGURATION 0x0400
 
 
 class CBridgeChangedHint

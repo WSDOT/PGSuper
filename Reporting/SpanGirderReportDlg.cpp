@@ -47,8 +47,8 @@ IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
-   m_Group  = INVALID_INDEX;
-   m_Girder = INVALID_INDEX;
+   m_Group  = 0;
+   m_Girder = 0;
 
    m_pBroker = pBroker;
 }
@@ -182,7 +182,10 @@ void CSpanGirderReportDlg::UpdateChapterList()
 
 BOOL CSpanGirderReportDlg::OnInitDialog()
 {
-//   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   if ( m_Girder == ALL_GIRDERS )
+   {
+      m_Girder = 0;
+   }
 
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
    pwndTitle->SetWindowText(m_RptDesc.GetReportName());

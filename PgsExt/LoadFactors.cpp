@@ -63,17 +63,17 @@ CLoadFactors::CLoadFactors()
 
    DCmin[pgsTypes::StrengthI]   = 0.90;     DCmax[pgsTypes::StrengthI]   = 1.25;
    DWmin[pgsTypes::StrengthI]   = 0.65;     DWmax[pgsTypes::StrengthI]   = 1.50;
-   CRmin[pgsTypes::StrengthI]   = 1.00;     CRmax[pgsTypes::StrengthI]   = 1.00;
-   SHmin[pgsTypes::StrengthI]   = 1.00;     SHmax[pgsTypes::StrengthI]   = 1.00;
-   REmin[pgsTypes::StrengthI]   = 1.00;     REmax[pgsTypes::StrengthI]   = 1.00;
+   CRmin[pgsTypes::StrengthI]   = 0.90;     CRmax[pgsTypes::StrengthI]   = 1.25;
+   SHmin[pgsTypes::StrengthI]   = 0.90;     SHmax[pgsTypes::StrengthI]   = 1.25;
+   REmin[pgsTypes::StrengthI]   = 0.90;     REmax[pgsTypes::StrengthI]   = 1.25;
    PSmin[pgsTypes::StrengthI]   = 1.00;     PSmax[pgsTypes::StrengthI]   = 1.00;
    LLIMmin[pgsTypes::StrengthI] = 1.75;     LLIMmax[pgsTypes::StrengthI] = 1.75;
 
    DCmin[pgsTypes::StrengthII]   = 0.90;    DCmax[pgsTypes::StrengthII]   = 1.25;
    DWmin[pgsTypes::StrengthII]   = 0.65;    DWmax[pgsTypes::StrengthII]   = 1.50;
-   CRmin[pgsTypes::StrengthII]   = 1.00;    CRmax[pgsTypes::StrengthII]   = 1.00;
-   SHmin[pgsTypes::StrengthII]   = 1.00;    SHmax[pgsTypes::StrengthII]   = 1.00;
-   REmin[pgsTypes::StrengthII]   = 1.00;    REmax[pgsTypes::StrengthII]   = 1.00;
+   CRmin[pgsTypes::StrengthII]   = 0.90;    CRmax[pgsTypes::StrengthII]   = 1.25;
+   SHmin[pgsTypes::StrengthII]   = 0.90;    SHmax[pgsTypes::StrengthII]   = 1.25;
+   REmin[pgsTypes::StrengthII]   = 0.90;    REmax[pgsTypes::StrengthII]   = 1.25;
    PSmin[pgsTypes::StrengthII]   = 1.00;    PSmax[pgsTypes::StrengthII]   = 1.00;
    LLIMmin[pgsTypes::StrengthII] = 1.35;    LLIMmax[pgsTypes::StrengthII] = 1.35;
 

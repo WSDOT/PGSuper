@@ -456,6 +456,7 @@ public:
    virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const;
    virtual void EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const;
    virtual void EnumDuctNames( std::vector<std::_tstring>* pNames ) const;
+   virtual void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const;
    virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames );
    virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory);
 
@@ -471,14 +472,16 @@ public:
    virtual const SpecLibraryEntry* GetSpecEntry( LPCTSTR lpszName ) const;
    virtual const LiveLoadLibraryEntry* GetLiveLoadEntry( LPCTSTR lpszName ) const;
    virtual const DuctLibraryEntry* GetDuctEntry( LPCTSTR lpszName ) const;
+   virtual const HaulTruckLibraryEntry* GetHaulTruckEntry(LPCTSTR lpszName) const;
    virtual ConcreteLibrary&        GetConcreteLibrary();
    virtual ConnectionLibrary&      GetConnectionLibrary();
    virtual GirderLibrary&          GetGirderLibrary();
    virtual DiaphragmLayoutLibrary& GetDiaphragmLayoutLibrary();
    virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary();
-   virtual LiveLoadLibrary*        GetLiveLoadLibrary();
    virtual SpecLibrary*            GetSpecLibrary();
+   virtual LiveLoadLibrary*        GetLiveLoadLibrary();
    virtual DuctLibrary*            GetDuctLibrary();
+   virtual HaulTruckLibrary*       GetHaulTruckLibrary();
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const;
    virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const;
    virtual RatingLibrary* GetRatingLibrary();
@@ -508,6 +511,8 @@ public:
    virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey);
    virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey);
    virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leftLoc,Float64 rightLoc);
+   virtual LPCTSTR GetHaulTruck(const CSegmentKey& segmentKey);
+   virtual void SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHaulTruck);
 
 // IImportProjectLibrary
 public:
@@ -866,6 +871,7 @@ private:
    void ReleaseDuctLibraryEntries();
 
    void UpdateConcreteMaterial();
+   void UpdateTimeDependentMaterials();
    void UpdateStrandMaterial();
    void VerifyRebarGrade();
 
@@ -910,6 +916,10 @@ private:
    bool HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType);
 
    bool m_bUpdateUserDefinedLoads; // if true, the user defined loads came from PGSuper 2.9.x or earlier and the timeline has not yet been updated
+
+   void UpdateHaulTruck(const COldHaulTruck* pOldHaulTruck);
+   const HaulTruckLibraryEntry* FindHaulTruckLibraryEntry(const COldHaulTruck* pOldHaulTruck);
+   const HaulTruckLibraryEntry* FindHaulTruckLibraryEntry(Float64 kTheta,const COldHaulTruck* pOldHaulTruck);
 };
 
 #endif //__PROJECTAGENT_H_

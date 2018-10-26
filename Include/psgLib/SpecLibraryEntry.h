@@ -34,6 +34,8 @@
 #include <psgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
+#include <psgLib\OldHaulTruck.h>
+
 #if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
 #endif
@@ -192,7 +194,6 @@ public:
 
    // Get the icon for this entry
    virtual HICON GetIcon() const;
-
 
    //////////////////////////////////////
    //
@@ -605,6 +606,22 @@ public:
    Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const;
    void SetLiftingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type);
 
+   pgsTypes::CamberMethod GetLiftingCamberMethod() const;
+   void SetLiftingCamberMethod(pgsTypes::CamberMethod method);
+
+   Float64 GetLiftingCamberPercentEstimate() const;
+   void SetLiftingCamberPercentEstimate(Float64 per);
+
+   pgsTypes::WindType GetLiftingWindType() const;
+   void SetLiftingWindType(pgsTypes::WindType windType);
+
+   // wind load is either pressure or speed depending on the wind type
+   Float64 GetLiftingWindLoad() const;
+   void SetLiftingWindLoad(Float64 wl);
+
+   bool EvaluateLiftingStressesPlumbGirder() const;
+   void EvaluateLiftingStressesPlumbGirder(bool bPlumb);
+
    //////////////////////////////////////
    //
    // Hauling/Shipping Parameters
@@ -629,86 +646,65 @@ public:
    Float64 GetHaulingMaximumGirderSweepTolerance() const;
    void SetHaulingMaximumGirderSweepTolerance(Float64 sweep);
 
-   // Set/Get the maximum allowable distance between hauling supports
-   Float64 GetHaulingSupportDistance() const;
-   void SetHaulingSupportDistance(Float64 d);
-
-   // Set/Get the maximum leading overhang distance during hauling
-   Float64 GetHaulingMaximumLeadingOverhang() const;
-   void SetHaulingMaximumLeadingOverhang(Float64 oh);
-
    // Set/Get the maximum lateral tolerance for hauling support placement
    Float64 GetHaulingSupportPlacementTolerance() const;
    void SetHaulingSupportPlacementTolerance(Float64 tol);
 
+   // Set/Get the method for hauling camber. If camber method is cmApproximate,
+   // camber is estimated with GetHaulingCamberPercentEstimate, otherwise
+   // camber is computed
+   pgsTypes::CamberMethod GetHaulingCamberMethod() const;
+   void SetHaulingCamberMethod(pgsTypes::CamberMethod camberMethod);
+   
    // Set/Get the percent the radius of stability is to be increased for camber
    Float64 GetHaulingCamberPercentEstimate() const;
    void SetHaulingCamberPercentEstimate(Float64 per);
 
-   // Set/Get height of bottom of girder above roadway during transport
-   Float64 GetTruckGirderHeight() const;
-   void SetTruckGirderHeight(Float64 height);
+   const COldHaulTruck* GetOldHaulTruck() const;
 
-   // Set/Get height of truck roll center above roadway.
-   Float64 GetTruckRollCenterHeight() const;
-   void SetTruckRollCenterHeight(Float64 height);
+   void SetHaulingImpactUsage(pgsTypes::HaulingImpact impactUsage);
+   pgsTypes::HaulingImpact GetHaulingImpactUsage() const;
 
-   // Set/Get center-to-center distance between truck tires
-   Float64 GetTruckAxleWidth() const;
-   void SetTruckAxleWidth(Float64 dist);
+   Float64 GetRoadwayCrownSlope() const;
+   void SetRoadwayCrownSlope(Float64 slope);
 
    // Set/Get max expected roadway superelevation angle during hauling
    Float64 GetRoadwaySuperelevation() const;
    void SetRoadwaySuperelevation(Float64 dist);
-
-   // Set/Get maximum girder weight for transportation
-   void SetMaxGirderWeight(Float64 wgt);
-   Float64 GetMaxGirderWeight() const;
-
-   // Set/Get method of computing the truck roll stiffness
-   // Use one of the ROLLSTIFFNESS_xxx constants
-   int GetTruckRollStiffnessMethod() const;
-   void SetTruckRollStiffnessMethod(int method);
-
-   // Parameters for roll stiffness method ROLLSTIFFNESS_LUMPSUM
-
-   // Set/Get truck roll stiffness
-   Float64 GetTruckRollStiffness() const;
-   void SetTruckRollStiffness(Float64 stiff);
-
-   // Parameters for roll stiffness method ROLLSTIFFNESS_PERAXLE
-
-   // Set/Get the per axle weight limit used to estimate the number of
-   // axles required to haul a girder
-   Float64 GetAxleWeightLimit() const;
-   void SetAxleWeightLimit(Float64 limit);
-
-   // Set/Get the per axle stiffness
-   Float64 GetAxleStiffness() const;
-   void SetAxleStiffness(Float64 stiffness);
-
-   // Set/Get the minimum roll stiffness of a haul truck
-   Float64 GetMinRollStiffness() const;
-   void SetMinRollStiffness(Float64 stiffness);
 
    // Set/Get the max allowable compressive concrete stress for hauling as a factor times f'ci
    Float64 GetHaulingCompressionStressFactor() const;
    void SetHaulingCompressionStressFactor(Float64 stress);
 
    // Set/Get the maximum allowable concrete tension stress during during hauling as a factor times sqrt(f'ci)
-   Float64 GetHaulingTensionStressFactor() const;
-   void SetHaulingTensionStressFactor(Float64 stress);
+   Float64 GetHaulingTensionStressFactorNormalCrown() const;
+   void SetHaulingTensionStressFactorNormalCrown(Float64 stress);
 
    // Set/Get the absolute maximum allowable concrete tension stress during hauling.
    // If bIsApplicable is false the allowable concrete tension stress is not limited
    // and maxStress is undefined
-   void GetHaulingMaximumTensionStress(bool* bIsApplicable, Float64* maxStress) const;
-   void SetHaulingMaximumTensionStress(bool bIsApplicable, Float64 maxStress);
+   void GetHaulingMaximumTensionStressNormalCrown(bool* bIsApplicable, Float64* maxStress) const;
+   void SetHaulingMaximumTensionStressNormalCrown(bool bIsApplicable, Float64 maxStress);
 
    // Set/Get the maximum allowable concrete tension stress during hauling as a factor times sqrt(f'c)
    // when adequate mild rebar is provided
-   Float64 GetHaulingTensionStressFactorWithRebar() const;
-   void SetHaulingTensionStressFactorWithRebar(Float64 stress);
+   Float64 GetHaulingTensionStressFactorWithRebarNormalCrown() const;
+   void SetHaulingTensionStressFactorWithRebarNormalCrown(Float64 stress);
+
+   // Set/Get the maximum allowable concrete tension stress during during hauling as a factor times sqrt(f'ci)
+   Float64 GetHaulingTensionStressFactorMaxSuper() const;
+   void SetHaulingTensionStressFactorMaxSuper(Float64 stress);
+
+   // Set/Get the absolute maximum allowable concrete tension stress during hauling.
+   // If bIsApplicable is false the allowable concrete tension stress is not limited
+   // and maxStress is undefined
+   void GetHaulingMaximumTensionStressMaxSuper(bool* bIsApplicable, Float64* maxStress) const;
+   void SetHaulingMaximumTensionStressMaxSuper(bool bIsApplicable, Float64 maxStress);
+
+   // Set/Get the maximum allowable concrete tension stress during hauling as a factor times sqrt(f'c)
+   // when adequate mild rebar is provided
+   Float64 GetHaulingTensionStressFactorWithRebarMaxSuper() const;
+   void SetHaulingTensionStressFactorWithRebarMaxSuper(Float64 stress);
 
    // Set/Get minimum factor of safety against cracking for hauling
    Float64 GetHaulingCrackingFOS() const;
@@ -721,6 +717,22 @@ public:
    // Set/Get the coefficient used to compute the modulus of rupture of concrete during hauling as a factor times sqrt(f'c)
    Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const;
    void SetHaulingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type);
+
+   pgsTypes::WindType GetHaulingWindType() const;
+   void SetHaulingWindType(pgsTypes::WindType windType);
+
+   // wind load is either pressure or speed depending on the wind type
+   Float64 GetHaulingWindLoad() const;
+   void SetHaulingWindLoad(Float64 wl);
+
+   pgsTypes::CFType GetCentrifugalForceType() const;
+   void SetCentrifugalForceType(pgsTypes::CFType cfType);
+
+   Float64 GetHaulingSpeed() const;
+   void SetHaulingSpeed(Float64 v);
+
+   Float64 GetTurningRadius() const;
+   void SetTurningRadius(Float64 r);
 
    //
    // Values used for KDOT method only
@@ -1220,7 +1232,8 @@ private:
 
    Float64 m_CyTensStressServWithRebar;
    Float64 m_TensStressLiftingWithRebar;
-   Float64 m_TensStressHaulingWithRebar;
+   Float64 m_TensStressHaulingWithRebarNormalCrown;
+   Float64 m_TensStressHaulingWithRebarMaxSuper;
 
    Float64 m_CyTensStressLifting;
    bool    m_CyDoTensStressLiftingMax;
@@ -1235,7 +1248,11 @@ private:
    Float64 m_LiftingUpwardImpact;
    Float64 m_LiftingDownwardImpact;
    int     m_CuringMethod;
-
+   pgsTypes::CamberMethod m_LiftingCamberMethod;
+   Float64 m_LiftingCamberPercentEstimate;
+   pgsTypes::WindType m_LiftingWindType;
+   Float64 m_LiftingWindLoad;
+   bool m_LiftingStressesPlumbGirder;
    Float64 m_SplittingZoneLengthFactor;
 
    // hauling
@@ -1245,31 +1262,28 @@ private:
 
    Float64 m_HaulingCrackFs;
    Float64 m_HaulingRollFs;
-   
-   int     m_TruckRollStiffnessMethod;
-   Float64 m_TruckRollStiffness;
-   Float64 m_AxleWeightLimit;
-   Float64 m_AxleStiffness;
-   Float64 m_MinRollStiffness;
 
-   Float64 m_TruckGirderHeight;
-   Float64 m_TruckRollCenterHeight;
-   Float64 m_TruckAxleWidth;
-   Float64 m_RoadwaySuperelevation;
-   Float64 m_MaxGirderSweepHauling;
-   Float64 m_HaulingSupportDistance;
-   Float64 m_HaulingSupportPlacementTolerance;
-   Float64 m_HaulingCamberPercentEstimate;
    Float64 m_HaulingUpwardImpact;
    Float64 m_HaulingDownwardImpact;
 
-   Float64 m_CompStressHauling;
-   Float64 m_TensStressHauling;
-   bool    m_DoTensStressHaulingMax;
-   Float64 m_TensStressHaulingMax;
+   pgsTypes::CamberMethod m_HaulingCamberMethod;
+   Float64 m_HaulingCamberPercentEstimate;
 
-   Float64 m_MaxHaulingOverhang;
-   Float64 m_MaxGirderWgt;
+   bool m_bHasOldHaulTruck; // if true, an old spec library entry was read and the hauling truck information is stored in m_OldHaulTruck
+   COldHaulTruck m_OldHaulTruck;
+   pgsTypes::HaulingImpact m_HaulingImpactUsage;
+   Float64 m_RoadwayCrownSlope;
+   Float64 m_RoadwaySuperelevation;
+   Float64 m_MaxGirderSweepHauling;
+   Float64 m_HaulingSupportPlacementTolerance;
+
+   Float64 m_CompStressHauling;
+   Float64 m_TensStressHaulingNormalCrown;
+   bool    m_DoTensStressHaulingMaxNormalCrown;
+   Float64 m_TensStressHaulingMaxNormalCrown;
+   Float64 m_TensStressHaulingMaxSuper;
+   bool    m_DoTensStressHaulingMaxMaxSuper;
+   Float64 m_TensStressHaulingMaxMaxSuper;
 
    Float64  m_HaulingModulusOfRuptureCoefficient[3];
    Float64  m_LiftingModulusOfRuptureCoefficient[3];
@@ -1278,6 +1292,13 @@ private:
    Float64 m_LiftPointAccuracy;
    Float64 m_MinHaulPoint;
    Float64 m_HaulPointAccuracy;
+
+   pgsTypes::WindType m_HaulingWindType;
+   Float64 m_HaulingWindLoad;
+
+   pgsTypes::CFType m_CentrifugalForceType;
+   Float64 m_HaulingSpeed;
+   Float64 m_TurningRadius;
 
    // Used for KDOT only
    bool    m_UseMinTruckSupportLocationFactor;

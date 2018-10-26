@@ -36,8 +36,21 @@ CBrokerReportSpecification(strReportName,pBroker)
    m_IntervalIdx = intervalIdx;
 }
 
+CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(const CInitialStrainAnalysisReportSpecification& rOther) :
+CBrokerReportSpecification(rOther)
+{
+   m_GirderKey = rOther.m_GirderKey;
+   m_IntervalIdx = rOther.m_IntervalIdx;
+}
+
 CInitialStrainAnalysisReportSpecification::~CInitialStrainAnalysisReportSpecification(void)
 {
+}
+
+void CInitialStrainAnalysisReportSpecification::SetOptions(const CGirderKey& girderKey,IntervalIndexType intervalIdx)
+{
+   m_GirderKey = girderKey;
+   m_IntervalIdx = intervalIdx;
 }
 
 HRESULT CInitialStrainAnalysisReportSpecification::Validate() const

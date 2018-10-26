@@ -262,6 +262,9 @@ public:
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;
 
+   void SetHaulTruck(LPCTSTR lpszHaulTruck);
+   LPCTSTR GetHaulTruck() const;
+
    // Set if elastic modulus is defined by user. Used by GetGirderConfiguration
    void SetUserEc(Float64 Ec);
    void SetUserEci(Float64 Eci);
@@ -334,6 +337,7 @@ private:
    Float64 m_LiftLocRight;
    Float64 m_ShipLocLeft;
    Float64 m_ShipLocRight;
+   std::_tstring m_strHaulTruck;
 
    bool  m_IsUserEc;
    Float64 m_UserEc;

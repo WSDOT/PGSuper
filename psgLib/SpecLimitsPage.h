@@ -71,6 +71,7 @@ protected:
 public:
    afx_msg void OnBnClickedCheckGirderSag();
    virtual BOOL OnInitDialog();
+	virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}

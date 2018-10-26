@@ -7,7 +7,6 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_bridge_view_settings
 * @subpage ug_dialogs_bridge_view_section_cut
 * @subpage ug_dialogs_cast_deck
-* @subpage ug_dialogs_configure
 * @subpage ug_dialogs_configure_prestress_losses
 * @subpage ug_dialogs_configure_reports
 * @subpage ug_dialogs_configuration_servers
@@ -43,6 +42,7 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_project_criteria
 * @subpage ug_dialogs_project_properties
 * @subpage ug_dialogs_report_options
+* @subpage ug_dialogs_configure
 * @subpage ug_dialogs_span_description
 * @subpage ug_dialogs_structural_analysis_method
 * @subpage ug_dialogs_timeline_event

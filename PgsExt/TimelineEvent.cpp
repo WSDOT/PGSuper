@@ -437,9 +437,9 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("Description"),&var);
       m_Description = OLE2T(var.bstrVal);
 
-      var.vt = VT_I2;
+      var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("Day"),&var);
-      m_Day = var.iVal;
+      m_Day = var.dblVal;
 
       hr = m_ConstructSegments.Load(pStrLoad,pProgress);
       hr = m_ErectPiers.Load(pStrLoad,pProgress);

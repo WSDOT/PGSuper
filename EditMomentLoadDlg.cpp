@@ -276,7 +276,9 @@ void CEditMomentLoadDlg::UpdateEventLoadCase(bool isInitial)
    {
       pcbEvent->ResetContent();
       const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(liveLoadEventIdx);
-      int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+      CString strEvent;
+      strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(liveLoadEventIdx),pTimelineEvent->GetDescription());
+      int idx = pcbEvent->AddString(strEvent);
       pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
       pcbEvent->SetCurSel(0);
       pcbEvent->EnableWindow(FALSE);
@@ -289,11 +291,14 @@ void CEditMomentLoadDlg::UpdateEventLoadCase(bool isInitial)
       {
          pcbEvent->ResetContent();
          const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(castDeckEventIdx);
-         int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+         CString strEvent;
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(castDeckEventIdx),pTimelineEvent->GetDescription());
+         int idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
          pTimelineEvent = m_TimelineMgr.GetEventByIndex(railingSystemEventIdx);
-         idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(railingSystemEventIdx),pTimelineEvent->GetDescription());
+         idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
          pcbEvent->EnableWindow(TRUE);
@@ -303,7 +308,6 @@ void CEditMomentLoadDlg::UpdateEventLoadCase(bool isInitial)
             EventIDType castDeckEventID      = m_TimelineMgr.GetCastDeckEventID();
             EventIDType railingSystemEventID = m_TimelineMgr.GetRailingSystemLoadEventID();
             EventIDType liveLoadEventID      = m_TimelineMgr.GetLiveLoadEventID();
-
             if ( m_EventID == castDeckEventID )
             {
                pcbEvent->SetCurSel(0);
@@ -439,8 +443,6 @@ void CEditMomentLoadDlg::UpdateGirderList()
 
 void CEditMomentLoadDlg::FillEventList()
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
-
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
@@ -469,16 +471,13 @@ void CEditMomentLoadDlg::FillEventList()
             CString label;
             label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
 
-            pcbEvent->SetItemData(pcbEvent->AddString(label),pTimelineEvent->GetID());
+            EventIDType eventID = pTimelineEvent->GetID();
+            pcbEvent->SetItemData(pcbEvent->AddString(label),eventID);
          }
       }
 
-      CEAFDocument* pDoc = EAFGetDocument();
-      if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-      {
-         CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
-         pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
-      }
+      CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+      pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
 
       if ( selEventIdx != CB_ERR )
       {

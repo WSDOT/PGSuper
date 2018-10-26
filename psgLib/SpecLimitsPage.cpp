@@ -107,3 +107,16 @@ void CSpecLimitsPage::OnBnClickedCheckGirderSag()
    BOOL bEnable = (IsDlgButtonChecked(IDC_CHECK_GIRDER_SAG) == BST_CHECKED) ? TRUE : FALSE;
    GetDlgItem(IDC_SAG_OPTIONS)->EnableWindow(bEnable);
 }
+
+BOOL CSpecLimitsPage::OnSetActive() 
+{
+   // if this is third edition or earlier, enable the shipping loss controls
+   CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
+   if ( pParent->m_Entry.GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      GetDlgItem(IDC_SAG_OPTIONS_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SAG_OPTIONS)->ShowWindow(SW_HIDE);
+   }
+
+   return CPropertyPage::OnSetActive();
+}

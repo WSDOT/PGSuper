@@ -714,6 +714,9 @@ public:
    void SetCamberMultipliers(CamberMultipliers& factors);
    CamberMultipliers GetCamberMultipliers() const;
 
+   void SetDragCoefficient(Float64 Cd);
+   Float64 GetDragCoefficient() const;
+
 protected:
    void MakeCopy(const GirderLibraryEntry& rOther);
 
@@ -1017,6 +1020,8 @@ private:
    Float64 m_ExcessiveSlabOffsetWarningTolerance;
 
    CamberMultipliers m_CamberMultipliers;
+
+   Float64 m_DragCoefficient;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

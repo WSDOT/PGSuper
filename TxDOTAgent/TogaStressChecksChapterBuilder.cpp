@@ -228,7 +228,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    }
 
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
+   std::_tstring strLimitState = GetLimitStateString(limitState);
 
    if ( limitState == pgsTypes::ServiceIII )
    {

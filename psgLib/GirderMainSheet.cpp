@@ -152,6 +152,14 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 	   DDX_Text(pDX, IDC_ENAME, m_Name);
    }
 
+   Float64 Cd = m_Entry.GetDragCoefficient();
+   DDX_Text(pDX, IDC_DRAG_COEFFICIENT, Cd);
+   DDV_GreaterThanZero(pDX,IDC_DRAG_COEFFICIENT,Cd);
+   if ( pDX->m_bSaveAndValidate )
+   {
+      m_Entry.SetDragCoefficient(Cd);
+   }
+
    bool bUnitsSI = (pApp->GetUnitsMode() == eafTypes::umSI);
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
@@ -1059,14 +1067,7 @@ void CGirderMainSheet::MiscOnAbsolute()
 
 bool CGirderMainSheet::CanHarpStrands() const
 {
-   if (pgsTypes::asStraight == m_Entry.GetAdjustableStrandType())
-   {
-      return false;
-   }
-   else
-   {
-      return m_Entry.GetNumHarpedStrandCoordinates() > 0;
-   }
+   return pgsTypes::asStraight == m_Entry.GetAdjustableStrandType() ? false : true;
 }
 
 bool CGirderMainSheet::CanDebondStrands() const

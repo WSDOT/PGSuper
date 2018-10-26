@@ -29,6 +29,8 @@
 #include "SpecHaulingErectionPage.h"
 #include "SpecMainSheet.h"
 
+#include <EAF\EAFApp.h>
+
 // CWsdotHaulingDlg dialog
 
 IMPLEMENT_DYNAMIC(CWsdotHaulingDlg, CDialog)
@@ -45,9 +47,20 @@ CWsdotHaulingDlg::~CWsdotHaulingDlg()
 
 BOOL CWsdotHaulingDlg::OnInitDialog()
 {
-   CDialog::OnInitDialog();
+   CComboBox* pcbWind = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)pgsTypes::Pressure);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)pgsTypes::Speed);
 
-   OnCheckHaulingTensMax();
+   CComboBox* pcbCF = (CComboBox*)GetDlgItem(IDC_CF_TYPE);
+   pcbCF->SetItemData(pcbCF->AddString(_T("Adverse")),  (DWORD_PTR)pgsTypes::Adverse);
+   pcbCF->SetItemData(pcbCF->AddString(_T("Favorable")),(DWORD_PTR)pgsTypes::Favorable);
+
+   CComboBox* pcbImpactUsage = (CComboBox*)GetDlgItem(IDC_IMPACT_USAGE);
+   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Normal Crown Slope and Max. Superelevation Cases")),(DWORD_PTR)pgsTypes::Both);
+   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Normal Crown Slope Case Only")),(DWORD_PTR)pgsTypes::NormalCrown);
+   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Max. Superelevation Case Only")),(DWORD_PTR)pgsTypes::MaxSuper);
+
+   CDialog::OnInitDialog();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -60,48 +73,39 @@ void CWsdotHaulingDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CWsdotHaulingDlg, CDialog)
-	ON_BN_CLICKED(IDC_CHECK_HAULING_TENSION_MAX, OnCheckHaulingTensMax)
-	ON_BN_CLICKED(IDC_LUMPSUM_METHOD, OnLumpSumMethod)
-	ON_BN_CLICKED(IDC_PERAXLE_METHOD, OnPerAxleMethod)
+	ON_BN_CLICKED(IDC_CHECK_HAULING_TENSION_MAX_CROWN, OnCheckHaulingTensMaxCrown)
+	ON_BN_CLICKED(IDC_CHECK_HAULING_TENSION_MAX_SUPER, OnCheckHaulingTensMaxSuper)
+   ON_CBN_SELCHANGE(IDC_WIND_TYPE, &CWsdotHaulingDlg::OnCbnSelchangeWindType)
 END_MESSAGE_MAP()
 
 // CWsdotHaulingDlg message handlers
 
-void CWsdotHaulingDlg::OnCheckHaulingTensMax()
+void CWsdotHaulingDlg::OnCheckHaulingTensMaxCrown()
 {
-   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENSION_MAX);
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENSION_MAX_CROWN);
    ASSERT(pchk);
    BOOL ischk = pchk->GetCheck() == BST_CHECKED;
 
-   CWnd* pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX);
+   CWnd* pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_CROWN);
    ASSERT(pwnd);
    pwnd->EnableWindow(ischk);
-   pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_UNIT);
+   pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_UNIT_CROWN);
    ASSERT(pwnd);
    pwnd->EnableWindow(ischk);
 }
 
-void CWsdotHaulingDlg::OnLumpSumMethod() 
+void CWsdotHaulingDlg::OnCheckHaulingTensMaxSuper()
 {
-   EnableLumpSumMethod(TRUE);
-}
+   CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_HAULING_TENSION_MAX_SUPER);
+   ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck() == BST_CHECKED;
 
-void CWsdotHaulingDlg::OnPerAxleMethod() 
-{
-   EnableLumpSumMethod(FALSE);
-}
-
-void CWsdotHaulingDlg::EnableLumpSumMethod(BOOL bEnable)
-{
-   GetDlgItem(IDC_ROLL_STIFFNESS)->EnableWindow(bEnable);
-   GetDlgItem(IDC_ROLL_STIFFNESS_UNITS)->EnableWindow(bEnable);
-
-   GetDlgItem(IDC_AXLE_WEIGHT)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_AXLE_WEIGHT_UNITS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_AXLE_STIFFNESS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_AXLE_STIFFNESS_UNITS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_MIN_ROLL_STIFFNESS)->EnableWindow(!bEnable);
-   GetDlgItem(IDC_MIN_ROLL_STIFFNESS_UNITS)->EnableWindow(!bEnable);
+   CWnd* pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_SUPER);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_HAULING_TENSION_MAX_UNIT_SUPER);
+   ASSERT(pwnd);
+   pwnd->EnableWindow(ischk);
 }
 
 void CWsdotHaulingDlg::OnSetActive()
@@ -120,5 +124,27 @@ void CWsdotHaulingDlg::OnSetActive()
       GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_SHOW);
+   }
+
+   OnCheckHaulingTensMaxCrown();
+   OnCheckHaulingTensMaxSuper();
+}
+
+void CWsdotHaulingDlg::OnCbnSelchangeWindType()
+{
+   // TODO: Add your control notification handler code here
+   CComboBox* pcbWindType = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
+   int curSel = pcbWindType->GetCurSel();
+   pgsTypes::WindType windType = (pgsTypes::WindType)pcbWindType->GetItemData(curSel);
+   CDataExchange dx(this,false);
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
+   if ( windType == pgsTypes::Speed )
+   {
+      DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->Velocity);
+   }
+   else
+   {
+      DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->WindPressure);
    }
 }

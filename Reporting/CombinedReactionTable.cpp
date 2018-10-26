@@ -205,7 +205,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
    rptRcTable* p_table=0;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,iter.CurrentItem().GirderKey,(tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,iter.CurrentItem().GirderKey,(tableType==PierReactionsTable ? _T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
                                  true ,bRating,intervalIdx,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
@@ -385,7 +385,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   std::_tstring strLabel (tableType == PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions"));
+   std::_tstring strLabel (tableType == PierReactionsTable ? _T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions"));
    strLabel += std::_tstring(bDesign ? _T(" - Design Vehicles") : _T(" - Rating Vehicles"));
    strLabel += std::_tstring(includeImpact ? _T(" (Including Impact)") : _T(" (Without Impact)"));
 
@@ -711,12 +711,12 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   std::_tstring strLabel (tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions"));
+   std::_tstring strLabel (tableType==PierReactionsTable ? _T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions"));
    strLabel += std::_tstring(includeImpact ? _T(" (Including Impact)") : _T(" (Without Impact)"));
 
    rptRcTable * p_table;
    RowIndexType row = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
-                             true,bDesign,bPermit,bRating,false,analysisType,pProductLoads,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+                             true,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
 

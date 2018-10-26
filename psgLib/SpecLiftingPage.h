@@ -73,6 +73,7 @@ public:
    virtual BOOL OnSetActive();
 
    void EnableControls(BOOL bEnable);
+   afx_msg void OnCbnSelchangeWindType();
 };
 
 //{{AFX_INSERT_LOCATION}}

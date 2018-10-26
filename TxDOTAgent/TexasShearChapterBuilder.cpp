@@ -133,7 +133,7 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    // Debonding check if applicable
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   if ( pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,0),pgsTypes::Straight) )
+   if ( pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,0),pgsTypes::Straight,pgsTypes::dbetEither) )
    {
       CDebondCheckTable().Build(pChapter, pBroker,pGirderArtifact,pgsTypes::Straight, pDisplayUnits);
    }

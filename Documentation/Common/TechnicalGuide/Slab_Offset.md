@@ -22,7 +22,11 @@ The width of the slab haunch is the width of the top flange of the girder for si
 > TIP: PGSuper's Girder Designer can find an optimal Slab Offset for you.
 
 Well-designed slab haunches have the following characteristics:
-* The haunch depth is adequate at its minimum location along the girder to satisfy the fillet depth defined by the user. Typically the fillet will coincide with the Standard Minimum Fillet defined in the Girder library. The fillet should consider tolerances plus physical concerns such as: horizontal interface shear stirrups, spacers, forms (bedding strips), and reinforcement in the slab bottom region.
+* The haunch depth is adequate at its minimum location along the girder to satisfy the fillet depth defined by the user.
+* Ideally, to save on concrete, the fillet will coincide with the Standard Minimum Fillet. If the input fillet is smaller than Standard Minimum Fillet, a spec check failure will occur.
+  + For spread-spaced girders, the Standard Minimum Fillet is defined in the Girder library. 
+  + For adjacently-spaced girders, the Standard Minimum Fillet is hard-coded to zero.
+* The fillet should also consider tolerances plus physical concerns such as: horizontal interface shear stirrups, spacers, forms (bedding strips), and reinforcement in the slab bottom region.
 * The haunch has adequate minimum depth at the C.L. bearing locations to satisfy the Standard Minimum Haunch Depth at CL Bearings defined in the Girder library.
 * The haunch is kept as shallow as possible to minimize weight and material costs.
 
@@ -53,7 +57,7 @@ Deck Effect
 ------------
 Per our definition; the distance between the top of the girder and the top of the roadway surface must be at least the thickness of the slab plus the fillet depth.
 
-The Fillet is the least allowable haunch depth along a girder. This value is input by the user as part of the physical bridge description. The Fillet is used by PGSuper to compute the required “A” dimension during a specification check. During design, the fillet value can be left unchanged or it can be modified by the design algorithm if requested. If the value is modified by the design algorithm, it is set equal to the Standard Fillet Depth as specified in the Girder library. 
+The Fillet is the least allowable haunch depth along a girder. This value is input by the user as part of the physical bridge description. The Fillet is used by PGSuper to compute the required “A” dimension during a specification check. During design, the fillet value can be left unchanged or it can be modified by the design algorithm if requested. If the value is modified by the design algorithm, it is set equal to the Standard Minimum Fillet Depth as specified in the Girder library. 
 
 If camber and deflection predictions are 100% accurate, a properly designed haunch will be such that the least distance between the top of girder and bottom of gross slab (haunch depth) will be exactly equal to the fillet depth.
 

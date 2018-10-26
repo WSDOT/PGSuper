@@ -106,23 +106,23 @@ w<sub>tf</sub> = total width of the all the top flanges for a girder<br>
 
 The depth of the slab haunch is the distance from the bottom of the deck slab to the top of the girder. There are two methods for modeling the path of the top of the girder; straight and parabolic. The option is defined in the Project Criteria. The methods are as follows:
 
-##### Haunch Depth when Top of Girder is assumed to be a Straight Line  #####
+##### Option 1: Haunch Depth when Top of Girder is assumed to be a Straight Line  #####
 The top of the girder is assumed to be straight (zero excess camber) for purposes of computing this dead load. The schematic below illustrates the depth of the haunch for load distribution for this case.
 
   ![](HaunchLoadLinear.png)
 
-> NOTE: Modern girders have wide top flanges and as such the slab haunch load can be significant. This method of estimating the slab haunch load is conservative and it makes an allowance for the actual girder camber being less than predicted. With this approach, girders will not be under-designed if camber is less than predicted.
+> NOTE: Modern girders have wide top flanges and as such the slab haunch load can be significant. This method of estimating the slab haunch load is conservative (unless the girder has negative excess camber) and it makes an allowance for the actual girder camber being less than predicted. With this approach, girders will not be under-designed if camber is less than predicted.
 
-##### Haunch Depth when Top of Girder is assumed to be a Parabola #####
+##### Option 2: Haunch Depth when Top of Girder is assumed to be a Parabola #####
 The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the Fillet dimension. The schematic below illustrates the depth of the haunch for this case.
 
   ![](HaunchLoadParabolic.png)
 
-> NOTE: It is the responsibility of the user to ensure that haunch dead load parabola defined by the slab offset and fillet dimensions match the parabola defined by the excess camber computed by the program. If the parabolas do not match within tolerance, a specification check failure will occur indicating the haunch dead load was either over or under estimated. 
+> NOTE: For this option it is the responsibility of the user to ensure that haunch dead load parabola defined by the slab offset and fillet dimensions closely matches the parabola defined by the excess camber computed by the program. If the parabolas do not match within tolerance, a specification check failure will occur indicating the haunch dead load was either over or under estimated. 
 >     For complex bridge geometries it may be necessary to define a unique fillet and/or slab offset for each girder in the bridge in order to meet this requirement.
 >     The Loading Details chapter in the Details report tabulates the haunch depth along the girder.
 
-> NOTE: The shape of the slab haunch is governed, in part, by the girder camber which is a function of the concrete properties, prestressing, and loading conditions. At the onset of design the girder camber is not known. As such, the slab haunch dead load must be estimated and refined. This software does not perform iterations to converge on the slab haunch shape, depth, and dead load.
+> NOTE: The shape of the slab haunch is governed, in part, by the girder camber which is a function of the concrete properties, prestressing, and loading conditions. At the onset of design, the girder camber is not known. As such, the slab haunch dead load must be estimated and refined manually. In other words, this software does not perform iterations to minimize varation between the slab haunch shape and the haunch dead load.
   
 #### Intermediate Diaphragm Dead Load ####
 Diaphragm loads are modeled as concentrated forces. The force for exterior girders is P = HW<span style="font-family:Symbol">g</span><sub>c</sub>(w<sub>trib</sub> - t<sub>web</sub>) and for interior girders P = 0.5HW<span style="font-family:Symbol">g</span><sub>c</sub>(S - t<sub>web</sub>)

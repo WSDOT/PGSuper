@@ -57,8 +57,10 @@ public:
    virtual UINT GetMenuResourceID() = 0;
    virtual CPGSImportPluginDocTemplateBase* CreateDocTemplate() = 0;
 
+   virtual BOOL UseConfigurationCallback() { return FALSE; }
 
    virtual void SaveReportOptions();
+   virtual void SaveRegistryValues();
 
    HMENU m_hMenuShared;
    CProjectImportersCmdTarget m_MyCmdTarget;

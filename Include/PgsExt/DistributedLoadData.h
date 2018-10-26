@@ -54,7 +54,7 @@ public:
    bool operator != (const CDistributedLoadData& rOther) const;
 
    // properties
-   IDType                         m_ID;
+   IDType                         m_ID; // this is the load's ID
    UserLoads::LoadCase            m_LoadCase;
    UserLoads::DistributedLoadType m_Type;
 

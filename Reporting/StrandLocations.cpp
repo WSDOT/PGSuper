@@ -108,7 +108,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
    // Straight strands
    pgsPointOfInterest end_poi(segmentKey,0.0);
-   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
    StrandIndexType nExtendedLeft  = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
    StrandIndexType nExtendedRight = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
    if (0 < Ns)
@@ -215,7 +215,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          pPara = &(*pStraightLayoutTable)(0,1);
       }
 
-      nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
+      nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary,pgsTypes::dbetEither);
 
       rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
       *pPara << p_table;
@@ -275,7 +275,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
    bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
    StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-   nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
+   nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped,pgsTypes::dbetEither);
 
    int nStrandGrids;
    if ( areHarpedStraight || Nh==0 )

@@ -1,10 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    W32BT    *     25  0.6  270  14.72  10.04  11.75  11.75                                               5  28.0  3.0  7.400  8.300   3.574    -4.981     3041   0.550  0.671   3.973 -1.053 -0.084 -0.120 -1.257 112.17  176.52    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     1    W32BT    *     26  0.6  270  14.49  10.80  11.75  11.75                                               4  28.0  3.0  7.900  8.900   3.617    -5.003     3143   0.551  0.671   3.963 -1.017 -0.082 -0.117 -1.216 116.34  182.05    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
+Lifting checks failed
 Hauling checks failed
 
 

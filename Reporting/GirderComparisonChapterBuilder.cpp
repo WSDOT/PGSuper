@@ -27,6 +27,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
 
 #include <Material\PsStrand.h>
 
@@ -256,11 +257,11 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       (*p_table)(row,col++) << pStrands->GetStrandMaterial(pgsTypes::Straight)->GetName();
 
       (*p_table)(row,col) << pStrands->GetStrandCount(pgsTypes::Straight);
-      StrandIndexType nd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+      StrandIndexType nd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
       if (0 < nd)
       {
          (*p_table)(row,col) << rptNewLine << nd << _T(" Debonded");
-         was_debonding = true;     
+         was_debonding = true;
       }
       StrandIndexType nExtLeft  = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
       StrandIndexType nExtRight = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
@@ -673,16 +674,27 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );
 
+   ColumnIndexType nCols = 5;
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+   {
+      nCols++;
+   }
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
    *pPara << p_table<<rptNewLine;
 
-   (*p_table)(0,0) << _T("Girder");
-   (*p_table)(0,1) << COLHDR(_T("Left Lifting") << rptNewLine << _T("Loop Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,2) << COLHDR(_T("Right Lifting") << rptNewLine << _T("Loop Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,3) << COLHDR(_T("Leading Truck") << rptNewLine << _T("Support Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,4) << COLHDR(_T("Trailing Truck") << rptNewLine << _T("Support Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   ColumnIndexType col = 0;
+   (*p_table)(0,col++) << _T("Girder");
+   (*p_table)(0,col++) << COLHDR(_T("Left Lifting") << rptNewLine << _T("Loop Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Right Lifting") << rptNewLine << _T("Loop Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Leading Truck") << rptNewLine << _T("Support Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Trailing Truck") << rptNewLine << _T("Support Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+   {
+      (*p_table)(0,col++) << _T("Haul Truck");
+   }
 
 
    GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
@@ -690,12 +702,19 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
       CSegmentKey segmentKey(grpIdx,gdrIdx,0);
+#pragma Reminder("UPDATE: assuming precast girder")
 
-      (*p_table)(row,0) << LABEL_GIRDER(gdrIdx);
-      (*p_table)(row,1) << loc.SetValue(pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey));
-      (*p_table)(row,2) << loc.SetValue(pSegmentLifting->GetRightLiftingLoopLocation(segmentKey));
-      (*p_table)(row,3) << loc.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey));
-      (*p_table)(row,4) << loc.SetValue(pSegmentHauling->GetTrailingOverhang(segmentKey));
-      row++;
+      col = 0;
+
+      (*p_table)(row,col++) << LABEL_GIRDER(gdrIdx);
+      (*p_table)(row,col++) << loc.SetValue(pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey));
+      (*p_table)(row,col++) << loc.SetValue(pSegmentLifting->GetRightLiftingLoopLocation(segmentKey));
+      (*p_table)(row,col++) << loc.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey));
+      (*p_table)(row,col++) << loc.SetValue(pSegmentHauling->GetTrailingOverhang(segmentKey));
+      if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+      {
+         (*p_table)(row,col++) << pSegmentHauling->GetHaulTruck(segmentKey);
+      }
+     row++;
    }
 }

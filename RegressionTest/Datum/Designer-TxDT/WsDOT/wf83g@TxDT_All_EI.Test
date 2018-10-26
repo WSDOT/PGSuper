@@ -1,6 +1,16 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     1    WF83G    *     48  0.6  270  36.54  16.36  12.00  12.00                                              14  78.6  6.0  5.800  7.200   4.637    -4.419    14644   0.540  0.671   4.706 -2.154 -0.185 -0.218 -2.557 195.99  346.22    3.75   14.00   14.00 
+ 34.25    6   6.00                     1     1    WF83G    *     47  0.6  270  36.41  22.60  11.75  11.75                                               9  78.6  3.0  6.000  7.200   4.612    -4.397    14427   0.540  0.671   4.561 -2.118 -0.185 -0.218 -2.521 182.00  328.79    2.75   14.50   14.50 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
+Confinement zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 34.25    6   6.00                     1     2    WF83G    *     47  0.6  270  36.41  22.60  11.50  11.50                                               9  78.6  3.0  6.200  7.200   4.621    -4.404    14489   0.538  0.671   4.356 -2.129 -0.185 -0.218 -2.532 179.65  319.84    2.50   14.50   14.50 
 
 
 The Specification Check was Not Successful
@@ -9,16 +19,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     2    WF83G    *     48  0.6  270  36.54  16.36  11.75  11.75                                              14  78.6  6.0  5.800  7.200   4.643    -4.424    14644   0.538  0.671   4.590 -2.161 -0.185 -0.218 -2.564 195.99  345.64    3.75   14.00   14.00 
-
-
-The Specification Check was Not Successful
-Confinement zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     4    WF83G    *     48  0.6  270  36.54  16.36  11.75  11.75                                              14  78.6  6.0  5.800  7.200   4.643    -4.424    14644   0.538  0.671   4.590 -2.161 -0.185 -0.218 -2.564 195.99  345.64    3.75   14.00   14.00 
+ 34.25    6   6.00                     1     4    WF83G    *     47  0.6  270  36.41  22.60  11.50  11.50                                               9  78.6  3.0  6.200  7.200   4.621    -4.404    14489   0.538  0.671   4.356 -2.129 -0.185 -0.218 -2.532 179.65  319.84    2.50   14.50   14.50 
 
 
 The Specification Check was Not Successful

@@ -121,10 +121,10 @@ HRESULT CBoxBeamFactory2::FinalConstruct()
 
 void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
-   CComPtr<IBoxBeamSection> gdrsection;
-   gdrsection.CoCreateInstance(CLSID_BoxBeamSection);
+   CComPtr<IBoxBeamSection> gdrSection;
+   gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
    CComPtr<IBoxBeam> beam;
-   gdrsection->get_Beam(&beam);
+   gdrSection->get_Beam(&beam);
 
    Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength);
@@ -151,7 +151,7 @@ void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusItemIDType sta
    beam->put_F2(F2);
    beam->put_C1(C1);
 
-   gdrsection.QueryInterface(ppSection);
+   gdrSection.QueryInterface(ppSection);
 }
 
 

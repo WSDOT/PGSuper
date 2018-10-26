@@ -35,7 +35,7 @@ public:
 	virtual ~CWsdotHaulingDlg();
 
 // Dialog Data
-	enum { IDD = IDD_WSDOT_HAULINGD };
+	enum { IDD = IDD_WSDOT_HAULING };
 
    void OnSetActive();
 
@@ -47,11 +47,10 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CSpecHaulingErectionPage)
-	afx_msg void OnCheckHaulingTensMax();
-	afx_msg void OnLumpSumMethod();
-	afx_msg void OnPerAxleMethod();
+	afx_msg void OnCheckHaulingTensMaxCrown();
+	afx_msg void OnCheckHaulingTensMaxSuper();
 
 	DECLARE_MESSAGE_MAP()
-
-   void EnableLumpSumMethod(BOOL bEnable);
+public:
+   afx_msg void OnCbnSelchangeWindType();
 };

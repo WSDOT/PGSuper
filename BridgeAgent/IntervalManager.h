@@ -111,6 +111,12 @@ public:
    // returns the index of the interval when the closure joint is cast
    IntervalIndexType GetCastClosureInterval(const CClosureKey& clousreKey) const;
 
+   // returns the index of the interval when the first closure joint is cast for the specified girder
+   IntervalIndexType GetFirstCastClosureJointInterval(const CGirderKey& girderKey) const;
+
+   // returns the index of the interval when the last closure joint is cast for the specified girder
+   IntervalIndexType GetLastCastClosureJointInterval(const CGirderKey& girderKey) const;
+
    // returns the index of the interval when the deck and diaphragms are cast
    IntervalIndexType GetCastDeckInterval() const;
 
@@ -170,6 +176,9 @@ protected:
    void ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
    void ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
    void ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
+
+   // returns a list of closure joints that are casting during the timeline event
+   std::vector<CClosureKey> GetClosureJoints(const CTimelineEvent* pTimelineEvent);
 
    std::map<CTendonKey,IntervalIndexType> m_StressTendonIntervals;
 

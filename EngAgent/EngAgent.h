@@ -29,7 +29,7 @@ COPYRIGHT
    Washington State Department Of Transportation
    All Rights Reserved
 *****************************************************************************/
-
+#include <PgsExt\PgsExt.h>
 
 #include <IFace\PrestressForce.h>
 #include <IFace\DistributionFactors.h>

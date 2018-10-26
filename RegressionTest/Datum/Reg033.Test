@@ -15,7 +15,6 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 Lifting checks failed
 Hauling checks failed
-Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -35,6 +34,5 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 Lifting checks failed
 Hauling checks failed
-Minimum fillet value exceeded for bridge check failed
 
 

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <PgsExt\PgsExtExp.h>
+#include <PgsExt\PgsExt.h>
 
 interface IBridge;
 interface IGirder;
@@ -56,8 +56,7 @@ public:
    // Constructor
    pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IBridge* pBridge,IGirder* pGirder,
                                          IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,
-                                         bool bSISpec,
+                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,Float64 fsMax,
                                          bool bGirderStresses);
 
    //------------------------------------------------------------------------
@@ -65,9 +64,13 @@ public:
    virtual ~pgsAlternativeTensileStressCalculator()
    {;}
 
-   // if true, the stress in the mild reinforcement is limited to 30 ksi, otherwise it is not.
+   // if true, the stress in the mild reinforcement is limited to the bar stress limit, otherwise it is not.
    void LimitBarStress(bool bLimit);
    bool LimitBarStress() const;
+
+   // set/get the bar stress limit
+   void SetBarStressLimit(Float64 fsMax);
+   Float64 GetBarStressLimit() const;
 
    Float64 ComputeAlternativeStressRequirements(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                                                 Float64 fTop, Float64 fBot, 
@@ -94,7 +97,8 @@ private:
    IPointOfInterest* m_pPoi;
 
    bool m_bLimitBarStress;
-   bool m_bSISpec;
+   Float64 m_fsMax;
+
    bool m_bGirderStresses;
    IntervalIndexType m_IntervalIdx;
 };

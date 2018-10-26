@@ -250,6 +250,43 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry* pSubject,Int32 hint)
    pDoc->SetModified();
 }
 
+void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry* pSubject,Int32 hint)
+{
+   m_pAgent->HoldEvents();
+   if ( hint & LibraryHints::EntryRenamed )
+   {
+      GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      {
+         CGirderGroupData* pGroup = m_pAgent->m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               if ( pSegment->HandlingData.pHaulTruckLibraryEntry == pSubject )
+               {
+                  pSegment->HandlingData.HaulTruckName = pSubject->GetName();
+               }
+            }
+         }
+      }
+   }
+
+   if ( hint & LibraryHints::EntryEdited )
+   {
+      ClearStatusItems();
+      m_pAgent->Fire_BridgeChanged();
+   }
+   m_pAgent->FirePendingEvents();
+
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   pDoc->SetModified();
+}
+
 //======================== ACCESS     =======================================
 void pgsLibraryEntryObserver::SetAgent(CProjectAgentImp* pAgent)
 {

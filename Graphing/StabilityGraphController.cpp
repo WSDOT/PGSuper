@@ -68,7 +68,7 @@ BOOL CStabilityGraphController::OnInitDialog()
 
    CComboBox* pcbStage = (CComboBox*)GetDlgItem(IDC_EVENT);
    pcbStage->AddString(_T("Lifting"));
-   pcbStage->AddString(_T("Transportation"));
+   pcbStage->AddString(_T("Hauling"));
    pcbStage->SetCurSel(0);
    m_GraphType = GT_LIFTING;
 

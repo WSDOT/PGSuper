@@ -43,27 +43,40 @@ CBridgeAnalysisReportSpecificationBuilder::~CBridgeAnalysisReportSpecificationBu
 {
 }
 
-boost::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for girder and chapter list
    GET_IFACE(ISelection,pSelection);
-   CGirderKey girderKey = pSelection->GetSelectedGirder();
-   girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
-   girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
+   GirderIndexType girder = pSelection->GetSelectedGirder().girderIndex;
 
-   CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pRptSpec); // span only mode
-   dlg.m_Girder = girderKey.girderIndex;
+   CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pOldRptSpec); // span only mode
+   dlg.m_Girder = girder;
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CBridgeAnalysisReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder,dlg.m_bDesign,dlg.m_bRating) );
+      // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+      boost::shared_ptr<CBridgeAnalysisReportSpecification> pOldGRptSpec = boost::dynamic_pointer_cast<CBridgeAnalysisReportSpecification>(pOldRptSpec);
+
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CBridgeAnalysisReportSpecification> pNewGRptSpec = boost::shared_ptr<CBridgeAnalysisReportSpecification>( new CBridgeAnalysisReportSpecification(*pOldGRptSpec) );
+         pNewGRptSpec->SetGirderIndex(dlg.m_Girder);
+         pNewGRptSpec->SetOptions(dlg.m_bDesign, dlg.m_bRating);
+
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CBridgeAnalysisReportSpecification>( new CBridgeAnalysisReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder,dlg.m_bDesign,dlg.m_bRating) );
+      }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pNewRptSpec);
 
-      return pRptSpec;
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();

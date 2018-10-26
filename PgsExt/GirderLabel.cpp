@@ -288,7 +288,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
    return strLabel;
 }
 
-LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState)
+LPCTSTR GetLimitStateString(pgsTypes::LimitState limitState)
 {
    // these are the names that are displayed to the user in the UI and reports
    // this must be in the same order as the LimitState enum
@@ -411,4 +411,39 @@ LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState)
 #endif
 
    return strNames[limitState];
+}
+
+LPCTSTR GetStressLocationString(pgsTypes::StressLocation loc)
+{
+   switch(loc)
+   {
+   case pgsTypes::BottomGirder:
+      return _T("Bottom of Girder");
+      break;
+   case pgsTypes::TopGirder:
+      return _T("Top of Girder");
+      break;
+   case pgsTypes::TopDeck:
+      return _T("Top of Slab");
+      break;
+   default:
+      ATLASSERT(false);
+      return _T("Error in StressLocation");
+   }
+}
+
+LPCTSTR GetStressTypeString(pgsTypes::StressType type)
+{
+   switch(type)
+   {
+   case pgsTypes::Tension:
+      return _T("Tension");
+      break;
+   case pgsTypes::Compression:
+      return _T("Compression");
+      break;
+   default:
+      ATLASSERT(false);
+      return _T("Error in StressType");
+   }
 }

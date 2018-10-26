@@ -35,8 +35,8 @@ CLASS
 pgsAlternativeTensileStressCalculator::pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
                                                                              IBridge* pBridge,IGirder* pGirder,
                                          IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,
-                                         bool bSISpec,bool bGirderStresses) :
+                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,Float64 fsMax,
+                                         bool bGirderStresses) :
 m_pBridge(pBridge),
 m_pGirder(pGirder),
 m_pShapes(pShapes),
@@ -47,7 +47,7 @@ m_pPoi(pPoi)
 {
    m_IntervalIdx = intervalIdx;
    m_bLimitBarStress = bLimitBarStress;
-   m_bSISpec = bSISpec;
+   m_fsMax = fsMax;
    m_bGirderStresses = bGirderStresses;
 }
 
@@ -61,6 +61,16 @@ bool pgsAlternativeTensileStressCalculator::LimitBarStress() const
    return m_bLimitBarStress;
 }
 
+void pgsAlternativeTensileStressCalculator::SetBarStressLimit(Float64 fsMax)
+{
+   m_fsMax = fsMax;
+}
+
+Float64 pgsAlternativeTensileStressCalculator::GetBarStressLimit() const
+{
+   return m_fsMax;
+}
+
 Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequirements(
                                         const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                                         Float64 fTop, Float64 fBot, 
@@ -68,11 +78,6 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
                                         Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                         Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar)
 {
-#pragma Reminder("UDPATE: need to consider which component has tension... girder or deck")
-   // fTop and fBot could be for the girder or for the deck
-   // if for the deck, deck properties and deck steel is needed. 
-   // this method doesn't do that yet (see case for slAllTens... uses girder area only)
-
    // Determine neutral axis location and mild steel requirement for alternative tensile stress
    typedef enum {slAllTens, slAllComp, slTopTens, slBotTens} StressLocation;
    StressLocation stressLoc;
@@ -111,10 +116,9 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
    // Max bar stress for computing higher allowable temporary tensile (5.9.4.1.2)
    Float64 allowable_bar_stress = 0.5*fy;
-   Float64 fsMax = (m_bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
-   if ( m_bLimitBarStress && fsMax < allowable_bar_stress )
+   if ( m_bLimitBarStress && m_fsMax < allowable_bar_stress )
    {
-       allowable_bar_stress = fsMax;
+       allowable_bar_stress = m_fsMax;
    }
 
    if ( fTop <= TOLERANCE && fBot <= TOLERANCE )
@@ -375,7 +379,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
    // Now we can determine which allowable we can use
    Float64 fAllowable;
-   if (AsReqd < AsProvd)
+   if (AsReqd <= AsProvd)
    {
       fAllowable = fAllowableWithRebar;
       *pIsAdequateRebar = true;

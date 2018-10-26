@@ -70,16 +70,16 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                 
                                  bool bModelRightCantilever,                  // if true, the cantilever defined by rightSupportLoc is modeled
                                  const std::vector<pgsPointOfInterest>& vPOI, // vector of PGSuper POIs that are to be modeld in the Fem2d Model
                                  IFem2dModel** ppModel,                       // the Fem2d Model
-                                 pgsPoiMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
+                                 pgsPoiPairMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
                                  )
 {
    // Build the model... always model the cantilevers in the geometry of the FEM model
-   BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, true, true, vPOI, ppModel, pPoiMap);
+   BuildModel(pBroker, intervalIdx, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, true, true, vPOI, ppModel);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
 
-   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
+   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel);
 
    ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
 }
@@ -87,7 +87,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                 
 void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,
                                           Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                           LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                          const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+                                          const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel)
 {
    if ( *ppModel )
    {
@@ -108,10 +108,10 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 
    // sometimes we loose the released segment POI at 0L and 1.0L in the call to RemovePointsOfInterest above
    // these are key POI so include them here so we are guarenteed to have them.
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_START_FACE);
    ATLASSERT(vPoi.size() == 1);
    xsPOI.push_back(vPoi.front());
-   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_END_FACE);
    ATLASSERT(vPoi.size() == 1);
    xsPOI.push_back(vPoi.front());
 
@@ -262,7 +262,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
 void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                        Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
                                        bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,
-                                       IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+                                       IFem2dModel** ppModel)
 {
    // apply loads
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -442,13 +442,13 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
 void pgsGirderModelFactory::ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
                                                   bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,
-                                                  IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+                                                  IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap)
 {
    // layout poi on fem model
    pPoiMap->Clear();
-   std::vector<PoiIDType> poiIDs = pgsGirderModelFactory::AddPointsOfInterest(*ppModel,vPOI);
-   std::vector<PoiIDType>::iterator poiIDiter(poiIDs.begin());
-   std::vector<PoiIDType>::iterator poiIDiterEnd(poiIDs.end());
+   std::vector<PoiIDPairType> poiIDs = pgsGirderModelFactory::AddPointsOfInterest(*ppModel,vPOI);
+   std::vector<PoiIDPairType>::iterator poiIDiter(poiIDs.begin());
+   std::vector<PoiIDPairType>::iterator poiIDiterEnd(poiIDs.end());
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPOI.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPOI.end());
    for ( ; poiIDiter != poiIDiterEnd && poiIter != poiIterEnd; poiIDiter++, poiIter++ )
@@ -496,7 +496,7 @@ void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStart
    ATLASSERT(false); // didn't find a solution
 }
 
-PoiIDType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,const pgsPointOfInterest& poi)
+PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,const pgsPointOfInterest& poi)
 {
    // layout poi on fem model
    CComPtr<IFem2dJointCollection> joints;
@@ -517,35 +517,58 @@ PoiIDType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,const pg
    Float64 prevLocation;
    prevJnt->get_X(&prevLocation);
 
+   Float64 poi_dist_from_start = poi.GetDistFromStart();
+
+   bool is_dual_pois = false; // if poi straddles a support location, add fem pois at either side
    for ( ; jntIdx < nJoints; jntIdx++, mbrID++ )
    {
       CComPtr<IFem2dJoint> jnt;
       joints->get_Item(jntIdx,&jnt);
       Float64 location;
       jnt->get_X(&location);
+      VARIANT_BOOL is_support;
+      jnt->IsSupport(&is_support);
 
-      if ( InRange(prevLocation,poi.GetDistFromStart(),location) )
+      if (is_support && IsEqual(poi_dist_from_start,location) && jntIdx!=nJoints-1 )
       {
-         dist_from_start_of_member = poi.GetDistFromStart() - prevLocation;
-         break;
+         // poi is directly over an interior support joint. we need fem pois on either side
+         CComPtr<IFem2dPOI> objPOI_left,objPOI_right;
+
+         PoiIDType femID_left = ms_FemModelPoiID++;
+         PoiIDType femID_right = ms_FemModelPoiID++;
+
+         HRESULT hr = pois->Create(femID_left, mbrID, -1.0, &objPOI_left);
+         ATLASSERT(SUCCEEDED(hr));
+         hr = pois->Create(femID_right, mbrID+1, 0.0, &objPOI_right);
+         ATLASSERT(SUCCEEDED(hr));
+
+         return PoiIDPairType(femID_left, femID_right);
+      }
+      else if ( InRange(prevLocation, poi_dist_from_start, location) )
+      {
+         dist_from_start_of_member = poi_dist_from_start - prevLocation;
+
+         CComPtr<IFem2dPOI> objPOI;
+
+         PoiIDType femID = ms_FemModelPoiID++;
+
+         HRESULT hr = pois->Create(femID,mbrID,dist_from_start_of_member,&objPOI);
+         ATLASSERT(SUCCEEDED(hr));
+
+         return PoiIDPairType(femID, femID);
       }
 
       prevLocation = location;
    }
 
-   CComPtr<IFem2dPOI> objPOI;
-
-   PoiIDType femID = ms_FemModelPoiID++;
-
-   HRESULT hr = pois->Create(femID,mbrID,dist_from_start_of_member,&objPOI);
-   ATLASSERT(SUCCEEDED(hr));
-
-   return femID;
+   // poi not on model. should never happen
+   ATLASSERT(0); 
+   return PoiIDPairType(INVALID_ID,INVALID_ID);
 }
 
-std::vector<PoiIDType> pgsGirderModelFactory::AddPointsOfInterest(IFem2dModel* pModel,const std::vector<pgsPointOfInterest>& vPOI)
+std::vector<PoiIDPairType> pgsGirderModelFactory::AddPointsOfInterest(IFem2dModel* pModel,const std::vector<pgsPointOfInterest>& vPOI)
 {
-   std::vector<PoiIDType> femIDs;
+   std::vector<PoiIDPairType> femIDs;
 
    std::vector<pgsPointOfInterest>::const_iterator i(vPOI.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
@@ -573,7 +596,7 @@ pgsKdotHaulingGirderModelFactory::~pgsKdotHaulingGirderModelFactory(void)
 void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel)
 {
    ATLASSERT(bModelLeftCantilever && bModelRightCantilever); // kdot method should always include cantilevers
 
@@ -712,7 +735,7 @@ pgsDesignHaunchLoadGirderModelFactory::~pgsDesignHaunchLoadGirderModelFactory(vo
 void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap)
+                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel)
 {
    // apply  loads
    // We dont need girder self weight, so don't use it

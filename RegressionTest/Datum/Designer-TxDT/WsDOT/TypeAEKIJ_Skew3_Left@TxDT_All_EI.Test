@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  11.92  11.50  11.50                                              11  62.0  4.0  4.300  5.200   3.537    -3.629     8683   0.510  0.758   4.395 -1.667 -0.150 -0.214 -2.032 140.29  266.99    3.00    5.50    5.50 
+ 28.25    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.562    -3.638     8783   0.511  0.757   4.436 -1.607 -0.146 -0.209 -1.962 137.81  262.25    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -12,7 +12,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    WF66G    *     36  0.6  270  28.69  11.03  11.50  11.50                                              12  62.0  4.0  4.300  5.200   3.552    -3.642     8834   0.508  0.758   4.494 -1.688 -0.150 -0.214 -2.053 149.08  282.16    3.00    5.50    5.50 
+ 28.25    5   6.00                     1     2    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.577    -3.650     8784   0.509  0.757   4.375 -1.627 -0.146 -0.209 -1.982 137.81  261.13    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -24,85 +24,78 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    WF66G    *     36  0.6  270  28.69  11.03  11.50  11.50                                              12  62.0  4.0  4.300  5.200   3.552    -3.642     8834   0.508  0.671   4.494 -1.688 -0.150 -0.214 -2.053 149.08  282.16    3.00    5.50    5.50 
+ 28.25    5   6.00                     1     3    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.577    -3.650     8784   0.509  0.671   4.375 -1.627 -0.146 -0.209 -1.982 137.81  261.13    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     1    WF66G    *     35  0.6  270  28.72  11.92  11.50  11.50                                              11  62.0  4.0  4.300  5.200   3.536    -3.626     8684   0.507  0.759   4.401 -1.668 -0.150 -0.215 -2.033 140.24  266.82    3.00    5.50    5.50 
+ 28.25    5   6.00                     2     1    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.561    -3.634     8783   0.508  0.758   4.441 -1.608 -0.147 -0.209 -1.963 137.76  262.09    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     2    WF66G    *     35  0.6  270  28.72  11.92  11.50  11.50                                              11  62.0  4.0  4.300  5.200   3.550    -3.638     8684   0.505  0.759   4.338 -1.688 -0.150 -0.215 -2.053 140.24  265.69    3.00    5.50    5.50 
+ 28.25    5   6.00                     2     2    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.575    -3.646     8784   0.506  0.758   4.381 -1.627 -0.147 -0.209 -1.982 137.76  261.01    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     3    WF66G    *     35  0.6  270  28.72  11.92  11.50  11.50                                              11  62.0  4.0  4.300  5.200   3.550    -3.638     8684   0.505  0.671   4.338 -1.688 -0.150 -0.215 -2.053 140.24  265.69    3.00    5.50    5.50 
+ 28.25    5   6.00                     2     3    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.575    -3.646     8784   0.506  0.671   4.381 -1.627 -0.147 -0.209 -1.982 137.76  261.01    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     1    WF66G    *     35  0.6  270  28.72  11.92  11.50  11.50                                              11  62.0  4.0  4.300  5.200   3.537    -3.629     8683   0.510  0.758   4.395 -1.667 -0.150 -0.214 -2.032 140.29  266.99    3.00    5.50    5.50 
+ 28.25    5   6.00                     3     1    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.562    -3.638     8783   0.511  0.757   4.436 -1.607 -0.146 -0.209 -1.962 137.81  262.25    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     2    WF66G    *     36  0.6  270  28.69  11.03  11.50  11.50                                              12  62.0  4.0  4.300  5.200   3.552    -3.642     8834   0.508  0.758   4.494 -1.688 -0.150 -0.214 -2.053 149.08  282.16    3.00    5.50    5.50 
+ 28.25    5   6.00                     3     2    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.577    -3.650     8784   0.509  0.757   4.375 -1.627 -0.146 -0.209 -1.982 137.81  261.13    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     3    WF66G    *     36  0.6  270  28.69  11.03  11.50  11.50                                              12  62.0  4.0  4.300  5.200   3.552    -3.642     8834   0.508  0.671   4.494 -1.688 -0.150 -0.214 -2.053 149.08  282.16    3.00    5.50    5.50 
+ 28.25    5   6.00                     3     3    WF66G    *     35  0.6  270  28.72  14.72  11.50  11.50                                               9  62.0  4.0  4.500  5.600   3.577    -3.650     8784   0.509  0.671   4.375 -1.627 -0.146 -0.209 -1.982 137.81  261.13    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 
 

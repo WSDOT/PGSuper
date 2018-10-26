@@ -362,7 +362,7 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
    return hr;
 }
 
@@ -425,7 +425,7 @@ void CBridgeDescription::MakeCopy(const CBridgeDescription& rOther)
 
    m_LLDFMethod = rOther.m_LLDFMethod;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CBridgeDescription::MakeAssignment(const CBridgeDescription& rOther)
@@ -752,7 +752,7 @@ void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpan
    if ( !pFirstSpan )
       firstSpan->SetGirderCount(m_nGirders);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CBridgeDescription::AppendSpan(const CSpanData* pSpanData,const CPierData* pPierData)
@@ -875,7 +875,7 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    if ( !pSpanData && m_bSameNumberOfGirders )
       pNewSpan->SetGirderCount(m_nGirders);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 class RemoveNegMomentRebar
@@ -963,7 +963,7 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 PierIndexType CBridgeDescription::GetPierCount() const

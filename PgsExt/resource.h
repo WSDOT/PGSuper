@@ -3,11 +3,15 @@
 // Used by PgsExt.rc
 //
 #define IDCANCEL2                       4
+#define IDR_ADD_DELETE_POPUP            147
 #define IDD_SPANGIRDERREPORT            150
 #define IDD_BOUNDARY_CONDITIONS         191
 #define IDD_REFINEDANALYSIS             216
 #define IDC_SLIDER                      221
 #define IDC_LOCATION                    222
+#define IDD_CONFIGUREPGSUPER            244
+#define IDD_CATALOGSERVER               255
+#define IDD_SERVERDATA                  256
 #define IDB_HINGES                      289
 #define IDB_ROLLERS                     290
 #define IDB_CONTINUOUS                  291
@@ -15,6 +19,7 @@
 #define IDB_IP_ROLLERS                  293
 #define IDB_COLUMN_FIXITY               294
 #define IDB_HAUNCH_SQUARE               295
+#define IDI_EARTH                       296
 #define IDB_BITMAP2                     296
 #define IDB_HAUNCH_FILLETED             296
 #define IDD_SELECT_GIRDER               297
@@ -87,15 +92,49 @@
 #define IDC_LIST                        1012
 #define IDC_SPAN                        1049
 #define IDC_GIRDER                      1050
+#define IDC_TEST_SERVER                 1101
 #define IDC_RADIO_LEVER                 1110
+#define IDC_ENGINEER_NAME               1139
+#define IDC_COMPANY_NAME                1142
+#define IDC_WORKGROUP_TEMPLATE_LOCATION 1145
+#define IDC_WORKGROUP_TEMPLATE_BROWSE   1147
+#define IDC_LIBRARY_FILE_LOCATION       1149
+#define IDC_LIBRARY_FILE_BROWSE         1152
+#define IDC_ADD                         1169
+#define IDC_EDIT                        1263
+#define IDC_NAME                        1265
+#define IDC_SERVER_TYPE                 1267
 #define IDC_DESCRIPTION                 1336
+#define ID_C_HELP                       1361
+#define IDC_RADIO1                      1362
+#define IDC_HELP                        1363
 #define IDC_BOUNDARY_CONDITION          1407
+#define IDC_UPDATE_FREQUENCY            1412
+#define IDC_SERVERS                     1429
 #define IDC_RADIO_INPUT                 1442
 #define IDC_RADIO_IGNORE                1443
+#define IDC_DELETE                      1444
 #define IDS_E_NOCHAPTERS                1492
+#define IDC_GENERIC                     1504
+#define IDC_DOWNLOAD                    1505
+#define IDC_PUBLISHERS                  1506
+#define IDC_FIRST_RUN                   1508
+#define IDC_URL                         1518
+#define IDC_UPDATENOW                   1519
+#define IDC_URL_STATIC                  1535
+#define IDC_UPDATES_STATIC              1536
+#define IDC_TEMPLATE_STATIC             1536
+#define IDC_PUBLISHER_HYPERLINK         1537
+#define IDC_STATIC_EARTH                1539
 #define IDC_SEGMENT                     1624
+#define IDC_SERVERS_STATIC              1637
+#define IDC_SERVERS_STATIC2             1639
 #define IDC_GROUP                       1655
+#define IDC_CONFIGURATION_GROUP         1804
+#define IDC_TITLE                       1805
 #define IDC_INTERVAL                    3016
+#define ID_EDIT_INSERTROW               36894
+#define ID_EDIT_REMOVEROWS              36897
 
 // Next default values for new objects
 // 
@@ -103,7 +142,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        300
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1361
+#define _APS_NEXT_CONTROL_VALUE         1364
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

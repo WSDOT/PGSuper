@@ -32,6 +32,7 @@
 #include <IFace\Artifact.h>
 #include <PgsExt\PoiMgr.h>
 
+#include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\GirderData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 

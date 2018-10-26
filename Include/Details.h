@@ -354,6 +354,47 @@ struct CREEPCOEFFICIENTDETAILS
    Float64 K1, K2; // 2005 and later, from NCHRP Report 496
 };
 
+struct INCREMENTALCREEPDETAILS
+{
+   boost::shared_ptr<matConcreteBaseCreepDetails> pStartDetails;
+   boost::shared_ptr<matConcreteBaseCreepDetails> pEndDetails;
+};
+
+struct INCREMENTALSHRINKAGEDETAILS
+{
+   INCREMENTALSHRINKAGEDETAILS() : esi(0) {}
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> pStartDetails;
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> pEndDetails;
+   Float64 esi;
+};
+
+// Details of incremental relaxation computation used for time-step analysis
+struct INCREMENTALRELAXATIONDETAILS
+{
+   INCREMENTALRELAXATIONDETAILS()
+   {
+      memset((void*)this,0,sizeof(INCREMENTALRELAXATIONDETAILS));
+   }
+
+   // common parameters
+   Float64 fpi; // effective prestress at the start of the interval
+   Float64 fpy;
+   Float64 fpu;
+   Float64 tStart;
+   Float64 tEnd;
+   Float64 epoxyFactor;
+
+   // These parameters are for AASHTO and ACI209 models
+   Float64 K;
+
+   // These parameters are for CEB-FEP model
+   Float64 p;
+   Float64 k;
+
+   // Incremental relaxation
+   Float64 fr;
+};
+
 #define TIMESTEP_CR  0
 #define TIMESTEP_SH  1
 #define TIMESTEP_RE  2
@@ -381,7 +422,7 @@ struct TIME_STEP_CONCRETE
       Float64 E; // modulus of elasticity used to compute creep strain (Not age adjusted)
       Float64 A;
       Float64 Cs; // C(i+1/2,j)
-      Float64 Ce; // C(1-1/2,j)
+      Float64 Ce; // C(i-1/2,j)
       Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
       Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
       Float64 e;
@@ -392,8 +433,8 @@ struct TIME_STEP_CONCRETE
          A = 0;
          Cs = 0;
          Ce = 0;
-         Xs = 0;
-         Xe = 0;
+         Xs = 1;
+         Xe = 1;
          e = 0;
       }
    };
@@ -404,7 +445,7 @@ struct TIME_STEP_CONCRETE
       Float64 E; // modulus of elasticity used to compute creep curvature (Not age adjusted)
       Float64 I;
       Float64 Cs; // C(i+1/2,j)
-      Float64 Ce; // C(1-1/2,j)
+      Float64 Ce; // C(i-1/2,j)
       Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
       Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
       Float64 r;
@@ -415,16 +456,17 @@ struct TIME_STEP_CONCRETE
          I = 0;
          Cs = 0;
          Ce = 0;
-         Xs = 0;
-         Xe = 0;
+         Xs = 1;
+         Xe = 1;
          r = 0;
       }
    };
    std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j*)C(i-1/2,j)]
    std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j)*C(i-1/2,j)]
+   std::vector<INCREMENTALCREEPDETAILS> Creep; // creep coefficient details
 
    // Unrestrained deformations due to creep and shrinkage in concrete during this interval
-   Float64 esi; // shrinkage
+   INCREMENTALSHRINKAGEDETAILS Shrinkage;
    Float64 eci; // sum of (dN(j)/(AE(j))*[C(i+1/2,j) - C(i-1/2,j)]
    Float64 rci; // sum of (dM(j)/(IE(j))*[C(i+1/2,j) - C(i-1/2,j)]
 
@@ -477,7 +519,6 @@ struct TIME_STEP_CONCRETE
       H  = 0;
       E  = 0;
 
-      esi = 0;
       eci = 0;
       rci = 0;
 
@@ -544,7 +585,7 @@ struct TIME_STEP_STRAND
    Float64 E;
 
    // Relaxation
-   Float64 fr; // prestress loss due to relaxation during this interval
+   INCREMENTALRELAXATIONDETAILS Relaxation;
    Float64 er; // apparent deformation due to relaxation (fr/Eps)
    Float64 PrRelaxation; // restraining force (= -Eps*Ap*er = -fr*As)
 
@@ -595,7 +636,6 @@ struct TIME_STEP_STRAND
       As = 0;
       Ys = 0;
       E = 0;
-      fr = 0;
       er = 0;
       PrRelaxation = 0;
 
@@ -802,6 +842,9 @@ struct TIME_STEP_DETAILS
 
       dP = 0;
       dM = 0;
+
+      P = 0;
+      M = 0;
 
       dPext = 0;
       dPint = 0;

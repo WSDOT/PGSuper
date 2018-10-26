@@ -395,7 +395,9 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
    {
       pcbEvent->ResetContent();
       const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(liveLoadEventIdx);
-      int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+      CString strEvent;
+      strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(liveLoadEventIdx),pTimelineEvent->GetDescription());
+      int idx = pcbEvent->AddString(strEvent);
       pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
       pcbEvent->SetCurSel(0);
       pcbEvent->EnableWindow(FALSE);
@@ -408,11 +410,14 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
       {
          pcbEvent->ResetContent();
          const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(castDeckEventIdx);
-         int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+         CString strEvent;
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(castDeckEventIdx),pTimelineEvent->GetDescription());
+         int idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
          pTimelineEvent = m_TimelineMgr.GetEventByIndex(railingSystemEventIdx);
-         idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(railingSystemEventIdx),pTimelineEvent->GetDescription());
+         idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
          pcbEvent->EnableWindow(TRUE);
@@ -635,7 +640,8 @@ void CEditDistributedLoadDlg::FillEventList()
             CString label;
             label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
 
-            pcbEvent->SetItemData(pcbEvent->AddString(label),pTimelineEvent->GetID());
+            EventIDType eventID = pTimelineEvent->GetID();
+            pcbEvent->SetItemData(pcbEvent->AddString(label),eventID);
          }
       }
 

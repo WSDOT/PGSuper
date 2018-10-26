@@ -163,7 +163,7 @@ HRESULT CLoadManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
    return hr;
 }
 
@@ -584,7 +584,7 @@ void CLoadManager::MakeCopy(const CLoadManager& rOther)
 
    m_pTimelineManager = rOther.m_pTimelineManager;
    m_pTimelineManager->SetLoadManager(this);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CLoadManager::MakeAssignment(const CLoadManager& rOther)

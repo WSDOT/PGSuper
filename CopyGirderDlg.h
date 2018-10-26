@@ -40,7 +40,7 @@ class CCopyGirderDlg : public CDialog
 {
 // Construction
 public:
-	CCopyGirderDlg(IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
@@ -78,20 +78,25 @@ public:
 protected:
    std::vector<IDType> m_CallbackIDs;
 
+   CSelection m_FromSelection;
+
 	// Generated message map functions
 	//{{AFX_MSG(CCopyGirderDlg)
 	virtual BOOL OnInitDialog();
    afx_msg void OnFromGroupChanged();
    afx_msg void OnToGroupChanged();
    afx_msg void OnToGirderChanged();
+   afx_msg void OnFromGirderChanged();
    afx_msg void OnHelp();
    afx_msg void OnBnClickedRadio();
    afx_msg void OnBnClickedSelectGirders();
+   afx_msg void OnCopyItemStateChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    void CopyToSelectionChanged();
    IBroker* m_pBroker;
+   std::map<IDType,ICopyGirderPropertiesCallback*>& m_rCopyGirderPropertiesCallbacks;
 
    void FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders);
    void FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpIdx,bool bIncludeAllGirders);
@@ -101,6 +106,9 @@ protected:
 private:
    // map from multi-select dialog
    std::vector<CGirderKey> m_MultiDialogSelections;
+protected:
+   virtual void OnOK();
+   void EnableCopyNow(BOOL bEnable);
 };
 
 //{{AFX_INSERT_LOCATION}}

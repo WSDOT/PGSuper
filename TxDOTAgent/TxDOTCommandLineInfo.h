@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <EAF\EAFCommandLineInfo.h>
+#include "PgsExt\BaseCommandLineInfo.h"
 
 /*****************************************************************************
 CLASS 
@@ -39,7 +39,7 @@ CLASS
 // Below is to take a sample exterior and interior girder (A and mid-most)
 #define TXEIGIRDERS  -6 
 
-class  CTxDOTCommandLineInfo : public CEAFCommandLineInfo
+class  CTxDOTCommandLineInfo : public CPGSBaseCommandLineInfo
 {
 public:
    // Different types of Analysis/Design and level of detail (Ext==extended) for TxDOT CAD reports
@@ -70,6 +70,7 @@ public:
 
 private:
    CString GetUsageString();
+   virtual LPCTSTR GetAppName() const;
 
    // Prevent accidental copying and assignment
    CTxDOTCommandLineInfo(const CTxDOTCommandLineInfo&);

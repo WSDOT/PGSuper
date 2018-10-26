@@ -352,7 +352,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      if ( IsDlgButtonChecked(IDC_FC1) )
+      if ( pParent->m_pSegment->Material.Concrete.bBasePropertiesOnInitialValues )
       {
          OnChangeFci();
       }
@@ -531,7 +531,19 @@ void CGirderDescGeneralPage::UpdateEci()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       Float64 Eci;
-      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
+      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+      {
+         lrfdLRFDTimeDependentConcrete concrete;
+         concrete.UserEc28(true);
+         concrete.SetEc28(Ec);
+         concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
+         concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(pParent->m_pSegment->Material.Concrete.Fc);
+         concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
+         Eci = concrete.GetEc(m_AgeAtRelease);
+      }
+      else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
       {
          matACI209Concrete concrete;
          concrete.UserEc28(true);
@@ -644,7 +656,11 @@ void CGirderDescGeneralPage::UpdateEc()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       Float64 Ec;
-      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
+      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+      {
+         Ec = lrfdLRFDTimeDependentConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+      }
+      else if (m_TimeDependentModel == pgsTypes::tdmACI209 )
       {
          Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
       }
@@ -702,7 +718,11 @@ void CGirderDescGeneralPage::UpdateFc()
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
          Float64 fc;
 
-         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
+         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+         {
+            fc = lrfdLRFDTimeDependentConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+         }
+         else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
          {
             fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
          }
@@ -742,7 +762,16 @@ void CGirderDescGeneralPage::UpdateFci()
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
          Float64 fci;
-         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO || m_TimeDependentModel == pgsTypes::tdmACI209 )
+         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+         {
+            lrfdLRFDTimeDependentConcrete concrete;
+            concrete.SetTimeAtCasting(0);
+            concrete.SetFc28(fc);
+            concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
+            concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
+            fci = concrete.GetFc(m_AgeAtRelease);
+         }
+         else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
          {
             matACI209Concrete concrete;
             concrete.SetTimeAtCasting(0);
@@ -779,6 +808,15 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    ExchangeConcreteData(&dx);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+
+   EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_pSegment->GetID());
+   Float64 ageAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetAgeAtRelease();
+   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(ageAtRelease,unitMeasure::Day);
+
+   dlg.m_fci = pParent->m_pSegment->Material.Concrete.Fci;
+   dlg.m_Eci = pParent->m_pSegment->Material.Concrete.Eci;
+   dlg.m_bUserEci = pParent->m_pSegment->Material.Concrete.bUserEci;
 
    dlg.m_fc28 = pParent->m_pSegment->Material.Concrete.Fc;
    dlg.m_Ec28 = pParent->m_pSegment->Material.Concrete.Ec;

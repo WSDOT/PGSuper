@@ -78,6 +78,4 @@ protected:
 
    //------------------------------------------------------------------------
    virtual void MakeAssignment(const CLiftingCheck& rOther);
-
-private:
 };

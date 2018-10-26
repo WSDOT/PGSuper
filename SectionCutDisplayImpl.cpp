@@ -100,6 +100,21 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject*
 
    pThis->m_pCutLocation = pCutLoc;
 
+   // need offset because view starts at cl pier
+   if ( pThis->m_GirderKey.groupIndex == ALL_GROUPS )
+   {
+      pThis->m_StartOffset = 0.0;
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
+      Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+      Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+      pThis->m_StartOffset = start_brg_offset - start_end_distance;
+   }
+
    Float64 Xgl = pThis->m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IPoint2d> pnt;
@@ -216,7 +231,7 @@ void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xg
 
    *top    = height;
    *bottom = -(GetGirderHeight(Xgl) + height);
-   *left   = Xgl;
+   *left   = Xgl + m_StartOffset; // add offset to get into correct coord's
    *right  = *left + width;
 }
 

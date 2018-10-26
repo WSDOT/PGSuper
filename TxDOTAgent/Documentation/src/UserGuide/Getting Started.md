@@ -10,7 +10,7 @@ Creating a new project in TOGA is simple: Open BridgeLink and select *File > New
 
 ![](FileNew.gif)
 
-> Note: If "TxDOT Optional Girder Analysis" is not an available project type, you probably don't have TOGA installed. Re-install BridgeLink with the TxDOT options, or contact technical support if this problem persists.
+> Note: If "TxDOT Optional Girder Analysis" is not an available project type, you probably don't have the TxDOT Extensions (which include TOGA) installed. Re-install BridgeLink with the TxDOT options enabled, or contact technical support if this problem persists.
 
 After you have a new file, running TOGA is simple: 
 1. Fill in all of the blank input controls on the [Bridge Input Tab](@ref ui_bridge_input_tab) and [Girder Input Tab ](@ref ui_girder_input_tab)

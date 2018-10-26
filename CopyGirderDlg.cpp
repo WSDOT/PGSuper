@@ -33,7 +33,9 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
+#include <IFace\Transactions.h>
 
+#include <PgsExt\MacroTxn.h>
 #include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
@@ -46,12 +48,17 @@ static char THIS_FILE[] = __FILE__;
 // CCopyGirderDlg dialog
 
 
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, CWnd* pParent /*=NULL*/)
+CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent /*=NULL*/)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
-   m_pBroker(pBroker)
+   m_pBroker(pBroker),
+   m_rCopyGirderPropertiesCallbacks(rCopyGirderPropertiesCallbacks)
 {
 	//{{AFX_DATA_INIT(CCopyGirderDlg)
 	//}}AFX_DATA_INIT
+
+   // keep selection around
+   GET_IFACE(ISelection,pSelection);
+   m_FromSelection = pSelection->GetSelection();
 }
 
 std::vector<IDType> CCopyGirderDlg::GetCallbackIDs()
@@ -87,6 +94,11 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
             m_CallbackIDs.push_back(callbackID);
          }
       }
+
+      // Save selection for next time we open
+      m_FromSelection.Type = CSelection::Girder;
+      m_FromSelection.GirderIdx = m_FromGirderKey.girderIndex;
+      m_FromSelection.GroupIdx = m_FromGirderKey.groupIndex;
    }
    else
    {
@@ -94,6 +106,18 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
       CButton* pBut = (CButton*)GetDlgItem(IDC_RADIO1);
       pBut->SetCheck(BST_CHECKED);
       GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(false);
+
+      if ( m_FromSelection.Type == CSelection::Girder || m_FromSelection.TemporarySupport == CSelection::Segment )
+      {
+         m_FromGroup.SetCurSel((int)m_FromSelection.GroupIdx);
+         OnFromGroupChanged();
+         m_FromGirder.SetCurSel((int)m_FromSelection.GirderIdx);
+
+         m_ToGroup.SetCurSel((int)m_FromSelection.GroupIdx+1);
+         OnToGroupChanged();
+      }
+
+      CopyToSelectionChanged();
    }
 }
 
@@ -103,11 +127,13 @@ BEGIN_MESSAGE_MAP(CCopyGirderDlg, CDialog)
    ON_CBN_SELCHANGE(IDC_FROM_SPAN,OnFromGroupChanged)
    ON_CBN_SELCHANGE(IDC_TO_SPAN,OnToGroupChanged)
    ON_CBN_SELCHANGE(IDC_TO_GIRDER,OnToGirderChanged)
+   ON_CBN_SELCHANGE(IDC_FROM_GIRDER,OnFromGirderChanged)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
    ON_BN_CLICKED(IDC_RADIO1, &CCopyGirderDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_RADIO2, &CCopyGirderDlg::OnBnClickedRadio)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_SELECT_GIRDERS, &CCopyGirderDlg::OnBnClickedSelectGirders)
+   ON_CLBN_CHKCHANGE(IDC_LIST,&CCopyGirderDlg::OnCopyItemStateChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -131,18 +157,6 @@ BOOL CCopyGirderDlg::OnInitDialog()
       m_ToGroup.EnableWindow(FALSE);
    }
 
-   GET_IFACE(ISelection,pSelection);
-   CSelection selection = pSelection->GetSelection();
-   if ( selection.Type == CSelection::Girder || selection.TemporarySupport == CSelection::Segment )
-   {
-      m_FromGroup.SetCurSel((int)selection.GroupIdx);
-      OnFromGroupChanged();
-      m_FromGirder.SetCurSel((int)selection.GirderIdx);
-
-      m_ToGroup.SetCurSel((int)selection.GroupIdx+1);
-      OnToGroupChanged();
-   }
-   CopyToSelectionChanged();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -236,6 +250,9 @@ void CCopyGirderDlg::OnFromGroupChanged()
    {
       m_ToGroup.SetCurSel(m_FromGroup.GetCurSel());
    }
+
+   CopyToSelectionChanged();
+   EnableCopyNow(TRUE);
 }
 
 void CCopyGirderDlg::OnToGroupChanged() 
@@ -252,11 +269,19 @@ void CCopyGirderDlg::OnToGroupChanged()
    }
 
    CopyToSelectionChanged();
+   EnableCopyNow(TRUE);
 }
 
 void CCopyGirderDlg::OnToGirderChanged()
 {
    CopyToSelectionChanged();
+   EnableCopyNow(TRUE);
+}
+
+void CCopyGirderDlg::OnFromGirderChanged()
+{
+   CopyToSelectionChanged();
+   EnableCopyNow(TRUE);
 }
 
 void CCopyGirderDlg::CopyToSelectionChanged() 
@@ -405,6 +430,7 @@ void CCopyGirderDlg::OnBnClickedRadio()
    {
       CopyToSelectionChanged();
    }
+   EnableCopyNow(TRUE);
 }
 
 void CCopyGirderDlg::OnBnClickedSelectGirders()
@@ -436,4 +462,54 @@ void CCopyGirderDlg::OnBnClickedSelectGirders()
 
       CopyToSelectionChanged();
    }
+   EnableCopyNow(TRUE);
+}
+
+void CCopyGirderDlg::OnOK()
+{
+   // CDialog::OnOK(); // we are completely bypassing the default implementation and doing our own thing
+   // want the dialog to stay open until the Close buttom is pressed
+
+
+   UpdateData(TRUE);
+
+   // execute transactions
+   pgsMacroTxn* pMacro = new pgsMacroTxn;
+   pMacro->Name(_T("Copy Girder Properties"));
+
+   std::vector<IDType> callbackIDs = GetCallbackIDs();
+   std::vector<IDType>::iterator iter(callbackIDs.begin());
+   std::vector<IDType>::iterator end(callbackIDs.end());
+   for ( ; iter != end; iter++ )
+   {
+      IDType callbackID = *iter;
+      std::map<IDType,ICopyGirderPropertiesCallback*>::iterator found(m_rCopyGirderPropertiesCallbacks.find(callbackID));
+      ATLASSERT(found != m_rCopyGirderPropertiesCallbacks.end());
+      ICopyGirderPropertiesCallback* pCallback = found->second;
+
+      txnTransaction* pTxn = pCallback->CreateCopyTransaction(m_FromGirderKey,m_ToGirderKeys);
+      if ( pTxn )
+      {
+         pMacro->AddTransaction(pTxn);
+      }
+   }
+
+   if ( 0 < pMacro->GetTxnCount() )
+   {
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pMacro);
+   }
+
+   CopyToSelectionChanged();
+   EnableCopyNow(FALSE);
+}
+
+void CCopyGirderDlg::OnCopyItemStateChanged()
+{
+   EnableCopyNow(TRUE);
+}
+
+void CCopyGirderDlg::EnableCopyNow(BOOL bEnable)
+{
+   GetDlgItem(IDOK)->EnableWindow(bEnable);
 }

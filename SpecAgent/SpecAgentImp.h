@@ -179,24 +179,24 @@ public:
 
 // IPrecastIGirderDetailsSpec
 public:
-   virtual Float64 GetMinTopFlangeThickness() const;
-   virtual Float64 GetMinWebThickness() const;
-   virtual Float64 GetMinBottomFlangeThickness() const;
+   virtual Float64 GetMinTopFlangeThickness();
+   virtual Float64 GetMinWebThickness();
+   virtual Float64 GetMinBottomFlangeThickness();
 
 // ISegmentLiftingSpecCriteria
 public:
-   virtual bool IsLiftingAnalysisEnabled() const;
-   virtual void GetLiftingImpact(Float64* pDownward, Float64* pUpward) const;
-   virtual Float64 GetLiftingCrackingFs() const;
-   virtual Float64 GetLiftingFailureFs() const;
+   virtual bool IsLiftingAnalysisEnabled();
+   virtual void GetLiftingImpact(Float64* pDownward, Float64* pUpward);
+   virtual Float64 GetLiftingCrackingFs();
+   virtual Float64 GetLiftingFailureFs();
    virtual Float64 GetLiftingAllowableTensileConcreteStress(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingAllowableCompressionFactor();
    virtual Float64 GetLiftingAllowableTensionFactor();
-   virtual Float64 GetHeightOfPickPointAboveGirderTop() const;
-   virtual Float64 GetLiftingLoopPlacementTolerance() const;
-   virtual Float64 GetLiftingCableMinInclination() const;
-   virtual Float64 GetLiftingSweepTolerance()const;
+   virtual Float64 GetHeightOfPickPointAboveGirderTop();
+   virtual Float64 GetLiftingLoopPlacementTolerance();
+   virtual Float64 GetLiftingCableMinInclination();
+   virtual Float64 GetLiftingSweepTolerance();
    virtual Float64 GetLiftingWithMildRebarAllowableStress(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor();
    virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
@@ -205,45 +205,64 @@ public:
    virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType);
    virtual Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
-   virtual Float64 GetLiftingPointLocationAccuracy() const;
+   virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end);
+   virtual Float64 GetLiftingPointLocationAccuracy();
+   virtual pgsTypes::CamberMethod GetLiftingCamberMethod();
+   virtual Float64 GetLiftingIncreaseInCgForCamber();   
+   virtual pgsTypes::WindType GetLiftingWindType();
+   virtual Float64 GetLiftingWindLoad();
+   virtual bool EvaluateLiftingStressesPlumbGirder();
+   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey);
+   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig);
 
 // ISegmentHaulingSpecCriteria
 public:
-   virtual bool IsHaulingAnalysisEnabled() const;
-   virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
-   virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const;
-   virtual Float64 GetHaulingCrackingFs() const;
-   virtual Float64 GetHaulingRolloverFs() const;
-   virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
-   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey);
+   virtual bool IsHaulingAnalysisEnabled();
+   virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod();
+   virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward);
+   virtual Float64 GetHaulingCrackingFs();
+   virtual Float64 GetHaulingRolloverFs();
+   virtual void GetHaulingAllowableTensileConcreteStressParametersNormalCrown(Float64* factor,bool* pbMax,Float64* fmax);
+   virtual Float64 GetHaulingAllowableTensileConcreteStressNormalCrown(const CSegmentKey& segmentKey);
+   virtual void GetHaulingAllowableTensileConcreteStressParametersMaxSuper(Float64* factor,bool* pbMax,Float64* fmax);
+   virtual Float64 GetHaulingAllowableTensileConcreteStressMaxSuper(const CSegmentKey& segmentKey);
    virtual Float64 GetHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey);
-   virtual Float64 GetHaulingAllowableTensionFactor();
+   virtual Float64 GetHaulingAllowableTensionFactorNormalCrown();
+   virtual Float64 GetHaulingAllowableTensionFactorMaxSuper();
    virtual Float64 GetHaulingAllowableCompressionFactor();
-   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar);
+   virtual Float64 GetHaulingAllowableTensileConcreteStressExNormalCrown(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar);
+   virtual Float64 GetHaulingAllowableTensileConcreteStressExMaxSuper(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar);
    virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc);
-   virtual ISegmentHaulingSpecCriteria::RollStiffnessMethod GetRollStiffnessMethod() const;
-   virtual Float64 GetLumpSumRollStiffness() const;
-   virtual Float64 GetAxleWeightLimit() const;
-   virtual Float64 GetAxleStiffness() const;
-   virtual Float64 GetMinimumRollStiffness() const;
-   virtual Float64 GetHeightOfGirderBottomAboveRoadway() const;
-   virtual Float64 GetHeightOfTruckRollCenterAboveRoadway() const;
-   virtual Float64 GetAxleWidth() const;
-   virtual Float64 GetMaxSuperelevation() const;
-   virtual Float64 GetHaulingSweepTolerance()const;
-   virtual Float64 GetHaulingSupportPlacementTolerance() const;
-   virtual Float64 GetIncreaseInCgForCamber() const;
-   virtual Float64 GetAllowableDistanceBetweenSupports() const;
-   virtual Float64 GetAllowableLeadingOverhang() const;
-   virtual Float64 GetMaxGirderWgt() const;
-   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey);
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor();
+   virtual pgsTypes::HaulingImpact GetHaulingImpactUsage();
+   virtual Float64 GetNormalCrownSlope();
+   virtual Float64 GetMaxSuperelevation();
+   virtual Float64 GetHaulingSweepTolerance();
+   virtual Float64 GetHaulingSupportPlacementTolerance();
+   virtual pgsTypes::CamberMethod GetHaulingCamberMethod();
+   virtual Float64 GetHaulingIncreaseInCgForCamber();
+   virtual Float64 GetRollStiffness(const CSegmentKey& segmentKey);
+   virtual Float64 GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& segmentKey);
+   virtual Float64 GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey& segmentKey);
+   virtual Float64 GetAxleWidth(const CSegmentKey& segmentKey);
+   virtual Float64 GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey);
+   virtual Float64 GetAllowableLeadingOverhang(const CSegmentKey& segmentKey);
+   virtual Float64 GetMaxGirderWgt(const CSegmentKey& segmentKey);
+   virtual Float64 GetHaulingWithMildRebarAllowableStressNormalCrown(const CSegmentKey& segmentKey);
+   virtual Float64 GetHaulingWithMildRebarAllowableStressFactorNormalCrown();
+   virtual Float64 GetHaulingWithMildRebarAllowableStressMaxSuper(const CSegmentKey& segmentKey);
+   virtual Float64 GetHaulingWithMildRebarAllowableStressFactorMaxSuper(const CSegmentKey& segmentKey);
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey);
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType);
    virtual Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType);
-   virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
-   virtual Float64 GetHaulingSupportLocationAccuracy() const;
+   virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end);
+   virtual Float64 GetHaulingSupportLocationAccuracy();
+   virtual pgsTypes::WindType GetHaulingWindType();
+   virtual Float64 GetHaulingWindLoad();
+   virtual pgsTypes::CFType GetCentrifugalForceType();
+   virtual Float64 GetHaulingSpeed();
+   virtual Float64 GetTurningRadius();
+   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey);
+   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig);
 
 // IKdotGirderHaulingSpecCriteria
 public:
@@ -257,9 +276,9 @@ public:
    virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
    virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar);
    virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc);
-   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const;
-   virtual Float64 GetHaulingDesignLocationAccuracy() const;
-   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const;
+   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor);
+   virtual Float64 GetHaulingDesignLocationAccuracy();
+   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor);
 
 // IDebondLimits
 public:
@@ -293,8 +312,8 @@ public:
 private:
    DECLARE_EAF_AGENT_DATA;
 
-   const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
-   const SpecLibraryEntry* GetSpec() const;
+   const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey);
+   const SpecLibraryEntry* GetSpec();
 
    bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls);
 };

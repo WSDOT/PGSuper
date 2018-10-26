@@ -68,6 +68,7 @@ static char THIS_FILE[] = __FILE__;
 #define DIMENSION_DISPLAY_LIST         4
 #define GIRDER_LABEL_DISPLAY_LIST      5
 #define TRAFFIC_BARRIER_DISPLAY_LIST   6
+#define ALIGNMENT_DISPLAY_LIST         7
 
 #define LEFT_CURB_SOCKET         100
 #define RIGHT_CURB_SOCKET        200
@@ -273,6 +274,12 @@ void CBridgeSectionView::BuildDisplayLists()
    CBridgeViewPane::SetMappingMode(DManip::Isotropic);
 
    // Setup display lists
+
+   CComPtr<iDisplayList> alignment_list;
+   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
+   alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
+   dispMgr->AddDisplayList(alignment_list);
+
    CComPtr<iDisplayList> girder_label_list;
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_label_list);
    girder_label_list->SetID(GIRDER_LABEL_DISPLAY_LIST);
@@ -553,7 +560,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
       Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
       Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
-      Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+      Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
 
       std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
@@ -641,6 +648,7 @@ void CBridgeSectionView::UpdateDisplayObjects()
    BuildOverlayDisplayObjects();
    BuildTrafficBarrierDisplayObjects();
    BuildDimensionLineDisplayObjects();
+   BuildAlignmentDisplayObjects();
 
    UpdateGirderTooltips();
 
@@ -1920,6 +1928,111 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          }
       }
    }
+}
+
+void CBridgeSectionView::BuildAlignmentDisplayObjects()
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CDManipClientDC dc(this);
+
+   CComPtr<iDisplayList> displayList;
+   dispMgr->FindDisplayList(ALIGNMENT_DISPLAY_LIST,&displayList);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
+
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
+
+   // model vertical line for the alignmtn
+   // The alignment is at X=0 in Bridge Section Coordinates
+   Float64 Xcl = 0;
+   Float64 Ydeck = pAlignment->GetElevation(cut_station,0); // deck elevation at alignment
+   Float64 Yt = Ydeck + ::ConvertToSysUnits(1.0,unitMeasure::Feet); // add a little so it projects over the roadway surface
+
+   CComPtr<IPoint2d> pnt1;
+   pnt1.CoCreateInstance(CLSID_Point2d);
+   pnt1->Move(Xcl,Yt);
+
+   CComPtr<IPoint2d> pnt2;
+   pnt2.CoCreateInstance(CLSID_Point2d);
+   pnt2->Move(Xcl,Yt - ::ConvertToSysUnits(3.0,unitMeasure::Feet));
+
+   CComPtr<iLineDisplayObject> doAlignment;
+   CreateLineDisplayObject(pnt1,pnt2,&doAlignment);
+   CComPtr<iDrawLineStrategy> drawStrategy;
+   doAlignment->GetDrawLineStrategy(&drawStrategy);
+   CComQIPtr<iSimpleDrawLineStrategy> drawAlignmentStrategy(drawStrategy);
+   drawAlignmentStrategy->SetWidth(ALIGNMENT_LINE_WEIGHT);
+   drawAlignmentStrategy->SetColor(ALIGNMENT_COLOR);
+   drawAlignmentStrategy->SetLineStyle(lsCenterline);
+
+   displayList->AddDisplayObject(doAlignment);
+
+   // draw bridge line if different then the alignment
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 BLO = pBridge->GetAlignmentOffset();
+   if ( !IsZero(BLO) )
+   {
+      Ydeck = pAlignment->GetElevation(cut_station,BLO);
+      Yt = Ydeck + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+      pnt1.Release();
+      pnt2.Release();
+
+      pnt1.CoCreateInstance(CLSID_Point2d);
+      pnt1->Move(Xcl+BLO,Yt);
+
+      pnt2.CoCreateInstance(CLSID_Point2d);
+      pnt2->Move(Xcl+BLO,Yt - ::ConvertToSysUnits(3.0,unitMeasure::Feet));
+
+      CComPtr<iLineDisplayObject> doBridgeLine;
+      CreateLineDisplayObject(pnt1,pnt2,&doBridgeLine);
+      CComPtr<iDrawLineStrategy> drawStrategy;
+      doBridgeLine->GetDrawLineStrategy(&drawStrategy);
+      CComQIPtr<iSimpleDrawLineStrategy> drawBridgeLineStrategy(drawStrategy);
+      drawBridgeLineStrategy->SetWidth(BRIDGELINE_LINE_WEIGHT);
+      drawBridgeLineStrategy->SetColor(BRIDGE_COLOR);
+      drawBridgeLineStrategy->SetLineStyle(lsCenterline);
+
+      displayList->AddDisplayObject(doBridgeLine);
+
+      // Need to add a dimension line between the alignment and the BLO
+   }
+}
+
+void CBridgeSectionView::CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO)
+{
+   CComPtr<iPointDisplayObject> doPntStart;
+   doPntStart.CoCreateInstance(CLSID_PointDisplayObject);
+   doPntStart->Visible(FALSE);
+   doPntStart->SetPosition(pntStart,FALSE,FALSE);
+   CComQIPtr<iConnectable> connectable1(doPntStart);
+   CComPtr<iSocket> socket1;
+   connectable1->AddSocket(0,pntStart,&socket1);
+
+   CComPtr<iPointDisplayObject> doPntEnd;
+   doPntEnd.CoCreateInstance(CLSID_PointDisplayObject);
+   doPntEnd->Visible(FALSE);
+   doPntEnd->SetPosition(pntEnd,FALSE,FALSE);
+   CComQIPtr<iConnectable> connectable2(doPntEnd);
+   CComPtr<iSocket> socket2;
+   connectable2->AddSocket(0,pntEnd,&socket2);
+
+   CComPtr<iLineDisplayObject> doLine;
+   doLine.CoCreateInstance(CLSID_LineDisplayObject);
+
+   CComQIPtr<iConnector> connector(doLine);
+   CComPtr<iPlug> startPlug, endPlug;
+   connector->GetStartPlug(&startPlug);
+   connector->GetEndPlug(&endPlug);
+   DWORD dwCookie;
+   connectable1->Connect(0,atByID,startPlug,&dwCookie);
+   connectable2->Connect(0,atByID,endPlug,  &dwCookie);
+
+   doLine.CopyTo(ppLineDO);
 }
 
 void CBridgeSectionView::UpdateDrawingScale()

@@ -99,10 +99,13 @@ protected:
    void BuildOverlayDisplayObjects();
    void BuildTrafficBarrierDisplayObjects();
    void BuildDimensionLineDisplayObjects();
+   void BuildAlignmentDisplayObjects();
 
    void UpdateGirderTooltips();
 
    void TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright);
+
+   void CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO);
 
    typedef std::map<CGirderKey,IDType> GirderIDCollection;
    GirderIDCollection m_GirderIDs; // maps girder keys into DMANIP display object IDs

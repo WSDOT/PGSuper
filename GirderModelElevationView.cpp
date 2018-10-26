@@ -853,9 +853,10 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
    {
       const CPierData2* pPier = pSpan->GetNextPier();
 
+      PierIDType pierID = pPier->GetID();
       PierIndexType pierIdx = pPier->GetIndex();
 
-      EventIndexType erectionEventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
+      EventIndexType erectionEventIdx = pTimelineMgr->GetPierErectionEventIndex(pierID);
       if ( erectionEventIdx <= eventIdx )
       {
          CSegmentKey segmentKey(pSpan->GetBridgeDescription()->GetGirderGroup(pSpan)->GetIndex(),
@@ -1381,20 +1382,26 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
                   Float64 start,end;
                   if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,&start,&end) )
                   {
-                     // Left debond point
-                     CComPtr<IPoint2d> left_debond;
-                     left_debond.CoCreateInstance(CLSID_Point2d);
-                     left_debond->Move(start_offset + running_segment_length + start,yStart);
+                     if (start!=0.0)
+                     {
+                        // Left debond point
+                        CComPtr<IPoint2d> left_debond;
+                        left_debond.CoCreateInstance(CLSID_Point2d);
+                        left_debond->Move(running_segment_length + start,yStart);
 
-                     BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
-                     BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
+                        BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
+                        BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
+                     }
 
-                     CComPtr<IPoint2d> right_debond;
-                     right_debond.CoCreateInstance(CLSID_Point2d);
-                     right_debond->Move(start_offset + running_segment_length + end,yEnd);
+                     if (end != segment_length)
+                     {
+                        CComPtr<IPoint2d> right_debond;
+                        right_debond.CoCreateInstance(CLSID_Point2d);
+                        right_debond->Move(running_segment_length + end,yEnd);
 
-                     BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
-                     BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
+                        BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
+                        BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
+                     }
                   }
                }
             }
@@ -2001,14 +2008,14 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
 
             CComQIPtr<iPointLoadDrawStrategy,&IID_iPointLoadDrawStrategy> pls(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
-
+/*
             CSegmentKey segmentKey;
             Float64 Xsp;
             pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey,Xspan,&segmentKey,&Xsp);
             Float64 x_position = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-
+*/
             Float64 start_of_span_location = GetSpanStartLocation(spanKey);
-            x_position += start_of_span_location - span_offset;
+            Float64 x_position = Xspan + start_of_span_location - span_offset;
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2637,7 +2644,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
             ATLASSERT(vPoi.size() == 1);
             poiStart = vPoi.front();
 
-            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_END_FACE);
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND);
             ATLASSERT(vPoi.size() == 1);
             poiEnd = vPoi.front();
 
@@ -2664,7 +2671,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
             ATLASSERT(vPoi.size() == 1);
             poiStart = vPoi.front();
 
-            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L,POIFIND_AND);
+            vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_END_FACE);
             ATLASSERT(vPoi.size() == 1);
             poiEnd = vPoi.front();
 
@@ -3597,7 +3604,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
    Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
    Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
-   Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+   Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
 
    std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 

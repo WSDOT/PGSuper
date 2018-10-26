@@ -99,8 +99,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   std::_tstring strLimitState = pProductLoads->GetLimitStateName(ls);
+   std::_tstring strLimitState = GetLimitStateString(ls);
    std::_tstring strDirection  = (bPositiveMoment ? _T("Positive") : _T("Negative"));
 
    std::_tostringstream os;

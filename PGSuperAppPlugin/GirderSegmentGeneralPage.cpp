@@ -135,6 +135,13 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    // Validation: 0 < f'ci <= f'c   
    DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pSegment->Material.Concrete.Fci,  pSegment->Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
+   Float64 segment_length = GetSegmentLength();
+   if ( pDX->m_bSaveAndValidate && !pSegment->AreSegmentVariationsValid(segment_length) )
+   {
+      AfxMessageBox(_T("Segment length parameters exceed the overall length of the segment."),MB_OK);
+      pDX->Fail();
+   }
+
    if ( !pDX->m_bSaveAndValidate )
    {
       CString strMeasure;
@@ -155,7 +162,7 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
          strMeasure = _T("Measured between CL Closure Joints");
       }
       CString strSegmentLength;
-      strSegmentLength.Format(_T("Segment Layout Length: %s\n%s"),FormatDimension(GetSegmentLength(),pDisplayUnits->GetSpanLengthUnit(),true),strMeasure );
+      strSegmentLength.Format(_T("Segment Layout Length: %s\n%s"),FormatDimension(segment_length,pDisplayUnits->GetSpanLengthUnit(),true),strMeasure );
       DDX_Text(pDX,IDC_SEGMENT_LENGTH,strSegmentLength);
    }
 }
@@ -200,6 +207,7 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    FillVariationTypeComboBox();
    FillEventList();
 
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -218,8 +226,6 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
 
    InitBottomFlangeDepthControls();
    InitEndBlockControls();
-
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
 
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
    m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetAgeAtRelease();
@@ -311,7 +317,15 @@ void CGirderSegmentGeneralPage::FillVariationTypeComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_VARIATION_TYPE);
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   std::vector<pgsTypes::SegmentVariationType> segmentVariations(pParent->m_Girder.GetSupportedSegmentVariations());
+
+   // get the segment variations... we need to use the version of GetSupportedSegmentVariations that takes
+   // a library entry because the girder type may have been changed during other editing operations
+   // the girder library entry held by pParent->m_Girder may not be consistent with the selected girder name.
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const GirderLibraryEntry* pGirderLibEntry = pLib->GetGirderEntry(pParent->m_Girder.GetGirderName());
+   std::vector<pgsTypes::SegmentVariationType> segmentVariations(pParent->m_Girder.GetSupportedSegmentVariations(pGirderLibEntry));
 
    std::vector<pgsTypes::SegmentVariationType>::iterator iter(segmentVariations.begin());
    std::vector<pgsTypes::SegmentVariationType>::iterator end(segmentVariations.end());
@@ -1189,27 +1203,8 @@ Float64 CGirderSegmentGeneralPage::GetSegmentLength()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
-
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-
-   CSegmentKey segmentKey(pParent->m_SegmentKey.groupIndex,pParent->m_Girder.GetIndex(),pParent->m_SegmentKey.segmentIndex);
-   Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
-
-   if ( segmentKey.segmentIndex == 0 )
-   {
-      Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
-      Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
-      segment_layout_length -= (brgOffset - endDist);
-   }
-   
-   if ( segmentKey.segmentIndex == pParent->m_Girder.GetSegmentCount()-1 )
-   {
-      Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
-      Float64 endDist   = pBridge->GetSegmentEndEndDistance(segmentKey);
-      segment_layout_length -= (brgOffset - endDist);
-   }
-
-   return segment_layout_length;
+   return pBridge->GetSegmentFramingLength(pParent->m_SegmentKey);
 }
 
 pgsTypes::SegmentVariationType CGirderSegmentGeneralPage::GetSegmentVariation()

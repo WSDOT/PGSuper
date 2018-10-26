@@ -32,13 +32,18 @@ static char THIS_FILE[] = __FILE__;
 CTimeStepDetailsReportSpecification::CTimeStepDetailsReportSpecification(LPCTSTR strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
-   m_bReportAtAllLocations = bReportAtAllLocations;
-   m_Poi = poi;
-   m_IntervalIdx = intervalIdx;
+   SetOptions(bReportAtAllLocations,poi,intervalIdx);
 }
 
 CTimeStepDetailsReportSpecification::~CTimeStepDetailsReportSpecification(void)
 {
+}
+
+void CTimeStepDetailsReportSpecification::SetOptions(bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
+{
+   m_bReportAtAllLocations = bReportAtAllLocations;
+   m_Poi = poi;
+   m_IntervalIdx = intervalIdx;
 }
 
 HRESULT CTimeStepDetailsReportSpecification::Validate() const

@@ -23,8 +23,8 @@ The construction activities have predefined steps. For example, in the Construct
 Erecting the girders consists of:
 1. Ship the girders to the bridge site
 2. Erect the girders onto their permanent bearings
-3. Cast diaphragms
-4. Remove temporary strands
+3. Remove temporary strands
+4. Cast diaphragms
 
 The steps in the construction activities relate to Analysis Intervals. The Analysis Intervals represent the intervals of time over which changes occur. For example, while the girder is in storage, creep and shrinkage are happening. Boundary conditions change during lifting and shipping so there are new states of stresses to analyze. The structal system changes when continuity is achieved between spans.
 
@@ -43,14 +43,13 @@ Interval | Name | Description
 5        | Haul Girders | The precast girders are hauled to the bridge site
 6        | Erect Girders | The precast girders are erected onto the substructure at the bridge site.
 7        | Remove temporary strands | Temporary strands are removed
-8        | Cast Deck (Bridge Site 1) | The deck is cast and carried by the non-composite girder section
+8        | Cast Deck (Bridge Site 1) | The deck and diaphragms are cast and carried by the non-composite girder section
 9        | Install Railing System and Overlay (Bridge Site 2) | The railing system and overlay are have been installed on the composite girder section. This is final without live load
 10       | Open to Traffic (Bridge Site 3) | The bridge is open to traffic. This is final with live load.
 
 > NOTE: The intervals are always numbered sequentially and some intervals may not be applicable to your bridge model. The intervals in your project may not exactly match the list above.
 
 > NOTE: The interval names contain the old stage names in parentheses.
-
  
 Graphical Results
 -----------------

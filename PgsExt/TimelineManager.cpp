@@ -81,7 +81,7 @@ CTimelineManager& CTimelineManager::operator= (const CTimelineManager& rOther)
 
 bool CTimelineManager::operator==(const CTimelineManager& rOther) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    if ( m_TimelineEvents.size() != rOther.m_TimelineEvents.size() )
    {
@@ -391,7 +391,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
 
    EventIndexType eventIdx = found - m_TimelineEvents.begin();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    *pEventIdx = eventIdx;
 
@@ -412,7 +412,7 @@ void CTimelineManager::RemoveEventByIndex(EventIndexType eventIdx)
    delete pTimelineEvent;
    m_TimelineEvents.erase(m_TimelineEvents.begin() + eventIdx);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::RemoveEventByID(EventIDType id)
@@ -470,7 +470,7 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,CTimelineEvent* pT
    // sort the timeline... this will automatically adjust the timeline so all the events fit
    Sort();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return TLM_SUCCESS;
 }
@@ -501,7 +501,7 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,const CTimelineEve
    *m_TimelineEvents[eventIdx] = timelineEvent;
    Sort();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return TLM_SUCCESS;
 }
@@ -568,7 +568,7 @@ int CTimelineManager::AdjustDayByIndex(EventIndexType eventIdx,Float64 day,bool 
    m_TimelineEvents[eventIdx]->SetDay(day);
    Sort();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return TLM_SUCCESS;
 }
@@ -621,7 +621,7 @@ EventIndexType CTimelineManager::GetEventCount() const
 
 bool CTimelineManager::FindEvent(LPCTSTR description,EventIndexType* pIndex,const CTimelineEvent** ppTimelineEvent) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -643,7 +643,7 @@ bool CTimelineManager::FindEvent(LPCTSTR description,EventIndexType* pIndex,cons
 
 EventIndexType CTimelineManager::GetEventIndex(EventIDType ID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -662,7 +662,7 @@ EventIndexType CTimelineManager::GetEventIndex(EventIDType ID) const
 
 bool CTimelineManager::HasEvent(Float64 day) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator found( std::find_if(m_TimelineEvents.begin(),m_TimelineEvents.end(),FindTimelineEventByDay(day)) );
    return ( found != m_TimelineEvents.end() ? true : false);
@@ -670,14 +670,14 @@ bool CTimelineManager::HasEvent(Float64 day) const
 
 Float64 CTimelineManager::GetStart(EventIndexType eventIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return m_TimelineEvents[eventIdx]->GetDay();
 }
 
 Float64 CTimelineManager::GetEnd(EventIndexType eventIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    if ( eventIdx == m_TimelineEvents.size()-1 )
    {
@@ -691,7 +691,7 @@ Float64 CTimelineManager::GetEnd(EventIndexType eventIdx) const
 
 Float64 CTimelineManager::GetDuration(EventIndexType eventIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return GetEnd(eventIdx) - GetStart(eventIdx);
 }
@@ -835,7 +835,7 @@ bool CTimelineManager::AreAllTendonsStressed() const
 
 const CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    ATLASSERT(0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() );
    return m_TimelineEvents[eventIdx];
@@ -843,7 +843,7 @@ const CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
 
 const CTimelineEvent* CTimelineManager::GetEventByID(IDType id) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -861,7 +861,7 @@ const CTimelineEvent* CTimelineManager::GetEventByID(IDType id) const
 
 CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    if (0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() )
    {
@@ -876,7 +876,7 @@ CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
 CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
 {
    ATLASSERT(id != INVALID_ID);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -929,7 +929,7 @@ bool CTimelineManager::IsPierErected(PierIDType pierID) const
 
 EventIndexType CTimelineManager::GetPierErectionEventIndex(PierIDType pierID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -947,7 +947,7 @@ EventIndexType CTimelineManager::GetPierErectionEventIndex(PierIDType pierID) co
 
 EventIDType CTimelineManager::GetPierErectionEventID(PierIDType pierID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -965,7 +965,7 @@ EventIDType CTimelineManager::GetPierErectionEventID(PierIDType pierID) const
 
 void CTimelineManager::SetPierErectionEventByIndex(PierIDType pierID,EventIndexType eventIdx)
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -987,7 +987,7 @@ void CTimelineManager::SetPierErectionEventByIndex(PierIDType pierID,EventIndexT
 
 void CTimelineManager::SetPierErectionEventByID(PierIDType pierID,EventIDType ID)
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -1004,7 +1004,7 @@ void CTimelineManager::SetPierErectionEventByID(PierIDType pierID,EventIDType ID
 
 bool CTimelineManager::IsTemporarySupportErected(SupportIDType tsID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1022,7 +1022,7 @@ bool CTimelineManager::IsTemporarySupportErected(SupportIDType tsID) const
 
 bool CTimelineManager::IsTemporarySupportRemoved(SupportIDType tsID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1040,7 +1040,7 @@ bool CTimelineManager::IsTemporarySupportRemoved(SupportIDType tsID) const
 
 bool CTimelineManager::IsTendonStressedByID(EventIDType ID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    const CTimelineEvent* pTimelineEvent = GetEventByID(ID);
    if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed() )
@@ -1053,7 +1053,7 @@ bool CTimelineManager::IsTendonStressedByID(EventIDType ID) const
 
 bool CTimelineManager::IsTendonStressedByIndex(EventIndexType eventIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    const CTimelineEvent* pTimelineEvent = GetEventByIndex(eventIdx);
    if ( pTimelineEvent->GetStressTendonActivity().IsTendonStressed() )
@@ -1066,7 +1066,7 @@ bool CTimelineManager::IsTendonStressedByIndex(EventIndexType eventIdx) const
 
 bool CTimelineManager::IsSegmentErected(SegmentIDType segmentID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1084,7 +1084,7 @@ bool CTimelineManager::IsSegmentErected(SegmentIDType segmentID) const
 
 bool CTimelineManager::IsSegmentErected(SegmentIDType segmentID,EventIndexType eventIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.begin() + eventIdx + 1);
@@ -1102,7 +1102,7 @@ bool CTimelineManager::IsSegmentErected(SegmentIDType segmentID,EventIndexType e
 
 bool CTimelineManager::IsClosureJointAtPier(PierIDType pierID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1120,7 +1120,7 @@ bool CTimelineManager::IsClosureJointAtPier(PierIDType pierID) const
 
 bool CTimelineManager::IsClosureJointAtTempSupport(SupportIDType tsID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1138,7 +1138,7 @@ bool CTimelineManager::IsClosureJointAtTempSupport(SupportIDType tsID) const
 
 bool CTimelineManager::IsClosureJointCast(EventIndexType eventIdx,ClosureIDType closureID) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    const CClosureJointData* pClosure  = m_pBridgeDesc->FindClosureJoint(closureID);
    const CPierData2*            pPier = pClosure->GetPier();
@@ -1159,7 +1159,7 @@ bool CTimelineManager::IsClosureJointCast(EventIndexType eventIdx,ClosureIDType 
 
 bool CTimelineManager::IsTendonStressed(GirderIDType girderID,DuctIndexType ductIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1177,7 +1177,7 @@ bool CTimelineManager::IsTendonStressed(GirderIDType girderID,DuctIndexType duct
 
 void CTimelineManager::SetTempSupportEvents(SupportIDType tsID,EventIndexType erectIdx,EventIndexType removeIdx)
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
@@ -1214,7 +1214,7 @@ void CTimelineManager::SetTempSupportEvents(SupportIDType tsID,EventIndexType er
 
 void CTimelineManager::GetTempSupportEvents(SupportIDType tsID,EventIndexType* pErectIdx,EventIndexType* pRemoveIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    *pErectIdx  = INVALID_INDEX;
    *pRemoveIdx = INVALID_INDEX;
@@ -1248,7 +1248,7 @@ void CTimelineManager::GetTempSupportEvents(SupportIDType tsID,EventIndexType* p
 EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType segmentID) const
 {
    ATLASSERT(segmentID != INVALID_ID);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1267,7 +1267,7 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType 
 EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmentID) const
 {
    ATLASSERT(segmentID != INVALID_ID);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1327,7 +1327,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetSegmentConstructionEventByID(SegmentIDType segmentID,EventIDType ID)
@@ -1345,13 +1345,13 @@ void CTimelineManager::SetSegmentConstructionEventByID(SegmentIDType segmentID,E
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::GetSegmentErectionEventIndex(SegmentIDType segmentID) const
 {
    ATLASSERT(segmentID != INVALID_ID);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1370,7 +1370,7 @@ EventIndexType CTimelineManager::GetSegmentErectionEventIndex(SegmentIDType segm
 EventIDType CTimelineManager::GetSegmentErectionEventID(SegmentIDType segmentID) const
 {
    ATLASSERT(segmentID != INVALID_ID);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1408,7 +1408,7 @@ void CTimelineManager::SetSegmentErectionEventByIndex(SegmentIDType segmentID,Ev
       m_TimelineEvents[eventIdx]->GetErectSegmentsActivity().AddSegment(segmentID);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetSegmentErectionEventByID(SegmentIDType segmentID,EventIDType ID)
@@ -1426,13 +1426,13 @@ void CTimelineManager::SetSegmentErectionEventByID(SegmentIDType segmentID,Event
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::GetSegmentEvents(SegmentIDType segmentID,EventIndexType* pConstructEventIdx,EventIndexType* pErectEventIdx) const
 {
    ATLASSERT(segmentID != INVALID_ID);
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    *pConstructEventIdx = INVALID_INDEX;
    *pErectEventIdx    = INVALID_INDEX;
@@ -1470,7 +1470,7 @@ void CTimelineManager::SetSegmentEvents(SegmentIDType segmentID,EventIndexType c
 
 EventIndexType CTimelineManager::GetFirstSegmentErectionEventIndex() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    EventIndexType eventIdx = 0;
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
@@ -1490,7 +1490,7 @@ EventIndexType CTimelineManager::GetFirstSegmentErectionEventIndex() const
 
 EventIDType CTimelineManager::GetFirstSegmentErectionEventID() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1524,7 +1524,7 @@ EventIndexType CTimelineManager::GetCastClosureJointEventIndex(ClosureIDType clo
 
 EventIndexType CTimelineManager::GetCastClosureJointEventIndex(const CClosureJointData* pClosure) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    if ( pClosure == NULL )
    {
@@ -1559,7 +1559,7 @@ EventIDType CTimelineManager::GetCastClosureJointEventID(ClosureIDType closureID
 
 EventIDType CTimelineManager::GetCastClosureJointEventID(const CClosureJointData* pClosure) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    if ( pClosure == NULL )
    {
@@ -1594,7 +1594,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
 
 void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* pClosure,EventIndexType eventIdx)
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    if ( pClosure == NULL )
    {
@@ -1674,12 +1674,12 @@ void CTimelineManager::SetCastClosureJointEventByID(const CClosureJointData* pCl
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::GetStressTendonEventIndex(GirderIDType girderID,DuctIndexType ductIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1697,7 +1697,7 @@ EventIndexType CTimelineManager::GetStressTendonEventIndex(GirderIDType girderID
 
 EventIDType CTimelineManager::GetStressTendonEventID(GirderIDType girderID,DuctIndexType ductIdx) const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1732,7 +1732,7 @@ void CTimelineManager::SetStressTendonEventByIndex(GirderIDType girderID,DuctInd
       m_TimelineEvents[eventIdx]->GetStressTendonActivity().AddTendon(girderID,ductIdx);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetStressTendonEventByID(GirderIDType girderID,DuctIndexType ductIdx,EventIDType ID)
@@ -1750,12 +1750,12 @@ void CTimelineManager::SetStressTendonEventByID(GirderIDType girderID,DuctIndexT
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::GetCastDeckEventIndex() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1772,7 +1772,7 @@ EventIndexType CTimelineManager::GetCastDeckEventIndex() const
 
 EventIDType CTimelineManager::GetCastDeckEventID() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1849,7 +1849,7 @@ int CTimelineManager::SetCastDeckEventByID(EventIDType ID,bool bAdjustTimeline)
 
 EventIndexType CTimelineManager::GetRailingSystemLoadEventIndex() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1866,7 +1866,7 @@ EventIndexType CTimelineManager::GetRailingSystemLoadEventIndex() const
 
 EventIDType CTimelineManager::GetRailingSystemLoadEventID() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1896,7 +1896,7 @@ void CTimelineManager::SetRailingSystemLoadEventByIndex(EventIndexType eventIdx)
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetRailingSystemLoadEventByID(EventIDType ID)
@@ -1912,7 +1912,7 @@ void CTimelineManager::SetRailingSystemLoadEventByID(EventIDType ID)
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::GetOverlayLoadEventIndex() const
@@ -1932,7 +1932,7 @@ EventIndexType CTimelineManager::GetOverlayLoadEventIndex() const
 
 EventIDType CTimelineManager::GetOverlayLoadEventID() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -1964,7 +1964,7 @@ void CTimelineManager::SetOverlayLoadEventByIndex(EventIndexType eventIdx)
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyOverlayLoad(true);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetOverlayLoadEventByID(EventIDType ID)
@@ -1981,19 +1981,19 @@ void CTimelineManager::SetOverlayLoadEventByID(EventIDType ID)
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::RemoveOverlayLoadEvent()
 {
    SetOverlayLoadEventByIndex(INVALID_INDEX);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::GetLiveLoadEventIndex() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -2010,7 +2010,7 @@ EventIndexType CTimelineManager::GetLiveLoadEventIndex() const
 
 EventIDType CTimelineManager::GetLiveLoadEventID() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -2040,7 +2040,7 @@ void CTimelineManager::SetLiveLoadEventByIndex(EventIndexType eventIdx)
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyLiveLoad(true);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetLiveLoadEventByID(EventIDType ID)
@@ -2057,12 +2057,12 @@ void CTimelineManager::SetLiveLoadEventByID(EventIDType ID)
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::GetLoadRatingEventIndex() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -2080,7 +2080,7 @@ EventIndexType CTimelineManager::GetLoadRatingEventIndex() const
 
 EventIDType CTimelineManager::GetLoadRatingEventID() const
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::const_iterator end(m_TimelineEvents.end());
@@ -2110,7 +2110,7 @@ void CTimelineManager::SetLoadRatingEventByIndex(EventIndexType eventIdx)
       m_TimelineEvents[eventIdx]->GetApplyLoadActivity().ApplyRatingLiveLoad(true);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetLoadRatingEventByID(EventIDType ID)
@@ -2127,24 +2127,28 @@ void CTimelineManager::SetLoadRatingEventByID(EventIDType ID)
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
-void CTimelineManager::SetUserLoadEventByIndex(LoadIDType loadID,EventIndexType eventIdx)
+void CTimelineManager::SetUserLoadEventByIndex(LoadIDType loadID,EventIndexType newEventIdx)
 {
-   EventIndexType oldEventIdx = FindUserLoadEventIndex(loadID);
-   if ( oldEventIdx == eventIdx )
+   EventIndexType currentEventIdx = FindUserLoadEventIndex(loadID);
+   if ( currentEventIdx == newEventIdx )
       return;
 
-   CTimelineEvent* pTimelineEvent = m_TimelineEvents[eventIdx];
-   pTimelineEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
-
-   if ( eventIdx != INVALID_INDEX )
+   if ( currentEventIdx != INVALID_INDEX )
    {
-      m_TimelineEvents[eventIdx]->GetApplyLoadActivity().AddUserLoad(loadID);
+      CTimelineEvent* pTimelineEvent = m_TimelineEvents[currentEventIdx];
+      pTimelineEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
    }
 
-   ASSERT_VALID;
+   if ( newEventIdx != INVALID_INDEX )
+   {
+      CTimelineEvent* pTimelineEvent = m_TimelineEvents[newEventIdx];
+      pTimelineEvent->GetApplyLoadActivity().AddUserLoad(loadID);
+   }
+
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::SetUserLoadEventByID(LoadIDType loadID,EventIDType eventID)
@@ -2161,7 +2165,7 @@ void CTimelineManager::SetUserLoadEventByID(LoadIDType loadID,EventIDType eventI
       }
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 EventIndexType CTimelineManager::FindUserLoadEventIndex(LoadIDType loadID) const
@@ -2458,14 +2462,14 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    };
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return S_OK;
 }
 
 HRESULT CTimelineManager::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    pStrSave->BeginUnit(_T("TimelineEvents"),1.0);
    pStrSave->put_Property(_T("Count"),CComVariant(m_TimelineEvents.size()));
@@ -2500,7 +2504,7 @@ void CTimelineManager::MakeCopy(const CTimelineManager& rOther)
    m_pBridgeDesc = rOther.GetBridgeDescription();
    m_pLoadManager = rOther.GetLoadManager();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CTimelineManager::MakeAssignment(const CTimelineManager& rOther)
@@ -2638,6 +2642,11 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    else
    {
       pNextEvent = *found;
+      if ( *found == pTimelineEvent && std::distance(m_TimelineEvents.begin(),found) < (std::vector<CTimelineEvent*>::difference_type)m_TimelineEvents.size() )
+      {
+         pNextEvent = *(found+1);
+      }
+
       found--; // back up to previous event
       pPrevEvent = *found;
    }

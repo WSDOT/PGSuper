@@ -545,7 +545,7 @@ void CDistributedLoadDrawStrategyImpl::EditLoad()
 	CEditDistributedLoadDlg dlg(*pLoad,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      if (*pLoad != dlg.m_Load)
+      if (*pLoad != dlg.m_Load || eventID != dlg.m_EventID)
       {
          txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          txnTxnManager::GetInstance()->Execute(pTxn);

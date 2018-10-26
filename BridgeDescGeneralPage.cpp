@@ -76,6 +76,10 @@ CBridgeDescGeneralPage::~CBridgeDescGeneralPage()
 void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
 	//{{AFX_DATA_MAP(CBridgeDescGeneralPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	DDX_Control(pDX, IDC_NUMGDR_SPIN, m_NumGdrSpinner);
@@ -170,16 +174,14 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    ////////////////////////////////////////////////
    // Deck and Railing System
    ////////////////////////////////////////////////
-	DDX_CBItemData(pDX, IDC_DECK_TYPE, m_Deck.DeckType);
- 	DDX_CBItemData(pDX, IDC_GIRDER_CONNECTIVITY, m_Deck.TransverseConnectivity);
+	DDX_CBItemData(pDX, IDC_DECK_TYPE, pParent->m_BridgeDesc.GetDeckDescription()->DeckType);
+ 	DDX_CBItemData(pDX, IDC_GIRDER_CONNECTIVITY, pParent->m_BridgeDesc.GetDeckDescription()->TransverseConnectivity);
 
    if ( pDX->m_bSaveAndValidate )
    {
       UpdateBridgeDescription();
    }
 
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    if ( !pDX->m_bSaveAndValidate )
    {
       m_AlignmentOffset = pParent->m_BridgeDesc.GetAlignmentOffset();
@@ -191,7 +193,6 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       pParent->m_BridgeDesc.SetAlignmentOffset(m_AlignmentOffset);
    }
-
 }
 
 
@@ -345,8 +346,7 @@ void CBridgeDescGeneralPage::Init()
    LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
    m_strCacheRefGirderOffset.Format(_T("%s %s"),FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
 
-   m_Deck = *pParent->m_BridgeDesc.GetDeckDescription();
-   m_CacheDeckEdgePoints = m_Deck.DeckEdgePoints;
+   m_CacheDeckEdgePoints = pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints;
 
    UpdateMinimumGirderCount();
 }
@@ -391,8 +391,6 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
    pParent->m_BridgeDesc.SetRefGirder(m_RefGirderIdx);
    pParent->m_BridgeDesc.SetRefGirderOffset(m_RefGirderOffset);
    pParent->m_BridgeDesc.SetRefGirderOffsetType(m_RefGirderOffsetType);
-
-   *pParent->m_BridgeDesc.GetDeckDescription() = m_Deck;
 
    if ( bNewGirderFamily )
    {
@@ -842,6 +840,8 @@ bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
 
 void CBridgeDescGeneralPage::FillDeckTypeComboBox()
 {
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
    pgsTypes::SupportedDeckTypes deckTypes = m_Factory->GetSupportedDeckTypes(m_GirderSpacingType);
 
    CComboBox* pcbDeck = (CComboBox*)GetDlgItem(IDC_DECK_TYPE);
@@ -853,7 +853,7 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
    }
    else
    {
-      deckType = m_Deck.DeckType;
+      deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
    }
 
    pcbDeck->ResetContent();
@@ -882,7 +882,7 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
    else
    {
       pcbDeck->SetCurSel(0);
-      m_Deck.DeckType = deckTypes.front();
+      pParent->m_BridgeDesc.GetDeckDescription()->DeckType = deckTypes.front();
       OnDeckTypeChanged();
    }
 }
@@ -1227,6 +1227,12 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
       UIHint(strText,UIHINT_SAME_GIRDER_SPACING);
    }
 
+   // If girder spacing is adjacent, force haunch shape to square
+   if ( IsAdjacentSpacing(m_GirderSpacingType) )
+   {
+      pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape = pgsTypes::hsSquare;
+   }
+
    OnDeckTypeChanged();
 
    // UpdateBridgeDescription(); // called by OnDeckTypeChanged()
@@ -1243,6 +1249,8 @@ void CBridgeDescGeneralPage::UpdateGirderConnectivity()
 
 void CBridgeDescGeneralPage::OnDeckTypeChanged() 
 {
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
    UpdateGirderConnectivity();
 
    // make sure deck dimensions are consistent with deck type
@@ -1276,47 +1284,45 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          m_CacheDeckEdgePoints.push_back(deckPoint);
       }
 
-      m_Deck.DeckEdgePoints = m_CacheDeckEdgePoints;
+      pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints = m_CacheDeckEdgePoints;
    }
    else
    {
-      m_CacheDeckEdgePoints = m_Deck.DeckEdgePoints;
-      m_Deck.DeckEdgePoints.clear();
+      m_CacheDeckEdgePoints = pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints;
+      pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints.clear();
    }
    
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   m_Deck.DeckType = newDeckType;
-   pParent->m_BridgeDesc.GetDeckDescription()->DeckType = newDeckType; // need to updated deck type here so calls to GetMaxFillet() work properly
+   pParent->m_BridgeDesc.GetDeckDescription()->DeckType = newDeckType;
 
-   if ( m_Deck.DeckType == pgsTypes::sdtCompositeCIP || m_Deck.DeckType == pgsTypes::sdtCompositeOverlay )
+   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP || pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
       Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
-      if ( minSlabOffset < m_Deck.GrossDepth )
+      if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
       {
-         m_Deck.GrossDepth = minSlabOffset;
+         pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset;
 
          // Since we are changing deck type here, data could be whacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
          // insure that we have a reasonable slab depth
-         if (m_Deck.GrossDepth <= 0.0)
+         if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
-            m_Deck.GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch),fillet);
+            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch),fillet);
          }
       }
    }
-   else if ( m_Deck.DeckType == pgsTypes::sdtCompositeSIP )
+   else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
       Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
-      if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth )
+      if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth )
       {
-         m_Deck.GrossDepth = minSlabOffset - m_Deck.PanelDepth; // decrease the cast depth
+         pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth; // decrease the cast depth
 
          // Since we are changing deck type here, data could be wacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
          // insure that we have a reasonable slab depth
-         if (m_Deck.GrossDepth <= 0.0)
+         if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
-            m_Deck.GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - m_Deck.PanelDepth, fillet);
+            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, fillet);
          }
       }
    }
@@ -1389,7 +1395,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          pGdrEntry->GetBeamFactory(&factory);
 
          Float64 min, max;
-         factory->GetAllowableSpacingRange(dimensions,m_Deck.DeckType,m_GirderSpacingType,&min,&max);
+         factory->GetAllowableSpacingRange(dimensions,pParent->m_BridgeDesc.GetDeckDescription()->DeckType,m_GirderSpacingType,&min,&max);
 
          Float64 min1 = min*startSkewCorrection;
          Float64 max1 = max*startSkewCorrection;

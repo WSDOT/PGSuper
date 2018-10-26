@@ -558,7 +558,7 @@ void CSpanData::MakeCopy(const CSpanData& rOther)
    m_GirderSpacing[pgsTypes::metStart].SetSpan(this);
    m_GirderSpacing[pgsTypes::metEnd].SetSpan(this);
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CSpanData::MakeAssignment(const CSpanData& rOther)

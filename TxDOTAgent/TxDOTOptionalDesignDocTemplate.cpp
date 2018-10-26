@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TxDOTOptionalDesignDocTemplate.h"
+#include "TxDOTAppPlugin.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,7 +71,12 @@ CTxDOTOptionalDesignDocTemplate::CTxDOTOptionalDesignDocTemplate(UINT nIDResourc
                                                                  int maxViewCount)
 : CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
- 
+}
+
+void CTxDOTOptionalDesignDocTemplate::SetPlugin(IEAFAppPlugin* pPlugin)
+{
+   CEAFDocTemplate::SetPlugin(pPlugin);
+
    LoadTemplateInformation();
 }
 
@@ -101,7 +107,9 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
    m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,NULL,hIcon) );
 
    // Location of template folders
-   CString strWorkgroupFolderName = GetTOGAFolder();
+   CCatalogServerAppMixin* pAppPlugin = dynamic_cast<CCatalogServerAppMixin*>(m_pPlugin);
+   CString strWorkgroupFolderName;
+   pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 
    m_TemplateGroup.Clear();
 
@@ -137,6 +145,8 @@ void CTxDOTOptionalDesignDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateG
 
 void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON origIcon)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());

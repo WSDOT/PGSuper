@@ -264,7 +264,7 @@ function RunTest (currFolder, currCommand)
          if ( AppName != "PGSPLICE" )
          {
          // testing TOGA - need to set library to txdot
-         SetPGSuperLibrary("TxDOTRegressionTest", "TxDOTRegressionTest");
+         SetTOGALibrary("TxDOTRegressionTest", "TxDOTRegressionTest");
           
          var fc = new Enumerator(subFolder.Files);
          for (; !fc.atEnd(); fc.moveNext())
@@ -333,6 +333,24 @@ function SetPGSuperLibrary(server, publisher)
        DisplayMessage(cmd);
    }
 }
+
+function SetTOGALibrary(server, publisher)
+{
+   var cmd = new String;
+   cmd = Application + "/App=TOGA" + " /Configuration=\"" + server + "\":\"" + publisher + "\"";
+
+   if(ExecuteCommands)
+   {
+       DisplayMessage("Running: "+ cmd);
+       DisplayMessage("");
+       st = wsShell.Run(cmd,1,"TRUE"); 
+   }
+   else
+   {
+       DisplayMessage(cmd);
+   }
+}
+
 
 function CleanFolder(currFolder)
 {

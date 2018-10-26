@@ -36,6 +36,19 @@ CBrokerReportSpecification(strReportName,pBroker)
    m_IntervalIdx = intervalIdx;
 }
 
+CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const CEquilibriumCheckReportSpecification& rOther):
+CBrokerReportSpecification(rOther)
+{
+   m_Poi = rOther.m_Poi;
+   m_IntervalIdx = rOther.m_IntervalIdx;
+}
+
+void CEquilibriumCheckReportSpecification::SetOptions(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
+{
+   m_Poi = poi;
+   m_IntervalIdx = intervalIdx;
+}
+
 CEquilibriumCheckReportSpecification::~CEquilibriumCheckReportSpecification(void)
 {
 }

@@ -41,7 +41,7 @@
 #include <WBFLUnitServer.h>
 
 #include "Hints.h"
-#include "PGSuperBaseCommandLineInfo.h"
+#include "pgsExt\BaseCommandLineInfo.h"
 #include "PGSuperPluginMgr.h"
 
 #include "CopyGirderPropertiesCallbacks.h"

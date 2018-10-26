@@ -219,7 +219,7 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    strReportNames.push_back(_T("Time Step Details Report"));
 
 #if defined _DEBUG || defined _BETA_VERSION
-   strReportNames.push_back(_T("(DEBUG) Stage by Stage Details Report"));
+   strReportNames.push_back(_T("(DEBUG) Interval by Interval Details Report"));
 #endif // _DEBUG || _BETA_VERSION
 
    GET_IFACE(IReportManager,pRptMgr);

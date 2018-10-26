@@ -101,7 +101,7 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
-   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    std::sort(vPoi.begin(),vPoi.end());
    vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
@@ -114,14 +114,11 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
    {
       col = 0;
-      const pgsPointOfInterest& poi = *i;
-      (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
+      (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
       (*p_table)(row,col++) << moment.SetValue( pProductForces->GetMoment( intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
       (*p_table)(row,col++) << shear.SetValue(  pProductForces->GetShear(  intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
       (*p_table)(row,col++) << deflection.SetValue(  pProductForces->GetDeflection(  intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, false ) );

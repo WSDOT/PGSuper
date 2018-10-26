@@ -54,7 +54,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -153,7 +153,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -252,7 +252,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -350,7 +350,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -453,7 +453,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -557,7 +557,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation"
+				AdditionalIncludeDirectories=".\;\ARP\PGSuper;\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\PGSuper\Documentation;\ARP\BridgeLink;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -647,6 +647,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\BaseCommandLineInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\BoundaryConditionComboBox.cpp"
 				>
 			</File>
@@ -725,6 +729,122 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Catalog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CatalogServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CatalogServerAppMixin.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CatalogServerDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CatalogServers.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CEBFIPConcretePage.cpp"
 				>
 			</File>
@@ -754,6 +874,10 @@
 			</File>
 			<File
 				RelativePath=".\ConcreteMaterial.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ConfigurePGSuperDlg.cpp"
 				>
 			</File>
 			<File
@@ -1819,64 +1943,6 @@
 				>
 			</File>
 			<File
-				RelativePath="LiftingAnalysisArtifact.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="LoadFactors.cpp"
 				>
 				<FileConfiguration
@@ -2535,6 +2601,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\PoiPairMap.cpp"
+				>
+			</File>
+			<File
 				RelativePath="PrecastIGirderDetailingArtifact.cpp"
 				>
 				<FileConfiguration
@@ -2715,6 +2785,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ServerDefinitionDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ShearData.cpp"
 				>
 			</File>
@@ -2794,6 +2868,10 @@
 			</File>
 			<File
 				RelativePath=".\SplicedGirderData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StabilityAnalysisPoint.cpp"
 				>
 			</File>
 			<File
@@ -3157,6 +3235,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TemplateManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TemporarySupportData.cpp"
 				>
 			</File>
@@ -3210,6 +3292,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\BaseCommandLineInfo.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\BoundaryConditionComboBox.h"
 				>
 			</File>
@@ -3231,6 +3317,26 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\CastDeckActivity.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Catalog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CatalogServer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\CatalogServerAppMixin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CatalogServerDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CatalogServers.h"
 				>
 			</File>
 			<File
@@ -3263,6 +3369,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\ConcreteMaterial.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ConfigurePGSuperDlg.h"
 				>
 			</File>
 			<File
@@ -3410,10 +3520,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\LiftingAnalysisArtifact.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Include\PgsExt\LoadFactors.h"
 				>
 			</File>
@@ -3439,6 +3545,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\MomentRatingArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\PgsBaseCommandLineInfo.h"
 				>
 			</File>
 			<File
@@ -3483,6 +3593,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\PointOfInterest.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\PoiPairMap.h"
 				>
 			</File>
 			<File
@@ -3562,6 +3676,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ServerDefinitionDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ShearData.h"
 				>
 			</File>
@@ -3587,6 +3705,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\SplicedGirderData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\StabilityAnalysisPoint.h"
 				>
 			</File>
 			<File
@@ -3627,6 +3749,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\StressTendonActivity.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TemplateManager.h"
 				>
 			</File>
 			<File
@@ -3680,6 +3806,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\globe.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\HaunchFilleted.bmp"
 				>
 			</File>
@@ -3703,6 +3833,186 @@
 				RelativePath=".\res\Rollers.bmp"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="MakePgz"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath="..\MakePgz\unzip.h"
+					>
+				</File>
+				<File
+					RelativePath="..\MakePgz\UnzipPgz.h"
+					>
+				</File>
+				<File
+					RelativePath="..\MakePgz\zip.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath="..\MakePgz\unzip.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\MakePgz\UnzipPgz.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\MakePgz\zip.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

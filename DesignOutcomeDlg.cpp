@@ -74,7 +74,7 @@ void CDesignOutcomeDlg::DoDataExchange(CDataExchange* pDX)
       if(m_ADesignCheckBox.GetCheck() == BST_CHECKED)
       {
          int fromsel = m_ADesignFromCombo.GetCurSel();
-         if (fromsel==CB_ERR || fromsel>m_GirderKeys.size())
+         if (fromsel == CB_ERR || (int)m_GirderKeys.size() < fromsel )
          {
             ATLASSERT(0);
             return;
@@ -367,7 +367,7 @@ void CDesignOutcomeDlg::OnCbnSelchangeDesignaFrom()
    }
    else
    {
-      if (0 <= cursel && cursel < m_GirderKeys.size())
+      if (0 <= cursel && cursel < (int)m_GirderKeys.size())
       {
          // Fill To box
          int tosel = m_ADesignToCombo.GetCurSel();

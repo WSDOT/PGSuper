@@ -37,11 +37,12 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 
+#include <IFace\AgeAdjustedMaterial.h>
+#include <Beams\Helper.h>
+
 #include <PgsExt\StatusItem.h>
 
 #include <PgsExt\BridgeDescription2.h>
-
-#include "PrivateHelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -123,11 +124,11 @@ HRESULT CSplicedIBeamFactory::FinalConstruct()
 
 void CSplicedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
-   CComPtr<IFlangedGirderSection> gdrsection;
-   gdrsection.CoCreateInstance(CLSID_FlangedGirderSection);
+   CComPtr<IFlangedGirderSection> gdrSection;
+   gdrSection.CoCreateInstance(CLSID_FlangedGirderSection);
 
    CComPtr<IPrecastBeam> beam;
-   gdrsection->get_Beam(&beam);
+   gdrSection->get_Beam(&beam);
 
    Float64 c1;
    Float64 d1,d2,d3,d4,d5,d6,d7;
@@ -172,7 +173,7 @@ void CSplicedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    beam->get_HookPoint(&hookPt);
    hookPt->Move(0,-overallHeight);
 
-   gdrsection.QueryInterface(ppSection);
+   gdrSection.QueryInterface(ppSection);
 }
 
 void CSplicedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
@@ -243,7 +244,11 @@ void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       segment->SetVariationParameters((SegmentZoneType)i,length,height,bottomFlangeDepth);
    }
 
-   BuildSplicedGirderMaterialModel(pBroker,pSegment,segment,gdrSection);
+   CComPtr<IAgeAdjustedMaterial> material;
+   BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&material);
+   CComQIPtr<IShape> shape(gdrSection);
+   ATLASSERT(shape);
+   segment->AddShape(shape,material,NULL);
 
    ssmbr->AddSegment(segment);
 }
@@ -663,12 +668,12 @@ IBeamFactory::Dimensions CSplicedIBeamFactory::LoadSectionDimensions(sysIStructu
    return dimensions;
 }
 
-bool CSplicedIBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CSplicedIBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
 {
    return false;
 }
 
-bool CSplicedIBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CSplicedIBeamFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
 {
    return false;
 }

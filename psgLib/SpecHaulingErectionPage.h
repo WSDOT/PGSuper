@@ -63,7 +63,7 @@ public:
 public:
    pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
 
-private:
+public:
    // Embedded dialogs
    CWsdotHaulingDlg m_WsdotHaulingDlg;
    CKdotHaulingDlg  m_KdotHaulingDlg;

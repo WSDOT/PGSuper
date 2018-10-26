@@ -80,7 +80,7 @@ void CDuctGeometryCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, radius, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pPara << _T("Duct Geoemtry [5.4.6.1]");
+   *pPara << _T("Duct Geometry [5.4.6.1]");
    pPara->SetName(_T("Duct Geometry"));
    *pChapter << pPara;
 

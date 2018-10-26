@@ -85,6 +85,7 @@ protected:
    Float64 m_FromStation;
    Float64 m_NextPierStation;
    Float64 m_PrevPierStation;
+   PierIDType      m_PierID;
    PierIndexType   m_PierIdx;
    SpanIndexType   m_nSpans;
 

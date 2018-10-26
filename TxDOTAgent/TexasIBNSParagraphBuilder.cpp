@@ -50,16 +50,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /// Inline functions
-inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, int sdtType)
-{
-   if (nperm>0)
-   {
-      return sdtType == CStrandData::sdtDirectSelection ||
-         (isHarpedDesign && sdtType != CStrandData::sdtTotal );
-   }
-   else
-      return false;
-}
+
 
 static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,
                                      const std::vector<CSegmentKey>& segments, ColumnIndexType startIdx, ColumnIndexType endIdx,
@@ -346,7 +337,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       }
 
       areAnyTempStrandsInTable   |= 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary);
-      areAnyDebondingInTable     |= 0 < pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+      areAnyDebondingInTable     |= 0 < pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
    }
 
    bool areAllHarpedStrandsStraightInTable = areAnyHarpedStrandsInTable && !areAnyBentHarpedStrandsInTable;
@@ -552,7 +543,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       ATLASSERT(pGirder->IsSymmetricSegment(segmentKey)); // this report assumes girders don't taper in depth
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+      IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
       StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
       StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
@@ -663,7 +654,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, false, &nEff ) );
 
-      StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+      StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
 
       if(bFirst)
       {
@@ -739,11 +730,11 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
 
-      pmid = pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT);
+      pmid = pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN);
       ATLASSERT(pmid.size()==1);
 
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
       fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -752,7 +743,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << stress.SetValue(-fcTop);
 
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
       ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -763,7 +754,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       //const pgsFlexuralCapacityArtifact* pFlexureArtifact = pGdrArtifact->GetFlexuralCapacityArtifact( pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,pmid[0].GetDistFromStart()) );
       MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,pmid[0],true,&mmcd);
+      pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid[0],true,&mmcd);
 
       if (bFirst)
          (*p_table)(row,0) << _T("Required minimum ultimate moment capacity ");

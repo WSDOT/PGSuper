@@ -6,4 +6,4 @@ Topics
 -------
 * @subpage configurations
 * @subpage project_templates
-* @subpage configuration_servers
+* @subpage configuration_server_files

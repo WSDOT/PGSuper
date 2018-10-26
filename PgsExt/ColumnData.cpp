@@ -169,7 +169,7 @@ HRESULT CColumnData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 
    return S_OK;
 }
@@ -201,7 +201,7 @@ void CColumnData::MakeCopy(const CColumnData& rOther)
 
    m_TransverseFixity = rOther.m_TransverseFixity;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CColumnData::MakeAssignment(const CColumnData& rOther)

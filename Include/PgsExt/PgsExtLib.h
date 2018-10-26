@@ -36,18 +36,19 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
 
+#include <grid\gxall.h>
 #include <MFCTools\MFCTools.h>
 
 #include <MathEx.h>
 
-#if defined ASSERT_VALID
-#undef ASSERT_VALID
+#if defined PGS_ASSERT_VALID
+#undef PGS_ASSERT_VALID
 #endif
 
 #if defined _DEBUG
-#define ASSERT_VALID AssertValid()
+#define PGS_ASSERT_VALID AssertValid()
 #else
-#define ASSERT_VALID
+#define PGS_ASSERT_VALID
 #endif
 
 #endif // INCLUDED_PGSEXT_PGSEXTLIB_H_

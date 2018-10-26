@@ -83,10 +83,10 @@ void CLoadFactorsDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,m_LoadFactors.DWmax[pgsTypes::StrengthI]);
    DDX_Text(pDX,IDC_STRENGTH_I_LLIM,m_LoadFactors.LLIMmin[pgsTypes::StrengthI]);
    DDX_Text(pDX,IDC_STRENGTH_I_LLIM,m_LoadFactors.LLIMmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_CR,m_LoadFactors.CRmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_CR,m_LoadFactors.CRmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_SH,m_LoadFactors.SHmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_SH,m_LoadFactors.SHmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_CR_MIN,m_LoadFactors.CRmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_CR_MAX,m_LoadFactors.CRmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_SH_MIN,m_LoadFactors.SHmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_SH_MAX,m_LoadFactors.SHmax[pgsTypes::StrengthI]);
    DDX_Text(pDX,IDC_STRENGTH_I_PS,m_LoadFactors.PSmin[pgsTypes::StrengthI]);
    DDX_Text(pDX,IDC_STRENGTH_I_PS,m_LoadFactors.PSmax[pgsTypes::StrengthI]);
 
@@ -96,10 +96,10 @@ void CLoadFactorsDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,m_LoadFactors.DWmax[pgsTypes::StrengthII]);
    DDX_Text(pDX,IDC_STRENGTH_II_LLIM,m_LoadFactors.LLIMmin[pgsTypes::StrengthII]);
    DDX_Text(pDX,IDC_STRENGTH_II_LLIM,m_LoadFactors.LLIMmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_CR,m_LoadFactors.CRmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_CR,m_LoadFactors.CRmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_SH,m_LoadFactors.SHmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_SH,m_LoadFactors.SHmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_CR_MIN,m_LoadFactors.CRmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_CR_MAX,m_LoadFactors.CRmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_SH_MIN,m_LoadFactors.SHmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_SH_MAX,m_LoadFactors.SHmax[pgsTypes::StrengthII]);
    DDX_Text(pDX,IDC_STRENGTH_II_PS,m_LoadFactors.PSmin[pgsTypes::StrengthII]);
    DDX_Text(pDX,IDC_STRENGTH_II_PS,m_LoadFactors.PSmax[pgsTypes::StrengthII]);
 
@@ -223,18 +223,28 @@ BOOL CLoadFactorsDlg::OnInitDialog()
       GetDlgItem(IDC_SERVICE_III_PS_LABEL)->ShowWindow(SW_HIDE);
 
       GetDlgItem(IDC_STRENGTH_I_PLUS)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_I_CR)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_I_CR_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_I_SH)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_I_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_PLUS2)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_CR_MIN)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_CR_MIN_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_CR_MAX)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_CR_MAX_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_SH_MIN)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_SH_MIN_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_SH_MAX)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_SH_MAX_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_I_PS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_I_PS_LABEL)->ShowWindow(SW_HIDE);
 
       GetDlgItem(IDC_STRENGTH_II_PLUS)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_II_CR)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_II_CR_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_II_SH)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STRENGTH_II_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_PLUS2)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_CR_MIN)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_CR_MIN_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_CR_MAX)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_CR_MAX_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_SH_MIN)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_SH_MIN_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_SH_MAX)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_SH_MAX_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_II_PS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_II_PS_LABEL)->ShowWindow(SW_HIDE);
 

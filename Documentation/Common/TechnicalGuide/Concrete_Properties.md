@@ -7,7 +7,7 @@ The modulus of elasticity is computed as
 
 ![](mod_e_2016.png)
 
-> NOTE: Prior to the AASHTO LRFD 7th Edition 2014 with 2016 Interims the modulus of elasticity was computed as ![](mod_e.png)
+> NOTE: Prior to the AASHTO LRFD 7th Edition 2014 with 2015 Interims the modulus of elasticity was computed as ![](mod_e.png)
 
 
 ## Creep

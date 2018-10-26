@@ -44,7 +44,7 @@ CInitialStrainAnalysisReportSpecificationBuilder::~CInitialStrainAnalysisReportS
 {
 }
 
-boost::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+boost::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -69,17 +69,30 @@ boost::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificatio
       girderKey.girderIndex  = 0;
    }
 
-   boost::shared_ptr<CInitialStrainAnalysisReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CInitialStrainAnalysisReportSpecification>(pRptSpec) );
+   // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+   boost::shared_ptr<CInitialStrainAnalysisReportSpecification> pOldGRptSpec( boost::dynamic_pointer_cast<CInitialStrainAnalysisReportSpecification>(pOldRptSpec) );
 
-   CInitialStrainAnalysisDlg dlg(m_pBroker,pInitRptSpec,girderKey,0);
+   CInitialStrainAnalysisDlg dlg(m_pBroker,pOldGRptSpec,girderKey,0);
 
    if ( dlg.DoModal() == IDOK )
    {
-      boost::shared_ptr<CReportSpecification> pRptSpec( new CInitialStrainAnalysisReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.GetGirderKey(),dlg.GetInterval()) );
+      boost::shared_ptr<CReportSpecification> pNewRptSpec;
+      if(pOldGRptSpec)
+      {
+         boost::shared_ptr<CInitialStrainAnalysisReportSpecification> pNewGRptSpec = boost::shared_ptr<CInitialStrainAnalysisReportSpecification>( new CInitialStrainAnalysisReportSpecification(*pOldGRptSpec) );
 
-      rptDesc.ConfigureReportSpecification(pRptSpec);
+         pNewGRptSpec->SetOptions(dlg.GetGirderKey(),dlg.GetInterval());
 
-      return pRptSpec;
+         pNewRptSpec = boost::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = boost::shared_ptr<CInitialStrainAnalysisReportSpecification>( new CInitialStrainAnalysisReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.GetGirderKey(),dlg.GetInterval()) );
+      }
+
+      rptDesc.ConfigureReportSpecification(pNewRptSpec);
+
+      return pNewRptSpec;
    }
 
    return boost::shared_ptr<CReportSpecification>();

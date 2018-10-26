@@ -28,7 +28,6 @@
 #include "GraphColor.h"
 
 #include <UnitMgt\UnitValueNumericalFormatTools.h>
-#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 
 #include <EAF\EAFUtilities.h>
@@ -51,6 +50,8 @@ static char THIS_FILE[] = __FILE__;
 
 static const COLORREF CURVE1_COLOR      = RGB(0,0,200);
 static const COLORREF CURVE2_COLOR      = RGB(200,0,0);
+static const COLORREF CURVE3_COLOR      = RGB(0,200,0);
+
 static const int      CURVE_PEN_WEIGHT  = GRAPH_PEN_WEIGHT;
 static const int      CURVE_STYLE       = PS_SOLID;
 static const int      LIMIT_STYLE       = PS_DASH;
@@ -206,11 +207,16 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    IndexType seriesFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
+
    IndexType seriesFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
+   IndexType seriesFS3 = m_Graph.CreateDataSeries();
+   m_Graph.SetPenStyle(seriesFS3, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
+
    IndexType limitFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
+
    IndexType limitFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
@@ -237,7 +243,7 @@ bool CStabilityGraphBuilder::UpdateNow()
       if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
       {
          CString strTitle;
-         strTitle.Format(_T("Effect of support location - Lifting Stage - %s"),m_PrintSubtitle.c_str());
+         strTitle.Format(_T("Effect of support location during lifting from casting bed - %s"),m_PrintSubtitle.c_str());
          m_Graph.SetTitle(strTitle);
          m_Graph.SetXAxisTitle(std::_tstring(_T("Lift Point Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")")).c_str());
 
@@ -249,12 +255,13 @@ bool CStabilityGraphBuilder::UpdateNow()
          while ( loc <= hp1 )
          {
             pProgress->UpdateMessage(_T("Working..."));
-            pgsLiftingAnalysisArtifact artifact;
 
-            pArtifact->CreateLiftingAnalysisArtifact(segmentKey,loc,&artifact);
+            stbLiftingCheckArtifact artifact;
+            pArtifact->CreateLiftingCheckArtifact(segmentKey,loc,&artifact);
 
-            AddGraphPoint(seriesFS1,loc,artifact.GetMinFsForCracking());
-            AddGraphPoint(seriesFS2,loc,artifact.GetFsFailure());
+            AddGraphPoint(seriesFS1,loc,artifact.GetLiftingResults().MinFScr);
+            AddGraphPoint(seriesFS2,loc,artifact.GetLiftingResults().MinAdjFsFailure);
+
             AddGraphPoint(limitFS1,loc,FS1);
             AddGraphPoint(limitFS2,loc,FS2);
 
@@ -268,7 +275,7 @@ bool CStabilityGraphBuilder::UpdateNow()
       if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
       {
          CString strTitle;
-         strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
+         strTitle.Format(_T("Effect of support location during hauling to bridge site - %s"),m_PrintSubtitle.c_str());
          m_Graph.SetTitle(strTitle);
          m_Graph.SetXAxisTitle(std::_tstring(_T("Truck Support Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")")).c_str());
 
@@ -290,8 +297,13 @@ bool CStabilityGraphBuilder::UpdateNow()
             const pgsWsdotHaulingAnalysisArtifact* pArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);
             if ( pArtifact )
             {
-               AddGraphPoint(seriesFS1,loc,pArtifact->GetMinFsForCracking());
-               AddGraphPoint(seriesFS2,loc,pArtifact->GetFsRollover());
+               Float64 FScr = Min(pArtifact->GetMinFsForCracking(pgsTypes::CrownSlope),pArtifact->GetMinFsForCracking(pgsTypes::Superelevation));
+               Float64 FSf  = Min(pArtifact->GetFsFailure(pgsTypes::CrownSlope),pArtifact->GetFsFailure(pgsTypes::Superelevation));
+               AddGraphPoint(seriesFS1,loc,FScr);
+               AddGraphPoint(seriesFS2,loc,FSf );
+
+               Float64 FSro = Min(pArtifact->GetFsRollover(pgsTypes::CrownSlope),pArtifact->GetFsRollover(pgsTypes::Superelevation));
+               AddGraphPoint(seriesFS3,loc,FSro);
 
                AddGraphPoint(limitFS1,loc,FS1);
                AddGraphPoint(limitFS2,loc,FS2);
@@ -397,7 +409,7 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
    else
    {
       GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
-      _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSr = %3.1f"),
+      _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf/FSr = %3.1f"),
          pCriteria->GetHaulingCrackingFs(),
          pCriteria->GetHaulingRolloverFs() );
    }
@@ -416,6 +428,7 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
 
    CPen pen1(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE1_COLOR);
    CPen pen2(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE2_COLOR);
+   CPen pen3(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE3_COLOR);
 
    CFont font;
    font.CreatePointFont(80,_T("Arial"),pDC);
@@ -438,8 +451,8 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
 
    UINT oldAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
 
-   CString legend1, legend2;
-   CSize size1, size2;
+   CString legend1, legend2, legend3;
+   CSize size1, size2, size3;
 
    if (  m_pGraphController->GetGraphType() == GT_LIFTING )
    {
@@ -450,30 +463,46 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    {
       legend1 = _T("F.S. Against Cracking (FScr)");
       legend2 = _T("F.S. Against Rollover (FSr)");
+      legend3 = _T("F.S. Against Failure (FSf)");
    }
    
    size1 = pDC->GetTextExtent(legend1);
    size2 = pDC->GetTextExtent(legend2);
+   size3 = pDC->GetTextExtent(legend3);
 
    int logPixelsX = pDC->GetDeviceCaps(LOGPIXELSX); // Pixels per inch in the x direction
    // we want a 1/2" line for the legend
    int legendLength = logPixelsX/2;
 
    CPoint bottomRight;
-   bottomRight.x = 5 + topLeft.x + Max(size1.cx,size2.cx) + 5 + legendLength + 5;
+   bottomRight.x = 5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength + 5;
    bottomRight.y = 5 + topLeft.y + size1.cy + 5 + size2.cy + 5;
+   if (  m_pGraphController->GetGraphType() == GT_HAULING )
+   {
+      bottomRight.y += size3.cy + 5;
+   }
 
+   // draw the box around the legend
    pDC->Rectangle(CRect(topLeft,bottomRight));
+
+
    pDC->TextOut(5 + topLeft.x,5 + topLeft.y,legend1);
    CPen* oldPen = pDC->SelectObject(&pen1);
-   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy/2);
-   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy/2);
+   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5,                5 + topLeft.y + size1.cy/2);
+   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength, 5 + topLeft.y + size1.cy/2);
 
    pDC->SelectObject(&pen2);
    pDC->TextOut(5 + topLeft.x,5 + topLeft.y + size1.cy + 5, legend2);
-   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
-   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
+   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5,                5 + topLeft.y + size1.cy + 5 + size2.cy/2);
+   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength, 5 + topLeft.y + size1.cy + 5 + size2.cy/2);
 
+   if (  m_pGraphController->GetGraphType() == GT_HAULING )
+   {
+      pDC->SelectObject(&pen3);
+      pDC->TextOut(5 + topLeft.x,5 + topLeft.y + size1.cy + 5 + size2.cy + 5, legend3);
+      pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5,                5 + topLeft.y + size1.cy + 5 + size2.cy + 5 + size3.cy/2);
+      pDC->LineTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength, 5 + topLeft.y + size1.cy + 5 + size2.cy + 5 + size3.cy/2);
+   }
 
    pDC->SelectObject(oldPen);
    pDC->SelectObject(oldFont);

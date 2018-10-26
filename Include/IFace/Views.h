@@ -42,4 +42,9 @@ interface IViews : public IUnknown
    virtual long GetReportViewKey() = 0;
    virtual long GetGraphingViewKey() = 0;
    virtual long GetLoadsViewKey() = 0;
+
+   virtual void GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) = 0;
+   virtual void SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx) = 0;
+   virtual Float64 GetBridgeViewCutStation() = 0;
+   virtual void SetBridgeViewCutStation(Float64 station) = 0;
 };

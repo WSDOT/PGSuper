@@ -9,6 +9,13 @@ Girder Dimensions | Each of the girder dimensions are defined on the accompanyin
 [View Section at Ends...] | Displays the basic girder section at the left end of the girder including the location of prestressing strands
 [View Section at Mid-Span...] | Displays the basic girder section at the mid-point of the girder including the location of prestressing strands
 
+Other Parameters
+-------------------
+
+Item | Description
+----|-----
+Drag Coefficient | Enter the drag coefficient for the bare girder. This parameter is used to determine wind pressure loading from wind speed for the lifting and hauling analysis. Typical values are 1.5 for U-beams and 2.2 for all other beams. (See University of Florida research http://ufdc.ufl.edu/UFE0045616/00001)
+
 Notes for Girders with End Blocks
 -----------------------------
 Solid end blocks can be added to I-Beams, U Beams, Box Beams, Decked Slab Beams, and Voided Slabs. The geometry of the end block is considered for dead load and all beam structural properties. End block geometry is not shown when the girder section is displayed by pressing [View Section at Ends...] or [View Section at Mid-Span...]

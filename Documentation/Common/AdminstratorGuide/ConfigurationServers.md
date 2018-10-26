@@ -1,4 +1,4 @@
-Configuration Servers {#configuration_servers}
+Configuration Servers {#configuration_server_files}
 ============
 Configuration Servers are more of a concept than what we traditionally think of as a server. Examples of the servers we traditionally think of are FTP, HTTP, PHP, SQL, and the like. All of these servers use dedicated hardware running specialized software. The Configuration Servers we are talking about are basically locations where some files can be stored and accessed by users. 
 
@@ -12,7 +12,7 @@ Configuration Servers based on a file system are the easiest to setup, however t
 
 To set up the server:
 1. Determine the location on your file system where you would like the server to reside. Let's say G:\\PGSuper\\.
-2. Copy your Master Library to G:\\PGSuper\\. The Master Library is a file you create with the PGS Library Editor application. The file has a .LBR extension.
+2. Copy your Master Library to G:\\PGSuper\\. The Master Library is a file you create with the PGSLibrary Editor application. The file has a .LBR extension.
 3. Copy your Project Templates, including the folder structure, to G:\\PGSuper\\. See @ref project_templates to learn how to create and organize project templates.
 4. Let everyone know how to access your configuration.
 

@@ -1219,9 +1219,15 @@ Float64 CConcreteManager::GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation
 
 Float64 CConcreteManager::GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
 {
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetRailingSystemFreeShrinkageStrainDetails(orientation,t);
+   return pDetails->esh;
+}
+
+boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
+{
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return m_pRailingConc[orientation]->GetFreeShrinkageStrain(t);
+   return m_pRailingConc[orientation]->GetFreeShrinkageStrainDetails(t);
 }
 
 Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
@@ -1229,6 +1235,13 @@ Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarr
    ValidateConcrete();
    ValidateRailingSystemConcrete();
    return m_pRailingConc[orientation]->GetCreepCoefficient(t,tla);
+}
+
+boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
+{
+   ValidateConcrete();
+   ValidateRailingSystemConcrete();
+   return m_pRailingConc[orientation]->GetCreepCoefficientDetails(t,tla);
 }
 
 Float64 CConcreteManager::GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading)
@@ -1465,15 +1478,28 @@ Float64 CConcreteManager::GetDeckShearFr(Float64 t)
 
 Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
 {
-   ValidateConcrete();
-   ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != NULL )
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetDeckFreeShrinkageStrainDetails(t);
+   if ( pDetails )
    {
-      return m_pDeckConc->GetFreeShrinkageStrain(t);
+      return pDetails->esh;
    }
    else
    {
       return 0;
+   }
+}
+
+boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(Float64 t)
+{
+   ValidateConcrete();
+   ValidateDeckConcrete();
+   if ( m_pDeckConc.get() != NULL )
+   {
+      return m_pDeckConc->GetFreeShrinkageStrainDetails(t);
+   }
+   else
+   {
+      return boost::shared_ptr<matConcreteBaseShrinkageDetails>();
    }
 }
 
@@ -1488,6 +1514,20 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
    else
    {
       return 0;
+   }
+}
+
+boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(Float64 t,Float64 tla)
+{
+   ValidateConcrete();
+   ValidateDeckConcrete();
+   if ( m_pDeckConc.get() != NULL )
+   {
+      return m_pDeckConc->GetCreepCoefficientDetails(t,tla);
+   }
+   else
+   {
+      return boost::shared_ptr<matConcreteBaseCreepDetails>();
    }
 }
 
@@ -1544,9 +1584,15 @@ Float64 CConcreteManager::GetSegmentShearFr(const CSegmentKey& segmentKey,Float6
 
 Float64 CConcreteManager::GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t)
 {
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetSegmentFreeShrinkageStrainDetails(segmentKey,t);
+   return pDetails->esh;
+}
+
+boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t)
+{
    ValidateConcrete();
    ValidateSegmentConcrete();
-   return m_pSegmentConcrete[segmentKey]->GetFreeShrinkageStrain(t);
+   return m_pSegmentConcrete[segmentKey]->GetFreeShrinkageStrainDetails(t);
 }
 
 Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
@@ -1554,6 +1600,13 @@ Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentK
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
+}
+
+boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   return m_pSegmentConcrete[segmentKey]->GetCreepCoefficientDetails(t,tla);
 }
 
 Float64 CConcreteManager::GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading)
@@ -1602,9 +1655,15 @@ Float64 CConcreteManager::GetClosureJointEc(const CClosureKey& closureKey,Float6
 
 Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t)
 {
+   boost::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetClosureJointFreeShrinkageStrainDetails(closureKey,t);
+   return pDetails->esh;
+}
+
+boost::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t)
+{
    ValidateConcrete();
    ValidateSegmentConcrete();
-   return m_pClosureConcrete[closureKey]->GetFreeShrinkageStrain(t);
+   return m_pClosureConcrete[closureKey]->GetFreeShrinkageStrainDetails(t);
 }
 
 Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla)
@@ -1612,6 +1671,13 @@ Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& clo
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);
+}
+
+boost::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla)
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   return m_pClosureConcrete[closureKey]->GetCreepCoefficientDetails(t,tla);
 }
 
 Float64 CConcreteManager::GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading)
@@ -1786,16 +1852,16 @@ matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& 
 
 Float64 CConcreteManager::GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading)
 {
-   //return 1.0;
-   // based on "Approximate expressions for the Aging coefficient and the relaxation function in the viscoelastic
-   // analysis of concrete structures", G. Lacidogna,, M. Tarantino. "Materials and Structures", Vol 29, April 1996, pp 131-140
-   Float64 age = pConcrete->GetAge(timeOfLoading);
-   if ( age < 0 )
-   {
-      return 0;
-   }
+   return 1.0;
+   //// based on "Approximate expressions for the Aging coefficient and the relaxation function in the viscoelastic
+   //// analysis of concrete structures", G. Lacidogna,, M. Tarantino. "Materials and Structures", Vol 29, April 1996, pp 131-140
+   //Float64 age = pConcrete->GetAge(timeOfLoading);
+   //if ( age < 0 )
+   //{
+   //   return 0;
+   //}
 
-   Float64 sqrt_age = sqrt(age);
-   Float64 X = sqrt_age/(1 + sqrt_age);
-   return X;
+   //Float64 sqrt_age = sqrt(age);
+   //Float64 X = sqrt_age/(1 + sqrt_age);
+   //return X;
 }

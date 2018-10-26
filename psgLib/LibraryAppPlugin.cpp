@@ -140,7 +140,7 @@ HMENU CLibraryAppPlugin::GetSharedMenuHandle()
 
 CString CLibraryAppPlugin::GetName()
 {
-   return CString(_T("PGS Library Editor"));
+   return CString(_T("PGSLibrary Editor"));
 }
 
 CString CLibraryAppPlugin::GetDocumentationSetName()

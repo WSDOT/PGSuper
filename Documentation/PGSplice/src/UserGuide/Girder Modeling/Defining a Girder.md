@@ -54,7 +54,7 @@ The general concrete material model is defined in the Project Criteria. The mode
 1. Enter either f'c or f'ci.
 2. Press [More Properties...] to further refine the concrete model. Here you can define the concrete type such as Normal Weight or Lightweight, define the unit weight, and define the time variation parameters for the concrete model.
 
-See @ref tg_concrete_models in the @ref technical_guide for more information about the time-dependent concrete material models.
+See @ref tg_time_dependent_material_models in the @ref technical_guide for more information about the time-dependent concrete material models.
 
 
 Defining Closure Joints

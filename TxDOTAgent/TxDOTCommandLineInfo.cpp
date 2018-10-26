@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 
 //======================== LIFECYCLE  =======================================
 CTxDOTCommandLineInfo::CTxDOTCommandLineInfo() :
-CEAFCommandLineInfo(),
+CPGSBaseCommandLineInfo(),
 m_DoTxCadReport(false),
 m_TxRunType(txrAnalysis),
 m_TxFType(txfNormal),
@@ -236,7 +236,7 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
    }
 
    if ( !bMyParameter )
-     CEAFCommandLineInfo::ParseParam(lpszParam, bFlag, bLast);
+     CPGSBaseCommandLineInfo::ParseParam(lpszParam, bFlag, bLast);
 
    m_Count++;
 }
@@ -249,4 +249,9 @@ CString CTxDOTCommandLineInfo::GetUsageMessage()
 CString CTxDOTCommandLineInfo::GetUsageString()
 {
    return CString(_T("Valid parameters are\n/flag filename.pgs outputfile span girder\nwhere\nflag can be TxA, TxAx, TxAt, TxD, TxDx, or TxDT\nspan can be a span number or the keyword ALL\ngirder can be a girder letter (A-Z), the keyword ALL or the keyword EI\nOr /TxTOGA filename.toga outputfile"));
+}
+
+LPCTSTR CTxDOTCommandLineInfo::GetAppName() const
+{
+   return _T("TOGA");
 }

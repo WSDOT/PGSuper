@@ -70,6 +70,10 @@ protected:
    arvPhysicalConverter* m_pXFormat;
    arvPhysicalConverter* m_pYFormat;
 
+   // zero tolerance values
+   Float64 m_ZeroToleranceX;
+   Float64 m_ZeroToleranceY;
+
    Float64 ComputeShift(const CGirderKey& girderKey);
    void GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pXVals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);

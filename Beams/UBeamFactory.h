@@ -70,8 +70,8 @@ public:
    virtual bool ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg);
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions);
    virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad);
-   virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey);
-   virtual bool IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey);
+   virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions);
+   virtual bool IsSymmetric(const IBeamFactory::Dimensions& dimensions);
    virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey);
    virtual std::_tstring GetImage();
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType);

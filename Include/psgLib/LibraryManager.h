@@ -40,6 +40,7 @@
 #include <psgLib\RatingLibraryEntry.h>
 #include <psgLib\LiveLoadLibraryEntry.h>
 #include <psgLib\DuctLibraryEntry.h>
+#include <psgLib\HaulTruckLibraryEntry.h>
 
 // LOCAL INCLUDES
 //
@@ -64,6 +65,7 @@ DECLARE_LIBRARY( SpecLibrary,            SpecLibraryEntry,       1 )
 DECLARE_LIBRARY( RatingLibrary,          RatingLibraryEntry,     1 )
 DECLARE_LIBRARY( LiveLoadLibrary,        LiveLoadLibraryEntry,   0 )
 DECLARE_LIBRARY( DuctLibrary,            DuctLibraryEntry,       1 )
+DECLARE_LIBRARY( HaulTruckLibrary,       HaulTruckLibraryEntry,  1 )
 
 class GirderLibrary : public GirderLibraryBase
 {
@@ -130,6 +132,8 @@ public:
    const LiveLoadLibrary* GetLiveLoadLibrary() const;
    DuctLibrary* GetDuctLibrary();
    const DuctLibrary* GetDuctLibrary() const;
+   HaulTruckLibrary* GetHaulTruckLibrary();
+   const HaulTruckLibrary* GetHaulTruckLibrary() const;
 
    virtual bool LoadMe(sysIStructuredLoad* pLoad);
 
@@ -158,6 +162,7 @@ private:
    CollectionIndexType m_RatingLibIdx;
    CollectionIndexType m_LiveLibIdx;
    CollectionIndexType m_DuctLibIdx;
+   CollectionIndexType m_HaulTruckLibIdx;
 
    std::_tstring m_strPublisher;
    std::_tstring m_strLibFile;

@@ -38,7 +38,6 @@ public:
 
    afx_msg void OnConfigurePlugins();
    afx_msg void OnUpdateTemplates();
-   afx_msg void OnProgramSettings();
 
    CPGSpliceAppPlugin* m_pMyAppPlugin;
 
@@ -76,6 +75,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICEAPPPLUGINIMPL)
    void FinalRelease();
 
    virtual CString GetAppName() const { return CString("PGSplice"); }
+   virtual CString GetDefaultCatalogServerName() const  { return CString("WSDOT"); }
+   virtual CString GetDefaultCatalogName()  const  { return CString("WSDOT"); }
+
    virtual CString GetTemplateFileExtension();
    virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
 
@@ -88,7 +90,6 @@ public:
    void ConfigurePlugins();
    void UpdateTemplates();
    bool UpdatingTemplates();
-   void OnProgramSettings();
 
 protected:
    virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;

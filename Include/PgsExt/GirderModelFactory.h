@@ -26,7 +26,7 @@
 #include <WBFLFem2d.h>
 #include <WBFLCore.h>
 #include <PgsExt\ReportPointOfInterest.h>
-#include "PoiMap.h"
+#include <PgsExt\PoiPairMap.h>
 #include <IFace\AnalysisResults.h>
 
 // This utility class provides methods for creating a simple span FEM2d model for a precast segment, finding members in the segment
@@ -50,7 +50,7 @@ public:
                                  bool bModelRightCantilever,                  // if true, the cantilever defined by rightSupportLoc is modeled
                                  const std::vector<pgsPointOfInterest>& vPOI, // vector of PGSuper POIs that are to be modeld in the Fem2d Model
                                  IFem2dModel** ppModel,                       // the Fem2d Model
-                                 pgsPoiMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
+                                 pgsPoiPairMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
                                  );
 
    // searches the fem model of a girder to find the member ID and distance from start of member for
@@ -62,18 +62,18 @@ public:
                           );
 
    // adds a PGSuper POI to the fem2d model. Returns the Fem2d POI ID
-   static PoiIDType AddPointOfInterest(IFem2dModel* pModel,const pgsPointOfInterest& poi);
+   static PoiIDPairType AddPointOfInterest(IFem2dModel* pModel,const pgsPointOfInterest& poi);
 
    // adds a vector of PGSuper POIs to the Fem2d model. Returns a vector of Fem2d POI IDs.
-   static std::vector<PoiIDType> AddPointsOfInterest(IFem2dModel* pModel,const std::vector<pgsPointOfInterest>& vPOI);
+   static std::vector<PoiIDPairType> AddPointsOfInterest(IFem2dModel* pModel,const std::vector<pgsPointOfInterest>& vPOI);
 
 
 protected:
    // Use template methods to allow children to add functionality
    // BuildModel returns length of model
-   virtual void BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap);
-   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap);
-   virtual void ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap);
+   virtual void BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel);
+   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel);
+   virtual void ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap);
 
    static PoiIDType ms_FemModelPoiID;
 };
@@ -92,7 +92,7 @@ public:
 
 protected:
    // Use template methods to allow children to add functionality
-   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap);
+   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel);
 
 private:
    Float64 m_OverhangFactor;
@@ -115,7 +115,7 @@ public:
 
 protected:
    // Use template methods to allow children to add functionality
-   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel,pgsPoiMap* pPoiMap);
+   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel);
 
 private:
    pgsDesignHaunchLoadGirderModelFactory();

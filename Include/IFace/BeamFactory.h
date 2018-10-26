@@ -177,11 +177,11 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns true if the non-composite beam section is prismatic
-   virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
+   virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns true of the non-composite beam is longitudinally symmetric about its mid-point
-   virtual bool IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
+   virtual bool IsSymmetric(const IBeamFactory::Dimensions& dimensions) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the interal surface area of voids within the member
@@ -295,6 +295,7 @@ interface IBeamFactory : IUnknown
 // {E97F7992-BE87-43cf-8657-A477EFC32B47}
 DEFINE_GUID(IID_ISplicedBeamFactory, 
 0xe97f7992, 0xbe87, 0x43cf, 0x86, 0x57, 0xa4, 0x77, 0xef, 0xc3, 0x2b, 0x47);
+struct __declspec(uuid("{E97F7992-BE87-43cf-8657-A477EFC32B47}")) ISplicedBeamFactory;
 interface ISplicedBeamFactory : IBeamFactory
 {
    // returns true if the section depth can be variable

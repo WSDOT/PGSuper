@@ -22,12 +22,14 @@
 
 #ifndef INCLUDED_PGSEXT_HANDLINGDATA_H_
 #define INCLUDED_PGSEXT_HANDLINGDATA_H_
-
-#include <WBFLCore.h>
+#pragma once
 
 #if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
 #endif
+
+#include <WBFLCore.h>
+#include <PsgLib\HaulTruckLibraryEntry.h>
 
 /*****************************************************************************
 CLASS 
@@ -66,6 +68,9 @@ public:
    Float64 LeftStoragePoint, RightStoragePoint; // distance from left/right end of segment to storage support point
    Float64 LeftLiftPoint, RightLiftPoint; // distance from left/right end of segment to lift point
    Float64 LeadingSupportPoint, TrailingSupportPoint;
+   std::_tstring HaulTruckName;
+   const HaulTruckLibraryEntry* pHaulTruckLibraryEntry;
+
 
 protected:
    void MakeCopy(const CHandlingData& rOther);

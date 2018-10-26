@@ -358,8 +358,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
                (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(t);
             }
 
-            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(segmentKey,intervalIdx);
-            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetSegmentFreeShrinkageStrain(segmentKey,intervalIdx,pgsTypes::End);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalSegmentFreeShrinkageStrain(segmentKey,intervalIdx);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalSegmentFreeShrinkageStrain(segmentKey,intervalIdx,pgsTypes::End);
          }
          else
          {
@@ -391,8 +391,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
                   (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(t);
                }
 
-               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
-               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
+               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
+               (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End);
             }
             else
             {
@@ -423,8 +423,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
             (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(t);
          }
 
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
       }
       else
       {

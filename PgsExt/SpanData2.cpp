@@ -429,7 +429,7 @@ void CSpanData2::MakeCopy(const CSpanData2& rOther,bool bCopyDataOnly)
 
    m_Fillets = rOther.m_Fillets;
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CSpanData2::MakeAssignment(const CSpanData2& rOther)

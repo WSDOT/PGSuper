@@ -1121,7 +1121,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetWholeDaysUnit(),     false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetFractionalDaysUnit(),     false );
 
    ColumnIndexType col = 1;
    (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
@@ -1276,7 +1276,6 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetWholeDaysUnit(),     false );
 
    ColumnIndexType col = 1;
    (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
@@ -1513,8 +1512,23 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       // diaphragm table
       if ( pPier->GetPrevSpan() )
       {
-         (*pDiaphragmTable)(row2,1) << cmpdim.SetValue(pPier->GetDiaphragmHeight(pgsTypes::Back));
-         (*pDiaphragmTable)(row2,2) << cmpdim.SetValue(pPier->GetDiaphragmWidth(pgsTypes::Back));
+         if ( pPier->GetDiaphragmHeight(pgsTypes::Back) < 0 )
+         {
+            (*pDiaphragmTable)(row2,1) << _T("Compute");
+         }
+         else
+         {
+            (*pDiaphragmTable)(row2,1) << cmpdim.SetValue(pPier->GetDiaphragmHeight(pgsTypes::Back));
+         }
+
+         if ( pPier->GetDiaphragmWidth(pgsTypes::Back) < 0 )
+         {
+            (*pDiaphragmTable)(row2,2) << _T("Compute");
+         }
+         else
+         {
+            (*pDiaphragmTable)(row2,2) << cmpdim.SetValue(pPier->GetDiaphragmWidth(pgsTypes::Back));
+         }
          switch( pPier->GetDiaphragmLoadType(pgsTypes::Back) )
          {
          case ConnectionLibraryEntry::ApplyAtBearingCenterline:
@@ -1543,8 +1557,24 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
       if ( pPier->GetNextSpan() )
       {
-         (*pDiaphragmTable)(row2,5) << cmpdim.SetValue(pPier->GetDiaphragmHeight(pgsTypes::Ahead));
-         (*pDiaphragmTable)(row2,6) << cmpdim.SetValue(pPier->GetDiaphragmWidth(pgsTypes::Ahead));
+         if ( pPier->GetDiaphragmHeight(pgsTypes::Ahead) < 0 )
+         {
+            (*pDiaphragmTable)(row2,5) << _T("Compute");
+         }
+         else
+         {
+            (*pDiaphragmTable)(row2,5) << cmpdim.SetValue(pPier->GetDiaphragmHeight(pgsTypes::Ahead));
+         }
+
+         if ( pPier->GetDiaphragmWidth(pgsTypes::Ahead) < 0 )
+         {
+            (*pDiaphragmTable)(row2,6) << _T("Compute");
+         }
+         else
+         {
+            (*pDiaphragmTable)(row2,6) << cmpdim.SetValue(pPier->GetDiaphragmWidth(pgsTypes::Ahead));
+         }
+
          switch( pPier->GetDiaphragmLoadType(pgsTypes::Ahead) )
          {
          case ConnectionLibraryEntry::ApplyAtBearingCenterline:
@@ -2144,7 +2174,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
             (*pTable)(row,0) << _T("Number of Straight Strands");
             (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Straight);
-            StrandIndexType nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Straight);
+            StrandIndexType nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
             if ( nDebonded != 0 )
             {
                (*pTable)(row,1) << rptNewLine << nDebonded << _T(" debonded");
@@ -2165,7 +2195,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
             (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
             (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
-            nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Harped);
+            nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Harped,pgsTypes::dbetEither);
             if ( nDebonded != 0 )
             {
                (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
@@ -2184,7 +2214,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             {
                (*pTable)(row,0) << _T("Number of Temporary Strands");
                (*pTable)(row,1) << pStrand->GetStrandCount(thisSegmentKey,pgsTypes::Temporary);
-               nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Temporary);
+               nDebonded = pStrand->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Temporary,pgsTypes::dbetEither);
                if ( nDebonded != 0 )
                {
                   (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");

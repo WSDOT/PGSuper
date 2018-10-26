@@ -178,8 +178,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
    bool bIsStressingInterval = pIntervals->IsStressingInterval(girderKey,intervalIdx);
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
+   std::_tstring strLimitState = GetLimitStateString(limitState);
 
    std::_tostringstream os;
    os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(intervalIdx) << _T(" : ") << strLimitState << std::endl;
@@ -278,9 +277,29 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
+   IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
+   IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+   PoiAttributeType refAttribute = POI_SPAN;
+   if ( intervalIdx == releaseIntervalIdx )
+   {
+      refAttribute = POI_RELEASED_SEGMENT;
+   }
+   else if (intervalIdx == storageIntervalIdx )
+   {
+      refAttribute = POI_STORAGE_SEGMENT;
+   }
+   else if ( intervalIdx == erectionIntervalIdx )
+   {
+      refAttribute = POI_ERECTED_SEGMENT;
+   }
+
+   // this table not used for lifting and hauling
+   ATLASSERT(intervalIdx != pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx)));
+   ATLASSERT(intervalIdx != pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx)));
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -421,8 +440,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    }
 
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
+   std::_tstring strLimitState = GetLimitStateString(limitState);
 
 
    if ( bIncludePrestress && ( bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot ) )
@@ -593,7 +611,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
             (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
          }
 
-         (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi );
+         (*p_table)(row,col++) << location.SetValue( refAttribute, poi );
 
          if ( pTensionArtifact )
          {

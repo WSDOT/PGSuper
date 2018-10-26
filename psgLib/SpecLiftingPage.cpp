@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CSpecLiftingPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_LIFTING_TENSION_MAX, OnCheckLiftingNormalMaxMax)
 	ON_BN_CLICKED(ID_HELP,OnHelp)
 	//}}AFX_MSG_MAP
+   ON_CBN_SELCHANGE(IDC_WIND_TYPE, &CSpecLiftingPage::OnCbnSelchangeWindType)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -95,9 +96,18 @@ void CSpecLiftingPage::DoCheckMax()
 
 BOOL CSpecLiftingPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+   CComboBox* pcbStresses = (CComboBox*)GetDlgItem(IDC_STRESSES);
+   pcbStresses->SetItemData(pcbStresses->AddString(_T("tilted girder")),(DWORD_PTR)false);
+   pcbStresses->SetItemData(pcbStresses->AddString(_T("plumb girder")),(DWORD_PTR)true);
+
+   CComboBox* pcbWind = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)pgsTypes::Pressure);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)pgsTypes::Speed);
+
+   CPropertyPage::OnInitDialog();
 	
 	DoCheckMax();
+   OnCbnSelchangeWindType();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -142,4 +152,23 @@ inline BOOL CALLBACK EnableChildWindow(HWND hwnd,LPARAM lParam)
 void CSpecLiftingPage::EnableControls(BOOL bEnable)
 {
    EnumChildWindows(GetSafeHwnd(),EnableChildWindow,bEnable);
+}
+
+void CSpecLiftingPage::OnCbnSelchangeWindType()
+{
+   // TODO: Add your control notification handler code here
+   CComboBox* pcbWindType = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
+   int curSel = pcbWindType->GetCurSel();
+   pgsTypes::WindType windType = (pgsTypes::WindType)pcbWindType->GetItemData(curSel);
+   CDataExchange dx(this,false);
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
+   if ( windType == pgsTypes::Speed )
+   {
+      DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->Velocity);
+   }
+   else
+   {
+      DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->WindPressure);
+   }
 }

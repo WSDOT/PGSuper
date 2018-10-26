@@ -18,13 +18,18 @@ void CProjectImportersCmdTarget::OnConfigureProjectImporters()
 // PGS application plug-ins. The only differece is this plug-in provides a 
 // framework for creating new PGS projects from external data sources. When this
 // plug-in is loaded and unloaded it reads and writes from the registery. It reads
-// and writes to the same location as PGS app plug-in. This works fine for 
-// everything except the custom reporting options. Whichever plug-in saves last
+// and writes to the same location as a PGS App Plug-in. This works fine for 
+// everything except the custom reporting and catalog server information. Whichever plug-in saves last
 // wins. Since we don't have any real project importers yet, it is just easier
-// to by-pass saving custom report information. This will have to be fixed later
+// to by-pass saving custom report information. This will have to be fixed later.
 void CPGSProjectImporterAppPluginBase::SaveReportOptions()
 {
    // do nothing
+}
+
+void CPGSProjectImporterAppPluginBase::SaveRegistryValues()
+{
+   // do nothing (See note above)
 }
 
 HRESULT CPGSProjectImporterAppPluginBase::FinalConstruct()

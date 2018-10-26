@@ -744,6 +744,13 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
    rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(pDeckRebar == NULL ? 2 : 3);
    *pPara << pLayoutTable << rptNewLine;
+
+   ColumnIndexType nCols = pLayoutTable->GetNumberOfColumns();
+   for ( ColumnIndexType col = 0; col < nCols; col++ )
+   {
+      pLayoutTable->SetColumnStyle(col,_T("BottomAlignCellStyle"));
+   }
+
    ColumnIndexType layoutColumn = 0;
 
    if ( pDeckRebar )

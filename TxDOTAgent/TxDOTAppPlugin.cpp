@@ -30,13 +30,29 @@
 #include "resource.h"
 #include "TxDOTCommandLineInfo.h"
 
+#include <EAF\EAFDocManager.h>
+#include <EAF\EAFBrokerDocument.h>
+#include <MFCTools\AutoRegistry.h>
 
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
+   ON_COMMAND(ID_UPDATE_TOGA_TEMPLATE,OnUpdateTemplates)
 END_MESSAGE_MAP()
 
+void CMyCmdTarget::OnUpdateTemplates()
+{
+   m_pMyAppPlugin->UpdateTemplates();
+}
 
 BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
 {
+   DefaultInit(this);
+
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+      LoadRegistryValues();
+   }
+
    // use manage state because we need exe's state below
    {
       AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -47,13 +63,25 @@ BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
       AfxLockTempMaps();
    }
 
-   m_DocumentationImpl.Init(this);
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+      if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
+         UpdateCache(); // we don't want to do this if we are running in batch/command line mode
+
+
+      m_DocumentationImpl.Init(this);
+   }
 
    return TRUE;
 }
 
 void CTxDOTAppPlugin::Terminate()
 {
+   SaveRegistryValues();
+
+   DefaultTerminate();
+
    {
       AFX_MANAGE_STATE(AfxGetAppModuleState());
       // see tricky in Init
@@ -61,9 +89,42 @@ void CTxDOTAppPlugin::Terminate()
    }
 }
 
+HRESULT CTxDOTAppPlugin::FinalConstruct()
+{
+   return OnFinalConstruct(); // CCatalogServerAppMixin
+}
+
+void CTxDOTAppPlugin::FinalRelease()
+{
+   OnFinalRelease(); // CCatalogServerAppMixin
+}
+
+
 void CTxDOTAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 {
-   // no UI integration
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   CEAFMenu* pMainMenu = pFrame->GetMainMenu();
+
+   UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
+   CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+
+   UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
+   CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
+
+   if ( bIntegrate )
+   {
+      // Append to the end of the Manage menu
+//      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("TOGA Plugins and Extensions..."),this);
+
+      // Alt+Ctrl+T
+      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_T, ID_UPDATE_TOGA_TEMPLATE,this);
+   }
+   else
+   {
+//      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
+
+      pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TOGA_TEMPLATE,this);
+   }
 }
 
 std::vector<CEAFDocTemplate*> CTxDOTAppPlugin::CreateDocTemplates()
@@ -92,7 +153,7 @@ HMENU CTxDOTAppPlugin::GetSharedMenuHandle()
 
 CString CTxDOTAppPlugin::GetName()
 {
-   return CString("TOGA - TxDOT Optional Girder Analysis");
+   return CString("TOGA");
 }
 
 CString CTxDOTAppPlugin::GetDocumentationSetName()
@@ -140,6 +201,11 @@ BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
    EAFGetApp()->ParseCommandLine(txCmdInfo);
    cmdInfo = txCmdInfo;
 
+   if (txCmdInfo.m_bSetUpdateLibrary)
+   {
+      ProcessLibrarySetUp(txCmdInfo);
+      return TRUE;
+   }
    // could handle processing here, but allow app class to do it
 //   if (txCmdInfo.m_DoTogaTest)
 //   {
@@ -212,4 +278,87 @@ BOOL CTxDOTAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
 	}
 
    return TRUE;
+}
+
+CString CTxDOTAppPlugin::GetTemplateFileExtension()
+{ 
+   return CString(_T("togt"));
+}
+
+const CRuntimeClass* CTxDOTAppPlugin::GetDocTemplateRuntimeClass()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return RUNTIME_CLASS(CTxDOTOptionalDesignDocTemplate);
+}
+
+CPGSBaseCommandLineInfo* CTxDOTAppPlugin::CreateCommandLineInfo() const
+{
+   return  new CTxDOTCommandLineInfo();
+}
+
+void CTxDOTAppPlugin::UpdateTemplates()
+{
+   ATLASSERT(0);
+   AfxMessageBox(_T("Update Templates feature not supported (or applicable) to TOGA"));
+}
+
+void CTxDOTAppPlugin::UpdateDocTemplates()
+{
+   CEAFApp* pApp = EAFGetApp();
+
+   // Need to update the main document template so that the File | New dialog is updated
+   // Search for the CPGSuperDocTemplate object
+   CEAFDocManager* pDocMgr = (CEAFDocManager*)(pApp->m_pDocManager);
+   POSITION pos = pDocMgr->GetFirstDocTemplatePosition();
+   while ( pos != NULL )
+   {
+      POSITION templatePos = pos;
+      CDocTemplate* pDocTemplate = pDocMgr->GetNextDocTemplate(pos);
+      if ( pDocTemplate->IsKindOf(GetDocTemplateRuntimeClass()) )
+      {
+         pDocMgr->RemoveDocTemplate(templatePos);
+
+         CTxDOTOptionalDesignDocTemplate* pTemplate = dynamic_cast<CTxDOTOptionalDesignDocTemplate*>(pDocTemplate);
+         pTemplate->LoadTemplateInformation();
+
+         pDocMgr->AddDocTemplate(pDocTemplate);
+
+         break;
+      }
+   }
+}
+
+CString CTxDOTAppPlugin::GetDefaultMasterLibraryFile()
+{
+   CString path = GetDefaultWorkgroupTemplateFolder();
+   return path + (_T("\\TXDOT.LBR"));
+}
+
+CString CTxDOTAppPlugin::GetDefaultWorkgroupTemplateFolder()
+{
+   CEAFApp* pApp = EAFGetApp();
+
+   CString strAppPath = pApp->GetAppLocation();
+   strAppPath.MakeUpper();
+
+#if defined _DEBUG
+#if defined _WIN64
+   strAppPath.Replace(_T("BRIDGELINK\\REGFREECOM\\X64\\DEBUG\\"),_T(""));
+#else
+   strAppPath.Replace(_T("BRIDGELINK\\REGFREECOM\\WIN32\\DEBUG\\"),_T(""));
+#endif
+
+   strAppPath += _T("PGSUPER\\TXDOTAGENT");
+
+#else
+   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
+   // ok... the replace will fail and the string wont be altered.
+#if defined _WIN64
+   strAppPath.Replace(_T("BRIDGELINK\\REGFREECOM\\X64\\RELEASE\\"),_T("PGSUPER\\TXDOTAGENT"));
+#else
+   strAppPath.Replace(_T("BRIDGELINK\\REGFREECOM\\WIN32\\RELEASE\\"),_T("PGSUPER\\TXDOTAGENT"));
+#endif
+#endif
+
+   return strAppPath + CString(_T("\\TOGATEMPLATES"));
 }

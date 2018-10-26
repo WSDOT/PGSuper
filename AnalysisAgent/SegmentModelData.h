@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <PgsExt\PoiMap.h>
+#include <PgsExt\PoiPairMap.h>
 #include <WBFLFem2d.h>
 
 class CSegmentModelData
@@ -35,7 +35,7 @@ public:
    IntervalIndexType IntervalIdx;
    Float64 Ec;
    CComPtr<IFem2dModel> Model;
-   pgsPoiMap PoiMap;
+   pgsPoiPairMap PoiMap;
    std::map<PoiIDType,LoadCaseIDType> UnitLoadIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corresponding poi in the Fem2d Model
    std::map<PoiIDType,LoadCaseIDType> UnitMomentIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corresponding poi in the Fem2d Model
    std::set<LoadCaseIDType> Loads; // keeps the ID of loads that have been applied to the model (except unit loads)

@@ -50,8 +50,8 @@ public:
    virtual std::vector<std::_tstring> GetDimensionNames();
    virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits);
    virtual std::vector<Float64> GetDefaultDimensions();
-   virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey);
-   virtual bool IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey);
+   virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions);;
+   virtual bool IsSymmetric(const IBeamFactory::Dimensions& dimensions);
    virtual std::_tstring GetName();
    virtual CLSID GetFamilyCLSID();
    virtual std::_tstring GetGirderFamilyName();

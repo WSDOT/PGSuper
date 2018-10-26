@@ -418,7 +418,7 @@ void CPointLoadDrawStrategyImpl::EditLoad()
 	CEditPointLoadDlg dlg(*pLoad,pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
-      if (*pLoad != dlg.m_Load)
+      if (*pLoad != dlg.m_Load || eventID != dlg.m_EventID)
       {
          txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,*pLoad,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : NULL);
          txnTxnManager::GetInstance()->Execute(pTxn);

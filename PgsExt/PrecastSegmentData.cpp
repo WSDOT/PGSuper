@@ -420,6 +420,55 @@ Float64 CPrecastSegmentData::GetVariationBottomFlangeDepth(pgsTypes::SegmentZone
    }
 }
 
+bool CPrecastSegmentData::AreSegmentVariationsValid(Float64 segmentFramingLength) const
+{
+   Float64 L = 0;
+   Float64 L1 = m_VariationLength[pgsTypes::sztLeftPrismatic];
+   Float64 L2 = m_VariationLength[pgsTypes::sztLeftTapered];
+   Float64 L3 = m_VariationLength[pgsTypes::sztRightTapered];
+   Float64 L4 = m_VariationLength[pgsTypes::sztRightPrismatic];
+   if ( L1 < 0 )
+   {
+      L1 *= -segmentFramingLength;
+   }
+
+   if ( L2 < 0 )
+   {
+      L2 *= -segmentFramingLength;
+   }
+
+   if ( L3 < 0 )
+   {
+      L3 *= -segmentFramingLength;
+   }
+
+   if ( L4 < 0 )
+   {
+      L4 *= -segmentFramingLength;
+   }
+
+   switch(m_VariationType)
+   {
+   case pgsTypes::svtNone:
+      break;
+
+   case pgsTypes::svtLinear:
+   case pgsTypes::svtParabolic:
+      L = L1 + L4;
+      break;
+
+   case pgsTypes::svtDoubleLinear:
+   case pgsTypes::svtDoubleParabolic:
+      L = L1 + L2 + L3 + L4;
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return (::IsLE(L,segmentFramingLength) ? true : false);
+}
+
 Float64 CPrecastSegmentData::GetBasicSegmentHeight() const
 {
    return GetSegmentHeight(true);
@@ -1065,7 +1114,7 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyI
 
    ResolveReferences();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 void CPrecastSegmentData::MakeAssignment(const CPrecastSegmentData& rOther)

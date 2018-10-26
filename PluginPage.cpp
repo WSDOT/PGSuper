@@ -48,7 +48,7 @@ void CPluginPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-	DDX_Control(pDX, IDC_PLUGIN_LIST, m_ctlPluginList);
+	DDX_Control(pDX, IDC_LIST, m_ctlPluginList);
 }
 
 void CPluginPage::Init(LPCTSTR strSection,const CATID& catid,LPCTSTR lpszAppName)

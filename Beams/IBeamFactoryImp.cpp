@@ -38,6 +38,9 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 
+#include <IFace\AgeAdjustedMaterial.h>
+#include <Beams\Helper.h>
+
 #include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
@@ -142,11 +145,11 @@ HRESULT CIBeamFactory::FinalConstruct()
 
 void CIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
-   CComPtr<IFlangedGirderSection> gdrsection;
-   gdrsection.CoCreateInstance(CLSID_FlangedGirderSection);
+   CComPtr<IFlangedGirderSection> gdrSection;
+   gdrSection.CoCreateInstance(CLSID_FlangedGirderSection);
 
    CComPtr<IPrecastBeam> beam;
-   gdrsection->get_Beam(&beam);
+   gdrSection->get_Beam(&beam);
 
    Float64 c1;
    Float64 d1,d2,d3,d4,d5,d6,d7;
@@ -169,7 +172,7 @@ void CIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statu
    beam->put_T2(t2);
    beam->put_C1(c1);
 
-   gdrsection.QueryInterface(ppSection);
+   gdrSection.QueryInterface(ppSection);
 }
 
 void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
@@ -204,7 +207,16 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
 {
    CComPtr<ISuperstructureMemberSegment> segment;
 
-   bool bPrismatic = IsPrismatic(pBroker,segmentKey);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   bool bPrismatic = IsPrismatic(dimensions);
    if ( bPrismatic )
    {
       // prismatic
@@ -219,15 +231,6 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    ATLASSERT(segment != NULL);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
    Float64 ebWidth, ebLength, ebTransition;
    ebWidth      = GetDimension(dimensions,_T("EndBlockWidth"));
    ebLength     = GetDimension(dimensions,_T("EndBlockLength"));
@@ -237,19 +240,29 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
 
    // Beam materials
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   material.CoCreateInstance(CLSID_Material);
-
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
-      Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
-      Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
+      CComPtr<IAgeAdjustedMaterial> aaMaterial;
+      BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
+      aaMaterial.QueryInterface(&material);
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      material.CoCreateInstance(CLSID_Material);
 
-      material->put_E(intervalIdx,E);
-      material->put_Density(intervalIdx,D);
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+      {
+         Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+         Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
+
+         material->put_E(intervalIdx,E);
+         material->put_Density(intervalIdx,D);
+      }
    }
 
 
@@ -644,17 +657,8 @@ IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad
    return dimensions;
 }
 
-bool CIBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CIBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
 {
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
    Float64 ebWidth, ebLength, ebTransition;
    ebWidth      = GetDimension(dimensions,_T("EndBlockWidth"));
    ebLength     = GetDimension(dimensions,_T("EndBlockLength"));
@@ -675,7 +679,7 @@ bool CIBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
    return bPrismatic;
 }
 
-bool CIBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CIBeamFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
 {
    return true;
 }

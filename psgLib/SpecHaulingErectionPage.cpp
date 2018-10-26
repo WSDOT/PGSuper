@@ -126,7 +126,6 @@ BOOL CSpecHaulingErectionPage::OnInitDialog()
    pBox->GetWindowRect(&boxRect);
    ScreenToClient(boxRect);
 
-   // m_WsdotHaulingDlg.Init(
    VERIFY(m_WsdotHaulingDlg.Create(CWsdotHaulingDlg::IDD, this));
    VERIFY(m_WsdotHaulingDlg.SetWindowPos( GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
 
@@ -134,6 +133,8 @@ BOOL CSpecHaulingErectionPage::OnInitDialog()
    VERIFY(m_KdotHaulingDlg.SetWindowPos( GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
 
 	CPropertyPage::OnInitDialog();
+
+   m_WsdotHaulingDlg.OnCbnSelchangeWindType();
 
    m_BeforeInit = false;
 

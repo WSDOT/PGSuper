@@ -34,10 +34,11 @@
 #include <PgsExt\SegmentStabilityArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
-#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\DebondArtifact.h>
 #include <PgsExt\StirrupCheckAtZonesArtifact.h>
 #include <PgsExt\DeflectionCheckArtifact.h>
+
+#include <Stability\Stability.h>
 
 #include <map>
 
@@ -107,9 +108,9 @@ public:
    const pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact() const;
    pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact();
 
-   void SetLiftingAnalysisArtifact(const pgsLiftingAnalysisArtifact* artifact);
-   const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact() const;
-   
+   void SetLiftingCheckArtifact(const stbLiftingCheckArtifact* artifact);
+   const stbLiftingCheckArtifact* GetLiftingCheckArtifact() const;
+
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
@@ -225,7 +226,7 @@ private:
 
    pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
 
-   const pgsLiftingAnalysisArtifact* m_pLiftingAnalysisArtifact; // pointer is not owned by this object
+   const stbLiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
    pgsDebondArtifact m_DebondArtifact[3];

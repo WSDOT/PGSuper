@@ -405,7 +405,7 @@ void CClosureJointData::MakeCopy(const CClosureJointData& rOther,bool bCopyDataO
 
    ResolveReferences();
 
-   ASSERT_VALID;
+   PGS_ASSERT_VALID;
 }
 
 

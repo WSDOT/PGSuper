@@ -29,7 +29,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.00                     2     1     K3            14  0.6  270  18.17  13.02   9.13   9.13                                               4  22.0  4.0 13.900 13.900   1.995    -2.535     3400   0.849  0.968   0.892 -0.256 -0.025 -0.016 -0.297  28.25   48.87    1.75    5.00    5.00 
+ 38.00    5   8.00                     2     1     K3            14  0.6  270  18.17  13.02   9.25   9.25                                               4  22.0  4.0 13.900 13.900   2.000    -2.539     3399   0.849  0.968   0.892 -0.258 -0.025 -0.016 -0.298  28.25   48.82    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -58,7 +58,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.00                     3     1     K3            14  0.6  270  18.17  13.02   9.13   9.13                                               4  22.0  4.0 13.900 13.900   1.986    -2.523     3401   0.849  0.968   0.889 -0.253 -0.025 -0.015 -0.294  28.25   48.92    1.75    5.00    5.00 
+ 38.00    5   8.00                     3     1     K3            14  0.6  270  18.17  13.02   9.25   9.25                                               4  22.0  4.0 13.900 13.900   1.991    -2.527     3400   0.849  0.968   0.889 -0.255 -0.025 -0.015 -0.295  28.25   48.87    1.75    5.00    5.00 
 
 
 Girder design was Not Successful

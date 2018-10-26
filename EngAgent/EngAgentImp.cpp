@@ -740,10 +740,9 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IProductLoads,pProductLoads);
    std::_tostringstream os;
 
-   os << _T("Computing ") << pProductLoads->GetLimitStateName(limitState) << _T(" critical section for shear for Girder ")
+   os << _T("Computing ") << GetLimitStateString(limitState) << _T(" critical section for shear for Girder ")
       << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
@@ -781,10 +780,9 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IProductLoads,pProductLoads);
    std::_tostringstream os;
 
-   os << _T("Computing ") << pProductLoads->GetLimitStateName(limitState) << _T(" critical section for shear for Girder ")
+   os << _T("Computing ") << GetLimitStateString(limitState) << _T(" critical section for shear for Girder ")
       << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
@@ -934,7 +932,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          continue;
       }
 
-      // reaction causes compression in the end of the girder... need to location CS 
+      // reaction causes compression in the end of the girder... need to locate CS 
       // We will look at POI that are with 2.5H from the face of support
 
       Float64 Hg = pGirder->GetHeight(poiFaceOfSupport);
@@ -2396,7 +2394,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
       return; // nothing to do here
    }
 
-   // get angle between all girders in this span
+   // get difference in stiffness between all girders in this span
    // if < than limit then status center + exception
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IBridge,pBridge);
@@ -2413,6 +2411,10 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   // want to get stiffness at same relative location for each girder
+   Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+   Float64 fractionalLength = poi.GetDistFromStart() / segmentLength;
+
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
   
    // look at non-composite moment of inertia
@@ -2424,10 +2426,13 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    Float64 Imin = pSectProp->GetIx(intervalIdx,poi);
    Float64 Imax = Imin;
 
-   for ( GirderIndexType gdrIdx = 1; gdrIdx < nGirders; gdrIdx++ )
+   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CSegmentKey current_segment_key(segmentKey.groupIndex,gdrIdx,segmentKey.segmentIndex);
-      pgsPointOfInterest current_poi(current_segment_key,poi.GetDistFromStart());
+      Float64 current_loc = pBridge->GetSegmentLength(current_segment_key);
+      current_loc *= fractionalLength;
+
+      pgsPointOfInterest current_poi(current_segment_key, current_loc );
       
       IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(current_segment_key);
 
@@ -3788,14 +3793,14 @@ ZoneIndexType CEngAgentImp::GetCriticalSectionZoneIndex(pgsTypes::LimitState lim
       const CRITSECTDETAILS& csDetails(*iter);
       if ( csDetails.bAtFaceOfSupport )
       {
-         if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && InRange(csDetails.Start,x,csDetails.End) )
+         if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
          {
             return (ZoneIndexType)(iter - vCSDetails.begin());
          }
       }
       else 
       {
-         if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && InRange(csDetails.Start,x,csDetails.End) )
+         if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
          {
             return (ZoneIndexType)(iter - vCSDetails.begin());
          }
@@ -3969,14 +3974,22 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       // pretensioned TTS
       config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPretensioned;
 
-      pgsLiftingAnalysisArtifact artifact1;
       GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
-      lifting_checker.DesignLifting(segmentKey,config,pSegmentLiftingPointsOfInterest,&artifact1,LOGGER);
-      pDetails->L[PS_TTS] = artifact1.GetLeftOverhang();
+
+      HANDLINGCONFIG lift_config;
+      lift_config.bIgnoreGirderConfig = false;
+      lift_config.GdrConfig = config;
+      stbLiftingCheckArtifact artifact1;
+      const stbLiftingStabilityProblem* pStabilityProblem;
+      lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact1,&pStabilityProblem,LOGGER);
+      pDetails->L[PS_TTS] = lift_config.LeftOverhang;
    
       Float64 fci;
-      Float64 fci_tens, fci_comp, fci_tens_wrebar;
-      artifact1.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
+
+      Float64 fci_comp = artifact1.RequiredFcCompression();
+      Float64 fci_tens = artifact1.RequiredFcTension();
+      Float64 fci_tens_wrebar = artifact1.RequiredFcTensionWithRebar();
+
       bool minRebarRequired = fci_tens<0;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[PS_TTS] = fci;
@@ -3989,11 +4002,15 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       config.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
       config.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
 
-      pgsLiftingAnalysisArtifact artifact2;
-      lifting_checker.DesignLifting(segmentKey,config,pSegmentLiftingPointsOfInterest,&artifact2,LOGGER);
-      pDetails->L[NO_TTS] = artifact2.GetLeftOverhang();
+      lift_config.GdrConfig = config;
+      stbLiftingCheckArtifact artifact2;
+      lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact2,&pStabilityProblem,LOGGER);
+      pDetails->L[NO_TTS] = lift_config.LeftOverhang;
    
-      artifact2.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
+      fci_comp = artifact2.RequiredFcCompression();
+      fci_tens = artifact2.RequiredFcTension();
+      fci_tens_wrebar = artifact2.RequiredFcTensionWithRebar();
+
       minRebarRequired = fci_tens<0;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[NO_TTS] = fci;
@@ -4007,18 +4024,19 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       ConfigStrandFillVector rfillvec = pStrandGeom->ComputeStrandFill(segmentKey, pgsTypes::Temporary, Nt);
       config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, rfillvec);
 
-      HANDLINGCONFIG lift_config;
-      lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = config;
       lift_config.LeftOverhang = pDetails->L[NO_TTS];
       lift_config.RightOverhang = pDetails->L[NO_TTS];
 
-      pgsLiftingAnalysisArtifact artifact3;
+      stbLiftingCheckArtifact artifact3;
       lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact3);
-      pDetails->L[PT_TTS_OPTIONAL] = artifact3.GetLeftOverhang();
+      pDetails->L[PT_TTS_OPTIONAL] = lift_config.LeftOverhang;
 
-      artifact3.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
-      minRebarRequired = fci_tens<0;
+      fci_comp = artifact3.RequiredFcCompression();
+      fci_tens = artifact3.RequiredFcTension();
+      fci_tens_wrebar = artifact3.RequiredFcTensionWithRebar();
+
+      minRebarRequired = fci_tens < 0 ? true : false;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[PT_TTS_OPTIONAL] = fci;
 
@@ -4031,12 +4049,15 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       lift_config.LeftOverhang = pDetails->L[PS_TTS];
       lift_config.RightOverhang = pDetails->L[PS_TTS];
 
-      pgsLiftingAnalysisArtifact artifact4;
+      stbLiftingCheckArtifact artifact4;
       lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact4);
-      pDetails->L[PT_TTS_REQUIRED] = artifact4.GetLeftOverhang();
+      pDetails->L[PT_TTS_REQUIRED] = lift_config.LeftOverhang;
    
-      artifact4.GetRequiredConcreteStrength(&fci_comp,&fci_tens,&fci_tens_wrebar);
-      minRebarRequired = fci_tens<0;
+      fci_comp = artifact4.RequiredFcCompression();
+      fci_tens = artifact4.RequiredFcTension();
+      fci_tens_wrebar = artifact4.RequiredFcTensionWithRebar();
+
+      minRebarRequired = fci_tens < 0 ? true : false;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
       pDetails->Fci[PT_TTS_REQUIRED] = fci;
    }
@@ -4139,12 +4160,15 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    config = pBridge->GetSegmentConfiguration(segmentKey);
    config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPretensioned;
 
+   HANDLINGCONFIG haulConfig;
+   haulConfig.bIgnoreGirderConfig = false;
+   haulConfig.GdrConfig = config;
    bool bResult;
-   std::auto_ptr<pgsHaulingAnalysisArtifact> hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,config,true,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
+   std::auto_ptr<pgsHaulingAnalysisArtifact> hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
 
    // Constructibility is wsdot-based. Cast artifact
    pgsWsdotHaulingAnalysisArtifact* hauling_artifact = dynamic_cast<pgsWsdotHaulingAnalysisArtifact*>(hauling_artifact_base.get());
-   if (hauling_artifact==NULL)
+   if (hauling_artifact == NULL)
    {
       ATLASSERT(false); // Should check that hauling analysis is WSDOT before we get here
       return;
@@ -4161,7 +4185,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
    Float64 fcReqd = -1;
 
-   ATLASSERT( IsEqual(hauling_artifact->GetLeadingOverhang(),hauling_artifact->GetTrailingOverhang()) );
+   ATLASSERT( IsEqual(haulConfig.LeftOverhang,haulConfig.RightOverhang) );
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
    Float64 min_location = Max(pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart),
@@ -4174,7 +4198,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    Float64 bigInc = 4*location_accuracy;
    Float64 smallInc = location_accuracy;
    Float64 inc = bigInc;
-   Float64 L = hauling_artifact->GetLeadingOverhang();
+   Float64 L = haulConfig.RightOverhang;
    while ( !bDone )
    {
       L += inc;
@@ -4188,8 +4212,15 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       std::auto_ptr<pgsHaulingAnalysisArtifact> hauling_artifact2( hauling_checker->AnalyzeHauling(segmentKey,hauling_config,pSegmentHaulingPointsOfInterest) );
    
       Float64 fc;
-      Float64 fc_tens, fc_comp, fc_tens_wrebar;
-      hauling_artifact2->GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
+      Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
+      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_comp1,&fc_tens1,&fc_tens_wrebar1);
+      Float64 fc_tens2, fc_comp2, fc_tens_wrebar2;
+      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_comp2,&fc_tens2,&fc_tens_wrebar2);
+
+      Float64 fc_tens = Max(fc_tens1,fc_tens2);
+      Float64 fc_comp = Max(fc_comp1,fc_comp2);
+      Float64 fc_tens_wrebar = Max(fc_tens_wrebar1,fc_tens_wrebar2);
+
       bool minRebarRequired = fc_tens<0;
       fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
@@ -4214,7 +4245,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       fcReqd = Max(fc,fcReqd);
    }
 
-   pDetails->Lmin = hauling_artifact->GetLeadingOverhang();
+   pDetails->Lmin = haulConfig.RightOverhang;
    pDetails->Lmax = L;
 
    /////////////////////////////////////////////////////////////
@@ -4249,14 +4280,26 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       }
 
       Float64 fc;
-      Float64 fc_tens, fc_comp, fc_tens_wrebar;
-      hauling_artifact2->GetRequiredConcreteStrength(&fc_comp,&fc_tens,&fc_tens_wrebar);
+      Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
+      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_comp1,&fc_tens1,&fc_tens_wrebar1);
+      Float64 fc_tens2, fc_comp2, fc_tens_wrebar2;
+      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_comp2,&fc_tens2,&fc_tens_wrebar2);
+
+      Float64 fc_tens = Max(fc_tens1,fc_tens2);
+      Float64 fc_comp = Max(fc_comp1,fc_comp2);
+      Float64 fc_tens_wrebar = Max(fc_tens_wrebar1,fc_tens_wrebar2);
+
       bool minRebarRequired = fc_tens<0;
       fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
       // check factors of safety
-      Float64 FSr  = hauling_artifact2->GetFsRollover();
-      Float64 FScr = hauling_artifact2->GetMinFsForCracking();
+#if defined MATCH_OLD_ANALYSIS
+      Float64 FScr = hauling_artifact2->GetMinFsForCracking(pgsTypes::Superelevation);
+      Float64 FSr  = hauling_artifact2->GetFsRollover(pgsTypes::Superelevation);
+#else
+      Float64 FScr = Min(hauling_artifact2->GetMinFsForCracking(pgsTypes::CrownSlope),hauling_artifact2->GetMinFsForCracking(pgsTypes::Superelevation));
+      Float64 FSr  = Min(hauling_artifact2->GetFsRollover(pgsTypes::CrownSlope),hauling_artifact2->GetFsRollover(pgsTypes::Superelevation));
+#endif
       bool bFS = ( FSrMin <= FSr && FScrMin <= FScr );
 
       // check concrete stress
@@ -4320,7 +4363,7 @@ const pgsSegmentArtifact* CEngAgentImp::GetSegmentArtifact(const CSegmentKey& se
    return pArtifact->GetSegmentArtifact(segmentKey.segmentIndex);
 }
 
-const pgsLiftingAnalysisArtifact* CEngAgentImp::GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey)
+const stbLiftingCheckArtifact* CEngAgentImp::GetLiftingCheckArtifact(const CSegmentKey& segmentKey)
 {
    return m_Designer.CheckLifting(segmentKey);
 }
@@ -4370,16 +4413,16 @@ const pgsGirderDesignArtifact* CEngAgentImp::GetDesignArtifact(const CGirderKey&
    return &((*found).second);
 }
 
-void CEngAgentImp::CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact)
+void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact)
 {
    bool bCreate = false;
 
-   typedef std::map<CSegmentKey, std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less> >::iterator iter_type;
+   typedef std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> >::iterator iter_type;
    iter_type found_gdr;
    found_gdr = m_LiftingArtifacts.find(segmentKey);
    if ( found_gdr != m_LiftingArtifacts.end() )
    {
-      std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less>::iterator found;
+      std::map<Float64,stbLiftingCheckArtifact,Float64_less>::iterator found;
       found = (*found_gdr).second.find(supportLoc);
       if ( found != (*found_gdr).second.end() )
       {
@@ -4392,7 +4435,7 @@ void CEngAgentImp::CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,F
    }
    else
    {
-      std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less> artifacts;
+      std::map<Float64,stbLiftingCheckArtifact,Float64_less> artifacts;
       std::pair<iter_type,bool> iter = m_LiftingArtifacts.insert( std::make_pair(segmentKey, artifacts) );
       found_gdr = iter.first;
       bCreate = true;

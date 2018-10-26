@@ -28,7 +28,6 @@
 // PROJECT INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
 
 #include <IFace\PointOfInterest.h>
@@ -77,10 +76,10 @@ public:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void CheckLifting(const CSegmentKey& segmentKey,pgsLiftingAnalysisArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId, pgsLiftingAnalysisArtifact* pArtifact);
-   pgsDesignCodes::OutcomeType DesignLifting(const CSegmentKey& segmentKey,const GDRCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId,pgsLiftingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE);
+   void CheckLifting(const CSegmentKey& segmentKey,stbLiftingCheckArtifact* pArtifact);
+   void AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact);
+   void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId, stbLiftingCheckArtifact* pArtifact, const stbLiftingStabilityProblem** ppStabilityProblem = NULL);
+   pgsDesignCodes::OutcomeType DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId,stbLiftingCheckArtifact* pArtifact,const stbLiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -110,25 +109,7 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,pgsLiftingAnalysisArtifact* pArtifact);
-   void PrepareLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 Loh,Float64 Roh,Float64 Fci,Float64 Eci,pgsTypes::ConcreteType concType,pgsLiftingAnalysisArtifact* pArtifact);
-   void ComputeLiftingMoments(const CSegmentKey& segmentKey,
-                              const pgsLiftingAnalysisArtifact& rArtifact, 
-                              const std::vector<pgsPointOfInterest>& vPoi,
-                              std::vector<Float64>* pvMoment, 
-                              Float64* pMidSpanDeflection);
-   void ComputeLiftingStresses(const CSegmentKey& segmentKey,bool bUseConfig,
-                               const HANDLINGCONFIG& liftConfig,
-                               const std::vector<pgsPointOfInterest>& vPoi,
-                               const std::vector<Float64>& vMoment,
-                               pgsLiftingAnalysisArtifact* pArtifact);
-   void ComputeLiftingFsAgainstFailure(const CSegmentKey& segmentKey,pgsLiftingAnalysisArtifact* pArtifact);
-   bool ComputeLiftingFsAgainstCracking(const CSegmentKey& segmentKey,bool bUseConfig,
-                                        const HANDLINGCONFIG& liftConfig,
-                                        const std::vector<pgsPointOfInterest>& vPoi,
-                                        const std::vector<Float64>& vMoment,
-                                        Float64 midSpanDeflection,
-                                        pgsLiftingAnalysisArtifact* pArtifact);
+   void AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingCheckArtifact* pArtifact,const stbLiftingStabilityProblem** ppStabilityProblem = NULL);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
