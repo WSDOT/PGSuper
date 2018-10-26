@@ -46,7 +46,8 @@ m_TxRunType(txrAnalysis),
 m_TxFType(txfNormal),
 m_TxSpan(-1),
 m_TxGirder(-1),
-m_DoAppendToFile(false)
+m_DoAppendToFile(false),
+m_DoTogaTest(false)
 {
    m_Count=0;
 }
@@ -83,53 +84,62 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
       }
       else if (strParam.Left(2).CompareNoCase("Tx") == 0)
       {   
-         // probable TxDOT CAD report
+         // probable TxDOT CAD or TOGA report
 
-         // see if we append or overwrite file
-         // if flag ends in "o" we are overwriting, not appending
-         m_DoAppendToFile = (strParam.Right(1).CompareNoCase("o") != 0);
-       
-         // Set main command option
-         if (strParam.CompareNoCase("TxA") == 0 || strParam.CompareNoCase("TxAo") == 0)
+         if (strParam.CompareNoCase("TxTOGA") == 0 )
          {
-            m_TxRunType = txrAnalysis;
-            m_TxFType   = txfNormal;
-         }
-         else if (strParam.CompareNoCase("TxAx") == 0 || strParam.CompareNoCase("TxAxo") == 0)
-         {
-            m_TxRunType = txrAnalysis;
-            m_TxFType   = txfExtended;
-         }
-         else if (strParam.CompareNoCase("TxAT") == 0 || strParam.CompareNoCase("TxATo") == 0)
-         {
-            m_TxRunType = txrAnalysis;
-            m_TxFType   = txfTest;
-            m_DoAppendToFile = false;  // always delete test file
-         }
-         else if (strParam.CompareNoCase("TxD") == 0 || strParam.CompareNoCase("TxDo") == 0)
-         {
-            m_TxRunType = txrDesign;
-            m_TxFType   = txfNormal;
-         }
-         else if (strParam.CompareNoCase("TxDx") == 0 || strParam.CompareNoCase("TxDxo") == 0)
-         {
-            m_TxRunType = txrDesign;
-            m_TxFType   = txfExtended;
-         }
-         else if (strParam.CompareNoCase("TxDT") == 0 || strParam.CompareNoCase("TxDTo") == 0)
-         {
-            m_TxRunType = txrDesign;
-            m_TxFType   = txfTest;
-            m_DoAppendToFile = false;  // always delete test file
+            // TOGA test file
+            m_DoTogaTest = true;
          }
          else
          {
-            // invalid flag
-            m_bError = true;
-            return;
+            // see if we append or overwrite file
+            // if flag ends in "o" we are overwriting, not appending
+            m_DoAppendToFile = (strParam.Right(1).CompareNoCase("o") != 0);
+      
+            // Set main command option
+            if (strParam.CompareNoCase("TxA") == 0 || strParam.CompareNoCase("TxAo") == 0)
+            {
+               m_TxRunType = txrAnalysis;
+               m_TxFType   = txfNormal;
+            }
+            else if (strParam.CompareNoCase("TxAx") == 0 || strParam.CompareNoCase("TxAxo") == 0)
+            {
+               m_TxRunType = txrAnalysis;
+               m_TxFType   = txfExtended;
+            }
+            else if (strParam.CompareNoCase("TxAT") == 0 || strParam.CompareNoCase("TxATo") == 0)
+            {
+               m_TxRunType = txrAnalysis;
+               m_TxFType   = txfTest;
+               m_DoAppendToFile = false;  // always delete test file
+            }
+            else if (strParam.CompareNoCase("TxD") == 0 || strParam.CompareNoCase("TxDo") == 0)
+            {
+               m_TxRunType = txrDesign;
+               m_TxFType   = txfNormal;
+            }
+            else if (strParam.CompareNoCase("TxDx") == 0 || strParam.CompareNoCase("TxDxo") == 0)
+            {
+               m_TxRunType = txrDesign;
+               m_TxFType   = txfExtended;
+            }
+            else if (strParam.CompareNoCase("TxDT") == 0 || strParam.CompareNoCase("TxDTo") == 0)
+            {
+               m_TxRunType = txrDesign;
+               m_TxFType   = txfTest;
+               m_DoAppendToFile = false;  // always delete test file
+            }
+            else
+            {
+               // invalid flag
+               m_bError = true;
+               return;
+            }
+
+            m_DoTxCadReport    = true;
          }
 
-         m_DoTxCadReport    = true;
          m_bCommandLineMode = true;
          m_bShowSplash      = FALSE;
          bMyParameter       = true;
@@ -206,7 +216,16 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
                }
             }
          }
-      } // m_DoTxCadReport
+      }
+      else if ( m_DoTogaTest )
+      {
+         if ( m_Count == 2 )
+         {
+            // output file name
+            m_TxOutputFile = lpszParam;
+            bMyParameter = true;
+         }
+      }
    }
 
    if ( !bMyParameter )
@@ -217,5 +236,5 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
 
 CString CTxDOTCommandLineInfo::GetUsageString()
 {
-   return CString("Valid parameters are\n/flag filename.pgs outputfile span girder\nwhere\nflag can be TxA, TxAx, TxAt, TxD, TxDx, or TxDT\nspan can be a span number or the keyword ALL\ngirder can be a girder letter (A-Z), the keyword ALL or the keyword EI");
+   return CString("Valid parameters are\n/flag filename.pgs outputfile span girder\nwhere\nflag can be TxA, TxAx, TxAt, TxD, TxDx, or TxDT\nspan can be a span number or the keyword ALL\ngirder can be a girder letter (A-Z), the keyword ALL or the keyword EI\nOr /TxTOGA filename.toga outputfile");
 }

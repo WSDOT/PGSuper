@@ -50,4 +50,7 @@
 // Error creating COM component
 #define XREASON_COMCREATE_ERROR              0x0080
 
+// The calculation, analysis method, or other requires a different version of the LRFD than is currently selected
+#define XREASON_LRFD_VERSION                 0x0100
+
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

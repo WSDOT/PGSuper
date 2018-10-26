@@ -233,7 +233,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnBnClickedOptCompute()
    eccCL = ::ConvertFromSysUnits(eccCL,unitMeasure::Inch);
 
    CEccentricityDlg dlg;
-   dlg.m_Message.Format("ecc, ends = %.3f in\n ecc, cl = %.3f in",eccEnds, eccCL);
+   dlg.m_Message.Format("ecc, cl = %.3f in\n ecc, ends = %.3f in", eccCL, eccEnds);
    dlg.DoModal();
 }
 

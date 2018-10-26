@@ -105,8 +105,6 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_Check_Bool(pDX,IDC_PT,m_Entry.m_bCanPostTension);
-
    if (pDX->m_bSaveAndValidate)
    {
 	   DDX_Text(pDX, IDC_ENAME, m_Name);
@@ -552,6 +550,7 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
    }
 
    DDX_Check_Bool(pDX,IDC_STIRRUPS_ENGAGE_DECK,m_Entry.m_bStirrupsEngageDeck);
+   DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_Entry.m_bIsRoughenedSurface);
 }
 
 void CGirderMainSheet::UploadTransverseData()

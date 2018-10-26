@@ -64,14 +64,27 @@ bool CPGSuperChapterBuilder::Select() const
 
 bool CPGSuperChapterBuilder::NeedsUpdate(CReportHint* pHint,CReportSpecification* pRptSpec,Uint16 level) const
 {
-   if (  CSpanGirderReportHint::IsMyGirder(pHint,pRptSpec) )
+   int result = CSpanGirderReportHint::IsMyGirder(pHint,pRptSpec);
+   if ( 0 < result ) // this is a SpanGirderReportHint and it is for our span/girder
       return true;
 
-   if ( CSpanReportHint::IsMySpan(pHint,pRptSpec) )
+   if ( result == 0 )
+      return false;// this is a SpanGirderReportHint and it is not for our span/girder
+
+   result = CSpanReportHint::IsMySpan(pHint,pRptSpec);
+   if ( 0 < result )
       return true;
 
-   if ( CGirderReportHint::IsMyGirder(pHint,pRptSpec) )
+   if ( result == 0 )
+      return false;
+
+   result = CGirderReportHint::IsMyGirder(pHint,pRptSpec);
+   if ( 0 < result )
       return true;
 
+   if ( result == 0 )
+      return false;
+
+   // base class always returns true
    return CChapterBuilder::NeedsUpdate(pHint,pRptSpec,level);
 }

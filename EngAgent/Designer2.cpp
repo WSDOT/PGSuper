@@ -1436,36 +1436,33 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       pArtifact->IsApplicable(false);
 
       // note if strut and tie analysis is required
-      bool bSTRequired = (poi.GetDistFromStart() < m_LeftCS ? m_bLeftCS_StrutAndTieRequired : m_bRightCS_StrutAndTieRequired);
-      pArtifact->IsStrutAndTieRequired(bSTRequired);
+      pArtifact->IsStrutAndTieRequired(pgsTypes::metStart,m_bLeftCS_StrutAndTieRequired);
+      pArtifact->IsStrutAndTieRequired(pgsTypes::metEnd,  m_bRightCS_StrutAndTieRequired);
 
-      if ( !bSTRequired )
+      GET_IFACE(IStirrupGeometry,pStirrupGeom);
+
+      // the shear reinforcement must be at least as much as at the critical section
+      Float64 AvS_provided = scd.Av/scd.S;
+      Float64 AvS_at_CS;
+      if ( !m_bLeftCS_StrutAndTieRequired && poi.GetDistFromStart() < m_LeftCS )
       {
-         GET_IFACE(IStirrupGeometry,pStirrupGeom);
-
-         // the shear reinforcement must be at least as much as at the critical section
-         Float64 AvS_provided = scd.Av/scd.S;
-         Float64 AvS_at_CS;
-         if ( poi.GetDistFromStart() < m_LeftCS )
-         {
-            pgsPointOfInterest poiCS(poi);
-            poiCS.SetDistFromStart(m_LeftCS);
-            Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poi);
-            Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poi)*nl;
-            Float64 S  = pStirrupGeom->GetS(poi);
-            AvS_at_CS = Av/S;
-         }
-         else if ( m_RightCS < poi.GetDistFromStart() )
-         {
-            pgsPointOfInterest poiCS(poi);
-            poiCS.SetDistFromStart(m_RightCS);
-            Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poi);
-            Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poi)*nl;
-            Float64 S  = pStirrupGeom->GetS(poi);
-            AvS_at_CS = Av/S;
-         }
-
-         pArtifact->SetEndSpacing(AvS_provided,AvS_at_CS);
+         pgsPointOfInterest poiCS(poi);
+         poiCS.SetDistFromStart(m_LeftCS);
+         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poi);
+         Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poi)*nl;
+         Float64 S  = pStirrupGeom->GetS(poi);
+         AvS_at_CS = Av/S;
+         pArtifact->SetEndSpacing(pgsTypes::metStart,AvS_provided,AvS_at_CS);
+      }
+      else if ( !m_bRightCS_StrutAndTieRequired && m_RightCS < poi.GetDistFromStart() )
+      {
+         pgsPointOfInterest poiCS(poi);
+         poiCS.SetDistFromStart(m_RightCS);
+         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poi);
+         Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poi)*nl;
+         Float64 S  = pStirrupGeom->GetS(poi);
+         AvS_at_CS = Av/S;
+         pArtifact->SetEndSpacing(pgsTypes::metEnd,AvS_provided,AvS_at_CS);
       }
    }
 }
@@ -1566,7 +1563,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    pArtifact->SetNumLegs(num_legs);
 
    // friction and cohesion factors
-   bool is_roughened = pBridge->AreGirderTopFlangesRoughened();
+   bool is_roughened = pBridge->AreGirderTopFlangesRoughened(poi.GetSpan(),poi.GetGirder());
    lrfdConcreteUtil::DensityType girderDensityType = (lrfdConcreteUtil::DensityType)pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
    lrfdConcreteUtil::DensityType slabDensityType   = (lrfdConcreteUtil::DensityType)pMaterial->GetSlabConcreteType();
    Float64 c  = lrfdConcreteUtil::ShearCohesionFactor(is_roughened,girderDensityType,slabDensityType);
@@ -6959,7 +6956,7 @@ void pgsDesigner2::DesignForHorizontalShear(const pgsPointOfInterest& poi, Float
       CHECK(fy>0.0);
       Float64 fy_u =  ::ConvertFromSysUnits(fy, unitMeasure::MPa);
 
-      bool is_roughened = pBridge->AreGirderTopFlangesRoughened();
+      bool is_roughened = pBridge->AreGirderTopFlangesRoughened(span,gdr);
       lrfdConcreteUtil::DensityType girderDensityType = (lrfdConcreteUtil::DensityType)pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
       lrfdConcreteUtil::DensityType slabDensityType   = (lrfdConcreteUtil::DensityType)pMaterial->GetSlabConcreteType();
       Float64 c = lrfdConcreteUtil::ShearCohesionFactor(is_roughened,girderDensityType,slabDensityType);

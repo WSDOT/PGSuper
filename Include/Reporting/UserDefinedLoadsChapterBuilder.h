@@ -51,7 +51,7 @@ class REPORTINGCLASS CUserDefinedLoadsChapterBuilder : public CPGSuperChapterBui
 {
 public:
    // GROUP: LIFECYCLE
-   CUserDefinedLoadsChapterBuilder(bool bSelect = true);
+   CUserDefinedLoadsChapterBuilder(bool bSelect = true, bool SimplifiedVersion=false);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -69,17 +69,17 @@ public:
    static rptParagraph* CreatePointLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
                            IEAFDisplayUnits* pDisplayUnits,
-                           Uint16 level);
+                           Uint16 level, bool bSimplifiedVersion);
 
    static rptParagraph* CreateDistributedLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
                            IEAFDisplayUnits* pDisplayUnits,
-                           Uint16 level);
+                           Uint16 level, bool bSimplifiedVersion);
 
    static rptParagraph* CreateMomentLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
                            IEAFDisplayUnits* pDisplayUnits,
-                           Uint16 level);
+                           Uint16 level, bool bSimplifiedVersion);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -94,6 +94,8 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_bSimplifiedVersion;
+
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment

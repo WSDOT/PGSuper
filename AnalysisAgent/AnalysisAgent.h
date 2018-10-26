@@ -36,5 +36,6 @@ COPYRIGHT
 #include <IFace\AnalysisResults.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\RatingSpecification.h>
 
 #endif // INCLUDED_ANALYSISAGENT_H_

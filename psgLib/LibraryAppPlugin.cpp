@@ -26,7 +26,35 @@ void CMyCmdTarget::OnManagePlugins()
 ///////////////////////////////////////////////////////////////////
 void CLibraryAppPlugin::ManagePlugins()
 {
-   EAFManagePlugins(_T("Manage Library Editor Plugins"),CATID_PGSuperLibraryManagerPlugin,EAFGetMainFrame());
+   std::vector<CEAFPluginState> pluginStates = EAFManagePlugins(_T("Manage Library Editor Plugins"),CATID_PGSuperLibraryManagerPlugin,EAFGetMainFrame());
+
+   if ( pluginStates.size() == 0 )
+      return;
+
+   // Find our document template
+   CEAFApp* pApp = EAFGetApp();
+
+   // write the plugin states into the registry 
+   std::vector<CEAFPluginState>::iterator iter;
+   for ( iter = pluginStates.begin(); iter != pluginStates.end(); iter++ )
+   {
+      CEAFPluginState& state = *iter;
+#if !defined _WBFL_VERSION
+#error _WBFL_VERSION must be defined... add #include <WBFLAll.h>
+#endif
+
+#if _WBFL_VERSION < 330
+      // Prior to WBFL version 3.3, there is a bug in the state.IsEnabled function
+      // This code works around the bug
+      bool bIsEnabled = false;
+      if ( (state.InitiallyEnabled() && !state.StateChanged()) || (!state.InitiallyEnabled() && state.StateChanged()) )
+         bIsEnabled = true;
+
+      pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),bIsEnabled ? _T("Enabled") : _T("Disabled") );
+#else
+      pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),state.IsEnabled() ? _T("Enabled") : _T("Disabled") );
+#endif
+   }
 }
 
 BOOL CLibraryAppPlugin::Init(CEAFApp* pParent)

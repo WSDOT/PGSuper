@@ -192,7 +192,7 @@ public:
    virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,double distFromStartOfBridge,SpanIndexType* pSpanIdx,double* pDistFromStartOfSpan);
    virtual bool IsInteriorGirder(SpanIndexType span,GirderIndexType gdr);
    virtual bool IsExteriorGirder(SpanIndexType span,GirderIndexType gdr);
-   virtual bool AreGirderTopFlangesRoughened();
+   virtual bool AreGirderTopFlangesRoughened(SpanIndexType span,GirderIndexType gdr);
    virtual void GetLeftSideEndDiaphragmSize(PierIndexType pier,Float64* pW,Float64* pH);
    virtual void GetRightSideEndDiaphragmSize(PierIndexType pier,Float64* pW,Float64* pH);
    virtual bool DoesLeftSideEndDiaphragmLoadGirder(PierIndexType pier);

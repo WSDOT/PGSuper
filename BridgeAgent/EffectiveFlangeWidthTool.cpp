@@ -325,30 +325,34 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
       }
 
-      // check overhang spacing
+      // check overhang spacing if it is a CIP or SIP deck
+      // overlay decks don't have overhangs
       bool bOverhangCheckFailed = false;
-      Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,0,location));
-      Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,nGirders-1,location));
-      double left_overhang  = twLeft - left_trib_width_adjustment;
-      double right_overhang = twRight - right_trib_width_adjustment;
-      if ( (gdrIdx == 0 && S/2 < left_overhang && !IsEqual(S/2,left_overhang)) || (gdrIdx == (nGirders-1) && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
+      if ( pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
       {
-         bOverhangCheckFailed = true;
-         // force tributary area to be S/2
-         if ( IsGE(S/2,left_overhang) )
-            twLeft = S/2;
+         Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,0,location));
+         Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,nGirders-1,location));
+         double left_overhang  = twLeft - left_trib_width_adjustment;
+         double right_overhang = twRight - right_trib_width_adjustment;
+         if ( (gdrIdx == 0 && S/2 < left_overhang && !IsEqual(S/2,left_overhang)) || (gdrIdx == (nGirders-1) && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
+         {
+            bOverhangCheckFailed = true;
+            // force tributary area to be S/2
+            if ( IsGE(S/2,left_overhang) )
+               twLeft = S/2;
 
-         if ( IsGE(S/2,right_overhang) )
-            twRight = S/2;
+            if ( IsGE(S/2,right_overhang) )
+               twRight = S/2;
 
-         // overhang is too big
-         std::ostringstream os;
-         os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
+            // overhang is too big
+            std::ostringstream os;
+            os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
-         pStatusCenter->Add(pStatusItem);
+            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
+            pStatusCenter->Add(pStatusItem);
 
-         wTrib = twLeft + twRight;
+            wTrib = twLeft + twRight;
+         }
       }
 
 

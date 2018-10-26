@@ -74,7 +74,6 @@ private:
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeOptStrandType();
-   afx_msg void OnCbnSelchangeOptNumStrands();
    afx_msg void OnBnClickedOptStandardFill();
    afx_msg void OnBnClickedOptUseDepressed();
 
@@ -87,6 +86,5 @@ public:
    virtual BOOL OnKillActive();
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-   afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
    afx_msg void OnHelpFinder();
 };

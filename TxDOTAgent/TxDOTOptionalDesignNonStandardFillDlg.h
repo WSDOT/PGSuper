@@ -22,6 +22,7 @@ public:
    CTxDOTOptionalDesignGirderData* m_pGirderData;
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
    bool m_UseDepressed;
+   Float64 m_yBottom;
 
 private:
    CStrandRowGrid m_GridAtCL;

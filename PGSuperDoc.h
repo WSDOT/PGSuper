@@ -262,6 +262,8 @@ protected:
    virtual void BrokerShutDown();
    virtual void OnStatusChanged();
 
+   BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
+
    virtual CString GetToolbarSectionName();
 
    virtual void CreateReportView(CollectionIndexType rptIdx,bool bPrompt);

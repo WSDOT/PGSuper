@@ -548,9 +548,9 @@ bool CBridgeAgentImp::ValidateConcrete()
    {
       std::ostringstream os;
       if ( m_pRailingConc[pgsTypes::tboLeft]->GetType() == pgsTypes::Normal )
-         os << "Left railing system concrete density is our of range for Normal Weight Concrete per LRFD 5.2.";
+         os << "Left railing system concrete density is out of range for Normal Weight Concrete per LRFD 5.2.";
       else
-         os << "Left railing system concrete density is our of range for Lightweight Concrete per LRFD 5.2.";
+         os << "Left railing system concrete density is out of range for Lightweight Concrete per LRFD 5.2.";
 
       std::string strMsg = os.str();
 
@@ -562,9 +562,9 @@ bool CBridgeAgentImp::ValidateConcrete()
    {
       std::ostringstream os;
       if ( m_pRailingConc[pgsTypes::tboRight]->GetType() == pgsTypes::Normal )
-         os << "Right railing system concrete density is our of range for Normal Weight Concrete per LRFD 5.2.";
+         os << "Right railing system concrete density is out of range for Normal Weight Concrete per LRFD 5.2.";
       else
-         os << "Right railing system concrete density is our of range for Lightweight Concrete per LRFD 5.2.";
+         os << "Right railing system concrete density is out of range for Lightweight Concrete per LRFD 5.2.";
 
       std::string strMsg = os.str();
 
@@ -627,9 +627,9 @@ bool CBridgeAgentImp::ValidateConcrete()
    {
       std::ostringstream os;
       if ( m_pSlabConc->GetType() == pgsTypes::Normal )
-         os << "Slab concrete density is our of range for Normal Weight Concrete per LRFD 5.2.";
+         os << "Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.";
       else
-         os << "Slab concrete density is our of range for Lightweight Concrete per LRFD 5.2.";
+         os << "Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.";
 
       std::string strMsg = os.str();
 
@@ -671,6 +671,8 @@ bool CBridgeAgentImp::ValidateConcrete()
 
          pgsTypes::ConcreteType gdrConcreteType = (pgsTypes::ConcreteType)m_pGdrConc[key]->GetType();
 
+         Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(gdrConcreteType);
+
          Float64 max_girder_fci = pLimits->GetMaxGirderFci(gdrConcreteType);
          Float64 fciGirderMax = ::ConvertFromSysUnits(max_girder_fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
          Float64 max_girder_fc = pLimits->GetMaxGirderFc(gdrConcreteType);
@@ -681,11 +683,12 @@ bool CBridgeAgentImp::ValidateConcrete()
 
          if ( m_pGdrConc[key]->GetFc() < fcMin )
          {
-            bThrow = true;
+            bThrow = false;
 
             std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": " << strMsg;
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthError,os.str().c_str());
+            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Girder concrete strength is less that permitted by LRFD 5.4.2.1";
+            strMsg = os.str();
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthError,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
          }
 
@@ -694,7 +697,7 @@ bool CBridgeAgentImp::ValidateConcrete()
             std::ostringstream os;
             os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Girder concrete release strength exceeds the normal value of " << fciGirderMax << " " << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
 
-            std::string strMsg = os.str();
+            strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::ReleaseStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -707,7 +710,7 @@ bool CBridgeAgentImp::ValidateConcrete()
             std::ostringstream os;
             os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Girder concrete strength exceeds the normal value of " << fcGirderMax << " " << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
 
-            std::string strMsg = os.str();
+            strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -721,7 +724,7 @@ bool CBridgeAgentImp::ValidateConcrete()
             std::ostringstream os;
             os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Girder concrete density for strength calcuations exceeds the normal value of " << MaxWc << " " << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
-            std::string strMsg = os.str();
+            strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::Density,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -735,7 +738,7 @@ bool CBridgeAgentImp::ValidateConcrete()
             std::ostringstream os;
             os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Girder concrete density for weight calcuations exceeds the normal value of " << MaxWc << " " << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
-            std::string strMsg = os.str();
+            strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::DensityForWeight,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -747,11 +750,11 @@ bool CBridgeAgentImp::ValidateConcrete()
          {
             std::ostringstream os;
             if ( m_pGdrConc[key]->GetType() == pgsTypes::Normal )
-               os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": concrete density is our of range for Normal Weight Concrete per LRFD 5.2.";
+               os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": concrete density is out of range for Normal Weight Concrete per LRFD 5.2.";
             else
-               os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": concrete density is our of range for Lightweight Concrete per LRFD 5.2.";
+               os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": concrete density is out of range for Lightweight Concrete per LRFD 5.2.";
 
-            std::string strMsg = os.str();
+            strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::DensityForWeight,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -764,7 +767,7 @@ bool CBridgeAgentImp::ValidateConcrete()
             std::ostringstream os;
             os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": Girder concrete aggregate size exceeds the normal value of " << MaxAggSize << " " << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
 
-            std::string strMsg = os.str();
+            strMsg = os.str();
 
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::AggSize,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -2960,10 +2963,11 @@ void CBridgeAgentImp::ConfigureConnection( const ConnectionLibraryEntry* pEntry,
    connection->put_EndDistanceMeasurementLocation((mtEndDistance==ConnectionLibraryEntry::FromBearingNormalToPier || mtEndDistance==ConnectionLibraryEntry::FromBearingAlongGirder) ? mlCenterlineBearing : mlCenterlinePier);
 }
 
-bool CBridgeAgentImp::AreGirderTopFlangesRoughened()
+bool CBridgeAgentImp::AreGirderTopFlangesRoughened(SpanIndexType span,GirderIndexType gdr)
 {
-   // not part of product model
-   return true;
+   GET_IFACE(IShear,pShear);
+	CShearData shear_data = pShear->GetShearData(span,gdr);
+   return shear_data.bIsRoughenedSurface;
 }
 
 void CBridgeAgentImp::LayoutPointsOfInterest(SpanIndexType span,GirderIndexType gdr)

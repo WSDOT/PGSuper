@@ -92,6 +92,8 @@ interface IGetTogaResults : IUnknown
    // Values from fabricator optional design
    virtual const pgsGirderArtifact* GetFabricatorDesignArtifact()=0;
    virtual Float64 GetFabricatorMaximumCamber()=0;
+
+   virtual bool ShearPassed()=0;
 };
 
 
@@ -152,11 +154,11 @@ public:
    void SetComments(const CString& text);
    CString GetComments() const;
 
-   void SetSpanNo(int val);
-   int GetSpanNo() const;
+   void SetSpanNo(const CString& val);
+   CString GetSpanNo() const;
 
-   void SetBeamNo(int val);
-   int GetBeamNo() const;
+   void SetBeamNo(const CString& val);
+   CString GetBeamNo() const;
 
    // TRICKY: Beam type is also file name of .togt template file
    void SetBeamType(const CString& text, bool doFire=true);
@@ -206,6 +208,9 @@ public:
 
    void SetWCompDw(Float64 val);
    Float64 GetWCompDw() const;
+
+   void SetUseHigherCompressionAllowable(BOOL val);
+   BOOL GetUseHigherCompressionAllowable() const;
 
    // our girders
    CTxDOTOptionalDesignGirderData* GetOriginalDesignGirderData();
@@ -287,8 +292,8 @@ private:
    CString m_Company;
    CString m_Comments;
 
-   int m_SpanNo;
-   int m_BeamNo;
+   CString m_SpanNo;
+   CString m_BeamNo;
    CString m_BeamType;
    Float64 m_BeamSpacing;
    Float64 m_SpanLength;
@@ -308,6 +313,8 @@ private:
    Float64 m_WNonCompDc;
    Float64 m_WCompDc;
    Float64 m_WCompDw;
+
+   BOOL m_UseHigherCompressionAllowable;
 
    // Girder data
    CTxDOTOptionalDesignGirderData m_OriginalDesignGirderData;

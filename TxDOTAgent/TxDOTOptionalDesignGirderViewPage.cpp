@@ -37,7 +37,10 @@ CTxDOTOptionalDesignGirderViewPage::~CTxDOTOptionalDesignGirderViewPage()
 
 void CTxDOTOptionalDesignGirderViewPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+   CPropertyPage::DoDataExchange(pDX);
+   DDX_Control(pDX, IDC_ERROR_MSG, m_ErrorMsgStatic);
+   DDX_Control(pDX, ID_SELECTED_GIRDER, m_GirderCtrl);
+   DDX_Control(pDX, IDC_SECTION_CUT, m_SectionBtn);
 }
 
 BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignGirderViewPage, CPropertyPage)
@@ -47,7 +50,8 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignGirderViewPage, CPropertyPage)
    ON_WM_SIZE()
    ON_CBN_SELCHANGE(ID_SELECTED_GIRDER, &CTxDOTOptionalDesignGirderViewPage::OnCbnSelchangeSelectedGirder)
    ON_BN_CLICKED(IDC_SECTION_CUT, &CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut)
-   ON_WM_HELPINFO()
+   ON_COMMAND(ID_VIEW_SECTIONCUTLOCATION, &CTxDOTOptionalDesignGirderViewPage::OnViewSectioncutlocation)
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignGirderViewPage::OnHelpFinder)
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignGirderViewPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
@@ -62,6 +66,9 @@ BOOL CTxDOTOptionalDesignGirderViewPage::OnSetActive()
    {
       try
       {
+         m_pSectionView->ShowWindow(SW_SHOW);
+         m_pElevationView->ShowWindow(SW_SHOW);
+
          // any change forces an update
          m_pElevationView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
          m_pSectionView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
@@ -72,11 +79,13 @@ BOOL CTxDOTOptionalDesignGirderViewPage::OnSetActive()
       }
       catch(TxDOTBrokerRetrieverException exc)
       {
-         ASSERT(0);
+         m_pSectionView->ShowWindow(SW_HIDE);
+         m_pElevationView->ShowWindow(SW_HIDE);
       }
       catch(...)
       {
-         ASSERT(0);
+         m_pSectionView->ShowWindow(SW_HIDE);
+         m_pElevationView->ShowWindow(SW_HIDE);
       }
    }
 
@@ -275,70 +284,87 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateCutLocation(CutLocation cutLoc,Fl
 
 void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
 {
-   CComboBox* pgirder_ctrl   = (CComboBox*)GetDlgItem(ID_SELECTED_GIRDER);
-   CStatic* plocation_static = (CStatic*)GetDlgItem(IDC_SECTION_CUT);
-   ASSERT(pgirder_ctrl);
-   ASSERT(plocation_static);
-
    SpanIndexType spanIdx, gdrIdx;
    GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   try
+   {
+      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+      GET_IFACE2(pBroker, IBridge, pBridge);
 
-   // cut location
-   Float64 gird_len = pBridge->GetGirderLength(spanIdx,gdrIdx);
-   m_MaxCutLocation = gird_len;
+      // cut location
+      Float64 gird_len = pBridge->GetGirderLength(spanIdx,gdrIdx);
+      m_MaxCutLocation = gird_len;
 
-   if (m_CutLocation==UserInput)
-   {
-      if (m_CurrentCutLocation > gird_len)
-         m_CurrentCutLocation = gird_len;
-   }
-   else if (m_CutLocation == LeftEnd)
-   {
-      m_CurrentCutLocation = 0.0;
-   }
-   else if (m_CutLocation == RightEnd)
-   {
-      m_CurrentCutLocation = gird_len;
-   }
-   else if (m_CutLocation == Center)
-   {
-      m_CurrentCutLocation = gird_len/2.0;
-   }
-   else
-   {
-      // cut was taken at a harping point, must enlist poi interface
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-      std::vector<pgsPointOfInterest> poi;
-      std::vector<pgsPointOfInterest>::iterator iter;
-      poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
-      int nPoi = poi.size();
-      ASSERT(0 < nPoi && nPoi <3);
-      iter = poi.begin();
-      pgsPointOfInterest left_hp_poi = *iter++;
-      pgsPointOfInterest right_hp_poi = left_hp_poi;
-      if ( nPoi == 2 )
-         right_hp_poi = *iter++;
-
-      if (m_CutLocation == LeftHarp)
+      if (m_CutLocation==UserInput)
       {
-         m_CurrentCutLocation = left_hp_poi.GetDistFromStart();
+         if (m_CurrentCutLocation > gird_len)
+            m_CurrentCutLocation = gird_len;
       }
-      else if (m_CutLocation == RightHarp)
+      else if (m_CutLocation == LeftEnd)
       {
-         m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
+         m_CurrentCutLocation = 0.0;
+      }
+      else if (m_CutLocation == RightEnd)
+      {
+         m_CurrentCutLocation = gird_len;
+      }
+      else if (m_CutLocation == Center)
+      {
+         m_CurrentCutLocation = gird_len/2.0;
       }
       else
-         ASSERT(0); // unknown cut location type
+      {
+         // cut was taken at a harping point, must enlist poi interface
+         GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+         std::vector<pgsPointOfInterest> poi;
+         std::vector<pgsPointOfInterest>::iterator iter;
+         poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
+         int nPoi = poi.size();
+         ASSERT(0 < nPoi && nPoi <3);
+         iter = poi.begin();
+         pgsPointOfInterest left_hp_poi = *iter++;
+         pgsPointOfInterest right_hp_poi = left_hp_poi;
+         if ( nPoi == 2 )
+            right_hp_poi = *iter++;
+
+         if (m_CutLocation == LeftHarp)
+         {
+            m_CurrentCutLocation = left_hp_poi.GetDistFromStart();
+         }
+         else if (m_CutLocation == RightHarp)
+         {
+            m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
+         }
+         else
+            ASSERT(0); // unknown cut location type
+      }
+
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      CString msg;
+      msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
+
+      m_SectionBtn.SetWindowText(msg);
+
+      // made it - we can show our controls
+      m_pSectionView->ShowWindow(SW_SHOW);
+      m_pElevationView->ShowWindow(SW_SHOW);
+      m_GirderCtrl.EnableWindow(TRUE);
+      m_SectionBtn.EnableWindow(TRUE);
+   }
+   catch(TxDOTBrokerRetrieverException exc)
+   {
+      // An error occurred in analysis - go to error mode
+      DisplayErrorMode(exc);
+   }
+   catch(...)
+   {
+      ASSERT(0);
+      TxDOTBrokerRetrieverException exc;
+      exc.Message = "An Unknown Error has Occurred";
+      DisplayErrorMode(exc);
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   CString msg;
-   msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
-
-   plocation_static->SetWindowText(msg);
 }
 
 void CTxDOTOptionalDesignGirderViewPage::OnSize(UINT nType, int cx, int cy)
@@ -402,16 +428,31 @@ void CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut()
 }
 
 
-BOOL CTxDOTOptionalDesignGirderViewPage::OnHelpInfo(HELPINFO* pHelpInfo)
-{
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_VIEW );
 
-   return TRUE;
+
+void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverException& exc)
+{
+   m_pSectionView->ShowWindow(SW_HIDE);
+   m_pElevationView->ShowWindow(SW_HIDE);
+   m_GirderCtrl.EnableWindow(FALSE);
+   m_SectionBtn.EnableWindow(FALSE);
+
+   CString msg;
+   msg.Format("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center",exc.Message);
+
+   m_ErrorMsgStatic.SetWindowTextA(msg);
+   m_ErrorMsgStatic.ShowWindow(SW_SHOW);
 }
+
+void CTxDOTOptionalDesignGirderViewPage::OnViewSectioncutlocation()
+{
+   this->ShowCutDlg();
+}
+
 
 void CTxDOTOptionalDesignGirderViewPage::OnHelpFinder()
 {
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_VIEW );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_VIEW );
 }

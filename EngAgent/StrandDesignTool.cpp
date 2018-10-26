@@ -189,8 +189,6 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, long statusGroupID, pgsDe
    m_pArtifact->SetUsedMaxPjackHarpedStrands( false );
    m_pArtifact->SetUsedMaxPjackTempStrands( false );
 
-   m_MinPermanentStrands = 0;
-
    m_MinSlabOffset = 0.0;
 
    InitDebondData();
@@ -216,6 +214,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, long statusGroupID, pgsDe
 
    // locate and cache points of interest for design
    ValidatePointsOfInterest();
+
+   // Compute minimum number of strands to start design from
+   ComputeMinStrands();
 }
 
 void pgsStrandDesignTool::InitReleaseStrength(Float64 fci)
@@ -776,7 +777,7 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
 StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 {
    // Intialize with low number of strands to force tension to control
-   StrandIndexType Np = GetNextNumPermanentStrands(1);
+   StrandIndexType Np = GetNextNumPermanentStrands(m_MinPermanentStrands);
 
    if (Np < 1)
    {
@@ -894,6 +895,102 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
 
    return true;
 }
+
+void pgsStrandDesignTool::ComputeMinStrands()
+{
+   // It's possible for users to enter strands at the beginning of the fill sequence that have
+   // negative eccentricity. This is typically for hanging stirrups. If this occurs then design will crap out
+
+   m_MinPermanentStrands=1; // resonable starting point
+
+   GET_IFACE(IStrandGeometry,pStrandGeom);
+
+   LOG("Compute m_MinPermanentStrands so next num strands give positive ecc");
+
+   m_MinPermanentStrands = GetNextNumPermanentStrands(0);
+   if(m_MinPermanentStrands<0)
+      return;
+
+   std::vector<pgsPointOfInterest> mid_pois = GetDesignPoi(pgsTypes::CastingYard,POI_MIDSPAN);
+   if (mid_pois.empty())
+   {
+      ATLASSERT(0); // no-midspan? this shouldn't happen, but take a default and carry on
+   }
+   else
+   {
+      GDRCONFIG config = m_pArtifact->GetGirderConfiguration();
+
+      StrandIndexType ns_prev = 1;
+      StrandIndexType ns_curr = GetNextNumPermanentStrands(ns_prev);
+
+      // Compute min number of strands in order to get a positive ecc
+      int nIter=0;
+      while (ns_curr>0)
+      {
+         StrandIndexType ns, nh;
+         if (m_StrandFillType == ftGridOrder)
+         {
+            if (!pStrandGeom->ComputeNumPermanentStrands(ns_curr,m_Span, m_Girder, &ns, &nh))
+            {
+               ATLASSERT(0); // caller should have figured out if numPerm is valid
+               m_MinPermanentStrands = 0;
+               return;
+            }
+         }
+         else if (m_StrandFillType == ftMinimizeHarping)
+         {
+            if (ComputeNextNumProportionalStrands(ns_curr-1, &ns, &nh) == Uint32_Max)
+            {
+               ATLASSERT(0);
+               m_MinPermanentStrands = 0;
+               return;
+            }
+         }
+         else
+         {
+            ATLASSERT(0);
+         }
+
+         config.Nstrands[pgsTypes::Straight] = ns;
+         config.Nstrands[pgsTypes::Harped] = nh;
+
+         Float64 neff;
+         Float64 ecc = pStrandGeom->GetEccentricity(mid_pois[0],config,false,&neff);
+         LOG("Computed ecc = "<<ecc<<" for ns="<<ns<<" nh="<<nh);
+         if (ecc>0.)
+         {
+            if (nIter==0)
+            {
+               // Setting strand to a minimal number seems to give optimal results for cases without top strands
+               m_MinPermanentStrands = 1;
+               LOG("Eccentricity positive on first iteration - m_MinPermanentStrands = " << m_MinPermanentStrands << "Success");
+            }
+            else
+            {
+               // TRICKY: Just finding the point where eccentricity is postitive turns out not to be enough.
+               //         The design algorithm will likely get stuck. So we double it.
+               m_MinPermanentStrands = GetNextNumPermanentStrands(2*ns_prev);
+               LOG("Found m_MinPermanentStrands = " << ns_prev << "Success");
+            }
+
+            break;
+         }
+         else
+         {
+            ns_prev = ns_curr;
+            ns_curr = GetNextNumPermanentStrands(ns_prev);
+
+            if (ns_curr<0)
+            {
+               LOG("**WARNING: Could not find number of strands to create positive eccentricity. The end is likely near...");
+            }
+         }
+
+         nIter++;
+      }
+   }
+}
+
 
 bool pgsStrandDesignTool::AdjustForStrandSlope()
 {

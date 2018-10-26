@@ -181,7 +181,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
 
       rptParagraph* pPara = new rptParagraph;

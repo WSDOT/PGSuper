@@ -30,6 +30,7 @@
 #include <ostream>
 #include <MfcTools\CustomDDx.h>
 #include <EAF\EAFDisplayUnits.h>
+#include "HtmlHelp\TogaHelp.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -212,5 +213,5 @@ void CTogaSectionCutDlgEx::OnUserCut()
 
 void CTogaSectionCutDlgEx::OnHelp() 
 {
-//   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_SECTIONCUT );
+  ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_VIEW_SETTINGS );
 }

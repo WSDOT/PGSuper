@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDocTemplate.h"
 #include "PGSuperDoc.h"
 #include "PGSuperBaseAppPlugin.h"
@@ -77,10 +77,7 @@ void CPGSuperDocTemplate::LoadTemplateInformation()
 
    if ( strWorkgroupFolderName.GetLength() != 0 )
    {
-      CEAFTemplateGroup* pGroup = new CEAFTemplateGroup(this);
-      pGroup->SetGroupName("Workgroup Templates");
-      m_TemplateGroup.AddGroup(pGroup);
-      FindInFolder(strWorkgroupFolderName,pGroup,defaultIcon);
+      FindInFolder(strWorkgroupFolderName,&m_TemplateGroup,defaultIcon);
 
       CEAFSplashScreen::SetText("");
    }

@@ -28,6 +28,7 @@
 #include "TxDOTOptionalDesignView.h"
 #include "TxDOTOptionalDesignChildFrame.h"
 #include "resource.h"
+#include "TxDOTCommandLineInfo.h"
 
 
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
@@ -91,10 +92,45 @@ CString CTxDOTAppPlugin::GetName()
    return CString("TOGA - TxDOT Optional Girder Analysis");
 }
 
-BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo &cmdInfo)
+CString CTxDOTAppPlugin::GetUsageMessage()
 {
-   // not handling any command line parameters
-   return FALSE;
+   CTxDOTCommandLineInfo txCmdInfo;
+   return txCmdInfo.GetUsageMessage();
+}
+
+BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+{
+   // cmdInfo is the command line information from the application. The application
+   // doesn't know about this plug-in at the time the command line parameters are parsed
+   //
+   // Re-parse the parameters with our own command line information object
+   CTxDOTCommandLineInfo txCmdInfo;
+   EAFGetApp()->ParseCommandLine(txCmdInfo);
+   cmdInfo = txCmdInfo;
+
+   // could handle processing here, but allow app class to do it
+//   if (txCmdInfo.m_DoTogaTest)
+//   {
+//      return TRUE; // command line parameters handled
+//   }
+
+   BOOL bHandled = FALSE;
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   CEAFDocument* pDoc = pFrame->GetDocument();
+   if ( pDoc )
+   {
+      bHandled = pDoc->ProcessCommandLineOptions(cmdInfo);
+   }
+
+   // If we get this far and there is one parameter and it isn't a file name and it isn't handled -OR-
+   // if there is more than one parameter and it isn't handled there is something wrong
+   if ( ((1 == txCmdInfo.m_Count && txCmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen) || (1 <  txCmdInfo.m_Count)) && !bHandled )
+   {
+      cmdInfo.m_bError = TRUE;
+      bHandled = TRUE;
+   }
+
+   return bHandled;
 }
 
 

@@ -54,6 +54,7 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public IContinuity,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
+   public IRatingSpecificationEventSink,
    public ILoadModifiersEventSink
 {
 public:
@@ -85,6 +86,7 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(IContinuity)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
+   COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
    COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
    COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
@@ -322,6 +324,10 @@ public:
    virtual HRESULT OnSpecificationChanged();
    virtual HRESULT OnAnalysisTypeChanged();
 
+// IRatingSpecificationEventSink
+public:
+   virtual HRESULT OnRatingSpecificationChanged();
+
 // ILoadModifersEventSink
 public:
    virtual HRESULT OnLoadModifiersChanged();
@@ -337,6 +343,7 @@ private:
    Uint16 m_Level;
    DWORD m_dwBridgeDescCookie;
    DWORD m_dwSpecCookie;
+   DWORD m_dwRatingSpecCookie;
    DWORD m_dwLoadModifierCookie;
    CComPtr<ILongArray> m_LBAMPoi;   // array for LBAM poi
    CComPtr<ILBAMLRFDFactory3> m_LBAMUtility;

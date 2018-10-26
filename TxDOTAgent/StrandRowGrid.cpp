@@ -105,7 +105,6 @@ void CStrandRowGrid::CustomInit(StrandRowGridEventHandler* pHandler)
    // disable left side
 	SetStyleRange(CGXRange(0,0), CGXStyle()
 			.SetControl(GX_IDS_CTRL_HEADER)
-			.SetEnabled(FALSE)
 		);
 
 // set text along top row
@@ -113,13 +112,11 @@ void CStrandRowGrid::CustomInit(StrandRowGridEventHandler* pHandler)
          .SetWrapText(TRUE)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetEnabled(FALSE)          // disables usage as current cell
 			.SetValue(_T("Row\n(in)"))
 		);
 
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
-		   .SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetValue(_T("No. Strands"))
@@ -142,15 +139,8 @@ void CStrandRowGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
 
-   SetStyleRange(CGXRange(nRow,0), CGXStyle()
-//         .SetHorizontalAlignment(DT_CENTER)
-//         .SetVerticalAlignment(DT_VCENTER)
-			.SetEnabled(FALSE)
-         );
-
 	SetStyleRange(CGXRange(nRow,1), CGXStyle()
-		   .SetEnabled(FALSE)
-         .SetReadOnly(TRUE)
+         .SetControl(GX_IDS_CTRL_STATIC)
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
@@ -285,9 +275,10 @@ CTxDOTOptionalDesignGirderData::StrandRowContainer CStrandRowGrid::GetData()
    return strandrows;
 }
 
-StrandIndexType CStrandRowGrid::ComputeNoStrands()
+void CStrandRowGrid::ComputeStrands(StrandIndexType* pNum, Float64* pCg)
 {
    StrandIndexType noStrands=0;
+   Float64 cg=0.0;
 
    ROWCOL nRows = GetRowCount();
 
@@ -300,11 +291,25 @@ StrandIndexType CStrandRowGrid::ComputeNoStrands()
          long strandcnt;
          sysTokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
 
+         CString strRow = GetCellValue(row,1);
+         Float64 rowht;
+         sysTokenizer::ParseDouble(strRow, &rowht);  // save num strands as integral value as well
+
          noStrands += strandcnt;
+
+         cg += strandcnt * rowht;
       }
    }
 
-   return noStrands;
+   *pNum = noStrands;
+   if (noStrands>0)
+   {
+      *pCg = cg/noStrands;
+   }
+   else
+   {
+      *pCg = 0.0;
+   }
 }
 
 void CStrandRowGrid::OnModifyCell (ROWCOL nRow, ROWCOL nCol)

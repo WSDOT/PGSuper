@@ -97,14 +97,14 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
 #else
    else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2006.png") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2006.png") << rptNewLine;
    }
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2007.png") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2007.png") << rptNewLine;

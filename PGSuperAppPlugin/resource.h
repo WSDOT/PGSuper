@@ -615,6 +615,7 @@
 #define IDC_CHECK1                      1446
 #define IDC_RATE_FOR_SHEAR              1446
 #define IDC_DESIGN                      1446
+#define IDC_ROUGHENED                   1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_FUTURE_WS                   1448
 #define IDC_MOD_ECI                     1449

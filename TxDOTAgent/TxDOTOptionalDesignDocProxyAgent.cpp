@@ -33,6 +33,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Allowables.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -272,6 +273,13 @@ Float64 CTxDOTOptionalDesignDocProxyAgent::GetRequiredFc()
    return m_RequiredFc;
 }
 
+bool CTxDOTOptionalDesignDocProxyAgent::ShearPassed()
+{
+   Validate();
+
+   return m_ShearPassed;
+}
+
 Float64 CTxDOTOptionalDesignDocProxyAgent::GetRequiredFci()
 {
    Validate();
@@ -299,6 +307,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       // build model
       IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
+      GET_IFACE2(pBroker,IAllowableConcreteStress, pAllowable );
+
       // Get responses from design based on original data
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
       const pgsGirderArtifact* pOriginalGdrArtifact = pIArtifact->GetArtifact(TOGA_SPAN, TOGA_ORIG_GDR);
@@ -309,7 +319,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
       std::vector<pgsPointOfInterest> vPOI = pIPoi->GetPointsOfInterest(TOGA_SPAN, TOGA_ORIG_GDR, pgsTypes::BridgeSite3,POI_MIDSPAN);
       ATLASSERT( vPOI.size() == 1 );
-      const pgsPointOfInterest& orig_ms_poi = vPOI.front();
+      const pgsPointOfInterest orig_ms_poi = vPOI.front();
 
       // Find max compressive stress and compute stress factor from original model
       const pgsFlexuralStressArtifact* pOriginalStressArtifact;
@@ -336,7 +346,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Camber from original model
       GET_IFACE2(pBroker,ICamber,pCamber);
-      m_MaximumCamber = pCamber->GetExcessCamber(orig_ms_poi,CREEP_MAXTIME);
+      m_MaximumCamber = pCamber->GetDCamberForGirderSchedule(orig_ms_poi,CREEP_MAXTIME);
 
       // Now we need results from fabricator model
       // =========================================
@@ -346,24 +356,35 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_GirderArtifact = *pFabricatorGdrArtifact;
 
       // List of possible stress checks
-      const int num_cases = 5;
-      pgsTypes::Stage       stages[num_cases] = {pgsTypes::BridgeSite1,pgsTypes::BridgeSite2, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3};
-      pgsTypes::LimitState lstates[num_cases] = {pgsTypes::ServiceI,   pgsTypes::ServiceI,    pgsTypes::ServiceI   , pgsTypes::ServiceIII,  pgsTypes::ServiceIA};
-      pgsTypes::StressType ststype[num_cases] = {pgsTypes::Tension,    pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension,     pgsTypes::Compression};
+      const int num_cases = 7;
+      pgsTypes::Stage       stages[num_cases] = {pgsTypes::BridgeSite1,pgsTypes::BridgeSite1,pgsTypes::BridgeSite2, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3};
+      pgsTypes::LimitState lstates[num_cases] = {pgsTypes::ServiceI,   pgsTypes::ServiceI,   pgsTypes::ServiceI,    pgsTypes::ServiceI   , pgsTypes::ServiceIII,  pgsTypes::FatigueI,    pgsTypes::ServiceIA};
+      pgsTypes::StressType ststype[num_cases] = {pgsTypes::Tension,    pgsTypes::Compression,pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension,     pgsTypes::Compression, pgsTypes::Compression};
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          lstates[num_cases-1] = pgsTypes::FatigueI;
-
-
-      vPOI = pIPoi->GetPointsOfInterest( TOGA_SPAN, TOGA_FABR_GDR, pgsTypes::BridgeSite3, 
-                                         POI_FLEXURESTRESS | POI_TABULAR );
-      CHECK(vPOI.size()>0);
 
       // Loop over all pois and limit states and factor results in our copy
       pgsFlexuralStressArtifact* pFabrStressArtifact;
 
       for (int icase=0; icase<num_cases; icase++)
       {
+         vPOI = pIPoi->GetPointsOfInterest( TOGA_SPAN, TOGA_FABR_GDR, stages[icase], 
+                                            POI_FLEXURESTRESS | POI_TABULAR );
+         CHECK(vPOI.size()>0);
+
+         if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
+              (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& lstates[icase] == pgsTypes::ServiceIA)
+              )
+         {
+            // if before LRFD 2009 and Fatigue I 
+            // - OR -
+            // LRFD 2009 and later and Service IA
+            //
+            // ... don't evaluate this case
+            continue;
+         }
+
          Float64 k;
          if (lstates[icase] == pgsTypes::ServiceIA || lstates[icase] == pgsTypes::FatigueI )
             k = 0.5; // Use half prestress stress if service IA (See Tbl 5.9.4.2.1-1)
@@ -394,29 +415,138 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             fBot = k*fBotPs + fBotExt;
 
             pFabrStressArtifact->SetDemand(fTop, fBot);
+
+            // Compute and store required concrete strength
+            if ( ststype[icase] == pgsTypes::Compression )
+            {
+               double c = pAllowable->GetAllowableCompressiveStressCoefficient(stages[icase],lstates[icase]);
+               double fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
+               
+               if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
+                  fc_reqd = 0;
+
+               pFabrStressArtifact->SetRequiredConcreteStrength(fc_reqd);
+            }
+            else
+            {
+               double t;
+               bool bCheckMax;
+               double fmax;
+
+               pAllowable->GetAllowableTensionStressCoefficient(stages[icase],lstates[icase],&t,&bCheckMax,&fmax);
+
+               // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
+               // otherwise, take the controlling tension
+               double f = (stages[icase] == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
+
+               double fc_reqd;
+               if (f>0.0)
+               {
+                  fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+               }
+               else
+               {
+                  // the maximum stress is compressive so tension isn't an issue
+                  fc_reqd = 0;
+               }
+
+               if ( bCheckMax &&                  // allowable stress is limited -AND-
+                    (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
+                    (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+               {
+                  // then that concrete strength wont really work afterall
+                  if ( stages[icase] == pgsTypes::CastingYard )
+                  {
+                     // unless we are in the casting yard, then we can add some additional rebar
+                     // and go to a higher limit
+                     double talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
+                     fc_reqd = pow(f/talt,2);
+                  }
+                  else
+                  {
+                     // too bad... this isn't going to work
+                     fc_reqd = -1;
+                  }
+               }
+               pFabrStressArtifact->SetRequiredConcreteStrength(fc_reqd);
+            }
+
          }
       }
    
       // mid span in fab model
       vPOI = pIPoi->GetPointsOfInterest(TOGA_SPAN, TOGA_FABR_GDR, pgsTypes::BridgeSite3,POI_MIDSPAN);
       ATLASSERT( vPOI.size() == 1 );
-      const pgsPointOfInterest& fabr_ms_poi = vPOI.front();
+      const pgsPointOfInterest fabr_ms_poi = vPOI.front();
 
       // Ultimate Moment
-      const pgsFlexuralCapacityArtifact* pCap;
-      pCap = m_GirderArtifact.GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,fabr_ms_poi.GetDistFromStart()));
+      const pgsFlexuralCapacityArtifact* pFabCap;
+      pFabCap = m_GirderArtifact.GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,fabr_ms_poi.GetDistFromStart()));
 
-      m_RequiredUltimateMoment = pCap->GetDemand();
-      m_UltimateMomentCapacity = pCap->GetCapacity();
+      m_UltimateMomentCapacity = pFabCap->GetCapacity();
+
+      // Required from original model
+      const pgsFlexuralCapacityArtifact* pOrigCap;
+      pOrigCap = pOriginalGdrArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,orig_ms_poi.GetDistFromStart()));
+
+      m_RequiredUltimateMoment = _cpp_max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
 
       // Required concrete strengths - fabricator model
-      m_RequiredFc  = m_GirderArtifact.GetRequiredConcreteStrength();
-      m_RequiredFci = m_GirderArtifact.GetRequiredReleaseStrength();
+      m_RequiredFci =  _cpp_max(m_GirderArtifact.GetRequiredReleaseStrength(),  ::ConvertToSysUnits(4.0, unitMeasure::KSI));
+      m_RequiredFc  =  _cpp_max(m_GirderArtifact.GetRequiredConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
 
       // Get camber from fabricator model
-      m_FabricatorMaximumCamber = pCamber->GetExcessCamber(fabr_ms_poi,CREEP_MAXTIME);
+      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderSchedule(fabr_ms_poi,CREEP_MAXTIME);
+
+      // Shear 
+      CheckShear(pIPoi);
 
       m_NeedValidate = false;
    }
 }
 
+void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
+{
+   m_ShearPassed = true; // until otherwise
+
+   const pgsStirrupCheckArtifact *pStirrups = m_GirderArtifact.GetStirrupCheckArtifact();
+
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pIPoi->GetPointsOfInterest(TOGA_SPAN, TOGA_FABR_GDR, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
+
+   std::vector<pgsPointOfInterest>::const_iterator i;
+   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   {
+      const pgsPointOfInterest& poi = *i;
+      // Only checking Strength I here. No TxDOT permit truck
+      const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()) );
+
+      const pgsVerticalShearArtifact* pShear = pPoiArtifacts->GetVerticalShearArtifact();
+      if (!pShear->Passed())
+      {
+         m_ShearPassed = false;
+         return;
+      }
+
+      const pgsLongReinfShearArtifact* pLongReinf = pPoiArtifacts->GetLongReinfShearArtifact();
+      if (!pLongReinf->Passed() )
+      {
+         m_ShearPassed = false;
+         return;
+      }
+
+      const pgsHorizontalShearArtifact* pHor = pPoiArtifacts->GetHorizontalShearArtifact();
+      if ( !pHor->Passed() )
+      {
+         m_ShearPassed = false;
+         return;
+      }
+
+      const pgsStirrupDetailArtifact* pDet = pPoiArtifacts->GetStirrupDetailArtifact();
+      if ( !pDet->Passed() )
+      {
+         m_ShearPassed = false;
+         return;
+      }
+   }
+}

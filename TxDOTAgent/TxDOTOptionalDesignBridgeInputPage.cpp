@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "HtmlHelp\TogaHelp.hh"
 #include "TxDOTOptionalDesignBridgeInputPage.h"
 
@@ -19,6 +20,7 @@ CTxDOTOptionalDesignBridgeInputPage::CTxDOTOptionalDesignBridgeInputPage()
 	: CPropertyPage(CTxDOTOptionalDesignBridgeInputPage::IDD),
    m_pBrokerRetriever(NULL),
    m_pData(NULL)
+   , m_UseHigherCompression(FALSE)
 {
 }
 
@@ -29,7 +31,7 @@ CTxDOTOptionalDesignBridgeInputPage::~CTxDOTOptionalDesignBridgeInputPage()
 BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignBridgeInputPage, CPropertyPage)
    ON_WM_ERASEBKGND()
    ON_WM_CTLCOLOR()
-   ON_WM_HELPINFO()
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder)
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
@@ -51,17 +53,8 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX, IDC_COMPANY, m_Company);
    DDX_Text(pDX, IDC_COMMENTS, m_Comments);
 
-   if (!(!pDX->m_bSaveAndValidate && m_SpanNo==-1)) // don't fill bogus values
-   {
-      DDX_Text(pDX, IDC_SPAN_NO, m_SpanNo);
-      DDV_MinMaxInt(pDX, m_SpanNo, 1, 999);
-   }
-
-   if (!(!pDX->m_bSaveAndValidate && m_BeamNo==-1)) // don't fill bogus values
-   {
-      DDX_Text(pDX, IDC_BEAM_NO, m_BeamNo);
-      DDV_MinMaxInt(pDX, m_BeamNo, 1, 999);
-   }
+   DDX_Text(pDX, IDC_SPAN_NO, m_SpanNo);
+   DDX_Text(pDX, IDC_BEAM_NO, m_BeamNo);
 
    DDX_CBString(pDX, IDC_BEAM_TYPE, m_BeamType);
 
@@ -88,13 +81,13 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    if (!(!pDX->m_bSaveAndValidate && m_LldfMoment==Float64_Inf)) // don't fill bogus values
    {
       DDX_Text(pDX, IDC_LLDF_MOMENT, m_LldfMoment);
-	   DDV_MinMaxDouble(pDX, m_LldfMoment, 0.0, 999);
+      DDV_MinMaxDouble(pDX, m_LldfMoment, 0.0, 999);
    }
 
    if (!(!pDX->m_bSaveAndValidate && m_LldfShear==Float64_Inf)) // don't fill bogus values
    {
       DDX_Text(pDX, IDC_LLDF_SHEAR, m_LldfShear);
-	   DDV_MinMaxDouble(pDX, m_LldfShear, 0.0, 999);
+      DDV_MinMaxDouble(pDX, m_LldfShear, 0.0, 999);
    }
 
    Float64 min_ec  = ::ConvertToSysUnits( 2000.0,  unitMeasure::KSI); 
@@ -125,6 +118,16 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag( pDX, IDC_W_COMP_DW,   IDC_W_COMP_DW_UNITS,  m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
    DDV_UnitValueZeroOrMore( pDX, IDC_W_COMP_DW,m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
+
+   DDX_Check(pDX, IDC_HIGHER_COMPRESSION, m_UseHigherCompression);
+
+   // Error checking that library entries exist for the selected girder type
+   bool st = CheckLibraryData(); // function will message the problem
+   if (!st && pDX->m_bSaveAndValidate)
+   {
+      pDX->PrepareCtrl(IDC_BEAM_TYPE);
+      pDX->Fail();
+   }
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -179,6 +182,8 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadDialogData()
    m_WCompDc = m_pData->GetWCompDc();
    m_WCompDw = m_pData->GetWCompDw();
 
+   m_UseHigherCompression = m_pData->GetUseHigherCompressionAllowable();
+
    // load beam type dialog
    LoadGirderNames();
 }
@@ -215,6 +220,8 @@ void CTxDOTOptionalDesignBridgeInputPage::SaveDialogData()
    m_pData->SetWNonCompDc(m_WNonCompDc);
    m_pData->SetWCompDc(m_WCompDc);
    m_pData->SetWCompDw(m_WCompDw);
+
+   m_pData->SetUseHigherCompressionAllowable(m_UseHigherCompression);
 }
 
 void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
@@ -268,6 +275,60 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
    }
 }
+
+bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
+{
+   // have to read .togt file based on girder selection
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString suffix;
+   suffix.LoadString(IDS_TEMPLATE_SUFFIX);
+
+   CString template_name = GetTOGAFolder() + CString("\\") + m_BeamType + "." + suffix;
+
+   CString girderEntry, leftConnEntry, rightConnEntry;
+   if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry))
+   {
+      return false;
+   }
+
+   GirderLibrary* pGdrLib = m_pBrokerRetriever->GetGirderLibrary();
+
+   const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pGdrLib->GetEntry(girderEntry));
+   if (pGdrEntry==NULL)
+   {
+      ASSERT(0);
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_GDR_ERROR);
+      msg.Format(stmp,girderEntry);
+      ::AfxMessageBox(msg);
+      return false;
+   }
+
+   ConnectionLibrary* pConnLib = m_pBrokerRetriever->GetConnectionLibrary();
+
+   const ConnectionLibraryEntry* pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(leftConnEntry));
+   if (pConnEntry==NULL)
+   {
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_CONN_ERROR);
+      msg.Format(stmp,leftConnEntry);
+      ::AfxMessageBox(msg);
+       return false;
+   }
+
+   pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(rightConnEntry));
+   if (pConnEntry==NULL)
+   {
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_CONN_ERROR);
+      msg.Format(stmp,rightConnEntry);
+      ::AfxMessageBox(msg);
+      return false;
+   }
+
+   return true;
+}
+
 BOOL CTxDOTOptionalDesignBridgeInputPage::OnEraseBkgnd(CDC* pDC)
 {
    // Set brush to dialog background color
@@ -297,17 +358,9 @@ HBRUSH CTxDOTOptionalDesignBridgeInputPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UIN
    return (HBRUSH)backBrush;
 }
 
-
-BOOL CTxDOTOptionalDesignBridgeInputPage::OnHelpInfo(HELPINFO* pHelpInfo)
-{
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_DESCRIPTION );
-
-   return TRUE;
-}
-
 void CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder()
 {
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_DESCRIPTION );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_DESCRIPTION );
 }

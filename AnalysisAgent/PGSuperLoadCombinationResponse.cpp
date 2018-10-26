@@ -39,11 +39,16 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperLoadCombinationResponse
-void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCResponse,ILBAMModel* pModel,CAnalysisAgentImp* pAnalysisAgent)
+void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CAnalysisAgentImp* pAnalysisAgent)
 {
    m_LCResponseDelegate = pLCResponse;
+   m_LiveLoadResponse = pLLResponse;
+   m_LoadGroupResponse = pLGResponse;
+
    m_Model = pModel;
    m_pAnalysisAgent = pAnalysisAgent;
+
+   m_Model->get_POIs(&m_POIs);
 
    // Get these interfaces once so we don't have to do it over and over
    CComPtr<IBroker> broker;
@@ -101,6 +106,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCom
          (*results)->get_Count(&nResults);
          for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
+            singlePOI->Clear();
+
             Float64 left_result, right_result;
             CComPtr<ILoadCombinationResultConfiguration> left_config, right_config;
 
@@ -175,6 +182,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR Lo
          (*results)->get_Count(&nResults);
          for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
+            singlePOI->Clear();
+
             Float64 left_result, right_result;
             CComPtr<ILoadCombinationResultConfiguration> left_config, right_config;
 
@@ -249,6 +258,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR Load
          (*results)->get_Count(&nResults);
          for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
+            singlePOI->Clear();
+
             Float64 result;
             CComPtr<ILoadCombinationResultConfiguration> config;
 
@@ -319,6 +330,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/
          (*results)->get_Count(&nResults);
          for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
+            singlePOI->Clear();
+
             Float64 result;
             CComPtr<ILoadCombinationResultConfiguration> config;
 
@@ -389,6 +402,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadC
          (*results)->get_Count(&nResults);
          for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
+            singlePOI->Clear();
+
             CComPtr<IStressResult> left_result, right_result;
             CComPtr<ILoadCombinationResultConfiguration> left_config, right_config;
 

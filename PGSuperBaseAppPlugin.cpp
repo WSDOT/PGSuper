@@ -555,7 +555,8 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
-      wndProgress->Show(CComBSTR("Checking the Internet for Library updates"),NULL);
+      CEAFMainFrame* pWnd = EAFGetMainFrame();
+      wndProgress->Show(CComBSTR("Checking the Internet for Library updates"),pWnd->GetSafeHwnd());
 
       try
       {
@@ -591,7 +592,8 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    wndProgress->put_HasCancel(VARIANT_FALSE);
 
    CComQIPtr<IProgressMonitor> progress(wndProgress);
-   wndProgress->Show(CComBSTR("Update Libraries and Templates"),NULL);
+   CEAFMainFrame* pWnd = EAFGetMainFrame();
+   wndProgress->Show(CComBSTR("Update Libraries and Templates"),pWnd->GetSafeHwnd());
 
    // setup cache folders
    CString strAppPath = pApp->GetAppLocation();

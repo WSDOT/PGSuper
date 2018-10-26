@@ -1326,7 +1326,7 @@ void write_btsummary_table(IBroker* pBroker,
    }
 
 
-   ColumnIndexType nCol = (shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007) ? 4 : 6;
+   ColumnIndexType nCol = 6;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    CString strTitle;
@@ -1346,20 +1346,11 @@ void write_btsummary_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
-   {
-      (*table)(0,1) << Sub2(symbol(epsilon),"s") << rptNewLine << "x 1000";
-      (*table)(0,2) << symbol(beta);
-      (*table)(0,3) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-   }
-   else
-   {
-      (*table)(0,1) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,2) << "v" << "/" << RPT_FC;
-      (*table)(0,3) << symbol(epsilon) << Sub("x") << " x 1000";
-      (*table)(0,4) << symbol(beta);
-      (*table)(0,5) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-   }
+   (*table)(0,1) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << "v" << "/" << RPT_FC;
+   (*table)(0,3) << symbol(epsilon) << Sub("x") << " x 1000";
+   (*table)(0,4) << symbol(beta);
+   (*table)(0,5) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false );
@@ -1392,8 +1383,7 @@ void write_btsummary_table(IBroker* pBroker,
 
       (*table)(row,col++) << location.SetValue( stage, poi, end_size );
 
-      if ( shear_capacity_method != scmBTEquations && shear_capacity_method != scmWSDOT2007 )
-         (*table)(row,col++) << stress.SetValue( scd.fc );
+      (*table)(row,col++) << stress.SetValue( scd.fc );
 
 
       if ( bAfter1999 && (shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001) )
@@ -1402,6 +1392,10 @@ void write_btsummary_table(IBroker* pBroker,
          (*table)(row,col++) << " " << symbol(LTE) << " " << scalar.SetValue(scd.vfc_tbl);
       }
       else if ( shear_capacity_method != scmBTEquations && shear_capacity_method != scmWSDOT2007 )
+      {
+         (*table)(row,col++) << scalar.SetValue( scd.vfc );
+      }
+      else
       {
          (*table)(row,col++) << scalar.SetValue( scd.vfc );
       }

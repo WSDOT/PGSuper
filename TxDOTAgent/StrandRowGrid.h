@@ -84,7 +84,7 @@ public:
                  const CTxDOTOptionalDesignGirderData::StrandRowContainer& container);
    CTxDOTOptionalDesignGirderData::StrandRowContainer GetData();
 
-   StrandIndexType ComputeNoStrands();
+   void ComputeStrands(StrandIndexType* pNum, Float64* pCg);
 
 private:
    StrandRowGridEventHandler* m_pHandler;

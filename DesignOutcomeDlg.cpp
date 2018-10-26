@@ -176,9 +176,6 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    m_pRptSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
-
    SpanIndexType span = m_pRptSpec->GetSpan();
    GirderIndexType gdr = m_pRptSpec->GetGirder();
 

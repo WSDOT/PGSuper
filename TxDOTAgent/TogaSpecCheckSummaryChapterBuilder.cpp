@@ -83,7 +83,14 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRp
    // Use original summary report chapter builder
    std::auto_ptr<CSpecCheckSummaryChapterBuilder> pchb( new CSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport) );
 
-   return pchb->BuildEx(pSGRptSpec, level, TOGA_SPAN, TOGA_FABR_GDR, pArtifact);
+   rptChapter* pChap = pchb->BuildEx(pSGRptSpec, level, TOGA_SPAN, TOGA_FABR_GDR, pArtifact);
+
+   // Throw in a page break
+   rptParagraph* p = new rptParagraph;
+   *pChap << p;
+   *p << rptNewPage;
+
+   return pChap;
 }
 
 CChapterBuilder* CTogaSpecCheckSummaryChapterBuilder::Clone() const

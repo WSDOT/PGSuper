@@ -86,11 +86,11 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker,ISpecification,pSpec);
    *pPara << "Specification = " << pSpec->GetSpecification() << rptNewLine;
 
-   *pPara << Bold("Note: ")<<"Calculated total external load top and bottom stresses are multiplied by the appropriate (Top or Bottom) ratio of (Input Design Load Stress)/(Calculated Stress).";
+   *pPara << Bold("Notes: ")<< rptNewLine;
+   *pPara <<symbol(DOT)<<" Calculated total external load top and bottom stresses are multiplied by the appropriate (Top or Bottom) ratio of (Input Design Load Stress)/(Calculated Stress).";
    *pPara << " This results in the Analysis Stress"<<rptNewLine;
+   *pPara <<symbol(DOT)<<" Stress Checks reflect the following sign convention: Compressive stress is negative. Tensile stress is positive.";
 
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
@@ -132,10 +132,10 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
       *pChapter << p;
 
       Float64 stress_val, stress_fac, stress_loc;
-      pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
+      pGetTogaResults-> GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
       *p<<"Ratio applied to Top Stresses = "<< stress_fac << rptNewLine;
 
-      pGetTogaResults->GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
+      pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
       *p<<"Ratio applied to Bottom Stresses = "<< stress_fac << rptNewLine;
    }
 

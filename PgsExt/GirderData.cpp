@@ -280,8 +280,11 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
       ct |= ctPrestress;
    }
 
-
-   if ( !IsEqual(Material.Fci,rOther.Material.Fci) )
+   if ( Material.Type != rOther.Material.Type ) 
+   {
+      ct |= ctConcrete;
+   }
+   else if ( !IsEqual(Material.Fci,rOther.Material.Fci) )
    {
       ct |= ctConcrete;
    }

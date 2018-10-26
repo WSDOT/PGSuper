@@ -76,6 +76,7 @@ public:
    BarSizeType ConfinementBarSize;
    Uint32      NumConfinementZones;
    bool        bDoStirrupsEngageDeck;
+   bool        bIsRoughenedSurface;
    BarSizeType TopFlangeBarSize;
    Float64     TopFlangeBarSpacing;
    typedef std::vector<CShearZoneData> ShearZoneVec;

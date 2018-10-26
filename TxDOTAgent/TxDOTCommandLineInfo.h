@@ -62,6 +62,8 @@ public:
    GirderIndexType m_TxGirder;
    bool m_DoAppendToFile;
 
+   bool m_DoTogaTest;
+
    Uint32 m_Count; // parameter number
 
 private:

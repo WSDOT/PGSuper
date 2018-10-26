@@ -59,6 +59,7 @@ static void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayU
 static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
 static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
 static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
+static void shear_summary(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 
 /****************************************************************************
 CLASS
@@ -114,12 +115,27 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecificatio
    design_information( pChapter, pBroker, pProjectData, pDisplayUnits );
    design_data       ( pChapter, pBroker, pProjectData, pDisplayUnits );
 
+   // Original girder
    girder_design(pChapter, pBroker, pProjectData->GetOriginalDesignGirderData(),  TOGA_ORIG_GDR, pDisplayUnits);
+
+   // Throw in a page break
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+   *p << rptNewPage;
+
+   // Fab opt girder
    girder_design(pChapter, pBroker, pProjectData->GetPrecasterDesignGirderData(), TOGA_FABR_GDR, pDisplayUnits);
 
    original_results_summary( pChapter, pBroker, pProjectData, pDisplayUnits );
    optional_results_summary( pChapter, pBroker, pProjectData, pDisplayUnits );
+
+   // Throw in a page break
+   p = new rptParagraph;
+   *pChapter << p;
+   *p << rptNewPage;
+
    camber_summary(pChapter, pBroker, pProjectData, pDisplayUnits);
+   shear_summary(pChapter, pBroker, pDisplayUnits);
 
    return pChapter;
 }
@@ -157,7 +173,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         true );
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -167,13 +183,13 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
 
 
    RowIndexType row = 0;
-   (*p_table)(row,0) << "Span";
-   (*p_table)(row++,1) << LABEL_SPAN(TOGA_SPAN);
+   (*p_table)(row,0) << "Span No.";
+   (*p_table)(row++,1) << pProjectData->GetSpanNo();
 
-   (*p_table)(row,0) << "Girder";
-   (*p_table)(row++ ,1) << LABEL_GIRDER(TOGA_FABR_GDR);
+   (*p_table)(row,0) << "Beam No.";
+   (*p_table)(row++ ,1) << pProjectData->GetBeamNo();
 
-   (*p_table)(row,0) << "Girder Type";
+   (*p_table)(row,0) << "Beam Type";
    (*p_table)(row++,1) << pProjectData->GetBeamType();
 
    (*p_table)(row,0) << "Span Length, CL Bearing to CL Bearing" ;
@@ -191,6 +207,12 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) << "Relative Humidity";
    (*p_table)(row++,1) <<  pEnvironment->GetRelHumidity()<<"%";
 
+   (*p_table)(row,0) << "LLDF (Moment)";
+   (*p_table)(row++,1) << pProjectData->GetLldfMoment();
+
+   (*p_table)(row,0) << "LLDF (Shear)";
+   (*p_table)(row++,1) << pProjectData->GetLldfShear();
+
    (*p_table)(row,0) << RPT_EC <<" Slab";
    (*p_table)(row++,1) << modE.SetValue( pMaterial->GetEcSlab() );
 
@@ -199,13 +221,6 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
 
    (*p_table)(row,0) << "Slab Compressive Strength";
    (*p_table)(row++,1) << stress.SetValue( pMaterial->GetFcSlab() );
-
-   const matPsStrand* pstrand = pMaterial->GetStrand(TOGA_SPAN,TOGA_FABR_GDR);
-
-   (*p_table)(row,0) << "Prestressing Strands";
-   (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<", "
-                       <<(pstrand->GetGrade() == matPsStrand::Gr1725 ? "Grade 250, " : "Grade 270, ")
-                       <<(pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
 
    (*p_table)(row,0) << "Live Load";
    std::vector<std::string> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
@@ -237,20 +252,14 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    *p << p_table << rptNewLine;
 
    RowIndexType row = 0;
-   (*p_table)(row,0) << "Design Load Compressive Stress (Top C.L.), "<<RPT_FTOP;
+   (*p_table)(row,0) << RPT_FTOP <<", Design Load Compressive Stress (Top C.L.)";
    (*p_table)(row++,1) << stress.SetValue( pProjectData->GetFt() );
 
-   (*p_table)(row,0) << "Design Load Tensile Stress (Bottom C.L.), "<<RPT_FBOT;
+   (*p_table)(row,0) <<RPT_FBOT<< ", Design Load Tensile Stress (Bottom C.L.)";
    (*p_table)(row++,1) << stress.SetValue( pProjectData->GetFb() );
 
-   (*p_table)(row,0) << "Required Ultimate Moment Capacity, M"<<Sub("u");
+   (*p_table)(row,0) <<"M"<<Sub("u")<< ", Required Ultimate Moment Capacity";
    (*p_table)(row++,1) << moment.SetValue( pProjectData->GetMu() );
-
-   (*p_table)(row,0) << "LLDF (Moment)";
-   (*p_table)(row++,1) << pProjectData->GetLldfMoment();
-
-   (*p_table)(row,0) << "LLDF (Shear)";
-   (*p_table)(row++,1) << pProjectData->GetLldfShear();
 
    (*p_table)(row,0) << "w"<<Sub("DC")<<" non-comp";
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWNonCompDc());
@@ -258,8 +267,19 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) << "w"<<Sub("DC")<<" comp";
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDc());
 
-   (*p_table)(row,0) << "w"<<Sub("DW")<<" non-comp";
+   (*p_table)(row,0) << "w"<<Sub("DW")<<" comp";
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDw());
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   Float64 allow_stf = pSpecEntry->GetCyCompStressService();
+   (*p_table)(row,0) << "Allowable release compression stress factor";
+   (*p_table)(row++,1) << allow_stf << RPT_FCI;
+
+   *p <<Bold("Note:")<<" Values in the above table reflect the following sign convention: Compressive stress is positive. Tensile stress is negative.";
+
 }
 
 void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignGirderData* pGirderData,
@@ -271,6 +291,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridgeMaterial, pMaterial);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -287,6 +308,13 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    (*p_table)(row,0) << RPT_FC;
    (*p_table)(row++,1) << stress.SetValue( pGirderData->GetFc() );
 
+   const matPsStrand* pstrand = pMaterial->GetStrand(TOGA_SPAN,gdr);
+
+   (*p_table)(row,0) << "Prestressing Strands";
+   (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<", "
+                       <<(pstrand->GetGrade() == matPsStrand::Gr1725 ? "Grade 250, " : "Grade 270, ")
+                       <<(pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
+
    (*p_table)(row,0) << "No. Strands";
 
    std::string note;
@@ -301,33 +329,36 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) << note;
 
-   if (pGirderData->GetStandardStrandFill())
+   if( pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
    {
-      (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
-      (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
-   }
-
-   Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
-   pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
-
-   (*p_table)(row,0) << "e"<<Sub("CL");
-   Float64 neff;
-   (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
-
-   pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
-   (*p_table)(row,0) << "e"<<Sub("girder ends");
-   (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
-
-   // non standard fill row tables
-   if (!pGirderData->GetStandardStrandFill())
-   {
-      non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Centerline",
-                         pGirderData->GetStrandsAtCL());
-
-      if (pGirderData->GetUseDepressedStrands())
+      if (pGirderData->GetStandardStrandFill())
       {
-         non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Ends",
-                            pGirderData->GetStrandsAtEnds());
+         (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
+         (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
+      }
+
+      Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
+      pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
+
+      (*p_table)(row,0) << "e"<<Sub("CL");
+      Float64 neff;
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
+
+      pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
+      (*p_table)(row,0) << "e"<<Sub("girder ends");
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
+
+      // non standard fill row tables
+      if (!pGirderData->GetStandardStrandFill())
+      {
+         non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Centerline",
+                            pGirderData->GetStrandsAtCL());
+
+         if (pGirderData->GetUseDepressedStrands())
+         {
+            non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Ends",
+                               pGirderData->GetStrandsAtEnds());
+         }
       }
    }
 }
@@ -371,26 +402,15 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,"Input Design Data Vs. Analysis of Original Design");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,"Input Design Data Vs. Calculated Design Data");
    *p << p_table;
 
    int row = 0;
    (*p_table)(row,0) << "Value";
    (*p_table)(row,1) << "Input"<<rptNewLine<<"Design Data";
-   (*p_table)(row,2) << "Analysis of"<<rptNewLine<<"Original Design";
-   (*p_table)(row,3) << "Input/Analysis"<<rptNewLine<<"Ratio";
+   (*p_table)(row,2) << "Calculated"<<rptNewLine<<"Design Data";
+   (*p_table)(row,3) << "Input/Calculated"<<rptNewLine<<"Ratio";
    (*p_table)(row,4) << "Status";
-
-   row++;
-   (*p_table)(row,0) << "Required Ultimate Moment  ("<<moment.GetUnitTag()<<")";
-   (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
-   (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetRequiredUltimateMoment() );
-   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetRequiredUltimateMoment();
-
-   if(pProjectData->GetMu() >= pGetTogaResults->GetRequiredUltimateMoment())
-      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
-   else
-      (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
 
    Float64 stress_val, stress_fac, stress_loc;
    pGetTogaResults->GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
@@ -419,9 +439,18 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    else
       (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
 
-   *p<<"NOTES: Values in the above table reflect the following sign convention:"<<rptNewLine;
-   *p<<"Compressive stress is positive. Tensile stress is negative.";
+   row++;
+   (*p_table)(row,0) << "Required Ultimate Moment  ("<<moment.GetUnitTag()<<")";
+   (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
+   (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetRequiredUltimateMoment() );
+   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetRequiredUltimateMoment();
 
+   if(pProjectData->GetMu() >= pGetTogaResults->GetRequiredUltimateMoment())
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
+
+   *p<<Bold("Note:")<<" Values in the above table reflect the following sign convention: Compressive stress is positive. Tensile stress is negative.";
 }
 
 static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
@@ -447,11 +476,26 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,3) << "Input/Analysis"<<rptNewLine<<"Ratio";
    (*p_table)(row,4) << "Status";
 
+
+   Float64 input_fci = pProjectData->GetPrecasterDesignGirderData()->GetFci();
+   Float64 reqd_fci = pGetTogaResults->GetRequiredFci();
+
+   row++;
+   (*p_table)(row,0) << "Required "<<RPT_FCI<<" ("<<stress.GetUnitTag()<<")";
+   (*p_table)(row,1) << stress.SetValue( input_fci );
+   (*p_table)(row,2) << stress.SetValue(  reqd_fci );
+   (*p_table)(row,3) << input_fci / reqd_fci;
+
+   if(input_fci >= reqd_fci)
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << bold(ON) << "Beam Does not Satisfy Design Requirements" << bold(OFF) << color(Black);
+
    Float64 input_fc = pProjectData->GetPrecasterDesignGirderData()->GetFc();
    Float64 reqd_fc = pGetTogaResults->GetRequiredFc();
 
    row++;
-   (*p_table)(row,0) << "Required Concrete Strength  ("<<stress.GetUnitTag()<<")";
+   (*p_table)(row,0) << "Required "<<RPT_FC<<" ("<<stress.GetUnitTag()<<")";
    (*p_table)(row,1) << stress.SetValue( input_fc );
    (*p_table)(row,2) << stress.SetValue(  reqd_fc );
    (*p_table)(row,3) << input_fc / reqd_fc;
@@ -492,19 +536,45 @@ static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpt
    (*p_table)(row,0) << "Value";
    (*p_table)(row,1) << "Analysis of"<<rptNewLine<<"Original Design";
    (*p_table)(row,2) << "Analysis of"<<rptNewLine<<"Fabricator"<<rptNewLine<<"Optional Design";
-   (*p_table)(row,3) << "Original/"<<rptNewLine<<"Fabricator"<<rptNewLine<<"Ratio";
+   (*p_table)(row,3) << "Difference";
    (*p_table)(row,4) << "Status";
 
    row++;
    (*p_table)(row,0) << "Maximum Camber  ("<<length.GetUnitTag()<<")";
    (*p_table)(row,1) << length.SetValue( pGetTogaResults->GetMaximumCamber() );
    (*p_table)(row,2) << length.SetValue( pGetTogaResults->GetFabricatorMaximumCamber() );
-   (*p_table)(row,3) << pGetTogaResults->GetMaximumCamber()/pGetTogaResults->GetFabricatorMaximumCamber();
 
-   if(pGetTogaResults->GetMaximumCamber() >= pGetTogaResults->GetFabricatorMaximumCamber())
+   Float64 camber_diff = pGetTogaResults->GetFabricatorMaximumCamber() - pGetTogaResults->GetMaximumCamber();
+
+   (*p_table)(row,3) << length.SetValue(camber_diff);
+
+   if(IsZero(camber_diff, ::ConvertToSysUnits( 0.5,unitMeasure::Inch)))
       (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
    else
       (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
 
-   *p<<"NOTE: Upward Camber is positive";
+   *p<<Bold("Note:")<<" Upward Camber is positive";
+}
+
+static void shear_summary(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+{
+
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+
+   rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << p;
+
+   *p << "Shear Design Check";
+
+   p = new rptParagraph;
+   *pChapter << p;
+
+   *p << "Standard shear reinforcing pattern: ";
+
+   bool passed = pGetTogaResults->ShearPassed();
+
+   if(passed)
+      *p << color(Green) << bold(ON) << "Ok" << bold(OFF) << color(Black);
+   else
+      *p << color(Red) << bold(ON) << "Beam Does not Satisfy Design Requirements" << bold(OFF) << color(Black);
 }

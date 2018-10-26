@@ -43,10 +43,13 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CUserDefinedLoadsChapterBuilder::CUserDefinedLoadsChapterBuilder(bool bSelect) :
-CPGSuperChapterBuilder(bSelect)
+
+CUserDefinedLoadsChapterBuilder::CUserDefinedLoadsChapterBuilder(bool bSelect, bool SimplifiedVersion) :
+CPGSuperChapterBuilder(bSelect),
+m_bSimplifiedVersion(SimplifiedVersion)
 {
 }
+
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
@@ -102,24 +105,28 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
       {
          rptParagraph* pParagraph;
 
-         pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter << pParagraph;
-         *pParagraph <<"Span "<<LABEL_SPAN(spanIdx)<<" Girder "<<LABEL_GIRDER(gdrIdx)<<rptNewLine;
+         // Only print span girder if we are in a multi-loop
+         if (lastSpanIdx!=firstSpanIdx+1 && lastGirderIdx!=firstGirderIdx+1)
+         {
+            pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pParagraph;
+            *pParagraph <<"Span "<<LABEL_SPAN(spanIdx)<<" Girder "<<LABEL_GIRDER(gdrIdx)<<rptNewLine;
+         }
 
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
          *pParagraph <<"Locations are measured from left support."<<rptNewLine;
 
          // tables of details - point loads first
-         rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+         rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
          *pChapter <<ppar1;
 
          // distributed loads
-         ppar1 = CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+         ppar1 = CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
          *pChapter <<ppar1;
 
          // moments loads
-         ppar1 = CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+         ppar1 = CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
          *pChapter <<ppar1;
       } // gdrIdx
    } // spanIdx
@@ -155,7 +162,7 @@ CChapterBuilder* CUserDefinedLoadsChapterBuilder::Clone() const
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
                            IEAFDisplayUnits* pDisplayUnits,
-                           Uint16 level)
+                           Uint16 level, bool bSimplifiedVersion)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
@@ -238,7 +245,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    {
       delete table;
 
-      *pParagraph << "No point loads exist for this girder"<<rptNewLine;
+      if (!bSimplifiedVersion)
+         *pParagraph << "No point loads exist for this girder"<<rptNewLine;
    }
 
    return pParagraph;
@@ -247,7 +255,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
                            IEAFDisplayUnits* pDisplayUnits,
-                           Uint16 level)
+                           Uint16 level, bool bSimplifiedVersion)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
@@ -332,7 +340,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    {
       delete table;
 
-      *pParagraph << "No distributed loads exist for this girder"<<rptNewLine;
+      if (! bSimplifiedVersion)
+         *pParagraph << "No distributed loads exist for this girder"<<rptNewLine;
    }
 
    return pParagraph;
@@ -342,7 +351,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
                            IEAFDisplayUnits* pDisplayUnits,
-                           Uint16 level)
+                           Uint16 level, bool bSimplifiedVersion)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
@@ -429,7 +438,8 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    {
       delete table;
 
-      *pParagraph << "No moment loads exist for this girder"<<rptNewLine;
+      if (!bSimplifiedVersion)
+         *pParagraph << "No moment loads exist for this girder"<<rptNewLine;
    }
 
    return pParagraph;

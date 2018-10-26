@@ -794,6 +794,50 @@ void CPGSuperDoc::EditBridgeViewSettings(int nPage)
 	
 }
 
+BOOL CPGSuperDoc::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
+{
+   CFileFind dir_finder;
+   BOOL bMoreDir = dir_finder.FindFile(CString(lpszDir)+"\\*");
+
+   // recursively go through the directories
+   while ( bMoreDir )
+   {
+      bMoreDir = dir_finder.FindNextFile();
+      CString strDir = dir_finder.GetFilePath();
+
+      if ( !dir_finder.IsDots() && dir_finder.IsDirectory() )
+         UpdateTemplates(pProgress,strDir);
+   }
+
+   // done with the directories below this leave. Process the templates at this level
+   CString strMessage;
+   strMessage.Format("Updating templates in %s",lpszDir);
+   pProgress->UpdateMessage(strMessage);
+
+   CFileFind template_finder;
+   BOOL bMoreTemplates = template_finder.FindFile(CString(lpszDir) + "\\*.pgt");
+   while ( bMoreTemplates )
+   {
+      bMoreTemplates      = template_finder.FindNextFile();
+      CString strTemplate = template_finder.GetFilePath();
+
+      strMessage.Format("Updating %s",template_finder.GetFileTitle());
+      pProgress->UpdateMessage(strMessage);
+
+      if ( !OpenTheDocument(strTemplate) )
+         return FALSE;
+
+      CEAFBrokerDocument::SaveTheDocument(strTemplate);
+
+      m_pBroker->Reset();
+
+      CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pInit(m_pBroker);
+      pInit->InitAgents();
+   }
+
+   return TRUE;
+}
+
 BOOL CPGSuperDoc::UpdateTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
@@ -818,42 +862,7 @@ BOOL CPGSuperDoc::UpdateTemplates()
    broker_persist->GetSaveMissingAgentDataFlag(&bFlag);
    broker_persist->SetSaveMissingAgentDataFlag(VARIANT_FALSE);
 
-   CFileFind dir_finder;
-   BOOL bMoreDir = dir_finder.FindFile(workgroup_folder+"\\*");
-
-   while ( bMoreDir )
-   {
-      bMoreDir = dir_finder.FindNextFile();
-      if ( dir_finder.IsDots() || !dir_finder.IsDirectory() )
-         continue;
-
-      CString strDir = dir_finder.GetFilePath();
-
-      CString strMessage;
-      strMessage.Format("Updating templates in %s",dir_finder.GetFileTitle());
-      pProgress->UpdateMessage(strMessage);
-
-      CFileFind template_finder;
-      BOOL bMoreTemplates = template_finder.FindFile(strDir + "\\*.pgt");
-      while ( bMoreTemplates )
-      {
-         bMoreTemplates = template_finder.FindNextFile();
-         CString strTemplate = template_finder.GetFilePath();
-
-         strMessage.Format("Updating %s - %s",dir_finder.GetFileTitle(),template_finder.GetFileTitle());
-         pProgress->UpdateMessage(strMessage);
-
-         if ( !OpenTheDocument(strTemplate) )
-            return FALSE;
-
-         CEAFBrokerDocument::SaveTheDocument(strTemplate);
-
-         m_pBroker->Reset();
-
-         CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pInit(m_pBroker);
-         pInit->InitAgents();
-      }
-   }
+   UpdateTemplates(pProgress,workgroup_folder);
 
    // restore the flag to its previous state
    broker_persist->SetSaveMissingAgentDataFlag(bFlag);

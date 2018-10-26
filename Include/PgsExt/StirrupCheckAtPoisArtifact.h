@@ -258,8 +258,8 @@ public:
    void IsApplicable(bool bApplicable);
 
    // for sections where strength is not applicable, strut and tie analysis may be
-   bool IsStrutAndTieRequired() const;
-   void IsStrutAndTieRequired(bool bRequired);
+   bool IsStrutAndTieRequired(pgsTypes::MemberEndType end) const;
+   void IsStrutAndTieRequired(pgsTypes::MemberEndType end,bool bRequired);
 
    // 5.8.2.4
    void SetAreStirrupsReqd(bool reqd);
@@ -273,8 +273,8 @@ public:
    void SetCapacity(Float64 cap);
    Float64 GetCapacity() const;
 
-   void SetEndSpacing(double AvS_provided,double AvS_at_CS);
-   void GetEndSpacing(double* pAvS_provided,double* pAvS_at_CS);
+   void SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS);
+   void GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS);
 
    bool   Passed() const;
 
@@ -329,8 +329,8 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    bool m_bIsApplicable;
-   bool m_bIsStrutAndTieRequired;
-   bool m_bEndSpacingApplicable;
+   bool m_bIsStrutAndTieRequired[2]; // pgsTypes::MemberEndType = array index
+   bool m_bEndSpacingApplicable[2];
 
    // 5.8.2.4
    bool m_AreStirrupsReqd;
@@ -339,7 +339,8 @@ private:
    Float64 m_Demand;
    Float64 m_Capacity;
 
-   double m_AvSprovided, m_AvSatCS;
+   Float64 m_AvSprovided[2];
+   Float64 m_AvSatCS[2];
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

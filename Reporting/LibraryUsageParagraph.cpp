@@ -45,7 +45,7 @@ CLibraryUsageParagraph::~CLibraryUsageParagraph()
 {
 }
 
-rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker) const
+rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable) const
 {
    rptParagraph* pParagraph = new rptParagraph;
 
@@ -69,9 +69,12 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker) const
    }
 
     *pParagraph << "Master Library Date Stamp: " << time.AsString() << rptNewLine;
-   rptRcTable* table = CLibraryUsageTable().Build(pBroker);
 
-   *pParagraph << table << rptNewLine;
+   if (doPrintTable)
+   {
+      rptRcTable* table = CLibraryUsageTable().Build(pBroker);
+      *pParagraph << table << rptNewLine;
+   }
 
    sysTime::PrintDate(bPrintDate);
 

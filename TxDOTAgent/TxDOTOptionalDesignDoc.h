@@ -124,6 +124,7 @@ public:
    virtual IBroker* GetUpdatedBroker();
    virtual IBroker* GetClassicBroker();
    virtual GirderLibrary* GetGirderLibrary();
+   virtual ConnectionLibrary* GetConnectionLibrary();
 
 // Operations
    // listen to data events
@@ -174,16 +175,22 @@ private:
 
    UINT m_GirderModelEditorSettings;
 
+   // Names of original spec entry from template and spec entry with 0.65f'ci modification
+   std::string m_OriginalSpecEntryName;
+   std::string m_065SpecEntryName;
 
 private:
    // Implementation
    void InitializeLibraryManager();
    void MarryPGSuperTemplateWithBroker(LPCTSTR lpszPathName);
+   void PreprocessTemplateData();
    void UpdatePgsuperModelWithData();
    void VerifyPgsuperTemplateData(CBridgeDescription& bridgeDesc);
    void SetGirderData(CTxDOTOptionalDesignGirderData* pOdGirderData, GirderIndexType gdr,
                       const char* gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
                       CGirderTypes* pGirderTypes);
+
+   void DealWith065SpecEntry();
 
    void RecreateBroker();
 
@@ -205,6 +212,8 @@ public:
    void SetGirderEditorSettings(UINT settings);
 
    void EditGirderViewSettings(int nPage);
+   afx_msg void OnViewGirderviewsettings();
+   afx_msg void OnStatuscenterView();
 };
 
 /////////////////////////////////////////////////////////////////////////////

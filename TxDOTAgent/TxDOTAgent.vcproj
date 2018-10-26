@@ -306,6 +306,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGACamberAndDeflectionChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaDisplayObjectFactory.cpp"
 				>
 			</File>
@@ -334,6 +338,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGALongSectionChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaSectionCutDisplayImpl.cpp"
 				>
 			</File>
@@ -346,11 +354,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGAStatusBar.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaStressChecksChapterBuilder.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\TogaSupportDrawStrategyImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TOGATitlePageBuilder.cpp"
 				>
 			</File>
 			<File
@@ -520,6 +536,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGACamberAndDeflectionChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaDisplayObjectFactory.h"
 				>
 			</File>
@@ -548,6 +568,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGALongSectionChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaSectionCutDisplayImpl.h"
 				>
 			</File>
@@ -564,6 +588,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGAStatusBar.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaStressChecksChapterBuilder.h"
 				>
 			</File>
@@ -573,6 +601,10 @@
 			</File>
 			<File
 				RelativePath=".\TogaSupportDrawStrategyImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TOGATitlePageBuilder.h"
 				>
 			</File>
 			<File

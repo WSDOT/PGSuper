@@ -23,8 +23,8 @@ public:
    CString m_Company;
    CString m_Comments;
 
-   int m_SpanNo;
-   int m_BeamNo;
+   CString m_SpanNo;
+   CString m_BeamNo;
    CString m_BeamType;
    Float64 m_BeamSpacing;
    Float64 m_SpanLength;
@@ -45,6 +45,8 @@ public:
    Float64 m_WCompDc;
    Float64 m_WCompDw;
 
+   BOOL m_UseHigherCompression;
+
    // Store a pointer to our data source
    CTxDOTOptionalDesignData* m_pData;
 
@@ -55,6 +57,8 @@ private:
    void LoadDialogData();
    void SaveDialogData();
    void LoadGirderNames();
+   bool CheckLibraryData();
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
@@ -63,6 +67,5 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-   afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
    afx_msg void OnHelpFinder();
 };

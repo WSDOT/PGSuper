@@ -99,6 +99,7 @@ void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
    m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
+   m_scidLRFDVersionError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
 }
 
 LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
@@ -743,6 +744,21 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       else
       {
          // 3rd edition /w 2005 interims and later
+
+         // LRFD 5th Edition, 2010, C5.9.5.3
+         // The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only
+         GET_IFACE(IBridge,pBridge);
+         if ( lrfdVersionMgr::FifthEdition2010 <= lrfdVersionMgr::GetVersion() && !pBridge->IsCompositeDeck() )
+         {
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            std::string msg("The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only.");
+            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLRFDVersionError,msg.c_str());
+            pStatusCenter->Add(pStatusItem);
+
+            msg += std::string("\nSee Status Center for Details");
+            THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
+         }
+
          lrfdApproximateLosses2005 losses(poi.GetDistFromStart(), // location along girder where losses are computed
                             girder_length,    // girder length
                             grade,
@@ -1101,7 +1117,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    *pParagraph << "Refined Estimate of Time-Dependent Losses [5.9.5.4]" << rptNewLine;
 
 #if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
@@ -2240,7 +2256,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    *pParagraph << "Final Prestress Losses" << rptNewLine;
 
 #if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;

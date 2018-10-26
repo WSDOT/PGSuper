@@ -1,0 +1,379 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#include "StdAfx.h"
+#include <Reporting\ReportStyleHolder.h>
+#include <Reporting\SpanGirderReportSpecification.h>
+#include <Reporting\ConstructabilityCheckTable.h>
+
+#include "TogaCamberAndDeflectionChapterBuilder.h"
+#include "TxDOTOptionalDesignUtilities.h"
+
+#include <EAF\EAFDisplayUnits.h>
+#include <IFace\AnalysisResults.h>
+#include <IFace\Bridge.h>
+#include <IFace\Artifact.h>
+#include <IFace\Project.h>
+
+#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderData.h>
+#include <PgsExt\GirderArtifact.h>
+#include <PgsExt\PierData.h>
+
+#include <psgLib\ConnectionLibraryEntry.h>
+
+#include <WBFLCogo.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/****************************************************************************
+CLASS
+   CTogaCamberAndDeflectionChapterBuilder
+****************************************************************************/
+
+
+static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+
+////////////////////////// PUBLIC     ///////////////////////////////////////
+
+//======================== LIFECYCLE  =======================================
+CTogaCamberAndDeflectionChapterBuilder::CTogaCamberAndDeflectionChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
+{
+}
+
+//======================== OPERATORS  =======================================
+//======================== OPERATIONS =======================================
+LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
+{
+   return TEXT("Camber and Deflections");
+}
+
+rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+{
+   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CComPtr<IBroker> pBroker;
+   pSpec->GetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+   deflection_and_camber( pChapter, pBroker, pDisplayUnits );
+
+   return pChapter;
+}
+
+CChapterBuilder* CTogaCamberAndDeflectionChapterBuilder::Clone() const
+{
+   return new CTogaCamberAndDeflectionChapterBuilder;
+}
+
+//======================== ACCESS     =======================================
+//======================== INQUIRY    =======================================
+
+////////////////////////// PROTECTED  ///////////////////////////////////////
+
+//======================== LIFECYCLE  =======================================
+//======================== OPERATORS  =======================================
+//======================== OPERATIONS =======================================
+//======================== ACCESS     =======================================
+//======================== INQUIRY    =======================================
+
+////////////////////////// PRIVATE    ///////////////////////////////////////
+void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+{
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   *p << pTable << rptNewLine;
+
+   (*pTable)(0,0)  << "Stage";
+
+   pTable->SetColumnSpan(0,1,2);
+   (*pTable)(0,1) << "Original Girder Design";
+
+   pTable->SetColumnSpan(0,2,2);
+   (*pTable)(0,2) << "Fabricator Optional Design";
+
+   pTable->SetColumnSpan(0,3,-1);
+   pTable->SetColumnSpan(0,4,-1);
+
+   // Setup up some unit value prototypes
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDisplacementUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
+
+   // Get the interfaces we need
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IProductForces, pProductForces);
+   GET_IFACE2(pBroker,IProductLoads, pProductLoads);
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2(pBroker,IGirderData,pGirderData);
+
+   CGirderData girderData_orig = pGirderData->GetGirderData(TOGA_SPAN, TOGA_ORIG_GDR);
+   CGirderData girderData_fabr = pGirderData->GetGirderData(TOGA_SPAN, TOGA_FABR_GDR);
+
+   std::string spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+
+   bool do_defl = pSpecEntry->GetDoEvaluateLLDeflection();
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   // Get Midspan poi's
+   std::vector<pgsPointOfInterest> vPoi_orig = pIPOI->GetPointsOfInterest(TOGA_SPAN, TOGA_ORIG_GDR,pgsTypes::BridgeSite3,POI_MIDSPAN);
+   CHECK(vPoi_orig.size()==1);
+   pgsPointOfInterest poi_orig = *vPoi_orig.begin();
+
+   std::vector<pgsPointOfInterest> vPoi_fabr = pIPOI->GetPointsOfInterest(TOGA_SPAN, TOGA_FABR_GDR,pgsTypes::BridgeSite3,POI_MIDSPAN);
+   CHECK(vPoi_fabr.size()==1);
+   pgsPointOfInterest poi_fabr = *vPoi_fabr.begin();
+
+   // Compute mid span deflections
+   Float64 delta_gdr_orig, delta_gdr_fabr; // due to girder self weight
+   Float64 delta_dl_orig,  delta_dl_fabr;  // due to dead loads on girder
+   Float64 delta_ol_orig,  delta_ol_fabr;  // due to overlay
+   Float64 delta_tb_orig,  delta_tb_fabr;  // due to traffic barrier
+   Float64 delta_ll_orig,  delta_ll_fabr;  // due to live load
+   Float64 delta_oll_orig, delta_oll_fabr; // due to optional live load
+   Float64 temp;
+
+   delta_gdr_orig = pProductForces->GetGirderDeflectionForCamber( poi_orig );
+   delta_gdr_fabr = pProductForces->GetGirderDeflectionForCamber( poi_fabr );
+
+   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+
+   delta_dl_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi_orig, bat )
+                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi_orig, bat );
+
+   delta_dl_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi_fabr, bat )
+                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi_fabr, bat );
+
+   pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+
+   delta_ol_orig = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi_orig, bat );
+   delta_ol_fabr = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi_fabr, bat );
+
+   delta_tb_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi_orig, bat );
+   delta_tb_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi_fabr, bat );
+
+   Float64 delta_dcu_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC, poi_orig, bat);
+   delta_dcu_orig        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC, poi_orig, bat);
+
+   Float64 delta_dcu_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC, poi_fabr, bat);
+   delta_dcu_fabr        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC, poi_fabr, bat);
+
+   Float64 delta_dwu_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW, poi_orig, bat);
+   delta_dwu_orig        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW, poi_orig, bat);
+
+   Float64 delta_dwu_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW, poi_fabr, bat);
+   delta_dwu_fabr        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW, poi_fabr, bat);
+
+   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, pgsTypes::BridgeSite3, poi_orig, bat, true, false, &delta_ll_orig, &temp );
+   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, pgsTypes::BridgeSite3, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );
+
+   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_orig, &delta_oll_orig, &temp );
+   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, &delta_oll_fabr, &temp );
+
+   // get # of days for creep
+   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+
+   // Populate the table
+   bool is_negative_camber = false;
+   Uint16 row = 1;
+   (*pTable)(row,0) << "Estimated camber at "<< min_days<<" days, D";
+
+   double D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MINTIME);
+   if ( D_orig < 0 )
+   {
+      (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
+      (*pTable)(row,2) << color(Red) << dispft.SetValue( D_orig ) << color(Black);
+   }
+   else
+   {
+      (*pTable)(row,1) << disp.SetValue( D_orig );
+      (*pTable)(row,2) << dispft.SetValue( D_orig );
+   }
+
+   double D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MINTIME);
+   if ( D_fabr < 0 )
+   {
+      (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
+      (*pTable)(row,4) << color(Red) << dispft.SetValue( D_fabr ) << color(Black);
+   }
+   else
+   {
+      (*pTable)(row,3) << disp.SetValue( D_fabr );
+      (*pTable)(row,4) << dispft.SetValue( D_fabr );
+   }
+
+   row++;
+
+   (*pTable)(row,0) << "Estimated camber at "<< max_days<<" days, D";
+   D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MAXTIME);
+   if ( D_orig < 0 )
+   {
+      (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
+      (*pTable)(row,2) << color(Red) << dispft.SetValue( D_orig ) << color(Black);
+   }
+   else
+   {
+      (*pTable)(row,1) << disp.SetValue( D_orig );
+      (*pTable)(row,2) << dispft.SetValue( D_orig );
+   }
+
+   D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MAXTIME);
+   if ( D_fabr < 0 )
+   {
+      (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
+      (*pTable)(row,4) << color(Red) << dispft.SetValue( D_fabr ) << color(Black);
+   }
+   else
+   {
+      (*pTable)(row,3) << disp.SetValue( D_fabr );
+      (*pTable)(row,4) << dispft.SetValue( D_fabr );
+   }
+
+   row++;
+
+   (*pTable)(row,0) << "Deflection (Prestressing)";
+   (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi_orig,false) );
+   (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_orig,false) );
+
+   (*pTable)(row,3) << disp.SetValue( pCamber->GetPrestressDeflection(poi_fabr,false) );
+   (*pTable)(row,4) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_fabr,false) );
+
+   row++;
+
+   (*pTable)(row,0) << "Deflection (Girder)";
+   (*pTable)(row,1) << disp.SetValue( delta_gdr_orig );
+   (*pTable)(row,2) << dispft.SetValue( delta_gdr_orig );
+
+   (*pTable)(row,3) << disp.SetValue( delta_gdr_fabr );
+   (*pTable)(row,4) << dispft.SetValue( delta_gdr_fabr );
+
+   row++;
+
+   (*pTable)(row,0) << "Deflection (Slab and Diaphragms)";
+   (*pTable)(row,1) << disp.SetValue( delta_dl_orig );
+   (*pTable)(row,2) << dispft.SetValue( delta_dl_orig );
+
+   (*pTable)(row,3) << disp.SetValue( delta_dl_fabr );
+   (*pTable)(row,4) << dispft.SetValue( delta_dl_fabr );
+
+   row++;
+
+   (*pTable)(row,0) << "Deflection (User Defined DC)";
+   (*pTable)(row,1) << disp.SetValue( delta_dcu_orig );
+   (*pTable)(row,2) << dispft.SetValue( delta_dcu_orig );
+
+   (*pTable)(row,3) << disp.SetValue( delta_dcu_fabr );
+   (*pTable)(row,4) << dispft.SetValue( delta_dcu_fabr );
+
+   row++;
+
+   (*pTable)(row,0) << "Deflection (User Defined DW)";
+   (*pTable)(row,1) << disp.SetValue( delta_dwu_orig );
+   (*pTable)(row,2) << dispft.SetValue( delta_dwu_orig );
+   (*pTable)(row,3) << disp.SetValue( delta_dwu_fabr );
+   (*pTable)(row,4) << dispft.SetValue( delta_dwu_fabr );
+
+   row++;
+
+   (*pTable)(row,0) << "Screed Camber, C";
+   (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi_orig) );
+   (*pTable)(row,2) << dispft.SetValue( pCamber->GetScreedCamber(poi_orig) );
+
+   (*pTable)(row,3) << disp.SetValue( pCamber->GetScreedCamber(poi_fabr) );
+   (*pTable)(row,4) << dispft.SetValue( pCamber->GetScreedCamber(poi_fabr) );
+
+   row++;
+
+   (*pTable)(row,0) << "Excess Camber" << rptNewLine << "(based on D at " << max_days << " days)";
+   double excess_camber = pCamber->GetExcessCamber(poi_orig,CREEP_MAXTIME);
+   if ( excess_camber < 0 )
+   {
+      (*pTable)(row,1) << color(Red) << disp.SetValue( excess_camber ) << color(Black);
+      (*pTable)(row,2) << color(Red) << dispft.SetValue( excess_camber ) << color(Black);
+   }
+   else
+   {
+      (*pTable)(row,1) << disp.SetValue( excess_camber );
+      (*pTable)(row,2) << dispft.SetValue( excess_camber );
+   }
+
+   excess_camber = pCamber->GetExcessCamber(poi_fabr,CREEP_MAXTIME);
+   if ( excess_camber < 0 )
+   {
+      (*pTable)(row,3) << color(Red) << disp.SetValue( excess_camber ) << color(Black);
+      (*pTable)(row,4) << color(Red) << dispft.SetValue( excess_camber ) << color(Black);
+      is_negative_camber = true;
+   }
+   else
+   {
+      (*pTable)(row,3) << disp.SetValue( excess_camber );
+      (*pTable)(row,4) << dispft.SetValue( excess_camber );
+   }
+
+   row++;
+
+   (*pTable)(row,0) << "Live Load Deflection (HL93 - Per Lane)";
+   (*pTable)(row,1) << disp.SetValue( delta_ll_orig );
+   (*pTable)(row,2) << dispft.SetValue( delta_ll_orig );
+
+   (*pTable)(row,3) << disp.SetValue( delta_ll_fabr );
+   (*pTable)(row,4) << dispft.SetValue( delta_ll_fabr );
+
+   row++;
+
+   if (do_defl)
+   {
+      (*pTable)(row,0) << "Optional Live Load Deflection (LRFD 3.6.1.3.2)";
+      (*pTable)(row,1) << disp.SetValue( delta_oll_orig );
+      (*pTable)(row,2) << dispft.SetValue( delta_oll_orig );
+
+      (*pTable)(row,3) << disp.SetValue( delta_oll_fabr );
+      (*pTable)(row,4) << dispft.SetValue( delta_oll_fabr );
+
+      row++;
+   }
+
+   if (is_negative_camber)
+   {
+      *p<<color(Red) << "Warning:  Excess camber is negative indicating a potential sag in the beam." << color(Black) << rptNewLine;
+   }
+}
+
+
+
+//======================== LIFECYCLE  =======================================
+//======================== OPERATORS  =======================================
+//======================== OPERATIONS =======================================
+//======================== ACCESS     =======================================
+//======================== INQUERY    =======================================

@@ -1442,7 +1442,7 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
          GirderIndexType nthisGstart, nthisGend;
          pthisSpan->GetGirderTypes()->GetGirderGroup(iGroup, &nthisGstart, &nthisGend, thisGirderName);
 
-         std::string origGirderName;
+         std::string origGirderName = thisGirderName;
          if (iGroup < origNGroups)
          {
             GirderIndexType norigGstart, norigGend;
