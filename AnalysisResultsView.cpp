@@ -30,7 +30,7 @@
 #include "AnalysisResultsView.h"
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Allowables.h>
 #include <IFace\MomentCapacity.h>
@@ -155,7 +155,15 @@ void CAnalysisResultsView::OnDraw(CDC* pDC)
       else
          msg.LoadString(IDS_RESULTS_NOT_AVAILABLE);
 
+      CFont font;
+      CFont* pOldFont = NULL;
+      if ( font.CreatePointFont(100,"Arial",pDC) )
+         pOldFont = pDC->SelectObject(&font);
+
       MultiLineTextOut(pDC,0,0,msg);
+
+      if ( pOldFont )
+         pDC->SelectObject(pOldFont);
 
       // give child frame a reasonable default
       SetWindowText("Analysis Results");
@@ -1307,7 +1315,7 @@ void CAnalysisResultsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint
    if ( 0 < lHint && lHint <= MAX_DISPLAY_HINT && lHint != HINT_GIRDERLABELFORMATCHANGED )
       return; // some display feature changed... not data... nothing to do here
 
-   if ( lHint == HINT_UPDATEERROR )
+   if ( lHint == EAF_HINT_UPDATEERROR )
    {
       CString* pmsg = (CString*)pHint;
       m_ErrorMsg = *pmsg;
@@ -1337,7 +1345,7 @@ void CAnalysisResultsView::UpdateUnits(ActionType action)
    delete m_pXFormat;
    delete m_pYFormat;
 
-   GET_IFACE2(m_pBroker,IDisplayUnits,pUnits);
+   GET_IFACE2(m_pBroker,IEAFDisplayUnits,pUnits);
 
    // first x axis
    const unitmgtLengthData& rlen = pUnits->GetSpanLengthUnit();

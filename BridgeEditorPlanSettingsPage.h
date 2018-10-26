@@ -29,6 +29,8 @@
 // BridgeEditorPlanSettingsPage.h : header file
 //
 
+#include "resource.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeEditorPlanSettingsPage dialog
 

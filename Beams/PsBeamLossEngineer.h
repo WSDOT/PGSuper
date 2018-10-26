@@ -56,7 +56,7 @@ public:
    virtual void SetBroker(IBroker* pBroker,long statusGroupID);
    virtual LOSSDETAILS ComputeLosses(const pgsPointOfInterest& poi);
    virtual LOSSDETAILS ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config);
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
+   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
 private:
    IBroker* m_pBroker;

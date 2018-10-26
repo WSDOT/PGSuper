@@ -31,6 +31,7 @@
 
 class CBridgeDescDlg;
 
+#include "resource.h"
 #include <PgsExt\DeckDescription.h>
 #include "BridgeDescDeckPointGrid.h"
 

@@ -28,7 +28,7 @@
 #include "BridgeViewPrintJob.h"
 #include "PGSuperCalculationSheet.h"
 #include "PGSuperUnits.h"
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE

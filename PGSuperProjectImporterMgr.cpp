@@ -57,8 +57,6 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
    // load all importers
-   UINT cmdImporter = FIRST_PROJECT_IMPORTER_PLUGIN;
-
    CEAFApp* pApp = (CEAFApp*)AfxGetApp();
 
    const int nCLSID = 5;
@@ -91,7 +89,7 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
             else
             {
                Record record;
-               record.commandID = cmdImporter++;
+               record.commandID = 0; // project importers don't use command IDs
                record.Importer  = importer;
 
                m_ImporterRecords.push_back( record );

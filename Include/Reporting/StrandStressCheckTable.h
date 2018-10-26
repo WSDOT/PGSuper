@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 class pgsStrandStressArtifact;
 
 /*****************************************************************************
@@ -76,7 +76,7 @@ public:
    // Builds the strand eccentricity table.
    rptRcTable* Build(IBroker* pBroker,
                      const pgsStrandStressArtifact* pArtifact,
-                     IDisplayUnits* pDisplayUnits) const;
+                     IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

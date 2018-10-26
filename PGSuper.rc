@@ -32,6 +32,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
+    "<EAF\\EAFResources.h\0"
+    "\0"
 END
 
 2 TEXTINCLUDE 
@@ -106,7 +108,6 @@ IDB_SPLASH              BITMAP                  "res\\Splash.bmp"
 IDB_NORTH_ARROW         BITMAP                  "res\\north_ar.bmp"
 IDR_STDTOOLBAR          BITMAP                  "res\\Toolbar.bmp"
 IDR_LIBTOOLBAR          BITMAP                  "res\\LibraryToolbar.bmp"
-IDR_LIBEDITORTOOLBAR    BITMAP                  "res\\LibEditorToolbar.bmp"
 IDR_HELPTOOLBAR         BITMAP                  "res\\HelpToolbar.bmp"
 CONCRETE_LIBRARY_ENTRY  BITMAP                  "res\\bitmap2.bmp"
 CONNECTION_LIBRARY_ENTRY BITMAP                  "res\\bmp00001.bmp"
@@ -152,9 +153,9 @@ BEGIN
     BUTTON      ID_PROJECT_BRIDGEDESC
     BUTTON      IDM_EDIT_GIRDER
     BUTTON      ID_EDIT_USERLOADS
-    BUTTON      IDR_LIVE_LOADS
-    BUTTON      IDM_COPY_GIRDER_PROPS
+    BUTTON      ID_LIVE_LOADS
     BUTTON      ID_RATING_SPEC
+    BUTTON      IDM_COPY_GIRDER_PROPS
     SEPARATOR
     BUTTON      ID_VIEW_LIBRARYEDITOR
     SEPARATOR
@@ -185,27 +186,6 @@ BEGIN
     BUTTON      IDM_LIST_ICONS
 END
 
-IDR_LIBEDITORTOOLBAR TOOLBAR  16, 16
-BEGIN
-    BUTTON      ID_FILE_NEW
-    BUTTON      ID_FILE_OPEN
-    BUTTON      ID_FILE_SAVE
-    SEPARATOR
-    BUTTON      IDM_ADD_ENTRY
-    BUTTON      IDM_DELETE_ENTRY
-    BUTTON      IDM_DUPLICATE_ENTRY
-    BUTTON      IDM_EDIT_ENTRY
-    SEPARATOR
-    BUTTON      IDM_LARGE_ICONS
-    BUTTON      IDM_SMALL_ICONS
-    BUTTON      IDM_LIST_ICONS
-    SEPARATOR
-    BUTTON      ID_UNITS_SI
-    BUTTON      ID_UNITS_US
-    SEPARATOR
-    BUTTON      ID_HELP_FINDER
-END
-
 IDR_HELPTOOLBAR TOOLBAR  16, 16
 BEGIN
     BUTTON      ID_HELP_INET_PGSUPER
@@ -227,9 +207,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "Pro&gram Settings...",        ID_VIEW_OPTIONS
-        MENUITEM "Manage Plugins...",           ID_OPTIONS_PLUGINS
-        MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
@@ -249,6 +226,7 @@ BEGIN
             MENUITEM "&PGSuper Home Page",          ID_HELP_INET_PGSUPER
         END
         MENUITEM SEPARATOR
+        MENUITEM "&Tip of the Day...",          ID_TIPOFTHEDAY
         MENUITEM "&Legal Notices...",           ID_APP_LEGAL
         MENUITEM "&About PGSuper...",           ID_APP_ABOUT
     END
@@ -311,8 +289,8 @@ BEGIN
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Units...",                   ID_EDIT_UNITS,MFT_STRING,MFS_ENABLED
         MENUITEM "Structural Analysis &Method...", ID_PROJECT_ANALYSIS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Design Criteria...",         ID_PROJECT_SPEC,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Rating Criteria...",         ID_RATING_SPEC,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Project Criteria...",        ID_PROJECT_SPEC,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Load Rating Options...",     ID_RATING_SPEC,MFT_STRING,MFS_ENABLED
         MENUITEM "En&vironment...",             ID_PROJECT_ENVIRONMENT,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "Prope&rties...",              ID_FILE_PROJECT_PROPERTIES,MFT_STRING,MFS_ENABLED
@@ -324,8 +302,10 @@ BEGIN
         MENUITEM "Add &Moment Load...",         ID_ADD_MOMENT_LOAD,MFT_STRING,MFS_ENABLED
         MENUITEM "Edit &User Defined Loads",    ID_EDIT_USERLOADS,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
-        MENUITEM "Li&ve Loads...",              IDR_LIVE_LOADS,MFT_STRING,MFS_ENABLED
+        MENUITEM "Li&ve Loads...",              ID_LIVE_LOADS,MFT_STRING,MFS_ENABLED
         MENUITEM "Live Load &Distribution Factors...", ID_LOADS_LLDF,MFT_STRING,MFS_ENABLED
+        MENUITEM MFT_SEPARATOR
+        MENUITEM "Construction Loads...",       33232,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Load Modifiers...",          ID_LOADS_LOADMODIFIERS,MFT_STRING,MFS_ENABLED
     END
@@ -388,7 +368,7 @@ BEGIN
             MENUITEM "&Alternate Route Project Home Page", ID_HELP_INET_ARP,MFT_STRING,MFS_ENABLED
         END
         MENUITEM MFT_SEPARATOR
-        MENUITEM "&Tip of the Day...",          CG_IDS_TIPOFTHEDAY,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Tip of the Day...",          ID_TIPOFTHEDAY,MFT_STRING,MFS_ENABLED
         MENUITEM "&Legal Notices...",           ID_APP_LEGAL,MFT_STRING,MFS_ENABLED
         MENUITEM "&About PGSuper...",           ID_APP_ABOUT,MFT_STRING,MFS_ENABLED
     END
@@ -453,6 +433,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Add Poi&nt Load...",          ID_GV_ADD_POINTLOAD
         MENUITEM "Add &Distributed Load...",    ID_ADD_GV_DISTRIBUTED_LOAD
+        MENUITEM "Add End Moment Load...",      33231
         MENUITEM SEPARATOR
         POPUP "Section &Cut"
         BEGIN
@@ -561,86 +542,76 @@ END
 
 IDR_MAINFRAME ACCELERATORS 
 BEGIN
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_SCREEN_SIZE,         VIRTKEY, CONTROL, ALT, NOINVERT
-    "U",            ID_UPDATE_TEMPLATE,     VIRTKEY, CONTROL, ALT, NOINVERT
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
-    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
+    VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_SCREEN_SIZE,         VIRTKEY, CONTROL, ALT, NOINVERT
 END
 
 IDR_BRIDGEMODELEDITOR ACCELERATORS 
 BEGIN
-    "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
-    "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
-    "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
-    "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    "U",            ID_PROJECT_UPDATENOW,   VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
-    VK_F5,          ID_PROJECT_UPDATENOW,   VIRTKEY, NOINVERT
-    VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
-    "X",            ID_SCALETOFIT,          VIRTKEY, CONTROL, ALT, NOINVERT
     "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_INSERT,              VIRTKEY, NOINVERT
+    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
+    "X",            ID_SCALETOFIT,          VIRTKEY, CONTROL, ALT, NOINVERT
+    "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
     "Z",            ID_ZOOM,                VIRTKEY, CONTROL, ALT, NOINVERT
 END
 
 IDR_GIRDERMODELEDITOR ACCELERATORS 
 BEGIN
+    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    "U",            ID_PROJECT_UPDATENOW,   VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_ANALYSISRESULTS ACCELERATORS 
 BEGIN
+    "L",            ID_DUMP_LBAM,           VIRTKEY, CONTROL, ALT, NOINVERT
+    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_DUMP_LBAM,           VIRTKEY, CONTROL, ALT, NOINVERT
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    "U",            ID_PROJECT_UPDATENOW,   VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_PROJECT_UPDATENOW,   VIRTKEY, NOINVERT
 END
 
 IDR_FACTOROFSAFETY ACCELERATORS 
 BEGIN
+    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_PROJECT_UPDATENOW,   VIRTKEY, NOINVERT
-    "U",            ID_PROJECT_UPDATENOW,   VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_REPORT ACCELERATORS 
 BEGIN
+    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "A",            ID_VIEW_ANALYSISRESULTS, VIRTKEY, CONTROL, NOINVERT
     "B",            ID_VIEW_BRIDGEMODELEDITOR, VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_PROJECT_DESIGNGIRDER, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_VIEW_GIRDEREDITOR,   VIRTKEY, CONTROL, NOINVERT
     "R",            ID_VIEW_REPORTS,        VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_PROJECT_UPDATENOW,   VIRTKEY, NOINVERT
-    "U",            ID_PROJECT_UPDATENOW,   VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -1029,9 +1000,9 @@ BEGIN
     CONTROL         "Directly Input Live Load Distribution Factors",IDC_LLDF_INPUT,
                     "Button",BS_AUTORADIOBUTTON,16,81,153,10
     CONTROL         "Custom1",IDC_STRENGTH_GRID,"GXWND",WS_DISABLED | WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,25,103,314,80
-    DEFPUSHBUTTON   "OK",IDOK,92,287,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,150,287,50,14
-    PUSHBUTTON      "Help",ID_HELP,208,287,50,14
+    DEFPUSHBUTTON   "OK",IDOK,179,287,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,237,287,50,14
+    PUSHBUTTON      "Help",ID_HELP,295,287,50,14
     CONTROL         "Custom1",IDC_FATIGUE_GRID,"GXWND",WS_DISABLED | WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,25,193,314,80
     LTEXT           "Strength and Service Limit States",IDC_STRENGTH_LABEL,26,93,106,8
     LTEXT           "Fatigue Limit States",IDC_FATIGUE_LABEL,26,184,62,8
@@ -1368,9 +1339,8 @@ BEGIN
     LTEXT           "Engineer",IDC_STATIC,258,60,65,8
     LTEXT           "Company",IDC_STATIC,258,90,69,8
     LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,233,174,8
-    GROUPBOX        "",IDC_SERVER_STATIC3,36,170,172,38
-    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,62,218,155,10
-    ICON            IDI_EARTH,IDC_STATIC_EARTH,38,214,20,20
+    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,49,220,155,10
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,21,20
 END
 
 IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 247
@@ -2131,6 +2101,21 @@ BEGIN
     LTEXT           "Enable Components",IDC_LIST_TITLE,7,7,64,8
 END
 
+IDD_CONSTRUCTION_LOADS DIALOGEX 0, 0, 342, 126
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Construction Loads"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Construction load allowance carried by the non-composite girder section. This allowance covers additional loads incurred by the use of stay-in-place metal forms or other permanent construction materials and tolerances.",IDC_STATIC,7,7,328,30
+    EDITTEXT        IDC_LOAD,7,40,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LOAD_UNIT,49,43,19,8
+    LTEXT           "applied to the entire area of the deck and distributed based on tributary width.",IDC_STATIC,70,43,263,8
+    LTEXT           "This load is applied to the DC load case.",IDC_STATIC,7,65,128,8
+    DEFPUSHBUTTON   "OK",IDOK,177,105,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,231,105,50,14
+    PUSHBUTTON      "Help",ID_HELP,285,105,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2138,8 +2123,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,2
- PRODUCTVERSION 2,3,0,2
+ FILEVERSION 2,3,0,3
+ PRODUCTVERSION 2,3,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2156,12 +2141,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.3.0.2"
+            VALUE "FileVersion", "2.3.0.3"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.2"
+            VALUE "ProductVersion", "2.3.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -2704,6 +2689,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 154
     END
+
+    IDD_CONSTRUCTION_LOADS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 335
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2992,14 +2985,81 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_HELP_POST            "Posts a question to the Alternate Route Project mailing list"
+    ID_HELP_INET_ARP        "Visit the Alternate Route Project Home Page"
+    ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
+    ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"
+    ID_LOADS_LLDF           "Input distribution factors"
+    ID_ADD_POINTLOAD        "Add a new point load to the model"
+    ID_EDIT_USERLOADS       "Edit user-defined loads on the structure\nEdit user-defined loads"
+    ID_ADD_DISTRIBUTED_LOAD "Add a new distributed load to the model"
+    ID_GV_ADD_POINTLOAD     "Add a concentrated load to the girder"
+    ID_ADD_GV_DISTRIBUTED_LOAD "Add a distributed load to the girder"
     ID_GEV_CTX_EDIT_LOAD    "Edit the selected load"
     ID_GEV_CTX_DELETE_LOAD  "Delete the selected load"
+END
+
+STRINGTABLE 
+BEGIN
     ID_PROJECT_ALIGNMENT    "Edit Roadway Alignment and Profile\nEdit Roadway Alignment and Profile"
-    IDR_LIVE_LOADS          "Change which live loads are used for the analysis...\nSpecify Live Loads for Analysis"
+    ID_LIVE_LOADS           "Change which live loads are used for the analysis...\nSpecify Live Loads for Analysis"
     ID_ADD_MOMENT_LOAD      "Add a new moment load to the model"
-    IDS_ALIGNMENTOFFSET_FMT "Enter offset from the alignment, measured normal to the alignment. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R)\nPositive values indicate the centerline of pier is offset to the right of the alignment. \nExample: -2.25 or 2.25 L"
-    ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
     ID_EDIT_PIER            "Edit Pier\nEdit Pier"
+    ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
+    ID_PROJECT_PIERDESC     "Edit the selected Pier\nEdit the selected Pier"
+    ID_DELETE               "Delete\nDelete"
+    ID_INSERT               "Insert Span\nInsert Span"
+    ID_INSERT_SPAN          "Insert Span\nInsert Span"
+    ID_INSERT_PIER          "Insert Span\nInsert Span"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_ALIGNMENTOFFSET_FMT "Enter offset from the alignment, measured normal to the alignment. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R)\nPositive values indicate the centerline of pier is offset to the right of the alignment. \nExample: -2.25 or 2.25 L"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_OPTIONS_HINTS        "Edit User Interface Hint Options\nHints"
+    ID_OPTIONS_LABELS       "Set the format for girder labels\nEdit girder label format"
+    ID_RATING_SPEC          "Edit load rating options for this project\nEdit Load Rating Options"
+    ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
+    ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
+    ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
+    ID_HELP_INET_PGSUPER    "Open the PGSuper Home Page\nPGSuper Online Resources"
+    ID_GV_ADD_MOMENT        "Add an end moment load to the girder"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nSelect Project Criteria"
+    ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
+    ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
+    ID_PROJECT_BRIDGEDESC   "Edit the Bridge\nEdit the Bridge Description"
+    ID_LOADS_LOADMODIFIERS  "Edit the load modifiers\nLoad modifiers"
+    ID_LEFTEND              "Cut section at left end of the girder"
+    ID_RIGHTEND             "Cut section at right end of girder"
+    ID_LEFT_HP              "Cut section at left harping point"
+    ID_CENTER               "Cut section at center of girder"
+    ID_RIGHT_HP             "Cut section at right harping point"
+    ID_USER_CUT             "Enter a user defined cut location"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_ADD_ENTRY           "Add a new entry to the library\nAdd entry"
+    IDM_EDIT_ENTRY          "Edit the selected entry\nEdit entry"
+    IDM_DELETE_ENTRY        "Delete the selected entry\nDelete entry"
+    IDM_DUPLICATE_ENTRY     "Duplicate the selected entry\nDuplicate entry"
+    IDM_LARGE_ICONS         "View library entries using large icons\nLarge Icons"
+    IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
+    IDM_LIST_ICONS          "View library entries in a list\nList"
+    IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_EXPORT_TEMPLATE     "Save the current project as a PGSuper template file\nSave as template file"
 END
 
 STRINGTABLE 
@@ -3031,45 +3091,24 @@ BEGIN
                             "Shows the Analysis Model View\nAnalysis Model View"
     ID_VIEW_LIBRARYEDITOR   "Shows the Library Editor\nEdit Library"
     ID_VIEW_REPORTS         "View a report\nReports"
-    IDS_BM_VIEW_SETTINGS    "View Settings - Bridge Model"
     ID_VIEWSETTINGS_BRIDGEMODELEDITOR "Bridge Model View Settings"
     ID_VIEWSETTINGS_GIRDEREDITOR "Girder View Settings"
     ID_VIEWSETTINGS_ANALYSISMODELEDITOR "Analysis Model Editor view settings"
     ID_VIEWSETTINGS_LIBRARYEDITOR "Library Editor view settings"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_VIEW_OPTIONS         "Edit the program options\nOptions"
-    ID_LOADS_ADDPOINTLOAD   "Add a concentrated load to the analysis model\nConcentrated Load"
-    ID_LOADS_ADDUNIFLOAD    "Add a uniform load to the analysis model\nUniform Load"
-    ID_LOADS_EDIT           "Edit the selected load.\nEdit Load"
-    ID_LOADS_UTILITIES      "Add a utility load to the analysis model\nUtilities"
-    ID_LOADS_FORMS          "Edit the form work load\nForms"
+    ID_CONFIGURE_PGSUPER    "Configure the library, template, and user information settings\nConfigure PGSuper"
     ID_PROJECT_AUTOCALC     "Toggles AutoCalc mode.\nAutoCalc"
     ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now"
     ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nPreliminary Girder Designer"
-    ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nDesign Criteria"
-    ID_PROJECT_POI          "Select points of interest\nPoints of Interest"
-    ID_PROJECT_DESIGNOPTIONS "Design Options\nDesign Options"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
-    ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
-    ID_PROJECT_BRIDGEDESC   "Edit the Bridge\nEdit the Bridge Description"
+    IDS_BM_VIEW_SETTINGS    "View Settings - Bridge Model"
 END
 
 STRINGTABLE 
 BEGIN
     IDS_GM_VIEW_SETTINGS    "View Settings - Girder Model Editor"
-    ID_LOADS_LOADMODIFIERS  "Edit the load modifiers\nLoad modifiers"
-    ID_LEFTEND              "Cut section at left end of the girder"
-    ID_RIGHTEND             "Cut section at right end of girder"
-    ID_LEFT_HP              "Cut section at left harping point"
-    ID_CENTER               "Cut section at center of girder"
-    ID_RIGHT_HP             "Cut section at right harping point"
 END
 
 STRINGTABLE 
@@ -3089,9 +3128,21 @@ BEGIN
     IDS_GDRSEL_EXCEED_MAX_STRAND 
                             "The current number of %1 strands exceeds the maximum number of %1 strands for the %2 girder.\n\n Would you like to change the number of %1 strands to the maximum?"
     IDS_PSFORCE_EXCEED_MAX  "The prestress force for the %1 strands exceed the ultimate strength of the prestressing strand.\n\nWould you like to change the prestressing force for the %1 strands to the maximum allowable jacking force?"
+    IDS_BROWSER_ERROR       "Error displaying report.  You must have Internet Explorer Version 4.0 or later."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_ANALYSIS   "CONTINUOUS"
     ID_INDICATOR_AUTOCALC_ON "AutoCalc : On"
     ID_INDICATOR_AUTOCALC_OFF "AutoCalc : Off"
-    IDS_BROWSER_ERROR       "Error displaying report.  You must have Internet Explorer Version 4.0 or later."
+    IDS_GIRDER_SHEAR        "Trans. Reinforcement"
+    IDS_LIVE_LOAD_FACTOR_TOOLTIP 
+                            "Enter a live load factor. Leave blank or use the keyword Compute to have the live load factor computed based on the requirements of the Load Rating Criteria.\n\n%1"
+    IDS_E_ONLINERESOURCES   "Sorry, but an error occured while attempting to connect to the Internet"
+    IDS_LIVE_LOAD_FACTOR_DISABLED_TOOLTIP 
+                            "Live load factors will be determined based on the Load Rating Criteria. The selected Load Rating Criteria does not permit user defined live load factors."
+    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
 END
 
 STRINGTABLE 
@@ -3104,8 +3155,6 @@ END
 STRINGTABLE 
 BEGIN
     IDS_TEMPLATE_FILE_SUFFIX "pgt"
-    IDS_FATAL_MSG_SAVE      """%1\n\nPGSuper is going to shut down!\n\nWould you like to attempt to save your project first?\n\n%2"""
-    IDS_FATAL_MSG_NOSAVE    """%1\n\nPGSuper is going to shut down!\n\n%2"""
     IDS_DEFAULT_MASTER_LIB  "PGSuper.lbr"
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
@@ -3128,8 +3177,6 @@ BEGIN
     IDS_E_PARSER_INIT_FAIL  "An error has occured while initializing the file parser.\n\nThis is most commonly caused by having the wrong version of Internet Explorer.\n\nPGSuper requires Internet Explorer 4.01 SP 3 or greater."
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
-    ID_E_INVALID_ORIENTATION 
-                            "Invalidate orientation for Pier %1\nEnter the keyword ""Normal"", a valid skew angle or a valid bearing"
 END
 
 STRINGTABLE 
@@ -3141,44 +3188,10 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_USER_CUT             "Enter a user defined cut location"
-    ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
-    ID_HELP_INET_PGSUPER    "Open the PGSuper Home Page\nPGSuper Online Resources"
-    IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
     IDM_EDIT_GIRDER         "Edit a Girder\nEdit a Girder"
     IDM_COPY_GIRDER_PROPS   "Copy Properties From One Girder to Another\nCopy Girder Properties"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_GIRDER_SHEAR        "Trans. Reinforcement"
-    IDS_LIVE_LOAD_FACTOR_TOOLTIP 
-                            "Enter a live load factor. Leave blank or use the keyword Compute to have the live load factor computed based on the requirements of the Load Rating Criteria.\n\n%1"
-    IDS_E_ONLINERESOURCES   "Sorry, but an error occured while attempting to connect to the Internet"
-    IDS_LIVE_LOAD_FACTOR_DISABLED_TOOLTIP 
-                            "Live load factors will be determined based on the Load Rating Criteria. The selected Load Rating Criteria does not permit user defined live load factors."
-    IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
-END
-
-STRINGTABLE 
-BEGIN
     IDM_IMPORT_PROJECT_LIBRARY 
                             "Get Library Entries From Another Project\nGet Library Entries From Another Project"
-    ID_APP_LEGAL            "Display PGSuper Legal Notices"
-    ID_HELP_POST            "Posts a question to the Alternate Route Project mailing list"
-    ID_HELP_INET_ARP        "Visit the Alternate Route Project Home Page"
-    ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
-    ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"
-    ID_LOADS_LLDF           "Input distribution factors"
-    ID_ADD_POINTLOAD        "Add a new point load to the model"
-    ID_ADD_LINEAR_LOAD      "Add a new distributed load to the model"
-    ID_EDIT_USERLOADS       "Edit user-defined loads on the structure\nEdit user-defined loads"
-    ID_ADD_DISTRIBUTED_LOAD "Add a New Distributed Load to the Structure"
-END
-
-STRINGTABLE 
-BEGIN
-    IDM_EXPORT_TXDOTCADDATA "Save TxDOT CAD data to a text file\nSave TxDOT CAD data to Text file"
 END
 
 STRINGTABLE 
@@ -3186,30 +3199,12 @@ BEGIN
     ID_VIEW_STATUSCENTER    "View Status Center Window\nView Status Center Window"
     ID_VIEW_STATUSCENTER2   "View Status Center Window\nView Status Center Window"
     ID_VIEW_STATUSCENTER3   "View Status Center Window\nView Status Center Window"
+    ID_APP_LEGAL            "Display PGSuper Legal Notices"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_INDICATOR_ANALYSIS   "CONTINUOUS"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
-    ID_PROJECT_PIERDESC     "Edit the selected Pier\nEdit the selected Pier"
-    ID_DELETE               "Delete\nDelete"
-    ID_INSERT               "Insert Span\nInsert Span"
-    ID_INSERT_SPAN          "Insert Span\nInsert Span"
-    ID_INSERT_PIER          "Insert Span\nInsert Span"
-    ID_OPTIONS_HINTS        "Edit User Interface Hint Options\nHints"
-END
-
-STRINGTABLE 
-BEGIN
-    ID_FILE_NEW_LIBRARY     "Create a new Master Library File\nNew Master Library"
-    ID_RATING_SPEC          "Choose the load rating criteria for your project\nRating Criteria"
-    ID_PROJECT_RATING       "Edit the load rating criteria\nRating Criteria"
-    ID_OPTIONS_PLUGINS      "Manage PGSuper Importer and Exporter Plug-ins\nManage Plug-ins"
+    ID_CONSTRUCTION_LOADS   "Add permanent construction loads for stay-in-place forms or other construction materials\nConstruction Loads"
 END
 
 #endif    // English (U.S.) resources

@@ -27,7 +27,7 @@
 #include <IFace\AnalysisResults.h>
 #include "ReportNotes.h"
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -76,7 +76,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             IDisplayUnits* pDisplayUnits) const;
+                             IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -129,7 +129,7 @@ public:
 //
 
 template <class M,class T>
-rptRcTable* CreateUserLoadHeading(const char* strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDisplayUnits,const T& unitT)
+rptRcTable* CreateUserLoadHeading(const char* strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    ColumnIndexType nCols = 6;
    if ( analysisType == pgsTypes::Envelope )

@@ -24,6 +24,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "PGSuper.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -34,7 +35,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 
 #include <PgsExt\BridgeDescription.h>
@@ -365,7 +366,7 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
 
       sink->OnChanged(dispObj);
    }
-   else if ( lHint == HINT_UPDATEERROR )
+   else if ( lHint == EAF_HINT_UPDATEERROR )
    {
       CString* pmsg = (CString*)pHint;
       m_ErrorMsg = *pmsg;
@@ -676,7 +677,7 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    strategy->DoFill(true);
 
    // set the tool tip text
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -1276,7 +1277,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
          // tool tip
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
          CString strLocation  = FormatDimension(location_from_left_end,pDisplayUnits->GetSpanLengthUnit(),true);
 
@@ -1404,7 +1405,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
          // tool tip
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          CString strStartMagnitude = FormatDimension(load.m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
          CString strEndMagnitude   = FormatDimension(load.m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
          CString strStartLocation  = FormatDimension(wstart_loc-start_lgth,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -1516,7 +1517,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
          // tool tip
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
          CString strLocation  = FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),true);
 
@@ -1947,7 +1948,7 @@ iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL,
    // Format the dimension text
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
    textBlock->SetText(strDimension);

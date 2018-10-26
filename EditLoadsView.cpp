@@ -30,7 +30,7 @@
 #include "EditDistributedLoadDlg.h"
 #include "EditMomentLoadDlg.h"
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <..\htmlhelp\HelpTopics.hh>
 
 #include "InsertDeleteLoad.h"
@@ -240,7 +240,7 @@ void CEditLoadsView::OnEditLoad()
 
 void CEditLoadsView::UpdateUnits()
 {
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    if (m_bUnitsSI)

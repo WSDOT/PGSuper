@@ -24,6 +24,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "pgsuper.h"
 #include "PGSuperDoc.h"
 #include "FactorOfSafetyView.h"
@@ -31,7 +32,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
@@ -137,7 +138,7 @@ void CFactorOfSafetyView::UpdateUnits()
    delete m_pYFormat;
 
    // Set up the unit formatters for the X and Y axes
-   GET_IFACE2(m_pBroker,IDisplayUnits,pUnits);
+   GET_IFACE2(m_pBroker,IEAFDisplayUnits,pUnits);
 
    // first x axis
    const unitmgtLengthData& rlen = pUnits->GetSpanLengthUnit();
@@ -329,7 +330,7 @@ void CFactorOfSafetyView::OnInitialUpdate()
 
 void CFactorOfSafetyView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
-   if ( lHint == HINT_UPDATEERROR )
+   if ( lHint == EAF_HINT_UPDATEERROR )
    {
       CString* pmsg = (CString*)pHint;
       m_ErrorMsg = *pmsg;

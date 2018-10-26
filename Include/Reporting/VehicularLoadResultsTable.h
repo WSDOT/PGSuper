@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -77,10 +77,10 @@ public:
                              const std::string& strLLName,VehicleIndexType vehicleIndex,
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,
-                             IDisplayUnits* pDisplayUnits) const;
+                             IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
-   static void ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IDisplayUnits* pDisplayUnits);
+   static void ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IEAFDisplayUnits* pDisplayUnits);
 
 protected:
    // GROUP: DATA MEMBERS

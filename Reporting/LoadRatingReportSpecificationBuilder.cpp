@@ -31,7 +31,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CLoadRatingReportSpecificationBuilder::CLoadRatingReportSpecificationBuilder(IBroker* pBroker) :
-CSpanGirderReportSpecificationBuilder(pBroker)
+CGirderReportSpecificationBuilder(pBroker)
 {
 }
 
@@ -50,12 +50,12 @@ boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::C
       pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special)
       )
    {
-      return CSpanGirderReportSpecificationBuilder::CreateReportSpec(rptDesc,pRptSpec);
+      return CGirderReportSpecificationBuilder::CreateReportSpec(rptDesc,pRptSpec);
    }
    else
    {
-      AfxMessageBox("No rating types defined. Select Project | Rating Criteria to select rating types");
-     return boost::shared_ptr<CReportSpecification>();
+      AfxMessageBox("No rating types defined. Select Project | Load Rating Options to select rating types");
+      return boost::shared_ptr<CReportSpecification>();
    }
 }
 
@@ -70,11 +70,11 @@ boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::C
       pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special)
       )
    {
-      return CSpanGirderReportSpecificationBuilder::CreateDefaultReportSpec(rptDesc);
+      return CGirderReportSpecificationBuilder::CreateDefaultReportSpec(rptDesc);
    }
    else
    {
-      AfxMessageBox("No rating types defined. Select Project | Rating Criteria to select rating types");
-     return boost::shared_ptr<CReportSpecification>();
+      AfxMessageBox("No rating types defined. Select Project | Load Rating Options to select rating types");
+      return boost::shared_ptr<CReportSpecification>();
    }
 }

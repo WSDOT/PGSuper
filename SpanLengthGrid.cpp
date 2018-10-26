@@ -28,7 +28,7 @@
 #include "PGSuperUnits.h"
 #include "SpanLengthGrid.h"
 #include <Units\Measure.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -128,7 +128,7 @@ void CSpanLengthGrid::CustomInit()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
    CString cv = "Length (" + CString(um.UnitTag().c_str()) + ")";
 	SetStyleRange(CGXRange(0,1), CGXStyle()
@@ -187,7 +187,7 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // remove all but top row
    ROWCOL rows = GetRowCount();
@@ -230,7 +230,7 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<double>& vSpanLengths)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
 

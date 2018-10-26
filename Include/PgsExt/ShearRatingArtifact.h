@@ -24,6 +24,7 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\PointOfInterest.h>
+#include <PgsExt\StirrupCheckAtPoisArtifact.h>
 
 /*****************************************************************************
 CLASS 
@@ -100,6 +101,9 @@ public:
    void SetLiveLoadShear(Float64 Vllim);
    Float64 GetLiveLoadShear() const;
 
+   void SetLongReinfShearArtifact(const pgsLongReinfShearArtifact& artifact);
+   const pgsLongReinfShearArtifact& GetLongReinfShearArtifact() const;
+
    Float64 GetRatingFactor() const;
 
 protected:
@@ -127,4 +131,5 @@ protected:
    Float64 m_Vdc;
    Float64 m_Vdw;
    Float64 m_Vllim;
+   pgsLongReinfShearArtifact m_LongReinfShearArtifact;
 };

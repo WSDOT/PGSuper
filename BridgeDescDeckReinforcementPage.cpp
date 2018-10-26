@@ -30,7 +30,7 @@
 #include "PGSuperDoc.h"
 #include <MFCTools\CustomDDX.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -67,7 +67,7 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX, IDC_TOP_COVER,    IDC_TOP_COVER_UNIT,    m_RebarData.TopCover,    pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_COVER, IDC_BOTTOM_COVER_UNIT, m_RebarData.BottomCover, pDisplayUnits->GetComponentDimUnit() );

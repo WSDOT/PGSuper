@@ -27,7 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -71,7 +71,7 @@ CVehicularLoadResultsTable& CVehicularLoadResultsTable::operator= (const CVehicu
 
 //======================== OPERATIONS =======================================
 rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LiveLoadType llType,const std::string& strLLName,VehicleIndexType vehicleIndex, pgsTypes::AnalysisType analysisType,
-                                              bool bReportTruckConfig,IDisplayUnits* pDisplayUnits) const
+                                              bool bReportTruckConfig,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -79,6 +79,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -106,6 +107,12 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
       nCols += 7;
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Live Load Results for " + strLLName);
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Set up table headings
    ColumnIndexType col = 0;
@@ -312,7 +319,7 @@ void CVehicularLoadResultsTable::MakeAssignment(const CVehicularLoadResultsTable
    MakeCopy( rOther );
 }
 
-void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IDisplayUnits* pDisplayUnits)
+void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IEAFDisplayUnits* pDisplayUnits)
 {
    if ( config.size() == 0 )
    {

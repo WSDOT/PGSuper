@@ -25,7 +25,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
@@ -66,7 +66,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

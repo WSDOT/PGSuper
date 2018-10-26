@@ -30,7 +30,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\CrackedSection.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -47,12 +47,12 @@ CLASS
 ****************************************************************************/
 
 void write_cracked_section_table(IBroker* pBroker,
-                             IDisplayUnits* pDisplayUnits,
+                             IEAFDisplayUnits* pDisplayUnits,
                              SpanIndexType span,
                              GirderIndexType gdr,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
-                             bool bPositiveMoment);
+                             bool bIncludeNegMoment);
 
 CCrackedSectionDetailsChapterBuilder::CCrackedSectionDetailsChapterBuilder()
 {
@@ -66,10 +66,28 @@ LPCTSTR CCrackedSectionDetailsChapterBuilder::GetName() const
 rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -95,26 +113,42 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
       }
    }
 
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "Positive Moment Cracked Section Analysis Details" << rptNewLine;
+   *pPara << Sub2("Y","t") << " = Distance from top of section to neutral axis" << rptNewLine;
+   *pPara << Sub2("Y","b") << " = Distance from bottom of section to neutral axis" << rptNewLine;
+   *pPara << Sub2("I","cr") << " = Moment of inertia of cracked section about neutral axis" << rptNewLine;
 
-
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    std::vector<pgsPointOfInterest> vPoi;
 
-   vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3, span, girder, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
-   write_cracked_section_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter,true);
-
-   if ( pBridge->ProcessNegativeMoments(span) )
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
    {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      *pChapter << pPara;
-      *pPara << "Negative Moment Cracked Section Analysis Details" << rptNewLine;
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
 
-      write_cracked_section_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, false);
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      {
+         rptParagraph* pPara;
+         if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
+         {
+            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pPara;
+            std::ostringstream os;
+            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            pPara->SetName( os.str().c_str() );
+            (*pPara) << pPara->GetName() << rptNewLine;
+         }
+
+         vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3, spanIdx,gdrIdx, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
+         write_cracked_section_table(pBroker,pDisplayUnits, spanIdx,gdrIdx, vPoi, pChapter, pBridge->ProcessNegativeMoments(spanIdx));
+      }
    }
 
    return pChapter;
@@ -126,12 +160,12 @@ CChapterBuilder* CCrackedSectionDetailsChapterBuilder::Clone() const
 }
 
 void write_cracked_section_table(IBroker* pBroker,
-                             IDisplayUnits* pDisplayUnits,
+                             IEAFDisplayUnits* pDisplayUnits,
                              SpanIndexType span,
                              GirderIndexType gdr,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
-                             bool bPositiveMoment)
+                             bool bIncludeNegMoment)
 {
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
@@ -142,25 +176,51 @@ void write_cracked_section_table(IBroker* pBroker,
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
    // Setup the table
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4,"");
-   table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(bIncludeNegMoment ? 7 : 4,"");
 
    *pPara << table << rptNewLine;
 
    ColumnIndexType col = 0;
 
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   table->SetNumberOfHeaderRows(2);
+
+   table->SetRowSpan(0,0,2);
+   table->SetRowSpan(1,0,-1);
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,col++) << COLHDR(Sub2("Y","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+
+   table->SetColumnSpan(0,1,3);
+   table->SetColumnSpan(0,2,-1);
+   table->SetColumnSpan(0,3,-1);
+   (*table)(0,1) << "Positive Moment";
+   (*table)(1,col++) << COLHDR(Sub2("Y","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(1,col++) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(1,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+
+   if ( bIncludeNegMoment )
+   {
+      table->SetColumnSpan(0,4,3);
+      table->SetColumnSpan(0,5,-1);
+      table->SetColumnSpan(0,6,-1);
+      (*table)(0,4) << "Negative Moment";
+      (*table)(1,col++) << COLHDR(Sub2("Y","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(1,col++) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(1,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   }
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_i,    pDisplayUnits->GetMomentOfInertiaUnit(),       false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
@@ -173,7 +233,7 @@ void write_cracked_section_table(IBroker* pBroker,
    {
       const pgsPointOfInterest& poi = *i;
       CRACKEDSECTIONDETAILS csd;
-      pCrackedSection->GetCrackedSectionDetails(poi,bPositiveMoment,&csd);
+      pCrackedSection->GetCrackedSectionDetails(poi,true,&csd);
 
       Float64 h = pSectProp->GetHg(pgsTypes::BridgeSite3,poi);
 
@@ -186,6 +246,16 @@ void write_cracked_section_table(IBroker* pBroker,
       (*table)(row,col++) << dim.SetValue( Yt );
       (*table)(row,col++) << dim.SetValue( Yb );
       (*table)(row,col++) << mom_i.SetValue( csd.Icr );
+
+      if ( bIncludeNegMoment )
+      {
+         pCrackedSection->GetCrackedSectionDetails(poi,false,&csd);
+         Yt = csd.c;
+         Yb = h - Yt;
+         (*table)(row,col++) << dim.SetValue( Yt );
+         (*table)(row,col++) << dim.SetValue( Yb );
+         (*table)(row,col++) << mom_i.SetValue( csd.Icr );
+      }
 
       row++;
    }

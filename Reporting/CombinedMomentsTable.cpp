@@ -28,7 +28,7 @@
 #include <PgsExt\PointOfInterest.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
@@ -74,7 +74,7 @@ CCombinedMomentsTable& CCombinedMomentsTable::operator= (const CCombinedMomentsT
 //======================== OPERATIONS =======================================
 void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDisplayUnits,
+                                         IEAFDisplayUnits* pDisplayUnits,
                                          pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -82,6 +82,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
    else
@@ -124,6 +125,13 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    RowIndexType row = CreateCombinedLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,"Moment",false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    *p << p_table;
+
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    int row2 = 1;
    rptRcTable* p_table2 = 0;
@@ -176,6 +184,13 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
       GET_IFACE2(pBroker,IStageMap,pStageMap);
       p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
+
+      if ( span == ALL_SPANS )
+      {
+         p_table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         p_table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      }
+
       row2 = ConfigureLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table2,false,bDesign,bPermit,bRating,true,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
       *p << p_table2;
    }
@@ -218,12 +233,12 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
 
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
@@ -231,9 +246,9 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          else
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, SimpleSpan );
-            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, SimpleSpan );
+            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, SimpleSpan );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, SimpleSpan );
-            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, SimpleSpan );
+            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, SimpleSpan );
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, SimpleSpan, &minServiceI, &maxServiceI );
          }
       }
@@ -243,12 +258,12 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
 
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
@@ -257,9 +272,9 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             BridgeAnalysisType bat = ( analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, bat );
-            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, bat );
+            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, bat );
-            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, bat );
+            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
 
             pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
          }
@@ -271,12 +286,12 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
             minDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
-            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
-            minDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
+            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MaxSimpleContinuousEnvelope );
+            minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, MinSimpleContinuousEnvelope );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
-            minDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
+            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
+            minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
 
             if ( bDesign )
             {
@@ -339,9 +354,9 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          {
             BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
             maxDCinc = pForces2->GetMoment( lcDC, stage, vPoi, ctIncremental, bat );
-            maxDWinc = pForces2->GetMoment( lcDW, stage, vPoi, ctIncremental, bat );
+            maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, bat );
-            maxDWcum = pForces2->GetMoment( lcDW, stage, vPoi, ctCummulative, bat );
+            maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
 
             if ( bDesign )
             {

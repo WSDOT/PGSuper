@@ -3,11 +3,6 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>Status_Center.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Alerts.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -18,7 +13,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
+			<name>Status_Center.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>GirderConnectionError.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Chapter.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

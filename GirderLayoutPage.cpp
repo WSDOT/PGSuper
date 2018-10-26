@@ -40,7 +40,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -139,7 +139,7 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
 
@@ -554,7 +554,7 @@ void CSpanGirderLayoutPage::CacheEndSpacing()
    // cache the reference girder offset
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CDataExchange dx(this,TRUE);
    DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
@@ -635,7 +635,7 @@ void CSpanGirderLayoutPage::RestoreEndSpacing()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(TRUE);
 
@@ -820,7 +820,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
          // for the entire bridge???
          CComPtr<IBroker> broker;
          EAFGetBroker(&broker);
-         GET_IFACE2(broker,IDisplayUnits,pDisplayUnits);
+         GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
@@ -1014,7 +1014,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
    {

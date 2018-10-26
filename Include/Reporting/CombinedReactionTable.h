@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -76,7 +76,7 @@ public:
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
-                      IDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 

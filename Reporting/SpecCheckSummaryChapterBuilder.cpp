@@ -34,7 +34,7 @@ CLASS
 #include <PgsExt\GirderArtifactTool.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>

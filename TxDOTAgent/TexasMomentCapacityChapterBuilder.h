@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TEXASMOMENTCAPACITYCHAPTERBUILDER_H_
 #define INCLUDED_TEXASMOMENTCAPACITYCHAPTERBUILDER_H_
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

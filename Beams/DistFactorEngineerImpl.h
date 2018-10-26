@@ -149,7 +149,7 @@ void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,StatusGroupIDType st
 	m_pBroker = pBroker;
 	m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidRefinedAnalysis = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
 }
 
@@ -590,7 +590,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType span,GirderIndexType gd
 template <class T>
 void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const lrfdXRangeOfApplicability& e)
 {
-   GET_IFACE(IStatusCenter,     pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,     pStatusCenter);
 
    const char* msg = "Live Load Distribution Factors could not be calculated";
    pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,msg);
@@ -676,7 +676,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
    GET_IFACE(IGirder,pGirder);
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(IBarriers,         pBarriers);
+   GET_IFACE(IBarriers, pBarriers);
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
 
    pDetails->Nb = pBridge->GetGirderCount(span);
 
@@ -687,6 +688,11 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    pDetails->Method = pSpecEntry->GetLiveLoadDistributionMethod();
 
+   Float64 dist_to_section_along_cl_span, curb_to_curb;
+   Uint32 Nl = pLLDF->GetNumberOfDesignLanesEx(span,&dist_to_section_along_cl_span,&curb_to_curb);
+   pDetails->wCurbToCurb = curb_to_curb;
+   pDetails->Nl = Nl;
+
    // Get sampling locations for values. This will occur at max curb width
    Float64 span_length = pBridge->GetSpanLength(span,gdr);
 
@@ -694,24 +700,11 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
    Float64 loc1 = span_fraction_for_girder_spacing*span_length;
    Float64 loc2 = (1-span_fraction_for_girder_spacing)*span_length;
 
-   Float64 gdr_end_dist = pBridge->GetGirderStartConnectionLength(span,gdr);
-   loc1 += gdr_end_dist;
-   loc2 += gdr_end_dist;
-
-   Float64 wcc1 = pBridge->GetCurbToCurbWidth(pgsPointOfInterest(span,gdr,loc1));
-   Float64 wcc2 = pBridge->GetCurbToCurbWidth(pgsPointOfInterest(span,gdr,loc2));
-
    Float64 ctrl_loc_from_gdr;
-   if (IsEqual(wcc1,wcc2) || wcc2 < wcc1)
-   {
-      ctrl_loc_from_gdr     = loc1;
-      pDetails->wCurbToCurb = wcc1;
-   }
+   if ( dist_to_section_along_cl_span <= pBridge->GetSpanLength(span) )
+      ctrl_loc_from_gdr = loc1;
    else
-   {
-      ctrl_loc_from_gdr     = loc2;
-      pDetails->wCurbToCurb = wcc2;
-   }
+      ctrl_loc_from_gdr = loc2;
 
    pgsPointOfInterest ctrl_poi(span,gdr,ctrl_loc_from_gdr);
 
@@ -726,7 +719,6 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
 
    // Lane info
    pDetails->wLane = lrfdUtility::GetDesignLaneWidth( pDetails->wCurbToCurb );
-   pDetails->Nl    = lrfdUtility::GetNumDesignLanes(  pDetails->wCurbToCurb);
 
    // overhangs
    if(pBridge->GetDeckType() == pgsTypes::sdtNone)

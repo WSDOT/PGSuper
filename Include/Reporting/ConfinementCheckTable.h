@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -67,7 +67,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                             IDisplayUnits* pDisplayUnits,
+                             IEAFDisplayUnits* pDisplayUnits,
                              pgsTypes::Stage stage) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

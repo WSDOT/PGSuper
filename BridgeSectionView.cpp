@@ -41,7 +41,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 
 #include <GraphicsLib\GraphTool.h>
@@ -464,7 +464,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
    pDoc->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
 
@@ -610,7 +610,7 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pdisp_units);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
    const unitStationFormat& station_format = pdisp_units->GetStationFormat();
    CString strTitle;
    CString strStation = FormatStation(station_format,m_pFrame->GetCurrentCutLocation());
@@ -761,7 +761,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 //         doText2.CoCreateInstance(CLSID_TextBlock);
 //         doText2->SetPosition(topCenter);
 //
-//         GET_IFACE2(pBroker,IDisplayUnits,pdisp_units);
+//         GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
 //         double x,y;
 //         topCenter->get_X(&x);
 //         topCenter->get_Y(&y);
@@ -796,7 +796,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1170,7 +1170,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    double distFromStartOfSpan   = cut_location - pBridge->GetPierStation(spanIdx);
 
    // get length unit so section can be labelled
-   GET_IFACE2(pBroker,IDisplayUnits,pdisp_units);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
    const unitmgtLengthData& rlen = pdisp_units->GetXSectionDimUnit();
 
    //

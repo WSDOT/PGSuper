@@ -39,6 +39,7 @@
 #include <IFace\Artifact.h>
 #include "StrandDesignTool.h"
 #include "DesignCodes.h"
+#include "LoadRater.h" // friend so it can access some private functions
 
 // LOCAL INCLUDES
 //
@@ -282,6 +283,8 @@ private:
 
    // round slab offset to acceptable value
    Float64 RoundSlabOffset(Float64 offset);
+
+   friend pgsLoadRater;
 
 public:
    // GROUP: DEBUG

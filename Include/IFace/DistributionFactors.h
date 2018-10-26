@@ -50,7 +50,7 @@ COPYRIGHT
 // MISCELLANEOUS
 //
 class rptChapter;
-struct IDisplayUnits;
+struct IEAFDisplayUnits;
 
 /*****************************************************************************
 INTERFACE
@@ -85,9 +85,10 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V) = 0;
    virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints) = 0;
 
-   virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
    virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile) = 0;
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType span) = 0;
+   virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType span,Float64* pDistToSection,Float64* pCurbToCurb) = 0;
    //---------------------------------------------------------------------
    // Get all types of factors
    virtual bool GetDFResultsEx(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,

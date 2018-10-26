@@ -30,7 +30,7 @@
 #include <MfcTools\CogoDDX.h>
 #include <MfcTools\CustomDDX.h>
 #include "htmlhelp\HelpTopics.hh"
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -129,7 +129,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       m_Grid.SetCurveData(m_AlignmentData.HorzCurves);
    }
 
-   GET_IFACE2(GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    DDX_Station(pDX,  IDC_REFSTATION, m_AlignmentData.RefStation, pDisplayUnits->GetStationFormat() );
    DDX_UnitValue(pDX,IDC_NORTHING,m_AlignmentData.yRefPoint,pDisplayUnits->GetAlignmentLengthUnit());
    DDX_UnitValue(pDX,IDC_EASTING, m_AlignmentData.xRefPoint,pDisplayUnits->GetAlignmentLengthUnit());

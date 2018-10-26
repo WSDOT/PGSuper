@@ -25,7 +25,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Allowables.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -2365,7 +2365,7 @@ void pgsStrandDesignTool::SetMinimumFinalMzEccentricity(Float64 ecc)
 
 Float64 pgsStrandDesignTool::GetMinimumReleaseStrength() const
 {
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0,unitMeasure::MPa) 
                                      : ::ConvertToSysUnits( 4.0,unitMeasure::KSI); // minimum per LRFD 5.4.2.1
 }
@@ -2379,14 +2379,14 @@ Float64 pgsStrandDesignTool::GetMaximumReleaseStrength() const
 
 Float64 pgsStrandDesignTool::GetMinimumConcreteStrength() const
 {
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(34.5,unitMeasure::MPa) 
                                      : ::ConvertToSysUnits( 5.0,unitMeasure::KSI); // agreed by wsdot and txdot
 }
 
 Float64 pgsStrandDesignTool::GetMaximumConcreteStrength() const
 {
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105.0,unitMeasure::MPa) 
                                      : ::ConvertToSysUnits( 15.0,unitMeasure::KSI);
 }

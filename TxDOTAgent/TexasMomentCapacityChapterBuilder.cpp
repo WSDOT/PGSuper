@@ -28,7 +28,7 @@
 #include <Reporting\MomentCapacityParagraphBuilder.h>
 #include "TexasMomentCapacityChapterBuilder.h"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
 
@@ -66,7 +66,7 @@ rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRpt
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

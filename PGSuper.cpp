@@ -26,6 +26,17 @@
 #include "stdafx.h"
 #include "PGSuper.h"
 
+// cause the resource control values to be defined
+#define APSTUDIO_INVOKED
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#include "resource.h"       // main symbols 
+
+#define BRIDGELINK_PLUGIN_COMMAND_BASE 0xC000 // 49152 (this gives us about 8100 plug commands)
+#if BRIDGELINK_PLUGIN_COMMAND_BASE < _APS_NEXT_COMMAND_VALUE
+#error "BridgeLink Application Plugins: Command IDs interfere with plug-in commands, change the plugin command base ID"
+#endif
+
 #include "PGSuperTemplateManager.h"
 
 #include "PGSuperAppPlugin.h"
@@ -53,7 +64,7 @@
 #include "PGSuperException.h"
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Test1250.h>
 
 #include "ScreenSizeDlg.h"
@@ -72,21 +83,6 @@ static char THIS_FILE[] = __FILE__;
 
 class CAboutDlg; // defined at bottom of file
 
-void save_doc(CDocument* pDoc,void* pStuff)
-{
-   if ( pDoc->IsModified() )
-         pDoc->DoFileSave();
-}
-
-void edit_bridge(CDocument* pDoc,void* pStuff)
-{
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)pDoc;
-      pPgsDoc->EditBridgeDescription(*((int*)pStuff));
-   }
-}
-
 // block multithreaded passes through exception handler
 static bool sis_handling_neg_span = false;
 
@@ -96,7 +92,6 @@ static bool sis_handling_neg_span = false;
 BEGIN_MESSAGE_MAP(CPGSuperApp, CEAFApp)
 	//{{AFX_MSG_MAP(CPGSuperApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-	ON_COMMAND(ID_VIEW_OPTIONS, OnProgramSettings)
 	ON_COMMAND(ID_HELP_JOINARPLIST, OnHelpJoinArpList)
 	ON_COMMAND(ID_HELP_INET_WSDOT, OnHelpInetWsdot)
 	ON_COMMAND(ID_HELP_INET_PGSUPER, OnHelpInetPgsuper)
@@ -173,12 +168,12 @@ BOOL CPGSuperApp::CreateApplicationPlugins()
    // Application plugin for regular PGSuper template based documents
    CComObject<CPGSuperAppPlugin>* pPGSuperAppPlugin;
    CComObject<CPGSuperAppPlugin>::CreateInstance(&pPGSuperAppPlugin);
-   GetAppPluginManager()->AddPlugin(pPGSuperAppPlugin);
+   GetAppPluginManager()->AddPlugin(CLSID_PGSuperAppPlugin,pPGSuperAppPlugin);
 
    // Application plugin for PGSuper documents that are created from a PGSuper Project Importer plug-in
    CComObject<CPGSuperProjectImporterAppPlugin>* pPGSuperProjectImporterDocPlugin;
    CComObject<CPGSuperProjectImporterAppPlugin>::CreateInstance(&pPGSuperProjectImporterDocPlugin);
-   GetAppPluginManager()->AddPlugin(pPGSuperProjectImporterDocPlugin);
+   GetAppPluginManager()->AddPlugin(CLSID_PGSuperProjectImporterDocumentPlugin,pPGSuperProjectImporterDocPlugin);
 
    //CComObject<CPGSpliceAppPlugin>* pPGSpliceAppPlugin;
    //CComObject<CPGSpliceAppPlugin>::CreateInstance(&pPGSpliceAppPlugin);
@@ -188,7 +183,7 @@ BOOL CPGSuperApp::CreateApplicationPlugins()
    CComPtr<IEAFAppPlugin> pLibraryAppPlugin;
    HRESULT hr = pLibraryAppPlugin.CoCreateInstance(CLSID_LibraryAppPlugin);
    ATLASSERT(SUCCEEDED(hr));
-   GetAppPluginManager()->AddPlugin(pLibraryAppPlugin);
+   GetAppPluginManager()->AddPlugin(CLSID_LibraryAppPlugin,pLibraryAppPlugin);
 
    return TRUE;
 }
@@ -246,16 +241,39 @@ BOOL CPGSuperApp::InitInstance()
    strTipFile.Replace("RegFreeCOM\\Release\\","");
 #endif
    EnableTipOfTheDay(strTipFile); // must be enabled before InitInstance
-   
+
+   // Do this before InitInstace...
+   // Set the first command ID for plugins that add commands to the interface
+   GetPluginCommandManager()->SetBaseCommandID(BRIDGELINK_PLUGIN_COMMAND_BASE);
+
+
    if ( !CEAFApp::InitInstance() )
       return FALSE;
 
+
    // Update any files that need to be cached from a web server
    // This needs to be generalized and moved into the base class
-   UpdateCache();
+   // Don't update if we are testing
+   if (!m_CommandLineInfo.m_bDo1250Test && !m_CommandLineInfo.m_DoTxCadReport)
+      UpdateCache();
 
    // user can double click on a file to open
    EnableShellOpen();
+
+   // Help file defaults to the location of the application
+   // In our development environment, it is in the \ARP\PGSuper folder
+   //
+   // Change help file name
+   CString strHelpFile(m_pszHelpFilePath);
+#if defined _DEBUG
+   strHelpFile.Replace("RegFreeCOM\\Debug\\","");
+#else
+   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
+   // ok... the replace will fail and the string wont be altered.
+   strHelpFile.Replace("RegFreeCOM\\Release\\","");
+#endif
+   free((void*)m_pszHelpFilePath);
+   m_pszHelpFilePath = _tcsdup(_T(strHelpFile));
 
    // command line
    // app.exe <AppPluginName> /Test <plugin defined test parameters>
@@ -274,35 +292,30 @@ BOOL CPGSuperApp::InitInstance()
    //////////////////////// PGSUPER Doc Specific initialization ////////////////////
    //
    //
-   // Do some special processing for 12-50 test cases and bail from showing windows.
+   // Do some special processing for 12-50 test cases
    if (m_CommandLineInfo.m_bDo1250Test)
    {
       Process1250Testing(m_CommandLineInfo);
-      return FALSE;
    }
    else if (m_CommandLineInfo.m_DoTxCadReport)
    {
       ProcessTxDotCad(m_CommandLineInfo);
-      return FALSE;
    }
    //
    //
    //////////////////////// PGSUPER Doc Specific initialization ////////////////////
 
-   // Help file defaults to the location of the application
-   // In our development environment, it is in the \ARP\PGSuper folder
-   //
-   // Change help file name
-   CString strHelpFile(m_pszHelpFilePath);
-#if defined _DEBUG
-   strHelpFile.Replace("RegFreeCOM\\Debug\\","");
-#else
-   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
-   strHelpFile.Replace("RegFreeCOM\\Release\\","");
-#endif
-   free((void*)m_pszHelpFilePath);
-   m_pszHelpFilePath = _tcsdup(_T(strHelpFile));
+
+   // We are doing command line processing, and it should have already happened...
+   // At this point, the application is done running, but we don't want to return FALSE
+   // because that says application initialization failed which isn't the case.
+   // Close the documents and post a WM_QUITE message and return TRUE. This will cause
+   // the application to close normally and to do all of its necessary cleanup
+   if ( m_CommandLineInfo.m_CommandLineMode )
+   {
+      CloseAllDocuments(TRUE);
+      AfxPostQuitMessage(0);
+   }
    
 	return TRUE;
 }
@@ -399,12 +412,13 @@ void CPGSuperApp::RegistryInit()
    int iDefaultCacheUpdateFrequency   = GetLocalMachineInt(   _T("Settings"),_T("CacheUpdateFrequency"),  2);
 
    CString strDefaultUserTemplateFolder     = GetLocalMachineString(_T("Options"),_T("UserTemplateLocation"), _T("C:\\"));
-   CString strDefaultCompany                = GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
-   CString strDefaultEngineer               = GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
    CString strDefaultCatalogServer          = GetLocalMachineString(_T("Options"),_T("CatalogServer"),_T("WSDOT"));
    CString strDefaultPublisher              = GetLocalMachineString(_T("Options"),_T("Publisher"),_T("WSDOT"));
    CString strDefaultLocalMasterLibraryFile = GetLocalMachineString(_T("Options"),_T("MasterLibraryLocal"),     GetDefaultMasterLibraryFile());
    CString strLocalWorkgroupTemplateFolder  = GetLocalMachineString(_T("Options"),_T("WorkgroupTemplatesLocal"),GetDefaultWorkgroupTemplateFolder());
+
+   CString strDefaultCompany                = GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
+   CString strDefaultEngineer               = GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
 
    // NOTE: Settings is an MFC created Registry section
 
@@ -516,8 +530,6 @@ void CPGSuperApp::RegistryExit()
    CEAFApp::RegistryExit();
 
 
-   VERIFY(WriteProfileString( _T("Settings"),_T("GirderLabelFormat"),pgsGirderLabel::UseAlphaLabel() ? _T("Alpha") : _T("Numeric") ));
-
    // Options settings
    VERIFY(WriteProfileString(_T("Options"), _T("CompanyName"), m_CompanyName));
 
@@ -563,11 +575,6 @@ void CPGSuperApp::OnScreenSize()
 }
 //                                                                                        //
 ///////////////////// back door functions to make managing PGSuper easier //////////////////
-
-void CPGSuperApp::OnProgramSettings() 
-{
-   OnProgramSettings(FALSE);
-}
 
 void CPGSuperApp::OnProgramSettings(BOOL bFirstRun) 
 {
@@ -647,74 +654,11 @@ CString CPGSuperApp::GetEngineerCompany()
    return m_CompanyName;
 }
 
-void notify_error(CDocument* pDoc,void* pStuff)
-{
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)pDoc;
-      pPgsDoc->OnUpdateError(*((CString*)pStuff));
-   }
-}
-
-void log_error(CDocument* pDoc,void* pStuff)
-{
-   CXShutDown* pXShutDown = (CXShutDown*)pStuff;
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)pDoc;
-
-      CComPtr<IBroker> pBroker;
-      pPgsDoc->GetBroker(&pBroker);
-
-      GET_IFACE2( pBroker, IProjectLog, pLog );
-
-      std::string error_message;
-      pXShutDown->GetErrorMessage( &error_message );
-
-      CString msg;
-      msg.Format("%s\nFile : %s\nLine : %d\n", error_message.c_str(), pXShutDown->GetFile().c_str(), pXShutDown->GetLine() );
-
-      pLog->LogMessage( msg );
-   }
-}
-
 LRESULT CPGSuperApp::ProcessWndProcException(CException* e, const MSG* pMsg) 
 {
    LRESULT lResult = 0L;
 
-	if ( e->IsKindOf(RUNTIME_CLASS(CXShutDown) ) )
-   {
-      CXShutDown* pXShutDown = (CXShutDown*)e;
-      std::string error_msg;
-      pXShutDown->GetErrorMessage( &error_msg );
-
-      CString msg1;
-      AfxFormatString1( msg1, IDS_E_PROBPERSISTS, "log" ); 
-      CString msg2;
-      AfxFormatString2( msg2, pXShutDown->AttemptSave() ? IDS_FATAL_MSG_SAVE : IDS_FATAL_MSG_NOSAVE, error_msg.c_str(), msg1 );
-      int retval = AfxMessageBox( msg2, (pXShutDown->AttemptSave() ? MB_YESNO : MB_OK) | MB_ICONEXCLAMATION );
-      ForEachDoc(log_error,(void*)pXShutDown);
-      if ( retval == IDYES )
-      {
-         ForEachDoc( save_doc, NULL );
-      }
-
-      lResult = 1L;
-      AfxPostQuitMessage( 0 );
-   }
-   else if ( e->IsKindOf(RUNTIME_CLASS(CXUnwind) ) )
-   {
-      CXUnwind* pXUnwind = (CXUnwind*)e;
-      std::string error_msg;
-      pXUnwind->GetErrorMessage( &error_msg );
-      m_LastError = error_msg.c_str();
-      AfxMessageBox( error_msg.c_str(),  MB_OK | MB_ICONWARNING );
-
-
-      ForEachDoc( notify_error, (void*)&m_LastError );
-      lResult = 1L;
-   }
-   else if ( e->IsKindOf(RUNTIME_CLASS(CInternetException) ) )
+   if ( e->IsKindOf(RUNTIME_CLASS(CInternetException) ) )
    {
       lResult = 1L;
       AfxMessageBox("There was a critical error accessing the Master Library and Workgroup Templates on the Internet.\n\nPGSuper will use the generic libraries and templates that were installed with the application.\n\nUse File | Program Settings to reset the Master Library and Workgroup Templates to shared Internet resources at a later date.",MB_OK | MB_ICONEXCLAMATION);
@@ -724,26 +668,10 @@ LRESULT CPGSuperApp::ProcessWndProcException(CException* e, const MSG* pMsg)
    }
    else
    {
-      lResult = CWinApp::ProcessWndProcException(e, pMsg);
+      lResult = CEAFApp::ProcessWndProcException(e, pMsg);
    }
 
 	return lResult;
-}
-
-void CPGSuperApp::ForEachDoc(DocCallback pfn,void* pStuff)
-{
-   POSITION tplpos = theApp.GetFirstDocTemplatePosition();
-   while ( tplpos != NULL )
-   {
-      CDocTemplate* pTpl = theApp.GetNextDocTemplate( tplpos );
-
-      POSITION docpos = pTpl->GetFirstDocPosition();
-      while ( docpos != NULL )
-      {
-         CDocument* pDoc = pTpl->GetNextDoc( docpos );
-         (*pfn)(pDoc,pStuff);
-      }
-   }
 }
 
 CString CPGSuperApp::GetWsdotUrl()
@@ -1340,88 +1268,79 @@ bool create_txdot_file_names(const CString& output, CString* pErrFileName)
 void CPGSuperApp::Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo)
 {
    ASSERT(rCmdInfo.m_bDo1250Test);
-   CString inputFile(rCmdInfo.m_strFileName);
-   if (!inputFile.IsEmpty())
-   {
-      CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)OpenDocumentFile(rCmdInfo.m_strFileName);
-		if (pPgsDoc!=0)
-      {
-         CComPtr<IBroker> pBroker;
-         pPgsDoc->GetBroker(&pBroker);
-         GET_IFACE2( pBroker, ITest1250, ptst );
 
-         CString resultsfile, poifile, errfile;
-         if (create_test_file_names(rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))
+   // The document is opened when CEAFApp::InitInstance calls ProcessShellCommand
+   // Get the document
+   CEAFMainFrame* pMainFrame = (CEAFMainFrame*)AfxGetMainWnd();
+   CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)pMainFrame->GetDocument();
+
+   CComPtr<IBroker> pBroker;
+   pPgsDoc->GetBroker(&pBroker);
+   GET_IFACE2( pBroker, ITest1250, ptst );
+
+   CString resultsfile, poifile, errfile;
+   if (create_test_file_names(rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))
+   {
+      try
+      {
+         if (!ptst->RunTest(rCmdInfo.m_SubdomainId, std::string(resultsfile), std::string(poifile)))
          {
-            try
-            {
-               if (!ptst->RunTest(rCmdInfo.m_SubdomainId, std::string(resultsfile), std::string(poifile)))
-               {
-                  CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
-                  ::AfxMessageBox(msg);
-               }
-            }
-            catch(const sysXBase& e)
-            {
-               std::string msg;
-               e.GetErrorMessage(&msg);
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
-            }
-            catch(CException* pex)
-            {
-               TCHAR   szCause[255];
-               CString strFormatted;
-               pex->GetErrorMessage(szCause, 255);
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
-               delete pex;
-            }
-            catch(CException& ex)
-            {
-               TCHAR   szCause[255];
-               CString strFormatted;
-               ex.GetErrorMessage(szCause, 255);
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
-            }
-            catch(const std::exception* pex)
-            {
-               std::string strMsg(pex->what());
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
-               delete pex;
-            }
-            catch(const std::exception& ex)
-            {
-                std::string strMsg(ex.what());
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
-            }
-            catch(...)
-            {
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Unknown Error running test for input file: "<<rCmdInfo.m_strFileName;
-            }
+            CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
+            ::AfxMessageBox(msg);
          }
-      }
-      else
-      {
-         CString msg = CString("Error - Opening test input file")+rCmdInfo.m_strFileName;
-         ::AfxMessageBox(msg);
-      }
-   }
-   else
-   {
-      ::AfxMessageBox("Error - Input file name must be specified on command line when Test option is used");
-   }
 
+         if ( pPgsDoc->IsModified() )
+            pPgsDoc->DoFileSave();
+      }
+      catch(const sysXBase& e)
+      {
+         std::string msg;
+         e.GetErrorMessage(&msg);
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
+      }
+      catch(CException* pex)
+      {
+         TCHAR   szCause[255];
+         CString strFormatted;
+         pex->GetErrorMessage(szCause, 255);
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         delete pex;
+      }
+      catch(CException& ex)
+      {
+         TCHAR   szCause[255];
+         CString strFormatted;
+         ex.GetErrorMessage(szCause, 255);
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+      }
+      catch(const std::exception* pex)
+      {
+         std::string strMsg(pex->what());
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         delete pex;
+      }
+      catch(const std::exception& ex)
+      {
+         std::string strMsg(ex.what());
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running test for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+      }
+      catch(...)
+      {
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Unknown Error running test for input file: "<<rCmdInfo.m_strFileName;
+      }
+   }
 }
 
 void CPGSuperApp::ProcessTxDotCad(const CPGSuperCommandLineInfo& rCmdInfo)
@@ -1429,98 +1348,88 @@ void CPGSuperApp::ProcessTxDotCad(const CPGSuperCommandLineInfo& rCmdInfo)
    ASSERT(rCmdInfo.m_DoTxCadReport);
 
 
-   if (rCmdInfo.m_TxGirder!=TXALLGIRDERS && rCmdInfo.m_TxGirder!=TXEIGIRDERS && (rCmdInfo.m_TxGirder<0 || rCmdInfo.m_TxGirder>27))
+   if (rCmdInfo.m_TxGirder != TXALLGIRDERS && 
+       rCmdInfo.m_TxGirder != TXEIGIRDERS && 
+       (rCmdInfo.m_TxGirder < 0 || 27 < rCmdInfo.m_TxGirder))
    {
       ::AfxMessageBox("Invalid girder specified on command line for TxDOT CAD report");
       return;
    }
 
-   if (rCmdInfo.m_TxSpan!=ALL_SPANS && rCmdInfo.m_TxSpan<0)
+   if (rCmdInfo.m_TxSpan != ALL_SPANS && rCmdInfo.m_TxSpan < 0)
    {
       ::AfxMessageBox("Invalid span specified on command line for TxDOT CAD report");
       return;
    }
 
-   CString inputFile(rCmdInfo.m_strFileName);
-   if (!inputFile.IsEmpty())
-   {
-      CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)OpenDocumentFile(rCmdInfo.m_strFileName);
-		if (pPgsDoc!=0)
-      {
-         CComPtr<IBroker> pBroker;
-         pPgsDoc->GetBroker(&pBroker);
-         GET_IFACE2( pBroker, ITest1250, ptst );
+   // The document is opened when CEAFApp::InitInstance calls ProcessShellCommand
+   // Get the document
+   CEAFMainFrame* pMainFrame = (CEAFMainFrame*)AfxGetMainWnd();
+   CPGSuperDoc* pPgsDoc = (CPGSuperDoc*)pMainFrame->GetDocument();
 
-         CString errfile;
-         if (create_txdot_file_names(rCmdInfo.m_TxOutputFile, &errfile))
+   CComPtr<IBroker> pBroker;
+   pPgsDoc->GetBroker(&pBroker);
+   GET_IFACE2( pBroker, ITest1250, ptst );
+
+   CString errfile;
+   if (create_txdot_file_names(rCmdInfo.m_TxOutputFile, &errfile))
+   {
+      try
+      {
+         if ( !pPgsDoc->DoTxDotCadReport(rCmdInfo.m_TxOutputFile, errfile, rCmdInfo) )
          {
-            try
-            {
-               if ( !pPgsDoc->DoTxDotCadReport(rCmdInfo.m_TxOutputFile, errfile, rCmdInfo) )
-               {
-                  CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
-                  ::AfxMessageBox(msg);
-               }
-            }
-            catch(const sysXBase& e)
-            {
-               std::string msg;
-               e.GetErrorMessage(&msg);
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
-            }
-            catch(CException* pex)
-            {
-               TCHAR   szCause[255];
-               CString strFormatted;
-               pex->GetErrorMessage(szCause, 255);
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
-               delete pex;
-            }
-            catch(CException& ex)
-            {
-               TCHAR   szCause[255];
-               CString strFormatted;
-               ex.GetErrorMessage(szCause, 255);
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
-            }
-            catch(const std::exception* pex)
-            {
-               std::string strMsg(pex->what());
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
-               delete pex;
-            }
-            catch(const std::exception& ex)
-            {
-                std::string strMsg(ex.what());
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
-            }
-            catch(...)
-            {
-               std::ofstream os;
-               os.open(errfile);
-               os <<"Unknown Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName;
-            }
+            CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
+            ::AfxMessageBox(msg);
          }
       }
-      else
+      catch(const sysXBase& e)
       {
-         CString msg = CString("Error - Opening test input file")+rCmdInfo.m_strFileName;
-         ::AfxMessageBox(msg);
+         std::string msg;
+         e.GetErrorMessage(&msg);
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
       }
-   }
-   else
-   {
-      ::AfxMessageBox("Error - Input file name must be specified on command line when TxDOT CAD report option is used");
+      catch(CException* pex)
+      {
+         TCHAR   szCause[255];
+         CString strFormatted;
+         pex->GetErrorMessage(szCause, 255);
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         delete pex;
+      }
+      catch(CException& ex)
+      {
+         TCHAR   szCause[255];
+         CString strFormatted;
+         ex.GetErrorMessage(szCause, 255);
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+      }
+      catch(const std::exception* pex)
+      {
+         std::string strMsg(pex->what());
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         delete pex;
+      }
+      catch(const std::exception& ex)
+      {
+          std::string strMsg(ex.what());
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+      }
+      catch(...)
+      {
+         std::ofstream os;
+         os.open(errfile);
+         os <<"Unknown Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName;
+      }
    }
 }
 
@@ -1557,7 +1466,7 @@ protected:
    CHyperLink m_BridgeSight;
 };
 
-CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIconA(IDR_MAINFRAME))
+CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIconA(IDR_MAINFRAME),IDD_ABOUTBOX)
 {
 	//{{AFX_DATA_INIT(CAboutDlg)
 	//}}AFX_DATA_INIT

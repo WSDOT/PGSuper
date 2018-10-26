@@ -72,7 +72,7 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 
 #include "StrandMoverImpl.h"

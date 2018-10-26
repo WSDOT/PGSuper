@@ -61,10 +61,12 @@ enum BridgeAnalysisType
 enum ProductForceType 
 { 
    pftGirder,
+   pftConstruction,
    pftSlab, 
    pftSlabPanel, 
    pftDiaphragm, 
    pftOverlay,
+   pftOverlayRating,
    pftSidewalk,
    pftTrafficBarrier, 
    pftUserDC, 
@@ -76,7 +78,8 @@ enum ProductForceType
 enum LoadingCombination
 { 
    lcDC, 
-   lcDW 
+   lcDW,
+   lcDWRating
 };
 
 enum CombinationType 
@@ -117,6 +120,8 @@ typedef struct OverlayLoad
    Float64 EndWcc; // curb to curb width
    Float64 EndLoad;
 } OverlayLoad;
+
+typedef OverlayLoad ConstructionLoad;
 
 typedef struct SlabLoad
 {
@@ -168,6 +173,9 @@ interface IProductLoads : IUnknown
 
    // overlay loads
    virtual void GetOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<OverlayLoad>* pOverlayLoads)=0;
+
+   // construction loads
+   virtual void GetConstructionLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ConstructionLoad>* pConstructionLoads)=0;
 
    // slab loads
    virtual void GetMainSpanSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<SlabLoad>* pSlabLoads)=0;

@@ -60,7 +60,7 @@
 #include <GeomModel\ShapeUtils.h>
 
 #include <IFace\DrawBridgeSettings.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
@@ -280,7 +280,7 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
 
 
       // remove our items from the status center
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
    }
 
@@ -553,14 +553,14 @@ bool CBridgeAgentImp::ValidateConcrete()
    }
 
    // Validate values   
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(ILimits,pLimits);
 
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
    bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
    Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    Float64 nwc_limit = GetNWCDensityLimit();
 
@@ -793,7 +793,7 @@ void CBridgeAgentImp::InvalidateUserLoads()
    m_bUserLoadsValidated = false;
 
    // remove our items from the status center
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_LoadStatusGroupID);
 }
 
@@ -824,7 +824,7 @@ void CBridgeAgentImp::ValidatePointLoads()
 {
    SpanIndexType num_spans = this->GetSpanCount();
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
    Uint32 num_pl = pUdl->GetPointLoadCount();
@@ -968,7 +968,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
 {
    SpanIndexType num_spans = this->GetSpanCount();
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
    Uint32 num_pl = pUdl->GetDistributedLoadCount();
@@ -1144,7 +1144,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
 {
    SpanIndexType num_spans = this->GetSpanCount();
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
    Uint32 num_pl = pUdl->GetMomentLoadCount();
@@ -1528,7 +1528,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                os << "The central angle of curve " << curveID << " is 0 or 180 degrees";
                std::string strMsg = os.str();
                pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
-               GET_IFACE(IStatusCenter,pStatusCenter);
+               GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
                strMsg += std::string("\nSee Status Center for Details");
                THROW_UNWIND(strMsg.c_str(),-1);
@@ -1579,7 +1579,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                      std::string strMsg = os.str();
                      
                      pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,0,strMsg.c_str());
-                     GET_IFACE(IStatusCenter,pStatusCenter);
+                     GET_IFACE(IEAFStatusCenter,pStatusCenter);
                      pStatusCenter->Add(p_status_item);
 
                      strMsg += std::string("\nSee Status Center for Details");
@@ -1591,7 +1591,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                      std::string strMsg = os.str();
                      
                      pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
-                     GET_IFACE(IStatusCenter,pStatusCenter);
+                     GET_IFACE(IEAFStatusCenter,pStatusCenter);
                      pStatusCenter->Add(p_status_item);
 
                      strMsg += std::string("\nSee Status Center for Details");
@@ -1800,7 +1800,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                std::string strMsg = os.str();
 
                pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,1,strMsg.c_str());
-               GET_IFACE(IStatusCenter,pStatusCenter);
+               GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
 
                strMsg += std::string("\nSee Status Center for Details");
@@ -1828,7 +1828,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                std::string strMsg = os.str();
 
                pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
-               GET_IFACE(IStatusCenter,pStatusCenter);
+               GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
             }
 
@@ -1964,7 +1964,7 @@ bool CBridgeAgentImp::LayoutPiersAndSpans(const CBridgeDescription* pBridgeDesc)
 
       if ( value < -MAX_SKEW_ANGLE || MAX_SKEW_ANGLE < value )
       {
-         GET_IFACE(IStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
          std::ostringstream os;
          os << "Pier " << pierIdx+1 << " has excessive Skew.";
 
@@ -2780,7 +2780,7 @@ bool CBridgeAgentImp::BuildGirder()
 
 void CBridgeAgentImp::ValidateGirder()
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    // some data validation checking
    SpanIndexType cSpans = GetSpanCount();
@@ -2809,7 +2809,7 @@ void CBridgeAgentImp::ValidateGirder()
 
 void CBridgeAgentImp::UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IGirderData, pGirderData);
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -3184,7 +3184,7 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(SpanIndexType span,GirderIndexType g
    else
    {
       // harp points are outside of the support location
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       std::ostringstream os;
       os << "The harping points for Girder " << LABEL_GIRDER(gdr) << " in Span " << LABEL_SPAN(span) 
          << " are located outside of the bearings. You can fix this by increasing the girder length, or"
@@ -4967,7 +4967,7 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
 
       if ( location1 < 0.0 || girder_length < location1 || location2 < 0.0 || girder_length < location2 )
       {
-         GET_IFACE(IStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
          std::string str("An interior diaphragm is located outside of the girder length. The diaphragm load will not be applied. Check the diaphragm rules for this girder.");
 
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,str.c_str());
@@ -5963,30 +5963,29 @@ bool CBridgeAgentImp::GetSkewAngle(Float64 station,const char* strOrientation,Fl
 
 bool CBridgeAgentImp::ProcessNegativeMoments(SpanIndexType spanIdx)
 {
-   bool bProcessNegativeMoments = false;
-
-   PierIndexType prev_pier = spanIdx;
-   PierIndexType next_pier = prev_pier + 1;
-
-   // don't need to process negative moment capacity if this is a simple span design
+   // don't need to process negative moments if this is a simple span design
    // or if there isn't any continuity
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+   if ( analysisType == pgsTypes::Simple )
+      return false;
 
-   if ( analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope )
+   PierIndexType startPier = (spanIdx == ALL_SPANS ? 0 : spanIdx);
+   PierIndexType endPier   = (spanIdx == ALL_SPANS ? GetSpanCount_Private() : spanIdx+1);
+
+   for ( PierIndexType pier = startPier; pier <= endPier; pier++ )
    {
-      bool bContinuousAtPrevPier,bContinuousAtNextPier,bValue;
-      IsContinuousAtPier(prev_pier,&bValue,&bContinuousAtPrevPier);
-      IsContinuousAtPier(next_pier,&bContinuousAtNextPier,&bValue);
+      bool bContinuousLeft,bContinuousRight;
+      IsContinuousAtPier(pier,&bContinuousLeft,&bContinuousRight);
 
-      bool bIntegralAtPrevPier,bIntegralAtNextPier;
-      IsIntegralAtPier(prev_pier,&bValue,&bIntegralAtPrevPier);
-      IsIntegralAtPier(next_pier,&bIntegralAtNextPier,&bValue);
+      bool bIntegralLeft,bIntegralRight;
+      IsIntegralAtPier(pier,&bIntegralLeft,&bIntegralRight);
 
-      bProcessNegativeMoments = ( bContinuousAtPrevPier || bContinuousAtNextPier || bIntegralAtPrevPier || bIntegralAtNextPier );
+      if ( bContinuousLeft || bContinuousRight || bIntegralLeft || bIntegralRight )
+         return true;
    }
 
-   return bProcessNegativeMoments;
+   return false;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -10323,7 +10322,7 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
    return ya - yc + slab_offset;
 }
 
-void CBridgeAgentImp::ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType girder,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void CBridgeAgentImp::ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType girder,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -10341,7 +10340,7 @@ void CBridgeAgentImp::ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexT
    }
 
    CComQIPtr<IReportEffectiveFlangeWidth> report(m_EffFlangeWidthTool);
-   report->ReportEffectiveFlangeWidth(m_pBroker,m_Bridge,(long)span,(long)girder,pChapter,pDisplayUnits);
+   report->ReportEffectiveFlangeWidth(m_pBroker,m_Bridge,span,girder,pChapter,pDisplayUnits);
 }
 
 Float64 CBridgeAgentImp::GetPerimeter(const pgsPointOfInterest& poi)
@@ -11681,6 +11680,12 @@ HRESULT CBridgeAgentImp::OnLiveLoadNameChanged(const char* strOldName,const char
    return S_OK;
 }
 
+HRESULT CBridgeAgentImp::OnConstructionLoadChanged()
+{
+   LOG("OnConstructionLoadChanged Event Received");
+   return S_OK;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // ISpecificationEventSink
 HRESULT CBridgeAgentImp::OnSpecificationChanged()
@@ -12291,7 +12296,7 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
 
 void CBridgeAgentImp::CheckBridge()
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILibrary,pLib);
 

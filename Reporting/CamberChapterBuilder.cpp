@@ -26,7 +26,7 @@
 
 #include <WBFLTools.h> // not sure why, but this is needed to compile
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -72,7 +72,7 @@ rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
    bool bTempStrands = ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping );
@@ -127,7 +127,7 @@ CChapterBuilder* CCamberChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -205,7 +205,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -279,7 +279,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -358,7 +358,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -430,7 +430,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -520,7 +520,7 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
    return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);

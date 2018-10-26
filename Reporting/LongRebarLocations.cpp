@@ -24,7 +24,7 @@
 #include <Reporting\LongRebarLocations.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 
 #include <Lrfd\RebarPool.h>
@@ -71,7 +71,7 @@ CLongRebarLocations& CLongRebarLocations::operator= (const CLongRebarLocations& 
 
 //======================== OPERATIONS =======================================
 void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDisplayUnits) const
+                                IEAFDisplayUnits* pDisplayUnits) const
 {
    USES_CONVERSION;
 

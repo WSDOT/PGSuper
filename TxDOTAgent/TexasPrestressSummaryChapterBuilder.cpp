@@ -26,7 +26,7 @@
 #include <Reporting\PrestressLossTable.h>
 #include "TexasPrestressSummaryChapterBuilder.h"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,7 +62,7 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pR
    SpanIndexType span = pSpec->GetSpan();
    GirderIndexType girder = pSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

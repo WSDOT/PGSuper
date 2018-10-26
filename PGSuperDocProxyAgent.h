@@ -28,7 +28,7 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
 #include <IFace\EditByUI.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\RatingSpecification.h>
 
 
@@ -70,7 +70,7 @@ class CPGSuperDocProxyAgent :
    public IBridgeDescriptionEventSink,
    public IEnvironmentEventSink,
    public IProjectPropertiesEventSink,
-   public IDisplayUnitsEventSink,
+   public IEAFDisplayUnitsEventSink,
    public ISpecificationEventSink,
    public IRatingSpecificationEventSink,
    public ILoadModifiersEventSink,
@@ -91,7 +91,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(IEnvironmentEventSink)
    COM_INTERFACE_ENTRY(IProjectPropertiesEventSink)
-   COM_INTERFACE_ENTRY(IDisplayUnitsEventSink)
+   COM_INTERFACE_ENTRY(IEAFDisplayUnitsEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
    COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
    COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
@@ -137,6 +137,7 @@ public:
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
    virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName);
+   virtual HRESULT OnConstructionLoadChanged();
 
 // IEnvironmentEventSink
 public:
@@ -147,7 +148,7 @@ public:
 public:
    virtual HRESULT OnProjectPropertiesChanged();
 
-// IDisplayUnitsEventSink
+// IEAFDisplayUnitsEventSink
 public:
    virtual HRESULT OnUnitsChanged(eafTypes::UnitMode newUnitsMode);
 
@@ -250,5 +251,8 @@ private:
 
    void CreateToolBars();
    void RemoveToolBars();
+
+   void CreateAcceleratorKeys();
+   void RemoveAcceleratorKeys();
 };
 

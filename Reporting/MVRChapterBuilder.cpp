@@ -45,7 +45,7 @@
 #include <Reporting\LiveLoadReactionTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -83,14 +83,32 @@ LPCTSTR CMVRChapterBuilder::GetName() const
 rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType girder;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      girder = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      girder = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      girder  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptParagraph* p = 0;
 
@@ -239,8 +257,23 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    if ( bDesign )
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,analysisType);
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   if ( 0 < pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) )
+   bool bTempStrands = false;
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
+      if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
+      {
+         bTempStrands = true;
+         break;
+      }
+   }
+   if ( bTempStrands )
    {
       // if there can be temporary strands, report the loads at the temporary strand removal stage
       // because this is when the girder load is applied

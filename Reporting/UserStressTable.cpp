@@ -28,7 +28,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -72,13 +72,20 @@ CUserStressTable& CUserStressTable::operator= (const CUserStressTable& rOther)
 
 //======================== OPERATIONS =======================================
 rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                                      IDisplayUnits* pDisplayUnits) const
+                                      IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>("User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetStressUnit());
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

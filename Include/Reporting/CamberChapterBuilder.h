@@ -28,7 +28,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 
 /*****************************************************************************
@@ -85,12 +85,12 @@ private:
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
 
-   rptChapter* Build_CIP_TempStrands(   CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptChapter* Build_CIP(               CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptChapter* Build_SIP_TempStrands(   CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptChapter* Build_SIP(               CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptChapter* Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits,Uint16 level) const;
-   rptChapter* Build_NoDeck(            CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits,Uint16 level) const;
+   rptChapter* Build_CIP_TempStrands(   CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   rptChapter* Build_CIP(               CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   rptChapter* Build_SIP_TempStrands(   CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   rptChapter* Build_SIP(               CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   rptChapter* Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   rptChapter* Build_NoDeck(            CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
 
    // Prevent accidental copying and assignment
    CCamberChapterBuilder(const CCamberChapterBuilder&);

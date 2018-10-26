@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -82,7 +82,7 @@ public:
                              VehicleIndexType vehicleIndex, 
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,
-                             IDisplayUnits* pDisplayUnits) const;
+                             IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

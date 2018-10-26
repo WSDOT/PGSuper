@@ -28,7 +28,7 @@
 #include <PgsExt\GirderData.h>
 
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 
@@ -73,7 +73,7 @@ CPrestressLossTable& CPrestressLossTable::operator= (const CPrestressLossTable& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                            IDisplayUnits* pDisplayUnits) const
+                                            IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IPrestressForce, pPrestressForce ); 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);

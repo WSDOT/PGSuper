@@ -710,6 +710,18 @@ GirderIndexType CGirderTypes::GetGirderCount() const
    return m_GirderNames.size();
 }
 
+void CGirderTypes::RenameGirder(GroupIndexType grpIdx,const char* strName)
+{
+   std::string strGirder;
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGirder);
+
+   for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+   {
+      m_GirderNames[gdrIdx] = strName;
+   }
+}
+
 void CGirderTypes::SetGirderName(GroupIndexType grpIdx,const char* strName)
 {
    std::string strGirder;

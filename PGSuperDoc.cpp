@@ -45,6 +45,9 @@
 #include <WBFLDManipTools_i.c>
 
 #include <PsgLib\PGSuperLibrary_i.h>
+#include <PGSuperAppPlugin.h>
+#include <PGSuperProjectImporterAppPlugin.h>
+
 #include <PsgLib\PsgLib.h>
 
 #include <IFace\Test1250.h>
@@ -57,7 +60,7 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\Project.h>
 #include <IFace\Alignment.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\MomentCapacity.h>
@@ -124,6 +127,7 @@
 #include "PierDetailsDlg.h"
 #include "GirderLabelFormatDlg.h"
 #include "RatingOptionsDlg.h"
+#include "ConstructionLoadDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -151,6 +155,7 @@
 #include "EditRatingCriteria.h"
 #include "EditLiveLoad.h"
 #include "EditAnalysisType.h"
+#include "EditConstructionLoad.h"
 #include "InsertDeleteLoad.h"
 
 // Logging
@@ -167,6 +172,17 @@
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
+
+// cause the resource control values to be defined
+#define APSTUDIO_INVOKED
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#include "resource.h"       // main symbols 
+
+#define PGSUPER_PLUGIN_COMMAND_BASE 0xC000 // 49152 (this gives us about 8100 plug commands)
+#if PGSUPER_PLUGIN_COMMAND_BASE < _APS_NEXT_COMMAND_VALUE
+#error "PGSuper Document Plugins and Extension Agents: Command IDs interfere with plug-in commands, change the plugin command base ID"
 #endif
 
 static const Float64 FILE_VERSION=2.0;
@@ -204,6 +220,7 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 	ON_COMMAND(ID_ADD_POINTLOAD, OnAddPointload)
 	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
 	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMomentLoad)
+   ON_COMMAND(ID_CONSTRUCTION_LOADS,OnConstructionLoads)
 	ON_COMMAND(ID_PROJECT_ALIGNMENT, OnProjectAlignment)
 	ON_COMMAND(ID_PROJECT_ANALYSIS, OnProjectAnalysis)
 	ON_COMMAND(ID_PROJECT_PIERDESC, OnEditPier)
@@ -211,7 +228,7 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 	ON_COMMAND(ID_DELETE, OnDeleteSelection)
 	ON_UPDATE_COMMAND_UI(ID_DELETE, OnUpdateDeleteSelection)
 	ON_COMMAND(ID_LOADS_LLDF, OnLoadsLldf)
-   ON_COMMAND(IDR_LIVE_LOADS,OnLiveLoads)
+   ON_COMMAND(ID_LIVE_LOADS,OnLiveLoads)
 	ON_COMMAND(ID_INSERT, OnInsert)
 	ON_COMMAND(ID_OPTIONS_HINTS, OnOptionsHints)
 	ON_COMMAND(ID_OPTIONS_LABELS, OnOptionsLabels)
@@ -253,7 +270,6 @@ m_CurrentPierIdx(-1),
 m_CurrentSpanIdx(-1),
 m_CurrentGirderIdx(-1),
 m_DesignSlabOffset(true),
-m_bIsReportMenuPopulated(false),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
@@ -269,6 +285,10 @@ m_bAutoCalcEnabled(true)
    m_pPGSuperDocProxyAgent = NULL;
 
    m_PluginMgr.LoadPlugins(); // these are the data importers and exporters
+
+   // Set the base command ID for EAFDocumentPlugin objects (not currently supported)
+   // and extension agents (supported)
+   GetPluginCommandManager()->SetBaseCommandID(PGSUPER_PLUGIN_COMMAND_BASE);
 }
 
 CPGSuperDoc::~CPGSuperDoc()
@@ -328,12 +348,6 @@ void CPGSuperDoc::OnViewStatusCenter(UINT nID)
    CEAFBrokerDocument::OnViewStatusCenter();
 }
 
-void CPGSuperDoc::OnUpdateError(const CString& errorMsg)
-{
-   CString my_string = errorMsg;
-   UpdateAllViews(0,HINT_UPDATEERROR,(CObject*)&my_string);
-}
-
 void CPGSuperDoc::OnLibMgrChanged(psgLibraryManager* pNewLibMgr)
 {
    GET_IFACE( ILibrary, pLib );
@@ -380,7 +394,7 @@ void CPGSuperDoc::EditAlignmentDescription(int nPage)
                                                     pAlignment->GetProfileData2(),       dlg.m_ProfilePage.m_ProfileData,
                                                     pAlignment->GetRoadwaySectionData(), dlg.m_CrownSlopePage.m_RoadwaySectionData );
 
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
@@ -434,7 +448,7 @@ void CPGSuperDoc::EditBridgeDescription(int nPage)
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity,
                                               bOldEnablePedLL,      bNewEnablePedLL);
 
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
@@ -455,7 +469,7 @@ bool CPGSuperDoc::EditPierDescription(PierIndexType pierIdx, int nPage)
       txnEditPierData newPierData = dlg.GetEditPierData();
 
       txnEditPier* pTxn = new txnEditPier(pierIdx,oldPierData,newPierData,dlg.GetMovePierOption());
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 
@@ -477,7 +491,7 @@ bool CPGSuperDoc::EditSpanDescription(SpanIndexType spanIdx, int nPage)
    {
       txnEditSpanData newData = dlg.GetEditSpanData();
       txnEditSpan* pTxn = new txnEditSpan(spanIdx,oldData,newData);
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 
@@ -553,7 +567,7 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
                                               slabOffset[pgsTypes::metEnd], dlg.m_General.m_SlabOffset[pgsTypes::metEnd]
                                               );
 
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
 
       return true;
@@ -589,7 +603,7 @@ bool CPGSuperDoc::EditPointLoad(CollectionIndexType loadIdx)
       if (loadData != dlg.m_Load)
       {
          txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,loadData,dlg.m_Load);
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
       }
@@ -610,7 +624,7 @@ bool CPGSuperDoc::EditDistributedLoad(CollectionIndexType loadIdx)
       if (loadData != dlg.m_Load)
       {
          txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,loadData,dlg.m_Load);
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
       }
@@ -631,7 +645,7 @@ bool CPGSuperDoc::EditMomentLoad(CollectionIndexType loadIdx)
       if (loadData != dlg.m_Load)
       {
          txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,loadData,dlg.m_Load);
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
          return true;
       }
@@ -693,6 +707,14 @@ BOOL CPGSuperDoc::UpdateTemplates()
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
+   // we want the template files to be "clean" with only PGSuper data in them
+   // Tell the broker to not save data from any missing extension agents
+   CComQIPtr<IBrokerPersist2> broker_persist(m_pBroker);
+   ATLASSERT(broker_persist);
+   VARIANT_BOOL bFlag;
+   broker_persist->GetSaveMissingAgentDataFlag(&bFlag);
+   broker_persist->SetSaveMissingAgentDataFlag(VARIANT_FALSE);
+
    CFileFind dir_finder;
    BOOL bMoreDir = dir_finder.FindFile(workgroup_folder+"\\*");
 
@@ -729,6 +751,10 @@ BOOL CPGSuperDoc::UpdateTemplates()
          pInit->InitAgents();
       }
    }
+
+   // restore the flag to its previous state
+   broker_persist->SetSaveMissingAgentDataFlag(bFlag);
+
 
    return FALSE; // didn't really open a file
 }
@@ -821,7 +847,7 @@ BOOL CPGSuperDoc::OpenTheDocument(LPCTSTR lpszPathName)
    // sets the status bar indicator for structural analysis type
    UpdateAnalysisTypeStatusIndicator();
 
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
   
 
@@ -940,11 +966,35 @@ long CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileNam
    return E_FAIL;
 }
 
+HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
+{
+   // don't call baseclass
+   return S_OK;
+}
+
+HRESULT CPGSuperDoc::CloseDocumentRootNode(IStructuredSave* pStrSave)
+{
+   // don't call baseclass
+   return S_OK;
+}
+
+HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
+{
+   // don't call baseclass
+   return S_OK;
+}
+
+HRESULT CPGSuperDoc::CloseDocumentRootNode(IStructuredLoad* pStrLoad)
+{
+   // don't call baseclass
+   return S_OK;
+}
+
 void CPGSuperDoc::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup)
 {
    CString msg;
 
-   GET_IFACE(IProjectLog,pLog);
+   GET_IFACE(IEAFProjectLog,pLog);
 
    pLog->LogMessage("");
    pLog->LogMessage("An error occured while recovering your last successful save.");
@@ -967,7 +1017,7 @@ void CPGSuperDoc::OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBac
 {
    CString msg;
 
-   GET_IFACE(IProjectLog,pLog);
+   GET_IFACE(IEAFProjectLog,pLog);
 
    pLog->LogMessage("");
    pLog->LogMessage("An error occured while recovering your last successful save.");
@@ -1101,7 +1151,7 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
 
-   GET_IFACE( IProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
    log_msg_header.Format("The following error occured while opening %s",lpszPathName );
@@ -1162,7 +1212,7 @@ void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleSaveDocumentError(hr,lpszPathName);
 
-   GET_IFACE( IProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
    log_msg_header.Format("The following error occured while saving %s",lpszPathName );
@@ -1209,7 +1259,7 @@ void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleConvertDocumentError(hr,lpszPathName);
 
-   GET_IFACE( IProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
    log_msg_header.Format("The following error occured while converting %s",lpszPathName );
@@ -1264,7 +1314,7 @@ void CPGSuperDoc::OnProjectEnvironment()
       if ( expCond != dlg.m_Exposure || relHumidity != dlg.m_RelHumidity )
       {
          txnEditEnvironment* pTxn = new txnEditEnvironment(ec,dlg.m_Exposure == 0 ? expNormal : expSevere,relHumidity,dlg.m_RelHumidity);
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }
    }
@@ -1294,7 +1344,7 @@ void CPGSuperDoc::OnProjectSpec()
       if ( dlg.m_Spec != cur_spec )
       {
          txnEditProjectCriteria* pTxn = new txnEditProjectCriteria(cur_spec.c_str(),dlg.m_Spec.c_str());
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }
    }
@@ -1384,9 +1434,9 @@ void CPGSuperDoc::OnRatingSpec()
    oldData.m_Permit.ServiceI_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
 
    oldData.m_Permit.IM_Truck_Routine = pLiveLoads->GetTruckImpact(pgsTypes::lltPermitRating_Routine);
-   oldData.m_Permit.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltPermitRating_Special);
+   oldData.m_Permit.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltPermitRating_Routine);
 
-   oldData.m_Permit.IM_Truck_Special = pLiveLoads->GetTruckImpact(pgsTypes::lltPermitRating_Routine);
+   oldData.m_Permit.IM_Truck_Special = pLiveLoads->GetTruckImpact(pgsTypes::lltPermitRating_Special);
    oldData.m_Permit.IM_Lane_Special  = pLiveLoads->GetLaneImpact( pgsTypes::lltPermitRating_Special);
 
    oldData.m_Permit.bRateForShear = pSpec->RateForShear(pgsTypes::lrPermit_Routine);
@@ -1412,7 +1462,7 @@ void CPGSuperDoc::OnRatingSpec()
       if ( oldData != newData )
       {
          txnEditRatingCriteria* pTxn = new txnEditRatingCriteria(oldData,newData);
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }
    }
@@ -1775,7 +1825,7 @@ void CPGSuperDoc::UpdateAnalysisTypeStatusIndicator()
 
 void CPGSuperDoc::OnProjectDesignGirder() 
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
       AfxMessageBox("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details.",MB_OK);
@@ -1848,7 +1898,7 @@ void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
 
 void CPGSuperDoc::DesignGirderDirect(bool bDesignSlabOffset)
 {
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
       AfxMessageBox("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details.",MB_OK);
@@ -1901,7 +1951,7 @@ void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const ar
       pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
       txnDesignGirder* pTxn = new txnDesignGirder(span,gdr,designOptions,*pArtifact,slabOffsetType);
 
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
@@ -2055,72 +2105,33 @@ bool CPGSuperDoc::LoadMasterLibrary()
    return DoLoadMasterLibrary(strMasterLibaryFile);
 }
 
-bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibaryFile)
+bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
 {
    // loop until a library file is opened or user gives up trying to find it
-   CComBSTR bpath(strMasterLibaryFile);
+   CString strFile = strMasterLibraryFile;
    CString err_msg;
-   err_msg.LoadString(IDS_CANT_FIND_LIBRARY_FILE);
 
-   bool do_loop=true;
-   while(do_loop)
+   bool bSuccess = false;
+   while(!bSuccess)
    {
-      FileStream ifile;
-      if ( bpath.Length() != 0 && ifile.open(bpath))
+      eafTypes::UnitMode unitMode;
+      HRESULT hr = pgslibLoadLibrary(strFile,&m_LibMgr,&unitMode);
+      if ( FAILED(hr) )
       {
-         // try to load file
-         try
-         {
-            // clear out library
-            m_LibMgr.ClearAllEntries();
+         WATCH("Failed to load master library");
+         AfxFormatString1(err_msg, IDS_CORRUPTED_LIBRARY_FILE, strFile);
 
-            sysStructuredLoadXmlPrs load;
-            load.BeginLoad( &ifile );
-
-            // Problem : Library Editor application specific code is in the
-            // master library file. We have to read it or get an error.
-            load.BeginUnit("LIBRARY_EDITOR");
-            std::string str;
-            load.Property("EDIT_UNITS", &str);
-
-            if ( !m_LibMgr.LoadMe( &load ) )
-               return false;
-
-            load.EndUnit(); //"LIBRARY_EDITOR"
-            load.EndLoad();
-
-            // success!
-            WATCH("Master Library loaded successfully");
-            do_loop=false;
-         }
-         catch( sysXStructuredLoad& e )
-         {
-            if ( e.GetExplicitReason() == sysXStructuredLoad::CantInitializeTheParser )
-            {
-               WATCH("Failed to initialize the parser");
-               err_msg.LoadString( IDS_E_PARSER_INIT_FAIL );
-            }
-            else
-            {
-               e.Throw(); // Should be handled by catch(...)
-            }
-         }
-         catch(...)
-         {
-            WATCH("Failed to load master library");
-            AfxFormatString1(err_msg, IDS_CORRUPTED_LIBRARY_FILE, strMasterLibaryFile);
-         }
-      }
-
-      if (do_loop)
-      {
          // if we are here, an error occured. Issue the message and give
          // the user a chance to load another library file
 
          AfxMessageBox(err_msg,MB_OK|MB_ICONSTOP);
          CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
          pApp->OnProgramSettings(TRUE);
-         bpath = pApp->GetCachedMasterLibraryFile();
+         strFile = pApp->GetCachedMasterLibraryFile();
+      }
+      else
+      {
+         bSuccess = true;
       }
    }
 
@@ -2216,7 +2227,7 @@ void CPGSuperDoc::OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<Span
       return; //nothing to do
 
    txnCopyGirder* pTxn = new txnCopyGirder(fromHash,toHash,bGirder,bTransverse,bLongitudinalRebar,bPrestress,bHandling,bMaterial,bSlabOffset);
-   GET_IFACE(ITransactions,pTransactions);
+   GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
 
@@ -2329,7 +2340,7 @@ void CPGSuperDoc::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
    {
       txnEditLLDF* pTxn = new txnEditLLDF(*pOldBridgeDesc,dlg.m_BridgeDesc,
                                           pLiveLoads->GetLldfRangeOfApplicabilityAction(),dlg.m_LldfRangeOfApplicabilityAction);
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
@@ -2340,7 +2351,7 @@ void CPGSuperDoc::OnAddPointload()
    if (dlg.DoModal() == IDOK)
    {
       txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
@@ -2352,7 +2363,7 @@ void CPGSuperDoc::OnAddDistributedLoad()
    if (dlg.DoModal() == IDOK)
    {
       txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 	
@@ -2364,7 +2375,22 @@ void CPGSuperDoc::OnAddMomentLoad()
    if (dlg.DoModal() == IDOK)
    {
       txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
+
+void CPGSuperDoc::OnConstructionLoads()
+{
+   CConstructionLoadDlg dlg;
+   GET_IFACE(IUserDefinedLoadData,pLoads);
+   Float64 load = pLoads->GetConstructionLoad();
+   dlg.m_Load = load;
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      txnEditConstructionLoad* pTxn = new txnEditConstructionLoad(load,dlg.m_Load);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
@@ -2426,29 +2452,23 @@ void CPGSuperDoc::OnLiveLoads()
       newPermit.m_LaneImpact   = dlg.m_PermitLaneImpact;
 
       txnEditLiveLoad* pTxn = new txnEditLiveLoad(oldDesign,newDesign,oldFatigue,newFatigue,oldPermit,newPermit);
-      GET_IFACE(ITransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
 }
 
-void CPGSuperDoc::OnReport(UINT nID)
+void CPGSuperDoc::CreateReportView(CollectionIndexType rptIdx,bool bPrompt)
 {
-   // User picked a report from a menu.
-   // get the report index
-   CollectionIndexType rptIdx = GetReportIndex(nID,false);
-   m_pPGSuperDocProxyAgent->CreateReportView(rptIdx,true);
-}
-
-void CPGSuperDoc::OnQuickReport(UINT nID)
-{
-   // User picked a report from a menu.
-   // This is a "quick report" so don't prompt
-   if ( m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS  )
+   if ( !bPrompt )
    {
-      // get the report index
-      CollectionIndexType rptIdx = GetReportIndex(nID,true);
-      m_pPGSuperDocProxyAgent->CreateReportView(rptIdx,false);
+      // this is a quick report... make sure there is a current span and girder
+      m_CurrentSpanIdx   = (m_CurrentSpanIdx   == INVALID_INDEX ? 0 : m_CurrentSpanIdx);
+      m_CurrentGirderIdx = (m_CurrentGirderIdx == INVALID_INDEX ? 0 : m_CurrentGirderIdx);
    }
+
+   m_pPGSuperDocProxyAgent->CreateReportView(rptIdx,bPrompt);
+
+   // the base class does nothing so we won't bother calling it
 }
 
 void CPGSuperDoc::OnViewBridgeModelEditor()
@@ -2495,7 +2515,7 @@ void CPGSuperDoc::OnProjectAnalysis()
       if ( currAnalysisType != dlg.m_AnalysisType )
       {
          txnEditAnalysisType* pTxn = new txnEditAnalysisType(currAnalysisType,dlg.m_AnalysisType);
-         GET_IFACE(ITransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }
    }
@@ -2697,7 +2717,7 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
 void CPGSuperDoc::DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face)
 {
    txnDeleteSpan* pTxn = new txnDeleteSpan(pierIdx,face);
-   GET_IFACE(ITransactions,pTransactions);
+   GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
 
@@ -2752,7 +2772,7 @@ void CPGSuperDoc::OnInsert()
 void CPGSuperDoc::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace)
 {
    txnInsertSpan* pTxn = new txnInsertSpan(refPierIdx,pierFace);
-   GET_IFACE(ITransactions,pTransactions);
+   GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
 
@@ -2802,49 +2822,13 @@ BOOL CPGSuperDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
            return TRUE; // message was handled
         }
     }
-
-   // TODO: This could be moved to the EAF
-   if ( m_pBroker )
-   {
-      // Interrupt the normal command processing to handle reports
-      // The report menu items are dynamically generated and so are their IDs
-      // If the command code is in the range IDM_REPORT to IDM_REPORT+nReports a specific
-      // report name was selected from a menu. Send the message on to the OnReport handler
-      // and tell MFC that this message has been handled (return TRUE)
-      GET_IFACE(IReportManager,pReportMgr);
-      CollectionIndexType nReports = pReportMgr->GetReportBuilderCount();
-      BOOL bIsReport      = (GetReportCommand(0,false) <= nID && nID <= GetReportCommand(nReports-1,false));
-      BOOL bIsQuickReport = (GetReportCommand(0,true)  <= nID && nID <= GetReportCommand(nReports-1,true));
-
-      if ( bIsReport || bIsQuickReport )
-      {
-         if ( nCode == CN_UPDATE_COMMAND_UI )
-         {
-            CCmdUI* pCmdUI = (CCmdUI*)(pExtra);
-            pCmdUI->Enable(TRUE);
-            return TRUE;
-         }
-         else if ( nCode == CN_COMMAND )
-         {
-            if ( bIsQuickReport )
-               OnQuickReport(nID);
-            else
-               OnReport(nID);
-
-            return TRUE;
-         }
-      }
-   }
 	
 	return CEAFBrokerDocument::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
 void CPGSuperDoc::PopulateReportMenu()
 {
-   if (m_bIsReportMenuPopulated)
-      return;
-
-   CEAFMenu* pMainMenu = GetMenu();
+   CEAFMenu* pMainMenu = GetMainMenu();
 
    UINT viewPos = pMainMenu->FindMenuItem("&View");
    ASSERT( 0 <= viewPos );
@@ -2859,85 +2843,7 @@ void CPGSuperDoc::PopulateReportMenu()
    CEAFMenu* pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
    ASSERT(pReportsMenu != NULL);
 
-   // remove any old reports and placeholders
-   UINT nItems = pReportsMenu->GetMenuItemCount();
-   for ( UINT idx = 0; idx < nItems; idx++ )
-   {
-      pReportsMenu->RemoveMenu(0,MF_BYPOSITION,NULL);
-   }
-
-   BuildReportMenu(pReportsMenu,false);
-
-   m_bIsReportMenuPopulated = true;
-}
-
-void CPGSuperDoc::BuildReportMenu(CMenu* pMenu,bool bQuickReport)
-{
-   GET_IFACE(IReportManager,pReportMgr);
-   std::vector<std::string> rptNames = pReportMgr->GetReportNames();
-
-   UINT i = 0;
-   std::vector<std::string>::iterator iter;
-   for ( iter = rptNames.begin(); iter != rptNames.end(); iter++ )
-   {
-      std::string rptName = *iter;
-      UINT_PTR nCmd = GetReportCommand(i,bQuickReport);
-      pMenu->AppendMenu(MF_STRING,nCmd,rptName.c_str());
-
-      const CBitmap* pBmp = pReportMgr->GetMenuBitmap(rptName);
-      pMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,NULL);
-
-      i++;
-   }
-}
-
-void CPGSuperDoc::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
-{
-   GET_IFACE(IReportManager,pReportMgr);
-   std::vector<std::string> rptNames = pReportMgr->GetReportNames();
-
-   UINT i = 0;
-   std::vector<std::string>::iterator iter;
-   for ( iter = rptNames.begin(); iter != rptNames.end(); iter++ )
-   {
-      std::string rptName = *iter;
-      UINT_PTR nCmd = GetReportCommand(i,bQuickReport);
-      pMenu->AppendMenu(nCmd,rptName.c_str(),NULL);
-
-      const CBitmap* pBmp = pReportMgr->GetMenuBitmap(rptName);
-      pMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,NULL,NULL);
-
-      i++;
-   }
-}
-
-UINT_PTR CPGSuperDoc::GetReportCommand(CollectionIndexType rptIdx,bool bQuickReport)
-{
-   UINT baseID = IDM_REPORT;
-
-   if ( !bQuickReport )
-   {
-      GET_IFACE(IReportManager,pReportMgr);
-      Uint32 nReports = pReportMgr->GetReportBuilderCount();
-
-      baseID += nReports + 1;
-   }
-
-   return (UINT_PTR)(rptIdx + baseID);
-}
-
-CollectionIndexType CPGSuperDoc::GetReportIndex(UINT nID,bool bQuickReport)
-{
-   UINT baseID = IDM_REPORT;
-   if ( !bQuickReport )
-   {
-      GET_IFACE(IReportManager,pReportMgr);
-      Uint32 nReports = pReportMgr->GetReportBuilderCount();
-
-      baseID += nReports + 1;
-   }
-
-   return (CollectionIndexType)(nID - baseID);
+   CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
 }
 
 void CPGSuperDoc::LoadDocumentSettings()
@@ -3024,6 +2930,8 @@ void CPGSuperDoc::SaveDocumentSettings()
 
    VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("UIHints"),m_UIHintSettings));
 
+   VERIFY(pApp->WriteProfileString( _T("Settings"),_T("GirderLabelFormat"),pgsGirderLabel::UseAlphaLabel() ? _T("Alpha") : _T("Numeric") ));
+
    // Save the design mode settings
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignFlexure"),m_bDesignFlexureEnabled ? _T("On") : _T("Off") ));
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignShear"),  m_bDesignShearEnabled   ? _T("On") : _T("Off") ));
@@ -3035,7 +2943,7 @@ void CPGSuperDoc::OnLogFileOpened()
 {
    CEAFBrokerDocument::OnLogFileOpened();
 
-   GET_IFACE(IProjectLog,pLog);
+   GET_IFACE(IEAFProjectLog,pLog);
    CString strMsg;
    strMsg.Format("PGSuper version %s",theApp.GetVersion(false).GetBuffer(100));
    pLog->LogMessage(strMsg);
@@ -3081,7 +2989,7 @@ void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    BuildReportMenu(pMenu,false);
 
-   GET_IFACE(IToolBars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,NULL);
    CRect rect;

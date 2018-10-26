@@ -123,7 +123,7 @@ public:
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi);
-   virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
+   virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetBeforeXferLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
@@ -189,9 +189,10 @@ public:
    virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double* pM,double* nM,double* V);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V);
-   virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
+   virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile);
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType span);
+   virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType span,Float64* pDistToSection,Float64* pCurbToCurb);
    virtual bool GetDFResultsEx(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,
                        Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
@@ -249,7 +250,7 @@ public:
    virtual const pgsDesignArtifact* GetDesignArtifact(SpanIndexType span,GirderIndexType gdr);
    virtual void CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
    virtual void CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc,pgsHaulingAnalysisArtifact* pArtifact);
-   virtual const pgsRatingArtifact* GetRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+   virtual const pgsRatingArtifact* GetRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
 
 // ICrackedSection
 public:
@@ -264,6 +265,7 @@ public:
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
    virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName);
+   virtual HRESULT OnConstructionLoadChanged();
 
 // ISpecificationEventSink
 public:
@@ -365,25 +367,18 @@ private:
 
    struct RatingArtifactKey
    {
-      RatingArtifactKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,VehicleIndexType vehIdx)
-      { SpanIdx = spanIdx, GirderIdx = gdrIdx; VehicleIdx = vehIdx; }
+      RatingArtifactKey(GirderIndexType gdrLineIdx,VehicleIndexType vehIdx)
+      { GirderLineIdx = gdrLineIdx; VehicleIdx = vehIdx; }
 
-      SpanIndexType SpanIdx;
-      GirderIndexType GirderIdx;
+      GirderIndexType GirderLineIdx;
       VehicleIndexType VehicleIdx;
 
       bool operator<(const RatingArtifactKey& other) const
       {
-         if( SpanIdx < other.SpanIdx )
+         if( GirderLineIdx < other.GirderLineIdx )
             return true;
 
-         if( other.SpanIdx < SpanIdx)
-            return false;
-
-         if( GirderIdx < other.GirderIdx )
-            return true;
-
-         if( other.GirderIdx < GirderIdx)
+         if( other.GirderLineIdx < GirderLineIdx)
             return false;
 
          if( VehicleIdx < other.VehicleIdx )
@@ -483,13 +478,13 @@ private:
    void ValidateLiveLoadDistributionFactors(SpanIndexType span,GirderIndexType gdr);
    void InvalidateLiveLoadDistributionFactors();
    void ValidateArtifacts(SpanIndexType span,GirderIndexType gdr);
-   void ValidateRatingArtifacts(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+   void ValidateRatingArtifacts(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
    void InvalidateArtifacts();
    void InvalidateRatingArtifacts();
 
    LOSSDETAILS* FindLosses(const pgsPointOfInterest& poi);
    pgsGirderArtifact* FindArtifact(SpanIndexType span,GirderIndexType gdr);
-   pgsRatingArtifact* FindRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+   pgsRatingArtifact* FindRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
 
    DECLARE_LOGFILE;
 

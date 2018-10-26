@@ -52,7 +52,7 @@ class REPORTINGCLASS CLongReinfShearCheckChapterBuilder : public CPGSuperChapter
 {
 public:
    // GROUP: LIFECYCLE
-   CLongReinfShearCheckChapterBuilder();
+   CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -80,6 +80,9 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_bDesign;
+   bool m_bRating;
+
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
@@ -88,6 +91,8 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
+   void BuildForDesign(rptChapter* pChapter,CReportSpecification* pRptSpec,Uint16 level) const;
+   void BuildForRating(rptChapter* pChapter,CReportSpecification* pRptSpec,Uint16 level) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

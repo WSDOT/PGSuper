@@ -28,6 +28,7 @@
 #endif // _MSC_VER > 1000
 // ScreenSizeDlg.h : header file
 //
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CScreenSizeDlg dialog

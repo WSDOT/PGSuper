@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\PointOfInterest.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
 #ifdef _DEBUG
@@ -58,19 +58,60 @@ LPCTSTR CEffFlangeWidthDetailsChapterBuilder::GetName() const
 rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->IsCompositeDeck() )
    {
       GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-      pSectProp2->ReportEffectiveFlangeWidth(span,girder,pChapter,pDisplayUnits);
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+      SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+      for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+      {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+         for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+         {
+            rptParagraph* pPara;
+            if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
+            {
+               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               *pChapter << pPara;
+               std::ostringstream os;
+               os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+               pPara->SetName( os.str().c_str() );
+               (*pPara) << pPara->GetName() << rptNewLine;
+            }
+
+            pSectProp2->ReportEffectiveFlangeWidth(spanIdx,gdrIdx,pChapter,pDisplayUnits);
+         }
+      }
    }
    else
    {

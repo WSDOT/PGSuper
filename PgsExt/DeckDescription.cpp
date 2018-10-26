@@ -342,6 +342,12 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       hr = pStrLoad->get_Property("SacrificialDepth", &var );
       SacrificialDepth = var.dblVal;
 
+      // there was a bug in the PGSuper interface that allowed the sacrifical depth to
+      // be greater than the gross/cast depth of the slab. Obviously this is incorrect.
+      // If this is encountered in the input, fix it.
+      if ( GrossDepth <= SacrificialDepth )
+         SacrificialDepth = GrossDepth/2;
+
       var.Clear();
       var.vt = VT_R8;
       hr = pStrLoad->get_Property("SlabFc", &var );

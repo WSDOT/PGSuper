@@ -25,7 +25,7 @@
 
 #include <PgsExt\GirderData.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -64,7 +64,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -120,7 +120,7 @@ CChapterBuilder* CCreepCoefficientChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                   IDisplayUnits* pDisplayUnits,
+                                                   IEAFDisplayUnits* pDisplayUnits,
                                                    Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -335,7 +335,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                       IDisplayUnits* pDisplayUnits,
+                                                       IEAFDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -482,21 +482,21 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                                   IDisplayUnits* pDisplayUnits,
+                                                                   IEAFDisplayUnits* pDisplayUnits,
                                                                    Uint16 level) const
 {
    return Build_CIP_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                       IDisplayUnits* pDisplayUnits,
+                                                       IEAFDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
    return Build_SIP_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                                      IDisplayUnits* pDisplayUnits,
+                                                                      IEAFDisplayUnits* pDisplayUnits,
                                                                       Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -796,7 +796,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                          IDisplayUnits* pDisplayUnits,
+                                                          IEAFDisplayUnits* pDisplayUnits,
                                                           Uint16 level) const
 {
    return Build_NoDeck_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);

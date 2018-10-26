@@ -24,7 +24,7 @@
 #include <Reporting\HaulingCheckChapterBuilder.h>
 #include <Reporting\HaulingCheck.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,7 +61,7 @@ rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

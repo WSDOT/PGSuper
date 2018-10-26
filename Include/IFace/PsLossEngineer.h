@@ -37,7 +37,7 @@
 // FORWARD DECLARATIONS
 //
 struct IBroker;
-struct IDisplayUnits;
+struct IEAFDisplayUnits;
 
 // MISCELLANEOUS
 //
@@ -66,7 +66,7 @@ interface IPsLossEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Creates a detailed report of the effective flange width computation
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
+   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 };
 
 #endif // INCLUDED_IFACE_PSLOSSENGINEER_H_

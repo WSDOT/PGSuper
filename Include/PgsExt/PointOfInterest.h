@@ -368,6 +368,9 @@ public:
    // Returns true if this is a girder poi
    bool IsGirderPoi() const;
 
+   void IncludeSpanAndGirder(bool bIncludeSpanAndGirder);
+   bool IncludeSpanAndGirder() const;
+
    //------------------------------------------------------------------------
    // If set to true, the poi attribute prefixes the distance value
    // eg  (HP) 2.34ft, otherwise it post-fixes the distance value 2.34ft (HP)
@@ -385,4 +388,5 @@ private:
    pgsPointOfInterest m_Poi;
    bool m_bSpanPOI;
    bool m_bPrefixAttributes;
+   bool m_bIncludeSpanAndGirder;
 };

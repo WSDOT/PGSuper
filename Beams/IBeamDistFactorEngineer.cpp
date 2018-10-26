@@ -33,7 +33,7 @@
 #include <Reporting\ReportStyleHolder.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\StatusCenter.h>
 #include "Helper.h"
@@ -51,10 +51,12 @@ HRESULT CIBeamDistFactorEngineer::FinalConstruct()
    return S_OK;
 }
 
-void CIBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void CIBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    SPANDETAILS span_lldf;
    GetSpanDF(span,gdr,pgsTypes::StrengthI,-1,&span_lldf);
+
+   GET_IFACE(IBridge,pBridge);
 
    PierIndexType pier1 = span;
    PierIndexType pier2 = span+1;
@@ -76,7 +78,6 @@ void CIBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gd
    ATLASSERT(pier1_lldf.bExteriorGirder == pier2_lldf.bExteriorGirder);
 
    // Grab the interfaces that are needed
-   GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILiveLoads,pLiveLoads);
 
    // determine continuity
@@ -416,7 +417,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
 
    if ( nGirders <= gdr )
    {
-      ATLASSERT(0);
+      //ATLASSERT(0);
       gdr = nGirders-1;
    }
 
@@ -517,7 +518,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    return pLLDF;
 }
 
-void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IDisplayUnits* pDisplayUnits)
+void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -705,7 +706,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
    }
 }
 
-void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IDisplayUnits* pDisplayUnits)
+void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 

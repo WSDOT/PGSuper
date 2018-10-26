@@ -58,6 +58,7 @@ CPGSuperReportView::~CPGSuperReportView()
 
 BEGIN_MESSAGE_MAP(CPGSuperReportView, CEAFAutoCalcReportView)
 	//{{AFX_MSG_MAP(CPGSuperReportView)
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -96,20 +97,6 @@ void CPGSuperReportView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       return; // some display feature changed... not data... nothing to do here
 
 
-   // The current implementation of this method is to re-generate a report
-   // every time anything changes.  We might want to consider making the
-   // report objects themselves be connection points for the things
-   // they depend on.  That way,  a report only re-generates if it needs to.
-   if ( lHint == HINT_UPDATEERROR )
-   {
-      CString* pmsg = (CString*)pHint;
-      m_ErrorMsg = *pmsg;
-      m_bUpdateError = true;
-
-      Invalidate();
-      return;
-   }
-
    CEAFAutoCalcReportView::OnUpdate(pSender,lHint,pHint);
 }
 
@@ -144,25 +131,11 @@ int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CEAFAutoCalcReportView::OnCreate(lpCreateStruct) == -1)
 		return -1;
-	
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStatusCenter,pStatusCenter);
-
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
-      return eafTypes::statusError;
 
    return 0;
 }
 
 void CPGSuperReportView::CreateEditButton()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStatusCenter,pStatusCenter);
-
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
-      return;
-
    CEAFAutoCalcReportView::CreateEditButton();
 }

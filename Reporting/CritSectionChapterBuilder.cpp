@@ -26,7 +26,7 @@
 
 #include <PgsExt\PointOfInterest.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Bridge.h>
@@ -71,10 +71,28 @@ LPCTSTR CCritSectionChapterBuilder::GetName() const
 rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType gdr = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -93,7 +111,7 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       bRating = pRatingSpec->AlwaysLoadRate();
    }
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -101,46 +119,70 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
 
-   if ( bDesign )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
    {
-      Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDisplayUnits,level);
-
-      if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) && !bAfterThirdEdition )
-         Build(pChapter,pgsTypes::StrengthII,pBroker,span,gdr,pDisplayUnits,level);
-   }
-
-   if ( bRating )
-   {
-      if ( bAfterThirdEdition )
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
       {
-         Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDisplayUnits,level);
-      }
-      else
-      {
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-            Build(pChapter,pgsTypes::StrengthI_Inventory,pBroker,span,gdr,pDisplayUnits,level);
+         rptParagraph* pPara;
+         if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
+         {
+            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pPara;
+            std::ostringstream os;
+            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            pPara->SetName( os.str().c_str() );
+            (*pPara) << pPara->GetName() << rptNewLine;
+         }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-            Build(pChapter,pgsTypes::StrengthI_Operating,pBroker,span,gdr,pDisplayUnits,level);
+         if ( bDesign )
+         {
+            Build(pChapter,pgsTypes::StrengthI,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            Build(pChapter,pgsTypes::StrengthI_LegalRoutine,pBroker,span,gdr,pDisplayUnits,level);
+            if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) && !bAfterThirdEdition )
+               Build(pChapter,pgsTypes::StrengthII,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
+         }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,span,gdr,pDisplayUnits,level);
+         if ( bRating )
+         {
+            if ( bAfterThirdEdition )
+            {
+               Build(pChapter,pgsTypes::StrengthI,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
+            }
+            else
+            {
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+                  Build(pChapter,pgsTypes::StrengthI_Inventory,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,span,gdr,pDisplayUnits,level);
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+                  Build(pChapter,pgsTypes::StrengthI_Operating,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            Build(pChapter,pgsTypes::StrengthII_PermitSpecial,pBroker,span,gdr,pDisplayUnits,level);
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+                  Build(pChapter,pgsTypes::StrengthI_LegalRoutine,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
+
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+                  Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
+
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+                  Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
+
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+                  Build(pChapter,pgsTypes::StrengthII_PermitSpecial,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
+            }
+         }
       }
    }
 
    return pChapter;
 }
 
-void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    USES_CONVERSION;
    GET_IFACE2(pBroker,IStageMap,pStageMap);
@@ -183,6 +225,12 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    *pPara << ptable;
    ptable->TableLabel() << "Critical Section Calculation";
   
+   if ( span == ALL_SPANS )
+   {
+      ptable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      ptable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    (*ptable)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*ptable)(0,1)  << COLHDR("Assumed C.S."<<rptNewLine<<"Location", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*ptable)(0,2)  << COLHDR("d"<<Sub("v") , rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -202,6 +250,8 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDisplayUnits->GetAngleUnit(),  false );
+
+   locationp.IncludeSpanAndGirder(span == ALL_SPANS);
 
    // Fill up the table
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);

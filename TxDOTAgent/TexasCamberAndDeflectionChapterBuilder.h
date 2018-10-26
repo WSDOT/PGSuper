@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TEXASCAMBERANDDEFLECTIONCHAPTERBUILDER_H_
 #define INCLUDED_TEXASCAMBERANDDEFLECTIONCHAPTERBUILDER_H_
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

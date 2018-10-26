@@ -97,8 +97,9 @@ protected:
 	afx_msg void OnFilePrintDirect();
 	afx_msg void OnSelectLoadingStage();
 	afx_msg void OnAddPointload();
-	afx_msg void OnAddGvDistributedLoad();
-	afx_msg void OnSync();
+	afx_msg void OnAddDistributedLoad();
+	afx_msg void OnAddMoment();
+   afx_msg void OnSync();
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()

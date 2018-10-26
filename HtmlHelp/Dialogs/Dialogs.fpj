@@ -3,16 +3,6 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>CopyConcrete.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Specify_User-Defined_Live_Loads.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Design_Complete.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -33,6 +23,21 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
+			<name>Design_Criteria.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Alignment_Description_Dialog.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Girder_Editing_Dialog.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>Library_Import_Entry_Conflict.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -43,17 +48,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Design_Criteria.htm</name>
+			<name>Rating_Options_(Permit).htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Girder_Editing_Dialog.htm</name>
+			<name>Plugins_and_Extensions.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Design_Girder.htm</name>
+			<name>Specify_User-Defined_Live_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -63,17 +68,22 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Alignment_Description_Dialog.htm</name>
+			<name>CopyConcrete.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Design_Girder.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Section_Cut.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
 			<name>Units.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Rating_Options_(Permit).htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -88,27 +98,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Edit_Point_Load.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Edit_Distributed_Load.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Load_Modifiers.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Project_Properties.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Section_Cut.htm</name>
+			<name>Edit_Point_Load.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -133,6 +128,11 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
+			<name>Edit_User_Defined_Loads.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>Live_Load_Distibution_Factors.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -143,12 +143,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Edit_User_Defined_Loads.htm</name>
+			<name>Load_Modifiers.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Plugins_and_Extensions.htm</name>
+			<name>Project_Properties.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Construction_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

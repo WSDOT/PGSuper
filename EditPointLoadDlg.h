@@ -27,6 +27,7 @@
 #endif // _MSC_VER > 1000
 // EditPointLoadDlg.h : header file
 //
+#include "resource.h"
 #include <pgsExt\PointLoadData.h>
 
 /////////////////////////////////////////////////////////////////////////////

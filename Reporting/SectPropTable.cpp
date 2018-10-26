@@ -24,7 +24,7 @@
 #include <Reporting\SectPropTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,7 +67,7 @@ CSectionPropertiesTable& CSectionPropertiesTable::operator= (const CSectionPrope
 
 //======================== OPERATIONS =======================================
 rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,bool bComposite,
-                                           IDisplayUnits* pDisplayUnits) const
+                                           IEAFDisplayUnits* pDisplayUnits) const
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IGirder,pGirder);

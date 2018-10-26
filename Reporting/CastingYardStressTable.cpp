@@ -27,7 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -71,15 +71,22 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 
 //======================== OPERATIONS =======================================
 rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDisplayUnits) const
+                                            IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    location.MakeGirderPoi();
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard Stresses");
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Set up table headings
    (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,                  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );

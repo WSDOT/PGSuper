@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -75,12 +75,12 @@ public:
    //------------------------------------------------------------------------
    // Builds the typical displacements  table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const;
+                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
 
    //------------------------------------------------------------------------
    // Builds the displacements  table for the optional deflection live load
    virtual rptRcTable* BuildLiveLoadTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                          IDisplayUnits* pDisplayUnits) const;
+                                          IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

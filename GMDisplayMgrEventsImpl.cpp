@@ -24,6 +24,7 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "PGSuper.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "mfcdual.h"

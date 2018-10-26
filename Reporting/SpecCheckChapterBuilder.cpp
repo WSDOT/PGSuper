@@ -45,7 +45,7 @@
 
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
@@ -60,7 +60,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 void write_splitting_zone_check(IBroker* pBroker,
-                               IDisplayUnits* pDisplayUnits,
+                               IEAFDisplayUnits* pDisplayUnits,
                                SpanIndexType span,
                                GirderIndexType gdr,
                                rptChapter* pChapter);
@@ -93,7 +93,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -406,7 +406,7 @@ CChapterBuilder* CSpecCheckChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 void write_splitting_zone_check(IBroker* pBroker,
-                               IDisplayUnits* pDisplayUnits,
+                               IEAFDisplayUnits* pDisplayUnits,
                                SpanIndexType span,
                                GirderIndexType gdr,
                                rptChapter* pChapter)

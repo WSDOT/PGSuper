@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -68,17 +68,17 @@ public:
 
    static rptParagraph* CreatePointLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDisplayUnits,
+                           IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level);
 
    static rptParagraph* CreateDistributedLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDisplayUnits,
+                           IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level);
 
    static rptParagraph* CreateMomentLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDisplayUnits,
+                           IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level);
 
    // GROUP: ACCESS

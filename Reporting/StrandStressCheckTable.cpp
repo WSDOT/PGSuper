@@ -27,7 +27,7 @@
 #include <PgsExt\GirderData.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
@@ -73,7 +73,7 @@ CStrandStressCheckTable& CStrandStressCheckTable::operator= (const CStrandStress
 
 //======================== OPERATIONS =======================================
 rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStressArtifact* pArtifact,
-                                           IDisplayUnits* pDisplayUnits) const
+                                           IEAFDisplayUnits* pDisplayUnits) const
 {
    // Get strand types that are checked
    pgsPointOfInterest poi = pArtifact->GetPointOfInterest();

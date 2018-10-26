@@ -966,6 +966,11 @@ const char* CBridgeDescription::GetGirderName() const
    return m_strGirderName.c_str();
 }
 
+void CBridgeDescription::RenameGirder(const char* strName)
+{
+   m_strGirderName = strName;
+}
+
 void CBridgeDescription::SetGirderName(const char* strName)
 {
    if ( m_strGirderName != strName )

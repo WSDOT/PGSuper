@@ -82,6 +82,14 @@ CPGSuperImportPluginDocTemplate::~CPGSuperImportPluginDocTemplate()
    m_ProjectImporterMgr.UnloadImporters();
 }
 
+CDocTemplate::Confidence CPGSuperImportPluginDocTemplate::MatchDocType(LPCTSTR lpszPathName,CDocument*& rpDocMatch)
+{
+   // This document template doesn't open any document files from disk
+   // return noAttempt so that the document manager does not conclude this is the
+   // best match
+   return CDocTemplate::noAttempt;
+}
+
 BOOL CPGSuperImportPluginDocTemplate::DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame)
 {
    // Importers "open" documents completely different then the default base class method

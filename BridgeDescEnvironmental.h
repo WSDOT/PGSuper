@@ -29,6 +29,9 @@
 // BridgeDescEnvironmental.h : header file
 //
 
+#include "resource.h"
+
+
 class CBridgeDescDlg;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescEnvironmental dialog

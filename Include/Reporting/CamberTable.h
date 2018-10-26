@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -74,27 +74,27 @@ public:
    //------------------------------------------------------------------------
    // Build the strand eccentricity tables
    void Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDisplayUnits,Int16 time,
+                              IEAFDisplayUnits* pDisplayUnits,Int16 time,
                               rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                  IDisplayUnits* pDisplayUnits,Int16 time,
+                  IEAFDisplayUnits* pDisplayUnits,Int16 time,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDisplayUnits,Int16 time,
+                              IEAFDisplayUnits* pDisplayUnits,Int16 time,
                               rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                  IDisplayUnits* pDisplayUnits,Int16 time,
+                  IEAFDisplayUnits* pDisplayUnits,Int16 time,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                 IDisplayUnits* pDisplayUnits,Int16 time,
+                                 IEAFDisplayUnits* pDisplayUnits,Int16 time,
                                  rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                     IDisplayUnits* pDisplayUnits,Int16 time,
+                     IEAFDisplayUnits* pDisplayUnits,Int16 time,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

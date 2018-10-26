@@ -111,3 +111,5 @@ IDH_LIVE_LOAD_FACTORS=User's Guide\Appendix B - PGSuper Library Dialogs\Live_Loa
 
 IDH_DECK_CONDITION=Bridge Description\Condition_and_Rating.htm
 IDH_GIRDER_CONDITION=Girder Editing Wizard\Condition_and_Rating_(Girder).htm
+
+IDH_CONSTRUCTION_LOADS=Dialogs\Construction_Loads.htm

@@ -3,17 +3,22 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>AnalysisControls.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>StructuralAnalysisMethod.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
 			<name>Project_Criteria.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>AnalysisControls.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Chapter.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

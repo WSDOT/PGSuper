@@ -37,7 +37,7 @@
 #include <WBFLCore_i.c>
 #include <IReportManager.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
@@ -45,6 +45,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\RatingSpecification.h>
 
 
 // Used to determine whether the DLL can be unloaded by OLE

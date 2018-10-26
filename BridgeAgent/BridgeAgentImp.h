@@ -503,7 +503,7 @@ public:
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi);
-   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
+   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi);
    virtual Float64 GetSurfaceArea(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetVolume(SpanIndexType span,GirderIndexType gdr);
@@ -589,6 +589,7 @@ public:
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
    virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName);
+   virtual HRESULT OnConstructionLoadChanged();
 
 // ISpecificationEventSink
 public:

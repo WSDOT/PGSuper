@@ -45,6 +45,8 @@ public:
 
    const CPGSuperProjectImporterMgr& GetProjectImporterManager() const;
 
+   virtual CDocTemplate::Confidence MatchDocType(LPCTSTR lpszPathName,	CDocument*& rpDocMatch);
+
 protected:
    virtual BOOL DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame);
 

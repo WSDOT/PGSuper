@@ -455,6 +455,12 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
 {
    USES_CONVERSION;
 
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString strAppUnit = AfxGetApp()->m_pszAppName;
+   strAppUnit.Trim();
+   strAppUnit.Replace(" ","");
+   pStrLoad->BeginUnit(strAppUnit); // it is ok if this fails as not all documents have this unit
+
    HRESULT hr = pStrLoad->BeginUnit("LIBRARY_EDITOR");
    if ( FAILED(hr) )
       return hr;
@@ -477,6 +483,55 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
       *pUnitsMode = eafTypes::umUS;
    else
       *pUnitsMode = eafTypes::umSI;
+
+   return S_OK;
+}
+
+HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode)
+{
+   CComPtr<IStructuredLoad> pStrLoad;
+   pStrLoad.CoCreateInstance(CLSID_StructuredLoad);
+   HRESULT hr = pStrLoad->Open(strFileName);
+   if ( FAILED(hr) )
+      return hr;
+
+   return pgslibLoadLibrary(pStrLoad,pLibMgr,pUnitMode);
+}
+
+HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode)
+{
+   try
+   {
+      CStructuredLoad load(pStrLoad);
+
+      // clear out library and load up new
+      pLibMgr->ClearAllEntries();
+
+      if ( FAILED(pgslibReadLibraryDocHeader(pStrLoad,pUnitMode)) )
+         THROW_LOAD(InvalidFileFormat,(&load));
+
+      // load the library 
+      pLibMgr->LoadMe(&load);
+   }
+   catch (const sysXStructuredLoad& rLoad)
+   {
+      sysXStructuredLoad::Reason reason = rLoad.GetExplicitReason();
+      std::string msg;
+      CString cmsg;
+      rLoad.GetErrorMessage(&msg);
+      if (reason==sysXStructuredLoad::InvalidFileFormat)
+         cmsg = "Invalid file data format. The file may have been corrupted. Extended error information is as follows: ";
+      else if (reason==sysXStructuredLoad::BadVersion)
+         cmsg = "Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ";
+      else if ( reason == sysXStructuredLoad::UserDefined )
+         cmsg = "Error reading file. Extended error information is as follows:";
+      else
+         cmsg = "Undetermined error reading data file.  Extended error information is as follows: ";
+
+      cmsg += msg.c_str();
+      AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);
+      return E_FAIL;
+   }
 
    return S_OK;
 }

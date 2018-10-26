@@ -167,7 +167,7 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    int result = dlg.DoModal();
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
@@ -230,7 +230,7 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    int result = dlg.DoModal();
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
@@ -292,7 +292,7 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    int result = dlg.DoModal();
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   GET_IFACE(IStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {

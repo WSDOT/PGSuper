@@ -28,7 +28,7 @@
 #include <PgsExt\StageCompare.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <sstream>
 
@@ -58,7 +58,7 @@ CSectionPropertiesTable2::~CSectionPropertiesTable2()
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,
-                                           IDisplayUnits* pDisplayUnits) const
+                                           IEAFDisplayUnits* pDisplayUnits) const
 {
    USES_CONVERSION;
    GET_IFACE2(pBroker,IStageMap,pStageMap);
@@ -80,6 +80,12 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
       nCol = 12; // BS2 or BS3 and noncomposite deck
 
    rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nCol,os.str().c_str());
+
+   if ( span == ALL_SPANS )
+   {
+      xs_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      xs_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Setup column headers
    Uint16 col = 0;
@@ -122,6 +128,8 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
    INIT_UV_PROTOTYPE( rptAreaUnitValue,    l2, pDisplayUnits->GetAreaUnit(),             false );
    INIT_UV_PROTOTYPE( rptLength3UnitValue, l3, pDisplayUnits->GetSectModulusUnit(),      false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, l4, pDisplayUnits->GetMomentOfInertiaUnit(),  false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

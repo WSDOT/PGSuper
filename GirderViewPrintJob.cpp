@@ -32,7 +32,7 @@
 #include "GirderModelElevationView.h"
 #include "GirderModelSectionView.h"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -174,7 +174,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    // label
    // get length unit for labelling
-   GET_IFACE(IDisplayUnits,pdisp_units);
+   GET_IFACE(IEAFDisplayUnits,pdisp_units);
    const unitmgtLengthData& rlen = pdisp_units->GetSpanLengthUnit();
    sysNumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
    Float64 dist = ::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);

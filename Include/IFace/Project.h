@@ -41,7 +41,7 @@ COPYRIGHT
 
 #include <Material\Material.h>
 
-#include <EAF\EAFProjectLog.h> // IProjectLog was moved... do the include here so other files don't have to change
+#include <EAF\EAFProjectLog.h> // IEAFProjectLog was moved... do the include here so other files don't have to change
 
 // LOCAL INCLUDES
 //
@@ -583,6 +583,7 @@ interface IBridgeDescriptionEventSink : IUnknown
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint) = 0;
    virtual HRESULT OnLiveLoadChanged() = 0;
    virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName) = 0;
+   virtual HRESULT OnConstructionLoadChanged() = 0;
 };
 
 
@@ -700,6 +701,10 @@ interface IUserDefinedLoadData : IUnknown
    virtual const CMomentLoadData& GetMomentLoad(CollectionIndexType idx) const = 0;
    virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
+
+   // construction loads
+   virtual void SetConstructionLoad(Float64 load) = 0;
+   virtual Float64 GetConstructionLoad() const = 0;
 };
 
 /*****************************************************************************

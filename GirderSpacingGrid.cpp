@@ -29,7 +29,7 @@
 
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
 #include <PgsExt\BridgeDescription.h>
@@ -200,7 +200,7 @@ void CGirderSpacingGrid::FillGrid()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& spacingUnit = IsGirderSpacing(m_GirderSpacingType) // if
                                         ? pDisplayUnits->GetXSectionDimUnit()     // then
                                         : pDisplayUnits->GetComponentDimUnit();   // else
@@ -691,7 +691,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
       spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
@@ -725,7 +725,7 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
 
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strValue;
       GetCurrentCellControl()->GetCurrentText(strValue);

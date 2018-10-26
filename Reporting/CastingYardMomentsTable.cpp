@@ -27,7 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -71,15 +71,22 @@ CCastingYardMomentsTable& CCastingYardMomentsTable::operator= (const CCastingYar
 
 //======================== OPERATIONS =======================================
 rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDisplayUnits) const
+                                            IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard");
    p_table->SetNumberOfHeaderRows(2);
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    // Set up table headings
    p_table->SetRowSpan(0,0,2);

@@ -28,6 +28,7 @@
 #endif // _MSC_VER > 1000
 // SpanConnectionsPage.h : header file
 //
+#include "resource.h"
 
 #include <PgsExt\PierData.h>
 #include "ConnectionComboBox.h"

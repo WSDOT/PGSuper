@@ -25,7 +25,7 @@
 #include <Reporting\StirrupDetailingCheckTable.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
@@ -78,7 +78,7 @@ CGirderDetailingCheck& CGirderDetailingCheck::operator= (const CGirderDetailingC
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDisplayUnits) const
+                              IEAFDisplayUnits* pDisplayUnits) const
 {
 
    if (!m_BasicVersion)
@@ -128,7 +128,7 @@ void CGirderDetailingCheck::MakeAssignment(const CGirderDetailingCheck& rOther)
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDisplayUnits) const
+                              IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);

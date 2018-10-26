@@ -28,7 +28,7 @@
 #include <PgsExt\GirderArtifact.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
 #include <PgsExt\CapacityToDemand.h>
@@ -61,11 +61,17 @@ CShearCheckTable::~CShearCheckTable()
 
 //======================== OPERATIONS =======================================
 rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDisplayUnits,
+                                               IEAFDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const
 {
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6," ");
+
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    if (ls==pgsTypes::StrengthI)
       table->TableLabel() << "Ultimate Shears for Strength I Limit State for Bridge Site Stage 3 [5.8]";
@@ -85,6 +91,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptCapacityToDemand cap_demand;
 

@@ -28,7 +28,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
@@ -73,7 +73,7 @@ CCombinedStressTable& CCombinedStressTable::operator= (const CCombinedStressTabl
 //======================== OPERATIONS =======================================
 void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDisplayUnits,
+                                         IEAFDisplayUnits* pDisplayUnits,
                                          pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -83,6 +83,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
    else
@@ -196,6 +197,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
       p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Final with Live Load (Bridge Site 3)");
 
+
       p_table->SetNumberOfHeaderRows(2);
 
       p_table->SetRowSpan(0,col,2);
@@ -278,6 +280,13 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       ATLASSERT(false); // who added a new stage without telling me?
    }
 
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    *p << p_table << rptNewLine;
 
    if ( stage == pgsTypes::BridgeSite3 )
@@ -330,9 +339,9 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    else if ( stage == pgsTypes::BridgeSite1 )
    {
       pForces2->GetStress( lcDC, stage, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-      pForces2->GetStress( lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
       pForces2->GetStress( lcDC, stage, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
-      pForces2->GetStress( lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
 
       pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI,&fTopMaxServiceI);
       pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI,&fBotMaxServiceI);
@@ -340,9 +349,9 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    else if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3)
    {
       pForces2->GetStress( lcDC, stage, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-      pForces2->GetStress( lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
       pForces2->GetStress( lcDC, stage, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
-      pForces2->GetStress( lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      pForces2->GetStress( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
 
       if ( stage == pgsTypes::BridgeSite2 )
       {

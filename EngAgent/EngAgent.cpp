@@ -44,7 +44,7 @@
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>
 

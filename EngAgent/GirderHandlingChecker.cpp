@@ -31,7 +31,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include "..\PGSuperException.h"
 
@@ -45,6 +45,8 @@
 
 #include "GirderHandlingChecker.h"
 #include "StatusItems.h"
+
+#include "PGSuperUnits.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,9 +68,11 @@ pgsGirderHandlingChecker::pgsGirderHandlingChecker(IBroker* pBroker,StatusGroupI
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IStatusCenter,pStatusCenter);
-   m_scidLiftingSupportLocation = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(m_pBroker) );
-   m_scidTruckStiffness         = pStatusCenter->RegisterCallback( new pgsTruckStiffnessStatusCallback(m_pBroker) );
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   m_scidLiftingSupportLocationError   = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(m_pBroker,eafTypes::statusError) );
+   m_scidLiftingSupportLocationWarning = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(m_pBroker,eafTypes::statusWarning) );
+   m_scidBunkPointLocation             = pStatusCenter->RegisterCallback( new pgsBunkPointLocationStatusCallback(m_pBroker) );
+   m_scidTruckStiffness                = pStatusCenter->RegisterCallback( new pgsTruckStiffnessStatusCallback(m_pBroker) );
 
    m_Model.CoCreateInstance(CLSID_Fem2dModel);
 }
@@ -555,10 +559,10 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
 
    if (span_len <= 0.0)
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       const char* msg = "Lifting support overhang cannot exceed one-half of the span length";
-      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocation,msg);
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationError,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -566,10 +570,22 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
       THROW_UNWIND(str.c_str(),-1);
    }
 
+   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+   Float64 min_lift_point = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation();
+   if ( Loh < min_lift_point || Roh < min_lift_point )
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+      CString strMsg;
+      strMsg.Format("Lift point is less than the minimum value of %s",::FormatDimension(min_lift_point,pDisplayUnits->GetSpanLengthUnit()));
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
+
    pArtifact->SetClearSpanBetweenPickPoints(span_len);
    pArtifact->SetOverhangs(Loh,Roh);
 
-   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    Float64 bracket_hgt = pGirderLiftingSpecCriteria->GetHeightOfPickPointAboveGirderTop();
    Float64 ycgt = pSectProp2->GetYtGirder(pgsTypes::CastingYard,pgsPointOfInterest(span,gdr,0.00));
    Float64 e_hgt = bracket_hgt+ycgt;
@@ -1000,10 +1016,10 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
 
    if (span_len<=0.0)
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       const char* msg = "Hauling support overhang cannot exceed one-half of the span length";
-      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocation,msg);
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationError,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -1011,10 +1027,22 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
       THROW_UNWIND(str.c_str(),-1);
    }
 
+   GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   Float64 min_bunk_point = pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation();
+   if ( Loh < min_bunk_point || Roh < min_bunk_point )
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+      CString strMsg;
+      strMsg.Format("Bunk Point is less than the minimum value of %s",::FormatDimension(min_bunk_point,pDisplayUnits->GetSpanLengthUnit()));
+      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(span,gdr,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
+
    pArtifact->SetClearSpanBetweenSupportLocations(span_len);
    pArtifact->SetOverhangs(Loh,Roh);
 
-   GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
    Float64 roll_hgt = pGirderHaulingSpecCriteria->GetHeightOfTruckRollCenterAboveRoadway();
    Float64 gb_hgt =  pGirderHaulingSpecCriteria->GetHeightOfGirderBottomAboveRoadway();
    Float64 camber_factor = 1.0 + pGirderHaulingSpecCriteria->GetIncreaseInCgForCamber();
@@ -1444,7 +1472,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
    Float64 denom = r-y-zo;
    if (denom<=0.0)
    {
-      GET_IFACE(IStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       const char* msg = "Truck spring stiffness is inadequate - girder/trailer is unstable";
       pgsTruckStiffnessStatusItem* pStatusItem = new pgsTruckStiffnessStatusItem(m_StatusGroupID,m_scidTruckStiffness,msg);
@@ -1466,7 +1494,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
     GET_IFACE(ISectProp2,pSectProp2);
     GET_IFACE(IBridgeMaterial,pMaterial);
 
-    GET_IFACE(IDisplayUnits,pDisplayUnits);
+    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
     bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    SpanIndexType span  = poi.GetSpan();

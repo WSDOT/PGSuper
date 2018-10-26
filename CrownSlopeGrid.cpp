@@ -29,7 +29,7 @@
 #include "PGSuperUnits.h"
 #include "PGSuperDoc.h"
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -101,7 +101,7 @@ void CCrownSlopeGrid::CustomInit()
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
@@ -224,7 +224,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
 
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    double station = data.Station;
@@ -250,7 +250,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,doub
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CString strStation = GetCellValue(nRow,1);
@@ -333,7 +333,7 @@ double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    double sign = 1;
    char cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
@@ -356,7 +356,7 @@ CString CCrownSlopeGrid::GetCrownPointOffset(double alignmentOffset)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strAlignmentOffset;
    if ( sign == 0 )

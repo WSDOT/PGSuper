@@ -28,7 +28,7 @@
 #include <PgsExt\GirderArtifact.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
 #include <Lrfd\Rebar.h>
@@ -61,7 +61,7 @@ CStirrupDetailingCheckTable::~CStirrupDetailingCheckTable()
 
 //======================== OPERATIONS =======================================
 rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDisplayUnits,
+                                               IEAFDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,
                                                bool* pWriteNote) const
@@ -71,6 +71,12 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8," ");
    table->TableLabel() << "Stirrup Detailing Check [5.8.2.5, 5.8.2.7, 5.10.3.1.2]";
   
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    if ( stage == pgsTypes::CastingYard )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
@@ -87,6 +93,8 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue,      AvS,      pDisplayUnits->GetAvOverSUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDisplayUnits->GetComponentDimUnit(),  false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);

@@ -29,9 +29,8 @@
 // ConfigurePGSuperDlg.h : header file
 //
 
+#include "resource.h"
 #include "PGSuperCatalogServers.h"
-#include <MfcTools\ddxFolder.h>
-#include <MfcTools\ddxfile.h>
 #include <MfcTools\HyperLink.h>
 
 /////////////////////////////////////////////////////////////////////////////

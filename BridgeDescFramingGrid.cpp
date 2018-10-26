@@ -34,7 +34,7 @@
 #include "PierDetailsDlg.h"
 
 #include <Units\Measure.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <algorithm>
 
@@ -466,7 +466,7 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -562,7 +562,7 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData& pierData)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pierData.GetStation());
 
    CString strPierLabel;
@@ -597,7 +597,7 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strSpanLength;
    double spanLength = spanData.GetSpanLength();
@@ -674,7 +674,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       hr = objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitMode()));
       if ( FAILED(hr) )

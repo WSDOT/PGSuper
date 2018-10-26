@@ -28,6 +28,7 @@
 #endif // _MSC_VER >= 1000
 // GirderEditorSectionSettingsPage.h : header file
 //
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderEditorSectionSettingsPage dialog

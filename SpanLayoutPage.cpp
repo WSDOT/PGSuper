@@ -29,7 +29,7 @@
 #include "SpanLayoutPage.h"
 #include "SpanDetailsDlg.h"
 #include <MfcTools\CustomDDX.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include "HtmlHelp\HelpTopics.hh"
 
 #ifdef _DEBUG
@@ -63,7 +63,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
 }

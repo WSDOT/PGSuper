@@ -28,7 +28,7 @@
 #include <PgsExt\GirderArtifact.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 
@@ -64,10 +64,12 @@ CInterfaceShearDetails::~CInterfaceShearDetails()
 //======================== OPERATIONS =======================================
 void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
                                   SpanIndexType span,GirderIndexType girder,
-                                  IDisplayUnits* pDisplayUnits,
+                                  IEAFDisplayUnits* pDisplayUnits,
                                   pgsTypes::Stage stage,
                                   pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -97,6 +99,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptLength3UnitValue,        l3,       pDisplayUnits->GetSectModulusUnit(), false);
    INIT_UV_PROTOTYPE( rptLength4UnitValue,        l4,       pDisplayUnits->GetMomentOfInertiaUnit(), false);
 
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
    const pgsStirrupCheckAtPoisArtifact* p_first_sartifact = NULL;
    for ( ip = vPoi.begin(); ip != vPoi.end(); ip++ )
    {
@@ -115,12 +119,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
 
-   if (ls==pgsTypes::StrengthI)
-      *pPara << "Details for Horizontal Interface Shear Capacity (Strength I) [5.8.4.1]"<<rptNewLine;
-   else if (ls==pgsTypes::StrengthII)
-      *pPara << "Details for Horizontal Interface Shear Capacity (Strength II) [5.8.4.1]"<<rptNewLine;
-   else
-      ATLASSERT(false);
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   (*pPara) << "Details for Horizontal Interface Shear Capacity (" << OLE2A(pStageMap->GetLimitStateName(ls)) << ") [5.8.4.1]" << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
@@ -129,6 +129,12 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    rptRcTable* vui_table = pgsReportStyleHolder::CreateDefaultTable(nCol,"");
    *pPara << vui_table << rptNewLine;
+
+   if ( span == ALL_SPANS )
+   {
+      vui_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      vui_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    ColumnIndexType col = 0;
 
@@ -174,6 +180,12 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    // TRICKY: create av/s table to be filled in same loop as next table
    rptRcTable* av_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
    *pPara << av_table;
+
+   if ( span == ALL_SPANS )
+   {
+      av_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      av_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    if ( stage == pgsTypes::CastingYard )
       (*av_table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -223,6 +235,12 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    *pPara << table;
 
  
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
    if ( stage == pgsTypes::CastingYard )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
@@ -339,6 +357,12 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    table = pgsReportStyleHolder::CreateDefaultTable(6,"");
    *pPara << table;
+
+   if ( span == ALL_SPANS )
+   {
+      table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
 
    if ( stage == pgsTypes::CastingYard )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());

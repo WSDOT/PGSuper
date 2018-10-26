@@ -52,13 +52,14 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CLibraryEditorDoc)
 	public:
-   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName);
-   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName);
 	//}}AFX_VIRTUAL
 
    // CEAFDocument pure-virtual functions
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
+   virtual HRESULT OpenDocumentRootNode(IStructuredLoad* pStrLoad);
+   virtual HRESULT CloseDocumentRootNode(IStructuredLoad* pStrLoad);
+   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
 
    void OnImport(); // import library entries (command handler)
 
@@ -81,6 +82,7 @@ public:
 
 private:
    CEAFToolBar* m_pMyToolBar;
+   HRESULT m_hrOpenRootNode; // keeps track of the state of BeginUnit for the root node
 
 protected:
    psgLibraryManager m_LibraryManager;

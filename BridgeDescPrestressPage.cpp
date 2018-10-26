@@ -38,7 +38,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 
@@ -124,7 +124,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -162,7 +162,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          {
             DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Permanent],   pDisplayUnits->GetGeneralForceUnit() );
          }
-         DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Permanent], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
+         DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Permanent], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
       }
 
       // compute number of straight and harped based on num permanent for possible later use below
@@ -191,7 +191,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Harped],   pDisplayUnits->GetGeneralForceUnit() );
       }
 
-      DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Harped], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s");
+      DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Harped], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s");
 
 
 	   DDX_Text(pDX, IDC_NUM_SS, pParent->m_GirderData.Nstrands[pgsTypes::Straight]);
@@ -206,7 +206,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Straight], pDisplayUnits->GetGeneralForceUnit() );
       }
 
-      DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Straight], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
+      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Straight], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
    }
 
 	DDX_Text(pDX, IDC_NUM_TEMP, pParent->m_GirderData.Nstrands[pgsTypes::Temporary]);
@@ -222,7 +222,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       DDX_UnitValueAndTag( pDX, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Temporary],  pDisplayUnits->GetGeneralForceUnit() );
    }
 
-   DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Temporary], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
+   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, pParent->m_GirderData.Pjack[pgsTypes::Temporary], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
 
    // Set up pjack controls - values that are auto-computed will be refreshed
    UpdateStrandControls();
@@ -464,7 +464,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    // Set text for Grade radio buttons
@@ -482,7 +482,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    // calling DoDataExchange.  OnInitDialog() calls DoDataExchange().
 
    // Set the OK button as the default button
-   SendMessage (DM_SETDEFID, ID_OK);
+   SendMessage (DM_SETDEFID, IDOK);
 
    InitHarpStrandOffsetMeasureComboBox( (CComboBox*)GetDlgItem(IDC_HP_COMBO_HP) );
    InitHarpStrandOffsetMeasureComboBox( (CComboBox*)GetDlgItem(IDC_HP_COMBO_END) );
@@ -608,7 +608,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -644,7 +644,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -736,7 +736,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -802,7 +802,7 @@ void CGirderDescPrestressPage::InitPjackEditEx( UINT nCheckBox )
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
 
    // only update dialog values if they are auto-computed
@@ -848,7 +848,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    int cursel = box->GetCurSel();
@@ -914,7 +914,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
       CDataExchange dx(this,FALSE);
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
@@ -1375,7 +1375,7 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 lowRange, highRange;
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, Nh, measureType, &lowRange, &highRange);
@@ -1406,7 +1406,7 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 lowRange, highRange;
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, Nh, measureType, &lowRange, &highRange);
@@ -1453,7 +1453,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_HP);
@@ -1487,7 +1487,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HP_CB_END);
@@ -1536,7 +1536,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    int cursel = box->GetCurSel();
@@ -1727,7 +1727,7 @@ void CGirderDescPrestressPage::UpdateStrandList(matPsStrand::Grade grade,matPsSt
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 

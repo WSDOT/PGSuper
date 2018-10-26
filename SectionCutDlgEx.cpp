@@ -30,7 +30,7 @@
 #include <ostream>
 #include <MfcTools\CustomDDx.h>
 #include "HtmlHelp\HelpTopics.hh"
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,7 +83,7 @@ void CSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSectionCutDlgEx) 
@@ -93,7 +93,7 @@ void CSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_VALUE, IDC_VALUE_UNITS, m_Value, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( pDX->m_bSaveAndValidate && m_CutIndex == IDC_USER_CUT )
-      DDV_UnitValueRange(pDX, m_Value, m_LowerBound, m_UpperBound, pDisplayUnits->GetSpanLengthUnit() );
+      DDV_UnitValueRange(pDX, IDC_VALUE, m_Value, m_LowerBound, m_UpperBound, pDisplayUnits->GetSpanLengthUnit() );
 
    if (!pDX->m_bSaveAndValidate)
    {

@@ -29,7 +29,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
@@ -74,11 +74,13 @@ CProductStressTable& CProductStressTable::operator= (const CProductStressTable& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                       bool bDesign,bool bRating,IDisplayUnits* pDisplayUnits) const
+                                       bool bDesign,bool bRating,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
@@ -93,6 +95,9 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
    bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
    bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
+
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+   bool bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -117,6 +122,14 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    ColumnIndexType nCols = 6;
 
    if ( bDeckPanels )
+   {
+      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
+         nCols += 2;
+      else
+         nCols++;
+   }
+
+   if ( bConstruction )
    {
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
          nCols += 2;
@@ -191,7 +204,14 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    }
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Bridge Site Stress");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
@@ -203,6 +223,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
    std::vector<Float64> fTopGirder, fBotGirder;
    std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
+   std::vector<Float64> fTopMaxConstruction, fTopMinConstruction, fBotMaxConstruction, fBotMinConstruction;
    std::vector<Float64> fTopMaxSlab, fTopMinSlab, fBotMaxSlab, fBotMinSlab;
    std::vector<Float64> fTopMaxSlabPanel, fTopMinSlabPanel, fBotMaxSlabPanel, fBotMinSlabPanel;
    std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
@@ -240,6 +261,19 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxSlab, &fBotMaxSlab );
    }
 
+   if ( bConstruction )
+   {
+      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+      {
+         pForces2->GetStress( pgsTypes::BridgeSite1, pftConstruction, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxConstruction, &fBotMaxConstruction );
+         pForces2->GetStress( pgsTypes::BridgeSite1, pftConstruction, vPoi, MinSimpleContinuousEnvelope, &fTopMinConstruction, &fBotMinConstruction );
+      }
+      else
+      {
+         pForces2->GetStress( pgsTypes::BridgeSite1, pftConstruction, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxConstruction, &fBotMaxConstruction );
+      }
+   }
+
    if ( bDeckPanels )
    {
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
@@ -270,8 +304,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
-      pForces2->GetStress( overlay_stage, pftOverlay, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxOverlay, &fBotMaxOverlay);
-      pForces2->GetStress( overlay_stage, pftOverlay, vPoi, MinSimpleContinuousEnvelope, &fTopMinOverlay, &fBotMinOverlay);
+      pForces2->GetStress( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxOverlay, &fBotMaxOverlay);
+      pForces2->GetStress( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope, &fTopMinOverlay, &fBotMinOverlay);
 
       if ( bDesign )
       {
@@ -339,7 +373,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          pForces2->GetStress( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxShearKey, &fBotMaxShearKey);
 
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
-      pForces2->GetStress( overlay_stage, pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
+      pForces2->GetStress( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
 
       if ( bDesign )
       {
@@ -433,6 +467,26 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          {
             (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxShearKey[index]);
+            col++;
+         }
+      }
+
+      if ( bConstruction )
+      {
+         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxConstruction[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinConstruction[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinConstruction[index]);
+            col++;
+         }
+         else
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxConstruction[index]);
             col++;
          }
       }

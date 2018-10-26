@@ -321,9 +321,13 @@
       </ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Chapter 6 - Status Center">
-      <param name="Local" value="User's Guide\StatusCenter\Status_Center.htm">
+      <param name="Local" value="User's Guide\StatusCenter\Chapter.htm">
     </object>
     <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Introduction">
+        <param name="Local" value="User's Guide\StatusCenter\Status_Center.htm">
+      </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Alerts">
         <param name="Local" value="User's Guide\StatusCenter\Alerts.htm">
@@ -335,9 +339,13 @@
       </ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Chapter 7 - Analysis Controls">
-      <param name="Local" value="User's Guide\AnalysisControls\AnalysisControls.htm">
+      <param name="Local" value="User's Guide\AnalysisControls\Chapter.htm">
     </object>
     <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Analysis Controls">
+        <param name="Local" value="User's Guide\AnalysisControls\AnalysisControls.htm">
+      </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Structural Analysis Method">
         <param name="Local" value="User's Guide\AnalysisControls\StructuralAnalysisMethod.htm">
@@ -440,7 +448,21 @@
       </object>
       </ul>
     <li><object type="text/sitemap">
-      <param name="Name" value="Chapter 12 - Project Templates">
+      <param name="Name" value="Chapter 12 - Load Rating">
+      <param name="Local" value="User's Guide\LoadRating\Chapter.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Introduction">
+        <param name="Local" value="User's Guide\LoadRating\Introduction.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Load Rating a Girder">
+        <param name="Local" value="User's Guide\LoadRating\Load_Rating_a_Girder.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Chapter 13 - Project Templates">
       <param name="Local" value="User's Guide\Project_Templates\Chapter_9.htm">
     </object>
     <ul>
@@ -458,7 +480,7 @@
       </object>
       </ul>
     <li><object type="text/sitemap">
-      <param name="Name" value="Chapter 13 - Customizing PGSuper">
+      <param name="Name" value="Chapter 14 - Customizing PGSuper">
       <param name="Local" value="User's Guide\Customizing_PGSuper\Chapter_10.htm">
     </object>
     <ul>
@@ -476,7 +498,7 @@
       </object>
       </ul>
     <li><object type="text/sitemap">
-      <param name="Name" value="Chapter 14 - Command Line Options">
+      <param name="Name" value="Chapter 15 - Command Line Options">
       <param name="Local" value="User's Guide\Command_Line_Options\Chapter_14.htm">
     </object>
     <ul>
@@ -487,6 +509,16 @@
       <li><object type="text/sitemap">
         <param name="Name" value="TxDOT Data Export Options">
         <param name="Local" value="User's Guide\Command_Line_Options\Command_Line_Options.htm">
+      </object>
+      </ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Chapter 16 - Extending PGSuper">
+      <param name="Local" value="User's Guide\Extending_PGSuper\Extending_PGSuper.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Introduction">
+        <param name="Local" value="User's Guide\Extending_PGSuper\Extending_PGSuper.htm">
       </object>
       </ul>
     <li><object type="text/sitemap">
@@ -598,6 +630,10 @@
       <li><object type="text/sitemap">
         <param name="Name" value="Configure PGSuper">
         <param name="Local" value="Dialogs\Configure_PGSuper.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Construction Loads">
+        <param name="Local" value="Dialogs\Construction_Loads.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Copy Concrete">
@@ -959,6 +995,10 @@
     <li><object type="text/sitemap">
       <param name="Name" value="Deflections Due To Creep">
       <param name="Local" value="Theoretical Manual\CreepDeflection.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Fatigue">
+      <param name="Local" value="Theoretical Manual\Fatigue.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Interface Shear Transfer">

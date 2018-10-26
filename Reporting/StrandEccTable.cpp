@@ -27,7 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,13 +70,15 @@ CStrandEccTable& CStrandEccTable::operator= (const CStrandEccTable& rOther)
 
 //======================== OPERATIONS =======================================
 rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                   IDisplayUnits* pDisplayUnits) const
+                                   IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) ? true : false);
 
    // Setup table
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7,"Strand Eccentricity");
+   std::ostringstream os;
+   os << "Strand Eccentricity for Span " << LABEL_SPAN(span) << " Girder " << LABEL_GIRDER(girder);
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7,os.str().c_str());
 
    p_table->SetNumberOfHeaderRows(2);
 

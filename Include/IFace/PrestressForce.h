@@ -49,7 +49,7 @@ COPYRIGHT
 class pgsPointOfInterest;
 class matPsStrand;
 class rptChapter;
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 // MISCELLANEOUS
 //
@@ -143,7 +143,7 @@ interface ILosses : IUnknown
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
    virtual void ClearDesignLosses() = 0;
 
-   virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

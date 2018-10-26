@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -73,8 +73,8 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the constructability check table.
-   rptRcTable* BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const;
-   void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IDisplayUnits* pDisplayUnits) const;
+   rptRcTable* BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

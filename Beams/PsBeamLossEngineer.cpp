@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "PsBeamLossEngineer.h"
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,7 +57,7 @@ LOSSDETAILS CPsBeamLossEngineer::ComputeLossesForDesign(const pgsPointOfInterest
    return m_Engineer.ComputeLossesForDesign(m_BeamType,poi,config);
 }
 
-void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    m_Engineer.BuildReport(m_BeamType,span,gdr,pChapter,pDisplayUnits);
 }

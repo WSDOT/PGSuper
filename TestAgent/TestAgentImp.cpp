@@ -350,7 +350,7 @@ std::string CTestAgentImp::GetBridgeID()
       return strID;
    else
    {
-      GET_IFACE(IDocument,pDocumnet);
+      GET_IFACE(IEAFDocument,pDocumnet);
       std::string strPath = pDocumnet->GetFilePath();
 
       // Filename is in the form Regxxx.pgs

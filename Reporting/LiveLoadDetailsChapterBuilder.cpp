@@ -24,7 +24,7 @@
 #include <Reporting\LiveLoadDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -63,13 +63,11 @@ LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
 
 rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pBrokerRptSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -302,7 +300,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    return pChapter;
 }
 
-void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IDisplayUnits* pDisplayUnits)
+void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,         pDisplayUnits->GetSpanLengthUnit(),       false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,       pDisplayUnits->GetGeneralForceUnit(),     false );

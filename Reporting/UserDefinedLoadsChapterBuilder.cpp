@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
 
@@ -56,33 +56,70 @@ LPCTSTR CUserDefinedLoadsChapterBuilder::GetName() const
 
 rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSpec->GetSpan();
-   GirderIndexType girder = pSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   rptParagraph* pParagraph;
-   pParagraph = new rptParagraph();
-   *pChapter << pParagraph;
-   *pParagraph <<"Span "<<LABEL_SPAN(span)<<" Girder "<<LABEL_GIRDER(girder)<<rptNewLine;
-   *pParagraph <<"Locations are measured from left support."<<rptNewLine;
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
 
-   // tables of details - point loads first
-   rptParagraph* ppar1 = CreatePointLoadTable(pBroker, span, girder, pDisplayUnits, level);
-   *pChapter <<ppar1;
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      {
+         rptParagraph* pParagraph;
 
-   // distributed loads
-   ppar1 = CreateDistributedLoadTable(pBroker, span, girder, pDisplayUnits, level);
-   *pChapter <<ppar1;
+         pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << pParagraph;
+         *pParagraph <<"Span "<<LABEL_SPAN(spanIdx)<<" Girder "<<LABEL_GIRDER(gdrIdx)<<rptNewLine;
 
-   // moments loads
-   ppar1 = CreateMomentLoadTable(pBroker, span, girder, pDisplayUnits, level);
-   *pChapter <<ppar1;
+         pParagraph = new rptParagraph;
+         *pChapter << pParagraph;
+         *pParagraph <<"Locations are measured from left support."<<rptNewLine;
+
+         // tables of details - point loads first
+         rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+         *pChapter <<ppar1;
+
+         // distributed loads
+         ppar1 = CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+         *pChapter <<ppar1;
+
+         // moments loads
+         ppar1 = CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
+         *pChapter <<ppar1;
+      } // gdrIdx
+   } // spanIdx
 
    return pChapter;
 }
@@ -114,7 +151,7 @@ CChapterBuilder* CUserDefinedLoadsChapterBuilder::Clone() const
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDisplayUnits,
+                           IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
@@ -125,6 +162,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
 
+   std::ostringstream os;
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"Point Loads");
 
    (*table)(0,0)  << "Stage";
@@ -205,7 +243,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDisplayUnits,
+                           IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
@@ -300,7 +338,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker,
                            SpanIndexType span, GirderIndexType girder,
-                           IDisplayUnits* pDisplayUnits,
+                           IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
@@ -311,7 +349,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"Moment Loads");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"End Moments");
 
    (*table)(0,0)  << "Stage";
    (*table)(0,1)  << "Load" << rptNewLine << "Case";

@@ -25,7 +25,7 @@
 #include <Reporting\ProductMomentsTable.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -71,7 +71,7 @@ CProductRotationTable& CProductRotationTable::operator= (const CProductRotationT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                         bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
+                                         bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -80,20 +80,20 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
-   bool bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    SpanIndexType startSpan, nSpans;
    pgsTypes::Stage continuity_stage;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
    PierIndexType nPiers = nSpans+1;
    PierIndexType startPier = startSpan;
    PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Rotations");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(p_table,true,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(p_table,true,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPoi;
@@ -140,6 +140,20 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          }
       }
 
+
+      if ( bConstruction )
+      {
+         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftConstruction,   poi, MaxSimpleContinuousEnvelope ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftConstruction,   poi, MinSimpleContinuousEnvelope ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftConstruction,   poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         }
+      }
+
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {
          (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftSlab,  poi, MaxSimpleContinuousEnvelope ) );
@@ -173,8 +187,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
          (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, MaxSimpleContinuousEnvelope ) );
          (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, MinSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, pftOverlay,        poi, MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, pftOverlay,        poi, MinSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        poi, MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        poi, MinSimpleContinuousEnvelope ) );
 
          Float64 min, max;
          long minConfig, maxConfig;
@@ -356,7 +370,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          }
 
          (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, pftOverlay,        poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( overlay_stage, bRating ? pftOverlayRating : pftOverlay,        poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
 
          if ( bPedLoading )
          {

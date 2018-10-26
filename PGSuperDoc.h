@@ -92,14 +92,10 @@ public:
    void SelectSpan(SpanIndexType spanIdx);
    void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
-   virtual void OnUpdateError(const CString& errorMsg);
-
    void OnLibMgrChanged(psgLibraryManager* pNewLibMgr);
 
    bool DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CPGSuperCommandLineInfo& txInfo);
 
-   // called by the framework to put the names of all available reports
-   // on the Reports sub-menu
    void PopulateReportMenu();
 
 // Overrides
@@ -184,8 +180,6 @@ protected:
 
    psgLibraryManager m_LibMgr;
 
-   bool m_bIsReportMenuPopulated; 
-
    bool m_bAutoCalcEnabled;
    UINT m_BridgeModelEditorSettings;
    UINT m_GirderModelEditorSettings;
@@ -222,6 +216,12 @@ protected:
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
 
+   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
+   virtual HRESULT CloseDocumentRootNode(IStructuredSave* pStrSave);
+
+   virtual HRESULT OpenDocumentRootNode(IStructuredLoad* pStrLoad);
+   virtual HRESULT CloseDocumentRootNode(IStructuredLoad* pStrLoad);
+
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
    virtual void OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
 
@@ -234,6 +234,8 @@ protected:
    virtual void OnStatusChanged();
 
    virtual CString GetToolbarSectionName();
+
+   virtual void CreateReportView(CollectionIndexType rptIdx,bool bPrompt);
 
 // Generated message map functions
 protected:
@@ -260,9 +262,8 @@ protected:
 	afx_msg void OnAddPointload();
 	afx_msg void OnAddDistributedLoad();
 	afx_msg void OnAddMomentLoad();
+   afx_msg void OnConstructionLoads();
 	afx_msg void OnProjectAlignment();
-   afx_msg void OnReport(UINT nID);
-   afx_msg void OnQuickReport(UINT nID);
    afx_msg void OnProjectAnalysis();
 	afx_msg void OnEditPier();
 	afx_msg void OnEditSpan();
@@ -294,12 +295,6 @@ public:
    bool DoLoadMasterLibrary(const CString& rPath);
 
    void InitProjectProperties();
-
-   /// populates a menu with the names of the reports
-   void BuildReportMenu(CMenu* pMenu,bool bQuickReport);
-   void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
-   UINT_PTR GetReportCommand(CollectionIndexType rptIdx,bool bQuickReport);
-   CollectionIndexType GetReportIndex(UINT nID,bool bQuickReport);
 
 	DECLARE_MESSAGE_MAP()
 };

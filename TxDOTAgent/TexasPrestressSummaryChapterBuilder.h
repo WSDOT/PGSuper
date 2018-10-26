@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TEXASPRESTRESSSUMMARYCHAPTERBUILDER_H_
 #define INCLUDED_TEXASPRESTRESSSUMMARYCHAPTERBUILDER_H_
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

@@ -34,7 +34,7 @@
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\PierData.h>
 #include <algorithm>
 
@@ -92,7 +92,7 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if ( !pDX->m_bSaveAndValidate )
    {
@@ -141,7 +141,7 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
    m_StationFormat.SetWindowText( fmt );

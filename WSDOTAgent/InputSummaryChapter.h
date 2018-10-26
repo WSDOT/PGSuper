@@ -38,7 +38,7 @@
 
 // FORWARD DECLARATIONS
 //
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 // MISCELLANEOUS
 //

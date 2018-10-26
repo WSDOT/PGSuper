@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
+    "<EAF\EAFResources.h\0>"
 END
 
 2 TEXTINCLUDE 
@@ -71,8 +73,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,2
- PRODUCTVERSION 2,3,0,2
+ FILEVERSION 2,3,0,3
+ PRODUCTVERSION 2,3,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,12 +92,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.3.0.2"
+            VALUE "FileVersion", "2.3.0.3"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.2"
+            VALUE "ProductVersion", "2.3.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -111,7 +113,7 @@ END
 //
 
 IDR_LIBAPPPLUGIN        REGISTRY                "LibraryAppPlugin.rgs"
-IDR_PGSUPERCOMPONENTINFO   REGISTRY             "res\\PGSuperComponentInfo.rgs"
+IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -883,8 +885,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Library Entry Conflict"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "Overwrite With Master",ID_OVERWRITE,66,116,80,14
-    PUSHBUTTON      "Rename Entry",ID_RENAME_ENTRY,7,116,50,14
+    DEFPUSHBUTTON   "Overwrite With Master",IDC_OVERWRITE,66,116,80,14
+    PUSHBUTTON      "Rename Entry",IDC_RENAME_ENTRY,7,116,50,14
     LTEXT           "A conflict occurred while reading the library entries. An entry in the project library has the same name as an entry in the Master Library, but not the same data values.",IDC_CONFLICT_TOP,7,7,198,35
     PUSHBUTTON      "Help",ID_HELP,155,116,50,14
     LTEXT           "The entry name is %s in the %s",IDC_ENTRY_TEXT,7,46,198,27
@@ -1971,6 +1973,7 @@ BEGIN
     IDS_SLOPE_O7_SI         "Max Strand Slope for 17.78d mm Strands"
     IDS_SLOPE_O7_US         "Max Strand Slope for 0.7d inch Strands"
     IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
+    ID_MANAGE_PLUGINS       "Manage Library Editor Plug-insanage Plug-ins"
     IDS_SPEC_STRAND         "Strand Stresses"
     IDS_SPEC_LOSS           "Losses"
     IDS_SPEC_ANALYSIS       "Structural Analysis"
@@ -1983,7 +1986,6 @@ BEGIN
     ID_EDIT_DELETEROW       "Delete the current row"
     ID_EDIT_REMOVEROWS      "Delete the current row"
     ID_EDIT_ROW             "Edit the current row"
-    ID_STR_APPEND           "Append strand to end of list"
     ID_STR_INSERT           "Insert location above"
     ID_STR_DELETE           "Delete row"
 END
@@ -2004,12 +2006,16 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDM_ADD_ENTRY           "Add a new entry to the library\nAdd new entry"
-    IDM_EDIT_ENTRY          "Open the entry for editing\nEdit entry"
-    IDM_DELETE_ENTRY        "Delete The Selected Entry\nDelete entry"
-    IDM_DUPLICATE_ENTRY     "Duplicate the Selected Entry\nDuplicate entry"
-    IDM_EXPORT_TEMPLATE     "Save the current project to a template file\nSave as template file"
+    IDM_ADD_ENTRY           "Add a new entry to the library\nAdd entry"
+    IDM_EDIT_ENTRY          "Edit the selected entry\nEdit entry"
+    IDM_DELETE_ENTRY        "Delete the selected entry\nDelete entry"
+    IDM_DUPLICATE_ENTRY     "Duplicate the selected entry\nDuplicate entry"
     IDM_LARGE_ICONS         "View library entries using large icons\nLarge Icons"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
 END
 
 STRINGTABLE 
@@ -2065,6 +2071,7 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

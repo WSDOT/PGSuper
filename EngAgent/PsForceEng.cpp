@@ -105,7 +105,7 @@ void pgsPsForceEng::Invalidate()
    m_PrestressTransferComputationType=(pgsTypes::PrestressTransferComputationType)-1; 
 }
 
-void pgsPsForceEng::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
+void pgsPsForceEng::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    CreateLossEngineer(span,gdr);
    m_LossEngineer->BuildReport(span,gdr,pChapter,pDisplayUnits);

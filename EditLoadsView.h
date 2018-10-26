@@ -40,6 +40,8 @@
 #include <afxext.h>
 #endif
 
+#include "resource.h"
+
 class CEditLoadsView : public CFormView
 {
 protected:

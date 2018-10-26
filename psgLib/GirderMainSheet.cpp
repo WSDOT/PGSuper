@@ -296,22 +296,22 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
    DDX_Check_Bool(pDX,IDC_ALLOW_HP_ADJUST, m_Entry.m_HPAdjustment.m_AllowVertAdjustment );
    DDX_UnitValueAndTag(pDX, IDC_HP_INCREMENT, IDC_HP_INCREMENT_T, m_Entry.m_HPAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_HPAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HP_INCREMENT,m_Entry.m_HPAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_HP_LSL, IDC_HP_LSL_T, m_Entry.m_HPAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_HPAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HP_LSL,m_Entry.m_HPAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
    DDX_CBIndex(pDX,IDC_COMBO_HP_LSL, (int&)m_Entry.m_HPAdjustment.m_BottomFace);
    DDX_UnitValueAndTag(pDX, IDC_HP_USL, IDC_HP_USL_T, m_Entry.m_HPAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_HPAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HP_USL,m_Entry.m_HPAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
    DDX_CBIndex(pDX,IDC_COMBO_HP_USL, (int&)m_Entry.m_HPAdjustment.m_TopFace);
    
    DDX_Check_Bool(pDX,IDC_ALLOW_END_ADJUST, m_Entry.m_EndAdjustment.m_AllowVertAdjustment );
    DDX_UnitValueAndTag(pDX, IDC_END_INCREMENT, IDC_END_INCREMENT_T, m_Entry.m_EndAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_EndAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_END_INCREMENT,m_Entry.m_EndAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_END_LSL, IDC_END_LSL_T, m_Entry.m_EndAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_EndAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_END_LSL,m_Entry.m_EndAdjustment.m_BottomLimit, pDisplayUnits->ComponentDim );
    DDX_CBIndex(pDX,IDC_COMBO_END_LSL, (int&)m_Entry.m_EndAdjustment.m_BottomFace);
    DDX_UnitValueAndTag(pDX, IDC_END_USL, IDC_END_USL_T, m_Entry.m_EndAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_EndAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_END_USL,m_Entry.m_EndAdjustment.m_TopLimit, pDisplayUnits->ComponentDim );
    DDX_CBIndex(pDX,IDC_COMBO_END_USL, (int&)m_Entry.m_EndAdjustment.m_TopFace);
 
    DDX_Check_Bool(pDX,IDC_ODD_STRANDS, m_Entry.m_bOddNumberOfHarpedStrands );
@@ -504,7 +504,7 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_TF_SPACING, IDC_TF_SPACING_UNITS, m_TfBarSpacing, pDisplayUnits->ComponentDim);
-   DDV_UnitValueZeroOrMore(pDX, m_TfBarSpacing, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_TF_SPACING,m_TfBarSpacing, pDisplayUnits->ComponentDim);
 
    // get shear steel information from grid and store it
    if (pDX->m_bSaveAndValidate)
@@ -686,7 +686,7 @@ void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
    else
    {
       DDX_UnitValueAndTag(pDX, IDC_HARP_LOCATION, IDC_HARP_LOCATION_TAG, m_Entry.m_HarpingPointLocation, pDisplayUnits->SpanLength);
-      DDV_UnitValueZeroOrMore(pDX, m_Entry.m_HarpingPointLocation, pDisplayUnits->SpanLength);
+      DDV_UnitValueZeroOrMore(pDX, IDC_HARP_LOCATION,m_Entry.m_HarpingPointLocation, pDisplayUnits->SpanLength);
    }
 
    int bMin;
@@ -703,7 +703,7 @@ void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
 
 
    DDX_UnitValueAndTag(pDX, IDC_MIN_HP, IDC_MIN_HP_UNIT, m_Entry.m_MinHarpingPointLocation, pDisplayUnits->SpanLength );
-   DDV_UnitValueZeroOrMore(pDX, m_Entry.m_MinHarpingPointLocation, pDisplayUnits->SpanLength );
+   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_HP,m_Entry.m_MinHarpingPointLocation, pDisplayUnits->SpanLength );
 }
 
 void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
@@ -722,10 +722,10 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
    DDX_Percentage(pDX,IDC_MAX_FRACTION_PER_SECTION, m_Entry.m_MaxDebondedStrandsPerSection);
 
    DDX_UnitValueAndTag(pDX, IDC_MIN_DISTANCE, IDC_MIN_DISTANCE_UNIT, m_Entry.m_MinDebondLength, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero( pDX, m_Entry.m_MinDebondLength, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero( pDX, IDC_MIN_DISTANCE,m_Entry.m_MinDebondLength, pDisplayUnits->ComponentDim);
 
    DDX_UnitValueAndTag(pDX, IDC_DEFAULT_DISTANCE, IDC_DEFAULT_DISTANCE_UNIT, m_Entry.m_DefaultDebondLength, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero( pDX, m_Entry.m_DefaultDebondLength, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero( pDX, IDC_DEFAULT_DISTANCE,m_Entry.m_DefaultDebondLength, pDisplayUnits->ComponentDim);
 
    if (m_Entry.m_DefaultDebondLength < m_Entry.m_MinDebondLength)
    {
@@ -769,7 +769,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       if(bval!=FALSE)
       {
          DDX_UnitValueAndTag(pDX, IDC_MAX_LENGTH, IDC_MAX_LENGTH_UNIT, m_Entry.m_MaxDebondLengthByHardDistance, pDisplayUnits->SpanLength);
-         DDV_UnitValueZeroOrMore(pDX, m_Entry.m_MaxDebondLengthByHardDistance, pDisplayUnits->SpanLength);
+         DDV_UnitValueZeroOrMore(pDX, IDC_MAX_LENGTH,m_Entry.m_MaxDebondLengthByHardDistance, pDisplayUnits->SpanLength);
       }
       else
       {

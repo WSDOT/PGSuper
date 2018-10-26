@@ -21,4 +21,26 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <EAF\EAFDisplayUnits.h>
+
+#include <System\Transaction.h>
+
+class txnEditConstructionLoad : public txnTransaction
+{
+public:
+   txnEditConstructionLoad(Float64 oldLoad,Float64 newLoad);
+
+   ~txnEditConstructionLoad();
+
+   virtual bool Execute();
+   virtual void Undo();
+   virtual txnTransaction* CreateClone() const;
+   virtual std::string Name() const;
+   virtual bool IsUndoable();
+   virtual bool IsRepeatable();
+
+private:
+   // index 0 = old data (before edit), index 1 = new data (after edit)
+   Float64 m_Load[2];
+
+   void DoExecute(int i);
+};

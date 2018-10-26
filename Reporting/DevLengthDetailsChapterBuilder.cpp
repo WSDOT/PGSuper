@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\DevLengthDetailsChapterBuilder.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -57,17 +57,36 @@ LPCTSTR CDevLengthDetailsChapterBuilder::GetName() const
 rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   if ( pSGRptSpec )
+   {
+      pSGRptSpec->GetBroker(&pBroker);
+      span = pSGRptSpec->GetSpan();
+      gdr = pSGRptSpec->GetGirder();
+   }
+   else if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      span = ALL_SPANS;
+      gdr = pGdrRptSpec->GetGirder();
+   }
+   else
+   {
+      span = ALL_SPANS;
+      gdr  = ALL_GIRDERS;
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,  pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -78,148 +97,169 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker,IPrestressForce,pPSForce);
 
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_ALL,POIFIND_OR);
-   ATLASSERT( vPOI.size() != 0 );
-   pgsPointOfInterest dummy_poi = vPOI[0];
-
-   STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(dummy_poi,false); // not debonded
-   STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true);  // debonded
-
-   // Transfer Length
-   GET_IFACE2(pBroker,ISpecification, pSpec );
-   std::string spec_name = pSpec->GetSpecification();
-   GET_IFACE2(pBroker,ILibrary, pLib );
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
-   rptParagraph* pParagraph_h = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pParagraph_h;
-   rptParagraph* pParagraph = new rptParagraph;
-   *pChapter << pParagraph;
-
-   if (pSpecEntry->GetPrestressTransferComputationType()!=pgsTypes::ptMinuteValue)
-   {
-      *pParagraph_h << "Transfer Length [5.11.4.1]" << rptNewLine;
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "TransferLength.gif") << rptNewLine;
-      *pParagraph << Sub2("d","b") << " = " << length.SetValue(bonded_details.db) << rptNewLine;
-      *pParagraph << Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
-   }
-   else
-   {
-      *pParagraph_h << "Zero Transfer Length Selected in Project Criteria" << rptNewLine;
-      *pParagraph << "Actual length used "<< Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
-   }
-
-   // Development Length
-   pParagraph = new rptParagraph;
-   *pChapter << pParagraph;
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,"Development Length [5.11.4.2]");
-   (*pParagraph) << pTable << rptNewLine;
-
-   if ( IS_US_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_US.gif") << rptNewLine;
-   else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_SI.gif") << rptNewLine;
-
-
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLengthReduction.png") << rptNewLine;
-
-   pTable->SetNumberOfHeaderRows(2);
-   pTable->SetRowSpan(0,0,2);
-   pTable->SetRowSpan(1,0,-1);
-   (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-
-   pTable->SetColumnSpan(0,1, 6);
-   pTable->SetColumnSpan(0,2,-1);
-   pTable->SetColumnSpan(0,3,-1);
-   pTable->SetColumnSpan(0,4,-1);
-   pTable->SetColumnSpan(0,5,-1);
-   pTable->SetColumnSpan(0,6,-1);
-   (*pTable)(0,1) << "Bonded Strands "   << symbol(kappa) << " = " << bonded_details.k;
-
-   pTable->SetColumnSpan(0,7, 6);
-   pTable->SetColumnSpan(0,8,-1);
-   pTable->SetColumnSpan(0,9,-1);
-   pTable->SetColumnSpan(0,10,-1);
-   pTable->SetColumnSpan(0,11,-1);
-   pTable->SetColumnSpan(0,12,-1);
-   (*pTable)(0,7) << "Debonded Strands " << symbol(kappa) << " = " << debonded_details.k;
-
-   (*pTable)(1,1) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(1,2) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(1,3) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(1,4) << COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(1,5) << COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(1,6) << Sub2("f","px") << "/" << Sub2("f","ps");
-
-   (*pTable)(1,7) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(1,8) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(1,9) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(1,10)<< COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(1,11)<< COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(1,12)<< Sub2("f","px") << "/" << Sub2("f","ps");
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-   Float64 girder_length = pBridge->GetGirderLength(span,girder);
-   Float64 half_girder_length = girder_length/2;
-
-   stress.ShowUnitTag(false);
-   length.ShowUnitTag(false);
-
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin(); iter != vPOI.end(); iter++ )
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
    {
-      pgsPointOfInterest poi = *iter;
-      STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(poi,false); // not debonded
-      STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(poi,true); // debonded
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      {
+         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
+         ATLASSERT( vPOI.size() != 0 );
+         pgsPointOfInterest dummy_poi = vPOI[0];
 
-      Float64 lpx;
-      if ( poi.GetDistFromStart() < half_girder_length )
-         lpx = poi.GetDistFromStart();
-      else
-         lpx = girder_length - poi.GetDistFromStart();
+         STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(dummy_poi,false); // not debonded
+         STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true);  // debonded
 
-      Float64 bond_factor;
-      if ( lpx < bonded_details.lt )
-         bond_factor = bonded_details.fpe*lpx/(bonded_details.fps*bonded_details.lt);
-      else if ( lpx < bonded_details.ld )
-         bond_factor = (bonded_details.fpe + ((lpx - bonded_details.lt)/(bonded_details.ld - bonded_details.lt))*(bonded_details.fps - bonded_details.fpe))/bonded_details.fps;
-      else
-         bond_factor = 1.0;
+         // Transfer Length
+         GET_IFACE2(pBroker,ISpecification, pSpec );
+         std::string spec_name = pSpec->GetSpecification();
+         GET_IFACE2(pBroker,ILibrary, pLib );
+         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-      bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
+         rptParagraph* pParagraph_h = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << pParagraph_h;
+         rptParagraph* pParagraph = new rptParagraph;
+         *pChapter << pParagraph;
 
-      (*pTable)(row,0) << location.SetValue( poi, end_size );
-      (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
-      (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
-      (*pTable)(row,3) << length.SetValue(bonded_details.db);
-      (*pTable)(row,4) << length.SetValue(bonded_details.ld);
-      (*pTable)(row,5) << length.SetValue(lpx);
-      (*pTable)(row,6) << scalar.SetValue(bond_factor);
+         if (pSpecEntry->GetPrestressTransferComputationType()!=pgsTypes::ptMinuteValue)
+         {
+            *pParagraph_h << "Transfer Length [5.11.4.1]" << rptNewLine;
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "TransferLength.gif") << rptNewLine;
+            *pParagraph << Sub2("d","b") << " = " << length.SetValue(bonded_details.db) << rptNewLine;
+            *pParagraph << Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph_h << "Zero Transfer Length Selected in Project Criteria" << rptNewLine;
+            *pParagraph << "Actual length used "<< Sub2("l","t") << " = " << length.SetValue(bonded_details.lt) << rptNewLine;
+         }
 
-      if ( lpx < debonded_details.lt )
-         bond_factor = debonded_details.fpe*lpx/(debonded_details.fps*debonded_details.lt);
-      else if ( lpx < debonded_details.ld )
-         bond_factor = (debonded_details.fpe + ((lpx - debonded_details.lt)/(debonded_details.ld - debonded_details.lt))*(debonded_details.fps - debonded_details.fpe))/debonded_details.fps;
-      else
-         bond_factor = 1.0;
+         // Development Length
+         pParagraph = new rptParagraph;
+         *pChapter << pParagraph;
 
-      bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
+         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,"Development Length [5.11.4.2]");
+         (*pParagraph) << pTable << rptNewLine;
 
-      (*pTable)(row,7) << stress.SetValue(debonded_details.fps);
-      (*pTable)(row,8) << stress.SetValue(debonded_details.fpe);
-      (*pTable)(row,9) << length.SetValue(debonded_details.db);
-      (*pTable)(row,10) << length.SetValue(debonded_details.ld);
-      (*pTable)(row,11) << length.SetValue(lpx);
-      (*pTable)(row,12) << scalar.SetValue(bond_factor);
 
-      row++;
+         if ( span == ALL_SPANS )
+         {
+            pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+            pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         }
+
+         if ( IS_US_UNITS(pDisplayUnits) )
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_US.gif") << rptNewLine;
+         else
+            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_SI.gif") << rptNewLine;
+
+
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLengthReduction.png") << rptNewLine;
+
+         pTable->SetNumberOfHeaderRows(2);
+         pTable->SetRowSpan(0,0,2);
+         pTable->SetRowSpan(1,0,-1);
+         (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+         pTable->SetColumnSpan(0,1, 6);
+         pTable->SetColumnSpan(0,2,-1);
+         pTable->SetColumnSpan(0,3,-1);
+         pTable->SetColumnSpan(0,4,-1);
+         pTable->SetColumnSpan(0,5,-1);
+         pTable->SetColumnSpan(0,6,-1);
+         (*pTable)(0,1) << "Bonded Strands "   << symbol(kappa) << " = " << bonded_details.k;
+
+         pTable->SetColumnSpan(0,7, 6);
+         pTable->SetColumnSpan(0,8,-1);
+         pTable->SetColumnSpan(0,9,-1);
+         pTable->SetColumnSpan(0,10,-1);
+         pTable->SetColumnSpan(0,11,-1);
+         pTable->SetColumnSpan(0,12,-1);
+         (*pTable)(0,7) << "Debonded Strands " << symbol(kappa) << " = " << debonded_details.k;
+
+         (*pTable)(1,1) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,2) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,3) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,4) << COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,5) << COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,6) << Sub2("f","px") << "/" << Sub2("f","ps");
+
+         (*pTable)(1,7) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,8) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1,9) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,10)<< COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,11)<< COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1,12)<< Sub2("f","px") << "/" << Sub2("f","ps");
+
+         GET_IFACE2(pBroker,IBridge,pBridge);
+         Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+         Float64 girder_length = pBridge->GetGirderLength(spanIdx,gdrIdx);
+         Float64 half_girder_length = girder_length/2;
+
+         stress.ShowUnitTag(false);
+         length.ShowUnitTag(false);
+
+         RowIndexType row = pTable->GetNumberOfHeaderRows();
+         for ( std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin(); iter != vPOI.end(); iter++ )
+         {
+            pgsPointOfInterest poi = *iter;
+            STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(poi,false); // not debonded
+            STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(poi,true); // debonded
+
+            Float64 lpx;
+            if ( poi.GetDistFromStart() < half_girder_length )
+               lpx = poi.GetDistFromStart();
+            else
+               lpx = girder_length - poi.GetDistFromStart();
+
+            Float64 bond_factor;
+            if ( lpx < bonded_details.lt )
+               bond_factor = bonded_details.fpe*lpx/(bonded_details.fps*bonded_details.lt);
+            else if ( lpx < bonded_details.ld )
+               bond_factor = (bonded_details.fpe + ((lpx - bonded_details.lt)/(bonded_details.ld - bonded_details.lt))*(bonded_details.fps - bonded_details.fpe))/bonded_details.fps;
+            else
+               bond_factor = 1.0;
+
+            bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
+
+            (*pTable)(row,0) << location.SetValue( poi, end_size );
+            (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
+            (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
+            (*pTable)(row,3) << length.SetValue(bonded_details.db);
+            (*pTable)(row,4) << length.SetValue(bonded_details.ld);
+            (*pTable)(row,5) << length.SetValue(lpx);
+            (*pTable)(row,6) << scalar.SetValue(bond_factor);
+
+            if ( lpx < debonded_details.lt )
+               bond_factor = debonded_details.fpe*lpx/(debonded_details.fps*debonded_details.lt);
+            else if ( lpx < debonded_details.ld )
+               bond_factor = (debonded_details.fpe + ((lpx - debonded_details.lt)/(debonded_details.ld - debonded_details.lt))*(debonded_details.fps - debonded_details.fpe))/debonded_details.fps;
+            else
+               bond_factor = 1.0;
+
+            bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
+
+            (*pTable)(row,7) << stress.SetValue(debonded_details.fps);
+            (*pTable)(row,8) << stress.SetValue(debonded_details.fpe);
+            (*pTable)(row,9) << length.SetValue(debonded_details.db);
+            (*pTable)(row,10) << length.SetValue(debonded_details.ld);
+            (*pTable)(row,11) << length.SetValue(lpx);
+            (*pTable)(row,12) << scalar.SetValue(bond_factor);
+
+            row++;
+         }
+
+         pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+         (*pChapter) << pParagraph;
+         (*pParagraph) << Sub2("f","px") << "/" << Sub2("f","ps") << " = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)" << rptNewLine;
+      }
    }
-
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-   (*pChapter) << pParagraph;
-   (*pParagraph) << Sub2("f","px") << "/" << Sub2("f","ps") << " = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)" << rptNewLine;
 
    return pChapter;
 }

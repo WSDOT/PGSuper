@@ -88,6 +88,7 @@ public:
 
    // returns the girder type name for a given girder index
    void SetGirderName(GroupIndexType grpIdx,const char* strName);
+   void RenameGirder(GroupIndexType grpIdx,const char* strName);
    const char* GetGirderName(GirderIndexType gdrIdx) const;
 
    void SetGirderLibraryEntry(GroupIndexType grpIdx,const GirderLibraryEntry* pEntry);

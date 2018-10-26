@@ -59,12 +59,13 @@ public:
 class pgsLiftingSupportLocationStatusCallback : public iStatusCallback
 {
 public:
-   pgsLiftingSupportLocationStatusCallback(IBroker* pBroker);
+   pgsLiftingSupportLocationStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity();
    virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 // status for truck stiffness
@@ -80,6 +81,29 @@ class pgsTruckStiffnessStatusCallback : public iStatusCallback
 {
 public:
    pgsTruckStiffnessStatusCallback(IBroker* pBroker);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
+};
+
+// status for bunk point
+class pgsBunkPointLocationStatusItem : public CEAFStatusItem
+{
+public:
+   pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
+
+   SpanIndexType m_Span;
+   GirderIndexType m_Girder;
+};
+
+///////////////////////////
+class pgsBunkPointLocationStatusCallback : public iStatusCallback
+{
+public:
+   pgsBunkPointLocationStatusCallback(IBroker* pBroker);
    virtual eafTypes::StatusSeverityType GetSeverity();
    virtual void Execute(CEAFStatusItem* pStatusItem);
 

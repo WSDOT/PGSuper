@@ -44,7 +44,7 @@ COPYRIGHT
 // FORWARD DECLARATIONS
 //
 struct IBroker;
-struct IDisplayUnits;
+struct IEAFDisplayUnits;
 
 // MISCELLANEOUS
 //
@@ -91,7 +91,7 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Creates a detailed report of the distribution factor computation
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
+   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 
    //---------------------------------------------------------------------
    // Creates a string that defines how the distribution factors are to be computed

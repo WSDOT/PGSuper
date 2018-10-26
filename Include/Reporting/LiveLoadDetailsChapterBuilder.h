@@ -28,7 +28,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -91,7 +91,7 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   static void ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IDisplayUnits* pDisplayUnits);
+   static void ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
    // GROUP: ACCESS
    // GROUP: INQUIRY
 };

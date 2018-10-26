@@ -28,7 +28,7 @@
 
 interface IBroker;
 interface IStageMap;
-interface IDisplayUnits;
+interface IEAFDisplayUnits;
 interface IRatingSpecification;
 
 /*****************************************************************************
@@ -80,7 +80,7 @@ public:
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
-                      IDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
    // GROUP: ACCESS
@@ -131,7 +131,7 @@ public:
 // INLINE METHODS
 //
 template <class M,class T>
-int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IStageMap* pStageMap,IRatingSpecification* pRatingSpec,IDisplayUnits* pDisplayUnits,const T& unitT)
+int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IStageMap* pStageMap,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    USES_CONVERSION;
 
@@ -585,7 +585,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
 ///////////////////////////////////////////////////////////////////
 
 template <class M,class T>
-RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bPedLoading,bool bRating,pgsTypes::Stage stage,pgsTypes::Stage continuityStage,pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,IDisplayUnits* pDisplayUnits,const T& unitT)
+RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bPedLoading,bool bRating,pgsTypes::Stage stage,pgsTypes::Stage continuityStage,pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    int nRows = 0;
 

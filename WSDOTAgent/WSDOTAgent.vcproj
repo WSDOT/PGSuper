@@ -246,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LoadRatingSummaryChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OutputSummaryChapter.cpp"
 				>
 			</File>
@@ -305,6 +309,10 @@
 			</File>
 			<File
 				RelativePath=".\InputSummaryChapter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LoadRatingSummaryChapterBuilder.h"
 				>
 			</File>
 			<File

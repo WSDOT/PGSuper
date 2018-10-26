@@ -236,6 +236,9 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
 CString CPGSuperCommandLineInfo::GetUsageMessage()
 {
    CString strMsg;
-   strMsg.Format("/TestR filename");
+   strMsg.Format("Command Line Options:\n%s\n%s\n%s",
+      "PGSuper filename.pgs",
+      "PGSuper [/TxA, /TxAx, /TxAt /TxD, /TxDx /TxDt] filename.pgs outputfile span girder",
+      "See Command Line Options in the PGSuper User Guide for more information");
    return strMsg;
 }

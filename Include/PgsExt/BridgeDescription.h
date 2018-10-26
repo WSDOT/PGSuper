@@ -103,6 +103,7 @@ public:
    void UseSameGirderForEntireBridge(bool bSame);
    bool UseSameGirderForEntireBridge() const;
    const char* GetGirderName() const;
+   void RenameGirder(const char* strName);
    void SetGirderName(const char* strName);
    const GirderLibraryEntry* GetGirderLibraryEntry() const;
    void SetGirderLibraryEntry(const GirderLibraryEntry* pEntry);

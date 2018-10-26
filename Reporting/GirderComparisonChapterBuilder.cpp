@@ -24,7 +24,7 @@
 #include <Reporting\GirderComparisonChapterBuilder.h>
 #include <Reporting\StirrupTable.h>
 
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
@@ -48,12 +48,12 @@ CLASS
 ****************************************************************************/
 
 
-void girders(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span);
-bool prestressing(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span);
-void debonding(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span);
-void material(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span);
-void stirrups(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span);
-void handling(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span);
+void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span);
+bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span);
+void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span);
+void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span);
+void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span);
+void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -77,7 +77,7 @@ rptChapter* CGirderComparisonChapterBuilder::Build(CReportSpecification* pRptSpe
    pSpec->GetBroker(&pBroker);
    SpanIndexType span = pSpec->GetSpan();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -118,7 +118,7 @@ CChapterBuilder* CGirderComparisonChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void girders(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span)
+void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span)
 {
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
@@ -153,7 +153,7 @@ void girders(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,
 }
 
 // return true if debonding exists
-bool prestressing(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span)
+bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span)
 {
    bool was_debonding = false;
 
@@ -430,7 +430,7 @@ DebondComparison::DebondStatus DebondComparison::Init(SpanIndexType span, Girder
       return IsDebonding;
 }
 
-void debonding(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span)
+void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
@@ -553,7 +553,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnit
 
 }
 
-void material(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span)
+void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -598,7 +598,7 @@ void material(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits
 
 }
 
-void stirrups(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span)
+void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -619,7 +619,7 @@ void stirrups(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits
    }
 }
 
-void handling(rptChapter* pChapter,IBroker* pBroker,IDisplayUnits* pDisplayUnits,SpanIndexType span)
+void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span)
 {
    GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
    GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);

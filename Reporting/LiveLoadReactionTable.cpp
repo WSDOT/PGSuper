@@ -26,7 +26,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\DisplayUnits.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
@@ -71,7 +71,7 @@ CLiveLoadReactionTable& CLiveLoadReactionTable::operator= (const CLiveLoadReacti
 //======================== OPERATIONS =======================================
 void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           SpanIndexType span,GirderIndexType girder,
-                                          IDisplayUnits* pDisplayUnits,
+                                          IEAFDisplayUnits* pDisplayUnits,
                                           pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const
 {
    // Build table
