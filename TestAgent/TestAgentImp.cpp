@@ -370,7 +370,7 @@ std::string CTestAgentImp::GetProcessID()
 {
    // the process ID is going to be the PGSuper version number
    GET_IFACE(IVersionInfo,pVI);
-   std::string strVersion = pVI->GetVersion();
+   std::string strVersion = pVI->GetVersion(true);
    return strVersion;
 }
 

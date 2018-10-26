@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 17.17   5  0.00     1     1  Slab  *    18   5/8  270  7.00  7.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.800 14.500    2.398   -2.641   1264  0.332  0.15 -0.02 -0.00 -0.01 -0.03  51.12 160.40   1.75   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 17.17   5  0.00     1     1  Slab  *    18   5/8  270  7.00  7.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.800 14.500    2.398   -2.641   1264  0.332  0.332  0.15 -0.02 -0.00 -0.01 -0.03  51.12 160.40   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Splitting zone checks failed.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 17.17   5  0.00     1     2  Slab  *    18   5/8  270  7.00  7.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.800 14.500    2.338   -2.568   1264  0.304  0.15 -0.02 -0.00 -0.01 -0.03  51.12 160.40   1.75   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 17.17   5  0.00     1     2  Slab  *    18   5/8  270  7.00  7.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.800 14.500    2.338   -2.568   1264  0.304  0.304  0.15 -0.02 -0.00 -0.01 -0.03  51.12 160.40   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Splitting zone checks failed.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 17.17   5  0.00     1     3  Slab  *    18   5/8  270  7.00  7.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.800 14.500    2.338   -2.568   1264  0.304  0.15 -0.02 -0.00 -0.01 -0.03  51.12 160.40   1.75   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 17.17   5  0.00     1     3  Slab  *    18   5/8  270  7.00  7.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.800 14.500    2.338   -2.568   1264  0.304  0.304  0.15 -0.02 -0.00 -0.01 -0.03  51.12 160.40   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

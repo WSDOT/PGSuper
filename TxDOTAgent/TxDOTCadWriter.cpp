@@ -259,7 +259,10 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
 
 	/* 17. LIVE LOAD DISTRIBUTION FACTOR */
-   Float64 liveLoadDistFactor = pDistFact->GetMomentDistFactor(span, gdr, pgsTypes::StrengthI);
+   Float64 momentDistFactor = pDistFact->GetMomentDistFactor(span, gdr, pgsTypes::StrengthI);
+
+	/* 17aa. LIVE LOAD DISTRIBUTION FACTOR */
+   Float64 shearDistFactor = pDistFact->GetShearDistFactor(span, gdr, pgsTypes::StrengthI);
 
    /* 17a - Non-Standard Design Data */
    std::string ns_strand_str;
@@ -331,7 +334,9 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	//----- COL 16 ---- 
    workerB.WriteInt16(reqMinUltimateMomentCapacity,"ultMom",6,"%6d",true);
 	//----- COL 17 ---- 
-   workerB.WriteFloat64(liveLoadDistFactor," lldf ",6,"%6.3f",true);
+   workerB.WriteFloat64(momentDistFactor,"LLDFmo",6,"%6.3f",true);
+	//----- COL 17aa ---- 
+   workerB.WriteFloat64(shearDistFactor,"LLDFsh",6,"%6.3f",true);
 
    if (do_write_ns_data)
    {

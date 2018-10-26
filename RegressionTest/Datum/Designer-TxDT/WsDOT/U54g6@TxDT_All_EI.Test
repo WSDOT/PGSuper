@@ -1,15 +1,15 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00     1     1 U54G6  *    70   5/8  270 15.19  5.14  16 50.0  5.400  8.700    6.524   -3.966  12648  0.740  0.30 -0.21 -0.01 -0.01 -0.24 279.11 591.08   1.75   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.25   4 12.00     1     1 U54G6  *    70   5/8  270 15.19  5.14  16 50.0  5.400  8.700    6.524   -3.966  12648  0.740  1.064  0.30 -0.21 -0.01 -0.01 -0.24 279.11 591.08   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00     1     2 U54G6  *    70   5/8  270 15.19  5.14  16 50.0  5.400  8.700    6.541   -3.975  12640  0.740  0.30 -0.21 -0.01 -0.01 -0.24 279.11 590.39   1.75   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.25   4 12.00     1     2 U54G6  *    70   5/8  270 15.19  5.14  16 50.0  5.400  8.700    6.541   -3.975  12640  0.740  1.064  0.30 -0.21 -0.01 -0.01 -0.24 279.11 590.39   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

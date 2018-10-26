@@ -105,8 +105,8 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
       {
          rptParagraph* pParagraph;
 
-         // Only print span girder if we are in a multi-loop
-         if (lastSpanIdx!=firstSpanIdx+1 && lastGirderIdx!=firstGirderIdx+1)
+         // Only print span and girder if we are in a multi span or multi girder loop
+         if (lastSpanIdx!=firstSpanIdx+1 || lastGirderIdx!=firstGirderIdx+1)
          {
             pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pParagraph;
@@ -246,7 +246,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
       delete table;
 
       if (!bSimplifiedVersion)
-         *pParagraph << "No point loads exist for this girder"<<rptNewLine;
+         *pParagraph << "Point loads were not defined for this girder"<<rptNewLine;
    }
 
    return pParagraph;
@@ -341,7 +341,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
       delete table;
 
       if (! bSimplifiedVersion)
-         *pParagraph << "No distributed loads exist for this girder"<<rptNewLine;
+         *pParagraph << "Distributed loads were not defined for this girder"<<rptNewLine;
    }
 
    return pParagraph;
@@ -439,7 +439,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
       delete table;
 
       if (!bSimplifiedVersion)
-         *pParagraph << "No moment loads exist for this girder"<<rptNewLine;
+         *pParagraph << "Moment loads were not defined for this girder"<<rptNewLine;
    }
 
    return pParagraph;

@@ -725,6 +725,7 @@ interface IEvents : IUnknown
 {
    virtual void HoldEvents() = 0;
    virtual void FirePendingEvents() = 0;
+   virtual void CancelPendingEvents() = 0;
 };
 
 /*****************************************************************************

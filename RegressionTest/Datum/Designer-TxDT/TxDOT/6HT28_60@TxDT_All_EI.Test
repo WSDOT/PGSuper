@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02     1     1 6HT28       28   1/2  270 12.85  7.13  16 18.0  4.000  5.000    1.709   -3.246   2055  0.530  0.21 -0.02  0.00 -0.01 -0.03  65.84 185.91   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02     1     1 6HT28       28   1/2  270 12.85  7.13  16 18.0  4.000  5.000    1.709   -3.246   2055  0.530  0.530  0.21 -0.02  0.00 -0.01 -0.03  65.84 185.91   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -9,9 +9,9 @@ Bursting zone checks failed.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02     1     2 6HT28       28   1/2  270 12.82  7.10  16 18.0  4.000  5.000    1.715   -3.246   2053  0.530  0.21 -0.02  0.00 -0.01 -0.03  65.95 186.12   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02     1     2 6HT28       28   1/2  270 12.82  7.10  16 18.0  4.000  5.000    1.715   -3.246   2053  0.530  0.530  0.21 -0.02  0.00 -0.01 -0.03  65.95 186.12   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

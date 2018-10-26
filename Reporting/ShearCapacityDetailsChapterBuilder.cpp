@@ -1123,7 +1123,7 @@ void write_ex_table(IBroker* pBroker,
       *pParagraph << rptNewLine;
    }
 
-   Int16 nCol = (bAfter1999 && shear_capacity_method == scmBTTables ? 11 : 9);
+   Int16 nCol = (bAfter1999 && shear_capacity_method == scmBTTables ? 14 : 12);
    if ( shear_capacity_method == scmWSDOT2001 || 
         shear_capacity_method == scmWSDOT2007 || 
         shear_capacity_method == scmBTEquations 
@@ -1163,9 +1163,12 @@ void write_ex_table(IBroker* pBroker,
 
    (*table)(0,col++) << COLHDR( Sub2("d","v"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR( Sub2("A","s"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++) << COLHDR( Sub2("E","s"), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
    (*table)(0,col++) << COLHDR( Sub2("A","ps"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++) << COLHDR( Sub2("E","ps"), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
    (*table)(0,col++) << COLHDR( Sub2("A","c"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
-   
+   (*table)(0,col++) << COLHDR( Sub2("E","c"), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
+
    if ( shear_capacity_method != scmWSDOT2001 && 
         shear_capacity_method != scmWSDOT2007 &&
         shear_capacity_method != scmBTEquations 
@@ -1180,6 +1183,7 @@ void write_ex_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
    INIT_UV_PROTOTYPE( rptLength2UnitValue, area, pDisplayUnits->GetAreaUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e, pDisplayUnits->GetModEUnit(), false );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
@@ -1233,8 +1237,11 @@ void write_ex_table(IBroker* pBroker,
 
       (*table)(row,col++) << dim.SetValue( scd.dv );
       (*table)(row,col++) << area.SetValue( scd.As );
+      (*table)(row,col++) << mod_e.SetValue( scd.Es );
       (*table)(row,col++) << area.SetValue( scd.Aps );
+      (*table)(row,col++) << mod_e.SetValue( scd.Ep );
       (*table)(row,col++) << area.SetValue( scd.Ac );
+      (*table)(row,col++) << mod_e.SetValue( scd.Ec );
       if (scd.ShearInRange)
       {
          if ( shear_capacity_method != scmWSDOT2001 && 
