@@ -2186,36 +2186,36 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,183,158,50,14
 END
 
-IDD_GIRDER_SELECT_STRANDS DIALOGEX 0, 0, 479, 383
+IDD_GIRDER_SELECT_STRANDS DIALOGEX 0, 0, 487, 383
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Select Strands"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,362,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,63,362,50,14
-    CONTROL         "Custom1",IDC_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,16,148,222
-    LTEXT           "",IDC_PICTURE,182,7,290,345,WS_BORDER
-    GROUPBOX        "Select Strands",IDC_GRID_STATIC,7,3,169,252
+    CONTROL         "Custom1",IDC_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,16,147,222
+    LTEXT           "",IDC_PICTURE,192,6,290,345,WS_BORDER
+    GROUPBOX        "Select Strands",IDC_GRID_STATIC,7,3,173,252
     CONTROL         "Symmetrical Debonding",IDC_CHECK_SYMM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,242,90,10
-    GROUPBOX        "View Settings",IDC_STATIC,7,326,169,29
+    GROUPBOX        "View Settings",IDC_STATIC,7,326,173,29
     COMBOBOX        IDC_COMBO_VIEWLOC,13,337,79,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Show Numbers",IDC_SHOW_NUMBERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,109,340,58,10
-    GROUPBOX        "Vertical Adjustment of Harped Strands",IDC_HARP_GROUP,7,262,169,59
+    GROUPBOX        "Vertical Adjustment of Harped Strands",IDC_HARP_GROUP,7,262,173,59
     LTEXT           "At Girder Ends:",IDC_HARP_END_STATIC1,12,275,50,8
     LTEXT           "At Harping Points:",IDC_HARP_HP_STATIC1,12,297,59,8
-    RTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_END_STATIC2,12,285,109,8
-    RTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_HP_STATIC2,11,307,109,8
-    COMBOBOX        IDC_HARP_END_CB,122,281,41,329,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_HARP_HP_CB,122,303,41,186,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "in",IDC_HARP_END_UNIT,166,285,8,8
-    LTEXT           "in",IDC_HARP_HP_UNIT,166,305,8,8
+    RTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_END_STATIC2,12,285,114,8
+    RTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_HP_STATIC2,11,307,115,8
+    COMBOBOX        IDC_HARP_END_CB,129,281,41,329,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_HARP_HP_CB,129,303,41,186,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "in",IDC_HARP_END_UNIT,173,285,8,8
+    LTEXT           "in",IDC_HARP_HP_UNIT,173,305,8,8
     PUSHBUTTON      "Help",ID_HELP,117,362,50,14
-    LTEXT           "Debonded",IDC_DEBONDED,183,368,116,8
-    LTEXT           "Straight",IDC_STRAIGHT,183,355,89,8
-    LTEXT           "Harped",IDC_HARPED,281,355,111,8
-    LTEXT           "Temporary",IDC_TEMPORARY,399,355,64,8
-    LTEXT           "Extended Left",IDC_EXTENDED_LEFT,303,368,89,8
-    LTEXT           "Extended Right",IDC_EXTENDED_RIGHT,399,368,64,8
+    LTEXT           "Debonded",IDC_DEBONDED,192,368,116,8
+    LTEXT           "Straight",IDC_STRAIGHT,192,355,89,8
+    LTEXT           "Harped",IDC_HARPED,290,355,111,8
+    LTEXT           "Temporary",IDC_TEMPORARY,408,355,64,8
+    LTEXT           "Extended Left",IDC_EXTENDED_LEFT,312,368,89,8
+    LTEXT           "Extended Right",IDC_EXTENDED_RIGHT,408,368,64,8
 END
 
 
@@ -2225,8 +2225,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,1,2
- PRODUCTVERSION 2,9,1,2
+ FILEVERSION 2,9,1,3
+ PRODUCTVERSION 2,9,1,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2243,12 +2243,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.9.1.2"
+            VALUE "FileVersion", "2.9.1.3"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.1.2"
+            VALUE "ProductVersion", "2.9.1.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -2801,7 +2801,7 @@ BEGIN
     IDD_GIRDER_SELECT_STRANDS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 472
+        RIGHTMARGIN, 480
         TOPMARGIN, 7
         BOTTOMMARGIN, 376
     END

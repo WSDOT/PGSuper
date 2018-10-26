@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@
 inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, bool areHarpedStraight)
 {
    CString msg;
-   CString mss(areHarpedStraight ? _T("S-W") : _T("HS"));
+   CString mss(areHarpedStraight ? _T("A-S") : _T("HS"));
    switch(type)
    {
       case hsoCGFROMTOP:
@@ -402,8 +402,21 @@ void CGirderSelectStrandsDlg::OnPaint()
    orgin.X() = x;
    orgin.Y() = y;
 
-   // Get height and width of the area occupied by all possible strand locations
+   // For straight adjustable strands, force hp values equal to end values
+   Float64 hp_incr;
+   Float64 end_incr = m_pGdrEntry->IsVerticalAdjustmentAllowedEnd() ? 0.0 : -1.0;
+   if (m_AdjustableStrandType == pgsTypes::asStraight)
+   {
+      m_HsoHpMeasurement = m_HsoEndMeasurement;
+      m_HpOffsetAtHp     = m_HpOffsetAtEnd;
+      hp_incr            = end_incr;
+   }
+   else
+   {
+      hp_incr  = m_pGdrEntry->IsVerticalAdjustmentAllowedHP() ? 0.0 : -1.0;
+   }
 
+   // Get height and width of the area occupied by all possible strand locations
    // Convert adjustment of harped strands to absolute
    ConfigStrandFillVector  harped_fillvec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
                                                         m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
@@ -416,9 +429,6 @@ void CGirderSelectStrandsDlg::OnPaint()
                                                         harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp);
 
    // We need a strand mover to adjust harped strands
-   Float64 end_incr = m_pGdrEntry->IsVerticalAdjustmentAllowedEnd() ? 0.0 : -1.0;
-   Float64 hp_incr  = m_pGdrEntry->IsVerticalAdjustmentAllowedHP() ? 0.0 : -1.0;
-
    CComPtr<IStrandMover> strand_mover;
    factory->CreateStrandMover(dimensions, 
                               IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,

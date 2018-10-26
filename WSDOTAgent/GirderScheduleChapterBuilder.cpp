@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2016  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -558,38 +558,39 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row,1) << gdim.SetValue(Dmax_UpperBound);
 
    // Stirrups
-   IndexType V1, V3, V5;
-   Float64 V2, V4, V6;
-   int reinfDetailsResult = GetReinforcementDetails(pBroker,span,girder,familyCLSID,&V1,&V2,&V3,&V4,&V5,&V6);
+   Float64 z1Spacing, z1Length;
+   Float64 z2Spacing, z2Length;
+   Float64 z3Spacing, z3Length;
+   int reinfDetailsResult = GetReinforcementDetails(pBroker,span,girder,familyCLSID,&z1Spacing,&z1Length,&z2Spacing,&z2Length,&z3Spacing,&z3Length);
    if (reinfDetailsResult < 0)
    {
-      (*pTable)(++row,0) << _T("V1");
+      (*pTable)(++row,0) << _T("Zone 1 Spacing");
       (*pTable)(row,1) << _T("###");
-      (*pTable)(++row,0) << _T("V2");
+      (*pTable)(++row,0) << _T("Zone 1 Length");
       (*pTable)(row,1) << _T("###");
-      (*pTable)(++row,0) << _T("V3");
+      (*pTable)(++row,0) << _T("Zone 2 Spacing");
       (*pTable)(row,1) << _T("###");
-      (*pTable)(++row,0) << _T("V4");
+      (*pTable)(++row,0) << _T("Zone 2 Length");
       (*pTable)(row,1) << _T("###");
-      (*pTable)(++row,0) << _T("V5");
+      (*pTable)(++row,0) << _T("Zone 3 Spacing");
       (*pTable)(row,1) << _T("###");
-      (*pTable)(++row,0) << _T("V6");
+      (*pTable)(++row,0) << _T("Zone 3 Length");
       (*pTable)(row,1) << _T("###");
    }
    else
    {
-      (*pTable)(++row,0) << _T("V1");
-      (*pTable)(row,1) << V1;
-      (*pTable)(++row,0) << _T("V2");
-      (*pTable)(row,1) << gdim.SetValue(V2);
-      (*pTable)(++row,0) << _T("V3");
-      (*pTable)(row,1) << V3;
-      (*pTable)(++row,0) << _T("V4");
-      (*pTable)(row,1) << gdim.SetValue(V4);
-      (*pTable)(++row,0) << _T("V5");
-      (*pTable)(row,1) << V5;
-      (*pTable)(++row,0) << _T("V6");
-      (*pTable)(row,1) << gdim.SetValue(V6);
+      (*pTable)(++row,0) << _T("Zone 1 Spacing");
+      (*pTable)(row,1) << gdim.SetValue(z1Spacing);
+      (*pTable)(++row,0) << _T("Zone 1 Length");
+      (*pTable)(row,1) << glength.SetValue(z1Length);
+      (*pTable)(++row,0) << _T("Zone 2 Spacing");
+      (*pTable)(row,1) << gdim.SetValue(z2Spacing);
+      (*pTable)(++row,0) << _T("Zone 2 Length");
+      (*pTable)(row,1) << glength.SetValue(z2Length);
+      (*pTable)(++row,0) << _T("Zone 3 Spacing");
+      (*pTable)(row,1) << gdim.SetValue(z3Spacing);
+      (*pTable)(++row,0) << _T("Zone 3 Length");
+      (*pTable)(row,1) << glength.SetValue(z3Length);
    }
 
    // Stirrup Height
@@ -745,7 +746,7 @@ CChapterBuilder* CGirderScheduleChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,CLSID& familyCLSID,IndexType* pV1,Float64 *pV2,IndexType *pV3,Float64* pV4,IndexType *pV5,Float64* pV6) const
+int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
    if ( !pStirrupGeometry->AreStirrupZonesSymmetrical(span,gdr) )
@@ -787,8 +788,8 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
    if ( barSize != matRebar::bs5 )
       return STIRRUP_ERROR_BARSIZE;
 
-   *pV1 = IndexType(floor(v));
-   *pV2 = spacing;
+   *pz1Spacing = spacing;
+   *pz1Length = zoneLength;
 
    // Zone 2 (V3 & V4)
    pStirrupGeometry->GetPrimaryZoneBounds(span,gdr,2,&zoneStart,&zoneEnd);
@@ -801,8 +802,8 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
    if ( barSize != matRebar::bs5 )
       return STIRRUP_ERROR_BARSIZE;
 
-   *pV3 = IndexType(Round(v));
-   *pV4 = spacing;
+   *pz2Spacing = spacing;
+   *pz2Length = zoneLength;
 
    // Zone 3 (either V6 or V5 & V6);
    Float64 v6Spacing;
@@ -854,8 +855,8 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
          return STIRRUP_ERROR_BARSIZE;
    }
 
-   *pV5 = IndexType(Round(v)) - (nZones == 5 ? 1 : 0);
-   *pV6 = spacing;
+   *pz3Spacing = spacing;
+   *pz3Length = zoneLength;
 
    if ( nZones == 6 && !IsEqual(spacing,v6Spacing) )
    {
