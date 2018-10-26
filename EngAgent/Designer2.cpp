@@ -3186,8 +3186,9 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(span,gdr,&haunch_details);
 
-      // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than 0.5"
-      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::ConvertToSysUnits(0.5,unitMeasure::Inch) < fabs(haunch_details.HaunchDiff) );
+      // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than have the deck thickness"
+      Float64 tSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(span,gdr,0.0));
+      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && tSlab/2 < fabs(haunch_details.HaunchDiff) );
    }
 
    ///////////////////////////////////////////////////////////////

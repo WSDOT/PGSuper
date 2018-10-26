@@ -379,11 +379,10 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
 
          Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
 
-         if (dev_length_factor >= 1.0) // Bars must be fully developed before higher 
-                                       // allowable stress can be used
+         if (dev_length_factor >= 1.0-1.0e-05) // Bars must be fully developed before higher 
+                                               // allowable stress can be used.
+                                               // Apply a small tolerance.
          {
-            ATLASSERT(dev_length_factor==1.0);
-
             if (stressLoc == slAllTens)
             {
                // all bars in tension - just add

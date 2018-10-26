@@ -4046,6 +4046,10 @@ void CBridgeAgentImp::LayoutPoiForGirderBarCutoffs(SpanIndexType span,GirderInde
    Float64 left_brg_loc  = GetGirderStartConnectionLength(span,gdr);
    Float64 right_brg_loc = gdr_length - GetGirderEndConnectionLength(span,gdr);
 
+   // TRICKY: Move bearing locations slightly so bar cutoffs directly over supports get picked up and tagged correctly
+   left_brg_loc  -= 1.0e-06;
+   right_brg_loc += 1.0e-06;
+
    GET_IFACE(IBridgeMaterialEx,pBridgeMaterialEx);
    Float64 fc = pBridgeMaterialEx->GetFcGdr(span, gdr);
    pgsTypes::ConcreteType concType = pBridgeMaterialEx->GetGdrConcreteType(span, gdr);

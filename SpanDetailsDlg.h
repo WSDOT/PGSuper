@@ -66,10 +66,10 @@ public:
 
    // Connections
    pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
-   Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end);
-   Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end);
-   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end);
-   Float64 GetDiaphragmLoadLocation(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   Float64 GetDiaphragmLoadLocation(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    Float64 GetEndDistance(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);

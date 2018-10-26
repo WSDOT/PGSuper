@@ -158,7 +158,6 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
 
       if ( pPrevSpan )
       {
-         DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_BEARING_OFFSET, m_BearingOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
          DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_END_DISTANCE,   m_EndDistance[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit() );
 
          // if end distance is measured from the datum line end distance cannot be greater than
@@ -179,7 +178,6 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
 
       if ( pNextSpan )
       {
-         DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_BEARING_OFFSET, m_BearingOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
          DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_END_DISTANCE,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit() );
 
 
@@ -601,6 +599,10 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 
          dx.m_bSaveAndValidate = FALSE;
          DoDataExchange(&dx);
+
+         OnBoundaryConditionChanged();
+         OnBackDiaphragmLoadTypeChanged();
+         OnAheadDiaphragmLoadTypeChanged();
       }
    }
 }

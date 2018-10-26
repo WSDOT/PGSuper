@@ -96,7 +96,7 @@ public:
    bool EnableItemDelete();
 
 private:
-   void GetConnectionData(CPierData* pPier,pgsTypes::PierFaceType pierFace,CSpanDetailsDlg& dlg);
+   void GetConnectionData(CPierData* pPier,pgsTypes::MemberEndType end,pgsTypes::PierFaceType pierFace,CSpanDetailsDlg& dlg);
 
    void InsertRow();
 

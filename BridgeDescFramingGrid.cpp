@@ -809,19 +809,17 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
 
 
       if ( pPrevPier->GetPrevSpan() )
-         GetConnectionData(pPrevPier,pgsTypes::Back,dlg);
+         GetConnectionData(pPrevPier,pgsTypes::metStart,pgsTypes::Back,dlg);
 
-      GetConnectionData(pPrevPier,pgsTypes::Ahead,dlg);
-      GetConnectionData(pNextPier,pgsTypes::Back,dlg);
+      GetConnectionData(pPrevPier,pgsTypes::metStart,pgsTypes::Ahead,dlg);
+      GetConnectionData(pNextPier,pgsTypes::metEnd,pgsTypes::Back,dlg);
 
       if ( pNextPier->GetNextSpan() )
-         GetConnectionData(pNextPier,pgsTypes::Ahead,dlg);
+         GetConnectionData(pNextPier,pgsTypes::metEnd,pgsTypes::Ahead,dlg);
 
 
-
-      pPrevPier->SetConnectionType( dlg.GetConnectionType(pgsTypes::Ahead) );
-      pNextPier->SetConnectionType( dlg.GetConnectionType(pgsTypes::Back)  );
-
+      pPrevPier->SetConnectionType( dlg.GetConnectionType( pPrevPier->GetPierIndex() ) );
+      pNextPier->SetConnectionType( dlg.GetConnectionType( pNextPier->GetPierIndex() ) );
 
 
       if ( IsGirderSpacing(dlg.GetGirderSpacingType()) && 1 < dlg.GetGirderCount() )
@@ -855,14 +853,12 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
    }
 }
 
-void CBridgeDescFramingGrid::GetConnectionData(CPierData* pPier,pgsTypes::PierFaceType pierFace,CSpanDetailsDlg& dlg)
+void CBridgeDescFramingGrid::GetConnectionData(CPierData* pPier,pgsTypes::MemberEndType end,pgsTypes::PierFaceType pierFace,CSpanDetailsDlg& dlg)
 {
-   pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)(pierFace);
-   pPier->SetConnectionType(dlg.GetConnectionType(end));
-   pPier->SetDiaphragmHeight(pierFace,dlg.GetDiaphragmHeight(end));
-   pPier->SetDiaphragmWidth(pierFace,dlg.GetDiaphragmWidth(end));
-   pPier->SetDiaphragmLoadType(pierFace,dlg.GetDiaphragmLoadType(end));
-   pPier->SetDiaphragmLoadLocation(pierFace,dlg.GetDiaphragmLoadLocation(end));
+   pPier->SetDiaphragmHeight(pierFace,dlg.GetDiaphragmHeight(end,pierFace));
+   pPier->SetDiaphragmWidth(pierFace,dlg.GetDiaphragmWidth(end,pierFace));
+   pPier->SetDiaphragmLoadType(pierFace,dlg.GetDiaphragmLoadType(end,pierFace));
+   pPier->SetDiaphragmLoadLocation(pierFace,dlg.GetDiaphragmLoadLocation(end,pierFace));
    pPier->SetGirderEndDistance(pierFace,dlg.GetEndDistance(end,pierFace),dlg.GetEndDistanceMeasurementType(end,pierFace));
    pPier->SetBearingOffset(pierFace,dlg.GetBearingOffset(end,pierFace),dlg.GetBearingOffsetMeasurementType(end,pierFace));
    pPier->SetSupportWidth(pierFace,dlg.GetSupportWidth(end,pierFace));

@@ -58,8 +58,8 @@ void CSpanDetailsDlg::SetSpanData(const CSpanData* pSpan)
    m_pSpanData = pSpan;
    m_pNextPier = pSpan->GetNextPier();
 
-   m_ConnectionType[pgsTypes::Ahead] = m_pPrevPier->GetConnectionType();
-   m_ConnectionType[pgsTypes::Back]  = m_pNextPier->GetConnectionType();
+   m_ConnectionType[pgsTypes::metStart] = m_pPrevPier->GetConnectionType();
+   m_ConnectionType[pgsTypes::metEnd]  = m_pNextPier->GetConnectionType();
    m_SpanLayoutPage.Init(pSpan);
    m_GirderLayoutPage.Init(pSpan);
 
@@ -166,12 +166,8 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
    {
       pgsTypes::MemberEndType end = (i == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
 
-      // Connection
+      // Boundary conditions
       editSpanData.m_ConnectionType[end]        = GetConnectionType(end);
-      editSpanData.m_DiaphragmHeight[end]       = GetDiaphragmHeight(end);
-      editSpanData.m_DiaphragmWidth[end]        = GetDiaphragmWidth(end);
-      editSpanData.m_DiaphragmLoadType[end]     = GetDiaphragmLoadType(end);
-      editSpanData.m_DiaphragmLoadLocation[end] = GetDiaphragmLoadLocation(end);
 
       // Spacing
       editSpanData.GirderSpacing[end] = GetGirderSpacing(end);
@@ -185,6 +181,12 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
          editSpanData.m_BearingOffsetMeasurementType[end][face] = GetBearingOffsetMeasurementType(end,face);
          editSpanData.m_BearingOffset[end][face]                = GetBearingOffset(end,face);
          editSpanData.m_SupportWidth[end][face]                 = GetSupportWidth(end,face);
+
+         // Connection
+         editSpanData.m_DiaphragmHeight[end][face]       = GetDiaphragmHeight(end,face);
+         editSpanData.m_DiaphragmWidth[end][face]        = GetDiaphragmWidth(end,face);
+         editSpanData.m_DiaphragmLoadType[end][face]     = GetDiaphragmLoadType(end,face);
+         editSpanData.m_DiaphragmLoadLocation[end][face] = GetDiaphragmLoadLocation(end,face);
       }
    }
 
@@ -206,36 +208,36 @@ pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::Member
 }
 
 
-Float64 CSpanDetailsDlg::GetDiaphragmHeight(pgsTypes::MemberEndType end)
+Float64 CSpanDetailsDlg::GetDiaphragmHeight(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
 {
    if ( end == pgsTypes::metStart )
-      return m_StartPierPage.m_DiaphragmHeight[pgsTypes::Ahead];
+      return m_StartPierPage.m_DiaphragmHeight[face];
    else
-      return m_EndPierPage.m_DiaphragmHeight[pgsTypes::Back];
+      return m_EndPierPage.m_DiaphragmHeight[face];
 }
 
-Float64 CSpanDetailsDlg::GetDiaphragmWidth(pgsTypes::MemberEndType end)
+Float64 CSpanDetailsDlg::GetDiaphragmWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
 {
    if ( end == pgsTypes::metStart )
-      return m_StartPierPage.m_DiaphragmWidth[pgsTypes::Ahead];
+      return m_StartPierPage.m_DiaphragmWidth[face];
    else
-      return m_EndPierPage.m_DiaphragmWidth[pgsTypes::Back];
+      return m_EndPierPage.m_DiaphragmWidth[face];
 }
 
-ConnectionLibraryEntry::DiaphragmLoadType CSpanDetailsDlg::GetDiaphragmLoadType(pgsTypes::MemberEndType end)
+ConnectionLibraryEntry::DiaphragmLoadType CSpanDetailsDlg::GetDiaphragmLoadType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
 {
    if ( end == pgsTypes::metStart )
-      return m_StartPierPage.m_DiaphragmLoadType[pgsTypes::Ahead];
+      return m_StartPierPage.m_DiaphragmLoadType[face];
    else
-      return m_EndPierPage.m_DiaphragmLoadType[pgsTypes::Back];
+      return m_EndPierPage.m_DiaphragmLoadType[face];
 }
 
-Float64 CSpanDetailsDlg::GetDiaphragmLoadLocation(pgsTypes::MemberEndType end)
+Float64 CSpanDetailsDlg::GetDiaphragmLoadLocation(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
 {
    if ( end == pgsTypes::metStart )
-      return m_StartPierPage.m_DiaphragmLoadLocation[pgsTypes::Ahead];
+      return m_StartPierPage.m_DiaphragmLoadLocation[face];
    else
-      return m_EndPierPage.m_DiaphragmLoadLocation[pgsTypes::Back];
+      return m_EndPierPage.m_DiaphragmLoadLocation[face];
 }
 
 ConnectionLibraryEntry::EndDistanceMeasurementType CSpanDetailsDlg::GetEndDistanceMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)

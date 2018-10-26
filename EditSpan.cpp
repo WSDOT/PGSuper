@@ -171,12 +171,6 @@ void txnEditSpan::DoExecute(int i)
       CPierData pier = *pBridgeDesc->GetPier( pierIdx );
       pier.SetConnectionType( m_SpanData[i].m_ConnectionType[end] );
 
-      // Diaphragm
-      pier.SetDiaphragmHeight(       (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmHeight[end]);
-      pier.SetDiaphragmWidth(        (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmWidth[end]);
-      pier.SetDiaphragmLoadType(     (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmLoadType[end]);
-      pier.SetDiaphragmLoadLocation( (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmLoadLocation[end]);
-
       for ( int k = 0; k < 2; k++ )
       {
          pgsTypes::PierFaceType face = (k == 0 ? pgsTypes::Ahead : pgsTypes::Back);
@@ -184,6 +178,12 @@ void txnEditSpan::DoExecute(int i)
          pier.SetGirderEndDistance( face,m_SpanData[i].m_EndDistance[end][face],  m_SpanData[i].m_EndDistanceMeasurementType[end][face]);
          pier.SetBearingOffset(     face,m_SpanData[i].m_BearingOffset[end][face],m_SpanData[i].m_BearingOffsetMeasurementType[end][face]);
          pier.SetSupportWidth(      face,m_SpanData[i].m_SupportWidth[end][face]);
+
+         // Diaphragm
+         pier.SetDiaphragmHeight(       face, m_SpanData[i].m_DiaphragmHeight[end][face]);
+         pier.SetDiaphragmWidth(        face, m_SpanData[i].m_DiaphragmWidth[end][face]);
+         pier.SetDiaphragmLoadType(     face, m_SpanData[i].m_DiaphragmLoadType[end][face]);
+         pier.SetDiaphragmLoadLocation( face, m_SpanData[i].m_DiaphragmLoadLocation[end][face]);
 
          pBridgeDesc->SetPier(pierIdx,pier);
       }

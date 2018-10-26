@@ -59,10 +59,10 @@ struct txnEditSpanData
    Float64 m_BearingOffset[2][2]; 
    Float64 m_SupportWidth[2][2];
 
-   Float64 m_DiaphragmHeight[2];
-   Float64 m_DiaphragmWidth[2];
-   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
-   Float64 m_DiaphragmLoadLocation[2];
+   Float64 m_DiaphragmHeight[2][2];
+   Float64 m_DiaphragmWidth[2][2];
+   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2][2];
+   Float64 m_DiaphragmLoadLocation[2][2];
 
    pgsTypes::SlabOffsetType SlabOffsetType;
    Float64 SlabOffset[2];

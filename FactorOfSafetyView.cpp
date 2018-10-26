@@ -283,12 +283,12 @@ void CFactorOfSafetyView::DrawLegend(CDC* pDC)
 
    if ( m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting )
    {
-      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend1 = _T("F.S. Against Cracking (FScr)");
       legend2 = _T("F.S. Against Failure (FSf)");
    }
    else
    {
-      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend1 = _T("F.S. Against Cracking (FScr)");
       legend2 = _T("F.S. Against Rollover (FSr)");
    }
    
@@ -541,20 +541,20 @@ void CFactorOfSafetyView::DoUpdateNow()
 
             // Only works for wsdot analysis
             const pgsWsdotHaulingAnalysisArtifact* artifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);
-            if (artifact==NULL)
+            if (artifact != NULL)
             {
                AddGraphPoint(seriesFS1,loc,artifact->GetMinFsForCracking());
                AddGraphPoint(seriesFS2,loc,artifact->GetFsRollover());
 
                AddGraphPoint(limitFS1,loc,FS1);
                AddGraphPoint(limitFS2,loc,FS2);
-
-               loc += stepSize;
             }
             else
             {
                ATLASSERT(0); // should not happen
             }
+
+            loc += stepSize;
          }
 
          // set flags that graph is built and up to date

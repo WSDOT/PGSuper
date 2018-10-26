@@ -350,6 +350,9 @@ void CBridgePlanView::OnInitialUpdate()
    CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
    IUnknown* unk = factory->GetInterface(&IID_iDisplayObjectFactory);
    dispMgr->AddDisplayObjectFactory((iDisplayObjectFactory*)unk);
+   unk->Release();
+   unk = NULL;
+   factory = NULL;
 
    dispMgr->EnableLBtnSelect(TRUE);
    dispMgr->EnableRBtnSelect(TRUE);
