@@ -56,7 +56,104 @@ void multiple_girder_table(int startIdx, int endIdx,IBroker* pBroker,std::vector
 void process_artifacts(int startIdx, int endIdx, std::vector<SpanGirderHashType>& girderList, IArtifact* pIArtifact,
                        const pgsDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& isHarped, bool& isTemporary);
 
-static const int MAX_TBL_COLS=6; // Maximum columns in multi-girder table
+// Function to compute columns in table that attempts to group all girders in a span per table
+static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
+static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
+
+inline std::list<int> ComputeTableCols(const std::vector<SpanGirderHashType>& spanGirders)
+{
+   // Idea here is to break tables at spans. 
+   // First build list of sizes of contiguous blocks of spans
+   std::list<int> contiguous_blocks1;
+   SpanIndexType curr_span(-1);
+   bool first=false;
+   for(std::vector<SpanGirderHashType>::const_iterator it=spanGirders.begin(); it!=spanGirders.end(); it++)
+   {
+      SpanIndexType new_span;
+      GirderIndexType new_gdr;
+      UnhashSpanGirder(*it, &new_span, &new_gdr);
+
+      if (first || curr_span!=new_span)
+      {
+         first = false;
+         curr_span = new_span;
+         contiguous_blocks1.push_back(1);
+      }
+      else
+      {
+         contiguous_blocks1.back()++;
+      }
+   }
+
+   // Next break blocks into list of table-sized chunks 
+   std::list<int> contiguous_blocks2;
+   for(std::list<int>::const_iterator it=contiguous_blocks1.begin(); it!=contiguous_blocks1.end(); it++)
+   {
+      int ncols = *it;
+      if (ncols > MAX_TBL_COLS)
+      {
+         int num_big_chunks = ncols / MAX_TBL_COLS;
+         int rmdr = ncols % MAX_TBL_COLS;
+
+         for (int ich=0; ich<num_big_chunks; ich++)
+         {
+            contiguous_blocks2.push_back(MAX_TBL_COLS);
+         }
+
+         if(rmdr != 0)
+         {
+            contiguous_blocks2.push_back(rmdr);
+         }
+      }
+      else
+      {
+         contiguous_blocks2.push_back(ncols);
+      }
+   }
+
+   // Now we have a "right-sized" columns, but we could have a list of one-column tables, which
+   // would be ugly. If all num colums are LE than min, combine into a wider, but not pretty table
+   bool is_ugly = true;
+   for(std::list<int>::const_iterator it=contiguous_blocks2.begin(); it!=contiguous_blocks2.end(); it++)
+   {
+      int ncols = *it;
+      if (ncols > MIN_TBL_COLS)
+      {
+         is_ugly = false; // we have at least one table of minimum width - we're not ugly.
+         break;
+      }
+   }
+
+   std::list<int> final_blocks;
+   if (!is_ugly)
+   {
+      final_blocks = contiguous_blocks2;
+   }
+   else
+   {
+      // work to combine blocks
+      std::list<int>::const_iterator it=contiguous_blocks2.begin();
+      while(it!=contiguous_blocks2.end())
+      {
+         int ncols = *it;
+         while (ncols<=MAX_TBL_COLS)
+         {
+            it++;
+            if (it==contiguous_blocks2.end() || ncols+(*it) > MAX_TBL_COLS)
+            {
+               final_blocks.push_back(ncols);
+               break;
+            }
+            else
+            {
+               ncols+= (*it);
+            }
+         }
+      }
+   }
+
+   return final_blocks;
+}
 
 CDesignOutcomeChapterBuilder::CDesignOutcomeChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -85,22 +182,29 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    // Write multiple girder table if we have more than one girder
    // Break into multiple tables if necessary
-   int max_idx = list.size()-1;
-   if ( max_idx>0 )
+   std::list<int> table_cols = ComputeTableCols(list);
+   bool first = true;
+   int start_idx, end_idx;
+   for (std::list<int>::iterator itcol = table_cols.begin(); itcol!=table_cols.end(); itcol++)
    {
-      int start_idx =0;
-      int end_idx = min( MAX_TBL_COLS-1, max_idx);
-      while(true)
+      if (first)
       {
-         multiple_girder_table(start_idx, end_idx, pBroker, list, pChapter, pDisplayUnits, pIArtifact);
-
-         if (end_idx >= max_idx)
-            break;
-
-         start_idx = end_idx + 1;
-         end_idx = min(end_idx+MAX_TBL_COLS, max_idx);
+         start_idx = 0;
+         end_idx = *itcol-1;
+         first = false;
+      }
+      else
+      {
+         start_idx = end_idx+1;
+         end_idx += *itcol;
+         ATLASSERT(end_idx<list.size());
       }
 
+      multiple_girder_table(start_idx, end_idx, pBroker, list, pChapter, pDisplayUnits, pIArtifact);
+   }
+
+   if (!list.empty())
+   {
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       (*pChapter) << pPara;
       (*pPara) << rptNewLine <<_T("Design Outcomes for Individual Girders");

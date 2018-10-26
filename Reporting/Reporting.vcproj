@@ -1347,5 +1347,9 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="Reporting.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

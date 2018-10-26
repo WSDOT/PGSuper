@@ -110,6 +110,8 @@ void CMultiGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CMultiGirderReportDlg, CDialog)
 	ON_COMMAND(IDHELP, OnHelp)
+   ON_BN_CLICKED(IDC_SELECT_ALL, &CMultiGirderReportDlg::OnBnClickedSelectAll)
+   ON_BN_CLICKED(IDC_CLEAR_ALL, &CMultiGirderReportDlg::OnBnClickedClearAll)
 END_MESSAGE_MAP()
 
 void CMultiGirderReportDlg::UpdateChapterList()
@@ -247,4 +249,14 @@ void CMultiGirderReportDlg::InitFromRptSpec()
    UpdateData(FALSE);
 
    InitChapterListFromSpec();
+}
+
+void CMultiGirderReportDlg::OnBnClickedSelectAll()
+{
+   m_pGrid->SetAllValues(true);
+}
+
+void CMultiGirderReportDlg::OnBnClickedClearAll()
+{
+   m_pGrid->SetAllValues(false);
 }

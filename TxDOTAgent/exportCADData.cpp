@@ -86,6 +86,8 @@ BEGIN_MESSAGE_MAP(exportCADData, CDialog)
 	ON_COMMAND(ID_HELP, OnHelp)
 	ON_CBN_SELCHANGE(IDC_SPAN, OnSelchangeSpan)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_SELECT_ALL, &exportCADData::OnBnClickedSelectAll)
+   ON_BN_CLICKED(IDC_CLEAR_ALL, &exportCADData::OnBnClickedClearAll)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -182,4 +184,14 @@ void exportCADData::OnSelchangeSpan()
 
    pGdrBox->SetCurSel(girder);
 	
+}
+
+void exportCADData::OnBnClickedSelectAll()
+{
+   m_pGrid->SetAllValues(true);
+}
+
+void exportCADData::OnBnClickedClearAll()
+{
+   m_pGrid->SetAllValues(false);
 }

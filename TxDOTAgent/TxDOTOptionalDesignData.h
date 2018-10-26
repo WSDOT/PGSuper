@@ -44,7 +44,6 @@ class CTxDOTOptionalDesignData;
 class pgsGirderArtifact;
 // MISCELLANEOUS
 //
-
 /*****************************************************************************
 INTERFACE
    IGetTogaData
@@ -209,8 +208,8 @@ public:
    void SetWCompDw(Float64 val);
    Float64 GetWCompDw() const;
 
-   void SetUseHigherCompressionAllowable(BOOL val);
-   BOOL GetUseHigherCompressionAllowable() const;
+   void SetSelectedProjectCriteriaLibrary(const CString& rName);
+   CString GetSelectedProjectCriteriaLibrary() const;
 
    // our girders
    CTxDOTOptionalDesignGirderData* GetOriginalDesignGirderData();
@@ -314,7 +313,7 @@ private:
    Float64 m_WCompDc;
    Float64 m_WCompDw;
 
-   BOOL m_UseHigherCompressionAllowable;
+   CString m_SelectedProjectCriteriaLibrary;
 
    // Girder data
    CTxDOTOptionalDesignGirderData m_OriginalDesignGirderData;

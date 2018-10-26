@@ -790,6 +790,13 @@ ConnectionLibrary* CTxDOTOptionalDesignDoc::GetConnectionLibrary()
    return &m_LibMgr.GetConnectionLibrary();
 }
 
+SpecLibrary* CTxDOTOptionalDesignDoc::GetSpecLibrary()
+{
+   ASSERT(m_LibMgr.GetSpecLibrary()->GetCount() > 0);
+
+   return m_LibMgr.GetSpecLibrary();
+}
+
 void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 {
 
@@ -1126,24 +1133,9 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       pSpan->SetLLDFShear(ig, pgsTypes::FatigueI, lldf_shr);
    }
 
-   // See if we need to modify/set spec entry for 0.65 f'ci option
-   std::_tstring curr_entry = pSpec->GetSpecification();
-   if (m_ProjectData.GetUseHigherCompressionAllowable())
-   {
-      if (curr_entry != m_065SpecEntryName)
-      {
-         DealWith065SpecEntry();
-
-         pSpec->SetSpecification(m_065SpecEntryName);
-      }
-   }
-   else
-   {
-      if (curr_entry != m_OriginalSpecEntryName)
-      {
-         pSpec->SetSpecification(m_OriginalSpecEntryName);
-      }
-   }
+   // Set spec entry 
+   std::_tstring curr_entry = m_ProjectData.GetSelectedProjectCriteriaLibrary();
+   pSpec->SetSpecification(curr_entry);
 
    // Applied dead loads
    // First delete any distributed loads

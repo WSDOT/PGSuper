@@ -1,0 +1,32 @@
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 32.00   4  8.67     1     1 5XB20       16   1/2  270  7.03  7.03   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    1.229   -1.655   1294  0.688  0.830  0.07 -0.02 -0.00 -0.00 -0.02  20.46  67.88   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 32.00   4  8.67     1     2 5XB20       16   1/2  270  7.03  7.03   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    1.241   -1.672   1302  0.681  0.830  0.07 -0.02 -0.00 -0.00 -0.02  20.46  67.66   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 32.00   4  8.67     2     1 5XB20       58   1/2  270  5.93  5.64  12  2.50  28  12  6  2  2  2  0  0  0  0  0  0  5.600  5.600    3.248   -4.037   2847  0.606  0.789  0.39 -0.13 -0.01 -0.01 -0.15 171.02 480.76   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 32.00   4  8.67     2     2 5XB20       60   1/2  270  5.83  5.59  10  2.50  28  10  2  4  2  2  0  0  0  0  0  0  5.700  5.900    3.287   -4.093   2875  0.600  0.789  0.40 -0.14 -0.01 -0.01 -0.16 180.10 506.97   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+

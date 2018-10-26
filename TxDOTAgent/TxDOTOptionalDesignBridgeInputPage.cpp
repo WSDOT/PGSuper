@@ -1,3 +1,24 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2011  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
 // TxDOTOptionalDesignBridgeInputPage.cpp : implementation file
 //
 
@@ -7,6 +28,7 @@
 #include "TxDOTOptionalDesignBridgeInputPage.h"
 
 #include "TxDOTOptionalDesignUtilities.h"
+#include "ProjectCriteriaNotFoundDlg.h"
 
 #include <MfcTools\CustomDDX.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -20,7 +42,6 @@ CTxDOTOptionalDesignBridgeInputPage::CTxDOTOptionalDesignBridgeInputPage()
 	: CPropertyPage(CTxDOTOptionalDesignBridgeInputPage::IDD),
    m_pBrokerRetriever(NULL),
    m_pData(NULL)
-   , m_UseHigherCompression(FALSE)
 {
 }
 
@@ -119,7 +140,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_W_COMP_DW,   IDC_W_COMP_DW_UNITS,  m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
    DDV_UnitValueZeroOrMore( pDX, IDC_W_COMP_DW,m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
 
-   DDX_Check(pDX, IDC_HIGHER_COMPRESSION, m_UseHigherCompression);
+   DDX_CBString(pDX, IDC_PROJECT_CRITERIA, m_SelectedProjectCriteriaLibrary);
 
    // Error checking that library entries exist for the selected girder type
    bool st = CheckLibraryData(); // function will message the problem
@@ -182,7 +203,10 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadDialogData()
    m_WCompDc = m_pData->GetWCompDc();
    m_WCompDw = m_pData->GetWCompDw();
 
-   m_UseHigherCompression = m_pData->GetUseHigherCompressionAllowable();
+   m_SelectedProjectCriteriaLibrary = m_pData->GetSelectedProjectCriteriaLibrary();
+
+   // load project criteria data
+   LoadProjectCriteriaLibraryNames();
 
    // load beam type dialog
    LoadGirderNames();
@@ -221,7 +245,7 @@ void CTxDOTOptionalDesignBridgeInputPage::SaveDialogData()
    m_pData->SetWCompDc(m_WCompDc);
    m_pData->SetWCompDw(m_WCompDw);
 
-   m_pData->SetUseHigherCompressionAllowable(m_UseHigherCompression);
+   m_pData->SetSelectedProjectCriteriaLibrary(m_SelectedProjectCriteriaLibrary);
 }
 
 void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
@@ -363,4 +387,38 @@ void CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
    ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_DESCRIPTION );
+}
+
+void CTxDOTOptionalDesignBridgeInputPage::LoadProjectCriteriaLibraryNames()
+{
+   SpecLibrary* pLib = m_pBrokerRetriever->GetSpecLibrary();
+
+   // names of project criteria entries
+   libKeyListType keys;
+   pLib->KeyList(keys);
+
+   CComboBox* ppcl_ctrl = (CComboBox*)GetDlgItem(IDC_PROJECT_CRITERIA);
+   ppcl_ctrl->ResetContent();
+
+   // put library entry names into control
+   for (libKeyListIterator it=keys.begin(); it!=keys.end(); it++)
+   {
+      ppcl_ctrl->AddString(it->c_str());
+   }
+
+   // Check that we have a matching library entry, and warn the user if we do not.
+   std::_tstring key(m_SelectedProjectCriteriaLibrary);
+   libKeyListIterator it = std::find(keys.begin(), keys.end(), key);
+   if (it==keys.end())
+   {
+      CProjectCriteriaNotFoundDlg dlg;
+      dlg.m_SelectedProjectCriteriaLibrary = m_SelectedProjectCriteriaLibrary;
+      dlg.m_Keys = keys;
+
+      // Only way to exit dialog is Ok
+      dlg.DoModal();
+
+      m_SelectedProjectCriteriaLibrary = dlg.m_SelectedProjectCriteriaLibrary;
+   }
+
 }

@@ -100,7 +100,7 @@ void CTxDOTOptionalDesignData::ResetData()
    m_WCompDc    = 0.0;
    m_WCompDw    = 0.0;
 
-   m_UseHigherCompressionAllowable = FALSE;
+   m_SelectedProjectCriteriaLibrary.Empty();
 
    m_OriginalDesignGirderData.ResetData();
    m_PrecasterDesignGirderData.ResetData();
@@ -150,7 +150,9 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
    pStrSave->put_Property(_T("PGSuperFileName"), CComVariant(m_PGSuperFileName));
    pStrSave->EndUnit();
 
-   pStrSave->BeginUnit(_T("BridgeInputData"),2.0);
+   // Version: 2.0 - Added UseHigherCompressionAllowable
+   //          3.0 - Changed UseHigherCompressionAllowable to SelectedProjectCriteriaLibrary
+   pStrSave->BeginUnit(_T("BridgeInputData"),3.0);
    pStrSave->put_Property(_T("Bridge"),         CComVariant(m_Bridge));
    pStrSave->put_Property(_T("BridgeID"),         CComVariant(m_BridgeID));
    pStrSave->put_Property(_T("JobNumber"),         CComVariant(m_JobNumber));
@@ -179,7 +181,7 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
    pStrSave->put_Property(_T("WCompDc"),         CComVariant(m_WCompDc));
    pStrSave->put_Property(_T("WCompDw"),         CComVariant(m_WCompDw));
 
-   pStrSave->put_Property(_T("UseHigherCompressionAllowable"), CComVariant(m_UseHigherCompressionAllowable!=FALSE)); // added version 2.0
+   pStrSave->put_Property(_T("SelectedProjectCriteriaLibrary"), CComVariant(m_SelectedProjectCriteriaLibrary));
 
    pStrSave->EndUnit(); // BridgeInputData
 
@@ -361,20 +363,35 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       hr = pStrLoad->get_Property(_T("WCompDw"), &var );
       m_WCompDw = var.dblVal;
 
-      if (brgversion < 2.0)
+      if (brgversion < 3.0)
       {
-         m_UseHigherCompressionAllowable = FALSE;
+         bool useHigherCompressionAllowable(false);
+
+         if (brgversion > 1.0)
+         {
+            var.Clear();
+            var.vt = VT_BOOL;
+            hr = pStrLoad->get_Property(_T("UseHigherCompressionAllowable"), &var );
+            useHigherCompressionAllowable = var.boolVal!=VARIANT_FALSE;
+         }
+
+         // Default names for project criteria with 0.60f'ci and 0.65f'ci release stress limits
+         // This is for older files before the project criteria was selectable and an option was
+         // provided to increase the allowable.
+         const LPCTSTR sProjectCriteria_060=_T("TxDOT 2008");
+         const LPCTSTR sProjectCriteria_065=_T("TxDOT 2010");
+
+         m_SelectedProjectCriteriaLibrary = useHigherCompressionAllowable ? sProjectCriteria_065 : sProjectCriteria_060;
       }
       else
       {
          var.Clear();
-         var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property(_T("UseHigherCompressionAllowable"), &var );
-         m_UseHigherCompressionAllowable = var.boolVal==VARIANT_FALSE ? FALSE : TRUE;
+         var.vt = VT_BSTR;
+         hr = pStrLoad->get_Property(_T("SelectedProjectCriteriaLibrary"), &var );
+         m_SelectedProjectCriteriaLibrary = var.bstrVal;
       }
 
       hr = pStrLoad->EndUnit(); // end BridgeInputData
-
 
       // Girder Data
       hr = pStrLoad->BeginUnit(_T("OriginalDesignGirderData"));
@@ -795,18 +812,18 @@ Float64 CTxDOTOptionalDesignData::GetWCompDw() const
    return m_WCompDw;
 }
 
-void CTxDOTOptionalDesignData::SetUseHigherCompressionAllowable(BOOL val)
+void CTxDOTOptionalDesignData::SetSelectedProjectCriteriaLibrary(const CString& val)
 {
-   if (val != m_UseHigherCompressionAllowable)
+   if (val != m_SelectedProjectCriteriaLibrary)
    {
-      m_UseHigherCompressionAllowable = val;
+      m_SelectedProjectCriteriaLibrary = val;
       FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
-BOOL CTxDOTOptionalDesignData::GetUseHigherCompressionAllowable() const
+CString CTxDOTOptionalDesignData::GetSelectedProjectCriteriaLibrary() const
 {
-   return m_UseHigherCompressionAllowable;
+   return m_SelectedProjectCriteriaLibrary;
 }
 
 CTxDOTOptionalDesignGirderData* CTxDOTOptionalDesignData::GetOriginalDesignGirderData()
@@ -886,7 +903,7 @@ void CTxDOTOptionalDesignData::MakeCopy(const CTxDOTOptionalDesignData& rOther)
    m_WCompDc = rOther.m_WCompDc;
    m_WCompDw = rOther.m_WCompDw;
 
-   m_UseHigherCompressionAllowable = rOther.m_UseHigherCompressionAllowable;
+   m_SelectedProjectCriteriaLibrary = rOther.m_SelectedProjectCriteriaLibrary;
 
    m_OriginalDesignGirderData = rOther.m_OriginalDesignGirderData;
    m_PrecasterDesignGirderData = rOther.m_PrecasterDesignGirderData;

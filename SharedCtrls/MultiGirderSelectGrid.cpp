@@ -438,6 +438,26 @@ void CMultiGirderSelectGrid::OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, cons
    CGXGridCore::OnDrawItem(pDC, nRow, nCol, rectItem, style);
 }
 
+void CMultiGirderSelectGrid::SetAllValues(bool val)
+{
+
+   ROWCOL nRows = GetRowCount();
+   ROWCOL nCols = GetColCount();
+
+   for (ROWCOL row=1; row<=nRows; row++)
+   {
+      for (ROWCOL col=1; col<=nCols; col++)
+      {
+         CGXControl* pControl = GetControl(row, col);
+         CGXCheckBox* pCheck = dynamic_cast<CGXCheckBox*>(pControl);
+         if (pCheck != NULL) // only set check boxes
+         {
+            SetValueRange(CGXRange(row, col), val ? _T("1") : _T("0"));
+            TRACE(_T("SetValue Range (%d, %d)"),row, col);
+         }
+      }
+   }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

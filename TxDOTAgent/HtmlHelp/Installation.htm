@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1819>
-<meta name=layout-width content=661>
+<meta name=layout-height content=2076>
+<meta name=layout-width content=686>
 
 
 <!--(Links)=========================================================-->
@@ -122,6 +122,30 @@
 <p>This can also happen if you are attempting to modify TOGA by creating 
  your own .toga template files. Remember that library entry names are case 
  sensitive.</p>
+
+<h3><a name=ProjectCriteriaNotFound>Project Criteria Entry Not Found</a></h3>
+
+<p>If this happens, a dialog is presented with the message: &quot;<span 
+ style="font-style: italic;">The Project Criteria library entry with the 
+ name $$$ that was originally selected and saved in this TOGA project file 
+ does not exist in the current PGSuper Master Library...</span>&quot; You 
+ are then asked to select another Project Criteria entry. The most likely 
+ causes/fixes for this problem are as follows:</p>
+
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>The TxDOT library configuration is not selected 
+ in PGSuper. As explained in the top portion of this page, PGSuper must 
+ be configured to use the TxDOT library configuration In order for TOGA 
+ to work correctly. Read the section above on <span style="font-style: italic; font-weight: bold;">PGSuper 
+ Libraries and Templates</span> for information on fixing this problem.</p></li>
+	
+	<li class=kadov-p><p>You have a very old TOGA project file that references 
+ a TxDOT Project Criteria entry that has been removed from the master library 
+ file on TxDOT's web server. Contact TxDOT PGSuper support for advice on 
+ which current library entry to select.</p></li>
+</ol>
 
 <h3>The TxDOT Server Does Not Appear in the Libraries and Templates list 
  on the Configure PGSuper Dialog</h3>

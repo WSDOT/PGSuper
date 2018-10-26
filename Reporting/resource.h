@@ -2,6 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by Reporting.rc
 //
+#define IDC_SELECT_ALL                  255
+#define IDC_CLEAR_ALL                   256
 #define IDC_SELECT_GRID                 1606
 #define IDD_SPANGIRDERREPORT            3000
 #define IDC_LIST                        3000

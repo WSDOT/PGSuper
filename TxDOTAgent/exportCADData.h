@@ -73,6 +73,9 @@ protected:
 
 private:
    CMultiGirderSelectGrid* m_pGrid;
+public:
+   afx_msg void OnBnClickedSelectAll();
+   afx_msg void OnBnClickedClearAll();
 };
 
 

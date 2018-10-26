@@ -219,8 +219,11 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) << RPT_EC <<_T(" Beam");
    (*p_table)(row++,1) << modE.SetValue( pMaterial->GetEcGdr(TOGA_SPAN,TOGA_FABR_GDR) );
 
-   (*p_table)(row,0) << RPT_FC <<_T("Slab");
+   (*p_table)(row,0) << RPT_FC <<_T(" Slab");
    (*p_table)(row++,1) << stress.SetValue( pMaterial->GetFcSlab() );
+
+   (*p_table)(row,0) << _T("Project Criteria");
+   (*p_table)(row++,1) << pProjectData->GetSelectedProjectCriteriaLibrary();
 
    (*p_table)(row,0) << _T("Live Load");
    std::vector<std::_tstring> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);

@@ -15,6 +15,7 @@
 #define IDR_TXDOTOPTIONALDESIGNTOOLBAR  107
 #define IDD_REPORT_PAGE                 107
 #define IDD_BRIDGE_INPUT_PAGE           108
+#define IDR_HTML_PROJECTCRITERIANOTFOUNDDLG 109
 #define IDD_GIRDER_EDITOR_SECTION_PAGE  160
 #define IDD_GIRDER_EDITOR_ELEVATION_PAGE 161
 #define IDR_GIRDER_CTX                  162
@@ -39,6 +40,7 @@
 #define IDC_ENGINEER                    214
 #define IDC_COMPANY                     215
 #define IDC_COMMENTS                    216
+#define IDD_PROJ_CRIT_NOT_FOUND         216
 #define IDC_BEAM_NO                     217
 #define IDC_BEAM_SPACING                218
 #define IDC_SPAN_LENGTH                 219
@@ -90,9 +92,12 @@
 #define IDC_OPT_TO_VALID_RANGE          255
 #define IDC_BUTTON1                     255
 #define IDC_ORIG_STRAND_TYPE            255
+#define IDC_SELECT_ALL                  255
 #define IDC_TO_TAG                      256
 #define IDC_OPT_TO_TAG                  256
 #define IDC_ORIG_BOX                    256
+#define IDC_BUTTON2                     256
+#define IDC_CLEAR_ALL                   256
 #define IDC_ECC_TEXT                    257
 #define IDC_ORIG_FCI_UNITS              257
 #define IDC_CL_GRID                     258
@@ -105,6 +110,8 @@
 #define IDC_ERROR_MSG                   263
 #define IDC_CHECK1                      264
 #define IDC_HIGHER_COMPRESSION          264
+#define IDC_PROJECT_CRITERIA            265
+#define IDC_WARNING_MSG                 266
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026
 #define ID_SELECTED_GIRDER              1086
@@ -126,6 +133,7 @@
 #define IDC_SELECT_GRID                 1606
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
+#define IDS_PROJCRIT_ERROR              1639
 #define IDS_E_INVALIDFORMAT             1640
 #define IDS_E_FILENOTFOUND              1642
 #define IDS_E_READ                      1644
@@ -164,9 +172,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        216
+#define _APS_NEXT_RESOURCE_VALUE        217
 #define _APS_NEXT_COMMAND_VALUE         33316
-#define _APS_NEXT_CONTROL_VALUE         265
-#define _APS_NEXT_SYMED_VALUE           109
+#define _APS_NEXT_CONTROL_VALUE         267
+#define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

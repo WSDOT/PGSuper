@@ -125,6 +125,7 @@ public:
    virtual IBroker* GetClassicBroker();
    virtual GirderLibrary* GetGirderLibrary();
    virtual ConnectionLibrary* GetConnectionLibrary();
+   virtual SpecLibrary* GetSpecLibrary();
 
 // Operations
    // listen to data events

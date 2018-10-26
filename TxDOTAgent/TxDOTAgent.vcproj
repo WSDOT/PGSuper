@@ -400,6 +400,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ProjectCriteriaNotFoundDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -647,6 +651,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\SharedCtrls\MultiGirderSelectGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProjectCriteriaNotFoundDlg.h"
 				>
 			</File>
 			<File
