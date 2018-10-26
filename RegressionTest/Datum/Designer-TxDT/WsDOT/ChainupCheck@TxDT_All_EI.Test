@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   8  0.00     1     1 Chain  *    18   5/8  270  3.78  3.78   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.100 11.300    2.296   -2.613    800  0.451  0.668  0.12 -0.02 -0.00 -0.00 -0.02  48.05 126.79   0.00   5.00   5.00
+ 40.00   8  0.00     1     1 Chain  *    18   5/8  270  3.78  3.78   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.100 11.400    2.299   -2.614    798  0.451  0.668  0.12 -0.02 -0.00 -0.00 -0.02  48.05 129.44   0.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -10,7 +10,7 @@ Splitting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   8  0.00     1     2 Chain  *    18   5/8  270  3.78  3.78   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.100 11.400    2.229   -2.520    801  0.408  0.736  0.12 -0.02 -0.00 -0.00 -0.02  48.05 126.88   0.00   5.00   5.00
+ 40.00   8  0.00     1     2 Chain  *    18   5/8  270  3.78  3.78   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.100 11.500    2.231   -2.522    799  0.408  0.736  0.12 -0.02 -0.00 -0.00 -0.02  48.05 129.52   0.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -19,7 +19,7 @@ Splitting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   8  0.00     1     5 Chain  *    16   5/8  270  4.00  4.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000 11.400    2.165   -2.414    755  0.408  0.736  0.11 -0.02 -0.00  0.00 -0.02  39.55 109.55   0.00   5.00   5.00
+ 40.00   8  0.00     1     5 Chain  *    16   5/8  270  4.00  4.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000 11.500    2.167   -2.415    753  0.408  0.736  0.11 -0.02 -0.00  0.00 -0.02  39.55 112.07   0.00   5.00   5.00
 
 
 The Specification Check was Not Successful

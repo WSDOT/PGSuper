@@ -2546,9 +2546,108 @@ void CAnalysisAgentImp::ApplyShearKeyLoad(ILBAMModel* pModel,GirderIndexType gdr
    }
 }
 
-void CAnalysisAgentImp::GetRailingSystemLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight)
+void CAnalysisAgentImp::GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight)
 {
-   // computes the fraction of the left and right railing system load on a girder
+   GET_IFACE( IBarriers, pBarriers);
+
+   bool bLeftSidewalk = pBarriers->HasSidewalk(pgsTypes::tboLeft);
+   bool bRightSidewalk = pBarriers->HasSidewalk(pgsTypes::tboRight);
+   if ( bLeftSidewalk && bRightSidewalk )
+   {
+      // if sidewalk is on both left and right side, it distributes the same as the traffic barrier
+      GetTrafficBarrierLoadFraction(spanIdx,gdrIdx,pFraLeft,pFraRight);
+   }
+   else
+   {
+      GirderIndexType nDist; // number of girders/webs/mating surfaces in the section
+      GirderIndexType nMaxDist; // max number of girders/webs/mating surfaces to distribute load to
+      pgsTypes::TrafficBarrierDistribution distType; // the distribution type
+
+      // NOTE: The term "element" refers to girder, web, or mating surface
+
+      GET_IFACE( IBridge, pBridge);
+      GET_IFACE( IGirder, pGirder);
+      GET_IFACE( ISpecification, pSpec );
+
+      pSpec->GetTrafficBarrierDistribution(&nMaxDist,&distType);
+
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      gdrIdx = min(gdrIdx,nGirders-1); // adjust girder index as needed
+
+      nDist = nGirders;
+      MatingSurfaceIndexType nElements = 1; // number of elements to distribute the load to
+      MatingSurfaceIndexType nPrevElements = gdrIdx; // number of elements to the left of this element
+      if ( distType == pgsTypes::tbdMatingSurface )
+      {
+         // get a count of all the elements in this span
+         nDist = 0;
+         nPrevElements = 0;
+
+         for ( GirderIndexType i = 0; i < nGirders; i++ )
+         {
+            MatingSurfaceIndexType n = pGirder->GetNumberOfMatingSurfaces(spanIdx,i);
+            nDist += n;
+
+            if ( i < gdrIdx )
+               nPrevElements += n;
+         }
+
+         // get number of mating surfaces for this girder
+         nElements = pGirder->GetNumberOfMatingSurfaces(spanIdx,gdrIdx);   
+      }
+      else if ( distType == pgsTypes::tbdWebs )
+      {
+         // get a count of all the webs in this span
+         nDist = 0;
+         nPrevElements = 0;
+
+         for ( GirderIndexType i = 0; i < nGirders; i++ )
+         {
+            WebIndexType n = pGirder->GetNumberOfWebs(spanIdx,i);
+            nDist += n;
+
+            if ( i < gdrIdx )
+               nPrevElements += n;
+         }
+
+         // get number of mating surfaces for this girder
+         nElements = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);   
+      }
+
+      if ( nPrevElements < nMaxDist || nDist-nPrevElements-nElements < nMaxDist )
+      {
+         // At least one element will see some load
+
+         // Distribute the weight over nMaxDist exterior distibution points
+         MatingSurfaceIndexType nRemainingElementsfromLeft = nMaxDist - nPrevElements;
+
+         if ( nRemainingElementsfromLeft < 0 || !bLeftSidewalk )
+            *pFraLeft = 0.0;
+         else if ( nRemainingElementsfromLeft < nElements )
+            *pFraLeft = (Float64)nRemainingElementsfromLeft/(Float64)nMaxDist;
+         else
+            *pFraLeft = (Float64)nElements/(Float64)nMaxDist;
+
+         MatingSurfaceIndexType nRemainingElementsfromRight = nMaxDist - (nDist - nPrevElements - nElements);
+         if ( nRemainingElementsfromRight < 0 || !bRightSidewalk )
+            *pFraRight = 0.0;
+         else if ( nRemainingElementsfromRight < nElements )
+            *pFraRight = (Float64)nRemainingElementsfromRight/(Float64)nMaxDist;
+         else
+            *pFraRight = (Float64)nElements/(Float64)nMaxDist;
+      }
+      else
+      {
+         // none of the mating surfaces in this girder will see load
+         *pFraLeft = 0.0;
+         *pFraRight = 0.0;
+      }
+   }
+}
+
+void CAnalysisAgentImp::GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight)
+{
+   // computes the fraction of the left and right traffic barrier load on a girder
    GirderIndexType nDist; // number of girders/webs/mating surfaces in the section
    GirderIndexType nMaxDist; // max number of girders/webs/mating surfaces to distribute load to
    pgsTypes::TrafficBarrierDistribution distType; // the distribution type
@@ -2588,7 +2687,7 @@ void CAnalysisAgentImp::GetRailingSystemLoadFraction(SpanIndexType spanIdx,Girde
    }
    else if ( distType == pgsTypes::tbdWebs )
    {
-      // get a count of all the mating surfaces in this span
+      // get a count of all the webs in this span
       nDist = 0;
       nPrevElements = 0;
 
@@ -2684,9 +2783,10 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       PierIndexType next_pier = prev_pier + 1;
 
       Float64 fraLeft, fraRight;
-      GetRailingSystemLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
-
+      GetTrafficBarrierLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
       Wtb_per_girder = -(fraLeft*WtbLeft + fraRight*WtbRight);
+
+      GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
       Wsw_per_girder = -(fraLeft*WswLeft + fraRight*WswRight);
 
       SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
@@ -3407,7 +3507,7 @@ Float64 CAnalysisAgentImp::GetPedestrianLiveLoad(SpanIndexType spanIdx,GirderInd
    //return (Wleft + Wright);
 
    Float64 fraLeft, fraRight;
-   GetRailingSystemLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
+   GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
 
    Float64 W_per_girder = fraLeft*Wleft + fraRight*Wright;
    return W_per_girder;
@@ -4547,14 +4647,8 @@ bool CAnalysisAgentImp::HasSidewalkLoad(SpanIndexType spanIdx,GirderIndexType gd
 {
    bool bHasSidewalkLoad = false;
 
-   GET_IFACE(IBarriers,pBarriers);
-   pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(spanIdx,gdrIdx);
-
-   if ( !pBarriers->HasSidewalk(side) )
-      return false;
-
    Float64 fraLeft, fraRight;
-   GetRailingSystemLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
+   GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
 
    if ( !IsZero(fraLeft) || !IsZero(fraRight) )
       bHasSidewalkLoad = true;
@@ -4576,10 +4670,10 @@ bool CAnalysisAgentImp::HasPedestrianLoad(SpanIndexType spanIdx,GirderIndexType 
       return false; // there is no chance of having any Ped load on this bridge
 
    Float64 fraLeft, fraRight;
-   GetRailingSystemLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
+   GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
 
-   if ( !IsZero(fraLeft) || !IsZero(fraRight) )
-      bHasPedLoad = true;
+   if ( IsZero(fraLeft) && IsZero(fraRight) )
+      bHasPedLoad = false;
 
    return bHasPedLoad;
 }
@@ -5238,7 +5332,12 @@ void CAnalysisAgentImp::GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, Spa
    GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
    gdrIdx = min(gdrIdx,nGirders-1);
 
-   Float64 density = pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx);
+   Float64 density;
+   if ( stage == pgsTypes::CastingYard )
+      density = pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx); // cast with girder, using girder concrete
+   else
+      density = pMaterial->GetWgtDensitySlab(); // cast with slab, using slab concrete
+
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
    std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetIntermediateDiaphragms(stage,spanIdx,gdrIdx);

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00     1     1 WF95G  *    40   5/8  270 42.60 21.73  10 90.5  4.500  6.000    3.365   -3.541  14257  0.564  0.671  0.26 -0.13 -0.01 -0.02 -0.16 140.26 289.31   3.75  15.00  21.00
+ 34.25   6  6.00     1     1 WF95G  *    40   5/8  270 42.60 21.73  10 90.5  4.500  5.900    3.361   -3.540  14196  0.563  0.671  0.26 -0.13 -0.01 -0.02 -0.16 140.26 293.97   3.75  15.00  21.00
 
 
 The Specification Check was Not Successful
@@ -10,19 +10,21 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00     1     2 WF95G  *    40   5/8  270 42.60 21.73  10 90.5  4.700  5.900    3.388   -3.565  14318  0.563  0.671  0.25 -0.13 -0.01 -0.02 -0.16 137.89 277.87   3.75  15.00  21.00
+ 34.25   6  6.00     1     2 WF95G  *    40   5/8  270 42.60 21.73  10 90.5  4.700  6.100    3.396   -3.568  14308  0.564  0.671  0.25 -0.13 -0.01 -0.02 -0.16 137.89 284.02   3.75  15.00  21.00
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Confinement zone checks failed.
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00     1     4 WF95G  *    40   5/8  270 42.60 21.73  10 90.5  4.700  5.900    3.388   -3.565  14318  0.563  0.671  0.25 -0.13 -0.01 -0.02 -0.16 137.89 277.87   3.75  15.00  21.00
+ 34.25   6  6.00     1     4 WF95G  *    40   5/8  270 42.60 21.73  10 90.5  4.700  6.100    3.396   -3.568  14308  0.564  0.671  0.25 -0.13 -0.01 -0.02 -0.16 137.89 284.02   3.75  15.00  21.00
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Confinement zone checks failed.
 
 

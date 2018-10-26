@@ -51,7 +51,7 @@ rptRcTable(NumColumns,0)
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   scalar.SetPrecision(3);
 
    strain.SetFormat( sysNumericFormatTool::Automatic );
    strain.SetWidth(6);
@@ -150,7 +150,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*pParamTable)(1,7) << details.RefinedLosses2005.GetDeckK2Shrinkage();
    (*pParamTable)(1,8) << table->strain.SetValue(details.RefinedLosses2005.Get_eddf() * 1000);
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
+   pParamTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR( Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,1) << COLHDR( Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -158,6 +158,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*pParamTable)(0,3) << Sub2(_T("K"),_T("1"));
    (*pParamTable)(0,4) << Sub2(_T("K"),_T("2"));
    (*pParamTable)(0,5) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
+   (*pParamTable)(0,6) << Sub2(symbol(psi),_T("bd")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
    (*pParamTable)(1,0) << table->mod_e.SetValue( details.RefinedLosses2005.GetEp() );
    (*pParamTable)(1,1) << table->mod_e.SetValue( details.RefinedLosses2005.GetEc() );
@@ -165,6 +166,7 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*pParamTable)(1,3) << details.RefinedLosses2005.GetDeckK1Creep();
    (*pParamTable)(1,4) << details.RefinedLosses2005.GetDeckK2Creep();
    (*pParamTable)(1,5) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,6) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeck().GetCreepCoefficient());
 
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );

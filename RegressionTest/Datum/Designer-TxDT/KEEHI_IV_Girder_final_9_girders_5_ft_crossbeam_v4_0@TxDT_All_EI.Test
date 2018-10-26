@@ -1,81 +1,72 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9 10.50     1     1    IV  *    43   5/8  270 25.58 15.02   9 56.0  6.600  7.500    3.531   -4.302   9369  0.660  1.000  0.40 -0.14 -0.01 -0.02 -0.17 176.33 271.65   1.75   5.00   5.00
+ 66.67   9 10.50     1     1    IV  *    44   5/8  270 25.54 14.18  10 56.0  6.700  9.000    3.610   -4.889   9404  0.660  1.000  0.41 -0.13 -0.01 -0.02 -0.16 184.00 302.61   1.75   5.00   5.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-
-
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9 10.50     1     2    IV  *    41   5/8  270 25.74 14.67   9 56.0  6.100  7.000    3.401   -4.097   8882  0.585  1.000  0.41 -0.14 -0.01 -0.02 -0.17 163.68 267.70   1.75   5.00   5.00
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9 10.50     1     5    IV  *    42   5/8  270 25.70 13.80  10 56.0  6.100  7.000    3.594   -4.257   9032  0.585  1.000  0.42 -0.16 -0.02  0.00 -0.18 166.75 282.80   1.75   5.00   5.00
+ 66.67   9 10.50     1     2    IV  *    42   5/8  270 25.70 13.80  10 56.0  6.300  8.700    3.483   -4.679   8933  0.585  1.000  0.40 -0.12 -0.01 -0.02 -0.15 170.03 294.98   1.75   5.00   5.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-
-
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92     2     1    IV  *    43   5/8  270 25.58 15.02   9 56.0  6.500  7.500    3.520   -3.758   9308  0.660  1.000  0.42 -0.13 -0.01 -0.02 -0.16 174.83 284.63   1.75   5.00   5.00
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92     2     2    IV  *    41   5/8  270 25.74 14.67   9 56.0  6.100  7.100    3.419   -3.670   8884  0.585  1.000  0.41 -0.13 -0.01 -0.02 -0.17 162.77 267.87   1.75   5.00   5.00
+ 66.67   9 10.50     1     5    IV  *    43   5/8  270 25.65 12.99  11 56.0  6.200  8.500    3.667   -4.762   9061  0.585  1.000  0.43 -0.15 -0.02  0.00 -0.16 174.20 312.01   1.75   5.00   5.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-
-
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92     2     5    IV  *    39   5/8  270 25.92 14.28   9 56.0  5.800  6.600    3.290   -3.596   8365  0.585  1.000  0.39 -0.14 -0.01  0.00 -0.15 149.79 266.07   1.75   5.00   5.00
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92     3     1    IV  *    40   5/8  270 25.78 15.58   8 56.0  6.100  7.100    3.273   -3.940   8718  0.660  1.000  0.39 -0.12 -0.01 -0.02 -0.15 158.90 270.73   1.75   5.00   5.00
+ 66.67   9  7.92     2     1    IV  *    44   5/8  270 25.54 14.18  10 56.0  6.600  9.100    3.584   -4.806   9308  0.660  1.000  0.42 -0.12 -0.01 -0.02 -0.15 182.50 315.67   1.75   5.00   5.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-
-
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92     3     2    IV  *    38   5/8  270 25.97 15.23   8 56.0  5.800  6.700    3.149   -3.815   8336  0.600  1.000  0.37 -0.12 -0.01 -0.02 -0.15 146.06 253.05   1.75   5.00   5.00
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92     3     5    IV  *    36   5/8  270 26.18 14.85   8 56.0  5.600  6.300    3.050   -3.681   7881  0.600  1.000  0.37 -0.12 -0.01  0.00 -0.13 133.68 237.72   1.75   5.00   5.00
+ 66.67   9  7.92     2     2    IV  *    42   5/8  270 25.70 13.80  10 56.0  6.200  8.800    3.501   -4.684   8911  0.585  1.000  0.41 -0.12 -0.01 -0.02 -0.15 170.31 298.73   1.75   5.00   5.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 66.67   9  7.92     2     5    IV  *    40   5/8  270 25.88 13.38  10 56.0  5.900  8.300    3.366   -4.391   8453  0.585  1.000  0.39 -0.13 -0.01  0.00 -0.14 157.17 295.71   1.75   5.00   5.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 66.67   9  7.92     3     1    IV  *    41   5/8  270 25.74 14.67   9 56.0  6.200  8.700    3.355   -4.509   8747  0.660  1.000  0.39 -0.11 -0.01 -0.02 -0.13 166.36 299.58   1.75   5.00   5.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 66.67   9  7.92     3     2    IV  *    39   5/8  270 25.92 14.28   9 56.0  5.900  8.300    3.226   -4.351   8395  0.600  1.000  0.37 -0.11 -0.01 -0.02 -0.13 153.35 282.03   1.75   5.00   5.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 66.67   9  7.92     3     5    IV  *    37   5/8  270 26.13 13.86   9 56.0  5.500  7.600    3.095   -4.079   7916  0.600  1.000  0.37 -0.11 -0.01  0.00 -0.12 141.76 280.21   1.75   5.00   5.00
+
+
+The Specification Check was Successful
 
 

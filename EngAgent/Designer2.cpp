@@ -1002,28 +1002,11 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    if ( fsMax < fs )
        fs = fsMax;
 
-   pgsTypes::AnalysisType analysisType = pgsTypes::Simple;
-   if ( pContinuity->IsContinuityFullyEffective(gdr) )
-      analysisType = pSpec->GetAnalysisType();
 
    Float64 AsMax = 0;
 
    BridgeAnalysisType batTop, batBottom;
-   if ( analysisType == pgsTypes::Simple )
-   {
-      batTop    = SimpleSpan;
-      batBottom = SimpleSpan;
-   }
-   else if ( analysisType == pgsTypes::Continuous )
-   {
-      batTop    = ContinuousSpan;
-      batBottom = ContinuousSpan;
-   }
-   else
-   {
-      batTop    = MaxSimpleContinuousEnvelope;
-      batBottom = MinSimpleContinuousEnvelope;
-   }
+   GetBridgeAnalysisType(gdr,task,batTop,batBottom);
 
    GET_IFACE(IStageMap,pStageMap);
    GET_IFACE(IProgress, pProgress);
@@ -5886,13 +5869,10 @@ void pgsDesigner2::RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IPro
    GET_IFACE(IAllowableConcreteStress,pAllowable);
    GET_IFACE(ILimitStateForces,pLimitStateForces);
    GET_IFACE(IPrestressStresses,pPsStress);
-   GET_IFACE(ISpecification, pSpec);
 
    LOG(_T(""));
    LOG(_T("Begin Design Refinement Iterations"));
    m_StrandDesignTool.DumpDesignParameters();
-
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    Float64 start_end_size = (task.stage==pgsTypes::CastingYard)? 0.0 : pBridge->GetGirderStartConnectionLength(span,gdr);
 
@@ -5907,13 +5887,8 @@ void pgsDesigner2::RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IPro
    Float64 fControl = task.type==pgsTypes::Tension ? -Float64_Max :  Float64_Max;  // controlling stress for all pois
    pgsTypes::StressLocation stress_location;
 
-   BridgeAnalysisType bat;
-   if ( analysisType == pgsTypes::Simple )
-      bat = SimpleSpan;
-   else if ( analysisType == pgsTypes::Continuous )
-      bat = ContinuousSpan;
-   else
-      bat = MaxSimpleContinuousEnvelope;
+   BridgeAnalysisType batTop, batBottom;
+   GetBridgeAnalysisType(gdr,task,batTop,batBottom);
 
    //std::vector<pgsPointOfInterest> vPoi = m_StrandDesignTool.GetDesignPoi(task.stage,POI_FLEXURESTRESS);
    // don't check stresses at all points - it takes too long
@@ -5945,8 +5920,8 @@ void pgsDesigner2::RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IPro
       //
       Float64 fTopMinExt, fTopMaxExt;
       Float64 fBotMinExt, fBotMaxExt;
-      pLimitStateForces->GetDesignStress(task.ls,task.stage,poi,pgsTypes::TopGirder,   fcgdr,startSlabOffset,endSlabOffset,bat,&fTopMinExt,&fTopMaxExt);
-      pLimitStateForces->GetDesignStress(task.ls,task.stage,poi,pgsTypes::BottomGirder,fcgdr,startSlabOffset,endSlabOffset,bat,&fBotMinExt,&fBotMaxExt);
+      pLimitStateForces->GetDesignStress(task.ls,task.stage,poi,pgsTypes::TopGirder,   fcgdr,startSlabOffset,endSlabOffset,batTop,   &fTopMinExt,&fTopMaxExt);
+      pLimitStateForces->GetDesignStress(task.ls,task.stage,poi,pgsTypes::BottomGirder,fcgdr,startSlabOffset,endSlabOffset,batBottom,&fBotMinExt,&fBotMaxExt);
 
       LOG(_T("Max External Stress  :: Top = ") << ::ConvertFromSysUnits(fTopMaxExt,unitMeasure::KSI) << _T(" KSI") << _T("    Bot = ") << ::ConvertFromSysUnits(fBotMaxExt,unitMeasure::KSI) << _T(" KSI"));
       LOG(_T("Min External Stress  :: Top = ") << ::ConvertFromSysUnits(fTopMinExt,unitMeasure::KSI) << _T(" KSI") << _T("    Bot = ") << ::ConvertFromSysUnits(fBotMinExt,unitMeasure::KSI) << _T(" KSI"));
@@ -7145,3 +7120,36 @@ bool pgsDesigner2::CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], Uint32 n
    return true;
 }
 
+void pgsDesigner2::GetBridgeAnalysisType(GirderIndexType gdr,const ALLOWSTRESSCHECKTASK& task,BridgeAnalysisType& batTop,BridgeAnalysisType& batBottom)
+{
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(IContinuity,pContinuity);
+
+   pgsTypes::AnalysisType analysisType = pgsTypes::Simple;
+   if ( pContinuity->IsContinuityFullyEffective(gdr) )
+      analysisType = pSpec->GetAnalysisType();
+
+   if ( analysisType == pgsTypes::Simple )
+   {
+      batTop    = SimpleSpan;
+      batBottom = SimpleSpan;
+   }
+   else if ( analysisType == pgsTypes::Continuous )
+   {
+      batTop    = ContinuousSpan;
+      batBottom = ContinuousSpan;
+   }
+   else
+   {
+      if ( task.type == pgsTypes::Compression )
+      {
+         batTop    = MaxSimpleContinuousEnvelope;
+         batBottom = MinSimpleContinuousEnvelope;
+      }
+      else
+      {
+         batTop    = MinSimpleContinuousEnvelope;
+         batBottom = MaxSimpleContinuousEnvelope;
+      }
+   }
+}

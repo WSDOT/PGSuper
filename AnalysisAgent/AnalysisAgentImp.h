@@ -478,7 +478,8 @@ private:
    void ApplyOverlayLoad(ILBAMModel* pModel, GirderIndexType gdr);
    void ApplyConstructionLoad(ILBAMModel* pModel,GirderIndexType gdr);
    void ApplyShearKeyLoad(ILBAMModel* pModel, GirderIndexType gdr);
-   void GetRailingSystemLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
+   void GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
+   void GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
    void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,GirderIndexType gdr);
    void ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gdr);
    void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,ILibrary* pLibrary, ILiveLoads* pLiveLoads,IVehicularLoads* pVehicles,IVehicularLoads* pPedVehicles);

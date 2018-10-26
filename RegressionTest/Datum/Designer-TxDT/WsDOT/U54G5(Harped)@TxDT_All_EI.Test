@@ -1,15 +1,14 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     1 U54G5  *    58   5/8  270 16.87  6.36  14 50.0  5.500  6.500    5.794   -4.257  11333  1.016  1.016  0.33 -0.20 -0.01 -0.01 -0.22 235.55 361.65   1.75   5.00   5.00
+ 34.25   4  8.00     1     1 U54G5  *    60   5/8  270 16.84  6.67  14 50.0  5.600  8.200    5.892   -4.282  11528  1.016  1.016  0.35 -0.18 -0.01 -0.01 -0.20 250.96 412.82   1.75   5.00   5.00
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     2 U54G5  *    48   5/8  270 17.06  5.81  12 50.0  4.200  6.100    5.029   -3.464   9166  0.557  0.773  0.26 -0.16 -0.01 -0.01 -0.19 174.85 320.47   1.75   5.00   5.00
+ 34.25   4  8.00     1     2 U54G5  *    48   5/8  270 17.06  5.81  12 50.0  4.300  6.000    5.024   -3.462   9149  0.557  0.773  0.26 -0.16 -0.01 -0.01 -0.19 173.24 321.13   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

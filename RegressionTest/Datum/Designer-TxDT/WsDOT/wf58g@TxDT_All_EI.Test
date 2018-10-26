@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     1 WF58G  *    39   5/8  270 25.04 11.93  11 54.0  5.400  6.300    3.883   -4.298   8737  0.541  0.671  0.37 -0.17 -0.02 -0.02 -0.21 158.68 244.81   1.75   5.00   5.00
+ 28.25   5  6.00     1     1 WF58G  *    40   5/8  270 25.03 11.23  12 54.0  5.500  6.400    3.888   -4.300   8739  0.541  0.671  0.38 -0.17 -0.02 -0.02 -0.21 166.38 261.49   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -10,22 +10,20 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     2 WF58G  *    39   5/8  270 25.04 11.93  11 54.0  5.400  6.300    3.892   -4.307   8750  0.541  0.671  0.37 -0.18 -0.02 -0.02 -0.21 158.68 244.22   1.75   5.00   5.00
+ 28.25   5  6.00     1     2 WF58G  *    40   5/8  270 25.03 11.23  12 54.0  5.500  6.400    3.897   -4.309   8752  0.541  0.671  0.38 -0.17 -0.02 -0.02 -0.21 166.38 260.88   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     3 WF58G  *    39   5/8  270 25.04 11.93  11 54.0  5.400  6.300    3.892   -4.307   8750  0.541  0.671  0.37 -0.18 -0.02 -0.02 -0.21 158.68 244.22   1.75   5.00   5.00
+ 28.25   5  6.00     1     3 WF58G  *    40   5/8  270 25.03 11.23  12 54.0  5.500  6.400    3.897   -4.309   8752  0.541  0.671  0.38 -0.17 -0.02 -0.02 -0.21 166.38 260.88   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Stirrup detailing checks failed for the Strength I Limit State.
 

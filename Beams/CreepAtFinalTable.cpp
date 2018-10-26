@@ -150,7 +150,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    table->time.ShowUnitTag(true);
    (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtDeckPlacement());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
    (*pParamTable)(1,0) << table->time.SetValue( details.RefinedLosses2005.GetAdjustedInitialAge() );
