@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,0,4
- PRODUCTVERSION 2,4,0,4
+ FILEVERSION 2,4,1,0
+ PRODUCTVERSION 2,4,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.4.0.4"
+            VALUE "FileVersion", "2.4.1.0"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.4.0.4"
+            VALUE "ProductVersion", "2.4.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -680,11 +680,11 @@ BEGIN
     LTEXT           "days of normal curing",IDC_STATIC,190,154,68,8
 END
 
-IDD_SPEC_LOSSES DIALOG  0, 0, 287, 310
+IDD_SPEC_LOSSES DIALOGEX 0, 0, 287, 326
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Loss Method",IDC_STATIC,7,7,273,179
+    GROUPBOX        "Loss Method",IDC_STATIC,7,7,273,194
     LTEXT           "Select method for computing losses",IDC_STATIC,18,22,112,8
     COMBOBOX        IDC_LOSS_METHOD,18,33,231,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Before Prestress Transfer",IDC_BEFORE_XFER_LABEL,29,55,98,8
@@ -716,21 +716,24 @@ BEGIN
     LTEXT           "After Deck Placement",IDC_AFTER_DECK_PLACEMENT_LABEL,29,148,104,8
     EDITTEXT        IDC_AFTER_DECK_PLACEMENT,141,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_AFTER_DECK_PLACEMENT_TAG,183,148,18,8
-    LTEXT           "Final",IDC_FINAL_LABEL,29,164,31,8
-    EDITTEXT        IDC_FINAL,141,164,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_FINAL_TAG,183,164,18,8
-    GROUPBOX        "Post-Tensioning Parameters",IDC_STATIC,7,186,273,67
-    LTEXT           "Anchor Set",IDC_STATIC,18,204,36,8
-    EDITTEXT        IDC_ANCHORSET,141,199,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ANCHORSET_TAG,183,202,19,8
-    LTEXT           "Wobble Friction Coefficient (K)",IDC_STATIC,18,218,96,8
-    EDITTEXT        IDC_WOBBLE,141,215,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_WOBBLE_TAG,183,217,19,8
-    LTEXT           "Coefficient of Friction (u)",IDC_STATIC,18,233,77,8
-    EDITTEXT        IDC_FRICTION,141,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Transfer length of pretensioned prestressing strands",IDC_STATIC,7,257,273,45
-    LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,269,247,10
-    COMBOBOX        IDC_COMBO_TRANSFER,44,284,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "After Superimposed Dead Loads",IDC_AFTER_SIDL_LABEL,29,165,104,8
+    EDITTEXT        IDC_AFTER_SIDL,141,165,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Final",IDC_FINAL_LABEL,29,182,31,8
+    EDITTEXT        IDC_FINAL,141,182,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FINAL_TAG,183,182,18,8
+    GROUPBOX        "Post-Tensioning Parameters",IDC_STATIC,7,202,273,67
+    LTEXT           "Anchor Set",IDC_STATIC,18,220,36,8
+    EDITTEXT        IDC_ANCHORSET,141,215,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ANCHORSET_TAG,183,218,19,8
+    LTEXT           "Wobble Friction Coefficient (K)",IDC_STATIC,18,234,96,8
+    EDITTEXT        IDC_WOBBLE,141,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_WOBBLE_TAG,183,233,19,8
+    LTEXT           "Coefficient of Friction (u)",IDC_STATIC,18,249,77,8
+    EDITTEXT        IDC_FRICTION,141,247,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Transfer length of pretensioned prestressing strands",IDC_STATIC,7,273,273,45
+    LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,285,247,10
+    COMBOBOX        IDC_COMBO_TRANSFER,44,300,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Static",IDC_AFTER_SIDL_TAG,183,165,18,8
 END
 
 IDD_SPEC_LIFTING DIALOGEX 0, 0, 378, 337
@@ -1571,7 +1574,7 @@ BEGIN
         VERTGUIDE, 18
         VERTGUIDE, 29
         TOPMARGIN, 7
-        BOTTOMMARGIN, 303
+        BOTTOMMARGIN, 319
     END
 
     IDD_SPEC_LIFTING, DIALOG

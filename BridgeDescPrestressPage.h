@@ -29,6 +29,7 @@
 // BridgeDescPrestressPage.h : header file
 //
 
+#include "PGSuperAppPlugin\resource.h"
 #include <PgsExt\GirderData.h>
 
 #if !defined INCLUDED_MATERIAL_PSSTRAND_H_

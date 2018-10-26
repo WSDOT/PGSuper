@@ -121,6 +121,17 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       // include load rating results if we are always load rating
       bRating = pRatingSpec->AlwaysLoadRate();
+
+
+      // if none of the rating types are enabled, skip the rating
+      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
+         )
+         bRating = false;
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -150,8 +161,8 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }
@@ -159,19 +170,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          // uniform loads
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara << "Uniform Loads Applied Along the Entire Girder" << rptNewLine;
+         *pPara << _T("Uniform Loads Applied Along the Entire Girder") << rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
 
-         p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+         p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
          *pPara << p_table << rptNewLine;
 
          p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
          p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-         (*p_table)(0,0) << "Load Type";
-         (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,0) << _T("Load Type");
+         (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
          GET_IFACE2(pBroker,IProductLoads,pProdLoads);
 
@@ -184,38 +195,38 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( bUniformGirderDeadLoad )
          {
             // girder load is uniform
-            (*p_table)(row,0) << "Girder";
+            (*p_table)(row,0) << _T("Girder");
             (*p_table)(row++,1) << fpl.SetValue(-gdrLoad[0].wStart);
          }
 
          if ( pProdLoads->HasSidewalkLoad(spanIdx,gdrIdx) )
          {
-            (*p_table)(row,0) << "Sidewalk";
+            (*p_table)(row,0) << _T("Sidewalk");
             (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(spanIdx,gdrIdx));
          }
 
          Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(spanIdx,gdrIdx);
          if (tb_load!=0.0)
          {
-            (*p_table)(row,0) << "Traffic Barrier";
+            (*p_table)(row,0) << _T("Traffic Barrier");
             (*p_table)(row++,1) << fpl.SetValue(-tb_load);
          }
 
          if ( pProdLoads->HasPedestrianLoad(spanIdx,gdrIdx) )
          {
-            (*p_table)(row,0) << "Pedestrian Live Load";
+            (*p_table)(row,0) << _T("Pedestrian Live Load");
             (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(spanIdx,gdrIdx));
          }
 
          if ( !bUniformGirderDeadLoad )
          {
-            p_table = pgsReportStyleHolder::CreateDefaultTable(4,"Girder Self-Weight");
+            p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Girder Self-Weight"));
             *pPara << rptNewLine << p_table << rptNewLine;
 
-            (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,1) << COLHDR("Load End,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,2) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,3) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,2) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             row = p_table->GetNumberOfHeaderRows();
             std::vector<GirderLoad>::iterator iter;
@@ -239,7 +250,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara<< "Slab Load Applied Between Bearings"<<rptNewLine;
+            *pPara<< _T("Slab Load Applied Between Bearings")<<rptNewLine;
             
             pgsTypes::SupportedDeckType deck_type = pBridge->GetDeckType();
 
@@ -255,11 +266,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if (is_uniform)
             {
-               *pNotePara << "Slab Load is uniform along entire girder length.";
+               *pNotePara << _T("Slab Load is uniform along entire girder length.");
             }
             else
             {
-               *pNotePara << "Slab Load is approximated with Linear Load Segments applied along the length of the girder";
+               *pNotePara << _T("Slab Load is approximated with Linear Load Segments applied along the length of the girder");
             }
 
             pPara = new rptParagraph;
@@ -269,35 +280,35 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             {
                if (is_uniform)
                {
-                  p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
                   *pPara << p_table << rptNewLine;
                   p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
                   p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-                  (*p_table)(0,0) << "Load Type";
-                  (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,0) << _T("Load Type");
+                  (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
                   RowIndexType row = p_table->GetNumberOfHeaderRows();
 
                   const SlabLoad& slab_load = *(slab_loads.begin());
 
-                  (*p_table)(row,0) << "Panel Weight";
+                  (*p_table)(row,0) << _T("Panel Weight");
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.PanelLoad);
-                  (*p_table)(row,0) << "Cast Slab Weight";
+                  (*p_table)(row,0) << _T("Cast Slab Weight");
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
-                  (*p_table)(row,0) << "Haunch Weight";
+                  (*p_table)(row,0) << _T("Haunch Weight");
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
-                  (*p_table)(row,0) << "Total Slab Weight";
+                  (*p_table)(row,0) << _T("Total Slab Weight");
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
                }
                else
                {
-                  p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
                   *pPara << p_table;
 
-                  (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-                  (*p_table)(0,1) << COLHDR("Panel Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-                  (*p_table)(0,2) << COLHDR("Cast Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-                  (*p_table)(0,3) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-                  (*p_table)(0,4) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,1) << COLHDR(_T("Panel Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,2) << COLHDR(_T("Cast Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,3) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,4) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
                   RowIndexType row = 1;
                   for ( std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++ )
@@ -322,12 +333,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             {
                if (is_uniform)
                {
-                  p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
                   *pPara << p_table << rptNewLine;
                   p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
                   p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-                  (*p_table)(0,0) << "Load Type";
-                  (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,0) << _T("Load Type");
+                  (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
                   RowIndexType row = p_table->GetNumberOfHeaderRows();
 
                   const SlabLoad& slab_load = *(slab_loads.begin());
@@ -337,23 +348,23 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
                   if (do_report_haunch)
                   {
-                     (*p_table)(row,0) << "Main Slab Weight";
+                     (*p_table)(row,0) << _T("Main Slab Weight");
                      (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
-                     (*p_table)(row,0) << "Haunch Weight";
+                     (*p_table)(row,0) << _T("Haunch Weight");
                      (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
                   }
-                  (*p_table)(row,0) << "Total Slab Weight";
+                  (*p_table)(row,0) << _T("Total Slab Weight");
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
                }
                else
                {
-                  p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
                   *pPara << p_table;
 
-                  (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-                  (*p_table)(0,1) << COLHDR("Main Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-                  (*p_table)(0,2) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-                  (*p_table)(0,3) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,1) << COLHDR(_T("Main Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,2) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,3) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
                   RowIndexType row = 1;
                   for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i!=slab_loads.end(); i++)
@@ -372,7 +383,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             } // end if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
 
             if(do_report_haunch)            
-               *pNotePara <<rptNewLine<< "Haunch weight includes effects of roadway geometry but does not include a reduction for camber";
+               *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry but does not include a reduction for camber");
 
             // the rest of the content is for the non-simplified version (full boat)
             if (!m_bSimplifiedVersion)
@@ -380,25 +391,25 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                // slab cantilever loads
                pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
                *pChapter << pPara;
-               *pPara<< "Slab Cantilever Loads"<<rptNewLine;
+               *pPara<< _T("Slab Cantilever Loads")<<rptNewLine;
             
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
                *pPara << p_table;
 
-               (*p_table)(0,0) << "Location";
-               (*p_table)(0,1) << COLHDR("Point Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-               (*p_table)(0,2) << COLHDR("Point Moment",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+               (*p_table)(0,0) << _T("Location");
+               (*p_table)(0,1) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+               (*p_table)(0,2) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
                Float64 P1, P2, M1, M2;
                pProdLoads->GetCantileverSlabLoad(spanIdx, gdrIdx, &P1, &M1, &P2, &M2);
-               (*p_table)(1,0) << "Left Bearing";
+               (*p_table)(1,0) << _T("Left Bearing");
                (*p_table)(1,1) << force.SetValue(-P1);
                (*p_table)(1,2) << moment.SetValue(M1);
             
-               (*p_table)(2,0) << "Right Bearing";
+               (*p_table)(2,0) << _T("Right Bearing");
                (*p_table)(2,1) << force.SetValue(-P2);
                (*p_table)(2,2) << moment.SetValue(M2);
 
@@ -416,7 +427,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara << "Overlay" << rptNewLine;
+            *pPara << _T("Overlay") << rptNewLine;
             pPara = new rptParagraph;
             *pChapter << pPara;
 
@@ -430,42 +441,42 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if (is_uniform)
             {
-               *pPara<<"Overlay load is uniform along entire girder length."<<rptNewLine;
+               *pPara<<_T("Overlay load is uniform along entire girder length.")<<rptNewLine;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
                *pPara << p_table << rptNewLine;
                p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
                p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-               (*p_table)(0,0) << "Load Type";
-               (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,0) << _T("Load Type");
+               (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
                RowIndexType row = p_table->GetNumberOfHeaderRows();
 
                const OverlayLoad& ovl_load = *(overlay_loads.begin());
 
-               (*p_table)(row,0) << "Overlay Weight";
+               (*p_table)(row,0) << _T("Overlay Weight");
                (*p_table)(row++,1) << fpl.SetValue(-ovl_load.StartLoad);
             }
             else
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
                *pPara << p_table;
 
-               (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR("Load End,"  <<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR(_T("Load End,")  <<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
                if (olayd==pgsTypes::olDistributeTributaryWidth)
                {
-                  (*p_table)(0,2) << COLHDR("Start " << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-                  (*p_table)(0,3) << COLHDR("End "   << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,2) << COLHDR(_T("Start ") << Sub2(_T("W"),_T("trib")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,3) << COLHDR(_T("End ")   << Sub2(_T("W"),_T("trib")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
                }
                else
                {
-                  (*p_table)(0,2) << COLHDR("Start " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-                  (*p_table)(0,3) << COLHDR("End "   << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,2) << COLHDR(_T("Start ") << Sub2(_T("W"),_T("cc")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,3) << COLHDR(_T("End ")   << Sub2(_T("W"),_T("cc")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
                }
 
-               (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,5) << COLHDR("End Weight",  rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,4) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,5) << COLHDR(_T("End Weight"),  rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
                RowIndexType row = 1;
                for (std::vector<OverlayLoad>::iterator i = overlay_loads.begin(); i != overlay_loads.end(); i++)
@@ -493,12 +504,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pChapter << pPara;
             if (olayd==pgsTypes::olDistributeTributaryWidth)
             {
-               *pPara << "Overlay load is distributed using tributary width."<< rptNewLine;
+               *pPara << _T("Overlay load is distributed using tributary width.")<< rptNewLine;
             }
             else
             {
-               *pPara << "Overlay load is distributed uniformly among all girders per LRFD 4.6.2.2.1"<< rptNewLine;
-               *pPara << Sub2("W","cc") << " is the curb to curb width"<< rptNewLine;
+               *pPara << _T("Overlay load is distributed uniformly among all girders per LRFD 4.6.2.2.1")<< rptNewLine;
+               *pPara << Sub2(_T("W"),_T("cc")) << _T(" is the curb to curb width")<< rptNewLine;
             }
          } // end if overlay
 
@@ -508,7 +519,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara << "Construction" << rptNewLine;
+            *pPara << _T("Construction") << rptNewLine;
             pPara = new rptParagraph;
             *pChapter << pPara;
 
@@ -519,34 +530,34 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if (is_uniform)
             {
-               *pPara<<"Construction load is uniform along entire girder length."<<rptNewLine;
+               *pPara<<_T("Construction load is uniform along entire girder length.")<<rptNewLine;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
                *pPara << p_table << rptNewLine;
                p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
                p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-               (*p_table)(0,0) << "Load Type";
-               (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,0) << _T("Load Type");
+               (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
                RowIndexType row = p_table->GetNumberOfHeaderRows();
          
                const ConstructionLoad& cnst_load = *(construction_loads.begin());
 
-               (*p_table)(row,0) << "Construction Weight";
+               (*p_table)(row,0) << _T("Construction Weight");
                (*p_table)(row++,1) << fpl.SetValue(-cnst_load.StartLoad);
             }
             else
             {
-            p_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+            p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
             *pPara << p_table;
 
-            (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,1) << COLHDR("Load End,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-            (*p_table)(0,2) << COLHDR("Start " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,3) << COLHDR("End " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,2) << COLHDR(_T("Start ") << Sub2(_T("W"),_T("cc")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,3) << COLHDR(_T("End ") << Sub2(_T("W"),_T("cc")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-            (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,5) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,4) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,5) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
 
             RowIndexType row = 1;
@@ -584,7 +595,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             one_girder_has_shear_key = true;
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara<< "Shear Key Load"<<rptNewLine;
+            *pPara<< _T("Shear Key Load")<<rptNewLine;
             
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -595,38 +606,38 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             bool is_uniform = IsShearKeyLoadUniform(loads);
             if (is_uniform)
             {
-               *pPara << "Shear Key Load is uniform along entire girder length" << rptNewLine;
+               *pPara << _T("Shear Key Load is uniform along entire girder length") << rptNewLine;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
                *pPara << p_table << rptNewLine;
                p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
                p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-               (*p_table)(0,0) << "Load Type";
-               (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,0) << _T("Load Type");
+               (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
                RowIndexType row = p_table->GetNumberOfHeaderRows();
 
                const ShearKeyLoad& load = *(loads.begin());
 
-               (*p_table)(row,0) << "Load Within Girder Envelope";
+               (*p_table)(row,0) << _T("Load Within Girder Envelope");
                (*p_table)(row++,1) << fpl.SetValue(-load.UniformLoad);
 
-               (*p_table)(row,0) << "Load Within Joint";
+               (*p_table)(row,0) << _T("Load Within Joint");
                (*p_table)(row++,1) << fpl.SetValue(-load.StartJointLoad);
 
-               (*p_table)(row,0) << "Total Shear Key Weight";
+               (*p_table)(row,0) << _T("Total Shear Key Weight");
                (*p_table)(row++,1) << fpl.SetValue(-load.StartJointLoad - load.UniformLoad);
             }
             else
             {
-               *pPara << "Shear Key Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
+               *pPara << _T("Shear Key Load is approximated with Linear Load Segments applied along the length of the girder") << rptNewLine;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
                *pPara << p_table;
 
-               (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR("Load Within"<<rptNewLine<<"Girder Envelope",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,2) << COLHDR("Load Within"<<rptNewLine<<"Joint",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,3) << COLHDR("Total Shear"<<rptNewLine<<"Key Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR(_T("Load Within")<<rptNewLine<<_T("Girder Envelope"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,2) << COLHDR(_T("Load Within")<<rptNewLine<<_T("Joint"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,3) << COLHDR(_T("Total Shear")<<rptNewLine<<_T("Key Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
                RowIndexType row = 1;
                for ( std::vector<ShearKeyLoad>::iterator i = loads.begin(); i != loads.end(); i++ )
@@ -665,25 +676,25 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             // end diaphragm loads
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara<< "End Diaphragm Loads"<<rptNewLine;
+            *pPara<< _T("End Diaphragm Loads")<<rptNewLine;
          
             pPara = new rptParagraph;
             *pChapter << pPara;
 
-            p_table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+            p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
             *pPara << p_table;
 
-            (*p_table)(0,0) << "Location";
-            (*p_table)(0,1) << COLHDR("Point Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-            (*p_table)(0,2) << COLHDR("Point Moment",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+            (*p_table)(0,0) << _T("Location");
+            (*p_table)(0,1) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+            (*p_table)(0,2) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
             Float64 P1, P2, M1, M2;
             pProdLoads->GetEndDiaphragmLoads(spanIdx, gdrIdx, &P1, &M1, &P2, &M2);
-            (*p_table)(1,0) << "Left Bearing";
+            (*p_table)(1,0) << _T("Left Bearing");
             (*p_table)(1,1) << force.SetValue(-P1);
             (*p_table)(1,2) << moment.SetValue(M1);
          
-            (*p_table)(2,0) << "Right Bearing";
+            (*p_table)(2,0) << _T("Right Bearing");
             (*p_table)(2,1) << force.SetValue(-P2);
             (*p_table)(2,2) << moment.SetValue(M2);
 
@@ -693,7 +704,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             // diaphragm loads between supports
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara<< "Intermediate Diaphragm Loads Constructed in Casting Yard"<<rptNewLine;
+            *pPara<< _T("Intermediate Diaphragm Loads Constructed in Casting Yard")<<rptNewLine;
          
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -704,18 +715,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if (diap_loads.size() == 0)
             {
-               *pPara<<"No Intermediate Diaphragms Present"<<rptNewLine;
+               *pPara<<_T("No Intermediate Diaphragms Present")<<rptNewLine;
             }
             else
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
                *pPara << p_table;
 
-               (*p_table)(0,0) << COLHDR("Load Location,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR("H",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-               (*p_table)(0,2) << COLHDR("W",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-               (*p_table)(0,3) << COLHDR("T",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-               (*p_table)(0,4) << COLHDR("Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+               (*p_table)(0,0) << COLHDR(_T("Load Location,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR(_T("H"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+               (*p_table)(0,2) << COLHDR(_T("W"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+               (*p_table)(0,3) << COLHDR(_T("T"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+               (*p_table)(0,4) << COLHDR(_T("Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
                int row=1;
 
@@ -736,9 +747,9 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                   }
                   else
                   {
-                     (*p_table)(row,1) << "";
-                     (*p_table)(row,2) << "";
-                     (*p_table)(row,3) << "";
+                     (*p_table)(row,1) << _T("");
+                     (*p_table)(row,2) << _T("");
+                     (*p_table)(row,3) << _T("");
                   }
                   (*p_table)(row,4) << force.SetValue(-rload.Load);
                   row++;
@@ -747,7 +758,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara<< "Intermediate Diaphragm Loads Constructed at Bridge Site"<<rptNewLine;
+            *pPara<< _T("Intermediate Diaphragm Loads Constructed at Bridge Site")<<rptNewLine;
          
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -758,18 +769,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             if (diap_loads.size() == 0)
             {
-               *pPara<<"No Intermediate Diaphragms Present"<<rptNewLine;
+               *pPara<<_T("No Intermediate Diaphragms Present")<<rptNewLine;
             }
             else
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+               p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
                *pPara << p_table;
 
-               (*p_table)(0,0) << COLHDR("Load Location,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR("H",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-               (*p_table)(0,2) << COLHDR("W",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-               (*p_table)(0,3) << COLHDR("T",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-               (*p_table)(0,4) << COLHDR("Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+               (*p_table)(0,0) << COLHDR(_T("Load Location,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR(_T("H"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+               (*p_table)(0,2) << COLHDR(_T("W"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+               (*p_table)(0,3) << COLHDR(_T("T"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+               (*p_table)(0,4) << COLHDR(_T("Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
                std::vector<IntermedateDiaphragm> diaphragms   = pBridge->GetIntermediateDiaphragms(pgsTypes::BridgeSite1,spanIdx,gdrIdx);
                std::vector<IntermedateDiaphragm>::iterator iter = diaphragms.begin();
@@ -790,9 +801,9 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                   }
                   else
                   {
-                     (*p_table)(row,1) << "";
-                     (*p_table)(row,2) << "";
-                     (*p_table)(row,3) << "";
+                     (*p_table)(row,1) << _T("");
+                     (*p_table)(row,2) << _T("");
+                     (*p_table)(row,3) << _T("");
                   }
 
                   (*p_table)(row,4) << force.SetValue(-rload.Load);
@@ -803,7 +814,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             // User Defined Loads
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara<< "User Defined Loads"<<rptNewLine;
+            *pPara<< _T("User Defined Loads")<<rptNewLine;
             pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
             *pChapter << pPara;
             pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
@@ -823,26 +834,26 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< "Live Loads"<<rptNewLine;
+   *pPara<< _T("Live Loads")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
    if ( bDesign )
    {
-      std::vector<std::string> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
+      std::vector<std::_tstring> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
       if ( designLiveLoads.empty() )
       {
-         *pPara<<"No live loads were applied to the design (Service and Strength I) limit states"<< rptNewLine;
+         *pPara<<_T("No live loads were applied to the design (Service and Strength I) limit states")<< rptNewLine;
       }
       else
       {
-         *pPara<<"The following live loads were applied to the design (Service and Strength I) limit states:"<< rptNewLine;
+         *pPara<<_T("The following live loads were applied to the design (Service and Strength I) limit states:")<< rptNewLine;
 
-         std::vector<std::string>::iterator iter;
+         std::vector<std::_tstring>::iterator iter;
          for (iter = designLiveLoads.begin(); iter != designLiveLoads.end(); iter++)
          {
-            std::string& load_name = *iter;
+            std::_tstring& load_name = *iter;
             *pPara << load_name << rptNewLine;
          }
       }
@@ -850,19 +861,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         std::vector<std::string> fatigueLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
+         std::vector<std::_tstring> fatigueLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
          if ( fatigueLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the fatigue (Fatigue I) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the fatigue (Fatigue I) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the fatigue (Fatigue I) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the fatigue (Fatigue I) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = fatigueLiveLoads.begin(); iter != fatigueLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -872,19 +883,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( bPermit )
       {
-         std::vector<std::string> permitLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermit);
+         std::vector<std::_tstring> permitLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermit);
          if ( permitLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the permit (Strength II) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the permit (Strength II) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the permit (Strength II) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the permit (Strength II) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = permitLiveLoads.begin(); iter != permitLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -895,19 +906,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
       {
-         std::vector<std::string> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
+         std::vector<std::_tstring> designLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
          if ( designLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the design load rating (Service III and Strength I) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the design load rating (Service III and Strength I) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the design load rating (Service III and Strength I) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the design load rating (Service III and Strength I) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = designLiveLoads.begin(); iter != designLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -916,19 +927,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         std::vector<std::string> legalRoutineLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
+         std::vector<std::_tstring> legalRoutineLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
          if ( legalRoutineLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the legal load rating, routine commercial traffic (Service III and Strength I) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the legal load rating, routine commercial traffic (Service III and Strength I) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the legal load rating, routine commercial traffic (Service III and Strength I) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the legal load rating, routine commercial traffic (Service III and Strength I) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = legalRoutineLiveLoads.begin(); iter != legalRoutineLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -937,19 +948,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         std::vector<std::string> legalSpecialLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
+         std::vector<std::_tstring> legalSpecialLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
          if ( legalSpecialLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the legal load rating, specialized hauling vehicles (Service III and Strength I) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the legal load rating, specialized hauling vehicles (Service III and Strength I) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the legal load rating, specialized hauling vehicles (Service III and Strength I) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the legal load rating, specialized hauling vehicles (Service III and Strength I) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = legalSpecialLiveLoads.begin(); iter != legalSpecialLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -959,19 +970,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         std::vector<std::string> permitRoutineLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Routine);
+         std::vector<std::_tstring> permitRoutineLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Routine);
          if ( permitRoutineLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the permit load rating, routine/annual permit (Service I and Strength II) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the permit load rating, routine/annual permit (Service I and Strength II) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the permit load rating, routine/annual permit (Service I and Strength II) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the permit load rating, routine/annual permit (Service I and Strength II) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = permitRoutineLiveLoads.begin(); iter != permitRoutineLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -980,19 +991,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         std::vector<std::string> permitSpecialLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
+         std::vector<std::_tstring> permitSpecialLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
          if ( permitSpecialLiveLoads.empty() )
          {
-            *pPara<<"No live loads were applied to the permit load rating, special/limited crossing permit (Service I and Strength II) limit states"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the permit load rating, special/limited crossing permit (Service I and Strength II) limit states")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the permit load rating, special/limited crossing permit (Service I and Strength II) limit states:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the permit load rating, special/limited crossing permit (Service I and Strength II) limit states:")<< rptNewLine;
 
-            std::vector<std::string>::iterator iter;
+            std::vector<std::_tstring>::iterator iter;
             for (iter = permitSpecialLiveLoads.begin(); iter != permitSpecialLiveLoads.end(); iter++)
             {
-               std::string& load_name = *iter;
+               std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;
             }
          }
@@ -1016,12 +1027,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< "Limit States"<<rptNewLine;
+   *pPara<< _T("Limit States")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+   p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
    *pPara << p_table;
 
    p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1030,63 +1041,63 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    p_table->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   (*p_table)(row,0) << "Stage";
-   (*p_table)(row,1) << "Load Case";
+   (*p_table)(row,0) << _T("Stage");
+   (*p_table)(row,1) << _T("Load Case");
    row++;
 
-   std::string strDC;
+   std::_tstring strDC;
    if (one_girder_has_shear_key)
    {
-      strDC = "DC = Girder + Diaphragms + Shear Key + Construction + Slab";
+      strDC = _T("DC = Girder + Diaphragms + Shear Key + Construction + Slab");
    }
    else
    {
-      strDC = "DC = Girder + Diaphragms + Construction + Slab";
+      strDC = _T("DC = Girder + Diaphragms + Construction + Slab");
    }
 
    if ( bDesign )
    {
-      (*p_table)(row,0) << "Casting Yard";
-      (*p_table)(row,1) << "DC = Girder";
+      (*p_table)(row,0) << _T("Casting Yard");
+      (*p_table)(row,1) << _T("DC = Girder");
       row++;
 
 
-      (*p_table)(row,0) << "Deck and Diaphragm Placement (Bridge Site 1)";
+      (*p_table)(row,0) << _T("Deck and Diaphragm Placement (Bridge Site 1)");
       (*p_table)(row,1) << strDC;
       row++;
 
-      (*p_table)(row,0) << "Superimposed Dead Loads (Bridge Site 2)";
-      (*p_table)(row,1) << strDC<<" + Traffic Barrier"<<rptNewLine
-                      << "DW = Overlay";
+      (*p_table)(row,0) << _T("Superimposed Dead Loads (Bridge Site 2)");
+      (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
+                      << _T("DW = Overlay");
       row++;
    }
 
-   (*p_table)(row,0) << "Final with Live Load (Bridge Site 3)";
-   (*p_table)(row,1) << strDC<<" + Traffic Barrier"<<rptNewLine
-                   << "DW = Future Overlay"<< rptNewLine
-                   << "LL+IM = Live Load + Impact" << rptNewLine
-                   << "PL = Pedestrian Live Load" << rptNewLine;
+   (*p_table)(row,0) << _T("Final with Live Load (Bridge Site 3)");
+   (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
+                   << _T("DW = Future Overlay")<< rptNewLine
+                   << _T("LL+IM = Live Load + Impact") << rptNewLine
+                   << _T("PL = Pedestrian Live Load") << rptNewLine;
    row++;
 
 
    // LRFD Limit States Load Factors
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< "Limit State Load Factors"<<rptNewLine;
+   *pPara<< _T("Limit State Load Factors")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+   p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
    p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << p_table;
 
 
-   (*p_table)(0,0) << "Limit State";
-   (*p_table)(0,1) << Sub2(symbol(gamma),"DC");
-   (*p_table)(0,2) << Sub2(symbol(gamma),"DW");
-   (*p_table)(0,3) << Sub2(symbol(gamma),"LL");
+   (*p_table)(0,0) << _T("Limit State");
+   (*p_table)(0,1) << Sub2(symbol(gamma),_T("DC"));
+   (*p_table)(0,2) << Sub2(symbol(gamma),_T("DW"));
+   (*p_table)(0,3) << Sub2(symbol(gamma),_T("LL"));
    
    row = 1;
 
@@ -1094,7 +1105,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( bDesign )
    {
-      (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(pgsTypes::ServiceI));
+      (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceI));
       (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceI]);
       (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceI]);
       (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
@@ -1102,14 +1113,14 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(pgsTypes::ServiceIA));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIA));
          (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIA]);
          (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIA]);
          (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
          row++;
       }
 
-      (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(pgsTypes::ServiceIII));
+      (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::ServiceIII));
       (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIII]);
       (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIII]);
       (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
@@ -1117,27 +1128,27 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(pgsTypes::FatigueI));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::FatigueI));
          (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::FatigueI]);
          (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::FatigueI]);
          (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
          row++;
       }
 
-      (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(pgsTypes::StrengthI));
-      (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthI]) << "/";
+      (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthI));
+      (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthI]) << _T("/");
       (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthI]);
-      (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthI]) << "/";
+      (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthI]) << _T("/");
       (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthI]);
       (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
       row++;
 
       if ( bPermit )
       {
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(pgsTypes::StrengthII));
-         (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthII]) << "/";
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(pgsTypes::StrengthII));
+         (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthII]) << _T("/");
          (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthII]);
-         (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthII]) << "/";
+         (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthII]) << _T("/");
          (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthII]);
          (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
          row++;
@@ -1152,13 +1163,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( pRatingSpec->RateForStress(pgsTypes::lrDesign_Inventory) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_Inventory;
-            (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+            (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
             (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << "*";
+               (*p_table)(row,3) << _T("*");
                bFootNote = true;
             }
             else
@@ -1170,13 +1181,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_Inventory;
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
          (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << "*";
+            (*p_table)(row,3) << _T("*");
             bFootNote = true;
          }
          else
@@ -1192,13 +1203,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( pRatingSpec->RateForStress(pgsTypes::lrDesign_Operating) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_Operating;
-            (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+            (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
             (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << "*";
+               (*p_table)(row,3) << _T("*");
                bFootNote = true;
             }
             else
@@ -1210,13 +1221,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_Operating;
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
          (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << "*";
+            (*p_table)(row,3) << _T("*");
             bFootNote = true;
          }
          else
@@ -1232,13 +1243,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalRoutine;
-            (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+            (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
             (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << "*";
+               (*p_table)(row,3) << _T("*");
                bFootNote = true;
             }
             else
@@ -1250,13 +1261,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalRoutine;
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
          (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << "*";
+            (*p_table)(row,3) << _T("*");
             bFootNote = true;
          }
          else
@@ -1273,13 +1284,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalSpecial;
-            (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+            (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
             (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << "*";
+               (*p_table)(row,3) << _T("*");
                bFootNote = true;
             }
             else
@@ -1291,13 +1302,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalSpecial;
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
          (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << "*";
+            (*p_table)(row,3) << _T("*");
             bFootNote = true;
          }
          else
@@ -1313,13 +1324,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceI_PermitRoutine;
-            (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+            (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
             (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << "*";
+               (*p_table)(row,3) << _T("*");
                bFootNote = true;
             }
             else
@@ -1331,13 +1342,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthII_PermitRoutine;
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
          (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << "*";
+            (*p_table)(row,3) << _T("*");
             bFootNote = true;
          }
          else
@@ -1353,13 +1364,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          if ( pRatingSpec->RateForStress(pgsTypes::lrPermit_Special) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceI_PermitSpecial;
-            (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+            (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
             (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << "*";
+               (*p_table)(row,3) << _T("*");
                bFootNote = true;
             }
             else
@@ -1371,13 +1382,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthII_PermitSpecial;
-         (*p_table)(row,0) << OLE2A(pStageMap->GetLimitStateName(ls));
+         (*p_table)(row,0) << OLE2T(pStageMap->GetLimitStateName(ls));
          (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << "*";
+            (*p_table)(row,3) << _T("*");
             bFootNote = true;
          }
          else
@@ -1392,7 +1403,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
          *pChapter << pPara;
-         *pPara << Super("*") << "Live Load Factor depends on the weight of the axles on the bridge" << rptNewLine;
+         *pPara << Super(_T("*")) << _T("Live Load Factor depends on the weight of the axles on the bridge") << rptNewLine;
       }
    }
    }
@@ -1403,12 +1414,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    // Equivalent prestress loading for camber
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< "Equivalent Prestress Loading for Camber"<<rptNewLine<<rptNewLine;
+   *pPara<< _T("Equivalent Prestress Loading for Camber")<<rptNewLine<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << "Loads shown in positive directions" << rptNewLine;
+   *pPara << _T("Loads shown in positive directions") << rptNewLine;
 
    moment.ShowUnitTag(true);
    force.ShowUnitTag(true);
@@ -1424,8 +1435,8 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
          {
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }
@@ -1436,26 +1447,26 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          std::vector<std::pair<Float64,Float64> > loads;
          pCamber->GetStraightStrandEquivLoading(spanIdx,gdrIdx,&loads);
          std::vector<std::pair<Float64,Float64> >::iterator iter;
-         *pPara << Bold("Straight Strands") << rptNewLine;
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "StraightStrandCamberLoading.gif") << rptNewLine;
+         *pPara << Bold(_T("Straight Strands")) << rptNewLine;
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
          for ( iter = loads.begin(); iter != loads.end(); iter++ )
          {
             double M = iter->first;
             double X = iter->second;
 
-            *pPara << "M = " << moment.SetValue(M) << " at " << loc.SetValue(X) << rptNewLine;
+            *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
          }
 
          *pPara << rptNewLine;
 
          double Ml,Mr,Nl,Nr,Xl,Xr;
          pCamber->GetHarpedStrandEquivLoading(spanIdx,gdrIdx,&Ml, &Mr, &Nl, &Nr, &Xl, &Xr);
-         *pPara << Bold("Harped Strands") << rptNewLine;
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "HarpedStrandCamberLoading.gif") << rptNewLine;
-         *pPara << "End moments, M = " << moment.SetValue(Ml);
-         *pPara << " and " << moment.SetValue(Mr) << rptNewLine;
-         *pPara << "Left Harp Point, N = " << force.SetValue(Nl) << " at = " << loc.SetValue(Xl) << rptNewLine;
-         *pPara << "Right Harp Point, N = " << force.SetValue(Nr) << " at = " << loc.SetValue(Xr) << rptNewLine;
+         *pPara << Bold(_T("Harped Strands")) << rptNewLine;
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
+         *pPara << _T("End moments, M = ") << moment.SetValue(Ml);
+         *pPara << _T(" and ") << moment.SetValue(Mr) << rptNewLine;
+         *pPara << _T("Left Harp Point, N = ") << force.SetValue(Nl) << _T(" at = ") << loc.SetValue(Xl) << rptNewLine;
+         *pPara << _T("Right Harp Point, N = ") << force.SetValue(Nr) << _T(" at = ") << loc.SetValue(Xr) << rptNewLine;
 
          *pPara << rptNewLine;
       
@@ -1464,11 +1475,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          {
             double MxferL, MxferR, MremoveL, MremoveR;
             pCamber->GetTempStrandEquivLoading(spanIdx,gdrIdx,&MxferL,&MxferR,&MremoveL,&MremoveR);
-            *pPara << Bold("Temporary Strands") << rptNewLine;
-            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "TempStrandCamberLoading.gif") << rptNewLine;
-            *pPara << "End moments at prestressing, M = " << moment.SetValue(MxferL) << " and ";
+            *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TempStrandCamberLoading.gif")) << rptNewLine;
+            *pPara << _T("End moments at prestressing, M = ") << moment.SetValue(MxferL) << _T(" and ");
             *pPara << moment.SetValue(-MxferR) << rptNewLine;
-            *pPara << "Moment at strand removal, M = " << moment.SetValue(MremoveL) << " and ";
+            *pPara << _T("Moment at strand removal, M = ") << moment.SetValue(MremoveL) << _T(" and ");
             *pPara << moment.SetValue(-MremoveR) << rptNewLine;
          } // end if
       } // gdrIdx

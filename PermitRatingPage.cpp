@@ -41,7 +41,7 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlRoutineLL.GetText(idx, str);
-            m_Data.RoutinePermitNames.push_back( std::string(str));
+            m_Data.RoutinePermitNames.push_back( std::_tstring(str));
          }
       }
 
@@ -54,7 +54,7 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
          {
             CString str;
             m_ctlSpecialLL.GetText(idx, str);
-            m_Data.SpecialPermitNames.push_back( std::string(str));
+            m_Data.SpecialPermitNames.push_back( std::_tstring(str));
          }
       }
    }
@@ -72,13 +72,13 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Text(pDX,IDC_STRENGTH_II_DC,m_Data.StrengthII_DC);
    DDX_Text(pDX,IDC_STRENGTH_II_DW,m_Data.StrengthII_DW);
-   DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT, "Compute",m_Data.StrengthII_LL_Routine);
-   DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT2,"Compute",m_Data.StrengthII_LL_Special);
+   DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT, _T("Compute"),m_Data.StrengthII_LL_Routine);
+   DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT2,_T("Compute"),m_Data.StrengthII_LL_Special);
    
    DDX_Text(pDX,IDC_SERVICE_I_DC,m_Data.ServiceI_DC);
    DDX_Text(pDX,IDC_SERVICE_I_DW,m_Data.ServiceI_DW);
-   DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT, "Compute",m_Data.ServiceI_LL_Routine);
-   DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT2,"Compute",m_Data.ServiceI_LL_Special);
+   DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT, _T("Compute"),m_Data.ServiceI_LL_Routine);
+   DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT2,_T("Compute"),m_Data.ServiceI_LL_Special);
 
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,m_Data.bRateForShear);
    DDX_Check_Bool(pDX,IDC_CHECK_YIELDING,m_Data.bCheckReinforcementYielding);
@@ -103,13 +103,13 @@ BOOL CPermitRatingPage::OnInitDialog()
    EnableToolTips();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PERMIT_TYPE);
-   int idx = pCB->AddString("Single Trip with escort");
+   int idx = pCB->AddString(_T("Single Trip with escort"));
    pCB->SetItemData(idx,(DWORD_PTR)pgsTypes::ptSingleTripWithEscort);
 
-   idx = pCB->AddString("Single Trip with other traffic");
+   idx = pCB->AddString(_T("Single Trip with other traffic"));
    pCB->SetItemData(idx,(DWORD_PTR)pgsTypes::ptSingleTripWithTraffic);
 
-   idx = pCB->AddString("Multiple Trips (< 100) with other traffic");
+   idx = pCB->AddString(_T("Multiple Trips (< 100) with other traffic"));
    pCB->SetItemData(idx,(DWORD_PTR)pgsTypes::ptMultipleTripWithTraffic);
 
    CPropertyPage::OnInitDialog();
@@ -118,17 +118,17 @@ BOOL CPermitRatingPage::OnInitDialog()
    m_ctlSpecialLL.SetCheckStyle( BS_AUTOCHECKBOX );
 
    // fill the live load list boxes here
-   for (std::vector<std::string>::iterator iter = m_AllNames.begin(); iter != m_AllNames.end(); iter++)
+   for (std::vector<std::_tstring>::iterator iter = m_AllNames.begin(); iter != m_AllNames.end(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       m_ctlRoutineLL.AddString(str);
       m_ctlSpecialLL.AddString(str);
    }
 
    // Set the check marks for the various loads
-   for (std::vector<std::string>::reverse_iterator iter = m_Data.RoutinePermitNames.rbegin(); iter != m_Data.RoutinePermitNames.rend(); iter++)
+   for (std::vector<std::_tstring>::reverse_iterator iter = m_Data.RoutinePermitNames.rbegin(); iter != m_Data.RoutinePermitNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlRoutineLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
@@ -137,9 +137,9 @@ BOOL CPermitRatingPage::OnInitDialog()
       }
    }
 
-   for (std::vector<std::string>::reverse_iterator iter = m_Data.SpecialPermitNames.rbegin(); iter != m_Data.SpecialPermitNames.rend(); iter++)
+   for (std::vector<std::_tstring>::reverse_iterator iter = m_Data.SpecialPermitNames.rbegin(); iter != m_Data.SpecialPermitNames.rend(); iter++)
    {
-      const char* str = iter->c_str();
+      LPCTSTR str = iter->c_str();
       int idx = m_ctlSpecialLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
@@ -168,7 +168,7 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       switch(nID)
       {
       case IDC_PERMIT_TRUCK_IMPACT:
-         m_strTip = "MBE 6A.4.5.5 For slow moving vehicles (<= 10 mph) IM = 0%\rMBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%";
+         m_strTip = _T("MBE 6A.4.5.5 For slow moving vehicles (<= 10 mph) IM = 0%\rMBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%");
          break;
 
       case IDC_STRENGTH_II_LL_PERMIT:
@@ -267,8 +267,8 @@ BOOL CPermitRatingPage::OnSetActive()
    const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
    if ( !permit.AllowUserOverride() )
    {
-      DDX_Keyword(&dx,IDC_STRENGTH_II_LL_PERMIT,"Compute",gLL);
-      DDX_Keyword(&dx,IDC_SERVICE_I_LL_PERMIT,"Compute",gLL);
+      DDX_Keyword(&dx,IDC_STRENGTH_II_LL_PERMIT,_T("Compute"),gLL);
+      DDX_Keyword(&dx,IDC_SERVICE_I_LL_PERMIT,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(FALSE);
    }

@@ -341,7 +341,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    return RF;
 }
 
-void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::string* pVehicle) const
+void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const
 {
    Float64 posting_load = DBL_MAX;
    MomentRatings::const_iterator moment_iter;
@@ -349,7 +349,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
    {
       const pgsMomentRatingArtifact& artifact = moment_iter->second;
 
-      std::string strVehicle = artifact.GetVehicleName();
+      std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
@@ -369,7 +369,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
    {
       const pgsMomentRatingArtifact& artifact = moment_iter->second;
 
-      std::string strVehicle = artifact.GetVehicleName();
+      std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
@@ -390,7 +390,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
    {
       const pgsShearRatingArtifact& artifact = shear_iter->second;
 
-      std::string strVehicle = artifact.GetVehicleName();
+      std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
@@ -411,7 +411,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
    {
       const pgsStressRatingArtifact& artifact = stress_iter->second;
 
-      std::string strVehicle = artifact.GetVehicleName();
+      std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetRatingFactor();
       Float64 spl = W*(RF - 0.3)/0.7;
@@ -432,7 +432,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
    {
       const pgsYieldStressRatioArtifact& artifact = yield_stress_iter->second;
 
-      std::string strVehicle = artifact.GetVehicleName();
+      std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetStressRatio();
       Float64 spl = W*(RF - 0.3)/0.7;
@@ -452,7 +452,7 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
    {
       const pgsYieldStressRatioArtifact& artifact = yield_stress_iter->second;
 
-      std::string strVehicle = artifact.GetVehicleName();
+      std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
       Float64 RF = artifact.GetStressRatio();
       Float64 spl = W*(RF - 0.3)/0.7;

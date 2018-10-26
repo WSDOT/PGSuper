@@ -93,21 +93,21 @@ private:
 };
 
 // Name for girder library copy
-std::string MakeCloneName(const std::string& rOriginalName, GirderIndexType gdr)
+std::_tstring MakeCloneName(const std::_tstring& rOriginalName, GirderIndexType gdr)
 {
    if (gdr == TOGA_ORIG_GDR)
    {
-      return rOriginalName + std::string("(Original)");
+      return rOriginalName + std::_tstring(_T("(Original)"));
    }
    else
    {
       ASSERT(gdr == TOGA_FABR_GDR);
-      return rOriginalName + std::string("(Fabricator Optional)");
+      return rOriginalName + std::_tstring(_T("(Fabricator Optional)"));
    }
 }
 
 // Default PGSuper Template File
-static CString g_DefaultPGSuperFileName("TogaTemplate.pgs");
+static CString g_DefaultPGSuperFileName(_T("TogaTemplate.pgs"));
 
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignDoc
@@ -170,7 +170,7 @@ void CTxDOTOptionalDesignDoc::OnTxDotDataChanged(int change)
 HRESULT CTxDOTOptionalDesignDoc::LoadThePGSuperDocument(IStructuredLoad* pStrLoad)
 {
    // get the file version
-   HRESULT hr = pStrLoad->BeginUnit("PGSuper");
+   HRESULT hr = pStrLoad->BeginUnit(_T("PGSuper"));
    if ( FAILED(hr) )
       return hr;
 
@@ -180,14 +180,13 @@ HRESULT CTxDOTOptionalDesignDoc::LoadThePGSuperDocument(IStructuredLoad* pStrLoa
    {
       CComVariant var;
       var.vt = VT_BSTR;
-      pStrLoad->get_Property("Version",&var);
+      pStrLoad->get_Property(_T("Version"),&var);
    #if defined _DEBUG
-      USES_CONVERSION;
-      TRACE("Loading data saved with PGSuper Version %s\n",OLE2A(var.bstrVal));
+      TRACE(_T("Loading data saved with PGSuper Version %s\n"),CComBSTR(var.bstrVal));
    }
    else
    {
-      TRACE("Loading data saved with PGSuper Version 2.1 or earlier\n");
+      TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
    #endif
    } // clses the bracket for if ( 1.0 < ver )
 
@@ -202,7 +201,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format("The following error occured while opening %s",lpszPathName );
+   log_msg_header.Format(_T("The following error occured while opening %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -240,7 +239,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    default:
       {
          CString log_msg;
-         log_msg.Format("An unknown error occured while opening the file (hr = %d)",hr);
+         log_msg.Format(_T("An unknown error occured while opening the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -250,7 +249,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    // things here are very dire - show message box AND throw
    CString msg;
    CString msg2;
-   std::string strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -350,7 +349,7 @@ BOOL CTxDOTOptionalDesignDoc::Init()
    catch(TxDOTBrokerRetrieverException exc)
    {
       // An error occurred - report the problem
-      CString msg = "An Error Occurred While Loading the Master Library: ";
+      CString msg = _T("An Error Occurred While Loading the Master Library: ");
       msg += exc.Message;
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
       return FALSE;
@@ -375,7 +374,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
          AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
          // set up the toolbar here
-         UINT tbID = pFrame->CreateToolBar("TxDOT Optional Girder Analysis",GetPluginCommandManager());
+         UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
       }
@@ -441,7 +440,7 @@ BOOL CTxDOTOptionalDesignDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
       int l = name.GetLength();
       name = name.Left(l-ls);  // trim off suffix
 
-      int n = name.ReverseFind('\\');
+      int n = name.ReverseFind(_T('\\'));
       if (n>0)
       {
          l = name.GetLength();
@@ -474,7 +473,7 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile()
       suffix.LoadString(IDS_TEMPLATE_SUFFIX);
    }
 
-   CString template_name = GetTOGAFolder() + CString("\\") + beam_type + "." + suffix;
+   CString template_name = GetTOGAFolder() + CString(_T("\\")) + beam_type + _T(".") + suffix;
 
    // Read template file and update project data
    return ParseTemplateFile(template_name);
@@ -506,7 +505,7 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName)
 CString CTxDOTOptionalDesignDoc::GetRootNodeName()
 {
    if ( m_InExportMode )
-      return "PGSuper";
+      return _T("PGSuper");
    else
       return __super::GetRootNodeName();
 }
@@ -527,7 +526,7 @@ HRESULT CTxDOTOptionalDesignDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
      if ( FAILED(hr) )
         return hr;
 
-     hr = pStrSave->put_Property("Version",CComVariant("Toga"));
+     hr = pStrSave->put_Property(_T("Version"),CComVariant(_T("Toga")));
      if ( FAILED(hr) )
         return hr;
    }
@@ -614,24 +613,24 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
    catch(TxDOTBrokerRetrieverException exc)
    {
       // An error occurred - report the problem
-      CString msg = "An Error Occurred While Building the PGSuper Model: ";
+      CString msg = _T("An Error Occurred While Building the PGSuper Model: ");
       msg += exc.Message;
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
       return;
    }
    catch(...)
    {
-      CString msg = "An Unknown Error Occurred While Building the PGSuper Model";
+      CString msg = _T("An Unknown Error Occurred While Building the PGSuper Model");
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
       return;
    }
 
    // Have broker, now prompt user and save data
-   CString default_name = "TogaPGSuperModel.pgs";
+   CString default_name = _T("TogaPGSuperModel.pgs");
    
    // prompt user to save current project to a template file
-   CFileDialog  fildlg(FALSE,"pgs",default_name,OFN_HIDEREADONLY,
-                   "PGSuper Files (*.pgs)|*.pgs||");
+   CFileDialog  fildlg(FALSE,_T("pgs"),default_name,OFN_HIDEREADONLY,
+                   _T("PGSuper Files (*.pgs)|*.pgs||"));
 
    int stf = fildlg.DoModal();
    if (stf==IDOK)
@@ -642,8 +641,8 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
       // check if file exists and prompt user if he wants to overwrite
       if (DoesFileExist(file_path))
       {
-         CString msg(" The file: ");
-         msg += file_path + " exists. Overwrite it?";
+         CString msg(_T(" The file: "));
+         msg += file_path + _T(" exists. Overwrite it?");
          int stm = AfxMessageBox(msg,MB_YESNOCANCEL|MB_ICONQUESTION);
          if (stm!=IDYES)
             return;
@@ -723,7 +722,7 @@ IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
             pLib->SetLibraryManager( &m_LibMgr );
 
             // Need to load the pgsuper template file
-            CString template_name = GetTOGAFolder() + CString("\\") + m_ProjectData.GetPGSuperFileName();
+            CString template_name = GetTOGAFolder() + CString(_T("\\")) + m_ProjectData.GetPGSuperFileName();
 
             MarryPGSuperTemplateWithBroker(template_name);
          }
@@ -761,7 +760,7 @@ void CTxDOTOptionalDesignDoc::RecreateBroker()
    if (!this->CreateBroker())
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "An error occurred creating a new broker - This is a fatal programming error. Contact customer support";
+      exc.Message = _T("An error occurred creating a new broker - This is a fatal programming error. Contact customer support");
       throw exc;
    }
 }
@@ -801,7 +800,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
    {
       // PGSuper's installer should take care of this, but just in case:
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "The location of the PGSuper Master Library file is not in the registry. You must run PGSuper at least once before you can run TOGA. All it takes is opening and closing a .pgs file. You can do this now.";
+      exc.Message = _T("The location of the PGSuper Master Library file is not in the registry. You must run PGSuper at least once before you can run TOGA. All it takes is opening and closing a .pgs file. You can do this now.");
       WATCH(exc.Message);
       throw exc;
    }
@@ -813,9 +812,9 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
    CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer"));
 
     // Hard-coded file location
-//   CString strMasterLibaryFile = GetTOGAFolder() + CString("\\") + "MasterLibrary.lbr";
+//   CString strMasterLibaryFile = GetTOGAFolder() + CString(_T("\\")) + _T("MasterLibrary.lbr");
 
-   m_LibMgr.SetName( "TOGA PGSuper Library" );
+   m_LibMgr.SetName( _T("TOGA PGSuper Library") );
    m_LibMgr.SetMasterLibraryInfo(strServer,strURL);
 
    CComBSTR bpath(strMasterLibaryFile);
@@ -834,15 +833,15 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 
          // Problem : Library Editor application specific code is in the
          // master library file. We have to read it or get an error.
-         load.BeginUnit("PGSuperLibrary");
-         load.BeginUnit("LIBRARY_EDITOR");
-         std::string str;
-         load.Property("EDIT_UNITS", &str);
+         load.BeginUnit(_T("PGSuperLibrary"));
+         load.BeginUnit(_T("LIBRARY_EDITOR"));
+         std::_tstring str;
+         load.Property(_T("EDIT_UNITS"), &str);
 
          if ( !m_LibMgr.LoadMe( &load ) )
          {
             TxDOTBrokerRetrieverException exc;
-            exc.Message = "An uknown error occurred while loading the master library file.";
+            exc.Message = _T("An uknown error occurred while loading the master library file.");
             WATCH(exc.Message);
             throw exc;
          }
@@ -852,19 +851,19 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
          load.EndLoad();
 
          // success!
-         WATCH("Master Library loaded successfully");
+         WATCH(_T("Master Library loaded successfully"));
       }
       catch( sysXStructuredLoad& e )
       {
          TxDOTBrokerRetrieverException exc;
          if ( e.GetExplicitReason() == sysXStructuredLoad::CantInitializeTheParser )
          {
-            exc.Message = "Failed to initialize the xml parser. This is an installation issue.";
+            exc.Message = _T("Failed to initialize the xml parser. This is an installation issue.");
          }
          else
          {
             ASSERT(0);
-            exc.Message = "An unknown error occurred while loading the master library file.";
+            exc.Message = _T("An unknown error occurred while loading the master library file.");
          }
 
          WATCH(exc.Message);
@@ -874,7 +873,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
       catch(...)
       {
          TxDOTBrokerRetrieverException exc;
-         exc.Message = "An unknown error occurred while loading the master library file.";
+         exc.Message = _T("An unknown error occurred while loading the master library file.");
          WATCH(exc.Message);
          throw exc;
       }
@@ -882,7 +881,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
    else
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format("Failed to open the master library file: %s",strMasterLibaryFile);
+      exc.Message.Format(_T("Failed to open the master library file: %s"),strMasterLibaryFile);
       WATCH(exc.Message);
       throw exc;
    }
@@ -977,12 +976,12 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    CBridgeDescription bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
 
    // Save comment data
-   pProps->SetEngineer( std::string( m_ProjectData.GetEngineer() ) );
-   pProps->SetCompany( std::string( m_ProjectData.GetCompany() ) );
-   pProps->SetComments( std::string( m_ProjectData.GetComments() ) );
-   pProps->SetBridgeName( std::string( m_ProjectData.GetBridge() ) );
-   pProps->SetBridgeId( std::string( m_ProjectData.GetBridgeID() ) );
-   pProps->SetJobNumber( std::string( m_ProjectData.GetJobNumber() ) );
+   pProps->SetEngineer( std::_tstring( m_ProjectData.GetEngineer() ) );
+   pProps->SetCompany( std::_tstring( m_ProjectData.GetCompany() ) );
+   pProps->SetComments( std::_tstring( m_ProjectData.GetComments() ) );
+   pProps->SetBridgeName( std::_tstring( m_ProjectData.GetBridge() ) );
+   pProps->SetBridgeId( std::_tstring( m_ProjectData.GetBridgeID() ) );
+   pProps->SetJobNumber( std::_tstring( m_ProjectData.GetJobNumber() ) );
 
    // Start off by setting whole bridge data
    CString gdr_name = m_ProjectData.GetGirderEntryName();
@@ -992,7 +991,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    {
       TxDOTBrokerRetrieverException exc;
       CString stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       exc.Message.Format(stmp,gdr_name);
       throw exc;
    }
@@ -1000,7 +999,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed())
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue",gdr_name);
+      exc.Message.Format(_T("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue"),gdr_name);
       throw exc;
    }
 
@@ -1015,7 +1014,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    if (nGroups != TOGA_NUM_GDRS)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "The PGSuper Template file is invalid - Separate girder types must be defined for each girder";
+      exc.Message = _T("The PGSuper Template file is invalid - Separate girder types must be defined for each girder");
       throw exc;
    }
 
@@ -1034,7 +1033,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    {
       gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format("The girder spacing must be greater than the girder width of %f feet",gdr_width);
+      exc.Message.Format(_T("The girder spacing must be greater than the girder width of %f feet"),gdr_width);
       throw exc;
    }
 
@@ -1049,7 +1048,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    {
       TxDOTBrokerRetrieverException exc;
       CString stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       exc.Message.Format(stmp,gdr_name);
       throw exc;
    }
@@ -1064,7 +1063,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    {
       TxDOTBrokerRetrieverException exc;
       CString stmp;
-      stmp.LoadStringA(IDS_CONN_ERROR);
+      stmp.LoadString(IDS_CONN_ERROR);
       exc.Message.Format(stmp,conR_name);
       throw exc;
    }
@@ -1128,7 +1127,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pSpan->SetLLDFShear(pgsTypes::FatigueI,pgsTypes::Interior,lldf_shr);
 
    // See if we need to modify/set spec entry for 0.65 f'ci option
-   std::string curr_entry = pSpec->GetSpecification();
+   std::_tstring curr_entry = pSpec->GetSpecification();
    if (m_ProjectData.GetUseHigherCompressionAllowable())
    {
       if (curr_entry != m_065SpecEntryName)
@@ -1167,7 +1166,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    Float64 w = m_ProjectData.GetWNonCompDc();
    w = w==0.0 ? SMALL_LOAD : w; 
    CDistributedLoadData wncdc;
-   wncdc.m_Description = "w non-comp, dc";
+   wncdc.m_Description = _T("w non-comp, dc");
    wncdc.m_Type = UserLoads::Uniform;
    wncdc.m_WStart = w;
    wncdc.m_Stage = UserLoads::BridgeSite1;
@@ -1190,7 +1189,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    w = m_ProjectData.GetWCompDc();
    w = w==0.0 ? SMALL_LOAD : w; 
    CDistributedLoadData wcdc;
-   wcdc.m_Description = "w comp, dc";
+   wcdc.m_Description = _T("w comp, dc");
    wcdc.m_Type = UserLoads::Uniform;
    wcdc.m_WStart = w;
    wcdc.m_Stage = UserLoads::BridgeSite2;
@@ -1232,28 +1231,28 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    if(m_ProjectData.GetOriginalDesignGirderData()->GetFc() == Float64_Inf)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "You must enter f'c for the Original girder";
+      exc.Message = _T("You must enter f'c for the Original girder");
       throw exc;
    }
 
    if(m_ProjectData.GetOriginalDesignGirderData()->GetFci() == Float64_Inf)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "You must enter f'ci for the Original girder";
+      exc.Message = _T("You must enter f'ci for the Original girder");
       throw exc;
    }
 
    if(m_ProjectData.GetPrecasterDesignGirderData()->GetFc() == Float64_Inf)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "You must enter f'c for the Fabricator Optional girder";
+      exc.Message = _T("You must enter f'c for the Fabricator Optional girder");
       throw exc;
    }
 
    if(m_ProjectData.GetPrecasterDesignGirderData()->GetFci() == Float64_Inf)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "You must enter f'ci for the Fabricator Optional girder";
+      exc.Message = _T("You must enter f'ci for the Fabricator Optional girder");
       throw exc;
    }
 
@@ -1271,7 +1270,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 }
 
 void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdGirderData, GirderIndexType gdr, 
-                                            const char* gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
+                                            LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
                                             CGirderTypes* pGirderTypes)
 {
    CGirderData& rGirderData = pGirderTypes->GetGirderData(gdr);
@@ -1364,7 +1363,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
          if (tot_chk != nt_max)
          {
             TxDOTBrokerRetrieverException exc;
-            exc.Message = "The total number of strands in the generated library entry does not match the input number of strands. This is a programming error - Cannot continue.";
+            exc.Message = _T("The total number of strands in the generated library entry does not match the input number of strands. This is a programming error - Cannot continue.");
             throw exc;
          }
 
@@ -1430,7 +1429,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
                   ASSERT(0);
                   Float64 elev_in = ::ConvertFromSysUnits(row_elev, unitMeasure::Inch);
                   TxDOTBrokerRetrieverException exc;
-                  exc.Message.Format("Non-Standard strand input data tried and failed to fill %d strands at %.3f in. from the girder bottom. Input data does not match library.",strands_in_row,row_elev);
+                  exc.Message.Format(_T("Non-Standard strand input data tried and failed to fill %d strands at %.3f in. from the girder bottom. Input data does not match library."),strands_in_row,row_elev);
                   throw exc;
                }
             }
@@ -1438,7 +1437,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
             {
                Float64 elev_in = ::ConvertFromSysUnits(row_elev, unitMeasure::Inch);
                TxDOTBrokerRetrieverException exc;
-               exc.Message.Format("Non-Standard strand input data specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library.",elev_in);
+               exc.Message.Format(_T("Non-Standard strand input data specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
                throw exc;
             }
          }
@@ -1453,13 +1452,13 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       GET_IFACE(ILibrary, pLib );
       GirderLibrary& rLibrary =  pLib->GetGirderLibrary();
 
-      std::string original_name = pGdrEntry->GetName();
-      std::string clone_name = MakeCloneName(original_name, gdr);
+      std::_tstring original_name = pGdrEntry->GetName();
+      std::_tstring clone_name = MakeCloneName(original_name, gdr);
  
       while(!rLibrary.AddEntry(clone_entry, clone_name.c_str()))
       {
          // Name taken - create a new one (not pretty)
-         clone_name += "x";
+         clone_name += _T("x");
       }
 
       const GirderLibraryEntry* pclone = pLib->GetGirderEntry(clone_name.c_str());
@@ -1496,7 +1495,7 @@ void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& brid
    if (ns!=1)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format("The PGSuper template model must have a single span. The model loaded has %d. Cannot continue",ns);
+      exc.Message.Format(_T("The PGSuper template model must have a single span. The model loaded has %d. Cannot continue"),ns);
       throw exc;
    }
 
@@ -1504,7 +1503,7 @@ void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& brid
    if (ng!=TOGA_NUM_GDRS)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format("The PGSuper template model must have %d girders. The model loaded has %d. Cannot continue",TOGA_NUM_GDRS,ng);
+      exc.Message.Format(_T("The PGSuper template model must have %d girders. The model loaded has %d. Cannot continue"),TOGA_NUM_GDRS,ng);
       throw exc;
    }
 
@@ -1514,7 +1513,7 @@ void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& brid
    if (ndp!=1)
    {
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format("The PGSuper template model must contain a single deck edge point. The model loaded has %d. Cannot continue",ndp);
+      exc.Message.Format(_T("The PGSuper template model must contain a single deck edge point. The model loaded has %d. Cannot continue"),ndp);
       throw exc;
    }
 }
@@ -1533,14 +1532,14 @@ void CTxDOTOptionalDesignDoc::DealWith065SpecEntry()
 
       clone_entry.SetCyCompStressService(0.65);
 
-      std::string clone_name = m_OriginalSpecEntryName + std::string("_WithHigherComprAtRelease");
+      std::_tstring clone_name = m_OriginalSpecEntryName + std::_tstring(_T("_WithHigherComprAtRelease"));
  
       SpecLibrary* pLibrary =  pLib->GetSpecLibrary();
       while(!pLibrary->AddEntry(clone_entry, clone_name.c_str()))
       {
          ATLASSERT(0);
          // Name taken - create a new one (not pretty)
-         clone_name += "x";
+         clone_name += _T("x");
       }
 
       // Save name so we can refer to it
@@ -1576,7 +1575,7 @@ void CTxDOTOptionalDesignDoc::EditGirderViewSettings(int nPage)
 
    UINT settings = GetGirderEditorSettings();
 
-	CTogaGirderEditorSettingsSheet dlg("Girder View Settings");
+	CTogaGirderEditorSettingsSheet dlg(_T("Girder View Settings"));
    dlg.SetSettings(settings);
    dlg.SetActivePage(nPage);
 

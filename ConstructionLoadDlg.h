@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 // CConstructionLoadDlg dialog
 

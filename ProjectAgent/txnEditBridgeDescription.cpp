@@ -63,9 +63,9 @@ txnTransaction* txnEditBridgeDescription::CreateClone() const
    return new txnEditBridgeDescription(m_pBroker,m_BridgeDesc[0],m_BridgeDesc[1]);
 }
 
-std::string txnEditBridgeDescription::Name() const
+std::_tstring txnEditBridgeDescription::Name() const
 {
-   return "Modify bridge for Post-Tensioning";
+   return _T("Modify bridge for Post-Tensioning");
 }
 
 bool txnEditBridgeDescription::IsUndoable()

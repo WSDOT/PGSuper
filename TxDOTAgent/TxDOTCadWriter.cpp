@@ -42,19 +42,20 @@
 #include <PgsExt\GirderLabel.h>
 
 static void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, bool designSucceeded);
-static std::string MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 
 // Return string for strand size
 static int txdString_ftofrac	/* <=  Completion value                   */
 (
-char		*stringP,		      /* <=  Output text string                 */
+LPTSTR      stringP,		      /* <=  Output text string                 */
+size_t      size,             /* <= size of output string               */
 double		value,			   /*  => Value to convert                   */
 double		resolution		   /*  => Fractional resolution              */
 )
 {
 	double	fraction = 0.0, whole = 0.0;
 	int		index = 0;
-	char table[][4] = {" ","1/8","1/4","3/8","1/2","5/8","3/4","7/8"};
+	TCHAR table[][4] = {_T(" "),_T("1/8"),_T("1/4"),_T("3/8"),_T("1/2"),_T("5/8"),_T("3/4"),_T("7/8")};
 
 	/* Validate arguments */
 	if (stringP == NULL) return (ERROR);
@@ -65,13 +66,13 @@ double		resolution		   /*  => Fractional resolution              */
 	fraction = modf (value, &whole);	
 	
 	/* Create output string */
-	if (whole > 0) sprintf_s(stringP, sizeof(stringP), "%.0lf ",whole);
+	if (whole > 0) _stprintf_s(stringP, size, _T("%.0lf "),whole);
 
 	/* Apply resolution to fraction */
 	index = (int)((fraction + (resolution / 2.0)) / resolution);
 
 	/* Append fraction string */
-	strcat_s(stringP,sizeof(stringP), table[index]);
+	_tcscat_s(stringP,size, table[index]);
 
 	return (CAD_SUCCESS);
 }
@@ -82,7 +83,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 {
 // Get data first and convert to correct units. then write it all at end of function
 // Note that Units are hard-coded into this routine. TxDOT has no use for SI units
-	char	charBuffer[32];
+	TCHAR	charBuffer[32];
    Float64 value;
 
 
@@ -91,7 +92,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
  	const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span, gdr);
    if(!(pGdrArtifact->Passed()))
 	{
-//		AfxMessageBox("The Specification Check was NOT Successful",MB_OK);
+//		AfxMessageBox(_T("The Specification Check was NOT Successful"),MB_OK);
 	}
 
 	/* Interfaces to all relevant agents */
@@ -142,54 +143,58 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
       Float64 girderSpacing = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
 	   //----- COL 0a ---- 
-	   workerB.WriteFloat64(roadwayWidth,"RoadW",5,"%5.2f",true);
+	   workerB.WriteFloat64(roadwayWidth,_T("RoadW"),5,_T("%5.2f"),true);
 	   //----- COL 0b ----- 
-	   workerB.WriteInt16((Int16)nGirders,"Ng ",3,"%3d",true);
+	   workerB.WriteInt16((Int16)nGirders,_T("Ng "),3,_T("%3d"),true);
 	   //----- COL 0c ----- 
-	   workerB.WriteFloat64(girderSpacing,"Spcng",5,"%5.2f",true);
+	   workerB.WriteFloat64(girderSpacing,_T("Spcng"),5,_T("%5.2f"),true);
    }
 
 
 	/* 1. SPAN NUMBER */
-	char	spanNumber[5+1];
-	sprintf_s(spanNumber, sizeof(spanNumber), "%d", LABEL_SPAN(span));
+	TCHAR	spanNumber[5+1];
+	_stprintf_s(spanNumber, sizeof(spanNumber)/sizeof(TCHAR), _T("%d"), LABEL_SPAN(span));
 
 	/* 1. GIRDER NUMBER */
-	char  beamNumber[5+1];
-	sprintf_s(beamNumber, sizeof(beamNumber), "%s", LABEL_GIRDER(gdr));
+	TCHAR  beamNumber[5+1];
+	_stprintf_s(beamNumber, sizeof(beamNumber)/sizeof(TCHAR), _T("%s"), LABEL_GIRDER(gdr));
 
 	/* 3. BEAM TYPE */
-	char beamType[5+1];
-   beamType[5] = '\0';
+	TCHAR beamType[5+1];
+   beamType[5] = _T('\0');
+#if defined _UNICODE
+   wmemset( beamType,_T(' '),5);
+#else
    memset( beamType,' ',5);
-   std::string str = pIBridgeDesc->GetBridgeDescription()->GetSpan(span)->GetGirderTypes()->GetGirderName(gdr);
+#endif
+   std::_tstring str = pIBridgeDesc->GetBridgeDescription()->GetSpan(span)->GetGirderTypes()->GetGirderName(gdr);
 
    // assume that last contiguous string is type
-   size_t start = str.rfind(" ");
+   size_t start = str.rfind(_T(" "));
    str.erase(0,start+1);
    size_t cnt = min(5, str.length());
 
    // if string doesn't fill, leave first char blank
-   char* cnxt = beamType;
-   size_t count = sizeof(beamType);
+   TCHAR* cnxt = beamType;
+   size_t count = sizeof(beamType)/sizeof(TCHAR);
    if (cnt<5)
    {
       cnxt++;
       count--;
    }
 
-   strncpy_s(cnxt, count, str.c_str(), cnt);
+   _tcsncpy_s(cnxt, count, str.c_str(), cnt);
 
 	/* 4. STRAND PATTERN */
-	char  strandPat[5+1]; 
+	TCHAR  strandPat[5+1]; 
    CGirderData girderData = pGirderData->GetGirderData(span, gdr);
    if (girderData.NumPermStrandsType != NPS_TOTAL_NUMBER)
    {
-	   strcpy_s(strandPat, sizeof(strandPat), "*");
+	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));
    }
    else
    {
-	   strcpy_s(strandPat, sizeof(strandPat), " ");
+	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T(" "));
    }
 
 	/* 5. STRAND COUNT */
@@ -200,14 +205,14 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 
 	/* 6. STRAND SIZE */
-	char    strandSize[4+1];
+	TCHAR    strandSize[4+1];
    const matPsStrand* strandMatP = pGirderData->GetStrandMaterial(span, gdr,pgsTypes::Permanent);
    value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* Convert value to fraction representation */
-	txdString_ftofrac (charBuffer, value, 0.125); 
-	strcpy_s(strandSize, sizeof(strandSize), charBuffer);
+	txdString_ftofrac (charBuffer, sizeof(charBuffer)/sizeof(TCHAR), value, 0.125); 
+	_tcscpy_s(strandSize, sizeof(strandSize)/sizeof(TCHAR), charBuffer);
 
    /* 7. STRAND STRENGTH */
 	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
@@ -265,7 +270,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    Float64 shearDistFactor = pDistFact->GetShearDistFactor(span, gdr, pgsTypes::StrengthI);
 
    /* 17a - Non-Standard Design Data */
-   std::string ns_strand_str;
+   std::_tstring ns_strand_str;
    bool do_write_ns_data = isHarpedDesign && girderData.NumPermStrandsType != NPS_TOTAL_NUMBER && !isExtendedVersion;
    if (do_write_ns_data)
    {
@@ -274,25 +279,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    // WRITE DATA TO OUTPUT FILE
 	//----- COL 1 ----- 
-   workerB.WriteString(spanNumber,"Span ",5,"%5s",true);
+   workerB.WriteString(spanNumber,_T("Span "),5,_T("%5s"),true);
 	//----- COL 2 ----- 
-   workerB.WriteString(beamNumber," Gdr ",5,"%5s",true);
+   workerB.WriteString(beamNumber,_T(" Gdr "),5,_T("%5s"),true);
 	//----- COL 3 ----- 
-   workerB.WriteString(beamType,"Type ",5,"%5s",true);
+   workerB.WriteString(beamType,_T("Type "),5,_T("%5s"),true);
 	//----- COL 4 ----- 
 	workerB.WriteBlankSpaces(1);
-   workerB.WriteString(strandPat,"N",1,"%1s",true);
+   workerB.WriteString(strandPat,_T("N"),1,_T("%1s"),true);
 	workerB.WriteBlankSpaces(2);
 	//----- COL 5 ----- 
-   workerB.WriteInt16(strandNum,"Ns ",3,"%3d",true);
+   workerB.WriteInt16(strandNum,_T("Ns "),3,_T("%3d"),true);
 	//----- COL 6 ----- 
-   workerB.WriteString(strandSize,"Size ",5,"%5s",true);
+   workerB.WriteString(strandSize,_T("Size "),5,_T("%5s"),true);
 	//----- COL 7 ----- 
-   workerB.WriteInt16(strandStrength,"Strn",4,"%4d",true);
+   workerB.WriteInt16(strandStrength,_T("Strn"),4,_T("%4d"),true);
 	//----- COL 8 ----- 
-   workerB.WriteFloat64(strandEccCL,"EccCL",5,"%5.2f",true);
+   workerB.WriteFloat64(strandEccCL,_T("EccCL"),5,_T("%5.2f"),true);
 	//----- COL 9 ----- 
-   workerB.WriteFloat64(strandEccEnd,"EccEn",5,"%5.2f",true);
+   workerB.WriteFloat64(strandEccEnd,_T("EccEn"),5,_T("%5.2f"),true);
 
    Float64 girder_length = pBridge->GetGirderLength(span, gdr);
 
@@ -311,9 +316,9 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
       // output
 	   //----- COL 10 ---- 
-      workerB.WriteInt16(dstrandNum,"Nh ",3,"%3d",true);
+      workerB.WriteInt16(dstrandNum,_T("Nh "),3,_T("%3d"),true);
 	   //----- COL 11 ---- 
-      workerB.WriteFloat64(dstrandTo," To ",4,"%4.1f",true);
+      workerB.WriteFloat64(dstrandTo,_T(" To "),4,_T("%4.1f"),true);
    }
    else
    {
@@ -323,25 +328,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    // onward with common data for harped or debond designs
 	//----- COL 12 ---- 
-   workerB.WriteFloat64(concreteRelStrength," Fci  ",6,"%6.3f",true);
+   workerB.WriteFloat64(concreteRelStrength,_T(" Fci  "),6,_T("%6.3f"),true);
 	//----- COL 13 ---- 
-   workerB.WriteFloat64(min28dayCompStrength," Fc   ",6,"%6.3f",true);
+   workerB.WriteFloat64(min28dayCompStrength,_T(" Fc   "),6,_T("%6.3f"),true);
 	workerB.WriteBlankSpaces(1);
 	//----- COL 14 ---- 
-   workerB.WriteFloat64(designLoadCompStress," fcomp ",7,"%7.3f",true);
+   workerB.WriteFloat64(designLoadCompStress,_T(" fcomp "),7,_T("%7.3f"),true);
 	//----- COL 15 ---- 
-   workerB.WriteFloat64(designLoadTensileStress," ftens  ",8,"%8.3f",true);
+   workerB.WriteFloat64(designLoadTensileStress,_T(" ftens  "),8,_T("%8.3f"),true);
 	//----- COL 16 ---- 
-   workerB.WriteInt16(reqMinUltimateMomentCapacity,"ultMom",6,"%6d",true);
+   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMom"),6,_T("%6d"),true);
 	//----- COL 17 ---- 
-   workerB.WriteFloat64(momentDistFactor,"LLDFmo",6,"%6.3f",true);
+   workerB.WriteFloat64(momentDistFactor,_T("LLDFmo"),6,_T("%6.3f"),true);
 	//----- COL 17aa ---- 
-   workerB.WriteFloat64(shearDistFactor,"LLDFsh",6,"%6.3f",true);
+   workerB.WriteFloat64(shearDistFactor,_T("LLDFsh"),6,_T("%6.3f"),true);
 
    if (do_write_ns_data)
    {
       int cnt = max(ns_strand_str.size(), 7);
-      workerB.WriteString(ns_strand_str.c_str(),"NS Data",cnt,"%s",true);
+      workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),cnt,_T("%s"),true);
    }
 
 
@@ -361,7 +366,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
       Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
-   	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)"  */
+   	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab,      pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey,  pmid[0], SimpleSpan );
@@ -408,25 +413,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
       /* WRITE TO FILE */
       //==================
 	   //----- COL 18 ---- 
-      workerB.WriteFloat64(initialCamber,"Dinit",5,"%5.2f",true);
+      workerB.WriteFloat64(initialCamber,_T("Dinit"),5,_T("%5.2f"),true);
 	   //----- COL 19 ---- 
-      workerB.WriteFloat64(slabDiaphDeflection,"Dslab",5,"%5.2f",true);
+      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),5,_T("%5.2f"),true);
 	   //----- COL 20 ---- 
-      workerB.WriteFloat64(overlayDeflection,"Dolay",5,"%5.2f",true);
+      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),5,_T("%5.2f"),true);
 	   //----- COL 21 ---- 
-      workerB.WriteFloat64(otherDeflection,"Dothr",5,"%5.2f",true);
+      workerB.WriteFloat64(otherDeflection,_T("Dothr"),5,_T("%5.2f"),true);
 	   //----- COL 22 ---- 
-      workerB.WriteFloat64(totalDeflection,"Dtot ",5,"%5.2f",true);
+      workerB.WriteFloat64(totalDeflection,_T("Dtot "),5,_T("%5.2f"),true);
 	   //----- COL 23 ---- 
-      workerB.WriteFloat64(initialLoss,"LossIn",6,"%6.2f",true);
+      workerB.WriteFloat64(initialLoss,_T("LossIn"),6,_T("%6.2f"),true);
 	   //----- COL 24 ---- 
-      workerB.WriteFloat64(finalLoss,"LossFn",6,"%6.2f",true);
+      workerB.WriteFloat64(finalLoss,_T("LossFn"),6,_T("%6.2f"),true);
 	   //----- COL 25 ---- 
-      workerB.WriteFloat64(liftLoc,"LiftLc",6,"%6.2f",true);
+      workerB.WriteFloat64(liftLoc,_T("LiftLc"),6,_T("%6.2f"),true);
 	   //----- COL 26 ---- 
-      workerB.WriteFloat64(fwdLoc,"fwHaul",6,"%6.2f",true);
+      workerB.WriteFloat64(fwdLoc,_T("fwHaul"),6,_T("%6.2f"),true);
 	   //----- COL 27 ---- 
-      workerB.WriteFloat64(trlLoc,"trHaul",6,"%6.2f",false);
+      workerB.WriteFloat64(trlLoc,_T("trHaul"),6,_T("%6.2f"),false);
    }
 
 	// ------ END OF RECORD ----- 
@@ -442,27 +447,27 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    if (is_test_output)
    {
       write_spec_check_results(fp, pBroker, span, gdr,designSucceeded);
-      fprintf(fp, "\n");
-      fprintf(fp, "\n");
+      _ftprintf(fp, _T("\n"));
+      _ftprintf(fp, _T("\n"));
    }
 
    return CAD_SUCCESS;
 }
 
 
-void CadWriterWorkerBee::WriteFloat64(Float64 val, const char* title, Int16 nchars, const char* format, bool doDelim)
+void CadWriterWorkerBee::WriteFloat64(Float64 val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim)
 {
    // title, format, and nchars must match in size. It's your job to deal with this
-   ATLASSERT(std::string(title).size()==nchars);
+   ATLASSERT(std::_tstring(title).size()==nchars);
 
-   int nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
+   int nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
    m_DataLineCursor += nr;
 
    ATLASSERT(nr==nchars);
 
    if (doDelim)
    {
-      nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), CAD_DELIM);
+      nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), CAD_DELIM);
       m_DataLineCursor += nr;
    }
 
@@ -473,16 +478,16 @@ void CadWriterWorkerBee::WriteFloat64(Float64 val, const char* title, Int16 ncha
    }
 }
 
-void CadWriterWorkerBee::WriteInt16(Int16 val, const char* title, Int16 nchars, const char* format, bool doDelim)
+void CadWriterWorkerBee::WriteInt16(Int16 val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim)
 {
-   int nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
+   int nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
    m_DataLineCursor += nr;
 
    ATLASSERT(nr==nchars);
 
    if (doDelim)
    {
-      nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), CAD_DELIM);
+      nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), CAD_DELIM);
       m_DataLineCursor += nr;
    }
 
@@ -493,16 +498,16 @@ void CadWriterWorkerBee::WriteInt16(Int16 val, const char* title, Int16 nchars, 
    }
 }
 
-void CadWriterWorkerBee::WriteString(const char* val, const char* title, Int16 nchars, const char* format, bool doDelim)
+void CadWriterWorkerBee::WriteString(LPCTSTR val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim)
 {
-   int nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
+   int nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
    m_DataLineCursor += max(nchars,nr);
 
 //   ATLASSERT(nr==nchars);
 
    if (doDelim)
    {
-      nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), CAD_DELIM);
+      nr = _stprintf_s(m_DataLineCursor, DataBufferRemaining(), CAD_DELIM);
       m_DataLineCursor += nr;
    }
 
@@ -515,6 +520,19 @@ void CadWriterWorkerBee::WriteString(const char* val, const char* title, Int16 n
 
 void CadWriterWorkerBee::WriteBlankSpaces(Int16 ns)
 {
+#if defined _UNICODE
+   wmemset(m_DataLineCursor,_T(' '),ns);
+   m_DataLineCursor += ns;
+
+   if (m_DoWriteTitles)
+   {
+      wmemset(m_TitleLineCursor,_T(' '),ns);
+      m_TitleLineCursor += ns;
+
+      wmemset(m_DashLineCursor,_T(' '),ns);
+      m_DashLineCursor += ns;
+   }
+#else
    memset(m_DataLineCursor,' ',ns);
    m_DataLineCursor += ns;
 
@@ -526,6 +544,7 @@ void CadWriterWorkerBee::WriteBlankSpaces(Int16 ns)
       memset(m_DashLineCursor,' ',ns);
       m_DashLineCursor += ns;
    }
+#endif
 }
 
 void CadWriterWorkerBee::WriteToFile(FILE* fp)
@@ -533,49 +552,71 @@ void CadWriterWorkerBee::WriteToFile(FILE* fp)
    // Now that we've filled up our buffers, write them to the file
    if (m_DoWriteTitles)
    {
-      fprintf(fp, "%s", m_TitleLine);
-      fprintf(fp, "\n");
+      _ftprintf(fp, _T("%s"), m_TitleLine);
+      _ftprintf(fp, _T("\n"));
 
-      fprintf(fp, "%s", m_DashLine);
-      fprintf(fp, "\n");
+      _ftprintf(fp, _T("%s"), m_DashLine);
+      _ftprintf(fp, _T("\n"));
    }
 
-   fprintf(fp, "%s", m_DataLine);
-   fprintf(fp, "\n");
+   _ftprintf(fp, _T("%s"), m_DataLine);
+   _ftprintf(fp, _T("\n"));
 }
 
 CadWriterWorkerBee::CadWriterWorkerBee(bool doWriteTitles):
 m_DoWriteTitles(doWriteTitles)
 {
+#if defined _UNICODE
+    wmemset(m_DataLine,_T('\0'),BF_SIZ);
+    wmemset(m_TitleLine,_T('\0'),BF_SIZ);
+    wmemset(m_DashLine,_T('\0'),BF_SIZ);
+#else
     memset(m_DataLine,'\0',BF_SIZ);
     memset(m_TitleLine,'\0',BF_SIZ);
     memset(m_DashLine,'\0',BF_SIZ);
+#endif
 
     // First column is blank
-    m_DataLine[0]  = ' ';
-    m_TitleLine[0] = ' ';
-    m_DashLine[0]  = ' ';
+    m_DataLine[0]  = _T(' ');
+    m_TitleLine[0] = _T(' ');
+    m_DashLine[0]  = _T(' ');
 
     m_DataLineCursor  = m_DataLine+1;
     m_TitleLineCursor = m_TitleLine+1;
     m_DashLineCursor  = m_DashLine+1;
 }
 
-void CadWriterWorkerBee::WriteTitle(const char* title, Int16 nchars, bool doDelim)
+void CadWriterWorkerBee::WriteTitle(LPCTSTR title, Int16 nchars, bool doDelim)
 {
    // Write title line and dash line since
+#if defined _UNICODE
+   wmemcpy(m_TitleLineCursor, title, nchars);
+#else
    memcpy(m_TitleLineCursor, title, nchars);
+#endif
    m_TitleLineCursor += nchars;
 
+#if defined _UNICODE
+   wmemset(m_DashLineCursor,_T('-'), nchars);
+#else
    memset(m_DashLineCursor,'-', nchars);
+#endif
    m_DashLineCursor += nchars;
 
    if (doDelim)
    {
+#if defined _UNICODE
+      wmemset(m_TitleLineCursor, _T(' '), 1);
+#else
       memset(m_TitleLineCursor, ' ', 1);
+#endif
       m_TitleLineCursor++;
 
+#if defined _UNICODE
+      wmemset(m_DashLineCursor, _T(' '), 1);
+#else
       memset(m_DashLineCursor, ' ', 1);
+#endif
       m_DashLineCursor++;
    }
 }
@@ -587,14 +628,14 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
 
    // next write out data
 	//----- COL 10 ---- 
-   workerB.WriteInt16((Int16)m_NumDebonded,"Ndb",3,"%3d",true);
+   workerB.WriteInt16((Int16)m_NumDebonded,_T("Ndb"),3,_T("%3d"),true);
 
    if (m_NumDebonded==0 || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
    {
       // row height, srands in row, and debonds in row are zero
-	   workerB.WriteFloat64(0.0,"Debnd",5,"%5.2f",true);
-      workerB.WriteInt16(0,"   ",3,"%3d",true);
-      workerB.WriteInt16(0,"   ",3,"%3d",true);
+	   workerB.WriteFloat64(0.0,_T("Debnd"),5,_T("%5.2f"),true);
+      workerB.WriteInt16(0,_T("   "),3,_T("%3d"),true);
+      workerB.WriteInt16(0,_T("   "),3,_T("%3d"),true);
 
       if (m_OutCome==SectionMismatch || m_OutCome==TooManySections )
       {
@@ -608,7 +649,7 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
    	   //----- COL 11-23 ---- 
          for (int i=0; i<10; i++)
          {
-            workerB.WriteInt16(0,"  ",2,"%2d",true);
+            workerB.WriteInt16(0,_T("  "),2,_T("%2d"),true);
          }
       }
    }
@@ -667,16 +708,16 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
    // lastly write any information
    if (m_OutCome==SectionMismatch || m_OutCome==SectionsNotSymmetrical)
    {
-	   fprintf(fp, "Warning: Irregular, Non-standard debonding increments used for beam %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n",LABEL_GIRDER(m_Girder),LABEL_SPAN(m_Span));
+	   _ftprintf(fp, _T("Warning: Irregular, Non-standard debonding increments used for beam %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(m_Girder),LABEL_SPAN(m_Span));
    }
    else if (m_OutCome==TooManySections)
    {
-	   fprintf(fp, "Warning: The number of debonded sections exceeds ten for beam %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n",LABEL_GIRDER(m_Girder),LABEL_SPAN(m_Span));
+	   _ftprintf(fp, _T("Warning: The number of debonded sections exceeds ten for beam %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(m_Girder),LABEL_SPAN(m_Span));
    }
    else if (m_OutCome==NonStandardSection)
    {
       Float64 spac = ::ConvertFromSysUnits(m_SectionSpacing , unitMeasure::Feet );
-	   fprintf(fp, "Warning: Non-standard debonding increment of %6.3f ft used  for beam %s in span %2d. \n",spac,LABEL_GIRDER(m_Girder),LABEL_SPAN(m_Span));
+	   _ftprintf(fp, _T("Warning: Non-standard debonding increment of %6.3f ft used  for beam %s in span %2d. \n"),spac,LABEL_GIRDER(m_Girder),LABEL_SPAN(m_Span));
    }
 }
 
@@ -686,22 +727,22 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
    // elevation of row
    Float64 row_elev = ::ConvertFromSysUnits( row.m_Elevation, unitMeasure::Inch );
 
-   workerB.WriteFloat64(row_elev,"Elev ",5,"%5.2f",true);
+   workerB.WriteFloat64(row_elev,_T("Elev "),5,_T("%5.2f"),true);
 
 	//----- COL 12 ---- 
    // total strands in row
-   workerB.WriteInt16(strandsInRow,"Nsr",3,"%3d",true);
+   workerB.WriteInt16(strandsInRow,_T("Nsr"),3,_T("%3d"),true);
 
 	//----- COL 13 ---- 
    // num debonded strands in row
    Int16 nsr = CountDebondsInRow(row);
-   workerB.WriteInt16(nsr,"Ndb",3,"%3d",true);
+   workerB.WriteInt16(nsr,_T("Ndb"),3,_T("%3d"),true);
 
 	//----- COL 14-23 ---- 
    // we have 10 columns to write no matter what
    SectionListConstIter scit = row.m_Sections.begin();
 
-   char buff[4];
+   TCHAR buff[4];
    for (Int16 icol=0; icol<10; icol++)
    {
       Int16 db_cnt = 0;
@@ -718,9 +759,9 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
          }
       }
 
-      sprintf_s(buff,sizeof(buff),"%2d",icol+1);
+      _stprintf_s(buff,sizeof(buff)/sizeof(TCHAR),_T("%2d"),icol+1);
 
-      workerB.WriteInt16(db_cnt,buff,2,"%2d",true);
+      workerB.WriteInt16(db_cnt,buff,2,_T("%2d"),true);
    }
 
    ATLASSERT(scit==row.m_Sections.end()); // we didn't find all of our sections - bug
@@ -729,11 +770,11 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 
 void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, bool designSucceeded)
 {
-   fprintf(fp, "\n\n");
+   _ftprintf(fp, _T("\n\n"));
 
    if (!designSucceeded)
    {
-      fprintf(fp, "%s\n", "Girder design was Not Successful");
+      _ftprintf(fp, _T("%s\n"), _T("Girder design was Not Successful"));
    }
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -741,11 +782,11 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    if( pArtifact->Passed() )
    {
-      fprintf(fp, "%s\n", "The Specification Check was Successful");
+      _ftprintf(fp, _T("%s\n"), _T("The Specification Check was Successful"));
    }
    else
    {
-      fprintf(fp, "%s\n", "The Specification Check was Not Successful");
+      _ftprintf(fp, _T("%s\n"), _T("The Specification Check was Not Successful"));
      
       GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
       bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -783,7 +824,7 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
       // Put failures into report
       for (FailureListIterator it=failures.begin(); it!=failures.end(); it++)
       {
-         fprintf(fp, "%s\n", it->c_str());
+         _ftprintf(fp, _T("%s\n"), it->c_str());
       }
    }
 }
@@ -805,58 +846,58 @@ int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexT
                           &gV,  &gV1,  &gV2,
                           &gR,  &gR1,  &gR2 );
 
-	char	spanNumber[5+1];
-	sprintf_s(spanNumber, sizeof(spanNumber), "%d", LABEL_SPAN(span));
+	TCHAR	spanNumber[5+1];
+	_stprintf_s(spanNumber, sizeof(spanNumber)/sizeof(TCHAR), _T("%d"), LABEL_SPAN(span));
 
-	char  beamNumber[5+1];
-	sprintf_s(beamNumber, sizeof(beamNumber), "%s", LABEL_GIRDER(gdr));
+	TCHAR  beamNumber[5+1];
+	_stprintf_s(beamNumber, sizeof(beamNumber)/sizeof(TCHAR), _T("%s"), LABEL_GIRDER(gdr));
 
    // have our data, now need to write it
    CadWriterWorkerBee workerB(true);
 
-   workerB.WriteString(spanNumber,"Span ",5,"%5s",true);
-   workerB.WriteString(beamNumber," Gdr ",5,"%5s",true);
+   workerB.WriteString(spanNumber,_T("Span "),5,_T("%5s"),true);
+   workerB.WriteString(beamNumber,_T(" Gdr "),5,_T("%5s"),true);
 
-   workerB.WriteFloat64(gpM, " gpM  ",6,"%6.3f",true);
-   workerB.WriteFloat64(gpM1," gpM1 ",6,"%6.3f",true);
-   workerB.WriteFloat64(gpM2," gpM2 ",6,"%6.3f",true);
+   workerB.WriteFloat64(gpM, _T(" gpM  "),6,_T("%6.3f"),true);
+   workerB.WriteFloat64(gpM1,_T(" gpM1 "),6,_T("%6.3f"),true);
+   workerB.WriteFloat64(gpM2,_T(" gpM2 "),6,_T("%6.3f"),true);
 
-   workerB.WriteFloat64(gnM, " gnM  ",6,"%6.2f",true);
-   workerB.WriteFloat64(gnM1," gnM1 ",6,"%6.2f",true);
-   workerB.WriteFloat64(gnM2," gnM2 ",6,"%6.2f",true);
+   workerB.WriteFloat64(gnM, _T(" gnM  "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(gnM1,_T(" gnM1 "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(gnM2,_T(" gnM2 "),6,_T("%6.2f"),true);
 
-   workerB.WriteFloat64(gV, "  gV  ",6,"%6.2f",true);
-   workerB.WriteFloat64(gV1," gV1  ",6,"%6.2f",true);
-   workerB.WriteFloat64(gV2," gV2  ",6,"%6.2f",true);
+   workerB.WriteFloat64(gV, _T("  gV  "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(gV1,_T(" gV1  "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(gV2,_T(" gV2  "),6,_T("%6.2f"),true);
 
-   workerB.WriteFloat64(gR, "  gR  ",6,"%6.2f",true);
-   workerB.WriteFloat64(gR1," gR1  ",6,"%6.2f",true);
-   workerB.WriteFloat64(gR2," gR2  ",6,"%6.2f",false);
+   workerB.WriteFloat64(gR, _T("  gR  "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(gR1,_T(" gR1  "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(gR2,_T(" gR2  "),6,_T("%6.2f"),false);
 
    workerB.WriteToFile(fp);
 
-   fprintf(fp, "\n");
+   _ftprintf(fp, _T("\n"));
 
    return CAD_SUCCESS;
 }
 
-std::string MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
 {
    StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, midPoi);
 
    // At this point, we have counted the number of strands per row. Now create string
    bool first = true;
-   std::stringstream os;
+   std::_tostringstream os;
    for (StrandRowUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
    {
       if (!first)
-         os<<",";
+         os<<_T(",");
       else
          first=false;
 
       const StrandRowUtil::StrandRow& srow = *srit;
       Float64 elev_in = RoundOff(::ConvertFromSysUnits( srow.Elevation, unitMeasure::Inch ),0.001);
-      os<<elev_in<<"("<<srow.Count<<")";
+      os<<elev_in<<_T("(")<<srow.Count<<_T(")");
    }
 
    return os.str();
@@ -879,9 +920,9 @@ int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
    Float64 stress_val_input = ::ConvertFromSysUnits( pProjectData->GetFt(), unitMeasure::KSI );
    stress_val_calc = ::ConvertFromSysUnits( -stress_val_calc, unitMeasure::KSI );
 
-   workerB.WriteFloat64(stress_val_input, "ftinp ",6,"%6.2f",true);
-   workerB.WriteFloat64(stress_val_calc, "ftcalc",6,"%6.2f",true);
-   workerB.WriteFloat64(stress_fac, "ftfact",6,"%6.2f",true);
+   workerB.WriteFloat64(stress_val_input, _T("ftinp "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(stress_val_calc, _T("ftcalc"),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(stress_fac, _T("ftfact"),6,_T("%6.2f"),true);
 
    // Tensile stress - bottom
    pGetTogaResults->GetControllingTensileStress(&stress_val_calc, &stress_fac, &stress_loc);
@@ -889,46 +930,46 @@ int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
    stress_val_input = ::ConvertFromSysUnits( pProjectData->GetFb(), unitMeasure::KSI );
    stress_val_calc = ::ConvertFromSysUnits( -stress_val_calc, unitMeasure::KSI );
 
-   workerB.WriteFloat64(stress_val_input, "fbinp ",6,"%6.2f",true);
-   workerB.WriteFloat64(stress_val_calc, "fbcalc",6,"%6.2f",true);
-   workerB.WriteFloat64(stress_fac, "fbfact",6,"%6.2f",true);
+   workerB.WriteFloat64(stress_val_input, _T("fbinp "),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(stress_val_calc, _T("fbcalc"),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(stress_fac, _T("fbfact"),6,_T("%6.2f"),true);
 
    // Ultimate moment
    Float64 mu_input = ::ConvertFromSysUnits( pProjectData->GetMu(), unitMeasure::KipFeet);
    Float64 mu_orig  = ::ConvertFromSysUnits( pGetTogaResults->GetRequiredUltimateMoment(), unitMeasure::KipFeet );
    Float64 mu_fabr  = ::ConvertFromSysUnits( pGetTogaResults->GetUltimateMomentCapacity(), unitMeasure::KipFeet );
 
-   workerB.WriteFloat64(mu_input," muinp  ",8,"%8.2f",true);
-   workerB.WriteFloat64(mu_orig, " muorig ",8,"%8.2f",true);
-   workerB.WriteFloat64(mu_fabr, " mufabr ",8,"%8.2f",true);
+   workerB.WriteFloat64(mu_input,_T(" muinp  "),8,_T("%8.2f"),true);
+   workerB.WriteFloat64(mu_orig, _T(" muorig "),8,_T("%8.2f"),true);
+   workerB.WriteFloat64(mu_fabr, _T(" mufabr "),8,_T("%8.2f"),true);
 
    // Required concrete strengths
    Float64 input_fci = ::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFci(), unitMeasure::KSI );
    Float64 reqd_fci  = ::ConvertFromSysUnits(pGetTogaResults->GetRequiredFci(), unitMeasure::KSI );
 
-   workerB.WriteFloat64(input_fci,"fciinp",6,"%6.2f",true);
-   workerB.WriteFloat64(reqd_fci, "fcireq",6,"%6.2f",true);
+   workerB.WriteFloat64(input_fci,_T("fciinp"),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(reqd_fci, _T("fcireq"),6,_T("%6.2f"),true);
 
    Float64 input_fc = ::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFc(), unitMeasure::KSI );
    Float64 reqd_fc =  ::ConvertFromSysUnits(pGetTogaResults->GetRequiredFc(), unitMeasure::KSI );
 
-   workerB.WriteFloat64(input_fc,"fc inp",6,"%6.2f",true);
-   workerB.WriteFloat64(reqd_fc, "fc req",6,"%6.2f",true);
+   workerB.WriteFloat64(input_fc,_T("fc inp"),6,_T("%6.2f"),true);
+   workerB.WriteFloat64(reqd_fc, _T("fc req"),6,_T("%6.2f"),true);
 
    // Camber
    Float64 cbr_orig = ::ConvertFromSysUnits(pGetTogaResults->GetMaximumCamber(), unitMeasure::Feet );
    Float64 cbr_fabr = ::ConvertFromSysUnits(pGetTogaResults->GetFabricatorMaximumCamber(), unitMeasure::Feet );
 
-   workerB.WriteFloat64(cbr_orig,"cbr orig",8,"%8.4f",true);
-   workerB.WriteFloat64(cbr_fabr,"cbr fabr",8,"%8.4f",true);
+   workerB.WriteFloat64(cbr_orig,_T("cbr orig"),8,_T("%8.4f"),true);
+   workerB.WriteFloat64(cbr_fabr,_T("cbr fabr"),8,_T("%8.4f"),true);
 
    // Shear check
    bool passed = pGetTogaResults->ShearPassed();
-   workerB.WriteString(passed?"Ok\0":"Fail\n","Shear",7,"%7s",true);
+   workerB.WriteString(passed?_T("Ok\0"):_T("Fail\n"),_T("Shear"),7,_T("%7s"),true);
 
    workerB.WriteToFile(fp);
 
-   fprintf(fp, "\n");
+   _ftprintf(fp, _T("\n"));
 
    return CAD_SUCCESS;
 }

@@ -90,7 +90,7 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
          if (m_LaneLoad<=0.0)
          {
             pDX->PrepareEditCtrl(IDC_LANE_LOAD);
-            ::AfxMessageBox("Error - Lane load must be a positive number",MB_OK | MB_ICONEXCLAMATION);
+            ::AfxMessageBox(_T("Error - Lane load must be a positive number"),MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }
@@ -100,7 +100,7 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
          if (m_Axles.empty())
          {
             pDX->PrepareCtrl(IDC_AXLES_GRID);
-            ::AfxMessageBox("Error - The truck must have at least one axle",MB_OK | MB_ICONEXCLAMATION);
+            ::AfxMessageBox(_T("Error - The truck must have at least one axle"),MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }
@@ -139,27 +139,27 @@ BOOL CLiveLoadDlg::OnInitDialog()
 
    // Fill Load Type combo box
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONFIG_TYPE);
-   int idx = pCB->AddString("Truck Only");
+   int idx = pCB->AddString(_T("Truck Only"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckOnly);
 
-   idx = pCB->AddString("Lane Load Only");
+   idx = pCB->AddString(_T("Lane Load Only"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcLaneOnly);
 
-   idx = pCB->AddString("Sum of Lane Load and Truck");
+   idx = pCB->AddString(_T("Sum of Lane Load and Truck"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckPlusLane);
 
-   idx = pCB->AddString("Envelope of Lane Load and Truck");
+   idx = pCB->AddString(_T("Envelope of Lane Load and Truck"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckLaneEnvelope);
 
    // Fill Usage combo box
    pCB = (CComboBox*)GetDlgItem(IDC_USAGE);
-   idx = pCB->AddString("Use for all actions at all locations");
+   idx = pCB->AddString(_T("Use for all actions at all locations"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::llaEntireStructure);
 
-   idx = pCB->AddString("Use only for negative moments between points of contraflexure and interior pier reactions");
+   idx = pCB->AddString(_T("Use only for negative moments between points of contraflexure and interior pier reactions"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::llaContraflexure);
 
-   idx = pCB->AddString("Use only for negative moments and interior pier reactions");
+   idx = pCB->AddString(_T("Use only for negative moments and interior pier reactions"));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction);
 
 
@@ -171,14 +171,14 @@ BOOL CLiveLoadDlg::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_EntryName;
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 	

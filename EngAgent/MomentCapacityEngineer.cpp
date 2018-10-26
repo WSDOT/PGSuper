@@ -70,7 +70,7 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
 
    if ( FAILED(hr) )
    {
-      THROW_SHUTDOWN("Installation Problem - Unable to create Moment Capacity Solver",XREASON_COMCREATE_ERROR,true);
+      THROW_SHUTDOWN(_T("Installation Problem - Unable to create Moment Capacity Solver"),XREASON_COMCREATE_ERROR,true);
    }
 
 
@@ -78,7 +78,7 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
 
    if ( FAILED(hr) )
    {
-      THROW_SHUTDOWN("Installation Problem - Unable to create Cracked Section Solver",XREASON_COMCREATE_ERROR,true);
+      THROW_SHUTDOWN(_T("Installation Problem - Unable to create Cracked Section Solver"),XREASON_COMCREATE_ERROR,true);
    }
 }
 
@@ -218,7 +218,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    if ( hr == RC_E_MATERIALFAILURE )
    {
-      WATCHX(MomCap,0,"Exceeded material strain limit");
+      WATCHX(MomCap,0,_T("Exceeded material strain limit"));
       hr = S_OK;
    }
    
@@ -243,7 +243,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
       if ( hr == RC_E_MATERIALFAILURE )
       {
-         WATCHX(MomCap,0,"Exceeded material strain limit");
+         WATCHX(MomCap,0,_T("Exceeded material strain limit"));
          hr = S_OK;
       }
 
@@ -257,7 +257,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
          if ( hr == RC_E_MATERIALFAILURE )
          {
-            WATCHX(MomCap,0,"Exceeded material strain limit");
+            WATCHX(MomCap,0,_T("Exceeded material strain limit"));
             hr = S_OK;
          }
 
@@ -268,14 +268,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
             const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
             CString msg;
-            msg.Format("An unknown error occured while computing %s moment capacity for Span %d Girder %s at %f %s from the left end of the girder (%d)",
-                        (bPositiveMoment ? "positive" : "negative"),
+            msg.Format(_T("An unknown error occured while computing %s moment capacity for Span %d Girder %s at %f %s from the left end of the girder (%d)"),
+                        (bPositiveMoment ? _T("positive") : _T("negative")),
                         LABEL_SPAN(poi.GetSpan()),
                         LABEL_GIRDER(poi.GetGirder()),
                         ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
                         unit.UnitOfMeasure.UnitTag().c_str(),
                         hr);
-            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg);
+            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg);
             pStatusCenter->Add(pStatusItem);
             THROW_UNWIND(msg,-1);
          }
@@ -286,7 +286,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 #if defined _DEBUG
    CTime endTime = CTime::GetCurrentTime();
    CTimeSpan duration = endTime - startTime;
-   WATCHX(MomCap,0,"Duration = " << duration.GetTotalSeconds() << " seconds");
+   WATCHX(MomCap,0,_T("Duration = ") << duration.GetTotalSeconds() << _T(" seconds"));
 #endif // _DEBUG
 
    pmcd->CapacitySolution = solution;
@@ -360,37 +360,40 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       szOffset->get_Dy(&dy);
 
       // determine average stress in strands
-      CComPtr<IStressStrain> ssStrand;
-      ssStrand.CoCreateInstance(CLSID_PSPowerFormula);
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      for ( int i = 0; i < 2; i++ ) // straight and harped strands
+      if ( 0 <  Ns + Nh )
       {
-         pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
-         CComPtr<IPoint2dCollection> points;
-         pStrandGeom->GetStrandPositionsEx(poi, (i == 0 ? Ns : Nh), strandType, &points);
-
-         long strandPos = 0;
-         CComPtr<IEnumPoint2d> enum_points;
-         points->get__Enum(&enum_points);
-         CComPtr<IPoint2d> point;
-         while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+         CComPtr<IStressStrain> ssStrand;
+         ssStrand.CoCreateInstance(CLSID_PSPowerFormula);
+         GET_IFACE(IStrandGeometry,pStrandGeom);
+         for ( int i = 0; i < 2; i++ ) // straight and harped strands
          {
-            Float64 bond_factor = bond_factors[i][strandPos++];
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
+            CComPtr<IPoint2dCollection> points;
+            pStrandGeom->GetStrandPositionsEx(poi, (i == 0 ? Ns : Nh), strandType, &points);
 
-            point->get_X(&x);
-            point->get_Y(&y);
+            long strandPos = 0;
+            CComPtr<IEnumPoint2d> enum_points;
+            points->get__Enum(&enum_points);
+            CComPtr<IPoint2d> point;
+            while ( enum_points->Next(1,&point,NULL) != S_FALSE )
+            {
+               Float64 bond_factor = bond_factors[i][strandPos++];
 
-            strainPlane->GetZ(x-dx,y-dy,&z);
-            Float64 stress;
-            ssStrand->ComputeStress(z+e_initial,&stress);
+               point->get_X(&x);
+               point->get_Y(&y);
 
-            fps_avg += bond_factor*stress;
+               strainPlane->GetZ(x-dx,y-dy,&z);
+               Float64 stress;
+               ssStrand->ComputeStress(z+e_initial,&stress);
 
-            point.Release();
+               fps_avg += bond_factor*stress;
+
+               point.Release();
+            }
          }
-      }
 
-      fps_avg /= (Ns+Nh);
+         fps_avg /= (Ns+Nh);
+      }
    }
    else
    {
@@ -403,7 +406,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       fps_avg    = 0.0;
    }
 
-   WATCHX(MomCap,0, "X = " << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << " ft" << "   Mn = " << ::ConvertFromSysUnits(mn,unitMeasure::KipFeet) << " kip-ft" << " My/Mx = " << My/mn << " fps_avg = " << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << " KSI");
+   WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
 
    pmcd->fps = fps_avg;
    pmcd->dt = dt;
@@ -505,8 +508,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    pmcd->e_initial = e_initial;
 
 #if defined _DEBUG
-   m_Log << "Dist from end " << poi.GetDistFromStart() << endl;
-   m_Log << "-------------------------" << endl;
+   m_Log << _T("Dist from end ") << poi.GetDistFromStart() << endl;
+   m_Log << _T("-------------------------") << endl;
    m_Log << endl;
 #endif
 }
@@ -632,12 +635,12 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(pgsTypes::Stage stage,c
 
    if (ls==pgsTypes::StrengthI)
    {
-      pmmcd->LimitState = "Strength I";
+      pmmcd->LimitState = _T("Strength I");
    }
    else 
    {
       ATLASSERT(ls==pgsTypes::StrengthII);
-      pmmcd->LimitState = "Strength II";
+      pmmcd->LimitState = _T("Strength II");
    }
 
    pmmcd->Mr     = Mr;
@@ -1031,6 +1034,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    GET_IFACE(ISectProp2, pSectProp);
    GET_IFACE(IStrandGeometry, pStrandGeom );
    GET_IFACE(ILongRebarGeometry, pRebarGeom);
+   GET_IFACE(ICamber,pCamber);
+   GET_IFACE(IGirder,pGirder);
+
    SpanIndexType span = poi.GetSpan();
    GirderIndexType gdr  = poi.GetGirder();
    Float64 dist_from_start = poi.GetDistFromStart();
@@ -1352,12 +1358,58 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
       rect->put_Height(Dslab);
       rect->put_Width(Weff);
 
-      // put the bottom center of the deck rectangle right on the top center of the beam
       CComQIPtr<IXYPosition> posDeck(rect);
 
-      CComPtr<IPoint2d> pntCommon;
-      posBeam->get_LocatorPoint(lpTopCenter,&pntCommon);
-      posDeck->put_LocatorPoint(lpBottomCenter,pntCommon);
+      if ( bPositiveMoment )
+      {
+         // put the bottom center of the deck rectangle right on the top center of the beam
+         CComPtr<IPoint2d> pntCommon;
+         posBeam->get_LocatorPoint(lpTopCenter,&pntCommon);
+         posDeck->put_LocatorPoint(lpBottomCenter,pntCommon);
+      }
+      else
+      {
+        // put slab in correct location to account for additional moment arm due to "A" dimension
+        Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi); // does not account for camber
+        Float64 excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
+        Float64 top_girder_to_bottom_slab = top_girder_to_top_slab - Dslab - excess_camber;
+        if ( top_girder_to_bottom_slab < 0 )
+           top_girder_to_bottom_slab = 0;
+
+        ATLASSERT(0 <= top_girder_to_bottom_slab);
+
+         CComPtr<IPoint2d> pntCommon;
+         posBeam->get_LocatorPoint(lpTopCenter,&pntCommon);
+         pntCommon->Offset(0,top_girder_to_bottom_slab);
+
+         posDeck->put_LocatorPoint(lpBottomCenter,pntCommon);
+
+         if ( !IsZero(top_girder_to_bottom_slab) )
+         {
+            Float64 x_centerline;
+            pntCommon->get_X(&x_centerline);
+            FlangeIndexType nTopFlanges = pGirder->GetNumberOfTopFlanges(span,gdr);
+            for ( FlangeIndexType flangeIdx = 0; flangeIdx < nTopFlanges; flangeIdx++ )
+            {
+               Float64 offset = pGirder->GetTopFlangeLocation(poi,flangeIdx);
+               Float64 top_flange_width = pGirder->GetTopFlangeWidth(poi,flangeIdx);
+
+               CComPtr<IRectangle> haunch;
+               haunch.CoCreateInstance(CLSID_Rect);
+               haunch->put_Height(top_girder_to_bottom_slab);
+               haunch->put_Width(top_flange_width);
+
+               Float64 x = x_centerline + offset;
+               pntCommon->put_X(x);
+               CComQIPtr<IXYPosition> posHaunch(haunch);
+               posHaunch->put_LocatorPoint(lpTopCenter,pntCommon);
+
+               CComQIPtr<IShape> shapeHaunch(haunch);
+               section->AddShape(shapeHaunch,ssSlab,NULL,0.00);
+            }
+         }
+      }
+
 
       // if this is positive moment and we have a deck, the extreme compression point is top center
       if (bPositiveMoment)
@@ -1392,13 +1444,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             // move the center of the rebar rectangle below the top of the deck rectangle by the cover amount.
             // center it horizontally
             CComQIPtr<IXYPosition> posTop(topRect);
-            pntCommon.Release();
-            posDeck->get_LocatorPoint(lpTopCenter,&pntCommon);
-            pntCommon->Offset(0,-coverTop);
-            posTop->put_LocatorPoint(lpCenterCenter,pntCommon);
+            CComPtr<IPoint2d> pntDeck;
+            posDeck->get_LocatorPoint(lpTopCenter,&pntDeck);
+            pntDeck->Offset(0,-coverTop);
+            posTop->put_LocatorPoint(lpCenterCenter,pntDeck);
 
             Float64 cy;
-            pntCommon->get_Y(&cy);
+            pntDeck->get_Y(&cy);
             dt = _cpp_max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeTop(posTop);
@@ -1426,13 +1478,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             // move the center of the rebar rectangle above the bottom of the deck rectangle by the cover amount.
             // center it horizontally
             CComQIPtr<IXYPosition> posBottom(botRect);
-            pntCommon.Release();
-            posDeck->get_LocatorPoint(lpBottomCenter,&pntCommon);
-            pntCommon->Offset(0,coverBottom);
-            posBottom->put_LocatorPoint(lpCenterCenter,pntCommon);
+            CComPtr<IPoint2d> pntDeck;
+            posDeck->get_LocatorPoint(lpBottomCenter,&pntDeck);
+            pntDeck->Offset(0,coverBottom);
+            posBottom->put_LocatorPoint(lpCenterCenter,pntDeck);
 
             Float64 cy;
-            pntCommon->get_Y(&cy);
+            pntDeck->get_Y(&cy);
             dt = _cpp_max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeBottom(posBottom);
@@ -1459,7 +1511,7 @@ bool pgsMomentCapacityEngineer::AssertValid() const
 
 void pgsMomentCapacityEngineer::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsMomentCapacityEngineer" << endl;
+   os << _T("Dump for pgsMomentCapacityEngineer") << endl;
 }
 #endif // _DEBUG
 
@@ -1477,10 +1529,10 @@ bool pgsMomentCapacityEngineer::TestMe(dbgLog& rlog)
 #if defined _DEBUG_SECTION_DUMP
 void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<long,Float64> ssBondFactors,std::map<long,Float64> hsBondFactors,bool bPositiveMoment)
 {
-   std::ostringstream os;
-   std::string strMn(bPositiveMoment ? "+M" : "-M"); 
+   std::_tostringstream os;
+   std::_tstring strMn(bPositiveMoment ? "+M" : "-M"); 
    os << "GeneralSection_" << strMn << "_Span_" << LABEL_SPAN(poi.GetSpan()) << "_Girder_" << LABEL_GIRDER(poi.GetGirder()) << "_" << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << ".txt";
-   std::ofstream file(os.str().c_str());
+   std::_tofstream file(os.str().c_str());
 
    long shape_count;
    section->get_ShapeCount(&shape_count);

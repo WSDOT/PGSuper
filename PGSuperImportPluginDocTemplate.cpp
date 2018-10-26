@@ -74,7 +74,7 @@ CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMe
 
       HICON hIcon;
       importer->GetIcon(&hIcon);
-      m_TemplateGroup.AddItem( new CMyTemplateItem(OLE2A(bstrText),NULL,hIcon,importer) );
+      m_TemplateGroup.AddItem( new CMyTemplateItem(OLE2T(bstrText),NULL,hIcon,importer) );
    }
 }
 
@@ -149,7 +149,7 @@ CString CPGSuperImportPluginDocTemplate::GetTemplateGroupItemDescription(const C
 {
    CString strName = pItem->GetName();
    CString strDescription;
-   strDescription.Format("Create a new PGSuper project using the %s importer",strName);
+   strDescription.Format(_T("Create a new PGSuper project using the %s importer"),strName);
    return strDescription;
 }
 
@@ -157,7 +157,7 @@ BOOL CPGSuperImportPluginDocTemplate::GetDocString(CString& rString,enum DocStri
 {
    if ( index == CDocTemplate::fileNewName )
    {
-      rString = "PGSuper Project Importers";
+      rString = _T("PGSuper Project Importers");
       return TRUE;
    }
    else if ( index == CDocTemplate::filterExt || index == CDocTemplate::filterName )

@@ -241,7 +241,7 @@ void CEngAgentImp::ValidateArtifacts(SpanIndexType span,GirderIndexType gdr)
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Analyzing Span " << LABEL_SPAN(span) << " Girder " << LABEL_GIRDER(gdr) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -266,7 +266,7 @@ void CEngAgentImp::ValidateRatingArtifacts(GirderIndexType gdrLineIdx,pgsTypes::
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Load Rating Girder Line " << LABEL_GIRDER(gdrLineIdx) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -342,18 +342,18 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   std::string strSectionType = ( stage == pgsTypes::BridgeSite1 ? "noncomposite" : "composite" );
+   std::_tstring strSectionType = ( stage == pgsTypes::BridgeSite1 ? _T("noncomposite") : _T("composite") );
 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   std::ostringstream os;
-   os << "Computing " << strSectionType << " minimum moment capacity for Span "
-      << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   os << _T("Computing ") << strSectionType << _T(" minimum moment capacity for Span ")
+      << LABEL_SPAN(span) << _T(" Girder ")
+      << LABEL_GIRDER(gdr) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -388,15 +388,15 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(pgsTypes::Sta
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   std::string strSectionType = ( stage == pgsTypes::BridgeSite1 ? "noncomposite" : "composite" );
+   std::_tstring strSectionType = ( stage == pgsTypes::BridgeSite1 ? _T("noncomposite") : _T("composite") );
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   std::ostringstream os;
-   os << "Computing " << strSectionType << " cracking moment for Span "
-      << LABEL_SPAN(poi.GetSpan()) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   os << _T("Computing ") << strSectionType << _T(" cracking moment for Span ")
+      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
+      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -524,13 +524,13 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
 
    CEAFAutoProgress ap(pProgress);
 
-   std::string strSectionType = ( bPositiveMoment ? "positive" : "negative" );
+   std::_tstring strSectionType = ( bPositiveMoment ? _T("positive") : _T("negative") );
 
-   std::ostringstream os;
-   os << "Computing " << strSectionType << " moment capacity for Span "
-      << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   os << _T("Computing ") << strSectionType << _T(" moment capacity for Span ")
+      << LABEL_SPAN(span) << _T(" Girder ")
+      << LABEL_GIRDER(gdr) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -552,13 +552,13 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    CEAFAutoProgress ap(pProgress);
 
 
-   std::string strSectionType = ( bPositiveMoment ? "positive" : "negative" );
+   std::_tstring strSectionType = ( bPositiveMoment ? _T("positive") : _T("negative") );
 
-   std::ostringstream os;
-   os << "Computing " << strSectionType << " moment capacity for Span "
-      << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   os << _T("Computing ") << strSectionType << _T(" moment capacity for Span ")
+      << LABEL_SPAN(span) << _T(" Girder ")
+      << LABEL_GIRDER(gdr) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -597,7 +597,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::StoreMomentCapacityDetails(pgsTypes::
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateMomentCapacity()
 {
-   LOG("Invalidating moment capacities");
+   LOG(_T("Invalidating moment capacities"));
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -614,7 +614,7 @@ void CEngAgentImp::InvalidateMomentCapacity()
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateShearCapacity()
 {
-   LOG("Invalidating shear capacities");
+   LOG(_T("Invalidating shear capacities"));
    CollectionIndexType size = sizeof(m_ShearCapacity)/sizeof(std::map<PoiKey,SHEARCAPACITYDETAILS>);
    for (CollectionIndexType idx = 0; idx < size; idx++ )
    {
@@ -625,7 +625,7 @@ void CEngAgentImp::InvalidateShearCapacity()
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateCrackedSectionDetails()
 {
-   LOG("Invalidating cracked section details");
+   LOG(_T("Invalidating cracked section details"));
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -657,12 +657,12 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   std::ostringstream os;
-   std::string strLimitState = (ls == pgsTypes::StrengthI ? "Strength I" : "Strength II");
-   os << "Computing " << strLimitState << " shear capacity for Span "
-      << LABEL_SPAN(poi.GetSpan()) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   std::_tstring strLimitState = (ls == pgsTypes::StrengthI ? _T("Strength I") : _T("Strength II"));
+   os << _T("Computing ") << strLimitState << _T(" shear capacity for Span ")
+      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
+      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -693,11 +693,11 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   std::ostringstream os;
-   os << "Computing fpc for Span "
-      << LABEL_SPAN(poi.GetSpan()) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   os << _T("Computing fpc for Span ")
+      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
+      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -717,7 +717,7 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateFpc()
 {
-   LOG("Invalidating Fpc");
+   LOG(_T("Invalidating Fpc"));
    m_Fpc.clear();
 }
 
@@ -725,7 +725,7 @@ void CEngAgentImp::InvalidateFpc()
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateShearCritSection()
 {
-   LOG("Invalidating critical section for shear");
+   LOG(_T("Invalidating critical section for shear"));
    CollectionIndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<SpanGirderHashType,CRITSECTDETAILS>);
    for (CollectionIndexType idx = 0; idx < size; idx++ )
    {
@@ -754,9 +754,9 @@ const CRITSECTDETAILS* CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitSta
    CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Computing " << OLE2A(pStageMap->GetLimitStateName(limitState)) << " critical section for shear for Span "
-      << LABEL_SPAN(span) << " Girder "<< LABEL_GIRDER(gdr) << std::ends;
+   std::_tostringstream os;
+   os << _T("Computing ") << OLE2T(pStageMap->GetLimitStateName(limitState)) << _T(" critical section for shear for Span ")
+      << LABEL_SPAN(span) << _T(" Girder ")<< LABEL_GIRDER(gdr) << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -882,8 +882,8 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
 
    // create a graph for dv and 0.5d*dv*cot(theta)
    // create intercept lines as well since we are looping on poi.
-   LOG(endl<<"Critical Section Intercept graph");
-   LOG("Location , Dv, Theta, 0.5*Dv*cotan(theta), Yl, Yr");
+   LOG(endl<<_T("Critical Section Intercept graph"));
+   LOG(_T("Location , Dv, Theta, 0.5*Dv*cotan(theta), Yl, Yr"));
    GET_IFACE(IShearCapacity,pShearCapacity);
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
    {
@@ -933,10 +933,10 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
       left_intercept.AddPoint( gpPoint2d(x,Yl) );
       right_intercept.AddPoint( gpPoint2d(x,Yr) );
 
-      LOG(poi.GetDistFromStart()<<", "<<csdp.Dv<<", "<<csdp.Theta<<", "<<csdp.CotanThetaDv05<<", "<<Yl<<", "<<Yr);
+      LOG(poi.GetDistFromStart()<<_T(", ")<<csdp.Dv<<_T(", ")<<csdp.Theta<<_T(", ")<<csdp.CotanThetaDv05<<_T(", ")<<Yl<<_T(", ")<<Yr);
    }
 
-   LOG("End of intercept values"<<endl);
+   LOG(_T("End of intercept values")<<endl);
 
    // determine intersections
    gpPoint2d p;
@@ -971,7 +971,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
             pdtls->LeftCsDv.CotanThetaDv05 = 0.0;
          }
 
-         LOG("Dv on Left Intersection = ("<<p.X()-left_end_size<<", "<<p.Y()<<")");
+         LOG(_T("Dv on Left Intersection = (")<<p.X()-left_end_size<<_T(", ")<<p.Y()<<_T(")"));
 
          // dv cot(theta) on left
          retval = dv_cos_theta.Intersect(left_intercept,range, &p );
@@ -985,12 +985,12 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
             pdtls->LeftCsDvt.Theta          = theta.Evaluate(x1);
             pdtls->LeftCsDvt.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
 
-            LOG(".5*Dv*cot(theta) on Left Intersection = ("<<p.X()-left_end_size<<", "<<p.Y()<<")");
+            LOG(_T(".5*Dv*cot(theta) on Left Intersection = (")<<p.X()-left_end_size<<_T(", ")<<p.Y()<<_T(")"));
          }
          else
          {
             pdtls->LeftCsDvt.InRange        = false;
-            LOG(".5*Dv*cot(theta) on Left Intersection = No Intersection");
+            LOG(_T(".5*Dv*cot(theta) on Left Intersection = No Intersection"));
          }
       }
 
@@ -1014,7 +1014,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
             pdtls->RightCsDv.Theta          = 0.0;
             pdtls->RightCsDv.CotanThetaDv05 = 0.0;
          }
-         LOG("Dv on Right Intersection = ("<<span_length + right_end_size - p.X()<<", "<<p.Y()<<")");
+         LOG(_T("Dv on Right Intersection = (")<<span_length + right_end_size - p.X()<<_T(", ")<<p.Y()<<_T(")"));
 
          // dv cot(theta) on Right
          retval = dv_cos_theta.Intersect(right_intercept,range, &p );
@@ -1027,12 +1027,12 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
             pdtls->RightCsDvt.Dv             = dv.Evaluate(x1);
             pdtls->RightCsDvt.Theta          = theta.Evaluate(x1);
             pdtls->RightCsDvt.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
-            LOG(".5*Dv*cot(theta) on Right Intersection = ("<<span_length + right_end_size - p.X()<<", "<<p.Y()<<")");
+            LOG(_T(".5*Dv*cot(theta) on Right Intersection = (")<<span_length + right_end_size - p.X()<<_T(", ")<<p.Y()<<_T(")"));
          }
          else
          {
             pdtls->RightCsDvt.InRange        = false;
-            LOG(".5*Dv*cot(theta) on Right Intersection = No Intersection");
+            LOG(_T(".5*Dv*cot(theta) on Right Intersection = No Intersection"));
          }
       }
    }
@@ -1040,11 +1040,11 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-      std::string msg("An error occured while locating the critical section for shear");
-      pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+      std::_tstring msg(_T("An error occured while locating the critical section for shear"));
+      pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       pStatusCenter->Add(pStatusItem);
 
-      msg += std::string("\nSee Status Center for Details");
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),-1);
    }
 }
@@ -1067,11 +1067,11 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const p
    CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   std::ostringstream os;
-   os << "Analyzing cracked section for Span "
-      << LABEL_SPAN(poi.GetSpan()) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << " from start of girder" << std::ends;
+   std::_tostringstream os;
+   os << _T("Analyzing cracked section for Span ")
+      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
+      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -1359,6 +1359,20 @@ Float64 CEngAgentImp::GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTy
    return val;
 }
 
+Float64 CEngAgentImp::GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+{
+   LOSSDETAILS* pLossDetails = FindLosses(poi);
+   ATLASSERT(pLossDetails != 0);
+
+   Float64 val;
+   if ( strandType == pgsTypes::Temporary )
+      val = pLossDetails->pLosses->TemporaryStrand_AfterSIDL();
+   else
+      val = pLossDetails->pLosses->PermanentStrand_AfterSIDL();
+
+   return val;
+}
+
 Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
 {
    LOSSDETAILS* pLossDetails = FindLosses(poi);
@@ -1504,6 +1518,19 @@ Float64 CEngAgentImp::GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTy
       loss = details.pLosses->TemporaryStrand_AfterDeckPlacement();
    else
       loss = details.pLosses->PermanentStrand_AfterDeckPlacement();
+   
+   return loss;
+}
+
+Float64 CEngAgentImp::GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config)
+{
+   LOSSDETAILS details = GetLossDetails(poi,config);
+
+   Float64 loss;
+   if ( strandType == pgsTypes::Temporary )
+      loss = details.pLosses->TemporaryStrand_AfterSIDL();
+   else
+      loss = details.pLosses->PermanentStrand_AfterSIDL();
    
    return loss;
 }
@@ -1834,12 +1861,12 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    bool bIsOK = true;
    if ( nBeams == 0 || nBeams == 1 )
    {
-      const char* msg = "The bridge must have at least two beams per span";
+      LPCTSTR msg = _T("The bridge must have at least two beams per span");
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,1,msg);
       pStatusCenter->Add(pStatusItem);
 
-      std::string strMsg(msg);
-      strMsg += "\nSee Status Center for Details";
+      std::_tstring strMsg(msg);
+      strMsg += _T("\nSee Status Center for Details");
       THROW_UNWIND(strMsg.c_str(),-3);
    }
    else if ( nBeams == 2 )
@@ -1861,17 +1888,17 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
 
    if ( !bIsOK )
    {
-      std::ostringstream os;
-      os << "Live Load Distribution Factors could not be calculated for the following reason" << std::endl;
-      os << "Per 4.6.1.2.1, the limiting central angle for neglecting curvature has been exceeded" << std::endl;
-      os << "Computed value = " << delta << " deg" << std::endl;
-      os << "Limiting value = " << delta_limit << " deg" << std::endl;
-      os << "A refined method of analysis is required for this bridge" << std::endl;
+      std::_tostringstream os;
+      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
+      os << _T("Per 4.6.1.2.1, the limiting central angle for neglecting curvature has been exceeded") << std::endl;
+      os << _T("Computed value = ") << delta << _T(" deg") << std::endl;
+      os << _T("Limiting value = ") << delta_limit << _T(" deg") << std::endl;
+      os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
       pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
-      os << "See Status Center for Details" << std::endl;
+      os << _T("See Status Center for Details") << std::endl;
       THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
    }
 }
@@ -1919,19 +1946,19 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    if ( ratio < minStiffnessRatio )
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      std::ostringstream os;
-      os << "Live Load Distribution Factors could not be calculated for the following reason" << std::endl;
-      os << "Per 4.6.2.2.1, the girders in this span do not have approximately the same stiffness." << std::endl;
-      os << "Minimum I = " << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
-      os << "Maximum I = " << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
-      os << "Stiffness Ratio (I min / I max) = " << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << "Minimum stiffness ratio permitted by " << pSpecEntry->GetName() << " = " << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << "A refined method of analysis is required for this bridge" << std::endl;
+      std::_tostringstream os;
+      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
+      os << _T("Per 4.6.2.2.1, the girders in this span do not have approximately the same stiffness.") << std::endl;
+      os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
+      os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
+      os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
+      os << _T("Minimum stiffness ratio permitted by ") << pSpecEntry->GetName() << _T(" = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
+      os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
       pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
-      os << "See Status Center for Details" << std::endl;
+      os << _T("See Status Center for Details") << std::endl;
       THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
    }
 }
@@ -1983,17 +2010,17 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    if ( maxAllowableAngle < maxAngularDifference )
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      std::ostringstream os;
-      os << "Live Load Distribution Factors could not be calculated for the following reason" << std::endl;
-      os << "Per 4.6.2.2.1, the girders in this span are not parallel." << std::endl;
-      os << "Greatest angular difference between girders in this span = " << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-      os << "Maximum angular difference permitted by " << pSpecEntry->GetName() << " = " << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-      os << "A refined method of analysis is required for this bridge" << std::endl;
+      std::_tostringstream os;
+      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
+      os << _T("Per 4.6.2.2.1, the girders in this span are not parallel.") << std::endl;
+      os << _T("Greatest angular difference between girders in this span = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+      os << _T("Maximum angular difference permitted by ") << pSpecEntry->GetName() << _T(" = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+      os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
       pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
-      os << "See Status Center for Details" << std::endl;
+      os << _T("See Status Center for Details") << std::endl;
       THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
    }
 }
@@ -2364,7 +2391,7 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
       rptParagraph* pPara;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << "Method of Computation: Directly Input" << rptNewLine;
+      (*pPara) << _T("Method of Computation: Directly Input") << rptNewLine;
 
       const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
       pgsTypes::GirderLocation gl = pSpan->IsInteriorGirder(gdr) ? pgsTypes::Interior : pgsTypes::Exterior;
@@ -2373,7 +2400,7 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          nCols += 4;
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Live Load Distribution Factors");
+      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
 
       (*pPara) << table;
 
@@ -2382,11 +2409,11 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
          table->SetNumberOfHeaderRows(1);
-         (*table)(0,0) << "";
-         (*table)(0,1) << "+M";
-         (*table)(0,2) << "-M";
-         (*table)(0,3) << "V";
-         (*table)(0,4) << "R";
+         (*table)(0,0) << _T("");
+         (*table)(0,1) << _T("+M");
+         (*table)(0,2) << _T("-M");
+         (*table)(0,3) << _T("V");
+         (*table)(0,4) << _T("R");
       }
       else
       {
@@ -2394,13 +2421,13 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
 
          table->SetRowSpan(0,0,2);
          table->SetRowSpan(1,0,-1);
-         (*table)(0,0) << "";
+         (*table)(0,0) << _T("");
 
          table->SetColumnSpan(0,1,4);
-         (*table)(0,1) << "Strength/Service";
+         (*table)(0,1) << _T("Strength/Service");
 
          table->SetColumnSpan(0,2,4);
-         (*table)(0,2) << "Fatigue";
+         (*table)(0,2) << _T("Fatigue");
 
          table->SetColumnSpan(0,3,-1);
          table->SetColumnSpan(0,4,-1);
@@ -2409,14 +2436,14 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
          table->SetColumnSpan(0,7,-1);
          table->SetColumnSpan(0,8,-1);
 
-         (*table)(1,1) << "+M";
-         (*table)(1,2) << "-M";
-         (*table)(1,3) << "V";
-         (*table)(1,4) << "R";
-         (*table)(1,5) << "+M";
-         (*table)(1,6) << "-M";
-         (*table)(1,7) << "V";
-         (*table)(1,8) << "R";
+         (*table)(1,1) << _T("+M");
+         (*table)(1,2) << _T("-M");
+         (*table)(1,3) << _T("V");
+         (*table)(1,4) << _T("R");
+         (*table)(1,5) << _T("+M");
+         (*table)(1,6) << _T("-M");
+         (*table)(1,7) << _T("V");
+         (*table)(1,8) << _T("R");
       }
 
       const CPierData* pPier = pBridgeDesc->GetPier(0);
@@ -2426,8 +2453,8 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
       {
          PierIndexType pierIdx = pPier->GetPierIndex();
 
-         (*table)(row,0) << "Pier " << LABEL_PIER(pierIdx);
-         (*table)(row,1) << "";
+         (*table)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+         (*table)(row,1) << _T("");
 
          bool bContinuous = pPier->IsContinuous();
 
@@ -2437,21 +2464,21 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
          if ( bContinuous || bIntegralOnLeft || bIntegralOnRight)
             (*table)(row,2) << scalar.SetValue( pPier->GetLLDFNegMoment(pgsTypes::StrengthI,gl) );
          else
-            (*table)(row,2) << "";
+            (*table)(row,2) << _T("");
 
-         (*table)(row,3) << "";
+         (*table)(row,3) << _T("");
          (*table)(row,4) << scalar.SetValue( pPier->GetLLDFReaction(pgsTypes::StrengthI,gl) );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            (*table)(row,5) << "";
+            (*table)(row,5) << _T("");
 
             if ( bContinuous || bIntegralOnLeft || bIntegralOnRight)
                (*table)(row,6) << scalar.SetValue( pPier->GetLLDFNegMoment(pgsTypes::FatigueI,gl) );
             else
-               (*table)(row,6) << "";
+               (*table)(row,6) << _T("");
 
-            (*table)(row,7) << "";
+            (*table)(row,7) << _T("");
             (*table)(row,8) << scalar.SetValue( pPier->GetLLDFReaction(pgsTypes::FatigueI,gl) );
          }
 
@@ -2471,16 +2498,16 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
             pSpan->GetNextPier()->IsIntegral(&bIntegralOnLeft,&bIntegralOnRight);
             bool bIntegralEnd = bIntegralOnLeft;
 
-            (*table)(row,0) << "Span " << LABEL_SPAN(spanIdx);
+            (*table)(row,0) << _T("Span ") << LABEL_SPAN(spanIdx);
             (*table)(row,1) << scalar.SetValue( pSpan->GetLLDFPosMoment(pgsTypes::StrengthI,gl) );
             
             if ( bContinuousStart || bContinuousEnd || bIntegralStart || bIntegralEnd )
                (*table)(row,2) << scalar.SetValue( pSpan->GetLLDFNegMoment(pgsTypes::StrengthI,gl) );
             else
-               (*table)(row,2) << "";
+               (*table)(row,2) << _T("");
 
             (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(pgsTypes::StrengthI,gl) );
-            (*table)(row,4) << "";
+            (*table)(row,4) << _T("");
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
@@ -2489,10 +2516,10 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
                if ( bContinuousStart || bContinuousEnd || bIntegralStart || bIntegralEnd )
                   (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFNegMoment(pgsTypes::FatigueI,gl) );
                else
-                  (*table)(row,6) << "";
+                  (*table)(row,6) << _T("");
 
                (*table)(row,7) << scalar.SetValue( pSpan->GetLLDFShear(pgsTypes::FatigueI,gl) );
-               (*table)(row,8) << "";
+               (*table)(row,8) << _T("");
             }
 
             row++;
@@ -2503,7 +2530,7 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
    }
 }
 
-bool CEngAgentImp::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile)
+bool CEngAgentImp::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
    ValidateLiveLoadDistributionFactors(span,gdr);
    return m_pDistFactorEngineer->Run1250Tests(span,gdr,ls,pid,bridgeId,resultsFile,poiFile);
@@ -2632,6 +2659,19 @@ void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPoint
    }
 }
 
+std::vector<Float64> CEngAgentImp::GetCrackingMoment(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
+{
+   std::vector<Float64> Mcr;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      Mcr.push_back( GetCrackingMoment(stage,poi,bPositiveMoment));
+   }
+
+   return Mcr;
+}
+
 Float64 CEngAgentImp::GetCrackingMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
    CRACKINGMOMENTDETAILS cmd;
@@ -2676,6 +2716,19 @@ void CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const pgsPoint
       GetCrackingMomentDetails(stage,poi,bPositiveMoment,pcmd);
    else
       m_MomentCapEngineer.ComputeCrackingMoment(stage,poi,config,bPositiveMoment,pcmd);
+}
+
+std::vector<Float64> CEngAgentImp::GetMinMomentCapacity(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
+{
+   std::vector<Float64> Mmin;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      Mmin.push_back( GetMinMomentCapacity(stage,poi,bPositiveMoment));
+   }
+
+   return Mmin;
 }
 
 Float64 CEngAgentImp::GetMinMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment)
@@ -3515,28 +3568,28 @@ std::vector<CRACKEDSECTIONDETAILS> CEngAgentImp::GetCrackedSectionDetails(const 
 // IBridgeDescriptionEventSink
 HRESULT CEngAgentImp::OnBridgeChanged()
 {
-   LOG("OnBridgeChanged Event Received");
+   LOG(_T("OnBridgeChanged Event Received"));
    InvalidateAll();
    return S_OK;
 }
 
 HRESULT CEngAgentImp::OnGirderFamilyChanged()
 {
-   LOG("OnGirderFamilyChanged Event Received");
+   LOG(_T("OnGirderFamilyChanged Event Received"));
    InvalidateAll();
    return S_OK;
 }
 
 HRESULT CEngAgentImp::OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint)
 {
-   LOG("OnGirderChanged Event Received");
+   LOG(_T("OnGirderChanged Event Received"));
    InvalidateAll();
    return S_OK;
 }
 
 HRESULT CEngAgentImp::OnLiveLoadChanged()
 {
-   LOG("OnLiveLoadChanged Event Received");
+   LOG(_T("OnLiveLoadChanged Event Received"));
    InvalidateAll();
 //   InvalidateArtifacts();
 //   InvalidateShearCapacity();
@@ -3545,9 +3598,9 @@ HRESULT CEngAgentImp::OnLiveLoadChanged()
    return S_OK;
 }
 
-HRESULT CEngAgentImp::OnLiveLoadNameChanged(const char* strOldName,const char* strNewName)
+HRESULT CEngAgentImp::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName)
 {
-   LOG("OnLiveLoadNameChanged Event Received");
+   LOG(_T("OnLiveLoadNameChanged Event Received"));
    return S_OK;
 }
 
@@ -3560,7 +3613,7 @@ HRESULT CEngAgentImp::OnConstructionLoadChanged()
 // ISpecificationEventSink
 HRESULT CEngAgentImp::OnSpecificationChanged()
 {
-   LOG("OnSpecificationChanged Event Received");
+   LOG(_T("OnSpecificationChanged Event Received"));
    InvalidateAll();
 
    return S_OK;
@@ -3576,7 +3629,7 @@ HRESULT CEngAgentImp::OnAnalysisTypeChanged()
 // IRatingSpecificationEventSink
 HRESULT CEngAgentImp::OnRatingSpecificationChanged()
 {
-   LOG("OnRatingSpecificationChanged Event Received");
+   LOG(_T("OnRatingSpecificationChanged Event Received"));
    InvalidateRatingArtifacts();
 
    // invalidate shear capacities associated with rating limit states

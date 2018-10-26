@@ -36,19 +36,19 @@ CLASS
 ****************************************************************************/
 
 
-std::string pgsReportStyleHolder::ms_ReportTitleStyle           = "ReportTitleStyle";
-std::string pgsReportStyleHolder::ms_ReportSubtitleStyle        = "ReportSubtitleStyle";
-std::string pgsReportStyleHolder::ms_ChapterTitleStyle          = "ChapterTitleStyle";
-std::string pgsReportStyleHolder::ms_HeadingStyle               = "HeadingStyle";
-std::string pgsReportStyleHolder::ms_SubheadingStyle            = "SubheadingStyle";
-std::string pgsReportStyleHolder::ms_TableColumnHeadingStyle    = "TableColumnHeadingStyle";
-std::string pgsReportStyleHolder::ms_FootnoteStyle              = "Footnote";
-std::string pgsReportStyleHolder::ms_CopyrightStyle             = "Copyright";
-std::string pgsReportStyleHolder::ms_TableCellStyle[4]          = {   "NB-LJ",   "TB-LJ",   "NB-RJ",   "TB-RJ"};
-std::string pgsReportStyleHolder::ms_TableStripeRowCellStyle[4] = {"SR-NB-LJ","SR-TB-LJ","SR-NB-RJ","SR-TB-RJ"};
-std::string pgsReportStyleHolder::ms_ReportCoverImage           = "";
+std::_tstring pgsReportStyleHolder::ms_ReportTitleStyle           = _T("ReportTitleStyle");
+std::_tstring pgsReportStyleHolder::ms_ReportSubtitleStyle        = _T("ReportSubtitleStyle");
+std::_tstring pgsReportStyleHolder::ms_ChapterTitleStyle          = _T("ChapterTitleStyle");
+std::_tstring pgsReportStyleHolder::ms_HeadingStyle               = _T("HeadingStyle");
+std::_tstring pgsReportStyleHolder::ms_SubheadingStyle            = _T("SubheadingStyle");
+std::_tstring pgsReportStyleHolder::ms_TableColumnHeadingStyle    = _T("TableColumnHeadingStyle");
+std::_tstring pgsReportStyleHolder::ms_FootnoteStyle              = _T("Footnote");
+std::_tstring pgsReportStyleHolder::ms_CopyrightStyle             = _T("Copyright");
+std::_tstring pgsReportStyleHolder::ms_TableCellStyle[4]          = {   _T("NB-LJ"),   _T("TB-LJ"),   _T("NB-RJ"),   _T("TB-RJ")};
+std::_tstring pgsReportStyleHolder::ms_TableStripeRowCellStyle[4] = {_T("SR-NB-LJ"),_T("SR-TB-LJ"),_T("SR-NB-RJ"),_T("SR-TB-RJ")};
+std::_tstring pgsReportStyleHolder::ms_ReportCoverImage           = _T("");
 
-std::auto_ptr<std::string> pgsReportStyleHolder::ms_pImagePath;
+std::auto_ptr<std::_tstring> pgsReportStyleHolder::ms_pImagePath;
 
 Float64 pgsReportStyleHolder::ms_MaxTableWidth = 7.5; // 7.5" wide tables
 
@@ -188,37 +188,37 @@ void pgsReportStyleHolder::InitStyles()
 }
 
 
-const std::string& pgsReportStyleHolder::GetReportTitleStyle()
+const std::_tstring& pgsReportStyleHolder::GetReportTitleStyle()
 {
 return ms_ReportTitleStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetReportSubtitleStyle()
+const std::_tstring& pgsReportStyleHolder::GetReportSubtitleStyle()
 {
 return ms_ReportSubtitleStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetChapterTitleStyle()
+const std::_tstring& pgsReportStyleHolder::GetChapterTitleStyle()
 {
 return ms_ChapterTitleStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetHeadingStyle()
+const std::_tstring& pgsReportStyleHolder::GetHeadingStyle()
 {
 return ms_HeadingStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetSubheadingStyle()
+const std::_tstring& pgsReportStyleHolder::GetSubheadingStyle()
 {
 return ms_SubheadingStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetTableColumnHeadingStyle()
+const std::_tstring& pgsReportStyleHolder::GetTableColumnHeadingStyle()
 {
    return ms_TableColumnHeadingStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetTableCellStyle(Uint32 style)
+const std::_tstring& pgsReportStyleHolder::GetTableCellStyle(Uint32 style)
 {
    // Bit 1 = Border Style
    // Bit 2 = Justification
@@ -245,7 +245,7 @@ const std::string& pgsReportStyleHolder::GetTableCellStyle(Uint32 style)
    return ms_TableCellStyle[index];
 }
 
-const std::string& pgsReportStyleHolder::GetTableStripeRowCellStyle(Uint32 style)
+const std::_tstring& pgsReportStyleHolder::GetTableStripeRowCellStyle(Uint32 style)
 {
    // Bit 1 = Border Style
    // Bit 2 = Justification
@@ -272,12 +272,12 @@ const std::string& pgsReportStyleHolder::GetTableStripeRowCellStyle(Uint32 style
    return ms_TableStripeRowCellStyle[index];
 }
 
-const std::string& pgsReportStyleHolder::GetFootnoteStyle()
+const std::_tstring& pgsReportStyleHolder::GetFootnoteStyle()
 {
    return ms_FootnoteStyle;
 }
 
-const std::string& pgsReportStyleHolder::GetCopyrightStyle()
+const std::_tstring& pgsReportStyleHolder::GetCopyrightStyle()
 {
    return ms_CopyrightStyle;
 }
@@ -287,7 +287,7 @@ double pgsReportStyleHolder::GetMaxTableWidth()
    return ms_MaxTableWidth;
 }
 
-rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, std::string label)
+rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, std::_tstring label)
 {
    rptRcTable* pTable = new rptRcTable( numColumns, 0.0/*pgsReportStyleHolder::GetMaxTableWidth()*/ );
    if (!label.empty())
@@ -298,7 +298,7 @@ rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns,
    return pTable;
 }
 
-rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, std::string label)
+rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, std::_tstring label)
 {
    rptRcTable* pTable = CreateDefaultTable(numColumns,label);
 
@@ -334,7 +334,7 @@ void pgsReportStyleHolder::ConfigureTable(rptRcTable* pTable)
    }
 }
 
-void make_upper( std::string::iterator begin,std::string::iterator end)
+void make_upper( std::_tstring::iterator begin,std::_tstring::iterator end)
 {
    while ( begin != end )
    {
@@ -343,19 +343,19 @@ void make_upper( std::string::iterator begin,std::string::iterator end)
    }
 }
 
-const std::string& pgsReportStyleHolder::GetImagePath()
+const std::_tstring& pgsReportStyleHolder::GetImagePath()
 {
    if ( ms_pImagePath.get() == 0 )
    {
       TCHAR szBuff[_MAX_PATH];
       ::GetModuleFileName(::GetModuleHandle(NULL), szBuff, _MAX_PATH);
-      std::string filename(szBuff);
+      std::_tstring filename(szBuff);
       make_upper( filename.begin(), filename.end() );
 
       // find first occurance of "PGSUPER"
-      std::string strPGSuper("PGSUPER");
-      std::string::size_type loc = filename.find(strPGSuper);
-      if ( loc != std::string::npos )
+      std::_tstring strPGSuper(_T("PGSUPER"));
+      std::_tstring::size_type loc = filename.find(strPGSuper);
+      if ( loc != std::_tstring::npos )
       {
          loc += strPGSuper.length();
       }
@@ -363,28 +363,28 @@ const std::string& pgsReportStyleHolder::GetImagePath()
       {
          // something is wrong... that find should have succeeded
          // hard code the default install location so that there is a remote chance of success
-         filename = "\\PROGRAM FILES\\WSDOT\\PGSUPER";
+         filename = _T("\\PROGRAM FILES\\WSDOT\\PGSUPER");
          loc = filename.length();
       }
 
-      filename.replace(filename.begin()+loc,filename.end(),"\\IMAGES\\");
-      ms_pImagePath = std::auto_ptr<std::string>(new std::string(filename));
+      filename.replace(filename.begin()+loc,filename.end(),_T("\\IMAGES\\"));
+      ms_pImagePath = std::auto_ptr<std::_tstring>(new std::_tstring(filename));
    }
 
    return *ms_pImagePath;
 }
 
-void pgsReportStyleHolder::SetReportCoverImage(const char* strImagePath)
+void pgsReportStyleHolder::SetReportCoverImage(LPCTSTR strImagePath)
 {
    ms_ReportCoverImage = strImagePath;
    make_upper(ms_ReportCoverImage.begin(),ms_ReportCoverImage.end());
 }
 
-const std::string& pgsReportStyleHolder::GetReportCoverImage()
+const std::_tstring& pgsReportStyleHolder::GetReportCoverImage()
 {
-   if ( ms_ReportCoverImage == "" )
+   if ( ms_ReportCoverImage == _T("") )
    {
-      SetReportCoverImage(std::string(GetImagePath() + "title_page_art.gif").c_str());
+      SetReportCoverImage(std::_tstring(GetImagePath() + _T("title_page_art.gif")).c_str());
    }
    return ms_ReportCoverImage;
 }

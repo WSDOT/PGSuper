@@ -94,7 +94,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Details for Check for Hauling to Bridge Site [5.5.4.3]"<<rptNewLine;
+   *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -103,7 +103,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
    if (!pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
    {
-      *p <<color(Red)<<"Hauling analysis disabled in Project Criteria library entry. No analysis performed."<<color(Black)<<rptNewLine;
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return pChapter;
    }
 
@@ -111,55 +111,55 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
    const pgsHaulingCheckArtifact* pHaul = pArtifact->GetHaulingCheckArtifact();
 
-   *p << Sub2("l","g") << " = Overall Length of girder = "<<loc.SetValue(pHaul->GetGirderLength())<<" "<<loc.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("l"),_T("g")) << _T(" = Overall Length of girder = ")<<loc.SetValue(pHaul->GetGirderLength())<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
 
    Float64 leadingOH  = pHaul->GetLeadingOverhang();
    Float64 trailingOH = pHaul->GetTrailingOverhang();
 
    FormatDimension(leadingOH,pDisplayUnits->GetSpanLengthUnit());
-   *p << "Leading Overhang = "<<loc.SetValue(leadingOH)<<" "<<loc.GetUnitTag()<<rptNewLine;
-   *p << "Trailing Overhang = "<<loc.SetValue(trailingOH)<<" "<<loc.GetUnitTag()<<rptNewLine;
-   *p << Sub2("l","l")<<" = Clear span length between supports = "<<loc.SetValue(pHaul->GetClearSpanBetweenSupportLocations())<<" "<<loc.GetUnitTag()<<rptNewLine;
-   *p << "w = average girder weight/length = "<<wt_len.SetValue(pHaul->GetAvgGirderWeightPerLength())<<" "<<" "<<wt_len.GetUnitTag()<<rptNewLine;
-   *p << "W = girder weight = "<<force.SetValue(pHaul->GetGirderWeight())<<" "<<" "<<force.GetUnitTag()<<rptNewLine;
-   *p << Sub2("I","y") << " = " << mom_I.SetValue(pHaul->GetIy())<< rptNewLine;
-   *p << Sub2("h","r")<<" = Height of roll center above roadway = "<<dim.SetValue(pHaul->GetHeightOfRollCenterAboveRoadway())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << "y = height of C.G. of Girder above roll center (Increased for camber by 2 percent) ="<<dim.SetValue(pHaul->GetHeightOfCgOfGirderAboveRollCenter())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << Sub2("K",symbol(theta))<<" = roll stiffness of vehicle = "<<spring.SetValue(pHaul->GetRollStiffnessOfvehicle())<<" "<<spring.GetUnitTag()<<rptNewLine;
-   *p << Sub2("z","max")<<" = distance from center of vehicle to center of dual tires = "<<dim.SetValue(pHaul->GetAxleWidth()/2.0)<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << symbol(alpha)<<" = Roadway superelevation = "<<scalar.SetValue(pHaul->GetRoadwaySuperelevation())<<rptNewLine;
-   *p << "Upward Impact during Hauling = "<<pHaul->GetUpwardImpact()<<rptNewLine;
-   *p << "Downward Impact during Hauling = "<<pHaul->GetDownwardImpact()<<rptNewLine;
-   *p << "Sweep tolerance = "<<pHaul->GetSweepTolerance()<<loc.GetUnitTag()<<"/"<<" "<<loc.GetUnitTag()<<rptNewLine;
-   *p << Sub2("e","truck")<<" = tolerance in placement of supports ="<<dim.SetValue(pHaul->GetSupportPlacementTolerance())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << RPT_STRESS("c") << " = concrete strength = " << stress.SetValue(pHaul->GetConcreteStrength()) << " " << stress.GetUnitTag() << rptNewLine;
-   *p << RPT_STRESS("r")<<" = modulus of rupture at Hauling = "<<stress.SetValue(pHaul->GetModRupture())<<" "<<stress.GetUnitTag()<<rptNewLine;
-   *p << "Elastic modulus of girder concrete at Hauling = "<<mod_e.SetValue(pHaul->GetElasticModulusOfGirderConcrete())<<" "<<mod_e.GetUnitTag()<<rptNewLine;
-   *p << Sub2("e","s")<<" = eccentricity due to sweep = "<<dim.SetValue(pHaul->GetEccentricityDueToSweep())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << Sub2("F","o")<<" = offset factor = " << "(" << Sub2("l","l") << "/" << Sub2("l","g") << ")" << Super("2") << " - 1/3 = " << pHaul->GetOffsetFactor()<<rptNewLine;
-   *p << Sub2("e","i")<<" = total initial eccentricity = " << Sub2("e","s")<<"*" << Sub2("F","o")<<" + " << Sub2("e","truck")<<" = "<<dim.SetValue(pHaul->GetTotalInitialEccentricity())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "zo.png" )<<" = "<<dim.SetValue(pHaul->GetZo())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << Sub2("z","o") << " is based on average girder unit weight and mid-span section properties" << rptNewLine;
-   *p << "r = Radius of stability = " << Sub2("K",symbol(theta))<<"/W = "<<dim.SetValue(pHaul->GetRadiusOfStability())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << "Equilibrium angle = "<<rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaHauling.png" )<<" = "<<angle.SetValue(pHaul->GetEqualibriumAngle())<<" "<<angle.GetUnitTag()<<rptNewLine;
-   *p << "Lateral Moment = (Vertical Moment)(Equilibrium Angle)" << rptNewLine;
+   *p << _T("Leading Overhang = ")<<loc.SetValue(leadingOH)<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
+   *p << _T("Trailing Overhang = ")<<loc.SetValue(trailingOH)<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("l"),_T("l"))<<_T(" = Clear span length between supports = ")<<loc.SetValue(pHaul->GetClearSpanBetweenSupportLocations())<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
+   *p << _T("w = average girder weight/length = ")<<wt_len.SetValue(pHaul->GetAvgGirderWeightPerLength())<<_T(" ")<<_T(" ")<<wt_len.GetUnitTag()<<rptNewLine;
+   *p << _T("W = girder weight = ")<<force.SetValue(pHaul->GetGirderWeight())<<_T(" ")<<_T(" ")<<force.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("I"),_T("y")) << _T(" = ") << mom_I.SetValue(pHaul->GetIy())<< rptNewLine;
+   *p << Sub2(_T("h"),_T("r"))<<_T(" = Height of roll center above roadway = ")<<dim.SetValue(pHaul->GetHeightOfRollCenterAboveRoadway())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << _T("y = height of C.G. of Girder above roll center (Increased for camber by 2 percent) =")<<dim.SetValue(pHaul->GetHeightOfCgOfGirderAboveRollCenter())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("K"),symbol(theta))<<_T(" = roll stiffness of vehicle = ")<<spring.SetValue(pHaul->GetRollStiffnessOfvehicle())<<_T(" ")<<spring.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("z"),_T("max"))<<_T(" = distance from center of vehicle to center of dual tires = ")<<dim.SetValue(pHaul->GetAxleWidth()/2.0)<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << symbol(alpha)<<_T(" = Roadway superelevation = ")<<scalar.SetValue(pHaul->GetRoadwaySuperelevation())<<rptNewLine;
+   *p << _T("Upward Impact during Hauling = ")<<pHaul->GetUpwardImpact()<<rptNewLine;
+   *p << _T("Downward Impact during Hauling = ")<<pHaul->GetDownwardImpact()<<rptNewLine;
+   *p << _T("Sweep tolerance = ")<<pHaul->GetSweepTolerance()<<loc.GetUnitTag()<<_T("/")<<_T(" ")<<loc.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("e"),_T("truck"))<<_T(" = tolerance in placement of supports =")<<dim.SetValue(pHaul->GetSupportPlacementTolerance())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << RPT_STRESS(_T("c")) << _T(" = concrete strength = ") << stress.SetValue(pHaul->GetConcreteStrength()) << _T(" ") << stress.GetUnitTag() << rptNewLine;
+   *p << RPT_STRESS(_T("r"))<<_T(" = modulus of rupture at Hauling = ")<<stress.SetValue(pHaul->GetModRupture())<<_T(" ")<<stress.GetUnitTag()<<rptNewLine;
+   *p << _T("Elastic modulus of girder concrete at Hauling = ")<<mod_e.SetValue(pHaul->GetElasticModulusOfGirderConcrete())<<_T(" ")<<mod_e.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("e"),_T("s"))<<_T(" = eccentricity due to sweep = ")<<dim.SetValue(pHaul->GetEccentricityDueToSweep())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("F"),_T("o"))<<_T(" = offset factor = ") << _T("(") << Sub2(_T("l"),_T("l")) << _T("/") << Sub2(_T("l"),_T("g")) << _T(")") << Super(_T("2")) << _T(" - 1/3 = ") << pHaul->GetOffsetFactor()<<rptNewLine;
+   *p << Sub2(_T("e"),_T("i"))<<_T(" = total initial eccentricity = ") << Sub2(_T("e"),_T("s"))<<_T("*") << Sub2(_T("F"),_T("o"))<<_T(" + ") << Sub2(_T("e"),_T("truck"))<<_T(" = ")<<dim.SetValue(pHaul->GetTotalInitialEccentricity())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("zo.png") )<<_T(" = ")<<dim.SetValue(pHaul->GetZo())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << Sub2(_T("z"),_T("o")) << _T(" is based on average girder unit weight and mid-span section properties") << rptNewLine;
+   *p << _T("r = Radius of stability = ") << Sub2(_T("K"),symbol(theta))<<_T("/W = ")<<dim.SetValue(pHaul->GetRadiusOfStability())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << _T("Equilibrium angle = ")<<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaHauling.png") )<<_T(" = ")<<angle.SetValue(pHaul->GetEqualibriumAngle())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
+   *p << _T("Lateral Moment = (Vertical Moment)(Equilibrium Angle)") << rptNewLine;
 
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   *pTitle << "Girder Forces and Stresses At Hauling";
+   *pTitle << _T("Girder Forces and Stresses At Hauling");
    p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,"Hauling Forces");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T("Hauling Forces"));
    *p << p_table<<rptNewLine;
 
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("Effective" << rptNewLine << "Prestress" << rptNewLine << "Force",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*p_table)(0,2) << COLHDR("Eccentricity",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,3) << COLHDR("Moment" << rptNewLine << "Impact Up",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(0,4) << COLHDR("Moment" << rptNewLine << "No Impact",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(0,5) << COLHDR("Moment" << rptNewLine << "Impact Down",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(_T("Effective") << rptNewLine << _T("Prestress") << rptNewLine << _T("Force"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Eccentricity"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,3) << COLHDR(_T("Moment") << rptNewLine << _T("Impact Up"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,4) << COLHDR(_T("Moment") << rptNewLine << _T("No Impact"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,5) << COLHDR(_T("Moment") << rptNewLine << _T("Impact Down"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    Float64 overhang = pHaul->GetTrailingOverhang();
 
@@ -187,19 +187,19 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       row++;
    }
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(9,"Hauling Stresses - Plumb Girder");
+   p_table = pgsReportStyleHolder::CreateDefaultTable(9,_T("Hauling Stresses - Plumb Girder"));
    *p << p_table;
 
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetRowSpan(0,0,2);
    p_table->SetRowSpan(1,0,-1);
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetColumnSpan(0,1,4);
-   (*p_table)(0,1) << "Top Stress, " << RPT_FTOP;
+   (*p_table)(0,1) << _T("Top Stress, ") << RPT_FTOP;
 
    p_table->SetColumnSpan(0,2,4);
-   (*p_table)(0,2) << "Bottom Stress " << RPT_FBOT;
+   (*p_table)(0,2) << _T("Bottom Stress ") << RPT_FBOT;
 
    p_table->SetColumnSpan(0,3,-1);
    p_table->SetColumnSpan(0,4,-1);
@@ -208,37 +208,37 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    p_table->SetColumnSpan(0,7,-1);
    p_table->SetColumnSpan(0,8,-1);
 
-   (*p_table)(1,1) << COLHDR("Prestress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,2) << COLHDR("Impact" << rptNewLine << "Up",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,3) << COLHDR("No" << rptNewLine << "Impact",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,4) << COLHDR("Impact" << rptNewLine << "Down",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,5) << COLHDR("Prestress",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,6) << COLHDR("Impact" << rptNewLine << "Up",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,7) << COLHDR("No" << rptNewLine << "Impact",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,8) << COLHDR("Impact" << rptNewLine << "Down",rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,1) << COLHDR(_T("Prestress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,2) << COLHDR(_T("Impact") << rptNewLine << _T("Up"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,3) << COLHDR(_T("No") << rptNewLine << _T("Impact"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,4) << COLHDR(_T("Impact") << rptNewLine << _T("Down"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,5) << COLHDR(_T("Prestress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,6) << COLHDR(_T("Impact") << rptNewLine << _T("Up"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,7) << COLHDR(_T("No") << rptNewLine << _T("Impact"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,8) << COLHDR(_T("Impact") << rptNewLine << _T("Down"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   rptRcTable* p_table2 = pgsReportStyleHolder::CreateDefaultTable(7,"Hauling Stresses - Tilted Girder");
+   rptRcTable* p_table2 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Hauling Stresses - Tilted Girder"));
    *p << p_table2;
-   *p << RPT_STRESS("tu") << " = top fiber stress, uphill side" << rptNewLine;
-   *p << RPT_STRESS("td") << " = top fiber stress, downhill side" << rptNewLine;
-   *p << RPT_STRESS("bu") << " = bottom fiber stress, uphill side" << rptNewLine;
-   *p << RPT_STRESS("bd") << " = bottom fiber stress, downhill side" << rptNewLine;
-   (*p_table2)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table2)(0,1) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table2)(0,2) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table2)(0,3) << COLHDR(RPT_STRESS("tu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table2)(0,4) << COLHDR(RPT_STRESS("td"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table2)(0,5) << COLHDR(RPT_STRESS("bu"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table2)(0,6) << COLHDR(RPT_STRESS("bd"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   *p << RPT_STRESS(_T("tu")) << _T(" = top fiber stress, uphill side") << rptNewLine;
+   *p << RPT_STRESS(_T("td")) << _T(" = top fiber stress, downhill side") << rptNewLine;
+   *p << RPT_STRESS(_T("bu")) << _T(" = bottom fiber stress, uphill side") << rptNewLine;
+   *p << RPT_STRESS(_T("bd")) << _T(" = bottom fiber stress, downhill side") << rptNewLine;
+   (*p_table2)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table2)(0,1) << COLHDR(Sub2(_T("M"),_T("vert")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table2)(0,2) << COLHDR(Sub2(_T("M"),_T("lat")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table2)(0,3) << COLHDR(RPT_STRESS(_T("tu")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,4) << COLHDR(RPT_STRESS(_T("td")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,5) << COLHDR(RPT_STRESS(_T("bu")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table2)(0,6) << COLHDR(RPT_STRESS(_T("bd")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
-   rptRcTable* p_table3 = pgsReportStyleHolder::CreateDefaultTable(5,"Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]");
+   rptRcTable* p_table3 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]"));
    *p << p_table3 << rptNewLine;
-   (*p_table3)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table3)(0,1) << COLHDR(Sub2("Y","na"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table3)(0,2) << COLHDR(Sub2("A","t"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*p_table3)(0,3) << COLHDR("T",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*p_table3)(0,4) << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*p_table3)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table3)(0,1) << COLHDR(Sub2(_T("Y"),_T("na")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table3)(0,2) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*p_table3)(0,3) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*p_table3)(0,4) << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
 
    RowIndexType row1 = 2;
    RowIndexType row2 = 1;
@@ -270,8 +270,8 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       Float64 lat_moment;
       lat_moment  = stressArtifact.GetLateralMoment();
-      (*p_table2)(row2,1) << moment.SetValue(lat_moment);
-      (*p_table2)(row2,2) << moment.SetValue(Mn);
+      (*p_table2)(row2,1) << moment.SetValue(Mn);
+      (*p_table2)(row2,2) << moment.SetValue(lat_moment);
 
       Float64 ftu, ftd, fbu, fbd;
       stressArtifact.GetIncludedGirderStresses(&ftu,&ftd,&fbu,&fbd);
@@ -293,21 +293,21 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       {
       case Up:
          if (YnaUp < 0 )
-             (*p_table3)(row2,1) << "-";
+             (*p_table3)(row2,1) << _T("-");
          else
             (*p_table3)(row2,1) << dim.SetValue(YnaUp);
          break;
 
       case None:
          if (YnaInclined < 0 )
-             (*p_table3)(row2,1) << "-";
+             (*p_table3)(row2,1) << _T("-");
          else
             (*p_table3)(row2,1) << dim.SetValue(YnaInclined);
          break;
 
       case Down:
          if (YnaDown < 0 )
-             (*p_table3)(row2,1) << "-";
+             (*p_table3)(row2,1) << _T("-");
          else
             (*p_table3)(row2,1) << dim.SetValue(YnaDown);
          break;
@@ -326,17 +326,17 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    *pChapter << p;
 
    // FS Cracking
-   p_table = pgsReportStyleHolder::CreateDefaultTable(7,"Factor of Safety Against Cracking");
+   p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Factor of Safety Against Cracking"));
    *p << p_table << rptNewLine;
-   *p << RPT_STRESS("t") << " = governing tension stress"<<rptNewLine;
+   *p << RPT_STRESS(_T("t")) << _T(" = governing tension stress")<<rptNewLine;
 
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(RPT_STRESS("t"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,2) << "Governing" << rptNewLine << "Flange";
-   (*p_table)(0,3) << COLHDR(Sub2("M","lat"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(0,4) << COLHDR(Sub2("M","vert"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(0,5) << COLHDR(Sub2(symbol(theta),"max"),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
-   (*p_table)(0,6) << Sub2("FS","cr");
+   (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(RPT_STRESS(_T("t")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << _T("Governing") << rptNewLine << _T("Flange");
+   (*p_table)(0,3) << COLHDR(Sub2(_T("M"),_T("lat")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,4) << COLHDR(Sub2(_T("M"),_T("vert")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,5) << COLHDR(Sub2(symbol(theta),_T("max")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+   (*p_table)(0,6) << Sub2(_T("FS"),_T("cr"));
 
    row=1;
    for (i = poi_vec.begin(); i!= poi_vec.end(); i++)
@@ -349,9 +349,9 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       (*p_table)(row,1) << stress.SetValue( crackArtifact.GetLateralMomentStress() );
 
       if (crackArtifact.GetCrackedFlange()==BottomFlange)
-         (*p_table)(row,2) << "Bottom";
+         (*p_table)(row,2) << _T("Bottom");
       else
-         (*p_table)(row,2) << "Top";
+         (*p_table)(row,2) << _T("Top");
 
       (*p_table)(row,3) << moment.SetValue( crackArtifact.GetLateralMoment() );
       (*p_table)(row,4) << moment.SetValue( crackArtifact.GetVerticalMoment() );
@@ -360,20 +360,20 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       row++;
    }
 
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mlat.png" )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaMax.png" )<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FScrHauling.png" )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mlat.png") )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaMax.png") )<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("FScrHauling.png") )<<rptNewLine;
 
    // FS Rollover
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Factor of Safety Against Rollover"<<rptNewLine;
+   *pTitle << _T("Factor of Safety Against Rollover")<<rptNewLine;
    p = new rptParagraph;
    *pChapter << p;
 
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ThetaPrimeMaxHauling.png" )<<" = "<<angle.SetValue(pHaul->GetThetaRolloverMax())<<" "<<angle.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "zo_prime_hauling.png" )<<" = "<<dim.SetValue(pHaul->GetZoPrime())<<" "<<dim.GetUnitTag()<<rptNewLine;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "FSrHauling.png" )<<" = "<<scalar.SetValue(pHaul->GetFsRollover())<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaPrimeMaxHauling.png") )<<_T(" = ")<<angle.SetValue(pHaul->GetThetaRolloverMax())<<_T(" ")<<angle.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("zo_prime_hauling.png") )<<_T(" = ")<<dim.SetValue(pHaul->GetZoPrime())<<_T(" ")<<dim.GetUnitTag()<<rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("FSrHauling.png") )<<_T(" = ")<<scalar.SetValue(pHaul->GetFsRollover())<<rptNewLine;
 
    return pChapter;
 }

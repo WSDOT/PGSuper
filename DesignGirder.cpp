@@ -71,9 +71,9 @@ txnTransaction* txnDesignGirder::CreateClone() const
    return new txnDesignGirder(m_SpanIdx, m_GirderIdx,m_DesignOptions,m_DesignArtifact,m_SlabOffsetType[1]);
 }
 
-std::string txnDesignGirder::Name() const
+std::_tstring txnDesignGirder::Name() const
 {
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Design Span " << LABEL_SPAN(m_SpanIdx) << " Girder " << LABEL_GIRDER(m_GirderIdx);
    return os.str();
 }

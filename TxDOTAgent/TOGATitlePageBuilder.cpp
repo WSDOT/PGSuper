@@ -41,7 +41,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,const char* strTitle,bool bFullVersion) :
+CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
 m_pBroker(pBroker),
 m_Title(strTitle),
 m_bFullVersion(bFullVersion)
@@ -71,11 +71,11 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    rptParagraph* pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
-   *pPara << "TOGA"<< Super(symbol(TRADEMARK))<<", A PGSuper"<<Super(symbol(TRADEMARK))<<" Extension"<< rptNewLine;
+   *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(", A PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetCopyrightStyle());
    *pTitlePage << pPara;
-   *pPara << "Copyright " << symbol(COPYRIGHT) << " " << sysDate().Year() << ", TxDOT, All Rights Reserved" << rptNewLine;
+   *pPara << _T("Copyright ") << symbol(COPYRIGHT) << _T(" ") << sysDate().Year() << _T(", TxDOT, All Rights Reserved") << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
@@ -83,7 +83,7 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    GET_IFACE(IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
-   const std::string& strImage = pgsReportStyleHolder::GetImagePath() + std::string("TxDOT_Logo.gif");
+   const std::_tstring& strImage = pgsReportStyleHolder::GetImagePath() + std::_tstring(_T("TxDOT_Logo.gif"));
    WIN32_FIND_DATA file_find_data;
    HANDLE hFind;
    hFind = FindFirstFile(strImage.c_str(),&file_find_data);
@@ -98,7 +98,7 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    rptParagraph* pPara3 = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << pPara3;
 
-   rptRcTable* pTbl = pgsReportStyleHolder::CreateTableNoHeading(2,"Project Properties");
+   rptRcTable* pTbl = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Project Properties"));
 
    pTbl->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT ) );
    pTbl->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT ) );
@@ -109,26 +109,26 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
       *pPara3 << rptNewLine << rptNewLine << rptNewLine;
 
    *pPara3 << pTbl;
-   (*pTbl)(0,0) << "Bridge Name";
+   (*pTbl)(0,0) << _T("Bridge Name");
    (*pTbl)(0,1) << pProps->GetBridgeName();
-   (*pTbl)(1,0) << "Bridge ID";
+   (*pTbl)(1,0) << _T("Bridge ID");
    (*pTbl)(1,1) << pProps->GetBridgeId();
-   (*pTbl)(2,0) << "Job Number";
+   (*pTbl)(2,0) << _T("Job Number");
    (*pTbl)(2,1) << pProps->GetJobNumber();
-   (*pTbl)(3,0) << "Engineer";
+   (*pTbl)(3,0) << _T("Engineer");
    (*pTbl)(3,1) << pProps->GetEngineer();
-   (*pTbl)(4,0) << "Company";
+   (*pTbl)(4,0) << _T("Company");
    (*pTbl)(4,1) << pProps->GetCompany();
-   (*pTbl)(5,0) << "Comments";
+   (*pTbl)(5,0) << _T("Comments");
    (*pTbl)(5,1) << pProps->GetComments();
-   (*pTbl)(6,0) << "File";
+   (*pTbl)(6,0) << _T("File");
    (*pTbl)(6,1) << pDocument->GetFilePath();
 
    // report library usage information
    rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << p;
 
-   *p << "Library Usage" << rptNewLine;
+   *p << _T("Library Usage") << rptNewLine;
    p = CLibraryUsageParagraph().Build(m_pBroker, false);
    *pTitlePage << p;
 
@@ -154,9 +154,9 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
       pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
       *pTitlePage << pPara;
 
-      *pPara << "Status Items" << rptNewLine;
+      *pPara << _T("Status Items") << rptNewLine;
 
-      pTable = pgsReportStyleHolder::CreateDefaultTable(2,"");
+      pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -164,26 +164,26 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
 
       *pPara << pTable << rptNewLine;
 
-      (*pTable)(0,0) << "Level";
-      (*pTable)(0,1) << "Description";
+      (*pTable)(0,0) << _T("Level");
+      (*pTable)(0,1) << _T("Description");
 
       // Don't allow duplicate strings in table
-      std::set<std::string> messages;
+      std::set<std::_tstring> messages;
 
       row = 1;
-      CString strSeverityType[] = { "Info", "Warning", "Error" };
+      CString strSeverityType[] = { _T("Info"), _T("Warning"), _T("Error") };
       for ( CollectionIndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
          // Trim span/girder information. TOGA doesn't want this
-         // Blasts anything left of the first ":"
-         std::string msg = pItem->GetDescription();
-         std::size_t loc = msg.find(':');
-         if (loc != std::string::npos)
+         // Blasts anything left of the first _T(":")
+         std::_tstring msg = pItem->GetDescription();
+         std::size_t loc = msg.find(_T(':'));
+         if (loc != std::_tstring::npos)
             msg.erase(0,loc+1);
 
-         std::pair< std::set<std::string>::iterator, bool > it = messages.insert(msg);
+         std::pair< std::set<std::_tstring>::iterator, bool > it = messages.insert(msg);
          if (it.second) // no dup's
          {
             eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);

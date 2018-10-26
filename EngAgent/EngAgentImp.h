@@ -121,6 +121,7 @@ public:
    virtual Float64 GetBeforeTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetAfterTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
+   virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi);
    virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
@@ -135,6 +136,7 @@ public:
    virtual Float64 GetBeforeTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetAfterTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
+   virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void ClearDesignLosses();
@@ -191,7 +193,7 @@ public:
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double* pM,double* nM,double* V);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V);
    virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile);
+   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType span);
    virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType span,Float64* pDistToSection,Float64* pCurbToCurb);
    virtual bool GetDFResultsEx(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,
@@ -215,6 +217,8 @@ public:
    virtual std::vector<MOMENTCAPACITYDETAILS> GetMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
    virtual std::vector<MINMOMENTCAPDETAILS> GetMinMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
    virtual std::vector<CRACKINGMOMENTDETAILS> GetCrackingMomentDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
+   virtual std::vector<Float64> GetCrackingMoment(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
+   virtual std::vector<Float64> GetMinMomentCapacity(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
 
 // IShearCapacity
 public:
@@ -265,7 +269,7 @@ public:
    virtual HRESULT OnGirderFamilyChanged();
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
-   virtual HRESULT OnLiveLoadNameChanged(const char* strOldName,const char* strNewName);
+   virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName);
    virtual HRESULT OnConstructionLoadChanged();
 
 // ISpecificationEventSink

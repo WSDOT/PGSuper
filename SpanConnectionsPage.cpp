@@ -172,16 +172,16 @@ void CSpanConnectionsPage::LabelGroupBoxes()
    long nextPierIdx = pParent->m_pNextPier->GetPierIndex();
 
    CString strAhead;
-   strAhead.Format("%s %d",
-      pParent->m_pPrevPier->GetPrevSpan() == NULL ? "Abutment" : "Pier",
+   strAhead.Format(_T("%s %d"),
+      pParent->m_pPrevPier->GetPrevSpan() == NULL ? _T("Abutment") : _T("Pier"),
       prevPierIdx+1);
 
    CWnd* pAheadGroup = GetDlgItem(IDC_AHEAD_GROUP);
    pAheadGroup->SetWindowText(strAhead);
 
    CString strBack;
-   strBack.Format("%s %d",
-      pParent->m_pNextPier->GetNextSpan() == NULL ? "Abutment" : "Pier",
+   strBack.Format(_T("%s %d"),
+      pParent->m_pNextPier->GetNextSpan() == NULL ? _T("Abutment") : _T("Pier"),
       nextPierIdx+1);
 
    CWnd* pBackGroup = GetDlgItem(IDC_BACK_GROUP);
@@ -194,13 +194,13 @@ void CSpanConnectionsPage::FillWithConnections(CComboBox* pCB)
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
 
-   std::vector<std::string> strNames;
+   std::vector<std::_tstring> strNames;
    pLibNames->EnumGdrConnectionNames( &strNames );
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
 
    for ( iter = strNames.begin(); iter != strNames.end(); iter++ )
    {
-      const std::string& strConnection = *iter;
+      const std::_tstring& strConnection = *iter;
 
       pCB->AddString( strConnection.c_str() );
    }

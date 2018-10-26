@@ -101,7 +101,7 @@ void CProfileGrid::CustomInit()
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
-   std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
+   std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -152,11 +152,11 @@ void CProfileGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Exit\nGrade\n(%)")
+			.SetValue(_T("Exit\nGrade\n(%)"))
 		);
 
    CString strLength1;
-   strLength1.Format("L1\n(%s)",strUnitTag.c_str());
+   strLength1.Format(_T("L1\n(%s)"),strUnitTag.c_str());
 	this->SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -166,7 +166,7 @@ void CProfileGrid::CustomInit()
       );
 
    CString strLength2;
-   strLength2.Format("L2\n(%s)",strUnitTag.c_str());
+   strLength2.Format(_T("L2\n(%s)"),strUnitTag.c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -265,14 +265,14 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double
    *pStation = station_value;
 
    CString strGrade = GetCellValue(nRow,2);
-   *pGrade = atof(strGrade)/100;
+   *pGrade = _tstof(strGrade)/100;
 
    CString strL1 = GetCellValue(nRow,3);
-   *pL1 = atof(strL1);
+   *pL1 = _tstof(strL1);
    *pL1 = ::ConvertToSysUnits(*pL1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strL2 = GetCellValue(nRow,4);
-   *pL2 = atof(strL2);
+   *pL2 = _tstof(strL2);
    *pL2 = ::ConvertToSysUnits(*pL2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    return true;

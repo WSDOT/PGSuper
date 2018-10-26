@@ -88,12 +88,12 @@ VehicleIndexType pgsMomentRatingArtifact::GetVehicleIndex() const
    return m_VehicleIndex;
 }
 
-void pgsMomentRatingArtifact::SetVehicleName(const char* str)
+void pgsMomentRatingArtifact::SetVehicleName(LPCTSTR str)
 {
    m_strVehicleName = str;
 }
 
-std::string pgsMomentRatingArtifact::GetVehicleName() const
+std::_tstring pgsMomentRatingArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

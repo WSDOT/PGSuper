@@ -70,13 +70,13 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
       m_Grid.SortCrossSections();
       if ( !m_Grid.GetCrownSlopeData(m_RoadwaySectionData.Superelevations) )
       {
-         AfxMessageBox("Invalid super elevation parameters");
+         AfxMessageBox(_T("Invalid super elevation parameters"));
          pDX->Fail();
       }
 
       if ( m_RoadwaySectionData.Superelevations.size () == 0 )
       {
-         AfxMessageBox("At least one section must be defined");
+         AfxMessageBox(_T("At least one section must be defined"));
          pDX->Fail();
       }
    }

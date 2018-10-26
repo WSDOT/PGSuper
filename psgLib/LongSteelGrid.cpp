@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
 // Copyright © 1999-2010  Washington State Department of Transportation
@@ -215,7 +216,7 @@ void CLongSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Girder\nFace")
+			.SetValue(_T("Girder\nFace"))
 		);
 
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
@@ -223,7 +224,7 @@ void CLongSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("Bar\nSize")
+			.SetValue(_T("Bar\nSize"))
 		);
 
 	this->SetStyleRange(CGXRange(0,3), CGXStyle()
@@ -231,11 +232,11 @@ void CLongSteelGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("# of Bars")
+			.SetValue(_T("# of Bars"))
 		);
 
    CString cv;
-   cv.Format("Cover\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Cover\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -244,7 +245,7 @@ void CLongSteelGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Spacing\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -321,7 +322,7 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
    int i;
 
    CString s = GetCellValue(nRow, 1);
-   if (s=="Top")
+   if (s==_T("Top"))
       plsi->Face = GirderLibraryEntry::GirderTop;
    else
       plsi->Face = GirderLibraryEntry::GirderBottom;
@@ -330,32 +331,32 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
    s.TrimLeft();
    int l = s.GetLength();
    CString s2 = s.Right(l-1);
-   i = atoi(s2);
+   i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
       return false;
    plsi->BarSize = i;
 
    s = GetCellValue(nRow, 3);
-   i = atoi(s);
+   i = _tstoi(s);
    if (s.IsEmpty())
       i=0;
-   else if (i==0 && s[0]!='0')
+   else if (i==0 && s[0]!=_T('0'))
       return false;
    plsi->NumberOfBars = i;
 
    s = GetCellValue(nRow, 4);
-   d = atof(s);
+   d = _tstof(s);
    if (s.IsEmpty())
       d=0;
-   else if (d==0.0 && s[0]!='0')
+   else if (d==0.0 && s[0]!=_T('0'))
       return false;
    plsi->Cover = d;
 
    s = GetCellValue(nRow, 5);
-   d = atof(s);
+   d = _tstof(s);
    if (s.IsEmpty())
       d=0;
-   else if (d==0.0 && s[0]!='0')
+   else if (d==0.0 && s[0]!=_T('0'))
       return false;
    plsi->BarSpacing = d;
 
@@ -380,14 +381,14 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
          CString tmp;
          GirderLibraryEntry::GirderFace face = (*it).Face;
          if (face==GirderLibraryEntry::GirderBottom)
-            tmp = "Bottom";
+            tmp = _T("Bottom");
          else
-            tmp = "Top";
+            tmp = _T("Top");
             
          VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
 
          Int32 size = (*it).BarSize;
-         tmp.Format("#%d", size);
+         tmp.Format(_T("#%d"), size);
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 3), (*it).NumberOfBars));

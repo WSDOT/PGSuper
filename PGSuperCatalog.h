@@ -40,7 +40,7 @@ public:
 
    CPGSuperCatalog();
 
-   bool Init(const char* strIniFileName, const CString& strPGSuperVersion);
+   bool Init(LPCTSTR strIniFileName, const CString& strPGSuperVersion);
 
    std::vector<CString> GetPublishers();
 
@@ -50,10 +50,10 @@ public:
    CString GetWebLink(const CString& publisher);
 
    // for ctOriginal catalogs
-   void GetCatalogSettings(const char* publisher,CString& strMasterLibrary,CString& strWorkgroupTemplates);
+   void GetCatalogSettings(LPCTSTR publisher,CString& strMasterLibrary,CString& strWorkgroupTemplates);
 
    // for ctOriginal catalogs
-   void GetCatalogSettings(const char* publisher,CString& strPgzFile);
+   void GetCatalogSettings(LPCTSTR publisher,CString& strPgzFile);
 
 
 private:
@@ -72,7 +72,7 @@ private:
 
 
    bool DoParse();
-   const Publisher* GetPublisher(const char* publisher);
+   const Publisher* GetPublisher(LPCTSTR publisher);
 
    CString m_strLocalCatalog; // location of ini file on local computer
    CString m_PGSuperVersion;

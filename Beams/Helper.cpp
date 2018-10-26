@@ -43,25 +43,25 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
       scalar.SetTolerance(1.0e-6);
 
       std::vector<Float64>::iterator iter;
-      std::string strImageName(lrd.bWasExterior ? "LeverRuleExterior.gif" : "LeverRuleInterior.gif");
-      (*pPara) << rptRcImage(std::string(pgsReportStyleHolder::GetImagePath()) + strImageName) << rptNewLine;
-      (*pPara) << "Multiple Presence Factor: m = " << lrd.m << rptNewLine;
+      std::_tstring strImageName(lrd.bWasExterior ? _T("LeverRuleExterior.gif") : _T("LeverRuleInterior.gif"));
+      (*pPara) << rptRcImage(std::_tstring(pgsReportStyleHolder::GetImagePath()) + strImageName) << rptNewLine;
+      (*pPara) << _T("Multiple Presence Factor: m = ") << lrd.m << rptNewLine;
       if (isMoment)
       {
-         (*pPara) << "mg" << Super(lrd.bWasExterior ? "ME" : "MI") << Sub(lrd.nLanesUsed > 1 ? "2+" : "1") << " = (";
+         (*pPara) << _T("mg") << Super(lrd.bWasExterior ? _T("ME") : _T("MI")) << Sub(lrd.nLanesUsed > 1 ? _T("2+") : _T("1")) << _T(" = (");
       }
       else
       {
-         (*pPara) << "mg" << Super(lrd.bWasExterior ? "VE" : "VI") << Sub(lrd.nLanesUsed > 1 ? "2+" : "1") << " = (";
+         (*pPara) << _T("mg") << Super(lrd.bWasExterior ? _T("VE") : _T("VI")) << Sub(lrd.nLanesUsed > 1 ? _T("2+") : _T("1")) << _T(" = (");
       }
 
       if (specialFactor != 1.0)
       {
-         (*pPara) << lrd.m << ")("<<specialFactor<<")[";
+         (*pPara) << lrd.m << _T(")(")<<specialFactor<<_T(")[");
       }
       else
       {
-         (*pPara) << lrd.m << ")[";
+         (*pPara) << lrd.m << _T(")[");
       }
 
       Float64 Sleft = lrd.Sleft;
@@ -75,11 +75,11 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
             Float64 d = fabs(*iter);
 
             if ( iter != lrd.AxleLocations.begin() )
-               (*pPara) << " + ";
+               (*pPara) << _T(" + ");
 
-            (*pPara) << "(" << xdim.SetValue(d) << ")" << "(P/2)";
+            (*pPara) << _T("(") << xdim.SetValue(d) << _T(")") << _T("(P/2)");
          }
-         (*pPara) << "]/[(" << xdim.SetValue(Sleft) << ")(P)]";
+         (*pPara) << _T("]/[(") << xdim.SetValue(Sleft) << _T(")(P)]");
       }
       else
       {
@@ -100,7 +100,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
          }
 
          if (is_left && is_right)
-            (*pPara) << " [";
+            (*pPara) << _T(" [");
 
          // do left, then right
          if (is_left)
@@ -112,20 +112,20 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
                if (d < 0.0)
                {
                   if ( !first )
-                     (*pPara) << " + ";
+                     (*pPara) << _T(" + ");
 
                   d*=-1;
 
-                  (*pPara) << "(" << xdim.SetValue(d) << ")" << "(P/2)";
+                  (*pPara) << _T("(") << xdim.SetValue(d) << _T(")") << _T("(P/2)");
                   first = false;
                }
             }
-            (*pPara) << "]/[(" << xdim.SetValue(Sleft) << ")(P)]";
+            (*pPara) << _T("]/[(") << xdim.SetValue(Sleft) << _T(")(P)]");
          }
 
          // right
          if (is_left && is_right)
-            (*pPara) << " + [";
+            (*pPara) << _T(" + [");
 
          if (is_right)
          {
@@ -136,26 +136,26 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
                if (d > 0.0)
                {
                   if ( !first )
-                     (*pPara) << " + ";
+                     (*pPara) << _T(" + ");
 
 
-                  (*pPara) << "(" << xdim.SetValue(d) << ")" << "(P/2)";
+                  (*pPara) << _T("(") << xdim.SetValue(d) << _T(")") << _T("(P/2)");
                   first = false;
                }
             }
-            (*pPara) << "]/[(" << xdim.SetValue(Sright) << ")(P)]";
+            (*pPara) << _T("]/[(") << xdim.SetValue(Sright) << _T(")(P)]");
          }
 
          if (is_left && is_right)
-            (*pPara) << " ]";
+            (*pPara) << _T(" ]");
       }
 
-      (*pPara) << " = " << scalar.SetValue(lrd.mg) << rptNewLine;
+      (*pPara) << _T(" = ") << scalar.SetValue(lrd.mg) << rptNewLine;
    }
    else
    {
       ATLASSERT(lrd.Nb==1);
-      (*pPara) << "For a single-beam superstructure, the lever rule decomposes to the Lanes/Beams method" << rptNewLine;
+      (*pPara) << _T("For a single-beam superstructure, the lever rule decomposes to the Lanes/Beams method") << rptNewLine;
       lrfdILiveLoadDistributionFactor::LanesBeamsMethod lbm;
       lbm.mg = lrd.mg;
       lbm.Nl = lrd.nLanesUsed;
@@ -176,30 +176,30 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 
-   (*pPara) << rptRcImage(std::string(pgsReportStyleHolder::GetImagePath()) + "RigidMethod.gif") << rptNewLine;
-   (*pPara) << "Multiple Presence Factor: m = " << rd.m << rptNewLine;
-   (*pPara) << "g = " << "(" << rd.Nl << "/" << rd.Nb << ") + (" << xdim.SetValue(rd.Xext) << ")[";
+   (*pPara) << rptRcImage(std::_tstring(pgsReportStyleHolder::GetImagePath()) + _T("RigidMethod.gif")) << rptNewLine;
+   (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
+   (*pPara) << _T("g = ") << _T("(") << rd.Nl << _T("/") << rd.Nb << _T(") + (") << xdim.SetValue(rd.Xext) << _T(")[");
    std::vector<Float64>::iterator iter;
    for ( iter = rd.e.begin(); iter != rd.e.end(); iter++ )
    {
       Float64 e = *iter;
       if ( iter != rd.e.begin() )
-         (*pPara) << " + ";
+         (*pPara) << _T(" + ");
 
-      (*pPara) << "(" << xdim.SetValue(e) << ")";
+      (*pPara) << _T("(") << xdim.SetValue(e) << _T(")");
 
    }
-   (*pPara) << "]/[";
+   (*pPara) << _T("]/[");
    for ( iter = rd.x.begin(); iter != rd.x.end(); iter++ )
    {
       Float64 x = *iter;
       if ( iter != rd.x.begin() )
-         (*pPara) << " + ";
+         (*pPara) << _T(" + ");
 
-      (*pPara) << "(" << xdim.SetValue(x) << ")" << Super("2");
+      (*pPara) << _T("(") << xdim.SetValue(x) << _T(")") << Super(_T("2"));
    }
-   (*pPara) << "] = " << scalar.SetValue(rd.mg/rd.m) << rptNewLine;
-   (*pPara) << "mg" << Super("ME") << Sub(rd.e.size() > 1 ? "2+" : "1") << " = " << scalar.SetValue(rd.mg) << rptNewLine;
+   (*pPara) << _T("] = ") << scalar.SetValue(rd.mg/rd.m) << rptNewLine;
+   (*pPara) << _T("mg") << Super(_T("ME")) << Sub(rd.e.size() > 1 ? _T("2+") : _T("1")) << _T(" = ") << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
 void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
@@ -210,6 +210,6 @@ void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor:
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 
-   (*pPara) << "Multiple Presence Factor: m = " << rd.m << rptNewLine;
-   (*pPara) << "g = " << "(" << rd.m <<")("<< rd.Nl << "/" << rd.Nb << ") = " << scalar.SetValue(rd.mg) << rptNewLine;
+   (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
+   (*pPara) << _T("g = ") << _T("(") << rd.m <<_T(")(")<< rd.Nl << _T("/") << rd.Nb << _T(") = ") << scalar.SetValue(rd.mg) << rptNewLine;
 }

@@ -50,19 +50,19 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CNUBeamFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("D1");
-   m_DimNames.push_back("D2");
-   m_DimNames.push_back("D3");
-   m_DimNames.push_back("D4");
-   m_DimNames.push_back("D5");
-   m_DimNames.push_back("R1");
-   m_DimNames.push_back("R2");
-   m_DimNames.push_back("R3");
-   m_DimNames.push_back("R4");
-   m_DimNames.push_back("T");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("W2");
-   m_DimNames.push_back("C1");
+   m_DimNames.push_back(_T("D1"));
+   m_DimNames.push_back(_T("D2"));
+   m_DimNames.push_back(_T("D3"));
+   m_DimNames.push_back(_T("D4"));
+   m_DimNames.push_back(_T("D5"));
+   m_DimNames.push_back(_T("R1"));
+   m_DimNames.push_back(_T("R2"));
+   m_DimNames.push_back(_T("R3"));
+   m_DimNames.push_back(_T("R4"));
+   m_DimNames.push_back(_T("T"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("W2"));
+   m_DimNames.push_back(_T("C1"));
 
    // Default beam is Caltrans Super Girder
    m_DefaultDims.push_back(::ConvertToSysUnits( 3.000,unitMeasure::Inch)); // D1
@@ -324,7 +324,7 @@ void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
 }
 
 
-std::vector<std::string> CNUBeamFactory::GetDimensionNames()
+std::vector<std::_tstring> CNUBeamFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -339,7 +339,7 @@ std::vector<const unitLength*> CNUBeamFactory::GetDimensionUnits(bool bSIUnits)
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double d1,d2,d3,d4,d5;
    double r1,r2,r3,r4;
@@ -365,24 +365,24 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
-      std::ostringstream os;
-      os << "D1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d3 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D3 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D3 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -390,16 +390,16 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d4 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
-      std::ostringstream os;
-      os << "D4 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d5 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D5 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D5 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -407,24 +407,24 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( r1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][5];
-      std::ostringstream os;
-      os << "R1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("R1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( r2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "R2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("R2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( r3 < 0.0 )
    {
-      std::ostringstream os;
-      os << "R3 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("R3 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -432,8 +432,8 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( r4 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
-      std::ostringstream os;
-      os << "R4 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("R4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -441,16 +441,16 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( w1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
-      std::ostringstream os;
-      os << "W1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if ( w2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "W2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("W2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -458,16 +458,16 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( t <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
-      std::ostringstream os;
-      os << "T must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
    
    if ( d5 < c1 )
    {
-      std::ostringstream os;
-      os << "C1 must be less than d5" << std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be less than d5") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -478,11 +478,11 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 void CNUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    // version 2.... added C1
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("NUBeamDimensions",2.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("NUBeamDimensions"),2.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -495,18 +495,18 @@ IBeamFactory::Dimensions CNUBeamFactory::LoadSectionDimensions(sysIStructuredLoa
 
    Float64 parent_version = pLoad->GetVersion();
 
-   if ( 14 <= parent_version && !pLoad->BeginUnit("NUBeamDimensions") )
+   if ( 14 <= parent_version && !pLoad->BeginUnit(_T("NUBeamDimensions")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
    Float64 version = pLoad->GetVersion();
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
 
-      if ( name == "C1" && version < 2 )
+      if ( name == _T("C1") && version < 2 )
       {
          // C1 didn't exist before version 2
          value = 0.0;
@@ -556,23 +556,23 @@ Float64 CNUBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,Gi
    return surface_area;
 }
 
-std::string CNUBeamFactory::GetImage()
+std::_tstring CNUBeamFactory::GetImage()
 {
-   return std::string("NUBeam.jpg");
+   return std::_tstring(_T("NUBeam.jpg"));
 }
 
-std::string CNUBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CNUBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
-      strImage =  "IBeam_Slab_CIP.gif";
+      strImage =  _T("IBeam_Slab_CIP.gif");
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "IBeam_Slab_SIP.gif";
+      strImage =  _T("IBeam_Slab_SIP.gif");
       break;
 
    default:
@@ -583,15 +583,15 @@ std::string CNUBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType d
    return strImage;
 }
 
-std::string CNUBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CNUBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "+Mn_IBeam_Composite.gif";
+      strImage =  _T("+Mn_IBeam_Composite.gif");
       break;
 
    default:
@@ -602,15 +602,15 @@ std::string CNUBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::Su
    return strImage;
 }
 
-std::string CNUBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CNUBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "-Mn_IBeam_Composite.gif";
+      strImage =  _T("-Mn_IBeam_Composite.gif");
       break;
 
    default:
@@ -621,15 +621,15 @@ std::string CNUBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::Su
    return strImage;
 }
 
-std::string CNUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CNUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "Vn_IBeam.gif";
+      strImage =  _T("Vn_IBeam.gif");
       break;
 
    default:
@@ -640,33 +640,33 @@ std::string CNUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::Supported
    return strImage;
 }
 
-std::string CNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "IBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("IBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "IBeam_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("IBeam_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "IBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("IBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "IBeam_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("IBeam_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -680,17 +680,17 @@ CLSID CNUBeamFactory::GetFamilyCLSID()
    return CLSID_WFBeamFamily;
 }
 
-std::string CNUBeamFactory::GetGirderFamilyName()
+std::_tstring CNUBeamFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CNUBeamFactory::GetPublisher()
+std::_tstring CNUBeamFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CNUBeamFactory::GetResourceInstance()
@@ -717,22 +717,22 @@ void CNUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                    double& w1,double& w2,
                                    double& c1)
 {
-   d1 = GetDimension(dimensions,"D1");
-   d2 = GetDimension(dimensions,"D2");
-   d3 = GetDimension(dimensions,"D3");
-   d4 = GetDimension(dimensions,"D4");
-   d5 = GetDimension(dimensions,"D5");
-   r1 = GetDimension(dimensions,"R1");
-   r2 = GetDimension(dimensions,"R2");
-   r3 = GetDimension(dimensions,"R3");
-   r4 = GetDimension(dimensions,"R4");
-   t  = GetDimension(dimensions,"T");
-   w1 = GetDimension(dimensions,"W1");
-   w2 = GetDimension(dimensions,"W2");
-   c1 = GetDimension(dimensions,"C1");
+   d1 = GetDimension(dimensions,_T("D1"));
+   d2 = GetDimension(dimensions,_T("D2"));
+   d3 = GetDimension(dimensions,_T("D3"));
+   d4 = GetDimension(dimensions,_T("D4"));
+   d5 = GetDimension(dimensions,_T("D5"));
+   r1 = GetDimension(dimensions,_T("R1"));
+   r2 = GetDimension(dimensions,_T("R2"));
+   r3 = GetDimension(dimensions,_T("R3"));
+   r4 = GetDimension(dimensions,_T("R4"));
+   t  = GetDimension(dimensions,_T("T"));
+   w1 = GetDimension(dimensions,_T("W1"));
+   w2 = GetDimension(dimensions,_T("W2"));
+   c1 = GetDimension(dimensions,_T("C1"));
 }
 
-double CNUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CNUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -777,8 +777,8 @@ void CNUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& di
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
 
    double gw = max(W1, W2);
 
@@ -808,18 +808,18 @@ long CNUBeamFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 
 Float64 CNUBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,"D1");
-   double D2 = GetDimension(dimensions,"D2");
-   double D3 = GetDimension(dimensions,"D3");
-   double D4 = GetDimension(dimensions,"D4");
-   double D5 = GetDimension(dimensions,"D5");
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
+   double D3 = GetDimension(dimensions,_T("D3"));
+   double D4 = GetDimension(dimensions,_T("D4"));
+   double D5 = GetDimension(dimensions,_T("D5"));
 
    return D1 + D2 + D3 + D4 + D5;
 }
 
 Float64 CNUBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return max(GetDimension(dimensions,"W1"),GetDimension(dimensions,"W2"));
+   return max(GetDimension(dimensions,_T("W1")),GetDimension(dimensions,_T("W2")));
 }
 
 bool CNUBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)

@@ -45,13 +45,13 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CGirderDescDlg, CPropertySheet)
 
 CGirderDescDlg::CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet("", pParentWnd, iSelectPage)
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    m_CurrentSpanIdx   = spanIdx;
    m_CurrentGirderIdx = gdrIdx;
 
    CString strTitle;
-   strTitle.Format("Girder Details for Span %d, Girder %s",LABEL_SPAN(m_CurrentSpanIdx),LABEL_GIRDER(m_CurrentGirderIdx));
+   strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(m_CurrentSpanIdx),LABEL_GIRDER(m_CurrentGirderIdx));
    SetTitle(strTitle);
 
    Init();

@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -543,13 +543,13 @@ void CBridgePlanView::UpdateGirderTooltips()
          pBridge->GetGirderBearing(spanIdx,girderIdx,&direction);
 
          CString strMsg1;
-         strMsg1.Format("Double click to edit Span %d Girder %s\r\nRight click for more options.",LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
+         strMsg1.Format(_T("Double click to edit Span %d Girder %s\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
 
          double gdr_length, span_length;
          gdr_length  = pBridge->GetGirderLength(spanIdx,girderIdx);
          span_length = pBridge->GetSpanLength(spanIdx,girderIdx);
          CString strMsg2;
-         strMsg2.Format("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s",
+         strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s"),
                         pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(girderIdx),
                         FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
                         FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()),
@@ -561,7 +561,7 @@ void CBridgePlanView::UpdateGirderTooltips()
          fci = pBridgeMaterial->GetFciGdr(spanIdx,girderIdx);
 
          CString strMsg3;
-         strMsg3.Format("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s",
+         strMsg3.Format(_T("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
                         matConcrete::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,girderIdx),true).c_str(),
                         FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                         FormatDimension(fc, pDisplayUnits->GetStressUnit())
@@ -581,12 +581,12 @@ void CBridgePlanView::UpdateGirderTooltips()
          {
             if ( Nsd == 0 )
             {
-               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                                pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
             }
             else
             {
-               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                                pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
             }
          }
@@ -594,12 +594,12 @@ void CBridgePlanView::UpdateGirderTooltips()
          {
             if ( Nsd == 0 )
             {
-               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d",
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
                                pStrand->GetName().c_str(),Ns,Nh);
             }
             else
             {
-               strMsg4.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d",
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
                                pStrand->GetName().c_str(),Ns,Nsd,Nh);
             }
          }
@@ -919,7 +919,7 @@ void CBridgePlanView::BuildTitleDisplayObjects()
    CComPtr<iViewTitle> title;
    title.CoCreateInstance(CLSID_ViewTitle);
 
-   title->SetText("Plan View");
+   title->SetText(_T("Plan View"));
    title_list->AddDisplayObject(title);
 }
 
@@ -983,7 +983,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<iDisplayObject> dispObj;
    doAlignment->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
    dispObj->RegisterEventSink(events);
-   dispObj->SetToolTipText("Double click to edit alignment.\r\nRight click for more options.");
+   dispObj->SetToolTipText(_T("Double click to edit alignment.\r\nRight click for more options."));
    dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
    dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
@@ -1252,7 +1252,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
             doText->SetPosition(pntText);
 
             CString strText;
-            strText.Format("%s",LABEL_GIRDER(girderIdx));
+            strText.Format(_T("%s"),LABEL_GIRDER(girderIdx));
             doText->SetText(strText);
             doText->SetTextAlign(TA_BOTTOM | TA_CENTER);
             doText->SetBkMode(TRANSPARENT);
@@ -1285,7 +1285,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
             CComBSTR bstrBearing;
             direction_formatter->Format(dir,CComBSTR("°,\',\""),&bstrBearing);
-            doText2->SetText(OLE2A(bstrBearing));
+            doText2->SetText(OLE2T(bstrBearing));
             doText2->SetAngle(angle);
             doText2->SetTextAlign(TA_BOTTOM | TA_LEFT);
             doText2->SetBkMode(TRANSPARENT);
@@ -1422,26 +1422,26 @@ void CBridgePlanView::BuildPierDisplayObjects()
       doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
 
       CString strMsg1;
-      strMsg1.Format("Double click to edit %s %d\r\nRight click for more options.",(pierIdx == 0 || pierIdx == nPiers-1 ? "Abutment" : "Pier"),pierIdx+1);
+      strMsg1.Format(_T("Double click to edit %s %d\r\nRight click for more options."),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier")),pierIdx+1);
 
       CString strMsg2;
-      strMsg2.Format("Station: %s\r\nDirection: %s\r\nSkew: %s",FormatStation(pDisplayUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
+      strMsg2.Format(_T("Station: %s\r\nDirection: %s\r\nSkew: %s"),FormatStation(pDisplayUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
 
       CString strConnectionTip;
       if ( pierIdx == 0 ) // first pier
       {
-         strConnectionTip.Format("Ahead Connection: %s\nBoundary Conditions: %s",pPier->GetConnection(pgsTypes::Ahead),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Ahead Connection: %s\nBoundary Conditions: %s"),pPier->GetConnection(pgsTypes::Ahead),CPierData::AsString(pPier->GetConnectionType()));
       }
       else if ( pierIdx == nPiers-1 ) // last pier
       {
-         strConnectionTip.Format("Back Connection: %s\nBoundary Conditions: %s",pPier->GetConnection(pgsTypes::Back),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Back Connection: %s\nBoundary Conditions: %s"),pPier->GetConnection(pgsTypes::Back),CPierData::AsString(pPier->GetConnectionType()));
       }
       else // intermediate pier
       {
-         strConnectionTip.Format("Back Connection: %s\nAhead Connection: %s\nBoundary Conditions: %s",pPier->GetConnection(pgsTypes::Back),pPier->GetConnection(pgsTypes::Ahead),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Back Connection: %s\nAhead Connection: %s\nBoundary Conditions: %s"),pPier->GetConnection(pgsTypes::Back),pPier->GetConnection(pgsTypes::Ahead),CPierData::AsString(pPier->GetConnectionType()));
       }
 
-      CString strMsg = strMsg1 + "\r\n\r\n" + strMsg2 + "\r\n" + strConnectionTip;
+      CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n") + strConnectionTip;
 
       doCenterLine->SetToolTipText(strMsg);
       doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -1567,9 +1567,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          CString strText;
          if ( pierIdx == 0 || pierIdx == nPiers-1 )
-            strText.Format("Abutment %d",pierIdx+1);
+            strText.Format(_T("Abutment %d"),pierIdx+1);
          else
-            strText.Format("Pier %d",pierIdx+1);
+            strText.Format(_T("Pier %d"),pierIdx+1);
 
          doPierName->SetPosition(ahead_point);
          doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
@@ -1588,7 +1588,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          CComPtr<iEditableUnitValueTextBlock> doStation;
          doStation.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
          doStation->SetUnitSystem(docUnitSystem);
-         doStation->SetDisplayUnitGroupName("Station");
+         doStation->SetDisplayUnitGroupName(_T("Station"));
          doStation->IsStation(true);
          doStation->SetValue(station);
          doStation->SetPosition(back_point);
@@ -1598,7 +1598,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doStation->SetAngle(angle);
          doStation->SetSelectionType(stAll);
          
-         doStation->SetToolTipText("Click to edit");
+         doStation->SetToolTipText(_T("Click to edit"));
          doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
          doStation->SetTipDisplayTime(TOOLTIP_DURATION);
 
@@ -1678,7 +1678,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
             CComPtr<iEditableUnitValueTextBlock> doSpanLength;
             doSpanLength.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
             doSpanLength->SetUnitSystem(docUnitSystem);
-            doSpanLength->SetDisplayUnitGroupName("SpanLength");
+            doSpanLength->SetDisplayUnitGroupName(_T("SpanLength"));
             doSpanLength->SetValue(span_length);
             doSpanLength->SetPosition(pntInSpan);
             doSpanLength->SetTextAlign(TA_BASELINE | TA_CENTER);
@@ -1687,7 +1687,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
             doSpanLength->SetAngle(angle);
             doSpanLength->SetSelectionType(stAll);
 
-            doSpanLength->SetToolTipText("Click to edit");
+            doSpanLength->SetToolTipText(_T("Click to edit"));
             doSpanLength->SetMaxTipWidth(TOOLTIP_WIDTH);
             doSpanLength->SetTipDisplayTime(TOOLTIP_DURATION);
 
@@ -1861,7 +1861,7 @@ void CBridgePlanView::BuildSpanDisplayObjects()
       CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doPnt);
       dispObj->RegisterEventSink(events);
 
-      CString strMsg("Double click to edit span.\r\nRight click for more options.");
+      CString strMsg(_T("Double click to edit span.\r\nRight click for more options."));
 
       dispObj->SetToolTipText(strMsg);
       dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -1938,13 +1938,13 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doPnt);
    dispObj->RegisterEventSink(events);
 
-   CString strMsg1("Double click to edit slab.\r\nRight click for more options.");
+   CString strMsg1(_T("Double click to edit slab.\r\nRight click for more options."));
 
    CString strMsg2;
 
    if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: ????\r\nf'c: %s",
+      strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: ????\r\nf'c: %s"),
                      m_pFrame->GetDeckTypeName(pDeck->DeckType),
                      FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                      //FormatDimension(pDeck->SlabOffset,pDisplayUnits->GetComponentDimUnit()), // replace ???? with %s in the format string
@@ -1956,8 +1956,8 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    double overlay_weight = pBridge->GetOverlayWeight();
    if ( pBridge->HasOverlay() )
    {
-      strMsg3.Format("\r\n\r\n%s: %s",
-         pBridge->IsFutureOverlay() ? "Future Overlay" : "Overlay",
+      strMsg3.Format(_T("\r\n\r\n%s: %s"),
+         pBridge->IsFutureOverlay() ? _T("Future Overlay") : _T("Overlay"),
          FormatDimension(overlay_weight,pDisplayUnits->GetOverlayWeightUnit()));
    }
 
@@ -1996,7 +1996,7 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
 
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
    point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
-   point_disp->SetToolTipText("Drag me along the alignment to move section cut.\r\nDouble click to enter the cut station\r\nPress CTRL + -> to move ahead\r\nPress CTRL + <- to move back");
+   point_disp->SetToolTipText(_T("Drag me along the alignment to move section cut.\r\nDouble click to enter the cut station\r\nPress CTRL + -> to move ahead\r\nPress CTRL + <- to move back"));
    point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
@@ -2148,7 +2148,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
             doDiaphragmLine->SetDrawLineStrategy(strategy);
 
             CString strTip;
-            strTip.Format("%s x %s intermediate diaphragm",::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
+            strTip.Format(_T("%s x %s intermediate diaphragm"),::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
             doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
             doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
             doDiaphragmLine->SetToolTipText(strTip);
@@ -2252,7 +2252,7 @@ DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState
 
 void CBridgePlanView::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
 {
-   AfxMessageBox("CBridgePlanView::OnDropped");
+   AfxMessageBox(_T("CBridgePlanView::OnDropped"));
 }
 
 void CBridgePlanView::OnSetFocus(CWnd* pOldWnd) 
@@ -2275,51 +2275,51 @@ void CBridgePlanView::DrawFocusRect()
    dc.DrawFocusRect(rClient);
 }
 
-std::string CBridgePlanView::GetConnectionString(const CPierData* pPierData)
+std::_tstring CBridgePlanView::GetConnectionString(const CPierData* pPierData)
 {
    pgsTypes::PierConnectionType connectionType = pPierData->GetConnectionType();
 
-   std::string strConnection;
+   std::_tstring strConnection;
    switch( connectionType )
    {
    case pgsTypes::Hinged:
-      strConnection = "H";
+      strConnection = _T("H");
       break;
 
    case pgsTypes::Roller:
-      strConnection = "R";
+      strConnection = _T("R");
       break;
 
    case pgsTypes::ContinuousAfterDeck:
-      strConnection = "Ca";
+      strConnection = _T("Ca");
       break;
 
    case pgsTypes::ContinuousBeforeDeck:
-      strConnection = "Cb";
+      strConnection = _T("Cb");
       break;
 
    case pgsTypes::IntegralAfterDeck:
-      strConnection = "Ia";
+      strConnection = _T("Ia");
       break;
 
    case pgsTypes::IntegralBeforeDeck:
-      strConnection = "Ib";
+      strConnection = _T("Ib");
       break;
 
    case pgsTypes::IntegralAfterDeckHingeBack:
-      strConnection = "H Ia";
+      strConnection = _T("H Ia");
       break;
 
    case pgsTypes::IntegralBeforeDeckHingeBack:
-      strConnection = "H Ib";
+      strConnection = _T("H Ib");
       break;
 
    case pgsTypes::IntegralAfterDeckHingeAhead:
-      strConnection = "Ia H";
+      strConnection = _T("Ia H");
       break;
 
    case pgsTypes::IntegralBeforeDeckHingeAhead:
-      strConnection = "Ib H";
+      strConnection = _T("Ib H");
       break;
 
    default:

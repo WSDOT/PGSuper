@@ -150,7 +150,7 @@ BOOL CTxDOTAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) con
 	if ( rMessage.LoadString(nID) )
 	{
 		// first newline terminates actual string
-      rMessage.Replace('\n','\0');
+      rMessage.Replace(_T('\n'),_T('\0'));
 	}
 	else
 	{

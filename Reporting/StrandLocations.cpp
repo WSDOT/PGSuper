@@ -82,7 +82,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
    rptParagraph* pHead;
    pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pHead;
-   *pHead <<"Prestressing Strand Locations"<<rptNewLine;
+   *pHead <<_T("Prestressing Strand Locations")<<rptNewLine;
 
    // Straight strands
    pgsPointOfInterest end_poi(span,girder,0.0);
@@ -93,17 +93,17 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),"Straight Strand Locations");
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),_T("Straight Strand Locations"));
       *pPara << p_table;
 
-      (*p_table)(0,0) << "Strand";
-      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,0) << _T("Strand");
+      (*p_table)(0,1) << COLHDR(_T("X Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Y Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       if ( 0 < nDebonded )
       {
-         (*p_table)(0,3) << COLHDR("Debonded from" << rptNewLine << "Left End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*p_table)(0,4) << COLHDR("Debonded from" << rptNewLine << "Right End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,3) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,4) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       CComPtr<IPoint2dCollection> spts;
@@ -130,8 +130,8 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
             }
             else
             {
-               (*p_table)(row,3) << "-";
-               (*p_table)(row,4) << "-";
+               (*p_table)(row,3) << _T("-");
+               (*p_table)(row,4) << _T("-");
             }
          }
 
@@ -143,11 +143,11 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       rptParagraph* pPara;
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
-      *pPara <<"Straight Strand Locations"<<rptNewLine;
+      *pPara <<_T("Straight Strand Locations")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<"No Straight Strands in Girder"<<rptNewLine;
+      *pPara <<_T("No Straight Strands in Girder")<<rptNewLine;
    }
 
    // Temporary strands
@@ -160,17 +160,17 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
          rptParagraph* pPara = new rptParagraph;
          *pChapter << pPara;
 
-         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),"Temporary Strand Locations");
+         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),_T("Temporary Strand Locations"));
          *pPara << p_table;
 
-         (*p_table)(0,0) << "Strand";
-         (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,0) << _T("Strand");
+         (*p_table)(0,1) << COLHDR(_T("X Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,2) << COLHDR(_T("Y Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
          if ( 0 < nDebonded )
          {
-            (*p_table)(0,3) << COLHDR("Left End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,4) << COLHDR("Right End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          }
 
          CComPtr<IPoint2dCollection> spts;
@@ -198,8 +198,8 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
                }
                else
                {
-                  (*p_table)(row,3) << "-";
-                  (*p_table)(row,4) << "-";
+                  (*p_table)(row,3) << _T("-");
+                  (*p_table)(row,4) << _T("-");
                }
             }
 
@@ -211,11 +211,11 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
          rptParagraph* pPara;
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara <<"Temporary Strand Locations"<<rptNewLine;
+         *pPara <<_T("Temporary Strand Locations")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
-         *pPara <<"No Temporary Strands in Girder"<<rptNewLine;
+         *pPara <<_T("No Temporary Strands in Girder")<<rptNewLine;
       }
    }
 
@@ -227,17 +227,17 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),"Harped Strand Locations at Ends of Girder");
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),_T("Harped Strand Locations at Ends of Girder"));
       *pPara << p_table;
 
-      (*p_table)(0,0) << "Strand";
-      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,0) << _T("Strand");
+      (*p_table)(0,1) << COLHDR(_T("X Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Y Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       if ( 0 < nDebonded )
       {
-         (*p_table)(0,3) << COLHDR("Left End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*p_table)(0,4) << COLHDR("Right End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       CComPtr<IPoint2dCollection> spts;
@@ -266,8 +266,8 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
             }
             else
             {
-               (*p_table)(row,3) << "-";
-               (*p_table)(row,4) << "-";
+               (*p_table)(row,3) << _T("-");
+               (*p_table)(row,4) << _T("-");
             }
          }
 
@@ -281,12 +281,12 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Harped Strand Locations at Harping Points");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Harped Strand Locations at Harping Points"));
       *pPara << p_table;
 
-      (*p_table)(0,0) << "Strand";
-      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,0) << _T("Strand");
+      (*p_table)(0,1) << COLHDR(_T("X Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Y Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       CComPtr<IPoint2dCollection> hspts;
       pStrandGeometry->GetStrandPositions(harp_poi, pgsTypes::Harped, &hspts);
@@ -310,11 +310,11 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       rptParagraph* pPara;
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
-      *pPara <<"Harped Strand Locations"<<rptNewLine;
+      *pPara <<_T("Harped Strand Locations")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<"No Harped Strands in Girder"<<rptNewLine;
+      *pPara <<_T("No Harped Strands in Girder")<<rptNewLine;
    }
 
 }
@@ -357,7 +357,7 @@ bool CStrandLocations::AssertValid() const
 
 void CStrandLocations::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CStrandLocations" << endl;
+   os << _T("Dump for CStrandLocations") << endl;
 }
 #endif // _DEBUG
 

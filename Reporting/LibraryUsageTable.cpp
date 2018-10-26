@@ -47,7 +47,7 @@ CLibraryUsageTable::~CLibraryUsageTable()
 
 rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
    table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
    table->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
    table->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
@@ -56,9 +56,9 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
    table->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    table->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
-   (*table)(0,0) << "Library";
-   (*table)(0,1) << "Entry";
-   (*table)(0,2) << "Source";
+   (*table)(0,0) << _T("Library");
+   (*table)(0,1) << _T("Entry");
+   (*table)(0,2) << _T("Source");
 
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    std::vector<libEntryUsageRecord> records = pLibrary->GetLibraryUsageRecords();
@@ -73,9 +73,9 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       (*table)(row,1) << record.EntryName;
       
       if ( record.bEditable )
-         (*table)(row,2) << "Project Library";
+         (*table)(row,2) << _T("Project Library");
       else
-         (*table)(row,2) << "Master Library";
+         (*table)(row,2) << _T("Master Library");
 
       row++;
    }

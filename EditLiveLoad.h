@@ -29,7 +29,7 @@
 
 struct txnEditLiveLoadData
 {
-   std::vector<std::string> m_VehicleNames;
+   std::vector<std::_tstring> m_VehicleNames;
    double m_TruckImpact;
    double m_LaneImpact;
 };
@@ -46,7 +46,7 @@ public:
    virtual bool Execute();
    virtual void Undo();
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool IsUndoable();
    virtual bool IsRepeatable();
 

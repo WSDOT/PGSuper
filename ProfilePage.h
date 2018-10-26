@@ -29,7 +29,7 @@
 // ProfilePage.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "ProfileGrid.h"
 
 /////////////////////////////////////////////////////////////////////////////

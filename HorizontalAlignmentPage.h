@@ -29,7 +29,7 @@
 // HorizontalAlignmentPage.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "HorizontalAlignmentGrid.h"
 
 /////////////////////////////////////////////////////////////////////////////

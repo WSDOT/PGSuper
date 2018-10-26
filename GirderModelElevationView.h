@@ -128,7 +128,7 @@ private:
    void UpdateDisplayObjects();
 
    bool m_bUpdateError;
-   std::string m_ErrorMsg;
+   std::_tstring m_ErrorMsg;
 };
 
 /////////////////////////////////////////////////////////////////////////////

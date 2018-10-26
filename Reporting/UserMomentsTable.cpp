@@ -78,7 +78,7 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderI
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>("Moments - User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>(_T("Moments - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    if ( span == ALL_SPANS )
    {
@@ -218,7 +218,7 @@ bool CUserMomentsTable::AssertValid() const
 
 void CUserMomentsTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CUserMomentsTable" << endl;
+   os << _T("Dump for CUserMomentsTable") << endl;
 }
 #endif // _DEBUG
 

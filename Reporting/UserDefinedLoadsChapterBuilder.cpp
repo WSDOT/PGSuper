@@ -110,12 +110,12 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
          {
             pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pParagraph;
-            *pParagraph <<"Span "<<LABEL_SPAN(spanIdx)<<" Girder "<<LABEL_GIRDER(gdrIdx)<<rptNewLine;
+            *pParagraph <<_T("Span ")<<LABEL_SPAN(spanIdx)<<_T(" Girder ")<<LABEL_GIRDER(gdrIdx)<<rptNewLine;
          }
 
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
-         *pParagraph <<"Locations are measured from left support."<<rptNewLine;
+         *pParagraph <<_T("Locations are measured from left support.")<<rptNewLine;
 
          // tables of details - point loads first
          rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
@@ -172,14 +172,14 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
 
-   std::ostringstream os;
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"Point Loads");
+   std::_tostringstream os;
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Point Loads"));
 
-   (*table)(0,0)  << "Stage";
-   (*table)(0,1)  << "Load" << rptNewLine << "Case";
-   (*table)(0,2)  << COLHDR("Location",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,3)  << COLHDR("Magnitude",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,4)  << "Description";
+   (*table)(0,0)  << _T("Stage");
+   (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
+   (*table)(0,2)  << COLHDR(_T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,3)  << COLHDR(_T("Magnitude"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,4)  << _T("Description");
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
 
@@ -187,22 +187,22 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    RowIndexType row = table->GetNumberOfHeaderRows();
    for ( int i=0; i<3; i++ )
    {
-      std::string stagenm;
+      std::_tstring stagenm;
       pgsTypes::Stage stage;
       if (i==0)
       {
          stage = pgsTypes::BridgeSite1;
-         stagenm = "Bridge Site 1";
+         stagenm = _T("Bridge Site 1");
       }
       else if (i==1)
       {
          stage = pgsTypes::BridgeSite2;
-         stagenm = "Bridge Site 2";
+         stagenm = _T("Bridge Site 2");
       }
       else
       {
          stage = pgsTypes::BridgeSite3;
-         stagenm = "Bridge Site 3";
+         stagenm = _T("Bridge Site 3");
       }
 
       const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(stage, span, girder);
@@ -216,13 +216,13 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 
             IUserDefinedLoads::UserPointLoad upl = ppl->at(ipl);
 
-             std::string strlcn;
+             std::_tstring strlcn;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-                strlcn = "DC";
+                strlcn = _T("DC");
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-                strlcn = "DW";
+                strlcn = _T("DW");
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-                strlcn = "LL+IM";
+                strlcn = _T("LL+IM");
              else
                 ATLASSERT(0);
 
@@ -246,7 +246,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
       delete table;
 
       if (!bSimplifiedVersion)
-         *pParagraph << "Point loads were not defined for this girder"<<rptNewLine;
+         *pParagraph << _T("Point loads were not defined for this girder")<<rptNewLine;
    }
 
    return pParagraph;
@@ -265,15 +265,15 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,"Distributed Loads");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Distributed Loads"));
 
-   (*table)(0,0)  << "Stage";
-   (*table)(0,1)  << "Load" << rptNewLine << "Case";
-   (*table)(0,2)  << COLHDR("Start" << rptNewLine << "Location",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,3)  << COLHDR("End" << rptNewLine << "Location",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,4)  << COLHDR("Start" << rptNewLine << "Magnitude",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(0,5)  << COLHDR("End" << rptNewLine << "Magnitude",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(0,6)  << "Description";
+   (*table)(0,0)  << _T("Stage");
+   (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
+   (*table)(0,2)  << COLHDR(_T("Start") << rptNewLine << _T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,3)  << COLHDR(_T("End") << rptNewLine << _T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,4)  << COLHDR(_T("Start") << rptNewLine << _T("Magnitude"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,5)  << COLHDR(_T("End") << rptNewLine << _T("Magnitude"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,6)  << _T("Description");
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
 
@@ -281,22 +281,22 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    RowIndexType row = table->GetNumberOfHeaderRows();
    for ( int i=0; i<3; i++ )
    {
-      std::string stagenm;
+      std::_tstring stagenm;
       pgsTypes::Stage stage;
       if (i==0)
       {
          stage = pgsTypes::BridgeSite1;
-         stagenm = "Bridge Site 1";
+         stagenm = _T("Bridge Site 1");
       }
       else if (i==1)
       {
          stage = pgsTypes::BridgeSite2;
-         stagenm = "Bridge Site 2";
+         stagenm = _T("Bridge Site 2");
       }
       else
       {
          stage = pgsTypes::BridgeSite3;
-         stagenm = "Bridge Site 3";
+         stagenm = _T("Bridge Site 3");
       }
 
       const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(stage, span, girder);
@@ -309,13 +309,13 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
             IUserDefinedLoads::UserDistributedLoad upl = ppl->at(ipl);
 
-             std::string strlcn;
+             std::_tstring strlcn;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-                strlcn = "DC";
+                strlcn = _T("DC");
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-                strlcn = "DW";
+                strlcn = _T("DW");
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-                strlcn = "LL+IM";
+                strlcn = _T("LL+IM");
              else
                 ATLASSERT(0);
 
@@ -341,7 +341,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
       delete table;
 
       if (! bSimplifiedVersion)
-         *pParagraph << "Distributed loads were not defined for this girder"<<rptNewLine;
+         *pParagraph << _T("Distributed loads were not defined for this girder")<<rptNewLine;
    }
 
    return pParagraph;
@@ -361,13 +361,13 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(span,girder);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"End Moments");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("End Moments"));
 
-   (*table)(0,0)  << "Stage";
-   (*table)(0,1)  << "Load" << rptNewLine << "Case";
-   (*table)(0,2)  << "Location";
-   (*table)(0,3)  << COLHDR("Magnitude",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,4)  << "Description";
+   (*table)(0,0)  << _T("Stage");
+   (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
+   (*table)(0,2)  << _T("Location");
+   (*table)(0,3)  << COLHDR(_T("Magnitude"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,4)  << _T("Description");
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
 
@@ -375,22 +375,22 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    RowIndexType row = table->GetNumberOfHeaderRows();
    for ( int i=0; i<3; i++ )
    {
-      std::string stagenm;
+      std::_tstring stagenm;
       pgsTypes::Stage stage;
       if (i==0)
       {
          stage = pgsTypes::BridgeSite1;
-         stagenm = "Bridge Site 1";
+         stagenm = _T("Bridge Site 1");
       }
       else if (i==1)
       {
          stage = pgsTypes::BridgeSite2;
-         stagenm = "Bridge Site 2";
+         stagenm = _T("Bridge Site 2");
       }
       else
       {
          stage = pgsTypes::BridgeSite3;
-         stagenm = "Bridge Site 3";
+         stagenm = _T("Bridge Site 3");
       }
 
       const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(stage, span, girder);
@@ -404,13 +404,13 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
 
             IUserDefinedLoads::UserMomentLoad upl = ppl->at(ipl);
 
-             std::string strlcn;
+             std::_tstring strlcn;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-                strlcn = "DC";
+                strlcn = _T("DC");
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-                strlcn = "DW";
+                strlcn = _T("DW");
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-                strlcn = "LL+IM";
+                strlcn = _T("LL+IM");
              else
                 ATLASSERT(0);
 
@@ -418,9 +418,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
             (*table)(row,1) << strlcn;
 
             if ( IsZero(upl.m_Location) )
-               (*table)(row,2) << "Start of span";
+               (*table)(row,2) << _T("Start of span");
             else
-               (*table)(row,2) << "End of span";
+               (*table)(row,2) << _T("End of span");
 
             (*table)(row,3) << moment.SetValue( upl.m_Magnitude );
             (*table)(row,4) << upl.m_Description;
@@ -439,7 +439,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
       delete table;
 
       if (!bSimplifiedVersion)
-         *pParagraph << "Moment loads were not defined for this girder"<<rptNewLine;
+         *pParagraph << _T("Moment loads were not defined for this girder")<<rptNewLine;
    }
 
    return pParagraph;

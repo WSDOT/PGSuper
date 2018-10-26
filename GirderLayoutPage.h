@@ -28,6 +28,7 @@
 #endif // _MSC_VER > 1000
 // SpanGirderLayoutPage.h : header file
 //
+#include "PGSuperAppPlugin\resource.h"
 
 #include "GirderNameGrid.h"
 #include "GirderSpacingGrid.h"

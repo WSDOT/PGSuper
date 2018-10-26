@@ -51,7 +51,7 @@ rptRcTable(NumColumns,0)
 
 CTimeDependentLossesAtDeckPlacementTable* CTimeDependentLossesAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -65,21 +65,21 @@ CTimeDependentLossesAtDeckPlacementTable* CTimeDependentLossesAtDeckPlacementTab
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
-       *pParagraph << "Time Dependent Losses Before Deck Placement" << rptNewLine;
+       *pParagraph << _T("Time Dependent Losses Before Deck Placement") << rptNewLine;
    else
-       *pParagraph << "Time Dependent Losses Before Installation of Precast Members" << rptNewLine;
+       *pParagraph << _T("Time Dependent Losses Before Installation of Precast Members") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS("pSR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS("pCR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pR1"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << italic(ON) << "f" << subscript(ON) << "pLT" << subscript(ON) << "id" << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("id") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   *pParagraph << symbol(DELTA) << italic(ON) << "f" << subscript(ON) << "pLT" << subscript(ON) << "id" << subscript(OFF) << subscript(OFF) << italic(OFF) << " = " << symbol(DELTA) << RPT_STRESS("pSR") << " + " << symbol(DELTA) << RPT_STRESS("pCR") << " + " << symbol(DELTA) << RPT_STRESS("pR1") << rptNewLine;
+   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("id") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSR")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1")) << rptNewLine;
 
    return table;
 }

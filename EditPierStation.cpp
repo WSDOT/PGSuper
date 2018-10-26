@@ -59,9 +59,9 @@ txnTransaction* txnEditPierStation::CreateClone() const
    return new txnEditPierStation(m_PierIdx,m_Station[0],m_Station[1],m_MoveOption);
 }
 
-std::string txnEditPierStation::Name() const
+std::_tstring txnEditPierStation::Name() const
 {
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Edit Station of Pier " << (m_PierIdx+1);
    return os.str();
 }

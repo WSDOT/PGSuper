@@ -73,7 +73,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
                                                SpanIndexType span,
                                                GirderIndexType girder,
                                                pgsTypes::LiveLoadType llType,
-                                               const std::string& strLLName,
+                                               const std::_tstring& strLLName,
                                                VehicleIndexType vehicleIndex, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
@@ -109,38 +109,38 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
    if ( bReportTruckConfig )
       nCols += 4;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Live Load Reactions and Rotations for " + strLLName);
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Live Load Reactions and Rotations for ") + strLLName);
 
    // Set up table headings
    ColumnIndexType col = 0;
-   (*p_table)(0,col++) << "";
-   (*p_table)(0,col++) << COLHDR("Reaction" << rptNewLine << "Max",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,col++) << _T("");
+   (*p_table)(0,col++) << COLHDR(_T("Reaction") << rptNewLine << _T("Max"),   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Reaction" << rptNewLine << "Max" << rptNewLine << "Config";
+      (*p_table)(0,col++) << _T("Reaction") << rptNewLine << _T("Max") << rptNewLine << _T("Config");
    }
 
-   (*p_table)(0,col++) << COLHDR("Reaction" << rptNewLine << "Min",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Reaction") << rptNewLine << _T("Min"),   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Reaction" << rptNewLine << "Min" << rptNewLine << "Config";
+      (*p_table)(0,col++) << _T("Reaction") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
    }
 
-   (*p_table)(0,col++) << COLHDR("Rotation" << rptNewLine << "Max",   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Max"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Rotation" << rptNewLine << "Max" << rptNewLine << "Config";
+      (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Max") << rptNewLine << _T("Config");
    }
 
-   (*p_table)(0,col++) << COLHDR("Rotation" << rptNewLine << "Min",   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Min"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
 
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << "Rotation" << rptNewLine << "Min" << rptNewLine << "Config";
+      (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
    }
 
    // Get POI at start and end of the span
@@ -168,9 +168,9 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
       pgsPointOfInterest& poi = vPoi[pier-startPier];
 
       if (pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
       if ( analysisType == pgsTypes::Envelope )
       {
@@ -287,7 +287,7 @@ bool CVehicularLoadReactionTable::AssertValid() const
 
 void CVehicularLoadReactionTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CVehicularLoadReactionTable" << endl;
+   os << _T("Dump for CVehicularLoadReactionTable") << endl;
 }
 #endif // _DEBUG
 

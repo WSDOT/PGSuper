@@ -50,7 +50,7 @@ rptRcTable(NumColumns,0)
 
 CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    CPostTensionTimeDependentLossesAtShippingTable* table = NULL;
 
@@ -70,22 +70,22 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pParagraph;
 
-      *pParagraph << "Post-Tensioned Temporary Strands" << rptNewLine;
+      *pParagraph << _T("Post-Tensioned Temporary Strands") << rptNewLine;
       
       pParagraph = new rptParagraph;
       *pChapter << pParagraph;
 
       *pParagraph << table << rptNewLine;
 
-      (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS("pF"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pA"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS("ptH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,1) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pt avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      *pParagraph << rptRcImage(strImagePath + "PTLossAtHauling.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("PTLossAtHauling.png")) << rptNewLine;
    }
 
    return table;

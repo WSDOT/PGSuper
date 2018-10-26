@@ -92,7 +92,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       nCols += 4; // for fatigue limit state LLDF
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,"Live Load Distribution Factors");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
    *pBody << pTable;
 
    if ( span == ALL_SPANS )
@@ -106,10 +106,10 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(0,1) << "+M";
-      (*pTable)(0,2) << "-M";
-      (*pTable)(0,3) << "V";
-      (*pTable)(0,4) << "R";
+      (*pTable)(0,1) << _T("+M");
+      (*pTable)(0,2) << _T("-M");
+      (*pTable)(0,3) << _T("V");
+      (*pTable)(0,4) << _T("R");
    }
    else
    {
@@ -119,10 +119,10 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pTable->SetRowSpan(1,0,-1);
 
       pTable->SetColumnSpan(0,1,4);
-      (*pTable)(0,1) << "Strength/Service";
+      (*pTable)(0,1) << _T("Strength/Service");
 
       pTable->SetColumnSpan(0,2,4);
-      (*pTable)(0,2) << "Fatigue/One Lane";
+      (*pTable)(0,2) << _T("Fatigue/One Lane");
 
       pTable->SetColumnSpan(0,3,-1);
       pTable->SetColumnSpan(0,4,-1);
@@ -131,14 +131,14 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pTable->SetColumnSpan(0,7,-1);
       pTable->SetColumnSpan(0,8,-1);
 
-      (*pTable)(1,1) << "+M";
-      (*pTable)(1,2) << "-M";
-      (*pTable)(1,3) << "V";
-      (*pTable)(1,4) << "R";
-      (*pTable)(1,5) << "+M";
-      (*pTable)(1,6) << "-M";
-      (*pTable)(1,7) << "V";
-      (*pTable)(1,8) << "R";
+      (*pTable)(1,1) << _T("+M");
+      (*pTable)(1,2) << _T("-M");
+      (*pTable)(1,3) << _T("V");
+      (*pTable)(1,4) << _T("R");
+      (*pTable)(1,5) << _T("+M");
+      (*pTable)(1,6) << _T("-M");
+      (*pTable)(1,7) << _T("V");
+      (*pTable)(1,8) << _T("R");
    }
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -169,7 +169,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       }
       else
       {
-         (*pTable)(row,2) << "---";
+         (*pTable)(row,2) << _T("---");
       }
       (*pTable)(row,3) << df.SetValue(V);
 
@@ -184,10 +184,10 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       }
       else
       {
-         (*pTable)(row,4) << "";
+         (*pTable)(row,4) << _T("");
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            (*pTable)(row,8) << "";
+            (*pTable)(row,8) << _T("");
          }
       }
 
@@ -202,7 +202,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
          }
          else
          {
-            (*pTable)(row,6) << "---";
+            (*pTable)(row,6) << _T("---");
          }
 
          (*pTable)(row,7) << df.SetValue(V);
@@ -219,7 +219,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
 
    GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);
-   std::string straction = pLiveLoads->GetLLDFSpecialActionText();
+   std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
    if ( !straction.empty() )
    {
       (*pBody) << color(Red) << straction << color(Black) << rptNewLine;

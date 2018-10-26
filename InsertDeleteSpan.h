@@ -33,7 +33,7 @@ class txnInsertSpan : public txnTransaction
 {
 public:
    txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
@@ -50,7 +50,7 @@ class txnDeleteSpan : public txnTransaction
 public:
    txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
    ~txnDeleteSpan();
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();

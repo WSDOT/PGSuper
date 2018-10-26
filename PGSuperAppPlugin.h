@@ -23,6 +23,7 @@
 
 #pragma once
 #include "PGSuperAppPlugin\PGSuperAppPlugin_i.h"
+#include "PGSuperAppPlugin\resource.h"
 
 #include <EAF\EAFAppPlugin.h>
 #include <EAF\EAFUIIntegration.h>

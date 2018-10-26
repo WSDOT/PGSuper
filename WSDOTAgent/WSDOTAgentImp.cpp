@@ -83,14 +83,14 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker) );
 
    // WSDOT Girder Schedule
-   CReportBuilder* pRptBuilder = new CReportBuilder("WSDOT Girder Schedule");
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Girder Schedule"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // WSDOT Summary Report
-   pRptBuilder = new CReportBuilder("WSDOT Summary Report");
+   pRptBuilder = new CReportBuilder(_T("WSDOT Summary Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
@@ -99,7 +99,7 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // WSDOT Load Rating Summary
-   pRptBuilder = new CReportBuilder("WSDOT Load Rating Summary");
+   pRptBuilder = new CReportBuilder(_T("WSDOT Load Rating Summary"));
 //   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );

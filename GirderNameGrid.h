@@ -72,7 +72,7 @@ public:
    // custom stuff for grid
    void CustomInit(const CSpanData* pSpanData);
    void FillGrid();
-   void OnGirderFamilyChanged(const char* strGirderFamily);
+   void OnGirderFamilyChanged(LPCTSTR strGirderFamily);
 
    void AddGirders(GirderIndexType nGirders);
    void RemoveGirders(GirderIndexType nGirders);
@@ -95,7 +95,7 @@ private:
 
    virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState);
 
-   void UpdateGirderFamilyList(const char* strGirderFamily);
+   void UpdateGirderFamilyList(LPCTSTR strGirderFamily);
 };
 
 /////////////////////////////////////////////////////////////////////////////

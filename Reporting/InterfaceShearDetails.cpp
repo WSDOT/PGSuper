@@ -120,14 +120,14 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
-   (*pPara) << "Details for Horizontal Interface Shear Capacity (" << OLE2A(pStageMap->GetLimitStateName(ls)) << ") [5.8.4.1]" << rptNewLine;
+   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << OLE2T(pStageMap->GetLimitStateName(ls)) << _T(") [5.8.4.1]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
 
    ColumnIndexType nCol = pSpecEntry->GetShearFlowMethod() == sfmLRFD ? 6 : 7;
 
-   rptRcTable* vui_table = pgsReportStyleHolder::CreateDefaultTable(nCol,"");
+   rptRcTable* vui_table = pgsReportStyleHolder::CreateDefaultTable(nCol,_T(""));
    *pPara << vui_table << rptNewLine;
 
    if ( span == ALL_SPANS )
@@ -145,40 +145,40 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
    {
-     (*vui_table)(0,col++) << COLHDR(Sub2("d","vi"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+     (*vui_table)(0,col++) << COLHDR(Sub2(_T("d"),_T("vi")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    }
    else
    {
-      (*vui_table)(0,col++) << COLHDR("I",rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit());
-      (*vui_table)(0,col++) << COLHDR(Sub2("Q","slab"),rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
+      (*vui_table)(0,col++) << COLHDR(_T("I"),rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit());
+      (*vui_table)(0,col++) << COLHDR(Sub2(_T("Q"),_T("slab")),rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
    }
 
-   (*vui_table)(0,col++) << COLHDR(Sub2("V","u"),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   (*vui_table)(0,col++) << COLHDR(Sub2(_T("V"),_T("u")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
 
    if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
    {
-      (*vui_table)(0,col++) << COLHDR(Sub2("v","ui") << " = " << Sub2("V","u") << "/" << Sub2("d","vi"),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
+      (*vui_table)(0,col++) << COLHDR(Sub2(_T("v"),_T("ui")) << _T(" = ") << Sub2(_T("V"),_T("u")) << _T("/") << Sub2(_T("d"),_T("vi")),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
    }
    else
    {
-      (*vui_table)(0,col++) << COLHDR(Sub2("v","ui") << " = " << Sub2("V","u") << "Q/I",rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
+      (*vui_table)(0,col++) << COLHDR(Sub2(_T("v"),_T("ui")) << _T(" = ") << Sub2(_T("V"),_T("u")) << _T("Q/I"),rptForcePerLengthUnitTag,pDisplayUnits->GetForcePerLengthUnit());
    }
 
-   (*vui_table)(0,col++) << COLHDR(Sub2("b","vi"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*vui_table)(0,col++) << COLHDR(Sub2(symbol(nu),"ui"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+   (*vui_table)(0,col++) << COLHDR(Sub2(_T("b"),_T("vi")),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*vui_table)(0,col++) << COLHDR(Sub2(symbol(nu),_T("ui")),rptStressUnitTag,pDisplayUnits->GetStressUnit());
 
    if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Sub2("d","vi") << " = " << Sub2("Y","t girder") << " + Strand Eccentricity + " << Sub2("t","slab") << "/2" << rptNewLine;
+      *pPara << Sub2(_T("d"),_T("vi")) << _T(" = ") << Sub2(_T("Y"),_T("t girder")) << _T(" + Strand Eccentricity + ") << Sub2(_T("t"),_T("slab")) << _T("/2") << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
    }
 
    // TRICKY: create av/s table to be filled in same loop as next table
-   rptRcTable* av_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+   rptRcTable* av_table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
    *pPara << av_table;
 
    if ( span == ALL_SPANS )
@@ -192,46 +192,46 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    else
       (*av_table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*av_table)(0,1)  << COLHDR("A" << Sub("vf")<<rptNewLine<<"Girder" , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*av_table)(0,2)  << COLHDR("S"<<rptNewLine<<"Girder", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*av_table)(0,3)  << COLHDR("A" << Sub("vf")<<rptNewLine<<"Top Flange" , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*av_table)(0,4)  << COLHDR("S"<<rptNewLine<<"Top Flange", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*av_table)(0,5)  << COLHDR("a" << Sub("vf")<<rptNewLine<<"Composite" , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*av_table)(0,1)  << COLHDR(_T("A") << Sub(_T("vf"))<<rptNewLine<<_T("Girder") , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*av_table)(0,2)  << COLHDR(_T("S")<<rptNewLine<<_T("Girder"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*av_table)(0,3)  << COLHDR(_T("A") << Sub(_T("vf"))<<rptNewLine<<_T("Top Flange") , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*av_table)(0,4)  << COLHDR(_T("S")<<rptNewLine<<_T("Top Flange"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*av_table)(0,5)  << COLHDR(_T("a") << Sub(_T("vf"))<<rptNewLine<<_T("Composite") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // general quantities
    double Es,Fy;
    pMaterial->GetTransverseRebarProperties(span,girder,&Es,&Fy);
 
-   *pPara << "Coeff. of Friction ("<<symbol(mu)<<") = "<< p_first_artifact->GetFrictionFactor()<<rptNewLine;
-   *pPara << "Cohesion Factor (c) = "<< stress_with_tag.SetValue(p_first_artifact->GetCohesionFactor())<<rptNewLine;
+   *pPara << _T("Coeff. of Friction (")<<symbol(mu)<<_T(") = ")<< p_first_artifact->GetFrictionFactor()<<rptNewLine;
+   *pPara << _T("Cohesion Factor (c) = ")<< stress_with_tag.SetValue(p_first_artifact->GetCohesionFactor())<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
    {
-      *pPara << Sub2("K","1") << " = " << p_first_artifact->GetK1() << rptNewLine;
-      *pPara << Sub2("K","2") << " = " << stress_with_tag.SetValue(p_first_artifact->GetK2()) << rptNewLine;
+      *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << p_first_artifact->GetK1() << rptNewLine;
+      *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << stress_with_tag.SetValue(p_first_artifact->GetK2()) << rptNewLine;
    }
 
-   *pPara << RPT_FC<<" = "<<stress_with_tag.SetValue(p_first_artifact->GetFc())<<rptNewLine;
-   *pPara << RPT_FY<<" = "<<stress_with_tag.SetValue(Fy)<<rptNewLine;
-   *pPara << symbol(phi)<<" = "<< p_first_artifact->GetPhi()<<rptNewLine;
+   *pPara << RPT_FC<<_T(" = ")<<stress_with_tag.SetValue(p_first_artifact->GetFc())<<rptNewLine;
+   *pPara << RPT_FY<<_T(" = ")<<stress_with_tag.SetValue(Fy)<<rptNewLine;
+   *pPara << symbol(phi)<<_T(" = ")<< p_first_artifact->GetPhi()<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
    {
-      *pPara << Sub2("v","ni")<<" = min( c" << Sub2("a","cv")<<" + "<<symbol(mu)<<"[ " << Sub2("a","vf")<< RPT_FY <<" + " << Sub2("p","c")<<"], "
-                                       << Sub2("K","1") << RPT_FC << Sub2("a","cv")<<", " << Sub2("K","2") << Sub2("a","cv")<<" )"<<rptNewLine;
+      *pPara << Sub2(_T("v"),_T("ni"))<<_T(" = min( c") << Sub2(_T("a"),_T("cv"))<<_T(" + ")<<symbol(mu)<<_T("[ ") << Sub2(_T("a"),_T("vf"))<< RPT_FY <<_T(" + ") << Sub2(_T("p"),_T("c"))<<_T("], ")
+                                       << Sub2(_T("K"),_T("1")) << RPT_FC << Sub2(_T("a"),_T("cv"))<<_T(", ") << Sub2(_T("K"),_T("2")) << Sub2(_T("a"),_T("cv"))<<_T(" )")<<rptNewLine;
    }
    else
    {
-      *pPara << Sub2("v","ni")<<" = min( ca"<<Sub("cv")<<" + "<<symbol(mu)<<"[ a"<<Sub("vf ")<<RPT_FY<<" + p"<<Sub("c")<<"], "
-                                       <<"0.2 " << RPT_FC <<"a"<<Sub("cv")<<", ";
+      *pPara << Sub2(_T("v"),_T("ni"))<<_T(" = min( ca")<<Sub(_T("cv"))<<_T(" + ")<<symbol(mu)<<_T("[ a")<<Sub(_T("vf "))<<RPT_FY<<_T(" + p")<<Sub(_T("c"))<<_T("], ")
+                                       <<_T("0.2 ") << RPT_FC <<_T("a")<<Sub(_T("cv"))<<_T(", ");
 
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pPara<<" 5.5 a"<<Sub("cv")<<" )"<<rptNewLine;
+         *pPara<<_T(" 5.5 a")<<Sub(_T("cv"))<<_T(" )")<<rptNewLine;
       else
-         *pPara<<" 0.8 a"<<Sub("cv")<<" )"<<rptNewLine;
+         *pPara<<_T(" 0.8 a")<<Sub(_T("cv"))<<_T(" )")<<rptNewLine;
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pPara << table;
 
  
@@ -246,26 +246,26 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR(Sub2("a","cv") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,2)  << COLHDR(Sub2("a","vf") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,3)  << COLHDR(Sub2("p","c"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(0,4)  << COLHDR("c a"<<Sub("cv")<<" + "<<rptNewLine<<symbol(mu)<<"[a"<<Sub("vf ")<<"f"<<Sub("y")<<" + p"<<Sub("c")<<"]", rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,1)  << COLHDR(Sub2(_T("a"),_T("cv")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,2)  << COLHDR(Sub2(_T("a"),_T("vf")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,3)  << COLHDR(Sub2(_T("p"),_T("c")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,4)  << COLHDR(_T("c a")<<Sub(_T("cv"))<<_T(" + ")<<rptNewLine<<symbol(mu)<<_T("[a")<<Sub(_T("vf "))<<_T("f")<<Sub(_T("y"))<<_T(" + p")<<Sub(_T("c"))<<_T("]"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
    {
-      (*table)(0,5)  << COLHDR(Sub2("K","1") << RPT_FC << Sub2("c","cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-      (*table)(0,6)  << COLHDR(Sub2("K","2") << Sub2("a","cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*table)(0,5)  << COLHDR(Sub2(_T("K"),_T("1")) << RPT_FC << Sub2(_T("a"),_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*table)(0,6)  << COLHDR(Sub2(_T("K"),_T("2")) << Sub2(_T("a"),_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    }
    else
    {
-      (*table)(0,5)  << COLHDR("0.2 f'"<<Sub("c")<<"a"<<Sub("cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*table)(0,5)  << COLHDR(_T("0.2 f'")<<Sub(_T("c"))<<_T("a")<<Sub(_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
       if ( IS_SI_UNITS(pDisplayUnits) )
-         (*table)(0,6)  << COLHDR("5.5 a"<<Sub("cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*table)(0,6)  << COLHDR(_T("5.5 a")<<Sub(_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
       else
-         (*table)(0,6)  << COLHDR("0.8 a"<<Sub("cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*table)(0,6)  << COLHDR(_T("0.8 a")<<Sub(_T("cv")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    }
 
-   (*table)(0,7)  << COLHDR(symbol(phi) << Sub2("v","ni"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,7)  << COLHDR(symbol(phi) << Sub2(_T("v"),_T("ni")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
    // Fill up the tables
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
@@ -340,7 +340,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    // Next, fill table for min Avf
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << "Details for Minimum Horizontal Interface Shear Reinforcement [5.8.4.4]"<<rptNewLine;
+   *pPara << _T("Details for Minimum Horizontal Interface Shear Reinforcement [5.8.4.4]")<<rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
@@ -349,13 +349,13 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened);
    if ( 0 < llss )
    {
-      *pPara << "The minimum reinforcement requirement of " 
-             << Sub2("a","vf") << " may be waived if " 
-             << Sub2("v","ni") << "/" << Sub2("a","cv") 
-             << " is less than " << stress_with_tag.SetValue(llss) << rptNewLine;
+      *pPara << _T("The minimum reinforcement requirement of ") 
+             << Sub2(_T("a"),_T("vf")) << _T(" may be waived if ") 
+             << Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")) 
+             << _T(" is less than ") << stress_with_tag.SetValue(llss) << rptNewLine;
    }
 
-   table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+   table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
    *pPara << table;
 
    if ( span == ALL_SPANS )
@@ -369,28 +369,28 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("a" << Sub("cv") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,2)  << COLHDR("a" << Sub("vf") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,1)  << COLHDR(_T("a") << Sub(_T("cv")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,2)  << COLHDR(_T("a") << Sub(_T("vf")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
    {
-      (*table)(0,3)<<COLHDR(Sub2("a","vf min"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+      (*table)(0,3)<<COLHDR(Sub2(_T("a"),_T("vf min")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_SI.png") << rptNewLine;
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_SI.png")) << rptNewLine;
       else
-         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_US.png") << rptNewLine;
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("AvfMin_US.png")) << rptNewLine;
    }
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.35a","cv") <<"/" << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+         (*table)(0,3)<<COLHDR(Sub2(_T("a"),_T("vf min")) << _T(" = ") << Sub2(_T("0.35a"),_T("cv")) <<_T("/") << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
       else
-         (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.05a","cv") <<"/" << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+         (*table)(0,3)<<COLHDR(Sub2(_T("a"),_T("vf min")) << _T(" = ") << Sub2(_T("0.05a"),_T("cv")) <<_T("/") << RPT_FY, rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    }
 
-   (*table)(0,4)  << COLHDR(Sub2("v","ni") << "/" << Sub2("a","cv"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5)  << "Min Reinforcement" << rptNewLine << "Requirement Waived?";
+   (*table)(0,4)  << COLHDR(Sub2(_T("v"),_T("ni")) << _T("/") << Sub2(_T("a"),_T("cv")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5)  << _T("Min Reinforcement") << rptNewLine << _T("Requirement Waived?");
 
    // Fill up the table
    row = 1;
@@ -409,7 +409,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
       (*table)(row,3) << AvS.SetValue(pArtifact->GetAvOverSMin());
       (*table)(row,4) << stress.SetValue( pArtifact->GetVsAvg() );
-      (*table)(row,5) << (pArtifact->GetVsAvg() < llss ? "Yes" : "No");
+      (*table)(row,5) << (pArtifact->GetVsAvg() < llss ? _T("Yes") : _T("No"));
 
       row++;
    }
@@ -443,7 +443,7 @@ bool CInterfaceShearDetails::AssertValid() const
 
 void CInterfaceShearDetails::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CInterfaceShearDetails" << endl;
+   os << _T("Dump for CInterfaceShearDetails") << endl;
 }
 #endif // _DEBUG
 

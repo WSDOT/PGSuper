@@ -52,6 +52,7 @@
 #include "TimeDependentLossesAtShippingTable.h"
 #include "PostTensionTimeDependentLossesAtShippingTable.h"
 #include "ElasticGainDueToDeckPlacementTable.h"
+#include "ElasticGainDueToSIDLTable.h"
 #include "TemporaryStrandRemovalTable.h"
 #include "TotalPrestressLossTable.h"
 #include "ShrinkageAtHaulingTable.h"
@@ -99,6 +100,7 @@ void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
    m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning) );
    m_scidLRFDVersionError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
 }
 
@@ -126,19 +128,19 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
-   std::ostringstream os;
-   os << "Computing prestress losses Span "
-      << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at "
+   std::_tostringstream os;
+   os << _T("Computing prestress losses Span ")
+      << LABEL_SPAN(span) << _T(" Girder ")
+      << LABEL_GIRDER(gdr) << _T(" at ")
       << std::setw(length.Width)
       << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << _T(" ") 
+      << length.UnitOfMeasure.UnitTag() << _T(" from start of girder") << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
    GET_IFACE(ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -190,7 +192,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
 void CPsLossEngineer::BuildReport(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -231,7 +233,7 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,SpanIndexType span,G
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ||
@@ -249,7 +251,7 @@ void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,SpanIndexType 
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
@@ -273,7 +275,7 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ||
@@ -350,7 +352,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    // get time to prestress transfer
    GET_IFACE( ISpecification,   pSpec);
    GET_IFACE(ILibrary,pLib);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    Float64 shipping_loss = pSpecEntry->GetShippingLosses();
@@ -391,11 +393,12 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
                                 rh,
                                 ti,
-                                shipping_loss
+                                shipping_loss,
+                                false
                                 );
 
 
-   // Any of the "get" methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
+   // Any of the _T("get") methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
    // the input data is bad.  To make sure we have everything correct, lets request
    // the elastic shortening losses and make sure an exception doesn't throw.
    try
@@ -407,7 +410,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    catch( const lrfdXPsLosses& e )
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
-      std::string msg;
+      std::_tstring msg;
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       CEAFStatusItem* pStatusItem;
@@ -415,25 +418,25 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces";
+         msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces");
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because an unspecified error occured";
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+         msg = _T("Prestress losses could not be computed because an unspecified error occured");
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
       pStatusCenter->Add(pStatusItem);
 
-      msg += std::string("\nSee Status Center for Details");
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),reason);
    }
 }
@@ -501,7 +504,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    // get time to prestress transfer
    GET_IFACE( ISpecification,   pSpec);
    GET_IFACE( ILibrary,         pLib);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    if ( lossAgency==laWSDOT )
    {
@@ -558,10 +561,10 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 tf,
                                 pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal,
                                 pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),
-                                lossAgency!=laWSDOT);
+                                lossAgency!=laWSDOT,false);
 
 
-   // Any of the "get" methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
+   // Any of the _T("get") methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
    // the input data is bad.  To make sure we have everything correct, lets request
    // the elastic shortening losses and make sure an exception doesn't throw.
    try
@@ -573,7 +576,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    catch( const lrfdXPsLosses& e )
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
-      std::string msg;
+      std::_tstring msg;
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       CEAFStatusItem* pStatusItem;
@@ -581,25 +584,25 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces";
+         msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces");
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because an unspecified error occured";
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+         msg = _T("Prestress losses could not be computed because an unspecified error occured");
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
       pStatusCenter->Add(pStatusItem);
 
-      msg += std::string("\nSee Status Center for Details");
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),reason);
    }
 }
@@ -667,7 +670,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    // get time to prestress transfer
    GET_IFACE( ISpecification,   pSpec);
    GET_IFACE( ILibrary,         pLib);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    try
@@ -732,7 +735,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
                             rh,      // relative humidity
                             ti,   // Time until prestress transfer
-                            !isWsdot);
+                            !isWsdot,false);
 
          // Any of the "get" methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
          // the input data is bad.  To make sure we have everything correct, lets request
@@ -751,11 +754,11 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          if ( lrfdVersionMgr::FifthEdition2010 <= lrfdVersionMgr::GetVersion() && !pBridge->IsCompositeDeck() )
          {
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            std::string msg("The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only.");
+            std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only."));
             pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLRFDVersionError,msg.c_str());
             pStatusCenter->Add(pStatusItem);
 
-            msg += std::string("\nSee Status Center for Details");
+            msg += std::_tstring(_T("\nSee Status Center for Details"));
             THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
          }
 
@@ -796,7 +799,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
                             rh,      // relative humidity
                             ti,   // Time until prestress transfer
-                            !isWsdot
+                            !isWsdot,
+                            false
                             );
 
          if ( isWsdot )
@@ -820,7 +824,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    catch( const lrfdXPsLosses& e )
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
-      std::string msg;
+      std::_tstring msg;
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       CEAFStatusItem* pStatusItem;
@@ -828,25 +832,25 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces";
+         msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces");
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,0,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,0,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because an unspecified error occured";
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+         msg = _T("Prestress losses could not be computed because an unspecified error occured");
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
       pStatusCenter->Add(pStatusItem);
 
-      msg += std::string("\nSee Status Center for Details");
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),reason);
    }
 }
@@ -914,13 +918,13 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    if ( Nstrands == 0 )
    {
-      pLosses->LumpSum = lrfdLumpSumLosses(0,0,0,0,usage,0,0,0,0,0,0,0,0);
+      pLosses->LumpSum = lrfdLumpSumLosses(0,0,0,0,usage,0,0,0,0,0,0,0,0,0);
       pLosses->pLosses = &(pLosses->LumpSum);
    }
    else
    {
       GET_IFACE(ISpecification,pSpec);
-      std::string strSpecName = pSpec->GetSpecification();
+      std::_tstring strSpecName = pSpec->GetSpecification();
 
       GET_IFACE(ILibrary,pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -933,6 +937,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
                                            pSpecEntry->GetBeforeTempStrandRemovalLosses(),
                                            pSpecEntry->GetAfterTempStrandRemovalLosses(),
                                            pSpecEntry->GetAfterDeckPlacementLosses(),
+                                           pSpecEntry->GetAfterSIDLLosses(),
                                            pSpecEntry->GetFinalLosses());
 
       pLosses->pLosses = &(pLosses->LumpSum);
@@ -944,7 +949,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 {
    rptParagraph* pParagraph;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
@@ -954,7 +959,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Refined Estimate of Time-Dependent Losses [5.9.5.4]" << rptNewLine;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
 
    GET_IFACE(IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> bsPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite3, POI_TABULAR );
@@ -1024,7 +1029,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Time dependent losses" << rptNewLine;
+   *pParagraph << _T("Time dependent losses") << rptNewLine;
 
    CChangeOfConcreteStressTable*   pDeltaFcdp = CChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CCreepAndShrinkageTable*        pCR        = CCreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
@@ -1098,7 +1103,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 {
    rptParagraph* pParagraph;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IBridgeMaterial,pMaterial);
@@ -1114,14 +1119,14 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Refined Estimate of Time-Dependent Losses [5.9.5.4]" << rptNewLine;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
 
 #if defined IGNORE_2007_CHANGES
    if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
-      *pParagraph << color(Red) << bold(ON) << "Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored." << bold(OFF) << color(Black) << rptNewLine;
+      *pParagraph << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
    }
 #endif
 
@@ -1179,21 +1184,19 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    
    CPostTensionTimeDependentLossesAtShippingTable* pPTH  = NULL;
 
-   if ( pGirderHaulingSpecCriteria->IsHaulingCheckEnabled() )
+   // must report this even if not checking hauling because
+   // temporary strand removal effects depend on losses at end of hauling stage
+   if ( 0 < Nt )
    {
       pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pParagraph;
-      *pParagraph << "Time dependent losses between transfer and hauling [5.9.5.4.2]" << rptNewLine << rptNewLine;
+      *pParagraph << _T("Time dependent losses between transfer and hauling [5.9.5.4.2]") << rptNewLine << rptNewLine;
 
       pSRH = CShrinkageAtHaulingTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,details,pDisplayUnits,level);
       pCRH = CCreepAtHaulingTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,details,pDisplayUnits,level);
       pR1H = CRelaxationAtHaulingTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,details,pDisplayUnits,level);
       pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,pDisplayUnits,level);
-
-      if ( 0 < Nt )
-      {
-         pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
-      }
+      pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    }
 
 
@@ -1204,9 +1207,9 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
-      *pParagraph << "Time dependent losses between transfer and deck placement [5.9.5.4.2]" << rptNewLine;
+      *pParagraph << _T("Time dependent losses between transfer and deck placement [5.9.5.4.2]") << rptNewLine;
    else
-      *pParagraph << "Time dependent losses between transfer and installation of precast members [5.9.5.4.2, 5.9.5.4.4]" << rptNewLine;
+      *pParagraph << _T("Time dependent losses between transfer and installation of precast members [5.9.5.4.2, 5.9.5.4.4]") << rptNewLine;
 
    CShrinkageAtDeckPlacementTable*      pSR = CShrinkageAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CCreepAtDeckPlacementTable*          pCR = CCreepAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
@@ -1224,11 +1227,12 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
-      *pParagraph << "Losses: Time of Deck Placement to Final Time [5.9.5.4.3]" << rptNewLine;
+      *pParagraph << _T("Losses: Time of Deck Placement to Final Time [5.9.5.4.3]") << rptNewLine;
    else
-      *pParagraph << "Losses: Time of Installation of Precast Members to Final Time [5.9.5.4.3, 5.9.5.4.4]" << rptNewLine;
+      *pParagraph << _T("Losses: Time of Installation of Precast Members to Final Time [5.9.5.4.3, 5.9.5.4.4]") << rptNewLine;
 
-   CElasticGainDueToDeckPlacementTable*            pED  = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CElasticGainDueToDeckPlacementTable*            pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CElasticGainDueToSIDLTable*                     pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    
    CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CCreepAtFinalTable*          pCD = CCreepAtFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
@@ -1278,6 +1282,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
          ReportLocation(pLTid,row2,stage,poi,end_size,pDisplayUnits);
          ReportLocation(pPTR, row2,stage,poi,end_size,pDisplayUnits);
          ReportLocation(pED,  row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pSIDL,row2,stage,poi,end_size,pDisplayUnits);
          ReportLocation(pSD,  row2,stage,poi,end_size,pDisplayUnits);
          ReportLocation(pCD,  row2,stage,poi,end_size,pDisplayUnits);
          ReportLocation(pR2,  row2,stage,poi,end_size,pDisplayUnits);
@@ -1312,6 +1317,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
          ReportRow(pLTid,pChapter,m_pBroker,row2,details,pDisplayUnits,level);
          ReportRow(pPTR, pChapter,m_pBroker,row2,details,pDisplayUnits,level);
          ReportRow(pED,  pChapter,m_pBroker,row2,details,pDisplayUnits,level);
+         ReportRow(pSIDL,pChapter,m_pBroker,row2,details,pDisplayUnits,level);
          ReportRow(pSD,  pChapter,m_pBroker,row2,details,pDisplayUnits,level);
          ReportRow(pCD,  pChapter,m_pBroker,row2,details,pDisplayUnits,level);
          ReportRow(pR2,  pChapter,m_pBroker,row2,details,pDisplayUnits,level);
@@ -1332,7 +1338,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 {
    rptParagraph* pParagraph;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IBridge,pBridge);
    Float64 end_size = pBridge->GetGirderStartConnectionLength( span,gdr );
@@ -1365,9 +1371,9 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    if (isWsdot)
-      *pParagraph << "Approximate Lump Sum Estimate of Time-Dependent Losses [WSDOT BDM 6.1.5.B3]" << rptNewLine;
+      *pParagraph << _T("Approximate Lump Sum Estimate of Time-Dependent Losses [WSDOT BDM 6.1.5.B3]") << rptNewLine;
    else
-      *pParagraph << "Approximate Lump Sum Estimate of Time-Dependent Losses [5.9.5.3]" << rptNewLine;
+      *pParagraph << _T("Approximate Lump Sum Estimate of Time-Dependent Losses [5.9.5.3]") << rptNewLine;
 
    bool bTemporaryStrands = ( 0 < Nt && girderData.TempStrandUsage == pgsTypes::ttsPretensioned ? true : false);
 
@@ -1467,7 +1473,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 {
    rptParagraph* pParagraph;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
@@ -1499,7 +1505,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Approximate Estimate of Time-Dependent Losses [5.9.5.3]" << rptNewLine;
+   *pParagraph << _T("Approximate Estimate of Time-Dependent Losses [5.9.5.3]") << rptNewLine;
 
    bool bTemporaryStrands = ( 0 < Nt && girderData.TempStrandUsage == pgsTypes::ttsPretensioned ? true : false);
 
@@ -1530,6 +1536,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
       pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
 
    CElasticGainDueToDeckPlacementTable*            pED  = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CElasticGainDueToSIDLTable*                     pSIDL= CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
 
    CTemporaryStrandRemovalTable*                   pPTR = NULL;
    if ( 0 < Nt )
@@ -1568,9 +1575,10 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
       if ( stage == pgsTypes::BridgeSite3 )
       {
-         ReportLocation(pED, row2,stage,poi,end_size,pDisplayUnits);
-         ReportLocation(pPTR,row2,stage,poi,end_size,pDisplayUnits);
-         ReportLocation(pT,  row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pED,  row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pSIDL,row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pPTR, row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pT,   row2,stage,poi,end_size,pDisplayUnits);
       }
 
       if ( !bSkipToNextRow )
@@ -1587,9 +1595,10 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
       if ( stage == pgsTypes::BridgeSite3 )
       {
-         ReportRow(pED, pChapter,m_pBroker,row2,details,pDisplayUnits,level);
-         ReportRow(pPTR,pChapter,m_pBroker,row2,details,pDisplayUnits,level);
-         ReportRow(pT,  pChapter,m_pBroker,row2,details,pDisplayUnits,level);
+         ReportRow(pED,   pChapter,m_pBroker,row2,details,pDisplayUnits,level);
+         ReportRow(pSIDL, pChapter,m_pBroker,row2,details,pDisplayUnits,level);
+         ReportRow(pPTR,  pChapter,m_pBroker,row2,details,pDisplayUnits,level);
+         ReportRow(pT,    pChapter,m_pBroker,row2,details,pDisplayUnits,level);
          row2++;
       }
       
@@ -1603,19 +1612,19 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 {
    rptParagraph* pParagraph;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "General Lump Sum Estimate Losses" << rptNewLine;
+   *pParagraph << _T("General Lump Sum Estimate Losses") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
    table->SetColumnWidth(0,3.0);
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -1633,24 +1642,24 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
    int row = 0;
 
-   (*table)(row,0) << "Stage"; (*table)(row++,1) << COLHDR("Loss", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(row,0) << _T("Stage"); (*table)(row++,1) << COLHDR(_T("Loss"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bDesign )
    {
-      (*table)(row,0) << "Before prestress transfer"; (*table)(row++,1) << stress.SetValue(details.LumpSum.GetBeforeXferLosses());
-      (*table)(row,0) << "After prestress transfer";  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterXferLosses());
-      (*table)(row,0) << "At girder lifting";         (*table)(row++,1) << stress.SetValue(details.LumpSum.GetLiftingLosses());
-      (*table)(row,0) << "At girder shipping";        (*table)(row++,1) << stress.SetValue(details.LumpSum.GetShippingLosses());
+      (*table)(row,0) << _T("Before prestress transfer"); (*table)(row++,1) << stress.SetValue(details.LumpSum.GetBeforeXferLosses());
+      (*table)(row,0) << _T("After prestress transfer");  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterXferLosses());
+      (*table)(row,0) << _T("At girder lifting");         (*table)(row++,1) << stress.SetValue(details.LumpSum.GetLiftingLosses());
+      (*table)(row,0) << _T("At girder shipping");        (*table)(row++,1) << stress.SetValue(details.LumpSum.GetShippingLosses());
 
       if ( 0 < NtMax )
       {
-         (*table)(row,0) << "Before temporary strand removal"; (*table)(row++,1) << stress.SetValue(details.LumpSum.GetBeforeTempStrandRemovalLosses());
-         (*table)(row,0) << "After temporary strand removal";  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterTempStrandRemovalLosses());
+         (*table)(row,0) << _T("Before temporary strand removal"); (*table)(row++,1) << stress.SetValue(details.LumpSum.GetBeforeTempStrandRemovalLosses());
+         (*table)(row,0) << _T("After temporary strand removal");  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterTempStrandRemovalLosses());
       }
 
-      (*table)(row,0) << "After deck placement";            (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterDeckPlacementLosses());
+      (*table)(row,0) << _T("After deck placement");            (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterDeckPlacementLosses());
    }
 
-   (*table)(row,0) << "Final";  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetFinalLosses());
+   (*table)(row,0) << _T("Final");  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetFinalLosses());
 }
 
 
@@ -1661,31 +1670,31 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    if ( pLosses->IgnoreInitialRelaxation() )
       return; // nothing to do
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
 
    // Relaxation At Prestress Transfer
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Prestress loss due to relaxation before transfer" << rptNewLine;
+   *pParagraph << _T("Prestress loss due to relaxation before transfer") << rptNewLine;
 
    if ( pLosses->GetStrandType() == matPsStrand::LowRelaxation )
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpR0_LR.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR0_LR.png")) << rptNewLine;
    else 
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpR0_SR.png") <<rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR0_SR.png")) <<rptNewLine;
 
    rptRcTable* table;
 
    if ( bTemporaryStrands )
    {
-      table = pgsReportStyleHolder::CreateDefaultTable(4,"Temporary Strands");
+      table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Temporary Strands"));
       *pParagraph << table << rptNewLine;
 
-      (*table)(0,0) << "t" << rptNewLine << "(Days)";
+      (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
       (*table)(0,1) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
       (*table)(1,1) << stress.SetValue( pLosses->GetFpjTemporary() );
@@ -1693,13 +1702,13 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
       (*table)(1,3) << stress.SetValue( pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer() );
    }
 
-   table = pgsReportStyleHolder::CreateDefaultTable(4,"Permanent Strands");
+   table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Permanent Strands"));
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << "t" << rptNewLine << "(Days)";
+   (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
    (*table)(0,1) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pR0"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
    (*table)(1,1) << stress.SetValue( pLosses->GetFpjPermanent() );
@@ -1720,11 +1729,11 @@ void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,int row,pgsTypes::Stage
    if ( stage == pgsTypes::CastingYard )
    {
       (*pTable)(row+rowOffset,0) << gdrloc.SetValue( stage, poi );
-      (*pTable)(row+rowOffset,1) << "";
+      (*pTable)(row+rowOffset,1) << _T("");
    }
    else
    {
-      (*pTable)(row+rowOffset,0) << "";
+      (*pTable)(row+rowOffset,0) << _T("");
       (*pTable)(row+rowOffset,1) << spanloc.SetValue( stage, poi, endsize );
    }
 }
@@ -1742,19 +1751,19 @@ void CPsLossEngineer::ReportLocation(rptRcTable* pTable,int row,pgsTypes::Stage 
 
 void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    // Lump Sum Loss at time of shipping
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Approximate Lump Sum Estimate of Time Dependent Losses at Shipping" << rptNewLine;
+   *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses at Shipping") << rptNewLine;
 
    if ( details.Method == LOSSES_AASHTO_LUMPSUM || details.Method == LOSSES_WSDOT_LUMPSUM )
    {
       // Approximate methods before 2005
       GET_IFACE( ISpecification,   pSpec);
       GET_IFACE( ILibrary,         pLib);
-      std::string spec_name = pSpec->GetSpecification();
+      std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
       Float64 shipping_losses = pSpecEntry->GetShippingLosses();
@@ -1765,21 +1774,21 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
       if ( shipping_losses < 0 )
       {
          // % of long term
-         *pParagraph << symbol(DELTA) << RPT_STRESS("pLTH") << " = " << -1*shipping_losses << "(" << symbol(DELTA) << RPT_STRESS("pLT") << ")" << rptNewLine;
+         *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << -1*shipping_losses << _T("(") << symbol(DELTA) << RPT_STRESS(_T("pLT")) << _T(")") << rptNewLine;
       }
 
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          true );
-      *pParagraph << symbol(DELTA) << RPT_STRESS("pLTH") << " = " << stress.SetValue(details.pLosses->PermanentStrand_TimeDependentLossesAtShipping()) << rptNewLine;
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << stress.SetValue(details.pLosses->PermanentStrand_TimeDependentLossesAtShipping()) << rptNewLine;
    }
    else
    {
       // Approximate methods, 2005
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_Shipping_2005_SI.png") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + _T("LumpSumLoss_Shipping_2005_SI.png")) << rptNewLine;
       else
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_Shipping_2005_US.png") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + _T("LumpSumLoss_Shipping_2005_US.png")) << rptNewLine;
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,"");
+      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
 
       INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,        pDisplayUnits->GetAreaUnit(),            false );
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
@@ -1791,14 +1800,14 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
 
       *pParagraph << table << rptNewLine;
       (*table)(0,0) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,1) << Sub2(symbol(gamma),"st");
-      (*table)(0,2) << "Relative" << rptNewLine << "Humidity (%)";
-      (*table)(0,3) << Sub2(symbol(gamma),"h");
-      (*table)(0,4) << COLHDR(RPT_STRESS("pi"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,5) << COLHDR(Sub2("A","ps"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,6) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS("pR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("pLTH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,1) << Sub2(symbol(gamma),_T("st"));
+      (*table)(0,2) << _T("Relative") << rptNewLine << _T("Humidity (%)");
+      (*table)(0,3) << Sub2(symbol(gamma),_T("h"));
+      (*table)(0,4) << COLHDR(RPT_STRESS(_T("pi")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,5) << COLHDR(Sub2(_T("A"),_T("ps")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,6) << COLHDR(Sub2(_T("A"),_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(1,0) << stress.SetValue( details.pLosses->GetFci() );
       (*table)(1,1) << scalar.SetValue( details.ApproxLosses2005.GetStrengthFactor() );
@@ -1814,62 +1823,62 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
 
 void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Approximate Lump Sum Estimate of Time Dependent Losses" << rptNewLine;
+   *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses") << rptNewLine;
 
    if ( details.Method == LOSSES_AASHTO_LUMPSUM || details.Method == LOSSES_WSDOT_LUMPSUM )
    {
-      std::string strLossEqnImage[2][5][2][2]; 
+      std::_tstring strLossEqnImage[2][5][2][2]; 
       // dim 0... 0 = LRFD, 1 = WSDOT
       // dim 1... 0 = I Beam, 1 = U Beam, 2 = SolidSlab, 3 = Box Beams, 4 = Single T
       // dim 2... 0 = Low Relax, 1 = Stress Rel
       // dim 2... 0 = SI, 1 = US
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][0]     = "ApproxLoss_LRFD_IBeam_LowRelax_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][0]     = "ApproxLoss_LRFD_IBeam_StressRel_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][0]     = "ApproxLoss_LRFD_UBeam_LowRelax_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][0]     = "ApproxLoss_LRFD_UBeam_StressRel_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][0] = "ApproxLoss_LRFD_SolidSlab_LowRelax_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][0] = "ApproxLoss_LRFD_SolidSlab_StressRel_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][0]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][0]   = "ApproxLoss_LRFD_BoxGirder_StressRel_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][0]   = "ApproxLoss_LRFD_SingleT_LowRelax_SI.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][0]   = "ApproxLoss_LRFD_SingleT_StressRel_SI.png";
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][0]     = _T("ApproxLoss_LRFD_IBeam_LowRelax_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][0]     = _T("ApproxLoss_LRFD_IBeam_StressRel_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][0]     = _T("ApproxLoss_LRFD_UBeam_LowRelax_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][0]     = _T("ApproxLoss_LRFD_UBeam_StressRel_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][0] = _T("ApproxLoss_LRFD_SolidSlab_LowRelax_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][0] = _T("ApproxLoss_LRFD_SolidSlab_StressRel_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][0]   = _T("ApproxLoss_LRFD_BoxGirder_LowRelax_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][0]   = _T("ApproxLoss_LRFD_BoxGirder_StressRel_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][0]   = _T("ApproxLoss_LRFD_SingleT_LowRelax_SI.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][0]   = _T("ApproxLoss_LRFD_SingleT_StressRel_SI.png");
 
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][0]     = "ApproxLoss_WSDOT_IBeam_LowRelax_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][0]     = "ApproxLoss_WSDOT_IBeam_StressRel_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][0]     = "ApproxLoss_WSDOT_UBeam_LowRelax_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][0]     = "ApproxLoss_WSDOT_UBeam_StressRel_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][0] = "ApproxLoss_LRFD_SolidSlab_LowRelax_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][0] = "ApproxLoss_LRFD_SolidSlab_StressRel_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][0]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][0]   = "ApproxLoss_LRFD_BoxGirder_StressRel_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][0]   = "ApproxLoss_LRFD_SingleT_LowRelax_SI.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][0]   = "ApproxLoss_LRFD_SingleT_StressRel_SI.png";
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][0]     = _T("ApproxLoss_WSDOT_IBeam_LowRelax_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][0]     = _T("ApproxLoss_WSDOT_IBeam_StressRel_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][0]     = _T("ApproxLoss_WSDOT_UBeam_LowRelax_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][0]     = _T("ApproxLoss_WSDOT_UBeam_StressRel_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][0] = _T("ApproxLoss_LRFD_SolidSlab_LowRelax_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][0] = _T("ApproxLoss_LRFD_SolidSlab_StressRel_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][0]   = _T("ApproxLoss_LRFD_BoxGirder_LowRelax_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][0]   = _T("ApproxLoss_LRFD_BoxGirder_StressRel_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][0]   = _T("ApproxLoss_LRFD_SingleT_LowRelax_SI.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][0]   = _T("ApproxLoss_LRFD_SingleT_StressRel_SI.png");
 
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][1]     = "ApproxLoss_LRFD_IBeam_LowRelax_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][1]     = "ApproxLoss_LRFD_IBeam_StressRel_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][1]     = "ApproxLoss_LRFD_UBeam_LowRelax_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][1]     = "ApproxLoss_LRFD_UBeam_StressRel_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][1] = "ApproxLoss_LRFD_SolidSlab_LowRelax_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][1] = "ApproxLoss_LRFD_SolidSlab_StressRel_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][1]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][1]   = "ApproxLoss_LRFD_BoxGirder_StressRel_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][1]   = "ApproxLoss_LRFD_SingleT_LowRelax_US.png";
-      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][1]   = "ApproxLoss_LRFD_SingleT_StressRel_US.png";
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][0][1]     = _T("ApproxLoss_LRFD_IBeam_LowRelax_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::IBeam][1][1]     = _T("ApproxLoss_LRFD_IBeam_StressRel_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][0][1]     = _T("ApproxLoss_LRFD_UBeam_LowRelax_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::UBeam][1][1]     = _T("ApproxLoss_LRFD_UBeam_StressRel_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][0][1] = _T("ApproxLoss_LRFD_SolidSlab_LowRelax_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SolidSlab][1][1] = _T("ApproxLoss_LRFD_SolidSlab_StressRel_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][0][1]   = _T("ApproxLoss_LRFD_BoxGirder_LowRelax_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::BoxBeam][1][1]   = _T("ApproxLoss_LRFD_BoxGirder_StressRel_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][0][1]   = _T("ApproxLoss_LRFD_SingleT_LowRelax_US.png");
+      strLossEqnImage[0][lrfdApproximateLosses::SingleT][1][1]   = _T("ApproxLoss_LRFD_SingleT_StressRel_US.png");
 
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][1]     = "ApproxLoss_WSDOT_IBeam_LowRelax_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][1]     = "ApproxLoss_WSDOT_IBeam_StressRel_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][1]     = "ApproxLoss_WSDOT_UBeam_LowRelax_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][1]     = "ApproxLoss_WSDOT_UBeam_StressRel_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][1] = "ApproxLoss_LRFD_SolidSlab_LowRelax_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][1] = "ApproxLoss_LRFD_SolidSlab_StressRel_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][1]   = "ApproxLoss_LRFD_BoxGirder_LowRelax_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][1]   = "ApproxLoss_LRFD_BoxGirder_StressRel_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][1]   = "ApproxLoss_LRFD_SingleT_LowRelax_US.png";
-      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][1]   = "ApproxLoss_LRFD_SingleT_StressRel_US.png";
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][0][1]     = _T("ApproxLoss_WSDOT_IBeam_LowRelax_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::IBeam][1][1]     = _T("ApproxLoss_WSDOT_IBeam_StressRel_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][0][1]     = _T("ApproxLoss_WSDOT_UBeam_LowRelax_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::UBeam][1][1]     = _T("ApproxLoss_WSDOT_UBeam_StressRel_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][0][1] = _T("ApproxLoss_LRFD_SolidSlab_LowRelax_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SolidSlab][1][1] = _T("ApproxLoss_LRFD_SolidSlab_StressRel_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][0][1]   = _T("ApproxLoss_LRFD_BoxGirder_LowRelax_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::BoxBeam][1][1]   = _T("ApproxLoss_LRFD_BoxGirder_StressRel_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][1]   = _T("ApproxLoss_LRFD_SingleT_LowRelax_US.png");
+      strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][1]   = _T("ApproxLoss_LRFD_SingleT_StressRel_US.png");
 
 
       int method = (details.Method == LOSSES_WSDOT_LUMPSUM) ? 1 : 0;
@@ -1883,18 +1892,18 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       *pParagraph<< rptRcImage(strImagePath + strLossEqnImage[method][beam][strand][units]) << rptNewLine;
 
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          true );
-      *pParagraph << RPT_FC << " = " << stress.SetValue(details.pLosses->GetFc() ) << rptNewLine;
-      *pParagraph << "PPR = " << details.ApproxLosses.GetPPR() << rptNewLine;
-      *pParagraph << symbol(DELTA) << RPT_STRESS("pLT") << " = " << stress.SetValue( details.pLosses->TimeDependentLosses() ) << rptNewLine;
+      *pParagraph << RPT_FC << _T(" = ") << stress.SetValue(details.pLosses->GetFc() ) << rptNewLine;
+      *pParagraph << _T("PPR = ") << details.ApproxLosses.GetPPR() << rptNewLine;
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << _T(" = ") << stress.SetValue( details.pLosses->TimeDependentLosses() ) << rptNewLine;
    }
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_2005_SI.png") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + _T("LumpSumLoss_2005_SI.png")) << rptNewLine;
       else
-         *pParagraph<< rptRcImage(strImagePath + "LumpSumLoss_2005_US.png") << rptNewLine;
+         *pParagraph<< rptRcImage(strImagePath + _T("LumpSumLoss_2005_US.png")) << rptNewLine;
 
-      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,"");
+      rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
 
       INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,        pDisplayUnits->GetAreaUnit(),            false );
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
@@ -1906,14 +1915,14 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
 
       *pParagraph << table << rptNewLine;
       (*table)(0,0) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,1) << Sub2(symbol(gamma),"st");
-      (*table)(0,2) << "Relative" << rptNewLine << "Humidity (%)";
-      (*table)(0,3) << Sub2(symbol(gamma),"h");
-      (*table)(0,4) << COLHDR(RPT_STRESS("pi"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,5) << COLHDR(Sub2("A","ps"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,6) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS("pR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("pLT"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,1) << Sub2(symbol(gamma),_T("st"));
+      (*table)(0,2) << _T("Relative") << rptNewLine << _T("Humidity (%)");
+      (*table)(0,3) << Sub2(symbol(gamma),_T("h"));
+      (*table)(0,4) << COLHDR(RPT_STRESS(_T("pi")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,5) << COLHDR(Sub2(_T("A"),_T("ps")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,6) << COLHDR(Sub2(_T("A"),_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       (*table)(1,0) << stress.SetValue( details.pLosses->GetFci() );
       (*table)(1,1) << scalar.SetValue( details.ApproxLosses2005.GetStrengthFactor() );
@@ -2125,7 +2134,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    if ( m_bComputingLossesForDesign )
    {
-      // get the additional moment caused by the difference in input and design "A" dimension
+      // get the additional moment caused by the difference in input and design _T("A") dimension
       double M = pProdForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
       *pMadlg += M;
    }
@@ -2150,7 +2159,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    // get time to prestress transfer
    GET_IFACE(ILibrary,pLib);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    *pti = pSpecEntry->GetXferTime();
    *pth = pSpecEntry->GetShippingTime();
@@ -2190,7 +2199,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 void CPsLossEngineer::ReportFinalLosses(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -2226,7 +2235,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ||
@@ -2244,7 +2253,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 {
    rptParagraph* pParagraph;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IBridgeMaterial,pMaterial);
@@ -2257,14 +2266,14 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Final Prestress Losses" << rptNewLine;
+   *pParagraph << _T("Final Prestress Losses") << rptNewLine;
 
 #if defined IGNORE_2007_CHANGES
    if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
-      *pParagraph << color(Red) << bold(ON) << "Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored." << bold(OFF) << color(Black) << rptNewLine;
+      *pParagraph << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
    }
 #endif
 
@@ -2300,7 +2309,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Refined Estimate of Time-Dependent Losses [5.9.5.4]" << rptNewLine;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
 
    GET_IFACE(IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> bsPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite3, POI_TABULAR );

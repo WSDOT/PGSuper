@@ -79,7 +79,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
       m_Grid.SortCurves();
       if ( !m_Grid.GetCurveData(m_ProfileData.VertCurves) )
       {
-         AfxMessageBox("Invalid vertical curve data");
+         AfxMessageBox(_T("Invalid vertical curve data"));
          pDX->Fail();
       }
 
@@ -91,7 +91,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
          if ( vc.L1 < 0 )
          {
             CString strMsg;
-            strMsg.Format("Curve Lengths must be greater than zero for curve # %d",curveID);
+            strMsg.Format(_T("Curve Lengths must be greater than zero for curve # %d"),curveID);
             AfxMessageBox(strMsg);
             pDX->Fail();
          }

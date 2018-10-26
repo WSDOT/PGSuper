@@ -52,7 +52,7 @@ void write_moment_data_table(IBroker* pBroker,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
                              pgsTypes::Stage stage,
-                             const std::string& strStageName,
+                             const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 void write_crack_moment_data_table(IBroker* pBroker,
@@ -62,7 +62,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const std::vector<pgsPointOfInterest>& pois,
                                    rptChapter* pChapter,
                                    pgsTypes::Stage stage,
-                                   const std::string& strStageName,
+                                   const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 void write_min_moment_data_table(IBroker* pBroker,
@@ -72,7 +72,7 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
                                  pgsTypes::Stage stage,
-                                 const std::string& strStageName,
+                                 const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
@@ -82,7 +82,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
                                  pgsTypes::Stage stage,
-                                 const std::string& strStageName,
+                                 const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -158,37 +158,37 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          *pChapter << pPara;
-         *pPara << "Positive Moment Capacity Details" << rptNewLine;
+         *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
          vPoi = pIPOI->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::BridgeSite3, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
 
-         write_moment_data_table(pBroker,pDisplayUnits,spanIdx,gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
+         write_moment_data_table(pBroker,pDisplayUnits,spanIdx,gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
          if ( !m_bCapacityOnly )
          {
-            write_crack_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
-            write_min_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
-            write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
+            write_crack_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
+            write_min_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
+            write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
          }
 
          if ( pBridge->ProcessNegativeMoments(span) )
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
             *pChapter << pPara;
-            *pPara << "Negative Moment Capacity Details" << rptNewLine;
+            *pPara << _T("Negative Moment Capacity Details") << rptNewLine;
 
-            write_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
+            write_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
             if ( !m_bCapacityOnly )
             {
-               write_crack_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
-               write_min_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
-               write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
+               write_crack_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
+               write_min_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
+               write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
             }
          }
       }
@@ -228,7 +228,7 @@ void write_moment_data_table(IBroker* pBroker,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
                              pgsTypes::Stage stage,
-                             const std::string& strStageName,
+                             const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
    rptParagraph* pPara = new rptParagraph();
@@ -246,7 +246,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
 
-   std::string strPicture;
+   std::_tstring strPicture;
    if ( bPositiveMoment )
       strPicture = pFactory->GetPositiveMomentCapacitySchematicImage(deckType);
    else
@@ -260,8 +260,8 @@ void write_moment_data_table(IBroker* pBroker,
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
 
-   std::ostringstream os;
-   os << "Moment Capacity [5.7.3.2.4] - " << strStageName << std::endl;
+   std::_tostringstream os;
+   os << _T("Moment Capacity [5.7.3.2.4] - ") << strStageName << std::endl;
    ColumnIndexType nColumns = (bPositiveMoment ? 14 : 10);
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
 
@@ -281,22 +281,22 @@ void write_moment_data_table(IBroker* pBroker,
    else
       (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,col++) << COLHDR("c", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR("d" << Sub("c"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR("d" << Sub("e"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR("d" << Sub("t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(_T("c"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("c")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("e")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    if ( bPositiveMoment )
    {
-      (*table)(0,col++) << COLHDR(RPT_STRESS("pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,col++) << Sub2(symbol(epsilon),"psi") << rptNewLine << "x 1000";
-      (*table)(0,col++) << COLHDR(RPT_STRESS("ps,avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,col++) << "PPR";
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << _T("PPR");
    }
    (*table)(0,col++) << symbol(phi);
-   (*table)(0,col++) << COLHDR("Moment" << rptNewLine << "Arm", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR("C", rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*table)(0,col++) << COLHDR("T", rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*table)(0,col++) << COLHDR("M" << Sub("n"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(_T("Moment") << rptNewLine << _T("Arm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(_T("C"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*table)(0,col++) << COLHDR(_T("T"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*table)(0,col++) << COLHDR(_T("M") << Sub(_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetGeneralForceUnit(), false );
@@ -361,7 +361,7 @@ void write_moment_data_table(IBroker* pBroker,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfter2005 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2006Interims ? true : false );
    if ( pSpec->GetMomentCapacityMethod() == WSDOT_METHOD || bAfter2005 )
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GeneralizedFlexureResistanceFactor.png") << rptNewLine;
+      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GeneralizedFlexureResistanceFactor.png")) << rptNewLine;
 
 }
 
@@ -372,7 +372,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const std::vector<pgsPointOfInterest>& pois,
                                    rptChapter* pChapter,
                                    pgsTypes::Stage stage,
-                                   const std::string& strStageName,
+                                   const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -387,15 +387,15 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    ColumnIndexType nColumns = bAfter2002 ? 8 : 7;
-   std::ostringstream os;
-   os << (bPositiveMoment ? "Positive" : "Negative") << " Cracking Moment Details [5.7.3.3.2] - " << strStageName << std::endl;
+   std::_tostringstream os;
+   os << (bPositiveMoment ? _T("Positive") : _T("Negative")) << _T(" Cracking Moment Details [5.7.3.3.2] - ") << strStageName << std::endl;
 
 
    *pParagraph << rptNewLine;
    if ( bAfter2002 )
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcr_2005.png") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcr_2005.png")) << rptNewLine;
    else
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcr.png") << rptNewLine;
+      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcr.png")) << rptNewLine;
    
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
 
@@ -412,14 +412,14 @@ void write_crack_moment_data_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR( RPT_STRESS("r"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2)  << COLHDR( RPT_STRESS("cpe"), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3)  << COLHDR( Sub2("S","nc"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-   (*table)(0,4)  << COLHDR( Sub2("S","c"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-   (*table)(0,5)  << COLHDR( Sub2("M","dnc"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,6)  << COLHDR( Sub2("M","cr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,1)  << COLHDR( RPT_STRESS(_T("r")), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2)  << COLHDR( RPT_STRESS(_T("cpe")), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3)  << COLHDR( Sub2(_T("S"),_T("nc")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+   (*table)(0,4)  << COLHDR( Sub2(_T("S"),_T("c")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+   (*table)(0,5)  << COLHDR( Sub2(_T("M"),_T("dnc")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,6)  << COLHDR( Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( bAfter2002 )
-      (*table)(0,7)  << COLHDR(Sub2("S","c") << RPT_STRESS("r"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,7)  << COLHDR(Sub2(_T("S"),_T("c")) << RPT_STRESS(_T("r")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -466,13 +466,13 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
-   *pParagraph << RPT_STRESS("r") << " = " << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
+   *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
 
-   *pParagraph << RPT_STRESS("cpe") << " = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads." << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fcpe.png") << rptNewLine;
-   *pParagraph << Sub2("S","nc") << " = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads" << rptNewLine;
-   *pParagraph << Sub2("S","c") << " = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads" << rptNewLine;
-   *pParagraph << Sub2("M","dnc") << " = total unfactored dead load moment acting on the monolithic or noncomposite section" << rptNewLine;
+   *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fcpe.png")) << rptNewLine;
+   *pParagraph << Sub2(_T("S"),_T("nc")) << _T(" = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads") << rptNewLine;
+   *pParagraph << Sub2(_T("S"),_T("c")) << _T(" = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads") << rptNewLine;
+   *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;
    *pParagraph << rptNewLine;
 }
 
@@ -483,7 +483,7 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
                                  pgsTypes::Stage stage,
-                                 const std::string& strStageName,
+                                 const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
    // Setup the table
@@ -492,8 +492,8 @@ void write_min_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   std::ostringstream os;
-   os << "Minimum Reinforcement [5.7.3.3.2] - " << strStageName << std::endl;
+   std::_tostringstream os;
+   os << _T("Minimum Reinforcement [5.7.3.3.2] - ") << strStageName << std::endl;
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,os.str());
 
    if ( span == ALL_SPANS )
@@ -509,12 +509,12 @@ void write_min_moment_data_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR( "M" << Sub("cr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,2)  << COLHDR( "1.2M" << Sub("cr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,3)  << "Loading";
-   (*table)(0,4)  << COLHDR( "M" << Sub("u"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,5)  << COLHDR( "1.33M" << Sub("u"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,6)  << COLHDR( symbol(phi) << "M" << Sub("n") << " Min", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,1)  << COLHDR( _T("M") << Sub(_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,2)  << COLHDR( _T("1.2M") << Sub(_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,3)  << _T("Loading");
+   (*table)(0,4)  << COLHDR( _T("M") << Sub(_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,5)  << COLHDR( _T("1.33M") << Sub(_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,6)  << COLHDR( symbol(phi) << _T("M") << Sub(_T("n")) << _T(" Min"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
@@ -553,7 +553,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << symbol(phi) << Sub2("M","n") << " Min = " << "min(" << Sub2("1.2M","cr") << ", " << Sub2("1.33M","u") << ")" << rptNewLine;
+   *pParagraph << symbol(phi) << Sub2(_T("M"),_T("n")) << _T(" Min = ") << _T("min(") << Sub2(_T("1.2M"),_T("cr")) << _T(", ") << Sub2(_T("1.33M"),_T("u")) << _T(")") << rptNewLine;
 }
 
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
@@ -563,7 +563,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
                                  pgsTypes::Stage stage,
-                                 const std::string& strStageName,
+                                 const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
    // Determine if this table is even needed...
@@ -594,16 +594,16 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    if ( bPositiveMoment )
-      *pParagraph << "Limiting Capacity of Over Reinforced Sections - Positive Moment - " << strStageName << rptNewLine;
+      *pParagraph << _T("Limiting Capacity of Over Reinforced Sections - Positive Moment - ") << strStageName << rptNewLine;
    else
-      *pParagraph << "Limiting Capacity of Over Reinforced Sections - Negative Moment - " << strStageName << rptNewLine;
+      *pParagraph << _T("Limiting Capacity of Over Reinforced Sections - Negative Moment - ") << strStageName << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << "Over reinforced sections may be considered adequate if the flexural demand does not exceed the flexural resistance suggested by LRFD C5.7.3.3.1." << rptNewLine;
-   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "LimitingCapacityOfOverReinforcedSections.jpg") << rptNewLine;
+   *pParagraph << _T("Over reinforced sections may be considered adequate if the flexural demand does not exceed the flexural resistance suggested by LRFD C5.7.3.3.1.") << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LimitingCapacityOfOverReinforcedSections.jpg")) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,"Nominal Resistance of Over Reinforced Sections [C5.7.3.3.1]");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,_T("Nominal Resistance of Over Reinforced Sections [C5.7.3.3.1]"));
 
    if ( span == ALL_SPANS )
    {
@@ -618,15 +618,15 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1) << symbol(beta) << Sub("1");
-   (*table)(0,2) << COLHDR("f" << Sub("c"), rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*table)(0,3) << COLHDR("b", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR("b" << Sub("w"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR("d" << Sub("e"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,6) << COLHDR("h" << Sub("f"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,7) << "Equation";
-   (*table)(0,8) << COLHDR("M" << Sub("n"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,9) << COLHDR(symbol(phi) << "M" << Sub("n"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,1) << symbol(beta) << Sub(_T("1"));
+   (*table)(0,2) << COLHDR(_T("f") << Sub(_T("c")), rptStressUnitTag,pDisplayUnits->GetStressUnit());
+   (*table)(0,3) << COLHDR(_T("b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4) << COLHDR(_T("b") << Sub(_T("w")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5) << COLHDR(_T("d") << Sub(_T("e")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,6) << COLHDR(_T("h") << Sub(_T("f")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,7) << _T("Equation");
+   (*table)(0,8) << COLHDR(_T("M") << Sub(_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,9) << COLHDR(symbol(phi) << _T("M") << Sub(_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
@@ -663,7 +663,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
          (*table)(row,4) << dim.SetValue( mcd.bw );
          (*table)(row,5) << dim.SetValue( mcd.de );
          (*table)(row,6) << dim.SetValue( mcd.hf );
-         (*table)(row,7) << (mcd.bRectSection ? "C5.7.3.3.1-1" : "C5.7.3.3.1-2");
+         (*table)(row,7) << (mcd.bRectSection ? _T("C5.7.3.3.1-1") : _T("C5.7.3.3.1-2"));
          (*table)(row,8) << moment.SetValue( mcd.MnMin );
          (*table)(row,9) << moment.SetValue( mcd.Phi * mcd.MnMin );
 

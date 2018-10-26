@@ -96,11 +96,11 @@ int _tmain(int argc, _TCHAR* argv[])
    else if ( argc == 3 )
    {
       // unzipping or listing
-      if (argv[2][1]=='L') // listing
+      if (argv[2][1]==_T('L')) // listing
       {
          return ListPGZ(argv[1]);
       }
-      else if (argv[2][1]=='U') // unzipping
+      else if (argv[2][1]==_T('U')) // unzipping
       {
          return UnZipPGZ(argv[1],_T(".\\"),true);
       }

@@ -31,13 +31,13 @@ public:
 public:
    void LoadDialogData();
    void SaveDialogData();
-   void Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* m_pBrokerRetriever, const char* entryName);
+   void Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* m_pBrokerRetriever, LPCTSTR entryName);
    void UpdateLibraryData();
    void InitStrandNoCtrl();
    void UpdateControls();
 
    // common girder dialog calls
-   virtual void SetGirderEntryName(const char* entryName);
+   virtual void SetGirderEntryName(LPCTSTR entryName);
    virtual BOOL OnFillSetActive();
    virtual BOOL OnFillKillActive();
 

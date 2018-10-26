@@ -68,6 +68,7 @@ END_MESSAGE_MAP()
 
 void CBridgeAnalysisReportDlg::OnHelp() 
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_BRIDGEANALYSISREPORT );
 }
 

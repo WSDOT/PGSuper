@@ -86,17 +86,28 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    {
       // include load rating results if we are always load rating
       bRating = pRatingSpec->AlwaysLoadRate();
+
+
+      // if none of the rating types are enabled, skip the rating
+      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
+           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
+         )
+         bRating = false;
    }
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
 
-   std::vector<std::string> user_loads;
-   std::vector<std::string>::iterator it;
+   std::vector<std::_tstring> user_loads;
+   std::vector<std::_tstring>::iterator it;
 
    if ( bDesign )
    {
-      *pPara<< "Live Loads used for Design"<<rptNewLine;
+      *pPara<< _T("Live Loads used for Design")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -105,16 +116,16 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       if (user_loads.empty())
       {
-         *pPara<<"No live loads were applied to the design (Service and Strength I) limit states"<< rptNewLine;
+         *pPara<<_T("No live loads were applied to the design (Service and Strength I) limit states")<< rptNewLine;
       }
       else
       {
-         *pPara<<"The following live loads were applied to the design (Service and Strength I) limit states:"<< rptNewLine;
+         *pPara<<_T("The following live loads were applied to the design (Service and Strength I) limit states:")<< rptNewLine;
       }
 
       for (it=user_loads.begin(); it!=user_loads.end(); it++)
       {
-         std::string& load_name = *it;
+         std::_tstring& load_name = *it;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -127,7 +138,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara<< "Live Loads Used for Fatigue Limit States"<<rptNewLine;
+         *pPara<< _T("Live Loads Used for Fatigue Limit States")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -136,16 +147,16 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          if (user_loads.empty())
          {
-            *pPara<<"No live loads were applied to the Fatigue I limit state"<< rptNewLine;
+            *pPara<<_T("No live loads were applied to the Fatigue I limit state")<< rptNewLine;
          }
          else
          {
-            *pPara<<"The following live loads were applied to the Fatigue I limit state:"<< rptNewLine;
+            *pPara<<_T("The following live loads were applied to the Fatigue I limit state:")<< rptNewLine;
          }
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
-            std::string& load_name = *it;
+            std::_tstring& load_name = *it;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -157,7 +168,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       // Strength II live loads
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
-      *pPara<< "Live Loads Used for Design Permit Limit State"<<rptNewLine;
+      *pPara<< _T("Live Loads Used for Design Permit Limit State")<<rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -166,16 +177,16 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
       if (user_loads.empty())
       {
-         *pPara<<"No live loads were applied to the design permit (Strength II) limit state"<< rptNewLine;
+         *pPara<<_T("No live loads were applied to the design permit (Strength II) limit state")<< rptNewLine;
       }
       else
       {
-         *pPara<<"The following live loads were applied to the design permit (Strength II) limit state:"<< rptNewLine;
+         *pPara<<_T("The following live loads were applied to the design permit (Strength II) limit state:")<< rptNewLine;
       }
 
       for (it=user_loads.begin(); it!=user_loads.end(); it++)
       {
-         std::string& load_name = *it;
+         std::_tstring& load_name = *it;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -188,7 +199,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    {
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
-         *pPara<< "Live Loads used for Design Load Rating"<<rptNewLine;
+         *pPara<< _T("Live Loads used for Design Load Rating")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -197,7 +208,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
-            std::string& load_name = *it;
+            std::_tstring& load_name = *it;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -210,7 +221,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara<< "Live Loads used for Legal Load Rating for Routine Commercial Traffic"<<rptNewLine;
+         *pPara<< _T("Live Loads used for Legal Load Rating for Routine Commercial Traffic")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -219,7 +230,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
-            std::string& load_name = *it;
+            std::_tstring& load_name = *it;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -233,7 +244,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara<< "Live Loads used for Legal Load Rating for Special Hauling Vehicles"<<rptNewLine;
+         *pPara<< _T("Live Loads used for Legal Load Rating for Special Hauling Vehicles")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -242,7 +253,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
-            std::string& load_name = *it;
+            std::_tstring& load_name = *it;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -256,7 +267,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara<< "Live Loads used for Routine Permit Load Rating"<<rptNewLine;
+         *pPara<< _T("Live Loads used for Routine Permit Load Rating")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -265,7 +276,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
-            std::string& load_name = *it;
+            std::_tstring& load_name = *it;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -278,7 +289,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara<< "Live Loads used for Special Permit Load Rating"<<rptNewLine;
+         *pPara<< _T("Live Loads used for Special Permit Load Rating")<<rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -287,7 +298,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          for (it=user_loads.begin(); it!=user_loads.end(); it++)
          {
-            std::string& load_name = *it;
+            std::_tstring& load_name = *it;
 
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -301,7 +312,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    return pChapter;
 }
 
-void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
+void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,         pDisplayUnits->GetSpanLengthUnit(),       false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,       pDisplayUnits->GetGeneralForceUnit(),     false );
@@ -316,33 +327,33 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
    // if the entry is NULL, the name better be HL-93
    if ( ll_entry == NULL )
    {
-      if ( load_name == "HL-93" )
+      if ( load_name == _T("HL-93") )
       {
-         *pPara << Bold("AASHTO LRFD 3.6.1.2: ") << "HL-93 Design Vehicular Live Load" << rptNewLine;
+         *pPara << Bold(_T("AASHTO LRFD 3.6.1.2: ")) << _T("HL-93 Design Vehicular Live Load") << rptNewLine;
       }
-      else if ( load_name == "Fatigue" )
+      else if ( load_name == _T("Fatigue") )
       {
-         *pPara << Bold("AASHTO LRFD 3.6.1.4: ") << "Fatigue Vehicular Live Load" << rptNewLine;
+         *pPara << Bold(_T("AASHTO LRFD 3.6.1.4: ")) << _T("Fatigue Vehicular Live Load") << rptNewLine;
       }
-      else if ( load_name == "Pedestrian on Sidewalk" )
+      else if ( load_name == _T("Pedestrian on Sidewalk") )
       {
-         *pPara << Bold("AASHTO LRFD 3.6.1.6: ") << "Pedestrian Live Load" << rptNewLine;
+         *pPara << Bold(_T("AASHTO LRFD 3.6.1.6: ")) << _T("Pedestrian Live Load") << rptNewLine;
 
          GET_IFACE2(pBroker,ISpecification,pSpec);
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-         *pPara << "A pedestrian load of " << pressure.SetValue(pSpecEntry->GetPedestrianLiveLoad()) << " is applied to sidewalks wider than " << sw.SetValue(pSpecEntry->GetMinSidewalkWidth()) << " and considered simultaneously with the vehicular design live load." << rptNewLine;
+         *pPara << _T("A pedestrian load of ") << pressure.SetValue(pSpecEntry->GetPedestrianLiveLoad()) << _T(" is applied to sidewalks wider than ") << sw.SetValue(pSpecEntry->GetMinSidewalkWidth()) << _T(" and considered simultaneously with the vehicular design live load.") << rptNewLine;
       }
-      else if ( load_name == "AASHTO Legal Loads" )
+      else if ( load_name == _T("AASHTO Legal Loads") )
       {
-         *pPara << Bold("AASHTO MBE 6A.4.4.2.1a: ") << "Routine Commercial Traffic" << rptNewLine;
+         *pPara << Bold(_T("AASHTO MBE 6A.4.4.2.1a: ")) << _T("Routine Commercial Traffic") << rptNewLine;
       }
-      else if ( load_name == "Notional Rating Load (NRL)" )
+      else if ( load_name == _T("Notional Rating Load (NRL)") )
       {
-         *pPara << Bold("AASHTO MBE 6A.4.4.2.1b: ") << "Specialized Hauling Vehicles (NRL)" << rptNewLine;
+         *pPara << Bold(_T("AASHTO MBE 6A.4.4.2.1b: ")) << _T("Specialized Hauling Vehicles (NRL)") << rptNewLine;
       }
-      else if ( load_name == "Single-Unit SHVs" )
+      else if ( load_name == _T("Single-Unit SHVs") )
       {
-         *pPara << Bold("AASHTO MBE 6A.4.4.2.1b: ") << "Specialized Hauling Vehicles (SU)" << rptNewLine;
+         *pPara << Bold(_T("AASHTO MBE 6A.4.4.2.1b: ")) << _T("Specialized Hauling Vehicles (SU)") << rptNewLine;
       }
       else
          ATLASSERT(false);
@@ -351,24 +362,24 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
    }
 
 
-   *pPara<< Bold("User-defined vehicular live load: ") << load_name << rptNewLine;
+   *pPara<< Bold(_T("User-defined vehicular live load: ")) << load_name << rptNewLine;
 
    LiveLoadLibraryEntry::LiveLoadConfigurationType ll_config = ll_entry->GetLiveLoadConfigurationType();
    if (ll_config == LiveLoadLibraryEntry::lcTruckOnly)
    {
-      *pPara<<"Configuration: Truck applied only (no lane)"<<rptNewLine;
+      *pPara<<_T("Configuration: Truck applied only (no lane)")<<rptNewLine;
    }
    else if (ll_config== LiveLoadLibraryEntry::lcLaneOnly)
    {
-      *pPara<<"Configuration: Lane load applied only (no truck)"<<rptNewLine;
+      *pPara<<_T("Configuration: Lane load applied only (no truck)")<<rptNewLine;
    }
    else if (ll_config== LiveLoadLibraryEntry::lcTruckPlusLane)
    {
-      *pPara<<"Configuration: Truck response added with lane response"<<rptNewLine;
+      *pPara<<_T("Configuration: Truck response added with lane response")<<rptNewLine;
    }
    else if (ll_config== LiveLoadLibraryEntry::lcTruckLaneEnvelope)
    {
-      *pPara<<"Configuration: Truck response enveloped with lane response"<<rptNewLine;
+      *pPara<<_T("Configuration: Truck response enveloped with lane response")<<rptNewLine;
    }
    else
    {
@@ -378,15 +389,15 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
    LiveLoadLibraryEntry::LiveLoadApplicabilityType ll_applicability = ll_entry->GetLiveLoadApplicabilityType();
    if ( ll_applicability == LiveLoadLibraryEntry::llaEntireStructure )
    {
-      *pPara << "Usage: Use for all actions at all locations" << rptNewLine;
+      *pPara << _T("Usage: Use for all actions at all locations") << rptNewLine;
    }
    else if ( ll_applicability == LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction  )
    {
-      *pPara << "Usage: Use only for negative moments and interior pier reactions" << rptNewLine;
+      *pPara << _T("Usage: Use only for negative moments and interior pier reactions") << rptNewLine;
    }
    else if ( ll_applicability == LiveLoadLibraryEntry::llaContraflexure  )
    {
-      *pPara << "Usage: Use only for negative moments between points of contraflexure and interior pier reactions" << rptNewLine;
+      *pPara << _T("Usage: Use only for negative moments between points of contraflexure and interior pier reactions") << rptNewLine;
    }
    else
    {
@@ -398,8 +409,8 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
        ll_config == LiveLoadLibraryEntry::lcTruckPlusLane ||
        ll_config == LiveLoadLibraryEntry::lcTruckLaneEnvelope)
    {
-      *pPara<<"Lane Load Value: "<< fpl.SetValue(ll_entry->GetLaneLoad()) << rptNewLine;
-      *pPara << "Lane Load is applied for span length greater than " << span_length.SetValue(ll_entry->GetLaneLoadSpanLength()) << rptNewLine; 
+      *pPara<<_T("Lane Load Value: ")<< fpl.SetValue(ll_entry->GetLaneLoad()) << rptNewLine;
+      *pPara << _T("Lane Load is applied for span length greater than ") << span_length.SetValue(ll_entry->GetLaneLoadSpanLength()) << rptNewLine; 
    }
 
    // truck axles
@@ -407,12 +418,12 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
        ll_config == LiveLoadLibraryEntry::lcTruckPlusLane ||
        ll_config == LiveLoadLibraryEntry::lcTruckLaneEnvelope)
    {
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
       *pPara << p_table;
 
-      (*p_table)(0,0) << "Axle";
-      (*p_table)(0,1) << COLHDR("Weight",  rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit() );
-      (*p_table)(0,2) << COLHDR("Spacing", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,0) << _T("Axle");
+      (*p_table)(0,1) << COLHDR(_T("Weight"),  rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       AxleIndexType var_axl = ll_entry->GetVariableAxleIndex();
 
@@ -430,11 +441,11 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
             (*p_table)(row,2) << dim.SetValue(axle.Spacing);
 
             if (axleIdx == var_axl)
-               (*p_table)(row,2) <<"-"<<dim.SetValue(ll_entry->GetMaxVariableAxleSpacing());
+               (*p_table)(row,2) <<_T("-")<<dim.SetValue(ll_entry->GetMaxVariableAxleSpacing());
          }
          else
          {
-            (*p_table)(row,2) << "";
+            (*p_table)(row,2) << _T("");
          }
       }
 
@@ -442,7 +453,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
       {
          if (ll_entry->GetIsNotional())
          {
-            *pPara<<"    Note: Only those axles contributing to extreme force under consideration are applied. (LRFD 3.6.1.3.1)"<<rptNewLine;
+            *pPara<<_T("    Note: Only those axles contributing to extreme force under consideration are applied. (LRFD 3.6.1.3.1)")<<rptNewLine;
          }
       }
    }

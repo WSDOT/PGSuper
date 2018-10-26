@@ -58,9 +58,9 @@ void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,long agentID,Span
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   double H1 = GetDimension(dimensions,"H1");
-   double H2 = GetDimension(dimensions,"H2");
-   double H3 = GetDimension(dimensions,"H3");
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
 
    Float64 height = H1 + H2 + H3;
 
@@ -97,7 +97,7 @@ void CBoxBeamFactoryImpl::LayoutGirderLine(IBroker* pBroker,long agentID,SpanInd
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
-   Float64 endBlockLength = GetDimension(dimensions,"EndBlockLength");
+   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
    segment->put_EndBlockLength(etStart,endBlockLength);
    segment->put_EndBlockLength(etEnd,endBlockLength);
 
@@ -183,7 +183,7 @@ void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    const GirderLibraryEntry* pGirderLib = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
-   Float64 endBlockLength = pGirderLib->GetDimension("EndBlockLength");
+   Float64 endBlockLength = pGirderLib->GetDimension(_T("EndBlockLength"));
 
    if ( !IsZero(endBlockLength) )
    {
@@ -266,7 +266,7 @@ void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,long agentID,Spa
 }
 
 
-std::vector<std::string> CBoxBeamFactoryImpl::GetDimensionNames()
+std::vector<std::_tstring> CBoxBeamFactoryImpl::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -287,7 +287,7 @@ bool CBoxBeamFactoryImpl::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,Gir
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 endBlockLength = GetDimension(dimensions,"EndBlockLength");
+   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 
    return IsZero(endBlockLength) ? true : false;
 }
@@ -326,17 +326,17 @@ CLSID CBoxBeamFactoryImpl::GetFamilyCLSID()
    return CLSID_BoxBeamFamily;
 }
 
-std::string CBoxBeamFactoryImpl::GetGirderFamilyName()
+std::_tstring CBoxBeamFactoryImpl::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CBoxBeamFactoryImpl::GetPublisher()
+std::_tstring CBoxBeamFactoryImpl::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CBoxBeamFactoryImpl::GetResourceInstance()
@@ -345,7 +345,7 @@ HINSTANCE CBoxBeamFactoryImpl::GetResourceInstance()
 }
 
 double CBoxBeamFactoryImpl::GetDimension(const IBeamFactory::Dimensions& dimensions,
-                                        const std::string& name)
+                                        const std::_tstring& name)
 {
    IBeamFactory::Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -403,34 +403,34 @@ long CBoxBeamFactoryImpl::GetNumberOfWebs(const IBeamFactory::Dimensions& dimens
 
 Float64 CBoxBeamFactoryImpl::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double H1 = GetDimension(dimensions,"H1");
-   double H2 = GetDimension(dimensions,"H2");
-   double H3 = GetDimension(dimensions,"H3");
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
 
    return H1 + H2 + H3;
 }
 
 
 
-std::string CBoxBeamFactoryImpl::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBoxBeamFactoryImpl::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
-      strImage = "BoxBeam_Composite_CIP.gif";
+      strImage = _T("BoxBeam_Composite_CIP.gif");
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      strImage = "BoxBeam_Composite_SIP.gif";
+      strImage = _T("BoxBeam_Composite_SIP.gif");
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      strImage = "BoxBeam_Composite.gif";
+      strImage = _T("BoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage = "BoxBeam_Noncomposite.gif";
+      strImage = _T("BoxBeam_Noncomposite.gif");
       break;
 
    default:
@@ -441,22 +441,22 @@ std::string CBoxBeamFactoryImpl::GetSlabDimensionsImage(pgsTypes::SupportedDeckT
    return strImage;
 }
 
-std::string CBoxBeamFactoryImpl::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBoxBeamFactoryImpl::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "+Mn_SpreadBoxBeam_Composite.gif";
+      strImage =  _T("+Mn_SpreadBoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_BoxBeam_Composite.gif";
+      strImage =  _T("+Mn_BoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "+Mn_BoxBeam_Noncomposite.gif";
+      strImage =  _T("+Mn_BoxBeam_Noncomposite.gif");
       break;
 
    default:
@@ -467,22 +467,22 @@ std::string CBoxBeamFactoryImpl::GetPositiveMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::string CBoxBeamFactoryImpl::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBoxBeamFactoryImpl::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "-Mn_SpreadBoxBeam_Composite.gif";
+      strImage =  _T("-Mn_SpreadBoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_BoxBeam_Composite.gif";
+      strImage =  _T("-Mn_BoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "-Mn_BoxBeam_Noncomposite.gif";
+      strImage =  _T("-Mn_BoxBeam_Noncomposite.gif");
       break;
 
    default:
@@ -493,22 +493,22 @@ std::string CBoxBeamFactoryImpl::GetNegativeMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::string CBoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CBoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      strImage =  "Vn_SpreadBoxBeam_Composite.gif";
+      strImage =  _T("Vn_SpreadBoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_BoxBeam_Composite.gif";
+      strImage =  _T("Vn_BoxBeam_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "Vn_BoxBeam_Noncomposite.gif";
+      strImage =  _T("Vn_BoxBeam_Noncomposite.gif");
       break;
 
    default:
@@ -519,35 +519,35 @@ std::string CBoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::Supp
    return strImage;
 }
 
-std::string CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
       if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
       {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
+         strImage =  _T("SpreadBoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
       else
       {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Interior_Girder.gif";
+         strImage =  _T("SpreadBoxBeam_Effective_Flange_Width_Interior_Girder.gif");
       }
       break;
 
    case pgsTypes::sdtCompositeOverlay:
       if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
       {
-         strImage =  "BoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
+         strImage =  _T("BoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
       else
       {
-         strImage =  "BoxBeam_Effective_Flange_Width_Interior_Girder.gif";
+         strImage =  _T("BoxBeam_Effective_Flange_Width_Interior_Girder.gif");
       }
       break;
 
@@ -560,35 +560,35 @@ std::string CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IBro
    return strImage;
 }
 
-std::string CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
       if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
       {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
+         strImage =  _T("SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }
       else
       {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder.gif";
+         strImage =  _T("SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder.gif");
       }
       break;
 
    case pgsTypes::sdtCompositeOverlay:
       if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
       {
-         strImage =  "BoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
+         strImage =  _T("BoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }
       else
       {
-         strImage =  "BoxBeam_Effective_Flange_Width_Exterior_Girder.gif";
+         strImage =  _T("BoxBeam_Effective_Flange_Width_Exterior_Girder.gif");
       }
       break;
 

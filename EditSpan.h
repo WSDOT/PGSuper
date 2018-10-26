@@ -45,8 +45,8 @@ struct txnEditSpanData
    GirderIndexType nGirders;
    CGirderTypes GirderTypes;
 
-   std::string PrevPierConnection[2];
-   std::string NextPierConnection[2];
+   std::_tstring PrevPierConnection[2];
+   std::_tstring NextPierConnection[2];
    pgsTypes::PierConnectionType ConnectionType[2];
    bool bSameGirderSpacingAtEachEnd;
    CGirderSpacing GirderSpacing[2];
@@ -65,7 +65,7 @@ public:
    virtual bool Execute();
    virtual void Undo();
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool IsUndoable();
    virtual bool IsRepeatable();
 

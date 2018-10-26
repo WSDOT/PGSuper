@@ -194,7 +194,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format("Left Offset (%s)", pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Left Offset (%s)"), pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -203,7 +203,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Right Offset (%s)", pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Right Offset (%s)"), pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -244,7 +244,7 @@ CString CBridgeDescDeckPointGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& point)
 {
    SetStyleRange(CGXRange(row,0), CGXStyle()
-      .SetValue("")
+      .SetValue(_T(""))
       );
 
    CComPtr<IBroker> pBroker;
@@ -259,12 +259,12 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(strStation)
       );
 
-   CString strDatumChoices("Bridge Line\nAlignment");
+   CString strDatumChoices(_T("Bridge Line\nAlignment"));
    SetStyleRange(CGXRange(row,2),CGXStyle()
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetHorizontalAlignment(DT_LEFT)
       .SetChoiceList(strDatumChoices)
-      .SetValue(point.MeasurementType == pgsTypes::omtBridge ? "Bridge Line" : "Alignment")
+      .SetValue(point.MeasurementType == pgsTypes::omtBridge ? _T("Bridge Line") : _T("Alignment"))
       );
 
    double offset = ::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
@@ -301,21 +301,21 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 
    // Datum
    CString strDatum = GetCellValue(row,2);
-   pPoint->MeasurementType = (strDatum == "Alignment" ? pgsTypes::omtAlignment : pgsTypes::omtBridge);
+   pPoint->MeasurementType = (strDatum == _T("Alignment") ? pgsTypes::omtAlignment : pgsTypes::omtBridge);
 
    // Left Edge
-   double offset = atof(GetCellValue(row,3));
+   double offset = _tstof(GetCellValue(row,3));
    pPoint->LeftEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Right Edge
-   offset = atof(GetCellValue(row,4));
+   offset = _tstof(GetCellValue(row,4));
    pPoint->RightEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 }
 
 void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint& point)
 {
    SetStyleRange(CGXRange(row,0), CGXStyle()
-      .SetValue("")
+      .SetValue(_T(""))
       );
 
    SetStyleRange(CGXRange(row,1,row,2), CGXStyle()
@@ -325,17 +325,17 @@ void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint&
       //.SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
       .SetReadOnly(TRUE)
       .SetEnabled(FALSE)
-      .SetValue("Transition")
+      .SetValue(_T("Transition"))
       );
 
-   CString strChoices("Parallel\nLinear\nSpline");
+   CString strChoices(_T("Parallel\nLinear\nSpline"));
    CString strChoice;
    if ( point.LeftTransitionType == pgsTypes::dptParallel )
-      strChoice = "Parallel";
+      strChoice = _T("Parallel");
    else if ( point.LeftTransitionType == pgsTypes::dptLinear )
-      strChoice = "Linear";
+      strChoice = _T("Linear");
    else if ( point.LeftTransitionType == pgsTypes::dptSpline )
-      strChoice = "Spline";
+      strChoice = _T("Spline");
 
    SetStyleRange(CGXRange(row,3), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -345,11 +345,11 @@ void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint&
       );
 
    if ( point.RightTransitionType == pgsTypes::dptParallel )
-      strChoice = "Parallel";
+      strChoice = _T("Parallel");
    else if ( point.RightTransitionType == pgsTypes::dptLinear )
-      strChoice = "Linear";
+      strChoice = _T("Linear");
    else if ( point.RightTransitionType == pgsTypes::dptSpline )
-      strChoice = "Spline";
+      strChoice = _T("Spline");
 
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -362,17 +362,17 @@ void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint&
 void CBridgeDescDeckPointGrid::GetTransitionRowData(ROWCOL row,CDeckPoint *pPoint)
 {
    CString strValue = GetCellValue(row,3);
-   if ( strValue == "Parallel" )
+   if ( strValue == _T("Parallel") )
       pPoint->LeftTransitionType = pgsTypes::dptParallel;
-   else if ( strValue == "Linear" )
+   else if ( strValue == _T("Linear") )
       pPoint->LeftTransitionType = pgsTypes::dptLinear;
    else
       pPoint->LeftTransitionType = pgsTypes::dptSpline;
 
    strValue = GetCellValue(row,4);
-   if ( strValue == "Parallel" )
+   if ( strValue == _T("Parallel") )
       pPoint->RightTransitionType = pgsTypes::dptParallel;
-   else if ( strValue == "Linear" )
+   else if ( strValue == _T("Linear") )
       pPoint->RightTransitionType = pgsTypes::dptLinear;
    else
       pPoint->RightTransitionType = pgsTypes::dptSpline;

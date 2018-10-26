@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
 
 txnEditGirder::txnEditGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,
                              bool bOldUseSameGirder, bool bNewUseSameGirder,
-                             const std::string& strOldGirderName, const std::string& strNewGirderName,
+                             const std::_tstring& strOldGirderName, const std::_tstring& strNewGirderName,
                              const CGirderData& oldGirderData,const CGirderData& newGirderData,
                              const CShearData& oldShearData,const CShearData& newShearData,
                              const CLongitudinalRebarData& oldRebarData,const CLongitudinalRebarData& newRebarData,
@@ -114,9 +114,9 @@ txnTransaction* txnEditGirder::CreateClone() const
                             );
 }
 
-std::string txnEditGirder::Name() const
+std::_tstring txnEditGirder::Name() const
 {
-   std::ostringstream os;
+   std::_tostringstream os;
    os << "Edit Span " << LABEL_SPAN(m_SpanIdx) << " Girder " << LABEL_GIRDER(m_GirderIdx);
    return os.str();
 }

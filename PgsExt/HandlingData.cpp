@@ -96,18 +96,18 @@ HRESULT CHandlingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       CComVariant var;
       var.vt = VT_R8;
 
-      hr = pStrLoad->BeginUnit("HandlingData");
+      hr = pStrLoad->BeginUnit(_T("HandlingData"));
 
-      hr = pStrLoad->get_Property("LeftLiftPoint",&var);
+      hr = pStrLoad->get_Property(_T("LeftLiftPoint"),&var);
       LeftLiftPoint = var.dblVal;
 
-      hr = pStrLoad->get_Property("RightLiftPoint",&var);
+      hr = pStrLoad->get_Property(_T("RightLiftPoint"),&var);
       RightLiftPoint = var.dblVal;
 
-      hr = pStrLoad->get_Property("LeadingSupportPoint",&var);
+      hr = pStrLoad->get_Property(_T("LeadingSupportPoint"),&var);
       LeadingSupportPoint = var.dblVal;
 
-      hr = pStrLoad->get_Property("TrailingSupportPoint",&var);
+      hr = pStrLoad->get_Property(_T("TrailingSupportPoint"),&var);
       TrailingSupportPoint = var.dblVal;
 
       hr = pStrLoad->EndUnit(); // HandlingData
@@ -124,11 +124,11 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("HandlingData",1.0);
-   pStrSave->put_Property("LeftLiftPoint",CComVariant(LeftLiftPoint));
-   pStrSave->put_Property("RightLiftPoint",CComVariant(RightLiftPoint));
-   pStrSave->put_Property("LeadingSupportPoint",CComVariant(LeadingSupportPoint));
-   pStrSave->put_Property("TrailingSupportPoint",CComVariant(TrailingSupportPoint));
+   pStrSave->BeginUnit(_T("HandlingData"),1.0);
+   pStrSave->put_Property(_T("LeftLiftPoint"),CComVariant(LeftLiftPoint));
+   pStrSave->put_Property(_T("RightLiftPoint"),CComVariant(RightLiftPoint));
+   pStrSave->put_Property(_T("LeadingSupportPoint"),CComVariant(LeadingSupportPoint));
+   pStrSave->put_Property(_T("TrailingSupportPoint"),CComVariant(TrailingSupportPoint));
    pStrSave->EndUnit(); // HandlingData
 
    return hr;

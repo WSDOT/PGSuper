@@ -59,7 +59,7 @@ boost::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilde
    {
       boost::shared_ptr<CReportSpecification> pRptSpec( new CBridgeAnalysisReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder,dlg.m_bDesign,dlg.m_bRating) );
 
-      std::vector<std::string> chList = dlg.m_ChapterList;
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
       AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;

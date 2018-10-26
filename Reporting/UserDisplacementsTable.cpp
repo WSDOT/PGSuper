@@ -79,7 +79,7 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,SpanIndexType span,G
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>("Displacements - User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>(_T("Displacements - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
 
    if ( span == ALL_SPANS )
    {
@@ -221,7 +221,7 @@ bool CUserDisplacementsTable::AssertValid() const
 
 void CUserDisplacementsTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CUserDisplacementsTable" << endl;
+   os << _T("Dump for CUserDisplacementsTable") << endl;
 }
 #endif // _DEBUG
 

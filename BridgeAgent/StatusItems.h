@@ -30,7 +30,7 @@
 class pgsAlignmentDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
+   pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    long m_DlgPage;
@@ -55,7 +55,7 @@ class pgsConcreteStrengthStatusItem : public CEAFStatusItem
 public:
    enum ConcreteType { Slab, Girder, RailingSystem };
    enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize, Modulus };
-   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    ConcreteType m_ConcreteType;
@@ -81,7 +81,7 @@ private:
 class pgsPointLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsPointLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsPointLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    Uint32 m_LoadIndex;
@@ -103,7 +103,7 @@ private:
 class pgsDistributedLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsDistributedLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsDistributedLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    Uint32 m_LoadIndex;
@@ -126,7 +126,7 @@ private:
 class pgsMomentLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsMomentLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   pgsMomentLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    Uint32 m_LoadIndex;

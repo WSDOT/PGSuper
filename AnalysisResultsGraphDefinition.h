@@ -48,7 +48,8 @@ enum GraphType
    graphPrestress, 
    graphDemand, 
    graphAllowable, 
-   graphCapacity
+   graphCapacity,
+   graphMinCapacity
 };
 
 enum ActionType 

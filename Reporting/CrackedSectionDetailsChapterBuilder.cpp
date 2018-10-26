@@ -100,7 +100,7 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << "Cracked section analysis not performed" << rptNewLine;
+      *pPara << _T("Cracked section analysis not performed") << rptNewLine;
       return pChapter;
    }
    else
@@ -109,16 +109,16 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
       {
          rptParagraph* pPara = new rptParagraph;
          *pChapter << pPara;
-         *pPara << "Cracked section analysis not performed" << rptNewLine;
+         *pPara << _T("Cracked section analysis not performed") << rptNewLine;
          return pChapter;
       }
    }
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << Sub2("Y","t") << " = Distance from top of section to neutral axis" << rptNewLine;
-   *pPara << Sub2("Y","b") << " = Distance from bottom of section to neutral axis" << rptNewLine;
-   *pPara << Sub2("I","cr") << " = Moment of inertia of cracked section about neutral axis" << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("t")) << _T(" = Distance from top of section to neutral axis") << rptNewLine;
+   *pPara << Sub2(_T("Y"),_T("b")) << _T(" = Distance from bottom of section to neutral axis") << rptNewLine;
+   *pPara << Sub2(_T("I"),_T("cr")) << _T(" = Moment of inertia of cracked section about neutral axis") << rptNewLine;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -141,8 +141,8 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }
@@ -180,7 +180,7 @@ void write_cracked_section_table(IBroker* pBroker,
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(bIncludeNegMoment ? 7 : 4,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(bIncludeNegMoment ? 7 : 4,_T(""));
 
    *pPara << table << rptNewLine;
 
@@ -201,20 +201,20 @@ void write_cracked_section_table(IBroker* pBroker,
    table->SetColumnSpan(0,1,3);
    table->SetColumnSpan(0,2,-1);
    table->SetColumnSpan(0,3,-1);
-   (*table)(0,1) << "Positive Moment";
-   (*table)(1,col++) << COLHDR(Sub2("Y","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(1,col++) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(1,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,1) << _T("Positive Moment");
+   (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(1,col++) << COLHDR(Sub2(_T("I"),_T("cr")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
 
    if ( bIncludeNegMoment )
    {
       table->SetColumnSpan(0,4,3);
       table->SetColumnSpan(0,5,-1);
       table->SetColumnSpan(0,6,-1);
-      (*table)(0,4) << "Negative Moment";
-      (*table)(1,col++) << COLHDR(Sub2("Y","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(1,col++) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(1,col++) << COLHDR(Sub2("I","cr"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      (*table)(0,4) << _T("Negative Moment");
+      (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(1,col++) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(1,col++) << COLHDR(Sub2(_T("I"),_T("cr")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    }
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),   false );

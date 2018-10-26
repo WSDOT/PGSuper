@@ -80,7 +80,7 @@ public:
    double TopLumpSum;
    double BottomLumpSum;
 
-   std::string strRebarMaterial;
+   std::_tstring strRebarMaterial;
 
    enum RebarMat { TopMat, BottomMat };
    struct NegMomentRebarData

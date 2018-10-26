@@ -126,6 +126,7 @@ interface ILosses : IUnknown
    virtual Float64 GetBeforeTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetAfterTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi) = 0;
 
@@ -139,6 +140,7 @@ interface ILosses : IUnknown
    virtual Float64 GetBeforeTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual Float64 GetAfterTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
+   virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
    virtual void ClearDesignLosses() = 0;

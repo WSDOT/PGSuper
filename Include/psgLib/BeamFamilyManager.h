@@ -37,8 +37,8 @@ public:
    static HRESULT Init();
 
    static std::vector<CString> GetBeamFamilyNames();
-   static HRESULT GetBeamFamily(const char* strName,IBeamFamily** ppFamily);
-   static CLSID GetBeamFamilyCLSID(const char* strName);
+   static HRESULT GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily);
+   static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
 
 private:
    typedef std::map<CString,CLSID> FamilyContainer;

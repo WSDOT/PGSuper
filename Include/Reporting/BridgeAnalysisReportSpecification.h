@@ -31,7 +31,7 @@ class REPORTINGCLASS CBridgeAnalysisReportSpecification :
    public CGirderReportSpecification
 {
 public:
-   CBridgeAnalysisReportSpecification(const char* strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating);
+   CBridgeAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating);
    ~CBridgeAnalysisReportSpecification(void);
 
    void SetOptions(bool bDesign,bool bRating);

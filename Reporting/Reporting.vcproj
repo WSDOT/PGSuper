@@ -22,7 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
-			CharacterSet="0"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories=".\;..\;..\Include;\ARP\WBFL\Include"
 				PreprocessorDefinitions="BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -60,7 +60,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\PGSUper\Include;\ARP\WBFL\Include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -104,7 +104,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
-			CharacterSet="0"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -126,9 +126,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\;..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories=".\;..\;..\Include;\ARP\WBFL\Include"
 				PreprocessorDefinitions="BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -143,7 +146,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\PGSUper\Include;\ARP\WBFL\Include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -158,6 +161,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
 				TargetMachine="1"
 			/>
 			<Tool

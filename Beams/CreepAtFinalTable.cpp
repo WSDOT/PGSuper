@@ -59,7 +59,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -85,12 +85,12 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    table->m_GirderData = girderData;
    table->m_NtMax = NtMax;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << "[5.9.5.4.3b] Creep of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pCD") << rptNewLine;
+   *pParagraph << _T("[5.9.5.4.3b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << rptNewLine;
 
    
    pParagraph = new rptParagraph;
@@ -101,24 +101,24 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_PT.png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
          else
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007_PT.png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PT.png")) << rptNewLine;
       }
       else
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_PS.png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS.png")) << rptNewLine;
          else
-            *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007_PS.png") << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PS.png")) << rptNewLine;
       }
    }
    else
    {
       if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpCD.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpCD_2007.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007.png")) << rptNewLine;
    }
 
    // DELTA Fcd Table
@@ -128,13 +128,13 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR(Sub2("E","p"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pParamTable)(0,1) << COLHDR(Sub2("E","c"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pParamTable)(0,2) << COLHDR(Sub2("E","ci"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pParamTable)(0,0) << COLHDR(Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pParamTable)(0,1) << COLHDR(Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pParamTable)(0,2) << COLHDR(Sub2(_T("E"),_T("ci")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pParamTable)(0,3) << COLHDR(RPT_FC,rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pParamTable)(0,4) << Sub2("k","f");
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("f"));
 
    (*pParamTable)(1,0) << table->mod_e.SetValue( details.RefinedLosses2005.GetEp() );
    (*pParamTable)(1,1) << table->mod_e.SetValue( details.RefinedLosses2005.GetEc() );
@@ -142,15 +142,15 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,3) << table->stress.SetValue(details.RefinedLosses2005.GetFc());
    (*pParamTable)(1,4) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeckToFinal().GetKf());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR(Sub2("t","i"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
-   (*pParamTable)(0,1) << COLHDR(Sub2("t","d"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
-   (*pParamTable)(0,2) << COLHDR(Sub2("t","f"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
+   (*pParamTable)(0,0) << COLHDR(Sub2(_T("t"),_T("i")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
+   (*pParamTable)(0,1) << COLHDR(Sub2(_T("t"),_T("d")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
+   (*pParamTable)(0,2) << COLHDR(Sub2(_T("t"),_T("f")), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,3) << Sub2("k","td") << rptNewLine << "t = " << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
-   (*pParamTable)(0,4) << Sub2("k","td") << rptNewLine << "t = " << table->time.SetValue(details.RefinedLosses2005.GetAgeAtDeckPlacement());
+   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtDeckPlacement());
    table->time.ShowUnitTag(false);
 
    (*pParamTable)(1,0) << table->time.SetValue( details.RefinedLosses2005.GetAdjustedInitialAge() );
@@ -159,11 +159,11 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,3) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetKtd());
    (*pParamTable)(1,4) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeckToFinal().GetKtd());
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(3,"");
+   pParamTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << Sub2(symbol(psi),"b") << "(" << Sub2("t","f") << "," << Sub2("t","i") << ")";
-   (*pParamTable)(0,1) << Sub2(symbol(psi),"b") << "(" << Sub2("t","d") << "," << Sub2("t","i") << ")";
-   (*pParamTable)(0,2) << Sub2(symbol(psi),"b") << "(" << Sub2("t","f") << "," << Sub2("t","d") << ")";
+   (*pParamTable)(0,0) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
+   (*pParamTable)(0,1) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
+   (*pParamTable)(0,2) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
    (*pParamTable)(1,0) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
    (*pParamTable)(1,1) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToDeck().GetCreepCoefficient());
@@ -175,22 +175,22 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    ColumnIndexType col = 0;
 
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << Sub2("K","df");
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << Sub2(_T("K"),_T("df"));
 
-  (*table)(0,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+  (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( 0 < NtMax &&  girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( 0 < NtMax )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("cd"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pCD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cd")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

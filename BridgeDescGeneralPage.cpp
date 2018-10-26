@@ -245,7 +245,7 @@ void CBridgeDescGeneralPage::Init()
    m_bSameGirderName      = pParent->m_BridgeDesc.UseSameGirderForEntireBridge();
    m_nGirders = pParent->m_BridgeDesc.GetSpan(0)->GetGirderCount();
 
-   m_strCacheNumGirders.Format("%d",m_nGirders);
+   m_strCacheNumGirders.Format(_T("%d"),m_nGirders);
 
    m_GirderFamilyName = pParent->m_BridgeDesc.GetGirderFamilyName();
 
@@ -290,18 +290,18 @@ void CBridgeDescGeneralPage::Init()
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
-      m_strCacheGirderSpacing.Format("%s",FormatDimension(m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
-      m_strCacheJointSpacing.Format( "%s",FormatDimension(0,              pDisplayUnits->GetComponentDimUnit(),false));
+      m_strCacheGirderSpacing.Format(_T("%s"),FormatDimension(m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheJointSpacing.Format( _T("%s"),FormatDimension(0,              pDisplayUnits->GetComponentDimUnit(),false));
    }
    else
    {
-      m_strCacheGirderSpacing.Format("%s",FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
-      m_strCacheJointSpacing.Format( "%s",FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
+      m_strCacheGirderSpacing.Format(_T("%s"),FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheJointSpacing.Format( _T("%s"),FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
    }
 
    int sign = ::Sign(m_RefGirderOffset);
-   char* strOffset = (sign == 0 ? "" : sign < 0 ? "L" : "R");
-   m_strCacheRefGirderOffset.Format("%s %s",FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
+   LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
+   m_strCacheRefGirderOffset.Format(_T("%s %s"),FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
 
    m_Deck = *pParent->m_BridgeDesc.GetDeckDescription();
    m_CacheDeckEdgePoints = m_Deck.DeckEdgePoints;
@@ -376,13 +376,13 @@ void CBridgeDescGeneralPage::OnSameNumGirders()
    {
       // box was just checked so restore the number of girders from the cache
       pEdit->SetWindowText(m_strCacheNumGirders);
-      strText = CString("By checking this box, all spans will have the same number of girders.");
+      strText = CString(_T("By checking this box, all spans will have the same number of girders."));
    }
    else
    {
       // box was just unchecked so cache the number of girders
       pEdit->GetWindowText(m_strCacheNumGirders);
-      strText = CString("By unchecking this box, each span can have a different number of girders. To define the number of girders in a span, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span.");
+      strText = CString(_T("By unchecking this box, each span can have a different number of girders. To define the number of girders in a span, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
    }
 
    // enable/disable the associated controls
@@ -420,13 +420,13 @@ void CBridgeDescGeneralPage::OnSameGirderName()
    {
       // button was just checked
       pcbGirderName->SetCurSel(m_CacheGirderNameIdx);
-      strText = CString("By checking this box, the same girder type will be used throughout the bridge.");
+      strText = CString(_T("By checking this box, the same girder type will be used throughout the bridge."));
    }
    else
    {
       // was was just unchecked
       m_CacheGirderNameIdx = pcbGirderName->GetCurSel();
-      strText = CString("By unchecking this box, a different girder can be assigned to each girder line. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span.");
+      strText = CString(_T("By unchecking this box, a different girder can be assigned to each girder line. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
    }
 
    EnableGirderName(m_bSameGirderName);
@@ -541,16 +541,16 @@ void CBridgeDescGeneralPage::FillGirderFamilyComboBox()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   std::vector<std::string> names;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> names;
+   std::vector<std::_tstring>::iterator iter;
 
    CComboBox* pcbGirderFamilies = (CComboBox*)GetDlgItem(IDC_BEAM_FAMILIES);
-   std::vector<std::string> girderFamilyNames;
+   std::vector<std::_tstring> girderFamilyNames;
    pLibNames->EnumGirderFamilyNames(&girderFamilyNames);
 
    for ( iter = girderFamilyNames.begin(); iter != girderFamilyNames.end(); iter++ )
    {
-      std::string strGirderFamilyName = *iter;
+      std::_tstring strGirderFamilyName = *iter;
       pLibNames->EnumGirderNames(strGirderFamilyName.c_str(), &names );
 
       // only add a girder family name into the combo box if the library
@@ -571,8 +571,8 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   std::vector<std::string> names;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> names;
+   std::vector<std::_tstring>::iterator iter;
    
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem( IDC_GDR_TYPE );
    pcbGirders->ResetContent();
@@ -581,7 +581,7 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
    pLibNames->EnumGirderNames(m_GirderFamilyName, &names );
    for ( iter = names.begin(); iter < names.end(); iter++ )
    {
-      std::string& name = *iter;
+      std::_tstring& name = *iter;
 
       int idx = pcbGirders->AddString( name.c_str() );
       if ( CString(name.c_str()) == m_GirderName )
@@ -596,16 +596,16 @@ void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
 {
    // Girder Orientation
    CComboBox* pOrientation = (CComboBox*)GetDlgItem(IDC_GIRDER_ORIENTATION);
-   int idx = pOrientation->AddString("Plumb"); 
+   int idx = pOrientation->AddString(_T("Plumb")); 
    pOrientation->SetItemData(idx,pgsTypes::Plumb);
 
-   idx = pOrientation->AddString("Normal to roadway at Start of Bridge");
+   idx = pOrientation->AddString(_T("Normal to roadway at Start of Bridge"));
    pOrientation->SetItemData(idx,pgsTypes::StartNormal);
 
-   idx = pOrientation->AddString("Normal to roadway at Mid-span of Bridge");
+   idx = pOrientation->AddString(_T("Normal to roadway at Mid-span of Bridge"));
    pOrientation->SetItemData(idx,pgsTypes::MidspanNormal);
 
-   idx = pOrientation->AddString("Normal to roadway at End of Bridge");
+   idx = pOrientation->AddString(_T("Normal to roadway at End of Bridge"));
    pOrientation->SetItemData(idx,pgsTypes::EndNormal);
 
    int curSel;
@@ -650,27 +650,27 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
       switch( spacingType )
       {
       case pgsTypes::sbsUniform:
-         idx = pSpacingType->AddString("Spread girders with same spacing in all spans");
+         idx = pSpacingType->AddString(_T("Spread girders with same spacing in all spans"));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsGeneral:
-         idx = pSpacingType->AddString("Spread girders with unique spacing for each span");
+         idx = pSpacingType->AddString(_T("Spread girders with unique spacing for each span"));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsUniformAdjacent:
-         idx = pSpacingType->AddString("Adjacent girders with same joint spacing in all spans");
+         idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing in all spans"));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsGeneralAdjacent:
-         idx = pSpacingType->AddString("Adjacent girders with unique joint spacing for each span");
+         idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing for each span"));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsConstantAdjacent:
-         idx = pSpacingType->AddString("Adjacent girders with the same width for all girders");
+         idx = pSpacingType->AddString(_T("Adjacent girders with the same width for all girders"));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
@@ -718,12 +718,12 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
 
    DWORD current_value = HashGirderSpacing(m_GirderSpacingMeasurementLocation,m_GirderSpacingMeasurementType);
 
-   int idx = pSpacingType->AddString("Measured at and along the CL pier");
+   int idx = pSpacingType->AddString(_T("Measured at and along the CL pier"));
    DWORD item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::AlongItem);
    pSpacingType->SetItemData(idx,item_data);
    m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
    
-   idx = pSpacingType->AddString("Measured normal to alignment at CL pier");
+   idx = pSpacingType->AddString(_T("Measured normal to alignment at CL pier"));
    item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::NormalToItem);
    pSpacingType->SetItemData(idx,item_data);
    m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
@@ -731,12 +731,12 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
    // Cannot measure along bearing if any bearings are measured along girder
    if (!AreAnyBearingsMeasuredAlongGirder())
    {
-      idx = pSpacingType->AddString("Measured at and along the CL bearing");
+      idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem);
       pSpacingType->SetItemData(idx,item_data);
       m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
 
-      idx = pSpacingType->AddString("Measured normal to alignment at CL bearing");
+      idx = pSpacingType->AddString(_T("Measured normal to alignment at CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::NormalToItem);
       pSpacingType->SetItemData(idx,item_data);
       m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
@@ -759,8 +759,8 @@ bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
       const CPierData* pPrevPier = pSpan->GetPrevPier();
       const CPierData* pNextPier = pSpan->GetNextPier();
 
-      std::string start_connection = pPrevPier->GetConnection(pgsTypes::Ahead);
-      std::string end_connection   = pNextPier->GetConnection(pgsTypes::Back);
+      std::_tstring start_connection = pPrevPier->GetConnection(pgsTypes::Ahead);
+      std::_tstring end_connection   = pNextPier->GetConnection(pgsTypes::Back);
 
       const ConnectionLibraryEntry* start_connection_entry = pLib->GetConnectionEntry(start_connection.c_str());
       const ConnectionLibraryEntry*   end_connection_entry = pLib->GetConnectionEntry(  end_connection.c_str());
@@ -814,10 +814,10 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
 void CBridgeDescGeneralPage::FillRefGirderOffsetTypeComboBox()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE);
-   int idx = pCB->AddString("Alignment");
+   int idx = pCB->AddString(_T("Alignment"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::omtAlignment);
 
-   idx = pCB->AddString("Bridge Line");
+   idx = pCB->AddString(_T("Bridge Line"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::omtBridge);
 }
 
@@ -827,13 +827,13 @@ void CBridgeDescGeneralPage::FillRefGirderComboBox()
    int curSel = pCB->GetCurSel();
    pCB->ResetContent();
 
-   int idx = pCB->AddString("Center of Girders");
+   int idx = pCB->AddString(_T("Center of Girders"));
    pCB->SetItemData(idx,(DWORD)-1);
 
    for ( GirderIndexType i = 0; i < m_nGirders; i++ )
    {
       CString str;
-      str.Format("Girder %s",LABEL_GIRDER(i));
+      str.Format(_T("Girder %s"),LABEL_GIRDER(i));
       idx = pCB->AddString(str);
       pCB->SetItemData(idx,(DWORD)i);
    }
@@ -849,10 +849,10 @@ void CBridgeDescGeneralPage::FillGirderConnectivityComboBox()
 
    if ( IsConstantWidthDeck(m_Deck.DeckType) )
    {
-      int idx = pcbConnectivity->AddString("Sufficient to make girders act as a unit");
+      int idx = pcbConnectivity->AddString(_T("Sufficient to make girders act as a unit"));
       pcbConnectivity->SetItemData(idx,pgsTypes::atcConnectedAsUnit);
 
-      idx =     pcbConnectivity->AddString("Prevents relative vertical displacement");
+      idx =     pcbConnectivity->AddString(_T("Prevents relative vertical displacement"));
       pcbConnectivity->SetItemData(idx,pgsTypes::atcConnectedRelativeDisplacement);
 
       if ( cursel != CB_ERR ) // if there was a previous selection
@@ -873,7 +873,7 @@ void CBridgeDescGeneralPage::UpdateGirderFactory()
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    m_Factory.Release();
-   pLibNames->GetBeamFactory(std::string(m_GirderFamilyName),std::string(m_GirderName),&m_Factory);
+   pLibNames->GetBeamFactory(std::_tstring(m_GirderFamilyName),std::_tstring(m_GirderName),&m_Factory);
 }
 
 CString CBridgeDescGeneralPage::GetDeckString(pgsTypes::SupportedDeckType deckType)
@@ -881,20 +881,20 @@ CString CBridgeDescGeneralPage::GetDeckString(pgsTypes::SupportedDeckType deckTy
    switch ( deckType )
    {
       case pgsTypes::sdtCompositeCIP:
-         return CString("Composite Cast-In-Place Deck");
+         return CString(_T("Composite Cast-In-Place Deck"));
 
       case pgsTypes::sdtCompositeSIP:
-         return CString("Composite Stay-In-Place Deck Panels");
+         return CString(_T("Composite Stay-In-Place Deck Panels"));
 
       case pgsTypes::sdtCompositeOverlay:
-         return CString("Composite Cast-In-Place Overlay");
+         return CString(_T("Composite Cast-In-Place Overlay"));
 
       case pgsTypes::sdtNone:
-         return CString("No deck");
+         return CString(_T("No deck"));
    }
 
    ATLASSERT(0);
-   return CString("Unknown Deck Type");
+   return CString(_T("Unknown Deck Type"));
 }
 
 void CBridgeDescGeneralPage::OnGirderFamilyChanged() 
@@ -1046,24 +1046,24 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {
             GetDlgItem(IDC_SPACING)->GetWindowText(strWndTxt);
-            GetDlgItem(IDC_SPACING)->SetWindowText("");
+            GetDlgItem(IDC_SPACING)->SetWindowText(_T(""));
 
-            if ( strWndTxt != "" )
+            if ( strWndTxt != _T("") )
                m_strCacheGirderSpacing = strWndTxt;
 
          }
          else
          {
             GetDlgItem(IDC_SPACING)->GetWindowText(strWndTxt);
-            GetDlgItem(IDC_SPACING)->SetWindowText("");
+            GetDlgItem(IDC_SPACING)->SetWindowText(_T(""));
 
-            if ( strWndTxt != "" )
+            if ( strWndTxt != _T("") )
                m_strCacheJointSpacing = strWndTxt;
          }
 
          GetDlgItem(IDC_REF_GIRDER_OFFSET)->GetWindowText(strWndTxt);
-         GetDlgItem(IDC_REF_GIRDER_OFFSET)->SetWindowText("");
-         if ( strWndTxt != "" )
+         GetDlgItem(IDC_REF_GIRDER_OFFSET)->SetWindowText(_T(""));
+         if ( strWndTxt != _T("") )
             m_strCacheRefGirderOffset = strWndTxt;
 
          curSel = pcbMeasure->GetCurSel();
@@ -1111,7 +1111,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
 
    if ( !m_bSetActive && IsSpanSpacing(m_GirderSpacingType) )
    {
-      CString strText("By selecting this option, a different spacing can be used between each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span.");
+      CString strText(_T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
       UIHint(strText,UIHINT_SAME_GIRDER_SPACING);
    }
 
@@ -1201,7 +1201,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
 
    if ( IsSpanSpacing(m_GirderSpacingType) )
    {
-      GetDlgItem(IDC_ALLOWABLE_SPACING)->SetWindowText("");
+      GetDlgItem(IDC_ALLOWABLE_SPACING)->SetWindowText(_T(""));
       return FALSE; // girder spacing isn't input in this dialog
    }
 
@@ -1243,7 +1243,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
       for ( GroupIndexType grpIdx = 0; grpIdx < nGirderGroups; grpIdx++ )
       {
          GirderIndexType firstGdrIdx, lastGdrIdx;
-         std::string strGdrName;
+         std::_tstring strGdrName;
 
          pGirderTypes->GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGdrName);
 
@@ -1288,11 +1288,11 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    // label for beam spacing
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
-      GetDlgItem(IDC_GIRDER_SPACING_LABEL)->SetWindowText("Girder Spacing");
+      GetDlgItem(IDC_GIRDER_SPACING_LABEL)->SetWindowText(_T("Girder Spacing"));
    }
    else
    {
-      GetDlgItem(IDC_GIRDER_SPACING_LABEL)->SetWindowText("Joint Spacing");
+      GetDlgItem(IDC_GIRDER_SPACING_LABEL)->SetWindowText(_T("Joint Spacing"));
    }
 
    CString label;
@@ -1302,20 +1302,20 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
       {
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {
-            label.Format("( %s to %s )", 
+            label.Format(_T("( %s to %s )"), 
                FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit()),
                FormatDimension(m_MaxGirderSpacing,pDisplayUnits->GetXSectionDimUnit()));
          }
          else
          {
             // this is actually joint spacing
-            label.Format("( 0 to %s )", 
+            label.Format(_T("( 0 to %s )"), 
                FormatDimension(m_MaxGirderSpacing - m_MinGirderSpacing,pDisplayUnits->GetComponentDimUnit()));
          }
       }
       else
       {
-         label.Format("( %s or more )", 
+         label.Format(_T("( %s or more )"), 
             FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit()));
       }
    }
@@ -1332,13 +1332,13 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
 
       if ( IsGirderSpacing(m_GirderSpacingType) )
       {
-         m_strCacheGirderSpacing.Format("%s",FormatDimension(m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
-         m_strCacheJointSpacing.Format( "%s",FormatDimension(0,              pDisplayUnits->GetComponentDimUnit(),false));
+         m_strCacheGirderSpacing.Format(_T("%s"),FormatDimension(m_GirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheJointSpacing.Format( _T("%s"),FormatDimension(0,              pDisplayUnits->GetComponentDimUnit(),false));
       }
       else
       {
-         m_strCacheGirderSpacing.Format("%s",FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
-         m_strCacheJointSpacing.Format( "%s",FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
+         m_strCacheGirderSpacing.Format(_T("%s"),FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheJointSpacing.Format( _T("%s"),FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
       }
    }
 
@@ -1373,7 +1373,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    }
 
 
-   std::string name = pGdrEntry->GetSectionName();
+   std::_tstring name = pGdrEntry->GetSectionName();
    description = name.c_str();
 
    // deck type
@@ -1381,7 +1381,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    int cursel = box->GetCurSel();
    pgsTypes::SupportedDeckType deckType = (pgsTypes::SupportedDeckType)box->GetItemData(cursel);
 
-   description += ", " + GetDeckString(deckType);
+   description += _T(", ") + GetDeckString(deckType);
 
    pgsTypes::AdjacentTransverseConnectivity connect = pgsTypes::atcConnectedAsUnit;
 
@@ -1396,20 +1396,20 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
 
       connect = (pgsTypes::AdjacentTransverseConnectivity)m_CacheGirderConnectivityIdx;
 
-      description += ". Girders are spaced adjacently, and are connected transversely ";
+      description += _T(". Girders are spaced adjacently, and are connected transversely ");
 
       if (connect == pgsTypes::atcConnectedAsUnit)
       {
-         description +="sufficiently to act as a unit.";
+         description +=_T("sufficiently to act as a unit.");
       }
       else
       {
-         description += "only enough to prevent relative vertical displacement at interface.";
+         description += _T("only enough to prevent relative vertical displacement at interface.");
       }
    }
    else
    {
-      description += ", Girders at spread spacing.";
+      description += _T(", Girders at spread spacing.");
    }
 
 
@@ -1417,23 +1417,23 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      description += "\r\n\r\nDistribution factors from Direct User Input";
+      description += _T("\r\n\r\nDistribution factors from Direct User Input");
    }
    else if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::LeverRule )
    {
-      description += "\r\n\r\nDistribution factors computed using lever rule. Specification was overridden";
+      description += _T("\r\n\r\nDistribution factors computed using lever rule. Specification was overridden");
    }
    else
    {
 #pragma Reminder("Assuming same section used for all spans/girders")
-      std::string entry_name = pGdrEntry->GetName();
+      std::_tstring entry_name = pGdrEntry->GetName();
 
 
       CComPtr<IDistFactorEngineer> dfEngineer;
       m_Factory->CreateDistFactorEngineer(pBroker, -1, &deckType, &connect, &dfEngineer);
-      std::string dfmethod = dfEngineer->GetComputationDescription(0, 0, entry_name, deckType, connect );
+      std::_tstring dfmethod = dfEngineer->GetComputationDescription(0, 0, entry_name, deckType, connect );
 
-      description += "\r\n\r\nDistribution factors computed using ";
+      description += _T("\r\n\r\nDistribution factors computed using ");
       description += dfmethod.c_str();
    }
 
@@ -1456,18 +1456,18 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
       {
       case IDC_SAME_NUM_GIRDERLINES:
          if ( IsDlgButtonChecked(IDC_SAME_NUM_GIRDERLINES) )
-            m_strToolTipText = "Uncheck this option to define a different number of girders in each span.";
+            m_strToolTipText = _T("Uncheck this option to define a different number of girders in each span.");
          else
-            m_strToolTipText = "Check this option to define the number of girders in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to define the number of girders in a particular span.";
+            m_strToolTipText = _T("Check this option to define the number of girders in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to define the number of girders in a particular span.");
 
          bShowTip = TRUE;
          break;
 
       case IDC_SAME_GIRDERNAME:
          if ( IsDlgButtonChecked(IDC_SAME_GIRDERNAME) )
-            m_strToolTipText = "Uncheck this option to use a different girder for each girder line.";
+            m_strToolTipText = _T("Uncheck this option to use a different girder for each girder line.");
          else
-            m_strToolTipText = "Check this option to use the same girder in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to assign a different girder to each girder line in a particular span.";
+            m_strToolTipText = _T("Check this option to use the same girder in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to assign a different girder to each girder line in a particular span.");
 
          bShowTip = TRUE;
          break;
@@ -1512,7 +1512,7 @@ void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {
       CUIHintsDlg dlg;
-      dlg.m_strTitle = "Hint";
+      dlg.m_strTitle = _T("Hint");
       dlg.m_strText = strText;
       dlg.DoModal();
       if ( dlg.m_bDontShowAgain )
@@ -1559,7 +1559,7 @@ void CBridgeDescGeneralPage::InitGirderName()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   std::vector<std::string> names;
+   std::vector<std::_tstring> names;
    pLibNames->EnumGirderNames(m_GirderFamilyName, &names );
    m_GirderName = names.front().c_str();
 }

@@ -110,7 +110,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
 
    // Texas Girder Schedule - use compacted title page
-   CReportBuilder* pRptBuilder = new CReportBuilder("TxDOT Girder Schedule Report");
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("TxDOT Girder Schedule Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
@@ -118,7 +118,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Texas Summary report
-   pRptBuilder = new CReportBuilder("TxDOT Summary Report");
+   pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
@@ -134,7 +134,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // TOGA Long Form
-   pRptBuilder = new CReportBuilder("TxDOT Optional Girder Analysis (TOGA) - Long Report",true);
+   pRptBuilder = new CReportBuilder(_T("TxDOT Optional Girder Analysis (TOGA) - Long Report"),true);
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
@@ -152,7 +152,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // TOGA Short Form
-   pRptBuilder = new CReportBuilder("TxDOT Optional Girder Analysis (TOGA) - Short Report",true);
+   pRptBuilder = new CReportBuilder(_T("TxDOT Optional Girder Analysis (TOGA) - Short Report"),true);
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
@@ -223,6 +223,8 @@ BOOL CTxDOTAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 
 void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
 {
+   USES_CONVERSION;
+
    ASSERT(rCmdInfo.m_DoTxCadReport);
 
 
@@ -230,13 +232,13 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
        rCmdInfo.m_TxGirder != TXEIGIRDERS && 
        (rCmdInfo.m_TxGirder < 0 || 27 < rCmdInfo.m_TxGirder))
    {
-      ::AfxMessageBox("Invalid girder specified on command line for TxDOT CAD report");
+      ::AfxMessageBox(_T("Invalid girder specified on command line for TxDOT CAD report"));
       return;
    }
 
    if (rCmdInfo.m_TxSpan != ALL_SPANS && rCmdInfo.m_TxSpan < 0)
    {
-      ::AfxMessageBox("Invalid span specified on command line for TxDOT CAD report");
+      ::AfxMessageBox(_T("Invalid span specified on command line for TxDOT CAD report"));
       return;
    }
 
@@ -247,26 +249,26 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
       {
          if ( !DoTxDotCadReport(rCmdInfo.m_TxOutputFile, errfile, rCmdInfo) )
          {
-            CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
+            CString msg = CString(_T("Error - Running test on file"))+rCmdInfo.m_strFileName;
             ::AfxMessageBox(msg);
          }
       }
       catch(const sysXBase& e)
       {
-         std::string msg;
+         std::_tstring msg;
          e.GetErrorMessage(&msg);
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
+         os <<_T("Error running TxDOT CAD report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;
       }
       catch(CException* pex)
       {
          TCHAR   szCause[255];
          CString strFormatted;
          pex->GetErrorMessage(szCause, 255);
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         os <<_T("Error running TxDOT CAD report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
          delete pex;
       }
       catch(CException& ex)
@@ -274,30 +276,30 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
          TCHAR   szCause[255];
          CString strFormatted;
          ex.GetErrorMessage(szCause, 255);
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         os <<_T("Error running TxDOT CAD report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
       }
       catch(const std::exception* pex)
       {
-         std::string strMsg(pex->what());
-         std::ofstream os;
+         std::_tstring strMsg(CA2T(pex->what()));
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         os <<_T("Error running TxDOT CAD report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
          delete pex;
       }
       catch(const std::exception& ex)
       {
-          std::string strMsg(ex.what());
-         std::ofstream os;
+         std::_tstring strMsg(CA2T(ex.what()));
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         os <<_T("Error running TxDOT CAD report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
       }
       catch(...)
       {
-         std::ofstream os;
+         std::_tofstream os;
          os.open(errfile);
-         os <<"Unknown Error running TxDOT CAD report for input file: "<<rCmdInfo.m_strFileName;
+         os <<_T("Unknown Error running TxDOT CAD report for input file: ")<<rCmdInfo.m_strFileName;
       }
    }
 }
@@ -307,16 +309,16 @@ bool CTxDOTAgentImp::CreateTxDOTFileNames(const CString& output, CString* pErrFi
 {
    CString tmp(output);
    tmp.MakeLower();
-   int loc = tmp.Find(".",0);
+   int loc = tmp.Find(_T("."),0);
    if (loc>0)
    {
       CString basename = output.Left(loc);
-      *pErrFileName = basename + ".err";
+      *pErrFileName = basename + _T(".err");
       return true;
    }
    else
    {
-      *pErrFileName = output + ".err";
+      *pErrFileName = output + _T(".err");
 
       return false;
    }
@@ -327,10 +329,10 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    // Called from the command line processing in the Application object
 
    // open the error file
-   std::ofstream err_file(errorFileName);
+   std::_tofstream err_file(errorFileName);
    if ( !err_file )
    {
-	   AfxMessageBox ("Could not Create error file");
+	   AfxMessageBox (_T("Could not Create error file"));
 	   return false;
    }
 
@@ -339,16 +341,16 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    errno_t result;
    if (txInfo.m_DoAppendToFile)
    {
-      result = fopen_s(&fp, LPCTSTR (outputFileName), "a+");
+      result = _tfopen_s(&fp, LPCTSTR (outputFileName), _T("a+"));
    }
    else
    {
-      result = fopen_s(&fp, LPCTSTR (outputFileName), "w+");
+      result = _tfopen_s(&fp, LPCTSTR (outputFileName), _T("w+"));
    }
 
    if (result != 0 || fp == NULL)
    {
-      err_file<<"Error: Output file could not be Created."<<std::endl;
+      err_file<<_T("Error: Output file could not be Created.")<<std::endl;
 	   return false;
    }
 
@@ -367,7 +369,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    {
       if (txInfo.m_TxSpan>=nSpans)
       {
-         err_file<<"Span value is out of range for this bridge"<<std::endl;
+         err_file<<_T("Span value is out of range for this bridge")<<std::endl;
 	      return false;
       }
       else
@@ -419,7 +421,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       }
       else
       {
-         err_file<<"Girder value is out of range for this bridge"<<std::endl;
+         err_file<<_T("Girder value is out of range for this bridge")<<std::endl;
 	      return false;
       }
    }
@@ -436,7 +438,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       UnhashSpanGirder(key, &span, &girder);
 
       CString strMessage;
-      strMessage.Format("Creating TxDOT CAD report for Span %d, Girder %s",LABEL_SPAN(span), LABEL_GIRDER(girder));
+      strMessage.Format(_T("Creating TxDOT CAD report for Span %d, Girder %s"),LABEL_SPAN(span), LABEL_GIRDER(girder));
       pProgress->UpdateMessage(strMessage);
 
       // See if we need to run a design
@@ -458,7 +460,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          
             if (pArtifact->GetOutcome() != pgsDesignArtifact::Success)
             {
-               err_file <<"Design was unsuccessful"<<std::endl;
+               err_file <<_T("Design was unsuccessful")<<std::endl;
                designSucceeded=false;
             }
 
@@ -467,7 +469,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          }
          catch(...)
          {
-           err_file <<"Design Failed for span"<<span<<" girder "<<girder<<std::endl;
+           err_file <<_T("Design Failed for span")<<span<<_T(" girder ")<<girder<<std::endl;
             return false;
          }
       }
@@ -475,7 +477,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       GET_IFACE(ITxDOTCadExport,pTxDOTCadExport);
       if ( !pTxDOTCadExport )
       {
-         AfxMessageBox("The TxDOT Cad Exporter is not currently installed");
+         AfxMessageBox(_T("The TxDOT Cad Exporter is not currently installed"));
          return false;
       }
 
@@ -484,7 +486,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          // Write distribution factor data to file
          if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, span, girder))
          {
-            err_file <<"Warning: An error occured while writing to File"<<std::endl;
+            err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
 	         return false;
          }
       }
@@ -493,7 +495,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          /* Write CAD data to text file */
          if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, span, girder, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded) )
          {
-            err_file <<"Warning: An error occured while writing to File"<<std::endl;
+            err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
 	         return false;
          }
 	  }
@@ -514,22 +516,22 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 
          try
          {
-            if (!ptst->RunTestEx(RUN_CADTEST, spn_grd_list, std::string(resultsfile), std::string(poifile)))
+            if (!ptst->RunTestEx(RUN_CADTEST, spn_grd_list, std::_tstring(resultsfile), std::_tstring(poifile)))
             {
-               CString msg = CString("Error - Running test on file")+txInfo.m_strFileName;
+               CString msg = CString(_T("Error - Running test on file"))+txInfo.m_strFileName;
                ::AfxMessageBox(msg);
             }
          }
          catch(...)
          {
-            CString msg = CString("Error - running test for input file:")+txInfo.m_strFileName;
+            CString msg = CString(_T("Error - running test for input file:"))+txInfo.m_strFileName;
             ::AfxMessageBox(msg);
             return false;
          }
       }
       else
       {
-         CString msg = CString("Error - Determining 1250 test file names for")+txInfo.m_strFileName;
+         CString msg = CString(_T("Error - Determining 1250 test file names for"))+txInfo.m_strFileName;
          ::AfxMessageBox(msg);
          return false;
       }
@@ -675,6 +677,8 @@ void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,co
 
 void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
 {
+   USES_CONVERSION;
+
    ASSERT(rCmdInfo.m_DoTogaTest);
 
    CString errfile;
@@ -684,26 +688,26 @@ void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
    {
       if ( !DoTOGAReport(rCmdInfo.m_TxOutputFile, rCmdInfo) )
       {
-         CString msg = CString("Error - Running test on file")+rCmdInfo.m_strFileName;
+         CString msg = CString(_T("Error - Running test on file"))+rCmdInfo.m_strFileName;
          ::AfxMessageBox(msg);
       }
    }
    catch(const sysXBase& e)
    {
-      std::string msg;
+      std::_tstring msg;
       e.GetErrorMessage(&msg);
-      std::ofstream os;
+      std::_tofstream os;
       os.open(errfile);
-      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< msg;
+      os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;
    }
    catch(CException* pex)
    {
       TCHAR   szCause[255];
       CString strFormatted;
       pex->GetErrorMessage(szCause, 255);
-      std::ofstream os;
+      std::_tofstream os;
       os.open(errfile);
-      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+      os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
       delete pex;
    }
    catch(CException& ex)
@@ -711,30 +715,30 @@ void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
       TCHAR   szCause[255];
       CString strFormatted;
       ex.GetErrorMessage(szCause, 255);
-      std::ofstream os;
+      std::_tofstream os;
       os.open(errfile);
-      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+      os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
    }
    catch(const std::exception* pex)
    {
-      std::string strMsg(pex->what());
-      std::ofstream os;
+      std::_tstring strMsg(CA2T(pex->what()));
+      std::_tofstream os;
       os.open(errfile);
-      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+      os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
       delete pex;
    }
    catch(const std::exception& ex)
    {
-       std::string strMsg(ex.what());
-      std::ofstream os;
+      std::_tstring strMsg(CA2T(ex.what()));
+      std::_tofstream os;
       os.open(errfile);
-      os <<"Error running TOGA report for input file: "<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+      os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
    }
    catch(...)
    {
-      std::ofstream os;
+      std::_tofstream os;
       os.open(errfile);
-      os <<"Unknown Error running TOGAreport for input file: "<<rCmdInfo.m_strFileName;
+      os <<_T("Unknown Error running TOGAreport for input file: ")<<rCmdInfo.m_strFileName;
    }
 }
 
@@ -747,19 +751,19 @@ bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCom
    errno_t result;
    if (rCmdInfo.m_DoAppendToFile)
    {
-      result = fopen_s(&fp, LPCTSTR (outputFileName), "a+");
+      result = _tfopen_s(&fp, LPCTSTR (outputFileName), _T("a+"));
    }
    else
    {
-      result = fopen_s(&fp, LPCTSTR (outputFileName), "w+");
+      result = _tfopen_s(&fp, LPCTSTR (outputFileName), _T("w+"));
    }
 
    if (result != 0 || fp == NULL)
    {
       CString errfile;
       CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile);
-      std::ofstream err_file(errfile);
-      err_file<<"Error: Output file could not be Created."<<std::endl;
+      std::_tofstream err_file(errfile);
+      err_file<<_T("Error: Output file could not be Created.")<<std::endl;
 	   return false;
    }
 
@@ -771,8 +775,8 @@ bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCom
    {
       CString errfile;
       CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile);
-      std::ofstream err_file(errfile);
-      err_file <<"Warning: An error occured while writing to File"<<std::endl;
+      std::_tofstream err_file(errfile);
+      err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
       return false;
    }
 

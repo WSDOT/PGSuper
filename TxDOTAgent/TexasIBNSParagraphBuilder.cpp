@@ -77,23 +77,23 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
    // see if we have an error condition - don't build table if so
    if (nss==0 || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
    {
-      *pPara <<Bold("Debonding Information")<<rptNewLine;
+      *pPara <<Bold(_T("Debonding Information"))<<rptNewLine;
 
       if(nss==0)
       {
-         *pPara<< color(Red) <<"Warning: No straight strands in girder. Cannot write debonding information."<<color(Black)<<rptNewLine;
+         *pPara<< color(Red) <<_T("Warning: No straight strands in girder. Cannot write debonding information.")<<color(Black)<<rptNewLine;
       }
       else if(m_OutCome==SectionMismatch)
       {
-         *pPara<< color(Red) <<"Warning: Irregular, Non-standard debonding increments used. Cannot write debonding information."<<color(Black)<<rptNewLine;
+         *pPara<< color(Red) <<_T("Warning: Irregular, Non-standard debonding increments used. Cannot write debonding information.")<<color(Black)<<rptNewLine;
       }
       else if (m_OutCome==TooManySections)
       {
-         *pPara<< color(Red) <<"Warning: More than ten debonding increments exist. Cannot write debonding information."<<color(Black)<<rptNewLine;
+         *pPara<< color(Red) <<_T("Warning: More than ten debonding increments exist. Cannot write debonding information.")<<color(Black)<<rptNewLine;
       }
       else if (m_OutCome==SectionsNotSymmetrical)
       {
-         *pPara<< color(Red) <<"Warning: Debond sections are not symmetic about girder mid-span. Cannot write debonding information."<<color(Black)<<rptNewLine;
+         *pPara<< color(Red) <<_T("Warning: Debond sections are not symmetic about girder mid-span. Cannot write debonding information.")<<color(Black)<<rptNewLine;
       }
       else
       {
@@ -109,7 +109,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
       uloc.SetFormat(sysNumericFormatTool::Automatic);
 
       const ColumnIndexType num_cols=13;
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,"Debonded Strand Pattern");
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,_T("Debonded Strand Pattern"));
       *pPara << p_table;
 
       // This table has a very special header
@@ -118,13 +118,13 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
       RowIndexType row = 0;
 
       p_table->SetRowSpan(row,0,2);
-      (*p_table)(row,0) << "Dist from Bottom";
+      (*p_table)(row,0) << _T("Dist from Bottom");
 
       p_table->SetColumnSpan(row,1,2);
-      (*p_table)(row,1) << "No. Strands";
+      (*p_table)(row,1) << _T("No. Strands");
 
       p_table->SetColumnSpan(row,2,10);
-      (*p_table)(row,2) << "Number of Strands Debonded To";
+      (*p_table)(row,2) << _T("Number of Strands Debonded To");
 
       // null remaining cells in this row
       ColumnIndexType ic;
@@ -136,8 +136,8 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
       // next row of header
       p_table->SetColumnSpan(++row,0,-1); 
 
-      (*p_table)(row,1) << Bold("Total");
-      (*p_table)(row,2) << Bold("Debonded");
+      (*p_table)(row,1) << Bold(_T("Total"));
+      (*p_table)(row,2) << Bold(_T("Debonded"));
 
       Int16 loc_inc=1;
       for (ic = 3; ic < num_cols; ic++)
@@ -227,7 +227,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          // write note about non-standard spacing if applicable
          if (m_OutCome==NonStandardSection)
          {
-            *pPara<< color(Red)<<"Warning: Non-standard debonding increment of "<<uloc.SetValue(m_SectionSpacing)<<" used."<<color(Black)<<rptNewLine;
+            *pPara<< color(Red)<<_T("Warning: Non-standard debonding increment of ")<<uloc.SetValue(m_SectionSpacing)<<_T(" used.")<<color(Black)<<rptNewLine;
          }
       }
    }
@@ -270,7 +270,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
 
    if (is_nonstandard)
    {
-      *p << color(Red) <<"Note: A Non-Standard Strand Fill Was Used For This Design" << color(Black) << rptNewLine;
+      *p << color(Red) <<_T("Note: A Non-Standard Strand Fill Was Used For This Design") << color(Black) << rptNewLine;
    }
 
    const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,girder,pgsTypes::Permanent);
@@ -287,104 +287,104 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
    CHECK(pmid.size()==1);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"TxDOT Girder Schedule");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T("TxDOT Girder Schedule"));
    p_table->SetColumnWidth(0,3.5);
    p_table->SetColumnWidth(1,2.5);
    *p << p_table;
 
    RowIndexType row = 0;
-   (*p_table)(row,0) << "Span";
+   (*p_table)(row,0) << _T("Span");
    (*p_table)(row,1) << LABEL_SPAN(span);
 
-   (*p_table)(++row,0) << "Girder";
+   (*p_table)(++row,0) << _T("Girder");
    (*p_table)(row  ,1) << LABEL_GIRDER(girder);
 
-   (*p_table)(++row,0) << "Girder Type";
+   (*p_table)(++row,0) << _T("Girder Type");
    (*p_table)(row,1) << pBridgeDesc->GetSpan(span)->GetGirderTypes()->GetGirderName(girder);
 
-   (*p_table)(++row,0) << Bold("Prestressing Strands");
-   (*p_table)(row,1) << Bold("Total");
+   (*p_table)(++row,0) << Bold(_T("Prestressing Strands"));
+   (*p_table)(row,1) << Bold(_T("Total"));
 
    StrandIndexType ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
    StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
 
-   (*p_table)(++row,0) << "NO. (N" << Sub("h") << " + N" << Sub("s") << ")";
+   (*p_table)(++row,0) << _T("NO. (N") << Sub(_T("h")) << _T(" + N") << Sub(_T("s")) << _T(")");
    (*p_table)(row  ,1) << Int16(nh + ns);
 
-   (*p_table)(++row,0) << "Size";
-   (*p_table)(row,1) << dia.SetValue(pstrand->GetNominalDiameter()) << " Dia.";
+   (*p_table)(++row,0) << _T("Size");
+   (*p_table)(row,1) << dia.SetValue(pstrand->GetNominalDiameter()) << _T(" Dia.");
 
-   (*p_table)(++row,0) << "Strength";
-   std::string strData;
-   std::string strGrade;
+   (*p_table)(++row,0) << _T("Strength");
+   std::_tstring strData;
+   std::_tstring strGrade;
    if ( bUnitsSI )
    {
-      strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? "1725" : "1860");
-      strData = "Grade " + strGrade;
-      strData += " ";
-      strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
+      strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("1725") : _T("1860"));
+      strData = _T("Grade ") + strGrade;
+      strData += _T(" ");
+      strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
 
       (*p_table)(row,1) << strData;
    }
    else
    {
-      strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? "250" : "270");
-      strData = "Grade " + strGrade;
-      strData += " ";
-      strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? "Low Relaxation" : "Stress Relieved");
+      strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("250") : _T("270"));
+      strData = _T("Grade ") + strGrade;
+      strData += _T(" ");
+      strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
 
       (*p_table)(row,1) << strData;
    }
 
-   (*p_table)(++row,0) << "Eccentricity @ CL";
+   (*p_table)(++row,0) << _T("Eccentricity @ CL");
    if ( bTempStrands )
-      (*p_table)(row,0) << " (w/o Temporary Strands)";
+      (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
 
    double nEff;
    (*p_table)(row,1) << ecc.SetValue( pStrandGeometry->GetEccentricity( pmid[0], false, &nEff ) );
 
-   (*p_table)(++row,0) << "Eccentricity @ End";
+   (*p_table)(++row,0) << _T("Eccentricity @ End");
    if ( bTempStrands )
-      (*p_table)(row,0) << " (w/o Temporary Strands)";
+      (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
 
    (*p_table)(row,1) << ecc.SetValue( pStrandGeometry->GetEccentricity( pois, false, &nEff ) );
 
    StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
 
-   (*p_table)(++row,0) << Bold("Prestressing Strands");
+   (*p_table)(++row,0) << Bold(_T("Prestressing Strands"));
    if (nh>0)
    {
-      (*p_table)(row,1) << Bold("Depressed");
+      (*p_table)(row,1) << Bold(_T("Depressed"));
 
-      (*p_table)(++row,0) << "NO. (# of Harped Strands)";
+      (*p_table)(++row,0) << _T("NO. (# of Harped Strands)");
       (*p_table)(row  ,1) << nh;
 
       double TO;
       pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
 
-      (*p_table)(++row,0) << "Y"<<Sub("b")<<" of Topmost Depressed Strand(s) @ End";
+      (*p_table)(++row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
       (*p_table)(row  ,1) << ecc.SetValue(TO);
    }
    else
    {
       // no harped strands, assume debond design
-      (*p_table)(row,1) << Bold("Debonded");
+      (*p_table)(row,1) << Bold(_T("Debonded"));
 
-      (*p_table)(++row,0) << "NO. (# of Debonded Strands)";
+      (*p_table)(++row,0) << _T("NO. (# of Debonded Strands)");
       (*p_table)(row  ,1) << ndb;
    }
 
-   (*p_table)(++row,0) << Bold("Concrete");
-   (*p_table)(row,1) << Bold("");
+   (*p_table)(++row,0) << Bold(_T("Concrete"));
+   (*p_table)(row,1) << Bold(_T(""));
 
-   (*p_table)(++row,0) << "Release Strength "<<RPT_FCI;
+   (*p_table)(++row,0) << _T("Release Strength ")<<RPT_FCI;
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
-   (*p_table)(++row,0) << "Minimum 28 day compressive strength "<<RPT_FC;
+   (*p_table)(++row,0) << _T("Minimum 28 day compressive strength ")<<RPT_FC;
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFcGdr(span,girder));
 
-   (*p_table)(++row,0) << Bold("Optional Design");
-   (*p_table)(row,1) << Bold("");
+   (*p_table)(++row,0) << Bold(_T("Optional Design"));
+   (*p_table)(row,1) << Bold(_T(""));
 
    const pgsFlexuralStressArtifact* pArtifact;
    double fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
@@ -394,13 +394,13 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
 	   pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetDistFromStart()) );
    pArtifact->GetExternalEffects( &fcTop, &fcBot );
 
-   (*p_table)(++row,0) << "Design Load Compressive Stress (Top CL)";
+   (*p_table)(++row,0) << _T("Design Load Compressive Stress (Top CL)");
    (*p_table)(row  ,1) << stress.SetValue(-fcTop);
 
    pArtifact = pGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetDistFromStart()) );
    pArtifact->GetExternalEffects( &ftTop, &ftBot );
 
-   (*p_table)(++row,0) << "Design Load Tensile Stress (Bottom CL)";
+   (*p_table)(++row,0) << _T("Design Load Tensile Stress (Bottom CL)");
    (*p_table)(row  ,1) << stress.SetValue(-ftBot);
 
    //const pgsFlexuralCapacityArtifact* pFlexureArtifact = pGdrArtifact->GetFlexuralCapacityArtifact( pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,pmid[0].GetDistFromStart()) );
@@ -408,7 +408,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    MINMOMENTCAPDETAILS mmcd;
    pMomentCapacity->GetMinMomentCapacityDetails(pgsTypes::BridgeSite3,pmid[0],true,&mmcd);
 
-   (*p_table)(++row,0) << "Required minimum ultimate moment capacity ";
+   (*p_table)(++row,0) << _T("Required minimum ultimate moment capacity ");
 //   (*p_table)(row,1) << moment.SetValue( pFlexureArtifact->GetDemand() );
    (*p_table)(row,1) << moment.SetValue( _cpp_max(mmcd.Mu,mmcd.MrMin) );
 
@@ -420,27 +420,27 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      (*p_table)(++row,0) << "Live Load Distribution Factor for Moment";
+      (*p_table)(++row,0) << _T("Live Load Distribution Factor for Moment");
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetMomentDistFactor(span,girder,pgsTypes::StrengthI));
 
-      (*p_table)(++row,0) << "Live Load Distribution Factor for Shear";
+      (*p_table)(++row,0) << _T("Live Load Distribution Factor for Shear");
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetShearDistFactor(span,girder,pgsTypes::StrengthI));
    }
    else
    {
-      (*p_table)(++row,0) << "Live Load Distribution Factor for Moment (Strength and Service Limit States)";
+      (*p_table)(++row,0) << _T("Live Load Distribution Factor for Moment (Strength and Service Limit States)");
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetMomentDistFactor(span,girder,pgsTypes::StrengthI));
 
-      (*p_table)(++row,0) << "Live Load Distribution Factor for Shear (Strength and Service Limit States)";
+      (*p_table)(++row,0) << _T("Live Load Distribution Factor for Shear (Strength and Service Limit States)");
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetShearDistFactor(span,girder,pgsTypes::StrengthI));
 
-      (*p_table)(++row,0) << "Live Load Distribution Factor for Moment (Fatigue Limit States)";
+      (*p_table)(++row,0) << _T("Live Load Distribution Factor for Moment (Fatigue Limit States)");
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetMomentDistFactor(span,girder,pgsTypes::FatigueI));
    }
 
    (*p) << rptNewLine;
-   (*p) << color(Red) <<"NOTE: Stresses show in the above table reflect the following sign convention:" << rptNewLine 
-        << "Compressive Stress is positive. Tensile Stress is negative" << color(Black) << rptNewLine;
+   (*p) << color(Red) <<_T("NOTE: Stresses show in the above table reflect the following sign convention:") << rptNewLine 
+        << _T("Compressive Stress is positive. Tensile Stress is negative") << color(Black) << rptNewLine;
 
    // write debond table
    WriteDebondTable(p, pBroker, span, girder, pDisplayUnits);
@@ -450,14 +450,14 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
       // Nonstandard strands table
       StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, pmid[0]);
 
-      p_table = pgsReportStyleHolder::CreateDefaultTable(2,"Non-Standard Strand Pattern");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T("Non-Standard Strand Pattern"));
       p_table->SetColumnWidth(0,1.3);
       p_table->SetColumnWidth(1,1.3);
       *p << p_table;
 
       RowIndexType row = 0;
-      (*p_table)(row,0) << "Row"<<rptNewLine<<"(in)"; // TxDOT dosn't do metric and we need special formatting below
-      (*p_table)(row++,1) << "# of"<<rptNewLine<<"Strands";
+      (*p_table)(row,0) << _T("Row")<<rptNewLine<<_T("(in)"); // TxDOT dosn't do metric and we need special formatting below
+      (*p_table)(row++,1) << _T("# of")<<rptNewLine<<_T("Strands");
 
       for (StrandRowUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
       {

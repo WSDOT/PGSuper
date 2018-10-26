@@ -103,15 +103,15 @@ TrafficBarrierEntry& TrafficBarrierEntry::operator= (const TrafficBarrierEntry& 
 //======================== OPERATIONS =======================================
 bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("TrafficBarrierEntry", 7.0);
+   pSave->BeginUnit(_T("TrafficBarrierEntry"), 7.0);
 
-   pSave->Property("Name",this->GetName().c_str());
+   pSave->Property(_T("Name"),this->GetName().c_str());
 
-   pSave->BeginUnit("BarrierPoints",1.0);
+   pSave->BeginUnit(_T("BarrierPoints"),1.0);
    
    CollectionIndexType count;
    m_BarrierPoints->get_Count(&count);
-   pSave->Property("Count",count);
+   pSave->Property(_T("Count"),count);
 
    CComPtr<IEnumPoint2d> enum_points;
    m_BarrierPoints->get__Enum(&enum_points);
@@ -122,24 +122,24 @@ bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
       point->get_X(&x);
       point->get_Y(&y);
 
-      pSave->BeginUnit("Point",1.0);
-      pSave->Property("X",x);
-      pSave->Property("Y",y);
+      pSave->BeginUnit(_T("Point"),1.0);
+      pSave->Property(_T("X"),x);
+      pSave->Property(_T("Y"),y);
       pSave->EndUnit();
 
       point.Release();
    }
    pSave->EndUnit();
 
-   pSave->BeginUnit("BarrierWeight",1.0);
-   pSave->Property("WeightMethod",(long)m_WeightMethod);
-   pSave->Property("Weight",m_Weight);
-   pSave->Property("Ec",m_Ec); // added in version 7
+   pSave->BeginUnit(_T("BarrierWeight"),1.0);
+   pSave->Property(_T("WeightMethod"),(long)m_WeightMethod);
+   pSave->Property(_T("Weight"),m_Weight);
+   pSave->Property(_T("Ec"),m_Ec); // added in version 7
    pSave->EndUnit();
 
-   pSave->Property("CurbOffset",m_CurbOffset); // added version 6
+   pSave->Property(_T("CurbOffset"),m_CurbOffset); // added version 6
 
-   pSave->Property("IsBarrierStructurallyContinuous",m_bStructurallyContinuous);
+   pSave->Property(_T("IsBarrierStructurallyContinuous"),m_bStructurallyContinuous);
 
    pSave->EndUnit();
 
@@ -150,14 +150,14 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
    m_BarrierPoints->Clear();
 
-   if(pLoad->BeginUnit("TrafficBarrierEntry"))
+   if(pLoad->BeginUnit(_T("TrafficBarrierEntry")))
    {
       double version = pLoad->GetVersion();
       if (7.0 < version)
          THROW_LOAD(BadVersion,pLoad);
 
-      std::string name;
-      if(pLoad->Property("Name",&name))
+      std::_tstring name;
+      if(pLoad->Property(_T("Name"),&name))
          this->SetName(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -166,28 +166,28 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          double x1,x2,x3,x4,x5,y1,y2,y3;
 
-         if(!pLoad->Property("X1", &x1))
+         if(!pLoad->Property(_T("X1"), &x1))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("X2", &x2))
+         if(!pLoad->Property(_T("X2"), &x2))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("X3", &x3))
+         if(!pLoad->Property(_T("X3"), &x3))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("X4", &x4))
+         if(!pLoad->Property(_T("X4"), &x4))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("X5", &x5))
+         if(!pLoad->Property(_T("X5"), &x5))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Y1", &y1))
+         if(!pLoad->Property(_T("Y1"), &y1))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Y2", &y2))
+         if(!pLoad->Property(_T("Y2"), &y2))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Y3", &y3))
+         if(!pLoad->Property(_T("Y3"), &y3))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          ConvertDimensionsToPoints(x1,x2,x3,x4,x5,y1,y2,y3);
@@ -195,12 +195,12 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 2 <= version ) // added in version 2 (skip for version 1)
          {
             long value;
-            if ( !pLoad->Property("WeightMethod",&value) )
+            if ( !pLoad->Property(_T("WeightMethod"),&value) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_WeightMethod = (WeightMethod)value;
 
-            if ( !pLoad->Property("Weight",&m_Weight) )
+            if ( !pLoad->Property(_T("Weight"),&m_Weight) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
@@ -218,33 +218,33 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             // this is obsolete data... just load it and ignore it
             long config;
-            if ( !pLoad->Property("Configuration",&config) )
+            if ( !pLoad->Property(_T("Configuration"),&config) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             configuration = (Configuration)config;
 
             // this unit got renamed in version 5... load old name here
-            if ( !pLoad->BeginUnit("ExteriorBarrierPoints") )
+            if ( !pLoad->BeginUnit(_T("ExteriorBarrierPoints")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
          else
          {
-            if ( !pLoad->BeginUnit("BarrierPoints") )
+            if ( !pLoad->BeginUnit(_T("BarrierPoints")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if ( !pLoad->Property("Count",&count) )
+         if ( !pLoad->Property(_T("Count"),&count) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          for ( long i = 0; i < count; i++ )
          {
-            if ( !pLoad->BeginUnit("Point") )
+            if ( !pLoad->BeginUnit(_T("Point")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("X",&x) )
+            if ( !pLoad->Property(_T("X"),&x) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("Y",&y) )
+            if ( !pLoad->Property(_T("Y"),&y) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             if ( !pLoad->EndUnit() )
@@ -270,18 +270,18 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( configuration == ExteriorBarrier_Sidewalk ||
                  configuration == ExteriorBarrier_Sidewalk_InteriorBarrier )
             {
-               if ( !pLoad->BeginUnit("Sidewalk") )
+               if ( !pLoad->BeginUnit(_T("Sidewalk")) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("H1",&dummy_val) )
+               if ( !pLoad->Property(_T("H1"),&dummy_val) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("H2",&dummy_val) )
+               if ( !pLoad->Property(_T("H2"),&dummy_val) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
                if ( configuration == ExteriorBarrier_Sidewalk )
                {
-                  if ( !pLoad->Property("W",&dummy_val) )
+                  if ( !pLoad->Property(_T("W"),&dummy_val) )
                      THROW_LOAD(InvalidFileFormat,pLoad);
                }
 
@@ -293,21 +293,21 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if ( configuration == ExteriorBarrier_Sidewalk_InteriorBarrier )
             {
-               if ( !pLoad->BeginUnit("InteriorBarrierPoints") )
+               if ( !pLoad->BeginUnit(_T("InteriorBarrierPoints")) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("Count",&count) )
+               if ( !pLoad->Property(_T("Count"),&count) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
                for ( long i = 0; i < count; i++ )
                {
-                  if ( !pLoad->BeginUnit("Point") )
+                  if ( !pLoad->BeginUnit(_T("Point")) )
                      THROW_LOAD(InvalidFileFormat,pLoad);
 
-                  if ( !pLoad->Property("X",&x) )
+                  if ( !pLoad->Property(_T("X"),&x) )
                      THROW_LOAD(InvalidFileFormat,pLoad);
 
-                  if ( !pLoad->Property("Y",&y) )
+                  if ( !pLoad->Property(_T("Y"),&y) )
                      THROW_LOAD(InvalidFileFormat,pLoad);
 
                   if ( !pLoad->EndUnit() )
@@ -322,21 +322,21 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 
          // Barrier Weight unit
-         if ( !pLoad->BeginUnit("BarrierWeight") )
+         if ( !pLoad->BeginUnit(_T("BarrierWeight")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          long value;
-         if ( !pLoad->Property("WeightMethod",&value) )
+         if ( !pLoad->Property(_T("WeightMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_WeightMethod = (WeightMethod)value;
 
-         if ( !pLoad->Property("Weight",&m_Weight) )
+         if ( !pLoad->Property(_T("Weight"),&m_Weight) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( 7 <= version )
          {
-            if ( !pLoad->Property("Ec",&m_Ec) )
+            if ( !pLoad->Property(_T("Ec"),&m_Ec) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
@@ -347,7 +347,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 5 < version )
       {
          // added version 6
-         if ( !pLoad->Property("CurbOffset",&m_CurbOffset) )
+         if ( !pLoad->Property(_T("CurbOffset"),&m_CurbOffset) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -356,13 +356,13 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
          // added version 4.0
          if ( version < 5 )
          {
-            if ( !pLoad->Property("ExteriorGirderStructurallyContinuous",&m_bStructurallyContinuous) )
+            if ( !pLoad->Property(_T("ExteriorGirderStructurallyContinuous"),&m_bStructurallyContinuous) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
          else
          {
             // renamed in version 5
-            if ( !pLoad->Property("IsBarrierStructurallyContinuous",&m_bStructurallyContinuous) )
+            if ( !pLoad->Property(_T("IsBarrierStructurallyContinuous"),&m_bStructurallyContinuous) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
@@ -698,7 +698,7 @@ bool TrafficBarrierEntry::AssertValid() const
 
 void TrafficBarrierEntry::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for TrafficBarrierEntry "<< GetName() <<endl;
+   os << _T("Dump for TrafficBarrierEntry ")<< GetName() <<endl;
 
    libLibraryEntry::Dump( os );
 }

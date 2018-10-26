@@ -54,7 +54,7 @@ boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::C
    }
    else
    {
-      AfxMessageBox("No rating types defined. Select Project | Load Rating Options to select rating types");
+      AfxMessageBox(_T("No rating types defined. Select Project | Load Rating Options to select rating types"));
       return boost::shared_ptr<CReportSpecification>();
    }
 }
@@ -74,7 +74,7 @@ boost::shared_ptr<CReportSpecification> CLoadRatingReportSpecificationBuilder::C
    }
    else
    {
-      AfxMessageBox("No rating types defined. Select Project | Load Rating Options to select rating types");
+      AfxMessageBox(_T("No rating types defined. Select Project | Load Rating Options to select rating types"));
       return boost::shared_ptr<CReportSpecification>();
    }
 }

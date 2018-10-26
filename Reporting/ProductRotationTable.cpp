@@ -92,7 +92,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    PierIndexType startPier = startSpan;
    PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Rotations");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Rotations"));
    RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(p_table,true,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
@@ -118,9 +118,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       ColumnIndexType col = 0;
 
       if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
+         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
    
       
       pgsPointOfInterest& poi = vPoi[pier-startPier];
@@ -207,7 +207,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
             (*p_table)(row,col) << rotation.SetValue( max );
             if ( bIndicateControllingLoad && 0 <= maxConfig )
             {
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
             }
             col++;
 
@@ -215,7 +215,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
             (*p_table)(row,col) << rotation.SetValue( min );
             if ( bIndicateControllingLoad && 0 <= minConfig )
             {
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
             }
             col++;
 
@@ -225,7 +225,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << _T(")");
                }
                col++;
 
@@ -233,7 +233,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << _T(")");
                }
                col++;
             }
@@ -244,7 +244,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << _T(")");
                }
                col++;
 
@@ -252,7 +252,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << _T(")");
                }
                col++;
             }
@@ -266,7 +266,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                }
                col++;
 
@@ -274,7 +274,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
                }
                col++;
             }
@@ -286,7 +286,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << _T(")");
                }
                col++;
 
@@ -294,7 +294,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << _T(")");
                }
                col++;
             }
@@ -306,7 +306,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
                }
                col++;
 
@@ -314,7 +314,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
                }
                col++;
             }
@@ -326,7 +326,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << _T(")");
                }
                col++;
 
@@ -334,7 +334,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << _T(")");
                }
                col++;
             }
@@ -346,7 +346,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << _T(")");
                }
                col++;
 
@@ -354,7 +354,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << _T(")");
                }
                col++;
             }
@@ -385,14 +385,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
             (*p_table)(row,col) << rotation.SetValue( max );
             if ( bIndicateControllingLoad && 0 <= maxConfig )
             {
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
             }
             col++;
 
             (*p_table)(row,col) << rotation.SetValue( min );
             if ( bIndicateControllingLoad && 0 <= minConfig )
             {
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
             }
             col++;
 
@@ -402,14 +402,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << _T(")");
                }
                col++;
             }
@@ -420,14 +420,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << _T(")");
                }
                col++;
             }
@@ -441,14 +441,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
                }
                col++;
             }
@@ -460,14 +460,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << _T(")");
                }
                col++;
             }
@@ -479,14 +479,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
                }
                col++;
             }
@@ -498,14 +498,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << _T(")");
                }
                col++;
             }
@@ -517,14 +517,14 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
                (*p_table)(row,col) << rotation.SetValue( max );
                if ( bIndicateControllingLoad && 0 <= maxConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << _T(")");
                }
                col++;
 
                (*p_table)(row,col) << rotation.SetValue( min );
                if ( bIndicateControllingLoad && 0 <= minConfig )
                {
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << _T(")");
                }
                col++;
             }
@@ -575,7 +575,7 @@ bool CProductRotationTable::AssertValid() const
 
 void CProductRotationTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CProductRotationTable" << endl;
+   os << _T("Dump for CProductRotationTable") << endl;
 }
 #endif // _DEBUG
 

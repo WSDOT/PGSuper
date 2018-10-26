@@ -64,11 +64,11 @@ interface IBeamFamily : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns the factory CLSID
-   virtual CLSID GetFactoryCLSID(const char* strName) = 0;
+   virtual CLSID GetFactoryCLSID(LPCTSTR strName) = 0;
 
    //---------------------------------------------------------------------------------
    // Creates a beam factory
-   virtual HRESULT CreateFactory(const char* strName,IBeamFactory** ppFactory) = 0;
+   virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory) = 0;
 };
 
 

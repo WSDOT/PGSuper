@@ -172,13 +172,13 @@ END_MESSAGE_MAP()
 BOOL CConcreteDetailsDlg::OnInitDialog() 
 {
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   int idx = pcbConcreteType->AddString("Normal weight");
+   int idx = pcbConcreteType->AddString(_T("Normal weight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
 
-   idx = pcbConcreteType->AddString("All lightweight");
+   idx = pcbConcreteType->AddString(_T("All lightweight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
 
-   idx = pcbConcreteType->AddString("Sand lightweight");
+   idx = pcbConcreteType->AddString(_T("Sand lightweight"));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
 	CDialog::OnInitDialog();
@@ -293,7 +293,7 @@ CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDen
 
          ec = k1*k2*lrfdConcreteUtil::ModE(fc,density,false);
 
-         strEc.Format("%s",FormatDimension(ec,pDisplayUnits->GetModEUnit(),false));
+         strEc.Format(_T("%s"),FormatDimension(ec,pDisplayUnits->GetModEUnit(),false));
    }
 
 
@@ -308,7 +308,7 @@ void CConcreteDetailsDlg::OnCopyMaterial()
    int result = dlg.DoModal();
    if ( result < 0 )
    {
-      ::AfxMessageBox("The Concrete library is empty",MB_OK);
+      ::AfxMessageBox(_T("The Concrete library is empty"),MB_OK);
    }
    else if ( result == IDOK )
    {

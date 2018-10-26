@@ -141,7 +141,7 @@ Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTyp
 Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands)
 {
    GET_IFACE( ISpecification, pSpec );
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
 
    GET_IFACE( ILibrary, pLib );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -204,7 +204,7 @@ Float64 pgsPsForceEng::GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsT
    {
       // Get value from libary if it hasn't been set up 
       GET_IFACE( ISpecification, pSpec );
-      std::string spec_name = pSpec->GetSpecification();
+      std::_tstring spec_name = pSpec->GetSpecification();
       GET_IFACE( ILibrary, pLib );
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -911,7 +911,7 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
       if ( 
            ( (stage == pgsTypes::Jacking || stage == pgsTypes::BeforeXfer || stage == pgsTypes::AfterXfer) && config.TempStrandUsage != pgsTypes::ttsPretensioned ) ||
            (  stage == pgsTypes::AtLifting && (config.TempStrandUsage == pgsTypes::ttsPTAfterLifting || config.TempStrandUsage == pgsTypes::ttsPTBeforeShipping) )   ||
-           (  stage == pgsTypes::AfterTemporaryStrandRemoval || stage == pgsTypes::DeckPlacement || stage == pgsTypes::AfterLosses )
+           (  stage == pgsTypes::AfterTemporaryStrandRemoval || stage == pgsTypes::AfterDeckPlacement || stage == pgsTypes::AfterSIDL || stage == pgsTypes::AfterLosses )
          )
       {
          N = 0;
@@ -974,8 +974,12 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
       loss = pLosses->GetAfterTemporaryStrandRemovalLosses(poi,strandType,config);
       break;
 
-   case pgsTypes::DeckPlacement:
+   case pgsTypes::AfterDeckPlacement:
       loss = pLosses->GetDeckPlacementLosses(poi,strandType,config);
+      break;
+
+   case pgsTypes::AfterSIDL:
+      loss = pLosses->GetSIDLLosses(poi,strandType,config);
       break;
 
    case pgsTypes::AfterLosses:

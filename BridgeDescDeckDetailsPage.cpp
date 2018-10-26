@@ -132,9 +132,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
       DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
-         DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), "Please enter a sacrificial depth that is less than %f %s" );
+         DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
       else
-         DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit(), "Please enter a sacrificial depth that is less than %f %s" );
+         DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
    }
 
    // overlay
@@ -203,15 +203,15 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay ) // CIP deck
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            strMsg1 = "Slab Offset must be larger than the gross slab depth";
-            strMsg2 = "Overhang edge depth must be less than the gross slab depth";
+            strMsg1 = _T("Slab Offset must be larger than the gross slab depth");
+            strMsg2 = _T("Overhang edge depth must be less than the gross slab depth");
             bCheckDepth = true;
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-            strMsg1 = "Slab Offset must be larger than the cast depth + panel depth";
-            strMsg2 = "Overhang edge depth must be less than the cast depth + panel depth";
+            strMsg1 = _T("Slab Offset must be larger than the cast depth + panel depth");
+            strMsg2 = _T("Overhang edge depth must be less than the cast depth + panel depth");
             bCheckDepth = true;
          }
          else
@@ -241,7 +241,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             if ( maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
             {
                CString msg;
-               msg.Format("Gross slab depth must less than %s to accomodate the %s fillet and maximum slab offset of %s",
+               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and maximum slab offset of %s"),
                             FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
@@ -255,7 +255,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             if ( maxSlabOffset -  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
             {
                CString msg;
-               msg.Format("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and maximum slab offset of %s",
+               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and maximum slab offset of %s"),
                             FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
@@ -344,19 +344,19 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    // set density/weight labels
    CStatic* pStatic = (CStatic*)GetDlgItem( IDC_OLAY_DENSITY_LABEL );
    if ( IS_SI_UNITS(pDisplayUnits) )
-      pStatic->SetWindowText( "Overlay Density" );
+      pStatic->SetWindowText( _T("Overlay Density") );
    else
-      pStatic->SetWindowText( "Overlay Weight" );
+      pStatic->SetWindowText( _T("Overlay Weight") );
 
    // fill up slab overhang taper options
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_OVERHANG_TAPER);
-   int idx = pCB->AddString("Taper overhang to top of top flange");
+   int idx = pCB->AddString(_T("Taper overhang to top of top flange"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::TopTopFlange);
 
-   idx = pCB->AddString("Taper overhang to bottom of top flange");
+   idx = pCB->AddString(_T("Taper overhang to bottom of top flange"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::BottomTopFlange);
 
-   idx = pCB->AddString("Don't taper overhang");
+   idx = pCB->AddString(_T("Don't taper overhang"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::None);
 
    // wearing surface types
@@ -364,23 +364,23 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
-      idx = pCB->AddString("Sacrificial Depth of Concrete Deck");
+      idx = pCB->AddString(_T("Sacrificial Depth of Concrete Deck"));
       pCB->SetItemData(idx,(DWORD)pgsTypes::wstSacrificialDepth);
    }
 
-   idx = pCB->AddString("Overlay");
+   idx = pCB->AddString(_T("Overlay"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::wstOverlay);
 
-   idx = pCB->AddString("Future Overlay");
+   idx = pCB->AddString(_T("Future Overlay"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::wstFutureOverlay);
 
    m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
    m_bSlabOffsetWholeBridge = pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge ? true : false;
-   m_strSlabOffsetCache.Format("%s",FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
+   m_strSlabOffsetCache.Format(_T("%s"),FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
 
    CPropertyPage::OnInitDialog();
 
-   if ( m_strUserEc == "" )
+   if ( m_strUserEc == _T("") )
       m_ctrlEc.GetWindowText(m_strUserEc);
 	
    OnWearingSurfaceTypeChanged();
@@ -411,25 +411,25 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    switch ( deckType )
    {
       case pgsTypes::sdtCompositeCIP:
-         strDeckType = "Composite Cast-In-Place Deck";
+         strDeckType = _T("Composite Cast-In-Place Deck");
          break;
 
       case pgsTypes::sdtCompositeSIP:
-         strDeckType = "Composite Stay-In-Place Deck Panels";
+         strDeckType = _T("Composite Stay-In-Place Deck Panels");
          break;
 
       case pgsTypes::sdtCompositeOverlay:
-         strDeckType = "Composite Cast-In-Place Overlay";
+         strDeckType = _T("Composite Cast-In-Place Overlay");
          break;
 
       case pgsTypes::sdtNone:
-         strDeckType = "No deck";
+         strDeckType = _T("No deck");
    }
    GetDlgItem(IDC_DECK_TYPE)->SetWindowText(strDeckType);
 
 
    CWnd* pWnd = GetDlgItem(IDC_GROSS_DEPTH_LABEL);
-   pWnd->SetWindowText(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeOverlay ? "Gross Depth" : "Cast Depth");
+   pWnd->SetWindowText(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeOverlay ? _T("Gross Depth") : _T("Cast Depth"));
 
    GetDlgItem(IDC_GROSS_DEPTH_LABEL)->EnableWindow( deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_GROSS_DEPTH)->EnableWindow(       deckType != pgsTypes::sdtNone);
@@ -445,7 +445,7 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
    if ( deckType == pgsTypes::sdtCompositeOverlay )
-      GetDlgItem(IDC_FILLET)->SetWindowText("0.00");
+      GetDlgItem(IDC_FILLET)->SetWindowText(_T("0.00"));
 
    UpdateSlabOffsetControls();
 
@@ -480,16 +480,16 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    // blank out deck related inputs
    if ( deckType == pgsTypes::sdtNone )
    {
-      GetDlgItem(IDC_GROSS_DEPTH)->SetWindowText("");
-      GetDlgItem(IDC_OVERHANG_DEPTH)->SetWindowText("");
-      GetDlgItem(IDC_FILLET)->SetWindowText("");
-      GetDlgItem(IDC_ADIM)->SetWindowText("");
-      GetDlgItem(IDC_SACDEPTH)->SetWindowText("");
-      GetDlgItem(IDC_PANEL_DEPTH)->SetWindowText("");
-      GetDlgItem(IDC_PANEL_SUPPORT)->SetWindowText("");
-      GetDlgItem(IDC_SLAB_FC)->SetWindowText("");
-      GetDlgItem(IDC_EC)->SetWindowText("");
-      GetDlgItem(IDC_OVERHANG_TAPER)->SetWindowText(""); // this is a combobox
+      GetDlgItem(IDC_GROSS_DEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_OVERHANG_DEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
+      GetDlgItem(IDC_ADIM)->SetWindowText(_T(""));
+      GetDlgItem(IDC_SACDEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_PANEL_DEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_PANEL_SUPPORT)->SetWindowText(_T(""));
+      GetDlgItem(IDC_SLAB_FC)->SetWindowText(_T(""));
+      GetDlgItem(IDC_EC)->SetWindowText(_T(""));
+      GetDlgItem(IDC_OVERHANG_TAPER)->SetWindowText(_T("")); // this is a combobox
    }
 
    return CPropertyPage::OnSetActive();
@@ -554,9 +554,9 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      strDensity.Format("%s",FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format("%f",pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK1);
-      strK2.Format("%f",pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK1);
+      strK2.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK2);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
@@ -741,19 +741,19 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    const CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
    CString strTip;
-   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s",
-      "Type", matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
-      "Unit Weight",FormatDimension(pDeck->SlabStrengthDensity,density),
-      "Unit Weight (w/ reinforcement)",  FormatDimension(pDeck->SlabWeightDensity,density),
-      "Max Aggregate Size",  FormatDimension(pDeck->SlabMaxAggregateSize,aggsize)
+   strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pDeck->SlabStrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pDeck->SlabWeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pDeck->SlabMaxAggregateSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    //{
    //   // add K1 parameter
    //   CString strK1;
-   //   strK1.Format("\r\n%-20s %s",
-   //      "K1",FormatScalar(pDeck->SlabK1,scalar));
+   //   strK1.Format(_T("\r\n%-20s %s"),
+   //      _T("K1"),FormatScalar(pDeck->SlabK1,scalar));
 
    //   strTip += strK1;
    //}
@@ -761,13 +761,13 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    if ( pDeck->SlabConcreteType != pgsTypes::Normal && pDeck->SlabHasFct )
    {
       CString strLWC;
-      strLWC.Format("\r\n%-20s %s",
-         "fct",FormatDimension(pDeck->SlabFct,stress));
+      strLWC.Format(_T("\r\n%-20s %s"),
+         _T("fct"),FormatDimension(pDeck->SlabFct,stress));
 
       strTip += strLWC;
    }
 
-   CString strPress("\r\n\r\nPress button to edit");
+   CString strPress(_T("\r\n\r\nPress button to edit"));
    strTip += strPress;
 
    m_strTip = strTip;
@@ -825,11 +825,11 @@ void CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset()
    CString strHint;
    if ( bEnable )
    {
-      strHint = "By checking this box, the same slab offset will be used for the entire bridge";
+      strHint = _T("By checking this box, the same slab offset will be used for the entire bridge");
    }
    else
    {
-      strHint = "By unchecking this box, the slab offset can be specified by span or by girder. Span by span slab offsets can be defined on either the Span or Pier Connections page. Girder by girder slab offsets can be defined on the Girder Spacing or Girder dialogs";
+      strHint = _T("By unchecking this box, the slab offset can be specified by span or by girder. Span by span slab offsets can be defined on either the Span or Pier Connections page. Girder by girder slab offsets can be defined on the Girder Spacing or Girder dialogs");
    }
 
    // Show the hint dialog
@@ -845,7 +845,7 @@ void CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset()
    {
       // box was checked off so read the current value from the window and cache it
       pWnd->GetWindowText(m_strSlabOffsetCache);
-      pWnd->SetWindowText("");
+      pWnd->SetWindowText(_T(""));
    }
 
    UpdateSlabOffsetControls();
@@ -881,7 +881,7 @@ void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {
       CUIHintsDlg dlg;
-      dlg.m_strTitle = "Hint";
+      dlg.m_strTitle = _T("Hint");
       dlg.m_strText = strText;
       dlg.DoModal();
       if ( dlg.m_bDontShowAgain )

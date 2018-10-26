@@ -29,7 +29,7 @@
 // ConfigurePGSuperDlg.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperCatalogServers.h"
 #include <MfcTools\HyperLink.h>
 

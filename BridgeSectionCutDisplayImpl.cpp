@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 static const double SSIZE = 1440 * 3/8; // (twips)
 
 
-UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat("BridgeSectionCutData");
+UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("BridgeSectionCutData"));
 
 CBridgeSectionCutDisplayImpl::CBridgeSectionCutDisplayImpl():
 m_pCutLocation(NULL),

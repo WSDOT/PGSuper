@@ -28,6 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Constructability.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
@@ -81,16 +82,17 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,S
    if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
    {
       INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,"Slab Offset (\"A\" Dimension)");
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Slab Offset (\"A\" Dimension)"));
 
       pTable->SetColumnStyle(3,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(3,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      (*pTable)(0,0) << COLHDR("Minimum" << rptNewLine << "Provided", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,1) << COLHDR("Required", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,2) << "Status";
-      (*pTable)(0,3) << "Notes";
+      (*pTable)(0,0) << COLHDR(_T("Minimum") << rptNewLine << _T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,1) << COLHDR(_T("Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,2) << _T("Status");
+      (*pTable)(0,3) << _T("Notes");
 
       (*pTable)(1,0) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
       (*pTable)(1,1) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
@@ -106,7 +108,7 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,S
             break;
 
          case pgsConstructabilityArtifact::Excessive:
-            (*pTable)(1,2) << color(Blue) << "Excessive" << color(Black);
+            (*pTable)(1,2) << color(Blue) << _T("Excessive") << color(Black);
             break;
 
          default:
@@ -116,11 +118,15 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,S
 
       if ( pArtifact->CheckStirrupLength() )
       {
-         (*pTable)(1,3) << color(Red) << "There is a large variation in the slab haunch thickness. Check stirrup length to ensure they engage the deck at all locations." << color(Black) << rptNewLine;
+         GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+         HAUNCHDETAILS haunch_details;
+         pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
+
+         (*pTable)(1,3) << color(Red) << _T("There is a large variation in the slab haunch thickness (") << dim2.SetValue(haunch_details.HaunchDiff) << _T("). Check stirrup length to ensure they engage the deck at all locations.") << color(Black) << rptNewLine;
       }
       else
       {
-         (*pTable)(1,3) << "";
+         (*pTable)(1,3) << _T("");
       }
 
       return pTable;
@@ -144,12 +150,12 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Global Stability of Girder";
+   *pTitle << _T("Global Stability of Girder");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GlobalGirderStability.gif");
+   *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GlobalGirderStability.gif"));
 
    rptRcScalar slope;
    slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
@@ -158,14 +164,14 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
-   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   (*pTable)(0,0) << COLHDR(Sub2("W","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,1) << COLHDR(Sub2("Y","b"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,2) << "Incline from Vertical (" << Sub2(symbol(theta),"max") << ")" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,3) << "Max Incline" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,4) << "Status";
+   (*pTable)(0,0) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,1) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,2) << _T("Incline from Vertical (") << Sub2(symbol(theta),_T("max")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,4) << _T("Status");
 
    double Wb, Yb, Orientation;
    pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
@@ -179,7 +185,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    if ( pArtifact->GlobalGirderStabilityPassed() )
       (*pTable)(1,4) << RPT_PASS;
    else
-      (*pTable)(1,4) << RPT_FAIL << rptNewLine << "Reaction falls outside of middle third of bottom width of girder";
+      (*pTable)(1,4) << RPT_FAIL << rptNewLine << _T("Reaction falls outside of middle third of bottom width of girder");
    
    *pBody << pTable;
 }
@@ -222,7 +228,7 @@ bool CConstructabilityCheckTable::AssertValid() const
 
 void CConstructabilityCheckTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CConstructabilityCheckTable" << endl;
+   os << _T("Dump for CConstructabilityCheckTable") << endl;
 }
 #endif // _DEBUG
 

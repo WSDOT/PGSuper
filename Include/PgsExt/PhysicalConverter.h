@@ -27,7 +27,7 @@ class arvPhysicalConverter: public sysINumericFormatToolBase
 {
 public:
    virtual Float64 Convert(Float64 value) const=0;
-   virtual std::string UnitTag() const =0;
+   virtual std::_tstring UnitTag() const =0;
 };
 
 // a template class for printing out physical values
@@ -45,7 +45,7 @@ public:
          CHECK(umd.Precision>0); // above will cause UINT's to roll over
       }
 
-   std::string AsString(Float64 val) const
+   std::_tstring AsString(Float64 val) const
    {
       if (fabs(val) > m_rT.Tol/10.)
          return m_FormatTool.AsString(val);
@@ -58,7 +58,7 @@ public:
       return ::ConvertFromSysUnits(value, m_rT.UnitOfMeasure);
    }
 
-   std::string UnitTag() const
+   std::_tstring UnitTag() const
    {
       return m_rT.UnitOfMeasure.UnitTag();
    }
@@ -82,7 +82,7 @@ public:
          CHECK(umd.Precision>0); // above will cause UINT's to roll over
       }
 
-   std::string AsString(Float64 val) const
+   std::_tstring AsString(Float64 val) const
    {
       return m_FormatTool.AsString(val);
    }
@@ -92,9 +92,9 @@ public:
       return value;
    }
 
-   std::string UnitTag() const
+   std::_tstring UnitTag() const
    {
-      return "";
+      return _T("");
    }
 private:
    sysNumericFormatTool m_FormatTool;

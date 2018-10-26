@@ -159,7 +159,11 @@ BOOL CCopyGirderDlg::OnInitDialog()
    if ( currSpan != INVALID_INDEX && currGirder != INVALID_INDEX )
    {
       m_FromSpan.SetCurSel((int)currSpan);
+      OnFromSpanChanged();
       m_FromGirder.SetCurSel((int)currGirder);
+
+      m_ToSpan.SetCurSel((int)currSpan+1);
+      OnToSpanChanged();
    }
 	
    UpdateApply();
@@ -179,7 +183,7 @@ void CCopyGirderDlg::FillComboBoxes(CComboBox& cbSpan,CComboBox& cbGirder, bool 
 
    if ( bIncludeAllSpanGirder )
    {
-      int idx = cbSpan.AddString("All Spans");
+      int idx = cbSpan.AddString(_T("All Spans"));
       cbSpan.SetItemData(idx,ALL_SPANS);
    }
 
@@ -188,7 +192,7 @@ void CCopyGirderDlg::FillComboBoxes(CComboBox& cbSpan,CComboBox& cbGirder, bool 
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       CString str;
-      str.Format("Span %d",LABEL_SPAN(spanIdx));
+      str.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
 
       int idx = cbSpan.AddString(str);
       cbSpan.SetItemData(idx,spanIdx);
@@ -207,7 +211,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanId
 
    if ( bIncludeAll )
    {
-      int idx = cbGirder.AddString("All Girders");
+      int idx = cbGirder.AddString(_T("All Girders"));
       cbGirder.SetItemData(idx,ALL_GIRDERS);
    }
 
@@ -216,7 +220,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanId
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CString str;
-      str.Format("Girder %s",LABEL_GIRDER(gdrIdx));
+      str.Format(_T("Girder %s"),LABEL_GIRDER(gdrIdx));
 
       int idx = cbGirder.AddString(str);
       cbGirder.SetItemData(idx,gdrIdx);
@@ -280,7 +284,7 @@ void CCopyGirderDlg::CopyToSelectionChanged()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   std::string strFromGirder = pBridgeDesc->GetSpan(fromSpan)->GetGirderTypes()->GetGirderName(fromGirder);
+   std::_tstring strFromGirder = pBridgeDesc->GetSpan(fromSpan)->GetGirderTypes()->GetGirderName(fromGirder);
 
    BOOL bCanCopy = TRUE;
 
@@ -291,7 +295,7 @@ void CCopyGirderDlg::CopyToSelectionChanged()
       SpanIndexType toSpan;
       GirderIndexType toGirder;
       UnhashSpanGirder(dwTo,&toSpan,&toGirder);
-      std::string strToGirder = pBridgeDesc->GetSpan(toSpan)->GetGirderTypes()->GetGirderName(toGirder);
+      std::_tstring strToGirder = pBridgeDesc->GetSpan(toSpan)->GetGirderTypes()->GetGirderName(toGirder);
 
       if ( strFromGirder != strToGirder )
       {

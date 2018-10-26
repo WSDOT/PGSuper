@@ -85,9 +85,9 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	CString default_name = "CADexport.txt",initial_filespec, initial_dir;
+	CString default_name = _T("CADexport.txt"),initial_filespec, initial_dir;
 	int		stf = IDOK;
-	char	strFilter[] = {"CAD Export Files (*.txt)|*.txt||"};
+	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
 	CFile	textFile;
 	FILE	*fp = NULL;
 	SpanIndexType span = 0;
@@ -121,7 +121,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	}
 
 	/* Create SAVEAS file dialog box object */
-	CFileDialog  fildlg(FALSE,"txt",default_name,OFN_HIDEREADONLY, strFilter);
+	CFileDialog  fildlg(FALSE,_T("txt"),default_name,OFN_HIDEREADONLY, strFilter);
 
 	/* Open the SAVEAS dialog box */
 	stf = fildlg.DoModal();
@@ -134,8 +134,8 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 		if (DoesFileExist(file_path))
 		{
 			/* See if the user wants to overwrite file */
-			CString msg(" The file: ");
-			msg += file_path + " exists. Overwrite it?";
+			CString msg(_T(" The file: "));
+			msg += file_path + _T(" exists. Overwrite it?");
 			int stm = AfxMessageBox(msg,MB_YESNOCANCEL|MB_ICONQUESTION);
 			if (stm != IDYES) 
             return S_OK;
@@ -149,9 +149,9 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          CEAFAutoProgress ap(pProgress);
 
 		   /* Open/create the specified text file */
-         if (fopen_s(&fp,LPCTSTR(file_path), "w+") != 0 || fp == NULL)
+         if (_tfopen_s(&fp,LPCTSTR(file_path), _T("w+")) != 0 || fp == NULL)
          {
-			   AfxMessageBox ("Warning: File Cannot be Created.");
+			   AfxMessageBox (_T("Warning: File Cannot be Created."));
 			   return S_OK;
 		   }
 
@@ -161,7 +161,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 		   /* Write CAD data to text file */
 		   if (CAD_SUCCESS != TxDOT_WriteCADDataToFile(fp, pBroker, span, gdr, format,true) )
          {
-			   AfxMessageBox ("Warning: An error occured while writing to File");
+			   AfxMessageBox (_T("Warning: An error occured while writing to File"));
 			   return S_OK;
          }
 
@@ -171,8 +171,8 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
       } // autoprogress scope
 
 		/* Notify completion */
-		CString msg("File: ");
-		msg += file_path + " creation complete.";
+		CString msg(_T("File: "));
+		msg += file_path + _T(" creation complete.");
       AfxMessageBox(msg,MB_ICONINFORMATION|MB_OK);
 	}
    return S_OK;

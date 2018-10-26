@@ -94,31 +94,31 @@ ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntr
 //======================== OPERATIONS =======================================
 bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("ConcreteMaterialEntry", 4.0);
+   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 4.0);
 
-   pSave->Property("Name",this->GetName().c_str());
+   pSave->Property(_T("Name"),this->GetName().c_str());
    
    // added version 4
-   pSave->Property("Type",matConcrete::GetTypeName((matConcrete::Type)m_Type,false).c_str());
-   pSave->Property("Dw", m_Dw);
-   pSave->Property("Fc", m_Fc);
-   pSave->Property("Ds", m_Ds);
-   pSave->Property("AggregateSize",m_AggSize);
-   pSave->Property("EccK1", m_EccK1); // changed from K1 in version 4
-   pSave->Property("EccK2", m_EccK2); // added in version 4
-   pSave->Property("CreepK1", m_CreepK1); // added in version 4
-   pSave->Property("CreepK2", m_CreepK2); // added in version 4
-   pSave->Property("ShrinkageK1", m_ShrinkageK1); // added in version 4
-   pSave->Property("ShrinkageK2", m_ShrinkageK2); // added in version 4
-   pSave->Property("UserEc",m_bUserEc);
-   pSave->Property("Ec",m_Ec);
+   pSave->Property(_T("Type"),matConcrete::GetTypeName((matConcrete::Type)m_Type,false).c_str());
+   pSave->Property(_T("Dw"), m_Dw);
+   pSave->Property(_T("Fc"), m_Fc);
+   pSave->Property(_T("Ds"), m_Ds);
+   pSave->Property(_T("AggregateSize"),m_AggSize);
+   pSave->Property(_T("EccK1"), m_EccK1); // changed from K1 in version 4
+   pSave->Property(_T("EccK2"), m_EccK2); // added in version 4
+   pSave->Property(_T("CreepK1"), m_CreepK1); // added in version 4
+   pSave->Property(_T("CreepK2"), m_CreepK2); // added in version 4
+   pSave->Property(_T("ShrinkageK1"), m_ShrinkageK1); // added in version 4
+   pSave->Property(_T("ShrinkageK2"), m_ShrinkageK2); // added in version 4
+   pSave->Property(_T("UserEc"),m_bUserEc);
+   pSave->Property(_T("Ec"),m_Ec);
 
    // Version 4
    if ( m_Type != pgsTypes::Normal )
    {
-      pSave->Property("HasAggSplittingStrength",m_bHasFct);
+      pSave->Property(_T("HasAggSplittingStrength"),m_bHasFct);
       if ( m_bHasFct )
-         pSave->Property("AggSplittingStrength",m_Fct);
+         pSave->Property(_T("AggSplittingStrength"),m_Fct);
    }
 
    pSave->EndUnit();
@@ -128,14 +128,14 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
 bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
-   if(pLoad->BeginUnit("ConcreteMaterialEntry"))
+   if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
       Float64 version = pLoad->GetVersion();
       if (4.0 < version )
          THROW_LOAD(BadVersion,pLoad);
 
-      std::string name;
-      if(pLoad->Property("Name",&name))
+      std::_tstring name;
+      if(pLoad->Property(_T("Name"),&name))
          this->SetName(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -144,55 +144,55 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // Added version 4
       if ( 3.0 < version )
       {
-         std::string strType;
-         pLoad->Property("Type",&strType);
+         std::_tstring strType;
+         pLoad->Property(_T("Type"),&strType);
          m_Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(strType.c_str());
       }
 
-      if(!pLoad->Property("Dw", &m_Dw))
+      if(!pLoad->Property(_T("Dw"), &m_Dw))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("Fc", &m_Fc))
+      if(!pLoad->Property(_T("Fc"), &m_Fc))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("Ds", &m_Ds))
+      if(!pLoad->Property(_T("Ds"), &m_Ds))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("AggregateSize", &m_AggSize))
+      if(!pLoad->Property(_T("AggregateSize"), &m_AggSize))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( 2.0 <= version && version < 4)
       {
-         if ( !pLoad->Property("K1",&m_EccK1) )
+         if ( !pLoad->Property(_T("K1"),&m_EccK1) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else if ( 4 <= version )
       {
-         if ( !pLoad->Property("EccK1",&m_EccK1) )
+         if ( !pLoad->Property(_T("EccK1"),&m_EccK1) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("EccK2",&m_EccK2) )
+         if ( !pLoad->Property(_T("EccK2"),&m_EccK2) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("CreepK1",&m_CreepK1) )
+         if ( !pLoad->Property(_T("CreepK1"),&m_CreepK1) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("CreepK2",&m_CreepK2) )
+         if ( !pLoad->Property(_T("CreepK2"),&m_CreepK2) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("ShrinkageK1",&m_ShrinkageK1) )
+         if ( !pLoad->Property(_T("ShrinkageK1"),&m_ShrinkageK1) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("ShrinkageK2",&m_ShrinkageK2) )
+         if ( !pLoad->Property(_T("ShrinkageK2"),&m_ShrinkageK2) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 3.0 <= version )
       {
-         if ( !pLoad->Property("UserEc",&m_bUserEc) )
+         if ( !pLoad->Property(_T("UserEc"),&m_bUserEc) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Ec",&m_Ec) )
+         if ( !pLoad->Property(_T("Ec"),&m_Ec) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -201,12 +201,12 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // Added version 4
          if ( m_Type != pgsTypes::Normal )
          {
-            if ( !pLoad->Property("HasAggSplittingStrength",&m_bHasFct) )
+            if ( !pLoad->Property(_T("HasAggSplittingStrength"),&m_bHasFct) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             if ( m_bHasFct )
             {
-               if ( !pLoad->Property("AggSplittingStrength",&m_Fct) )
+               if ( !pLoad->Property(_T("AggSplittingStrength"),&m_Fct) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
             }
          }
@@ -514,13 +514,13 @@ bool ConcreteLibraryEntry::AssertValid() const
 
 void ConcreteLibraryEntry::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for ConcreteLibraryEntry"<<endl;
-   os << "   m_Fc ="<< m_Fc <<endl;
-   os << "   m_Ec ="<< m_Ds << endl;
-   os << "   m_D  ="<< m_Dw <<endl;
-   os << "   m_AggSize "<< m_AggSize <<endl;
-   os << "   m_EccK1 " << m_EccK1 << endl;
-   os << "   m_EccK2 " << m_EccK2 << endl;
+   os << _T("Dump for ConcreteLibraryEntry")<<endl;
+   os << _T("   m_Fc =")<< m_Fc <<endl;
+   os << _T("   m_Ec =")<< m_Ds << endl;
+   os << _T("   m_D  =")<< m_Dw <<endl;
+   os << _T("   m_AggSize ")<< m_AggSize <<endl;
+   os << _T("   m_EccK1 ") << m_EccK1 << endl;
+   os << _T("   m_EccK2 ") << m_EccK2 << endl;
 
    libLibraryEntry::Dump( os );
 }

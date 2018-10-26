@@ -62,9 +62,9 @@ txnTransaction* txnEditLLDF::CreateClone() const
    return new txnEditLLDF(*m_pBridgeDesc[0], *m_pBridgeDesc[1],m_ROA[0],m_ROA[1]);
 }
 
-std::string txnEditLLDF::Name() const
+std::_tstring txnEditLLDF::Name() const
 {
-   return "Edit Live Load Distribution Factors";
+   return _T("Edit Live Load Distribution Factors");
 }
 
 bool txnEditLLDF::IsUndoable()

@@ -25,6 +25,7 @@
 			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -55,7 +56,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
+				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
 				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -131,6 +132,8 @@
 			UseOfMFC="2"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -160,7 +163,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
 				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -196,6 +204,9 @@
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile=".\Release/PGSuper.pdb"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
@@ -567,11 +578,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -599,15 +610,15 @@
 				>
 			</File>
 			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00005.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00005.ico"
 				>
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\ico00005.ico"
-				>
-			</File>
-			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File

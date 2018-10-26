@@ -34,7 +34,7 @@ class txnEditGirder : public txnTransaction
 public:
    txnEditGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,
                  bool bOldUseSameGirder, bool bNewUseSameGirder,
-                 const std::string& strOldGirderName, const std::string& newGirderName,
+                 const std::_tstring& strOldGirderName, const std::_tstring& newGirderName,
                  const CGirderData& oldGirderData,const CGirderData& newGirderData,
                  const CShearData& oldShearData,const CShearData& newShearData,
                  const CLongitudinalRebarData& oldRebarData,const CLongitudinalRebarData& newRebarData,
@@ -51,7 +51,7 @@ public:
    virtual bool Execute();
    virtual void Undo();
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool IsUndoable();
    virtual bool IsRepeatable();
 
@@ -60,7 +60,7 @@ private:
    SpanIndexType m_SpanIdx;
    GirderIndexType m_GirderIdx;
    bool m_bUseSameGirder[2];
-   std::string m_strGirderName[2];
+   std::_tstring m_strGirderName[2];
    CGirderData m_GirderData[2];
    CShearData m_ShearData[2];
    CLongitudinalRebarData m_RebarData[2];

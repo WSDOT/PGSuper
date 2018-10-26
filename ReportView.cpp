@@ -93,7 +93,7 @@ void CPGSuperReportView::OnInitialUpdate()
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
       m_bUpdateError = true;
-      m_ErrorMsg = "Errors exist that prevent analysis. Review the errors posted in the status center for more information";
+      m_ErrorMsg = _T("Errors exist that prevent analysis. Review the errors posted in the status center for more information");
       Invalidate();
       UpdateWindow();
       return;
@@ -141,7 +141,7 @@ HRESULT CPGSuperReportView::UpdateReportBrowser(CReportHint* pHint)
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   pProgress->UpdateMessage("Working...");
+   pProgress->UpdateMessage(_T("Working..."));
 
    return CEAFAutoCalcReportView::UpdateReportBrowser(pHint);
 }
@@ -152,7 +152,7 @@ void CPGSuperReportView::RefreshReport()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress progress(pProgress);
-   pProgress->UpdateMessage("Updating report...");
+   pProgress->UpdateMessage(_T("Updating report..."));
 
    CEAFAutoCalcReportView::RefreshReport();
 }

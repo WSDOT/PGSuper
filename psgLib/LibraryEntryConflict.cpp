@@ -39,8 +39,8 @@ static char THIS_FILE[] = __FILE__;
 // CLibraryEntryConflict dialog
 
 
-CLibraryEntryConflict::CLibraryEntryConflict(const std::string& entryName, const std::string& libName, 
-                                             const std::vector<std::string>& keylists, bool isImported, CWnd* pParent)
+CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, 
+                                             const std::vector<std::_tstring>& keylists, bool isImported, CWnd* pParent)
 	: CDialog(CLibraryEntryConflict::IDD, pParent),
    m_KeyList(keylists),
    m_EntryName(entryName.c_str()),
@@ -89,13 +89,13 @@ void CLibraryEntryConflict::OnRenameEntry()
       {
          if (dlg.m_EntryName.IsEmpty())
          {
-            ::AfxMessageBox("Please type in a valid entry name",MB_OK|MB_ICONEXCLAMATION);
+            ::AfxMessageBox(_T("Please type in a valid entry name"),MB_OK|MB_ICONEXCLAMATION);
          }
          else
          {
             // user typed in a name. make sure it's not in the keylist
             bool in_list = false;
-            for (std::vector<std::string>::const_iterator it=m_KeyList.begin(); it!=m_KeyList.end(); it++)
+            for (std::vector<std::_tstring>::const_iterator it=m_KeyList.begin(); it!=m_KeyList.end(); it++)
             {
                CString list_memb(it->c_str());
                if (list_memb.CompareNoCase(dlg.m_EntryName)==0)
@@ -104,7 +104,7 @@ void CLibraryEntryConflict::OnRenameEntry()
                   // user typed in a name that's already in list. bark at him 
                   // and ask him type type in another one.
                   CString temp;
-                  temp.Format("The name %s is already in the library.",dlg.m_EntryName);
+                  temp.Format(_T("The name %s is already in the library."),dlg.m_EntryName);
                   ::AfxMessageBox(temp,MB_OK|MB_ICONEXCLAMATION);
                   break;
                }
@@ -135,7 +135,7 @@ BOOL CLibraryEntryConflict::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	CString text;
-   text.Format("The entry name is %s in the %s",m_EntryName,m_LibName);
+   text.Format(_T("The entry name is %s in the %s"),m_EntryName,m_LibName);
    m_EntryText.SetWindowText(text);
 
    if (m_IsImported)
@@ -145,7 +145,7 @@ BOOL CLibraryEntryConflict::OnInitDialog()
       m_ConflictBottom.SetWindowText(s);
       VERIFY(s.LoadString(IDS_CONFLICT_TOP_IMPORT));
       m_ConflictTop.SetWindowText(s);
-      m_Overwrite.SetWindowText("Skip");
+      m_Overwrite.SetWindowText(_T("Skip"));
    }
    else
    {
@@ -154,7 +154,7 @@ BOOL CLibraryEntryConflict::OnInitDialog()
       m_ConflictBottom.SetWindowText(s);
       VERIFY(s.LoadString(IDS_CONFLICT_TOP_MASTER));
       m_ConflictTop.SetWindowText(s);
-      m_Overwrite.SetWindowText("Overwrite");
+      m_Overwrite.SetWindowText(_T("Overwrite"));
    }
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

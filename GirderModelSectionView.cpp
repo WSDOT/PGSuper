@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -888,7 +888,7 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
       CString msg("Select a girder to display");
       CFont font;
       CFont* pOldFont = NULL;
-      if ( font.CreatePointFont(100,"Arial",pDC) )
+      if ( font.CreatePointFont(100,_T("Arial"),pDC) )
          pOldFont = pDC->SelectObject(&font);
 
       MultiLineTextOut(pDC,0,0,msg);

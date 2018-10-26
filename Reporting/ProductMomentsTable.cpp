@@ -38,41 +38,41 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-std::string LiveLoadPrefix(pgsTypes::LiveLoadType llType)
+std::_tstring LiveLoadPrefix(pgsTypes::LiveLoadType llType)
 {
-   std::string strPrefix;
+   std::_tstring strPrefix;
    switch(llType)
    {
    case pgsTypes::lltDesign:
-      strPrefix = "D";
+      strPrefix = _T("D");
       break;
 
    case pgsTypes::lltFatigue:
-      strPrefix = "F";
+      strPrefix = _T("F");
       break;
       
    case pgsTypes::lltPedestrian:
-      strPrefix = "Ped";
+      strPrefix = _T("Ped");
       break;
 
    case pgsTypes::lltPermit:
-      strPrefix = "P";
+      strPrefix = _T("P");
       break;
 
    case pgsTypes::lltLegalRating_Routine:
-      strPrefix = "R";
+      strPrefix = _T("R");
       break;
 
    case pgsTypes::lltLegalRating_Special:
-      strPrefix = "S";
+      strPrefix = _T("S");
       break;
 
    case pgsTypes::lltPermitRating_Routine:
-      strPrefix = "PR";
+      strPrefix = _T("PR");
       break;
 
    case pgsTypes::lltPermitRating_Special:
-      strPrefix = "PS";
+      strPrefix = _T("PS");
       break;
    }
 
@@ -83,8 +83,8 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   std::vector<std::string> strLLNames;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> strLLNames;
+   std::vector<std::_tstring>::iterator iter;
    long j;
 
    if ( bDesign )
@@ -95,7 +95,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
       strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
-         *pPara << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << j << ") " << *iter << rptNewLine;
+         *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << j << _T(") ") << *iter << rptNewLine;
       }
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
@@ -104,7 +104,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -114,7 +114,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPedestrian) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltPedestrian) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -124,7 +124,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << j << _T(") ") << *iter << rptNewLine;
          }
       }
    }
@@ -137,7 +137,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -147,7 +147,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -157,7 +157,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -167,7 +167,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << j << _T(") ") << *iter << rptNewLine;
          }
       }
 
@@ -177,7 +177,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
          j = 0;
          for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
          {
-            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << j << ") " << *iter << rptNewLine;
+            *pPara << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << j << _T(") ") << *iter << rptNewLine;
          }
       }
    }
@@ -355,7 +355,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Moments");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moments"));
 
    if ( span == ALL_SPANS )
    {
@@ -691,14 +691,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
 
             if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");
 
             col++;
 
             (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
             
             if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << _T(")");
 
             col++;
 
@@ -707,14 +707,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
                (*p_table)(row,col) << moment.SetValue( maxFatigueLL[index] );
 
                if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minFatigueLL[index] );
                
                if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << _T(")");
 
                col++;
             }
@@ -723,13 +723,13 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             {
                (*p_table)(row,col) << moment.SetValue( maxPermitLL[index] );
                if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minPermitLL[index] );
                if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << _T(")");
 
                col++;
             }
@@ -742,14 +742,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
                (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
 
                if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
                
                if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << _T(")");
 
                col++;
             }
@@ -759,13 +759,13 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             {
                (*p_table)(row,col) << moment.SetValue( maxLegalRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < maxLegalRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minLegalRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < minLegalRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << _T(")");
 
                col++;
             }
@@ -775,13 +775,13 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             {
                (*p_table)(row,col) << moment.SetValue( maxLegalSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minLegalSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << _T(")");
 
                col++;
             }
@@ -791,13 +791,13 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             {
                (*p_table)(row,col) << moment.SetValue( maxPermitRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < maxPermitRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minPermitRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < minPermitRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << _T(")");
 
                col++;
             }
@@ -807,13 +807,13 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             {
                (*p_table)(row,col) << moment.SetValue( maxPermitSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < maxPermitSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << moment.SetValue( minPermitSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < minPermitSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << _T(")");
 
                col++;
             }

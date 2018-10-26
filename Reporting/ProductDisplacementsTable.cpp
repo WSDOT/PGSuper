@@ -93,7 +93,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Displacements");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Displacements"));
 
    if ( span == ALL_SPANS )
    {
@@ -429,14 +429,14 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
             (*p_table)(row,col) << displacement.SetValue( maxDesignLL[index] );
 
             if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");
 
             col++;
 
             (*p_table)(row,col) << displacement.SetValue( minDesignLL[index] );
             
             if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
+               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << _T(")");
 
             col++;
 
@@ -445,14 +445,14 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
                (*p_table)(row,col) << displacement.SetValue( maxFatigueLL[index] );
 
                if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minFatigueLL[index] );
                
                if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << _T(")");
 
                col++;
             }
@@ -462,14 +462,14 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
                (*p_table)(row,col) << displacement.SetValue( maxPermitLL[index] );
 
                if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size())
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minPermitLL[index] );
 
                if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size())
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << _T(")");
 
                col++;
             }
@@ -482,14 +482,14 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
                (*p_table)(row,col) << displacement.SetValue( maxDesignLL[index] );
 
                if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minDesignLL[index] );
                
                if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << _T(")");
 
                col++;
             }
@@ -499,13 +499,13 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
             {
                (*p_table)(row,col) << displacement.SetValue( maxLegalRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < maxLegalRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minLegalRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < minLegalRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << _T(")");
 
                col++;
             }
@@ -515,13 +515,13 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
             {
                (*p_table)(row,col) << displacement.SetValue( maxLegalSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minLegalSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << _T(")");
 
                col++;
             }
@@ -531,13 +531,13 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
             {
                (*p_table)(row,col) << displacement.SetValue( maxPermitRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < maxPermitRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minPermitRoutineLL[index] );
                if ( bIndicateControllingLoad && 0 < minPermitRoutineLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << _T(")");
 
                col++;
             }
@@ -547,13 +547,13 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
             {
                (*p_table)(row,col) << displacement.SetValue( maxPermitSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < maxPermitSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << _T(")");
 
                col++;
 
                (*p_table)(row,col) << displacement.SetValue( minPermitSpecialLL[index] );
                if ( bIndicateControllingLoad && 0 < minPermitSpecialLLtruck.size() )
-                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << ")";
+                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << _T(")");
 
                col++;
             }
@@ -575,7 +575,7 @@ rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,Span
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,"Displacements For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Displacements For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
 
    if ( span == ALL_SPANS )
    {
@@ -585,9 +585,9 @@ rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,Span
 
    // Set up table headings
    (*p_table)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,        rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("D1",          rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*p_table)(0,2) << COLHDR("D2",       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*p_table)(0,3) << COLHDR("D" << rptNewLine << "Controlling",            rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,1) << COLHDR(_T("D1"),          rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,2) << COLHDR(_T("D2"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,3) << COLHDR(_T("D") << rptNewLine << _T("Controlling"),            rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -661,7 +661,7 @@ bool CProductDisplacementsTable::AssertValid() const
 
 void CProductDisplacementsTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CProductDisplacementsTable" << endl;
+   os << _T("Dump for CProductDisplacementsTable") << endl;
 }
 #endif // _DEBUG
 

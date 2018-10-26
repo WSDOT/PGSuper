@@ -114,7 +114,7 @@ BOOL CStationCutDlg::OnInitDialog()
 
 
    CString strLabel;
-   strLabel.Format("Enter a station between %s and %s",OLE2A(bstrLowerBound),OLE2A(bstrUpperBound));
+   strLabel.Format(_T("Enter a station between %s and %s"),OLE2T(bstrLowerBound),OLE2T(bstrUpperBound));
    pprompt->SetWindowText(strLabel);
 
    

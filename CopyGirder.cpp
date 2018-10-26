@@ -85,7 +85,7 @@ bool txnCopyGirder::Execute()
       UnhashSpanGirder(hashval,&to_span,&to_gdr);
 
       CString strMsg;
-      strMsg.Format("Copying to Span %d Girder %s",LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
+      strMsg.Format(_T("Copying to Span %d Girder %s"),LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
       pProgress->UpdateMessage(strMsg);
 
       txnCopyGirderData copyData;
@@ -170,7 +170,7 @@ void txnCopyGirder::Undo()
 
 
       CString strMsg;
-      strMsg.Format("Undoing copy for Span %d Girder %s",LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
+      strMsg.Format(_T("Undoing copy for Span %d Girder %s"),LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
       pProgress->UpdateMessage(strMsg);
 
       txnCopyGirderData copyData = m_DestinationGirderData[ iter - m_To.begin() ];
@@ -219,9 +219,9 @@ txnTransaction* txnCopyGirder::CreateClone() const
    return new txnCopyGirder(m_From,m_To,m_bGirder,m_bTransverse,m_bLongitudinalRebar,m_bPrestress,m_bHandling,m_bMaterial,m_bSlabOffset);
 }
 
-std::string txnCopyGirder::Name() const
+std::_tstring txnCopyGirder::Name() const
 {
-   return "Copy Girder Properties";
+   return _T("Copy Girder Properties");
 }
 
 bool txnCopyGirder::IsUndoable()

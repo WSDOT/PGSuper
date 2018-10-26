@@ -112,7 +112,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       m_SpacingGroups.clear();
       m_GirderSpacing.clear();
 
-      hr = pStrLoad->BeginUnit("GirderSpacing");
+      hr = pStrLoad->BeginUnit(_T("GirderSpacing"));
 
       double version;
       hr = pStrLoad->get_Version(&version);
@@ -121,7 +121,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       CComVariant var;
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("MeasurementLocation",&var);
+      hr = pStrLoad->get_Property(_T("MeasurementLocation"),&var);
       m_MeasurementLocation = (pgsTypes::MeasurementLocation)(var.lVal);
 
       if ( 1 < m_MeasurementLocation )
@@ -131,7 +131,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("MeasurementType",&var);
+      hr = pStrLoad->get_Property(_T("MeasurementType"),&var);
       m_MeasurementType = (pgsTypes::MeasurementType)(var.lVal);
 
       if ( 1 < m_MeasurementType )
@@ -144,39 +144,39 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          // added in version 2
          var.vt = VT_I2;
-         hr = pStrLoad->get_Property("RefGirder",&var);
+         hr = pStrLoad->get_Property(_T("RefGirder"),&var);
          m_RefGirderIdx = (GirderIndexType)var.iVal;
 
-         hr = pStrLoad->get_Property("RefGirderOffsetType",&var);
+         hr = pStrLoad->get_Property(_T("RefGirderOffsetType"),&var);
          m_RefGirderOffsetType = (pgsTypes::OffsetMeasurementType)(var.iVal);
 
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("RefGirderOffset",&var);
+         hr = pStrLoad->get_Property(_T("RefGirderOffset"),&var);
          m_RefGirderOffset = var.dblVal;
       }
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("SpacingGroupCount", &var );
+      hr = pStrLoad->get_Property(_T("SpacingGroupCount"), &var );
 
       long nGroups = var.lVal;
       for ( long grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
-         hr = pStrLoad->BeginUnit("SpacingGroup");
+         hr = pStrLoad->BeginUnit(_T("SpacingGroup"));
 
          double grp_version;
          hr = pStrLoad->get_Version(&grp_version);
          ATLASSERT(grp_version == 1);
 
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("Spacing",&var);
+         hr = pStrLoad->get_Property(_T("Spacing"),&var);
          double spacing = var.dblVal;
 
          var.vt = VT_I2;
-         hr = pStrLoad->get_Property("FirstGirderIndex",&var);
+         hr = pStrLoad->get_Property(_T("FirstGirderIndex"),&var);
          GirderIndexType firstGdrIdx = var.iVal;
 
          var.vt = VT_I2;
-         hr = pStrLoad->get_Property("LastGirderIndex",&var);
+         hr = pStrLoad->get_Property(_T("LastGirderIndex"),&var);
          GirderIndexType lastGdrIdx = var.iVal;
 
          for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx < lastGdrIdx; gdrIdx++ )
@@ -208,28 +208,28 @@ HRESULT CGirderSpacingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    IS_VALID;
 
    HRESULT hr = S_OK;
-   pStrSave->BeginUnit("GirderSpacing",2.0);
+   pStrSave->BeginUnit(_T("GirderSpacing"),2.0);
 
-   pStrSave->put_Property("MeasurementLocation",CComVariant((long)m_MeasurementLocation));
-   pStrSave->put_Property("MeasurementType",CComVariant((long)m_MeasurementType));
+   pStrSave->put_Property(_T("MeasurementLocation"),CComVariant((long)m_MeasurementLocation));
+   pStrSave->put_Property(_T("MeasurementType"),CComVariant((long)m_MeasurementType));
 
    // added in version 2
-   pStrSave->put_Property("RefGirder",CComVariant(m_RefGirderIdx));
-   pStrSave->put_Property("RefGirderOffsetType",CComVariant(m_RefGirderOffsetType));
-   pStrSave->put_Property("RefGirderOffset",CComVariant(m_RefGirderOffset));
+   pStrSave->put_Property(_T("RefGirder"),CComVariant(m_RefGirderIdx));
+   pStrSave->put_Property(_T("RefGirderOffsetType"),CComVariant(m_RefGirderOffsetType));
+   pStrSave->put_Property(_T("RefGirderOffset"),CComVariant(m_RefGirderOffset));
 
-   pStrSave->put_Property("SpacingGroupCount",CComVariant((long)m_SpacingGroups.size()));
+   pStrSave->put_Property(_T("SpacingGroupCount"),CComVariant((long)m_SpacingGroups.size()));
 
    std::vector<SpacingGroup>::iterator iter;
    for ( iter = m_SpacingGroups.begin(); iter != m_SpacingGroups.end(); iter++ )
    {
       SpacingGroup group = *iter;
 
-      pStrSave->BeginUnit("SpacingGroup",1.0);
+      pStrSave->BeginUnit(_T("SpacingGroup"),1.0);
 
-      pStrSave->put_Property("Spacing",CComVariant(m_GirderSpacing[group.first]));
-      pStrSave->put_Property("FirstGirderIndex",CComVariant(group.first));
-      pStrSave->put_Property("LastGirderIndex",CComVariant(group.second));
+      pStrSave->put_Property(_T("Spacing"),CComVariant(m_GirderSpacing[group.first]));
+      pStrSave->put_Property(_T("FirstGirderIndex"),CComVariant(group.first));
+      pStrSave->put_Property(_T("LastGirderIndex"),CComVariant(group.second));
 
       pStrSave->EndUnit();
    }

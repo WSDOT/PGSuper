@@ -29,9 +29,8 @@
 // BridgeDescLiftingPage.h : header file
 //
 
-#if !defined INCLUDED_MFCTOOLS_METAFILESTATIC_H_
+#include "PGSuperAppPlugin\resource.h"
 #include <MfcTools\MetaFileStatic.h>
-#endif
 
 class CGirderDescDlg;
 

@@ -88,56 +88,56 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    ColumnIndexType nColumns = (bComposite ? 3 : 2);
 
-   rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,"Section Properties");
+   rptRcTable* xs_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Section Properties"));
 
-   (*xs_table)(0,0) << "";
+   (*xs_table)(0,0) << _T("");
 
    xs_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    xs_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*xs_table)(0,1).SetStyleName(pgsReportStyleHolder::GetTableColumnHeadingStyle() );
-   (*xs_table)(0,1) << "Girder";
+   (*xs_table)(0,1) << _T("Girder");
 
    if ( bComposite )
    {
       (*xs_table)(0,2).SetStyleName(pgsReportStyleHolder::GetTableColumnHeadingStyle() );
-      (*xs_table)(0,2) << "Composite";
+      (*xs_table)(0,2) << _T("Composite");
    }
 
 
    // Write labels
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
-   (*xs_table)(row++,0) << "Area (" << rptAreaUnitTag( &pDisplayUnits->GetAreaUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "I"<< Sub("x") << " (" << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "I"<< Sub("y") << " ("  << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "d (girder depth)  (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << RPT_YTOP  << Sub(" girder") << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << _T("Area (") << rptAreaUnitTag( &pDisplayUnits->GetAreaUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << _T("I")<< Sub(_T("x")) << _T(" (") << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << _T("I")<< Sub(_T("y")) << _T(" (")  << rptLength4UnitTag( &pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << _T("d (girder depth)  (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << RPT_YTOP  << Sub(_T(" girder")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
 
    if ( bComposite )
    {
-      (*xs_table)(row++,0) << RPT_YTOP  << Sub(" slab") << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
+      (*xs_table)(row++,0) << RPT_YTOP  << Sub(_T(" slab")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
    }
 
-   (*xs_table)(row++,0) << RPT_YBOT  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << RPT_YBOT  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
    
-   (*xs_table)(row++,0) << Sub2("k","t")  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<") (Top kern point)";
-   (*xs_table)(row++,0) << Sub2("k","b")  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<") (Bottom kern point)";
+   (*xs_table)(row++,0) << Sub2(_T("k"),_T("t"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(") (Top kern point)");
+   (*xs_table)(row++,0) << Sub2(_T("k"),_T("b"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(") (Bottom kern point)");
 
-   (*xs_table)(row++,0) << RPT_STOP  << Sub(" girder") << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << RPT_SBOT  << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << RPT_STOP  << Sub(_T(" girder")) << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << RPT_SBOT  << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
 
    if ( bComposite )
    {
-      (*xs_table)(row++,0) << RPT_STOP  << Sub(" slab") << " = n(" << Sub2("I","x") << "/" << Sub2("Y","t slab") << ")" << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
-      (*xs_table)(row++,0) << "Q" << Sub("slab") << " (" << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<")";
-      (*xs_table)(row++,0) << "Effective Flange Width (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
+      (*xs_table)(row++,0) << RPT_STOP  << Sub(_T(" slab")) << _T(" = n(") << Sub2(_T("I"),_T("x")) << _T("/") << Sub2(_T("Y"),_T("t slab")) << _T(")") << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << _T("Q") << Sub(_T("slab")) << _T(" (") << rptLength3UnitTag( &pDisplayUnits->GetSectModulusUnit().UnitOfMeasure ) <<_T(")");
+      (*xs_table)(row++,0) << _T("Effective Flange Width (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
    }
 
-   (*xs_table)(row++,0) << "Perimeter (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "Span/Depth Ratio";
-   (*xs_table)(row++,0) << "Weight (" << rptForcePerLengthUnitTag( &pDisplayUnits->GetForcePerLengthUnit().UnitOfMeasure ) <<")";
-   (*xs_table)(row++,0) << "Total Weight (" << rptForceUnitTag( &pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure ) <<")";
+   (*xs_table)(row++,0) << _T("Perimeter (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << _T("Span/Depth Ratio");
+   (*xs_table)(row++,0) << _T("Weight (") << rptForcePerLengthUnitTag( &pDisplayUnits->GetForcePerLengthUnit().UnitOfMeasure ) <<_T(")");
+   (*xs_table)(row++,0) << _T("Total Weight (") << rptForceUnitTag( &pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure ) <<_T(")");
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, l4, pDisplayUnits->GetMomentOfInertiaUnit(), false );
@@ -167,7 +167,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    if ( bComposite )
    {
-      (*xs_table)(row++,1) << "-";
+      (*xs_table)(row++,1) << _T("-");
    }
 
    (*xs_table)(row++,1) << l1.SetValue( Yb );
@@ -180,9 +180,9 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    if ( bComposite )
    {
-      (*xs_table)(row++,1) << "-";
-      (*xs_table)(row++,1) << "-";
-      (*xs_table)(row++,1) << "-";
+      (*xs_table)(row++,1) << _T("-");
+      (*xs_table)(row++,1) << _T("-");
+      (*xs_table)(row++,1) << _T("-");
    }
 
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetPerimeter(poi) );
@@ -207,17 +207,17 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetYtGirder(pgsTypes::BridgeSite3,poi) );
       (*xs_table)(row++,2) << l1.SetValue( Yt );
       (*xs_table)(row++,2) << l1.SetValue( Yb );
-      (*xs_table)(row++,2) << "-";
-      (*xs_table)(row++,2) << "-";
+      (*xs_table)(row++,2) << _T("-");
+      (*xs_table)(row++,2) << _T("-");
       (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetStGirder(pgsTypes::BridgeSite3,poi)) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetSb(pgsTypes::BridgeSite3,poi) );
       (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetSt(pgsTypes::BridgeSite3,poi)) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetQSlab(poi) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetEffectiveFlangeWidth(poi) );
-      (*xs_table)(row++,2) << "-";
+      (*xs_table)(row++,2) << _T("-");
       (*xs_table)(row++,2) << scalar.SetValue( span_length/depth );
-      (*xs_table)(row++,2) << "-";
-      (*xs_table)(row++,2) << "-";
+      (*xs_table)(row++,2) << _T("-");
+      (*xs_table)(row++,2) << _T("-");
    }
 
    return xs_table;
@@ -261,7 +261,7 @@ bool CSectionPropertiesTable::AssertValid() const
 
 void CSectionPropertiesTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CSectionPropertiesTable" << endl;
+   os << _T("Dump for CSectionPropertiesTable") << endl;
 }
 #endif // _DEBUG
 

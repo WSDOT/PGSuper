@@ -36,7 +36,7 @@ class CLibraryEntryConflict : public CDialog
 {
 // Construction
 public:
-   CLibraryEntryConflict(const std::string& entryName, const std::string& libName, const std::vector<std::string>& keylists, bool isImported, CWnd* pParent = NULL);
+   CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CLibraryEntryConflict)
@@ -72,7 +72,7 @@ public:
    CString m_EntryName;
    CString m_LibName;
    CString m_NewName;
-   const std::vector<std::string>& m_KeyList;
+   const std::vector<std::_tstring>& m_KeyList;
    bool m_IsImported; // are libraries coming from import or project?
 };
 

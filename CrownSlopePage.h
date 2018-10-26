@@ -29,7 +29,7 @@
 // CrownSlopePage.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "CrownSlopeGrid.h"
 
 /////////////////////////////////////////////////////////////////////////////

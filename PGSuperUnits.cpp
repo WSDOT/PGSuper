@@ -85,7 +85,7 @@ BOOL CreateAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
    HRESULT hr = appUnitSystem.CoCreateInstance(CLSID_AppUnitSystem);
    if ( FAILED(hr) )
    {
-      AfxMessageBox("Error initializing Units system",MB_OK | MB_ICONEXCLAMATION);
+      AfxMessageBox(_T("Error initializing Units system"),MB_OK | MB_ICONEXCLAMATION);
       return FALSE;
    }
 

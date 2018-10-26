@@ -48,7 +48,7 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(iDisplayObject* pDO)
 
    if ( IsLE(new_span_length,0.0) )
    {
-      AfxMessageBox("Invalid span length",MB_OK | MB_ICONEXCLAMATION);
+      AfxMessageBox(_T("Invalid span length"),MB_OK | MB_ICONEXCLAMATION);
       return;
    }
 

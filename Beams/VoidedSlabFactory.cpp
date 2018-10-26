@@ -53,12 +53,12 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CVoidedSlabFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("H");
-   m_DimNames.push_back("W");
-   m_DimNames.push_back("Void_Diameter");
-   m_DimNames.push_back("Void_Spacing");
-   m_DimNames.push_back("Number_of_Voids");
-   m_DimNames.push_back("Jmax");
+   m_DimNames.push_back(_T("H"));
+   m_DimNames.push_back(_T("W"));
+   m_DimNames.push_back(_T("Void_Diameter"));
+   m_DimNames.push_back(_T("Void_Spacing"));
+   m_DimNames.push_back(_T("Number_of_Voids"));
+   m_DimNames.push_back(_T("Jmax"));
 
    m_DefaultDims.push_back(::ConvertToSysUnits(18.0,unitMeasure::Inch)); // H
    m_DefaultDims.push_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W
@@ -232,7 +232,7 @@ void CVoidedSlabFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupI
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
    const GirderLibraryEntry* pGirderLib = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
 
-   double nVoids = pGirderLib->GetDimension("Number_of_Voids");
+   double nVoids = pGirderLib->GetDimension(_T("Number_of_Voids"));
 
    if ( nVoids == 0 )
       pEngineer->Init(CPsLossEngineer::SolidSlab);
@@ -344,7 +344,7 @@ void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimen
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::string> CVoidedSlabFactory::GetDimensionNames()
+std::vector<std::_tstring> CVoidedSlabFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -359,7 +359,7 @@ std::vector<const unitLength*> CVoidedSlabFactory::GetDimensionUnits(bool bSIUni
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::string* strErrMsg)
+bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
 {
    double H,W,D,S,J;
    long N;
@@ -367,24 +367,24 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
 
    if ( H <= 0.0 )
    {
-      std::ostringstream os;
-      os << "Height must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("Height must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( W <= 0.0 )
    {
-      std::ostringstream os;
-      os << "Width must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("Width must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( N < 0.0 )
    {
-      std::ostringstream os;
-      os << "Invalid Number of Voids" << std::ends;
+      std::_tostringstream os;
+      os << _T("Invalid Number of Voids") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -392,16 +392,16 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
    {
       if ( D != 0.0 )
       {
-         std::ostringstream os;
-         os << "Void Diameter Must Be Zero If No Voids" << std::ends;
+         std::_tostringstream os;
+         os << _T("Void Diameter Must Be Zero If No Voids") << std::ends;
          *strErrMsg = os.str();
          return false;
       }
 
       if ( S != 0.0 )
       {
-         std::ostringstream os;
-         os << "Invalid - Void Spacing Must Be Zero If No Voids" << std::ends;
+         std::_tostringstream os;
+         os << _T("Invalid - Void Spacing Must Be Zero If No Voids") << std::ends;
          *strErrMsg = os.str();
          return false;
       }
@@ -410,16 +410,16 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
    {
       if ( D <= 0.0 )
       {
-         std::ostringstream os;
-         os << "Void Diameter Must Be Greater Than Zero" << std::ends;
+         std::_tostringstream os;
+         os << _T("Void Diameter Must Be Greater Than Zero") << std::ends;
          *strErrMsg = os.str();
          return false;
       }
 
       if ( D >= H )
       {
-         std::ostringstream os;
-         os << "Void Diameter must be less than slab height" << std::ends;
+         std::_tostringstream os;
+         os << _T("Void Diameter must be less than slab height") << std::ends;
          *strErrMsg = os.str();
          return false;
       }
@@ -428,16 +428,16 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
       {
          if ( S != 0.0 )
          {
-            std::ostringstream os;
-            os << "Invalid - Void Spacing Must Be Zero If Only One Void" << std::ends;
+            std::_tostringstream os;
+            os << _T("Invalid - Void Spacing Must Be Zero If Only One Void") << std::ends;
             *strErrMsg = os.str();
             return false;
          }
 
          if ( D >= W )
          {
-            std::ostringstream os;
-            os << "Void Diameter must be less than slab width" << std::ends;
+            std::_tostringstream os;
+            os << _T("Void Diameter must be less than slab width") << std::ends;
             *strErrMsg = os.str();
             return false;
          }
@@ -447,16 +447,16 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
       {
          if ( S < D )
          {
-            std::ostringstream os;
-            os << "Void Spacing must be greater than Void Diameter" << std::ends;
+            std::_tostringstream os;
+            os << _T("Void Spacing must be greater than Void Diameter") << std::ends;
             *strErrMsg = os.str();
             return false;
          }
 
          if ( W <= (N-1)*S + D)
          {
-            std::ostringstream os;
-            os << "Slab must be wider than width occupied by voids" << std::ends;
+            std::_tostringstream os;
+            os << _T("Slab must be wider than width occupied by voids") << std::ends;
             *strErrMsg = os.str();
             return false;
          }
@@ -465,8 +465,8 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
 
    if ( J < 0.0 )
    {
-      std::ostringstream os;
-      os << "Maximum joint size must be zero or greater" << std::ends;
+      std::_tostringstream os;
+      os << _T("Maximum joint size must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -476,11 +476,11 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
 
 void CVoidedSlabFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("VoidedSlabDimensions",2.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("VoidedSlabDimensions"),2.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -492,12 +492,12 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructure
    Float64 parent_version = pLoad->GetVersion();
 
    IBeamFactory::Dimensions dimensions;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit("VoidedSlabDimensions") )
+      if ( pLoad->BeginUnit(_T("VoidedSlabDimensions")) )
          dimVersion = pLoad->GetVersion();
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -505,7 +505,7 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructure
 
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
@@ -513,7 +513,7 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructure
          
          // if this is before dimension data block versio 2 and the
          // dimension is Jmax, the fail to read is expected
-         if ( dimVersion < 2 && parent_version < 8.0 && name == "Jmax" )
+         if ( dimVersion < 2 && parent_version < 8.0 && name == _T("Jmax") )
          {
             value = 0.0; // set the default value
          }
@@ -578,8 +578,8 @@ Float64 CVoidedSlabFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanId
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 D = GetDimension(dimensions,"Void_Diameter");
-   long    N = (long)GetDimension(dimensions,"Number_of_Voids");
+   Float64 D = GetDimension(dimensions,_T("Void_Diameter"));
+   long    N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
    Float64 void_surface_area = Lg*N*M_PI*D;
 
    if ( bReduceForPoorlyVentilatedVoids )
@@ -590,22 +590,22 @@ Float64 CVoidedSlabFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanId
    return surface_area;
 }
 
-std::string CVoidedSlabFactory::GetImage()
+std::_tstring CVoidedSlabFactory::GetImage()
 {
-   return std::string("VoidedSlab.jpg");
+   return std::_tstring(_T("VoidedSlab.jpg"));
 }
 
-std::string CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage = "VoidedSlab_Composite.gif";
+      strImage = _T("VoidedSlab_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage = "VoidedSlab_Noncomposite.gif";
+      strImage = _T("VoidedSlab_Noncomposite.gif");
       break;
 
    default:
@@ -616,17 +616,17 @@ std::string CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckTy
    return strImage;
 }
 
-std::string CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_VoidedSlab_Composite.gif";
+      strImage =  _T("+Mn_VoidedSlab_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "+Mn_VoidedSlab_Noncomposite.gif";
+      strImage =  _T("+Mn_VoidedSlab_Noncomposite.gif");
       break;
 
    default:
@@ -637,17 +637,17 @@ std::string CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes
    return strImage;
 }
 
-std::string CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_VoidedSlab_Composite.gif";
+      strImage =  _T("-Mn_VoidedSlab_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "-Mn_VoidedSlab_Noncomposite.gif";
+      strImage =  _T("-Mn_VoidedSlab_Noncomposite.gif");
       break;
 
    default:
@@ -658,17 +658,17 @@ std::string CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes
    return strImage;
 }
 
-std::string CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_VoidedSlab_Composite.gif";
+      strImage =  _T("Vn_VoidedSlab_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "Vn_VoidedSlab_Noncomposite.gif";
+      strImage =  _T("Vn_VoidedSlab_Noncomposite.gif");
       break;
 
    default:
@@ -679,33 +679,33 @@ std::string CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppo
    return strImage;
 }
 
-std::string CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "VoidedSlab_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "VoidedSlab_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -719,17 +719,17 @@ CLSID CVoidedSlabFactory::GetFamilyCLSID()
    return CLSID_SlabBeamFamily;
 }
 
-std::string CVoidedSlabFactory::GetGirderFamilyName()
+std::_tstring CVoidedSlabFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CVoidedSlabFactory::GetPublisher()
+std::_tstring CVoidedSlabFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CVoidedSlabFactory::GetResourceInstance()
@@ -757,16 +757,16 @@ void CVoidedSlabFactory::GetDimensions(const IBeamFactory::Dimensions& dimension
                                        long& N,
                                        double& J)
 {
-   H = GetDimension(dimensions,"H");
-   W = GetDimension(dimensions,"W");
-   D = GetDimension(dimensions,"Void_Diameter");
-   S = GetDimension(dimensions,"Void_Spacing");
-   N = (long)GetDimension(dimensions,"Number_of_Voids");
-   J = GetDimension(dimensions,"Jmax");
+   H = GetDimension(dimensions,_T("H"));
+   W = GetDimension(dimensions,_T("W"));
+   D = GetDimension(dimensions,_T("Void_Diameter"));
+   S = GetDimension(dimensions,_T("Void_Spacing"));
+   N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
+   J = GetDimension(dimensions,_T("Jmax"));
 }
 
 double CVoidedSlabFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,
-                                        const std::string& name)
+                                        const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -812,8 +812,8 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double gw = GetDimension(dimensions,"W");
-   double J  = GetDimension(dimensions,"Jmax");
+   double gw = GetDimension(dimensions,_T("W"));
+   double J  = GetDimension(dimensions,_T("Jmax"));
 
    if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
    {
@@ -835,18 +835,18 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
 
 long CVoidedSlabFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
 {
-   long nv = (long)GetDimension(dimensions,"Number_of_Voids");
+   long nv = (long)GetDimension(dimensions,_T("Number_of_Voids"));
    return nv+1;
 }
 
 Float64 CVoidedSlabFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"H");
+   return GetDimension(dimensions,_T("H"));
 }
 
 Float64 CVoidedSlabFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"W");
+   return GetDimension(dimensions,_T("W"));
 }
 
 bool CVoidedSlabFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)

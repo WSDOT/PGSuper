@@ -90,8 +90,8 @@ rptChapter* CFinalLossesChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
             rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
 
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }

@@ -237,7 +237,7 @@ void CLLDFGrid::AddPierRow(pgsTypes::LimitState ls,const CPierData* pPier)
    CString strLabel;
    PierIndexType pierIdx = pPier->GetPierIndex();
    long nPiers = pPier->GetBridgeDescription()->GetPierCount();
-   strLabel.Format("%s %d",(pierIdx == 0 || pierIdx == nPiers-1 ? "Abut" : "Pier"),
+   strLabel.Format(_T("%s %d"),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abut") : _T("Pier")),
                             pierIdx+1);
 
    SetStyleRange(CGXRange(nRows,0), CGXStyle().SetHorizontalAlignment(DT_LEFT).SetValue(strLabel));
@@ -303,7 +303,7 @@ void CLLDFGrid::AddSpanRow(pgsTypes::LimitState ls,const CSpanData* pSpan)
    InsertRows(nRows,1);
 
    CString strLabel;
-   strLabel.Format("Span %d",LABEL_SPAN(pSpan->GetSpanIndex()));
+   strLabel.Format(_T("Span %d"),LABEL_SPAN(pSpan->GetSpanIndex()));
    SetStyleRange(CGXRange(nRows,0), CGXStyle().SetHorizontalAlignment(DT_RIGHT).SetValue(strLabel));
 
    SetStyleRange(CGXRange(nRows,1), CGXStyle()
@@ -362,35 +362,35 @@ void CLLDFGrid::GetPierRow(pgsTypes::LimitState ls,CPierData* pPier)
 
    if ( bCont || bIntLeft || bIntRight )
    {
-      pPier->SetLLDFNegMoment(ls,pgsTypes::Exterior,atof(GetCellValue(row,2)));
-      pPier->SetLLDFNegMoment(ls,pgsTypes::Interior,atof(GetCellValue(row,6)));
+      pPier->SetLLDFNegMoment(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,2)));
+      pPier->SetLLDFNegMoment(ls,pgsTypes::Interior,_tstof(GetCellValue(row,6)));
    }
    else
    {
       // if the pier is not integral or continuous, set the LLDF to 1.0
-      // atof in the above "if" block returns 0 in this case. If the user
+      // _tstof in the above "if" block returns 0 in this case. If the user
       // later changes the boundary conditions the LLDF will be 0. This is 
       // not desirable. To elimiate this problem, set the unused LLDF to 1.0
       pPier->SetLLDFNegMoment(ls,pgsTypes::Exterior,1.0);
       pPier->SetLLDFNegMoment(ls,pgsTypes::Interior,1.0);
    }
 
-   pPier->SetLLDFReaction(ls,pgsTypes::Exterior,atof(GetCellValue(row,4)));
-   pPier->SetLLDFReaction(ls,pgsTypes::Interior,atof(GetCellValue(row,8)));
+   pPier->SetLLDFReaction(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,4)));
+   pPier->SetLLDFReaction(ls,pgsTypes::Interior,_tstof(GetCellValue(row,8)));
 }
 
 void CLLDFGrid::GetSpanRow(pgsTypes::LimitState ls,CSpanData* pSpan)
 {
    ROWCOL row = pSpan->GetSpanIndex()*2 + 3;
 
-   pSpan->SetLLDFPosMoment(ls,pgsTypes::Exterior,atof(GetCellValue(row,1)));
-   pSpan->SetLLDFShear(ls,pgsTypes::Exterior,atof(GetCellValue(row,3)));
+   pSpan->SetLLDFPosMoment(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,1)));
+   pSpan->SetLLDFShear(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,3)));
 
-   pSpan->SetLLDFPosMoment(ls,pgsTypes::Interior,atof(GetCellValue(row,5)));
-   pSpan->SetLLDFShear(ls,pgsTypes::Interior,atof(GetCellValue(row,7)));
+   pSpan->SetLLDFPosMoment(ls,pgsTypes::Interior,_tstof(GetCellValue(row,5)));
+   pSpan->SetLLDFShear(ls,pgsTypes::Interior,_tstof(GetCellValue(row,7)));
 
 
-   // see note in GetPierRow. We don't atof to return 0 for LLDF.
+   // see note in GetPierRow. We don't _tstof to return 0 for LLDF.
    bool bContRight = pSpan->GetPrevPier()->IsContinuous();
    bool bContLeft  = pSpan->GetNextPier()->IsContinuous();
 
@@ -400,8 +400,8 @@ void CLLDFGrid::GetSpanRow(pgsTypes::LimitState ls,CSpanData* pSpan)
 
    if ( bContLeft || bContRight || bIntLeft || bIntRight )
    {
-      pSpan->SetLLDFNegMoment(ls,pgsTypes::Exterior,atof(GetCellValue(row,2)));
-      pSpan->SetLLDFNegMoment(ls,pgsTypes::Interior,atof(GetCellValue(row,6)));
+      pSpan->SetLLDFNegMoment(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,2)));
+      pSpan->SetLLDFNegMoment(ls,pgsTypes::Interior,_tstof(GetCellValue(row,6)));
    }
    else
    {

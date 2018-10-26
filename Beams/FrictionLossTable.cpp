@@ -56,42 +56,42 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    CFrictionLossTable* table = new CFrictionLossTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Friction and Anchor Set loss in post-tensioned temporary strands [5.9.5.2.1, 5.9.5.2.2b]" << rptNewLine;
+   *pParagraph << _T("Friction and Anchor Set loss in post-tensioned temporary strands [5.9.5.2.1, 5.9.5.2.2b]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << rptRcImage(strImagePath + "FrictionAndAnchorSetLosses.gif") << rptNewLine << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpF.png") << rptNewLine << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + "Delta_FpA.png") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("FrictionAndAnchorSetLosses.gif")) << rptNewLine << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_FpF.png")) << rptNewLine << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_FpA.png")) << rptNewLine;
 
-   *pParagraph << "Wobble Friction: K = " << table->wobble.SetValue(details.pLosses->GetWobbleFrictionCoefficient()) << rptNewLine;
+   *pParagraph << _T("Wobble Friction: K = ") << table->wobble.SetValue(details.pLosses->GetWobbleFrictionCoefficient()) << rptNewLine;
 
    table->ecc.ShowUnitTag(true);
-   *pParagraph << "Anchor Set: " << symbol(DELTA) << "L = " << table->ecc.SetValue(details.pLosses->GetAnchorSet()) << rptNewLine;
+   *pParagraph << _T("Anchor Set: ") << symbol(DELTA) << _T("L = ") << table->ecc.SetValue(details.pLosses->GetAnchorSet()) << rptNewLine;
    table->ecc.ShowUnitTag(false);
 
    table->offset.ShowUnitTag(true);
-   *pParagraph << Sub2("L","set") << " = " << table->offset.SetValue(details.pLosses->AnchorSetZone()) << rptNewLine;
-   *pParagraph << Sub2("L","g") << " = " << table->offset.SetValue(details.pLosses->GetGirderLength() ) << rptNewLine;
+   *pParagraph << Sub2(_T("L"),_T("set")) << _T(" = ") << table->offset.SetValue(details.pLosses->AnchorSetZone()) << rptNewLine;
+   *pParagraph << Sub2(_T("L"),_T("g")) << _T(" = ") << table->offset.SetValue(details.pLosses->GetGirderLength() ) << rptNewLine;
    table->offset.ShowUnitTag(false);
 
    table->stress.ShowUnitTag(true);
-   *pParagraph << symbol(DELTA) << RPT_STRESS("pFT") << " = " << table->stress.SetValue(details.pLosses->TotalFrictionLoss() ) << rptNewLine;
-   *pParagraph << symbol(DELTA) << RPT_STRESS("pAT") << " = " << table->stress.SetValue(details.pLosses->TotalAnchorSetLoss() ) << rptNewLine;
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pFT")) << _T(" = ") << table->stress.SetValue(details.pLosses->TotalFrictionLoss() ) << rptNewLine;
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAT")) << _T(" = ") << table->stress.SetValue(details.pLosses->TotalAnchorSetLoss() ) << rptNewLine;
    table->stress.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
 
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,2) << COLHDR("x",rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS("pF") << " @ x" , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS("pA") << " @ x" , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,2) << COLHDR(_T("x"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")) << _T(" @ x") , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")) << _T(" @ x") , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

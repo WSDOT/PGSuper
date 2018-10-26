@@ -113,7 +113,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
    ColumnIndexType col = 0;
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Concurrent Shears");
+   p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Concurrent Shears"));
 
    if ( span == ALL_SPANS )
    {
@@ -122,8 +122,8 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    }
 
    (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR(Sub2("M","max") << rptNewLine << "Strength I", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(0,col++) << COLHDR(Sub2("V","i"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*p_table)(0,col++) << COLHDR(Sub2(_T("M"),_T("max")) << rptNewLine << _T("Strength I"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(Sub2(_T("V"),_T("i")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
    *p << p_table;
 
@@ -203,7 +203,7 @@ bool CConcurrentShearTable::AssertValid() const
 
 void CConcurrentShearTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CConcurrentShearTable" << endl;
+   os << _T("Dump for CConcurrentShearTable") << endl;
 }
 #endif // _DEBUG
 

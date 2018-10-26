@@ -62,9 +62,9 @@ txnTransaction* txnEditLiveLoad::CreateClone() const
    return new txnEditLiveLoad(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1]);
 }
 
-std::string txnEditLiveLoad::Name() const
+std::_tstring txnEditLiveLoad::Name() const
 {
-   return "Edit Live Load";
+   return _T("Edit Live Load");
 }
 
 bool txnEditLiveLoad::IsUndoable()

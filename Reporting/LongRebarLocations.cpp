@@ -84,7 +84,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
 
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<"Longitudinal Rebar Locations"<<rptNewLine;
+   *pHead<<_T("Longitudinal Rebar Locations")<<rptNewLine;
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -100,18 +100,18 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
 
    if ( count == 0 )
    {
-      *pPara<<"No Longitudinal Rebar Defined"<<rptNewLine;
+      *pPara<<_T("No Longitudinal Rebar Defined")<<rptNewLine;
       return;
    }
 
-   *pPara<<"All longitudinal rebars run the entire length of the girder"<<rptNewLine;
+   *pPara<<_T("All longitudinal rebars run the entire length of the girder")<<rptNewLine;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
    *pPara << p_table;
 
-   (*p_table)(0,0) << COLHDR("X",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,1) << COLHDR("Y",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,2) << "Bar" << rptNewLine << "Size";
+   (*p_table)(0,0) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,1) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,2) << _T("Bar") << rptNewLine << _T("Size");
 
    int row=1;
 
@@ -135,7 +135,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
 
       (*p_table)(row,0) << dim.SetValue(x);
       (*p_table)(row,1) << dim.SetValue(y);
-      (*p_table)(row,2) << OLE2A(bstrName);
+      (*p_table)(row,2) << OLE2T(bstrName);
       
       
       row++;
@@ -181,7 +181,7 @@ bool CLongRebarLocations::AssertValid() const
 
 void CLongRebarLocations::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CLongRebarLocations" << endl;
+   os << _T("Dump for CLongRebarLocations") << endl;
 }
 #endif // _DEBUG
 

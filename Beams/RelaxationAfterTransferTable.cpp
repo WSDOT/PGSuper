@@ -57,7 +57,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    CRelaxationAfterTransferTable* table = new CRelaxationAfterTransferTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
 
    GET_IFACE2(pBroker, IGirderData,      pGirderData );
@@ -67,37 +67,37 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Losses due to Relaxation After Transfer" << rptNewLine;
+   *pParagraph << _T("Losses due to Relaxation After Transfer") << rptNewLine;
    if ( pstrand->GetType() == matPsStrand::LowRelaxation )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_LR_SI.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR2_LR_SI.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_LR_US.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR2_LR_US.png")) << rptNewLine;
       }
    }
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_SR_SI.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR2_SR_SI.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + "Delta_FpR2_SR_US.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR2_SR_US.png")) << rptNewLine;
       }
    }
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR( symbol(DELTA) << "f" << Sub("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR( symbol(DELTA) << "f" << Sub("pSR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR( symbol(DELTA) << "f" << Sub("pCR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR( symbol(DELTA) << "f" << Sub("pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }

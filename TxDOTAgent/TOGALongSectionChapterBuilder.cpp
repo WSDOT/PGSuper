@@ -59,7 +59,7 @@ rptChapter* CTogaLongSectionChapterBuilder::Build(CReportSpecification* pRptSpec
 
    rptParagraph* p = new rptParagraph;
 
-   *p <<italic(ON)<<bold(ON)<<"Note: Unless otherwise specified, all results output from this point on reflect values from the Precaster Optional Design."<<bold(OFF)<<italic(OFF);
+   *p <<italic(ON)<<bold(ON)<<_T("Note: Unless otherwise specified, all results output from this point on reflect values from the Precaster Optional Design.")<<bold(OFF)<<italic(OFF);
 
    *pChapter << p;
 

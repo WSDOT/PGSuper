@@ -170,13 +170,13 @@ Float64 CTxDOTOptionalDesignDocProxyAgent::GetSectionCutStation()
 // IVersionInfo
 CString CTxDOTOptionalDesignDocProxyAgent::GetVersionString(bool bIncludeBuildNumber)
 {
-   CString str("Version ");
+   CString str(_T("Version "));
    str += GetVersion(bIncludeBuildNumber);
 #if defined _BETA_VERSION
-   str += CString(" BETA");
+   str += CString(_T(" BETA"));
 #endif
 
-   str += CString(" - Built on ");
+   str += CString(_T(" - Built on "));
    str += CString(__DATE__);
    return str;
 }
@@ -189,7 +189,7 @@ CString CTxDOTOptionalDesignDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
 
    CWinApp* pApp = AfxGetApp();
    CString strExe( pApp->m_pszExeName );
-   strExe += ".dll";
+   strExe += _T(".dll");
 
    CVersionInfo verInfo;
    verInfo.Load(strExe);
@@ -204,7 +204,7 @@ CString CTxDOTOptionalDesignDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
    if (!bIncludeBuildNumber)
    {
       // remove the build number
-      int pos = strVersion.ReverseFind('.'); // find the last '.'
+      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
       strVersion = strVersion.Left(pos);
    }
 

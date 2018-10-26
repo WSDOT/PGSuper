@@ -271,25 +271,25 @@ void CGirderHarpedStrandPage::OnMidview()
 void CGirderHarpedStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)
 {
    CString str;
-   str.Format("# Straight Strands = %d", ns);
+   str.Format(_T("# Straight Strands = %d"), ns);
 
    CWnd* pw = (CWnd*)GetDlgItem(IDC_SS_STATUS);
    ASSERT(pw);
    pw->SetWindowText(str);
 
-   str.Format("# Debondable Strands = %d", ndb);
+   str.Format(_T("# Debondable Strands = %d"), ndb);
 
    pw = (CWnd*)GetDlgItem(IDC_DB_STATUS);
    ASSERT(pw);
    pw->SetWindowText(str);
 
-   str.Format("# Harped Strands = %d", nh);
+   str.Format(_T("# Harped Strands = %d"), nh);
 
    pw = (CWnd*)GetDlgItem(IDC_HS_STATUS);
    ASSERT(pw);
    pw->SetWindowText(str);
 
-   str.Format("Total Perm. Strands = %d", nh+ns);
+   str.Format(_T("Total Perm. Strands = %d"), nh+ns);
 
    pw = (CWnd*)GetDlgItem(IDC_TT_STATUS);
    ASSERT(pw);

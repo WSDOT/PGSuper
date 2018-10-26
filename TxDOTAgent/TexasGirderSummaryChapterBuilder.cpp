@@ -139,7 +139,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,"Girder Line Geometry");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Girder Line Geometry"));
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
@@ -164,8 +164,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   std::string strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
-   std::string* pStr;
+   std::_tstring strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
+   std::_tstring* pStr;
    for ( int i = 0; i < 2; i++ )
    {
       long hash;
@@ -181,93 +181,93 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       }
 
       if ( hash == HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::AlongItem) )
-         *pStr = "Measured at and along the centerline pier";
+         *pStr = _T("Measured at and along the centerline pier");
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem) )
-         *pStr = "Measured at and along the centerline bearing";
+         *pStr = _T("Measured at and along the centerline bearing");
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::NormalToItem) )
-         *pStr = "Measured normal to alignment at centerline pier";
+         *pStr = _T("Measured normal to alignment at centerline pier");
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::NormalToItem) )
-         *pStr = "Measured normal to alignment at centerline bearing";
+         *pStr = _T("Measured normal to alignment at centerline bearing");
    }
 
 
    RowIndexType row = 0;
 
    // Populate the table
-   (*pTable)(row,0) << "Girder Type";
+   (*pTable)(row,0) << _T("Girder Type");
    (*pTable)(row++,1) << pSpan->GetGirderTypes()->GetGirderName(girder);
 
-   (*pTable)(row,0) << "Span Length, CL Bearing to CL Bearing" ;
+   (*pTable)(row,0) << _T("Span Length, CL Bearing to CL Bearing") ;
    (*pTable)(row++,1) << length.SetValue(pBridge->GetSpanLength(span,girder));
 
-   (*pTable)(row,0) << "Girder Length" ;
+   (*pTable)(row,0) << _T("Girder Length") ;
    (*pTable)(row++,1) << length.SetValue(pBridge->GetGirderLength(span,girder));
 
-   (*pTable)(row,0) << "Number of Girders";
+   (*pTable)(row,0) << _T("Number of Girders");
    (*pTable)(row++,1) << pBridge->GetGirderCount(span);
 
    if ( pBridge->IsInteriorGirder(span,girder) )
    {
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
       {
-         (*pTable)(row,0) << "Girder Spacing Datum\nStart of Span";
+         (*pTable)(row,0) << _T("Girder Spacing Datum\nStart of Span");
          (*pTable)(row++,1) << strGirderSpacingMeasureAtStartOfSpan;
-         (*pTable)(row,0) << "Left Girder Spacing\nStart of Span";
+         (*pTable)(row,0) << _T("Left Girder Spacing\nStart of Span");
       }
       else
       {
-         (*pTable)(row,0) << "Joint Spacing Datum\nStart of Span";
+         (*pTable)(row,0) << _T("Joint Spacing Datum\nStart of Span");
          (*pTable)(row++,1) << strGirderSpacingMeasureAtStartOfSpan;
-         (*pTable)(row,0) << "Left Girder Joint\nStart of Span";
+         (*pTable)(row,0) << _T("Left Girder Joint\nStart of Span");
       }
 
       if ( 1 < pBridge->GetGirderCount(span) )
          (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(girder-1));
       else
-         (*pTable)(row++,1) << " - ";
+         (*pTable)(row++,1) << _T(" - ");
 
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
       {
-         (*pTable)(row,0) << "Right Girder Spacing\nStart of Span";
+         (*pTable)(row,0) << _T("Right Girder Spacing\nStart of Span");
       }
       else
       {
-         (*pTable)(row,0) << "Right Joint Spacing\nStart of Span";
+         (*pTable)(row,0) << _T("Right Joint Spacing\nStart of Span");
       }
 
       if ( 1 < pBridge->GetGirderCount(span) )
          (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(girder));
       else
-         (*pTable)(row++,1) << " - ";
+         (*pTable)(row++,1) << _T(" - ");
 
 
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
       {
-         (*pTable)(row,0) << "Girder Spacing Datum\nEnd of Span";
+         (*pTable)(row,0) << _T("Girder Spacing Datum\nEnd of Span");
          (*pTable)(row++,1) << strGirderSpacingMeasureAtEndOfSpan;
-         (*pTable)(row,0) << "Left Girder Spacing\nEnd of Span";
+         (*pTable)(row,0) << _T("Left Girder Spacing\nEnd of Span");
       }
       else
       {
-         (*pTable)(row,0) << "Joint Spacing Datum\nEnd of Span";
+         (*pTable)(row,0) << _T("Joint Spacing Datum\nEnd of Span");
          (*pTable)(row++,1) << strGirderSpacingMeasureAtEndOfSpan;
-         (*pTable)(row,0) << "Left Joint Spacing\nEnd of Span";
+         (*pTable)(row,0) << _T("Left Joint Spacing\nEnd of Span");
       }
 
       if ( 1 < pBridge->GetGirderCount(span) )
          (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(girder-1));
       else
-         (*pTable)(row++,1) << " - ";
+         (*pTable)(row++,1) << _T(" - ");
 
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
-         (*pTable)(row,0) << "Right Girder Spacing\nEnd of Span";
+         (*pTable)(row,0) << _T("Right Girder Spacing\nEnd of Span");
       else
-         (*pTable)(row,0) << "Right Joint Spacing\nEnd of Span";
+         (*pTable)(row,0) << _T("Right Joint Spacing\nEnd of Span");
 
       if ( 1 < pBridge->GetGirderCount(span) )
          (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(girder));
       else
-         (*pTable)(row++,1) << " - ";
+         (*pTable)(row++,1) << _T(" - ");
    }
    else
    {
@@ -275,103 +275,103 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       {
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
          {
-            (*pTable)(row,0) << "Girder Spacing Datum\nStart of Span";
+            (*pTable)(row,0) << _T("Girder Spacing Datum\nStart of Span");
             (*pTable)(row++,1) << strGirderSpacingMeasureAtStartOfSpan;
-            (*pTable)(row,0) << "Right Girder Spacing\nStart of Span";
+            (*pTable)(row,0) << _T("Right Girder Spacing\nStart of Span");
          }
          else
          {
-            (*pTable)(row,0) << "Joint Spacing Datum\nStart of Span";
+            (*pTable)(row,0) << _T("Joint Spacing Datum\nStart of Span");
             (*pTable)(row++,1) << strGirderSpacingMeasureAtStartOfSpan;
-            (*pTable)(row,0) << "Right Joint Spacing\nStart of Span";
+            (*pTable)(row,0) << _T("Right Joint Spacing\nStart of Span");
          }
 
          if ( 1 < pBridge->GetGirderCount(span) )
             (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(girder));
          else
-            (*pTable)(row++,1) << " - ";
+            (*pTable)(row++,1) << _T(" - ");
 
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
          {
-            (*pTable)(row,0) << "Girder Spacing Datum\nEnd of Span";
+            (*pTable)(row,0) << _T("Girder Spacing Datum\nEnd of Span");
             (*pTable)(row++,1) << strGirderSpacingMeasureAtEndOfSpan;
-            (*pTable)(row,0) << "Right Girder Spacing\nEnd of Span";
+            (*pTable)(row,0) << _T("Right Girder Spacing\nEnd of Span");
          }
          else
          {
-            (*pTable)(row,0) << "Joint Spacing Datum\nEnd of Span";
+            (*pTable)(row,0) << _T("Joint Spacing Datum\nEnd of Span");
             (*pTable)(row++,1) << strGirderSpacingMeasureAtEndOfSpan;
-            (*pTable)(row,0) << "Right Joint Spacing\nEnd of Span";
+            (*pTable)(row,0) << _T("Right Joint Spacing\nEnd of Span");
          }
 
          if ( 1 < pBridge->GetGirderCount(span) )
             (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(girder));
          else
-            (*pTable)(row++,1) << " - ";
+            (*pTable)(row++,1) << _T(" - ");
       }
       else
       {
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
-            (*pTable)(row,0) << "Left Girder Spacing\nStart of Span";
+            (*pTable)(row,0) << _T("Left Girder Spacing\nStart of Span");
          else
-            (*pTable)(row,0) << "Left Joint Spacing\nStart of Span";
+            (*pTable)(row,0) << _T("Left Joint Spacing\nStart of Span");
 
          GirderIndexType nGirders = pSpan->GetGirderCount();
 
          if ( 1 < pBridge->GetGirderCount(span) )
             (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(SpacingIndexType(nGirders-2)));
          else
-            (*pTable)(row++,1) << " - ";
+            (*pTable)(row++,1) << _T(" - ");
 
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
-            (*pTable)(row,0) << "Left Girder Spacing\nEnd of Span";
+            (*pTable)(row,0) << _T("Left Girder Spacing\nEnd of Span");
          else
-            (*pTable)(row,0) << "Left Joint Spacing\nEnd of Span";
+            (*pTable)(row,0) << _T("Left Joint Spacing\nEnd of Span");
 
          if ( 1 < pBridge->GetGirderCount(span) )
             (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(SpacingIndexType(nGirders-2)));
          else
-            (*pTable)(row++,1) << " - ";
+            (*pTable)(row++,1) << _T(" - ");
       }
    }
 
 #pragma Reminder("UPDATE: Assumes constant slab thickness")   
    pgsPointOfInterest poi(span,girder,0.00);
-   (*pTable)(row,0) << "Slab Thickness for Design";
+   (*pTable)(row,0) << _T("Slab Thickness for Design");
    (*pTable)(row++,1) << component.SetValue(pBridge->GetStructuralSlabDepth( poi ));
 
-   (*pTable)(row,0) << "Slab Thickness for Construction";
+   (*pTable)(row,0) << _T("Slab Thickness for Construction");
    (*pTable)(row++,1) << component.SetValue(pBridge->GetGrossSlabDepth( poi ));
 
-   (*pTable)(row,0) << "Slab Offset at Start (\"A\" Dimension)";
+   (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
    (*pTable)(row++,1) << component.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart));
 
-   (*pTable)(row,0) << "Slab Offset at End (\"A\" Dimension)";
+   (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
    (*pTable)(row++,1) << component.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
 
-   (*pTable)(row,0) << "Overlay";
+   (*pTable)(row,0) << _T("Overlay");
    (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
 
 #pragma Reminder("#*#*#*#*#*# TXDOT girder summary - Diaphragms #*#*#*#*#*#")
-//   (*pTable)(row,0) << "Intermediate Diaphragm (H x W)";
+//   (*pTable)(row,0) << _T("Intermediate Diaphragm (H x W)");
 //   (*pTable)(row,1) << component.SetValue( pXSectData->pGirderEntry->GetDiaphragmHeight() );
-//   (*pTable)(row,1) << " x ";
+//   (*pTable)(row,1) << _T(" x ");
 //   (*pTable)(row++,1) << component.SetValue( pXSectData->pGirderEntry->GetDiaphragmWidth() );
 
 
 #pragma Reminder("UPDATE:: Update for new railing/sidewalk system")
-   (*pTable)(row,0) << "Left Traffic Barrier";
+   (*pTable)(row,0) << _T("Left Traffic Barrier");
    (*pTable)(row++,1) << pBridgeDesc->GetLeftRailingSystem()->strExteriorRailing;
 
-   (*pTable)(row,0) << "Right Traffic Barrier";
+   (*pTable)(row,0) << _T("Right Traffic Barrier");
    (*pTable)(row++,1) << pBridgeDesc->GetRightRailingSystem()->strExteriorRailing;
 
-   (*pTable)(row,0) << "Traffic Barrier Weight (per girder)";
+   (*pTable)(row,0) << _T("Traffic Barrier Weight (per girder)");
    (*pTable)(row++,1) << fpl.SetValue( -pProductLoads->GetTrafficBarrierLoad(span,girder) );
 
-   (*pTable)(row,0) << "Connection type at Pier " << LABEL_PIER(span);
+   (*pTable)(row,0) << _T("Connection type at Pier ") << LABEL_PIER(span);
    (*pTable)(row++,1) << pPrevPier->GetConnection(pgsTypes::Ahead);
 
-   (*pTable)(row,0) << "Connection type at Pier " << LABEL_PIER(span+1);
+   (*pTable)(row,0) << _T("Connection type at Pier ") << LABEL_PIER(span+1);
    (*pTable)(row++,1) << pNextPier->GetConnection(pgsTypes::Back);
 }

@@ -72,7 +72,7 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
          m_bError = TRUE;
          m_strErrorMsg = GetUsageString();
       }
-      else if ( strParam.CompareNoCase("TestDF") == 0 )
+      else if ( strParam.CompareNoCase(_T("TestDF")) == 0 )
       {
          // Run distribution factor regression tests suite
          m_TxRunType        = TxrDistributionFactors;
@@ -82,11 +82,11 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
          m_bShowSplash      = FALSE;
          bMyParameter       = true;
       }
-      else if (strParam.Left(2).CompareNoCase("Tx") == 0)
+      else if (strParam.Left(2).CompareNoCase(_T("Tx")) == 0)
       {   
          // probable TxDOT CAD or TOGA report
 
-         if (strParam.CompareNoCase("TxTOGA") == 0 )
+         if (strParam.CompareNoCase(_T("TxTOGA")) == 0 )
          {
             // TOGA test file
             m_DoTogaTest = true;
@@ -94,37 +94,37 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
          else
          {
             // see if we append or overwrite file
-            // if flag ends in "o" we are overwriting, not appending
-            m_DoAppendToFile = (strParam.Right(1).CompareNoCase("o") != 0);
+            // if flag ends in _T("o") we are overwriting, not appending
+            m_DoAppendToFile = (strParam.Right(1).CompareNoCase(_T("o")) != 0);
       
             // Set main command option
-            if (strParam.CompareNoCase("TxA") == 0 || strParam.CompareNoCase("TxAo") == 0)
+            if (strParam.CompareNoCase(_T("TxA")) == 0 || strParam.CompareNoCase(_T("TxAo")) == 0)
             {
                m_TxRunType = txrAnalysis;
                m_TxFType   = txfNormal;
             }
-            else if (strParam.CompareNoCase("TxAx") == 0 || strParam.CompareNoCase("TxAxo") == 0)
+            else if (strParam.CompareNoCase(_T("TxAx")) == 0 || strParam.CompareNoCase(_T("TxAxo")) == 0)
             {
                m_TxRunType = txrAnalysis;
                m_TxFType   = txfExtended;
             }
-            else if (strParam.CompareNoCase("TxAT") == 0 || strParam.CompareNoCase("TxATo") == 0)
+            else if (strParam.CompareNoCase(_T("TxAT")) == 0 || strParam.CompareNoCase(_T("TxATo")) == 0)
             {
                m_TxRunType = txrAnalysis;
                m_TxFType   = txfTest;
                m_DoAppendToFile = false;  // always delete test file
             }
-            else if (strParam.CompareNoCase("TxD") == 0 || strParam.CompareNoCase("TxDo") == 0)
+            else if (strParam.CompareNoCase(_T("TxD")) == 0 || strParam.CompareNoCase(_T("TxDo")) == 0)
             {
                m_TxRunType = txrDesign;
                m_TxFType   = txfNormal;
             }
-            else if (strParam.CompareNoCase("TxDx") == 0 || strParam.CompareNoCase("TxDxo") == 0)
+            else if (strParam.CompareNoCase(_T("TxDx")) == 0 || strParam.CompareNoCase(_T("TxDxo")) == 0)
             {
                m_TxRunType = txrDesign;
                m_TxFType   = txfExtended;
             }
-            else if (strParam.CompareNoCase("TxDT") == 0 || strParam.CompareNoCase("TxDTo") == 0)
+            else if (strParam.CompareNoCase(_T("TxDT")) == 0 || strParam.CompareNoCase(_T("TxDTo")) == 0)
             {
                m_TxRunType = txrDesign;
                m_TxFType   = txfTest;
@@ -152,7 +152,7 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
       {
          // first parameter must be a flag
          m_bError = true;
-         m_strErrorMsg.Format("The first parameter must be a flag.\n%s",GetUsageString());
+         m_strErrorMsg.Format(_T("The first parameter must be a flag.\n%s"),GetUsageString());
       }
       else if ( m_DoTxCadReport )
       {
@@ -174,14 +174,14 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
             }
             else
             {
-               if (strParam.CompareNoCase("ALL") == 0)
+               if (strParam.CompareNoCase(_T("ALL")) == 0)
                {
                   m_TxSpan = ALL_SPANS;
                }
                else
                {
                   // Error parsing span number
-                  m_strErrorMsg.Format("An invalid span number was encountered.\n\n%s",GetUsageString());
+                  m_strErrorMsg.Format(_T("An invalid span number was encountered.\n\n%s"),GetUsageString());
                   m_bError = true;
 
                   return;
@@ -192,17 +192,17 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
          {
             // girder
             bMyParameter = true;
-            if (strParam.CompareNoCase("ALL") == 0)
+            if (strParam.CompareNoCase(_T("ALL")) == 0)
             {
                m_TxGirder = TXALLGIRDERS;
             }
-            else if (strParam.CompareNoCase("EI") == 0)
+            else if (strParam.CompareNoCase(_T("EI")) == 0)
             {
                m_TxGirder = TXEIGIRDERS;
             }
             else
             {
-               int gdrIdx = (char)strParam.GetAt(0) - 'A';
+               int gdrIdx = (TCHAR)strParam.GetAt(0) - _T('A');
                if (0 <= gdrIdx && gdrIdx <= 28)
                {
                   m_TxGirder = gdrIdx;
@@ -210,7 +210,7 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
                else
                {
                   // error parsing girder number
-                  m_strErrorMsg.Format("An invalid girder number was encountered.\n\n%s",GetUsageString());
+                  m_strErrorMsg.Format(_T("An invalid girder number was encountered.\n\n%s"),GetUsageString());
                   m_bError = true;
                   return;
                }
@@ -236,5 +236,5 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
 
 CString CTxDOTCommandLineInfo::GetUsageString()
 {
-   return CString("Valid parameters are\n/flag filename.pgs outputfile span girder\nwhere\nflag can be TxA, TxAx, TxAt, TxD, TxDx, or TxDT\nspan can be a span number or the keyword ALL\ngirder can be a girder letter (A-Z), the keyword ALL or the keyword EI\nOr /TxTOGA filename.toga outputfile");
+   return CString(_T("Valid parameters are\n/flag filename.pgs outputfile span girder\nwhere\nflag can be TxA, TxAx, TxAt, TxD, TxDx, or TxDT\nspan can be a span number or the keyword ALL\ngirder can be a girder letter (A-Z), the keyword ALL or the keyword EI\nOr /TxTOGA filename.toga outputfile"));
 }

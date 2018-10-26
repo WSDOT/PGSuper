@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CSpanDetailsDlg, CPropertySheet)
 
 CSpanDetailsDlg::CSpanDetailsDlg(const CSpanData* pSpan,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet("", pParentWnd, iSelectPage)
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    Init();
 
@@ -74,7 +74,7 @@ void CSpanDetailsDlg::SetSpanData(const CSpanData* pSpan)
 
    // Set dialog title
    CString strTitle;
-   strTitle.Format("Span %d Details",LABEL_SPAN(pSpan->GetSpanIndex()));
+   strTitle.Format(_T("Span %d Details"),LABEL_SPAN(pSpan->GetSpanIndex()));
    SetTitle(strTitle);
 }
 
@@ -142,12 +142,12 @@ pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::PierFa
    return m_ConnectionType[pierFace];
 }
 
-const char* CSpanDetailsDlg::GetPrevPierConnection(pgsTypes::PierFaceType pierFace)
+LPCTSTR CSpanDetailsDlg::GetPrevPierConnection(pgsTypes::PierFaceType pierFace)
 {
    return m_PrevPierConnectionName[pierFace];
 }
 
-const char* CSpanDetailsDlg::GetNextPierConnection(pgsTypes::PierFaceType pierFace)
+LPCTSTR CSpanDetailsDlg::GetNextPierConnection(pgsTypes::PierFaceType pierFace)
 {
    return m_NextPierConnectionName[pierFace];
 }

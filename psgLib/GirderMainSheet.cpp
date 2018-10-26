@@ -110,7 +110,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 	   DDX_Text(pDX, IDC_ENAME, m_Name);
       if (m_Name.IsEmpty())
       {
-         AfxMessageBox("Girder Name cannot be blank");
+         AfxMessageBox(_T("Girder Name cannot be blank"));
          pDX->Fail();
       }
       m_Entry.SetName(m_Name);
@@ -127,12 +127,12 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
    {
 
       // Pull the values from the grid... Convert back to system units
-      std::vector<std::string> names = m_Entry.m_pBeamFactory->GetDimensionNames();
+      std::vector<std::_tstring> names = m_Entry.m_pBeamFactory->GetDimensionNames();
       std::vector<const unitLength*> units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
 
       ATLASSERT(names.size() == units.size());
 
-      std::vector<std::string>::iterator name_iter;
+      std::vector<std::_tstring>::iterator name_iter;
       std::vector<const unitLength*>::iterator unit_iter;
       long nRow = 1;
       for ( name_iter = names.begin(), unit_iter = units.begin(); 
@@ -140,7 +140,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
             name_iter++, unit_iter++ )
       {
          CString strValue = m_GirderDimensionsPage.m_Grid.GetCellValue(nRow,1);
-         Float64 value = atof(strValue);
+         Float64 value = _tstof(strValue);
 
          const unitLength* pUnit = *unit_iter;
          if ( pUnit != NULL )
@@ -150,7 +150,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          nRow++;
       }
 
-      std::string strErrMsg;
+      std::_tstring strErrMsg;
       bool bValid = m_Entry.m_pBeamFactory->ValidateDimensions(m_Entry.m_Dimensions,bUnitsSI,&strErrMsg);
       if ( !bValid )
       {
@@ -161,19 +161,19 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
    else
    {
       // Fill up the grid
-      std::vector<std::string> names = m_Entry.m_pBeamFactory->GetDimensionNames();
+      std::vector<std::_tstring> names = m_Entry.m_pBeamFactory->GetDimensionNames();
       std::vector<const unitLength*> units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
 
       ATLASSERT(names.size() == units.size());
 
-      std::vector<std::string>::iterator name_iter;
+      std::vector<std::_tstring>::iterator name_iter;
       std::vector<const unitLength*>::iterator unit_iter;
       long nRow = 1;
       for ( name_iter = names.begin(), unit_iter = units.begin(); 
             name_iter != names.end() || unit_iter != units.end();
             name_iter++, unit_iter++ )
       {
-         std::string name = *name_iter;
+         std::_tstring name = *name_iter;
 
          Float64 value = m_Entry.GetDimension(name);
 
@@ -182,9 +182,9 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          {
             value = ::ConvertFromSysUnits(value,*pUnit);
 
-            name += " (";
+            name += _T(" (");
             name += pUnit->UnitTag();
-            name += ")";
+            name += _T(")");
          }
 
          VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 0), name.c_str() ));
@@ -232,7 +232,7 @@ bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
          else
          {
             CString msg;
-            msg.Format("Error - Incomplete data in row %d",i);
+            msg.Format(_T("Error - Incomplete data in row %d"),i);
             AfxMessageBox(msg);
 		      pDX->PrepareCtrl(m_GirderStraightStrandPage.m_TemporaryGrid.GridWnd()->GetDlgCtrlID());
             return false;
@@ -499,14 +499,14 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
       CString bs;
       m_ShearSteelPage.m_BarSize.GetWindowText(bs);
       bs.TrimLeft();
-      if (bs=="none")
+      if (bs==_T("none"))
          m_Entry.SetShearSteelBarSize(0);
       else
       {
          int l = bs.GetLength();
          CString s2 = bs.Right(l-1);
-         int i = atoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!='0'))
+         int i = _tstoi(s2);
+         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
          {
             ASSERT(0);
             m_Entry.SetShearSteelBarSize(0);
@@ -530,14 +530,14 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
       
       m_ShearSteelPage.m_TfBarSize.GetWindowText(bs);
       bs.TrimLeft();
-      if (bs=="none")
+      if (bs==_T("none"))
          m_Entry.SetTopFlangeShearBarSize(0);
       else
       {
          int l = bs.GetLength();
          CString s2 = bs.Right(l-1);
-         int i = atoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!='0'))
+         int i = _tstoi(s2);
+         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
          {
             ASSERT(0);
             m_Entry.SetTopFlangeShearBarSize(0);
@@ -579,7 +579,7 @@ void CGirderMainSheet::UploadTransverseData()
    if (siz>0)
    {
       CString tmp;
-      tmp.Format("#%d",siz);
+      tmp.Format(_T("#%d"),siz);
       int idx = m_ShearSteelPage.m_BarSize.SelectString(0,tmp);
       if (idx==CB_ERR)
          m_ShearSteelPage.m_BarSize.SetCurSel(0);
@@ -604,7 +604,7 @@ void CGirderMainSheet::UploadTransverseData()
    if (siz>0)
    {
       CString tmp;
-      tmp.Format("#%d",siz);
+      tmp.Format(_T("#%d"),siz);
       int idx = m_ShearSteelPage.m_TfBarSize.SelectString(0,tmp);
       if (idx==CB_ERR)
          m_ShearSteelPage.m_TfBarSize.SetCurSel(0);
@@ -684,7 +684,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 
    if (m_Entry.m_DefaultDebondLength < m_Entry.m_MinDebondLength)
    {
-      ::AfxMessageBox("Error - The default debond length cannot be less than the minimum debond length");
+      ::AfxMessageBox(_T("Error - The default debond length cannot be less than the minimum debond length"));
       pDX->Fail();
    }
 
@@ -756,9 +756,9 @@ void CGirderMainSheet::OnApply( NMHDR * pNotifyStruct, LRESULT * result )
       for(GirderLibraryEntry::GirderEntryDataErrorVec::const_iterator it = vec.begin();
           it != vec.end(); it++)
       {
-         errmsg += "- ";
+         errmsg += _T("- ");
          errmsg +=  (*it).GetErrorMsg().c_str();
-         errmsg += "\015\012\015\012";
+         errmsg += _T("\015\012\015\012");
       }
       m_GirderErrorDlg.m_ErrorEdit.SetWindowText(errmsg);
 
@@ -784,14 +784,14 @@ BOOL CGirderMainSheet::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_Entry.GetName().c_str();
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 	
@@ -801,7 +801,7 @@ BOOL CGirderMainSheet::OnInitDialog()
 void CGirderMainSheet::MiscOnFractional()
 {
    CWnd* pWnd = m_HarpPointPage.GetDlgItem(IDC_HARP_LOCATION_TAG);
-   pWnd->SetWindowText("(0.0-0.5]");
+   pWnd->SetWindowText(_T("(0.0-0.5]"));
 }
 
 void CGirderMainSheet::MiscOnAbsolute()

@@ -171,12 +171,12 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
 
    // get moments at pois  and mid-span deflection due to dead vertical lifting
    std::vector<Float64> moment_vec;
-   Float64 mid_span_deflection, overhang_deflection;
-   ComputeLiftingMoments(span, gdr, *pArtifact, poi_vec, &moment_vec,&mid_span_deflection,&overhang_deflection);
+   Float64 mid_span_deflection;
+   ComputeLiftingMoments(span, gdr, *pArtifact, poi_vec, &moment_vec,&mid_span_deflection);
 
    ComputeLiftingStresses(span, gdr, bUseConfig, liftConfig, poi_vec, moment_vec, pArtifact);
 
-   if (ComputeLiftingFsAgainstCracking(span, gdr, bUseConfig, liftConfig, poi_vec, moment_vec, mid_span_deflection, overhang_deflection, pArtifact))
+   if (ComputeLiftingFsAgainstCracking(span, gdr, bUseConfig, liftConfig, poi_vec, moment_vec, mid_span_deflection, pArtifact))
    {
       ComputeLiftingFsAgainstFailure(span, gdr, pArtifact);
    }
@@ -245,14 +245,14 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
 
    // get moments at pois  and mid-span deflection due to dead vertical hauling
    std::vector<Float64> moment_vec;
-   Float64 mid_span_deflection,overhang_deflection;
-   ComputeHaulingMoments(span, gdr, *pArtifact, poi_vec, &moment_vec,&mid_span_deflection,&overhang_deflection);
+   Float64 mid_span_deflection;
+   ComputeHaulingMoments(span, gdr, *pArtifact, poi_vec, &moment_vec,&mid_span_deflection);
 
-   ComputeHaulingRollAngle(span, gdr, pArtifact, poi_vec, &moment_vec,&mid_span_deflection,&overhang_deflection);
+   ComputeHaulingRollAngle(span, gdr, pArtifact, poi_vec, &moment_vec,&mid_span_deflection);
 
    ComputeHaulingStresses(span, gdr, bUseConfig, haulConfig, poi_vec, moment_vec, pArtifact);
 
-   ComputeHaulingFsForCracking(span, gdr, poi_vec, moment_vec, mid_span_deflection, overhang_deflection, pArtifact);
+   ComputeHaulingFsForCracking(span, gdr, poi_vec, moment_vec, pArtifact);
 
    ComputeHaulingFsForRollover(span, gdr, pArtifact);
 }
@@ -574,12 +574,12 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-      const char* msg = "Lifting support overhang cannot exceed one-half of the span length";
+      LPCTSTR msg = _T("Lifting support overhang cannot exceed one-half of the span length");
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationError,msg);
       pStatusCenter->Add(pStatusItem);
 
-      std::string str(msg);
-      str += std::string("\nSee Status Center for details");
+      std::_tstring str(msg);
+      str += std::_tstring(_T("\nSee Status Center for details"));
       THROW_UNWIND(str.c_str(),-1);
    }
 
@@ -592,7 +592,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format("Left lift point is less than the minimum value of %s",::FormatDimension(min_lift_point_start,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format(_T("Left lift point is less than the minimum value of %s"),::FormatDimension(min_lift_point_start,pDisplayUnits->GetSpanLengthUnit()));
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -603,7 +603,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format("Right lift point is less than the minimum value of %s",::FormatDimension(min_lift_point_end,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format(_T("Right lift point is less than the minimum value of %s"),::FormatDimension(min_lift_point_end,pDisplayUnits->GetSpanLengthUnit()));
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -667,7 +667,7 @@ void pgsGirderHandlingChecker::ComputeLiftingMoments(SpanIndexType span,GirderIn
                                                      const pgsLiftingAnalysisArtifact& rArtifact, 
                                                      const std::vector<pgsPointOfInterest>& rpoiVec,
                                                      std::vector<Float64>* pmomVec, 
-                                                     Float64* pMidSpanDeflection, Float64* pOverhangDeflection)
+                                                     Float64* pMidSpanDeflection)
 {
    // build a model
    Float64 glen    = rArtifact.GetGirderLength();
@@ -680,7 +680,7 @@ void pgsGirderHandlingChecker::ComputeLiftingMoments(SpanIndexType span,GirderIn
                   leftOH, glen, rightOH,
                   E,
                   rpoiVec,
-                  pmomVec, pMidSpanDeflection, pOverhangDeflection);
+                  pmomVec, pMidSpanDeflection);
 }
 
 void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderIndexType gdr,bool bUseConfig,
@@ -849,13 +849,11 @@ bool pgsGirderHandlingChecker::ComputeLiftingFsAgainstCracking(SpanIndexType spa
                                                                const std::vector<pgsPointOfInterest>& rpoiVec,
                                                                const std::vector<Float64>& momVec,
                                                                Float64 midSpanDeflection,
-                                                               Float64 overhangDeflection,
                                                                pgsLiftingAnalysisArtifact* pArtifact)
 {
    Float64 fo = pArtifact->GetOffsetFactor();
 
    pArtifact->SetCamberDueToSelfWeight(midSpanDeflection);
-   pArtifact->SetCamberDueToSelfWeightOverhang(overhangDeflection);
 
    // get mid-span poi so we can calc camber due to ps
    pgsPointOfInterest poi_ms;
@@ -894,7 +892,7 @@ bool pgsGirderHandlingChecker::ComputeLiftingFsAgainstCracking(SpanIndexType spa
    pArtifact->SetCamberDueToPrestress(ps_camber);
 
    // total adjusted camber
-   Float64 total_camber = ps_camber + midSpanDeflection - overhangDeflection;
+   Float64 total_camber = ps_camber + midSpanDeflection;
    pArtifact->SetTotalCamberAtLifting(total_camber);
 
    // adjusted yr = distance between cg and lifting point
@@ -904,6 +902,7 @@ bool pgsGirderHandlingChecker::ComputeLiftingFsAgainstCracking(SpanIndexType spa
 
    // Zo (based on mid-span properties)
    GET_IFACE(ISectProp2,pSectProp2);
+   Float64 Ix = pSectProp2->GetIx(pgsTypes::CastingYard,poi_ms);
    Float64 Iy = pSectProp2->GetIy(pgsTypes::CastingYard,poi_ms);
    Float64 span_len = pArtifact->GetClearSpanBetweenPickPoints();
    Float64 gird_len = pArtifact->GetGirderLength();
@@ -917,6 +916,7 @@ bool pgsGirderHandlingChecker::ComputeLiftingFsAgainstCracking(SpanIndexType spa
 
    pArtifact->SetZo(zo);
    pArtifact->SetIy(Iy);
+   pArtifact->SetIx(Ix);
 
    // intial tilt angle
    Float64 ei = pArtifact->GetTotalInitialEccentricity();
@@ -1062,12 +1062,12 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-      const char* msg = "Hauling support overhang cannot exceed one-half of the span length";
+      LPCTSTR msg = _T("Hauling support overhang cannot exceed one-half of the span length");
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationError,msg);
       pStatusCenter->Add(pStatusItem);
 
-      std::string str(msg);
-      str += std::string("\nSee Status Center for details");
+      std::_tstring str(msg);
+      str += std::_tstring(_T("\nSee Status Center for details"));
       THROW_UNWIND(str.c_str(),-1);
    }
 
@@ -1080,7 +1080,7 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format("Left bunk point is less than the minimum value of %s",::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format(_T("Left bunk point is less than the minimum value of %s"),::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
       pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(span,gdr,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -1091,7 +1091,7 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format("Right bunk point is less than the minimum value of %s",::FormatDimension(min_bunk_point_end,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format(_T("Right bunk point is less than the minimum value of %s"),::FormatDimension(min_bunk_point_end,pDisplayUnits->GetSpanLengthUnit()));
       pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(span,gdr,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -1356,8 +1356,6 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
 void pgsGirderHandlingChecker::ComputeHaulingFsForCracking(SpanIndexType span,GirderIndexType gdr,
                                                            const std::vector<pgsPointOfInterest>& rpoiVec,
                                                            const std::vector<Float64>& momVec,
-                                                           Float64 midSpanDeflection,
-                                                           Float64 overhangDeflection,
                                                            pgsHaulingAnalysisArtifact* pArtifact)
 {
    Float64 fo = pArtifact->GetOffsetFactor();
@@ -1493,7 +1491,7 @@ void pgsGirderHandlingChecker::ComputeHaulingFsForRollover(SpanIndexType span,Gi
 void pgsGirderHandlingChecker::ComputeHaulingMoments(SpanIndexType span,GirderIndexType gdr,
                                                      const pgsHaulingAnalysisArtifact& rArtifact, 
                                                      const std::vector<pgsPointOfInterest>& rpoiVec,
-                                                     std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection,Float64* pOverhangDeflection)
+                                                     std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection)
 {
    // build a model
    Float64 glen = rArtifact.GetGirderLength();
@@ -1506,13 +1504,13 @@ void pgsGirderHandlingChecker::ComputeHaulingMoments(SpanIndexType span,GirderIn
                   leftOH, glen, rightOH,
                   E,
                   rpoiVec,
-                  pmomVec, pMidSpanDeflection, pOverhangDeflection);
+                  pmomVec, pMidSpanDeflection);
 }
 
 void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,GirderIndexType gdr,
                                                        pgsHaulingAnalysisArtifact* pArtifact, 
                                                        const std::vector<pgsPointOfInterest> rpoiVec,
-                                                       std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection,Float64* pOverhangDeflection)
+                                                       std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection)
 {
    Float64 fo = pArtifact->GetOffsetFactor();
    Float64 y = pArtifact->GetHeightOfCgOfGirderAboveRollCenter();
@@ -1531,6 +1529,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
    std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_MIDSPAN);
    pgsPointOfInterest poi = vPOI[0];
    GET_IFACE(ISectProp2,pSectProp2);
+   Float64 Ix = pSectProp2->GetIx(pgsTypes::CastingYard,poi);
    Float64 Iy = pSectProp2->GetIy(pgsTypes::CastingYard,poi);
    Float64 span_len = pArtifact->GetClearSpanBetweenSupportLocations();
    Float64 Ec = pArtifact->GetElasticModulusOfGirderConcrete();
@@ -1542,6 +1541,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
 
    pArtifact->SetZo(zo);
    pArtifact->SetIy(Iy);
+   pArtifact->SetIx(Ix);
 
    // roll angle
    Float64 ei = pArtifact->GetTotalInitialEccentricity();
@@ -1554,12 +1554,12 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-      const char* msg = "Truck spring stiffness is inadequate - girder/trailer is unstable";
+      LPCTSTR msg = _T("Truck spring stiffness is inadequate - girder/trailer is unstable");
       pgsTruckStiffnessStatusItem* pStatusItem = new pgsTruckStiffnessStatusItem(m_StatusGroupID,m_scidTruckStiffness,msg);
       pStatusCenter->Add(pStatusItem);
 
-      std::string str(msg);
-      str += std::string("\nSee Status Center for details");
+      std::_tstring str(msg);
+      str += std::_tstring(_T("\nSee Status Center for details"));
       THROW_UNWIND(str.c_str(),-1);
    }
 
@@ -1707,7 +1707,7 @@ void pgsGirderHandlingChecker::ComputeMoments(SpanIndexType span,GirderIndexType
                                               Float64 leftOH,Float64 glen,Float64 rightOH,
                                               Float64 E,
                                               const std::vector<pgsPointOfInterest>& rpoiVec,
-                                              std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection, Float64* pOverhangDeflection)
+                                              std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection)
 {
    m_Model.Release();
 
@@ -1724,17 +1724,6 @@ void pgsGirderHandlingChecker::ComputeMoments(SpanIndexType span,GirderIndexType
    bool found_mid = false;
 
    Float64 dx,dy,rz;
-   if ( !IsZero(leftOH) )
-   {
-      HRESULT hr = results->ComputeJointDisplacements(lcid,0,&dx,&dy,&rz);
-      ATLASSERT(SUCCEEDED(hr));
-      *pOverhangDeflection = dy;
-   }
-   else
-   {
-      *pOverhangDeflection = 0.00;
-   }
-
    for (std::vector<pgsPointOfInterest>::const_iterator poiIter = rpoiVec.begin(); poiIter != rpoiVec.end(); poiIter++)
    {
       const pgsPointOfInterest& poi = *poiIter;
@@ -1747,13 +1736,16 @@ void pgsGirderHandlingChecker::ComputeMoments(SpanIndexType span,GirderIndexType
 
       if (poi.IsMidSpan(stage))
       {
-         hr = results->ComputePOIDisplacements(0,femPoiID,lotMember,&dx,&dy,&rz);
+         ATLASSERT(found_mid == false);
+         ATLASSERT( IsEqual(poi.GetDistFromStart(),glen/2) );
+
+         hr = results->ComputePOIDisplacements(lcid,femPoiID,lotMember,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
 
          *pMidSpanDeflection = dy;
-         found_mid=true;
+         found_mid = true;
       }
    }
 
-   CHECK(found_mid); // must have a point at mid-span for calc to work right
+   ATLASSERT(found_mid); // must have a point at mid-span for calc to work right
 }

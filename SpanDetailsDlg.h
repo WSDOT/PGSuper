@@ -58,8 +58,8 @@ public:
    double GetSpanLength();
 
    pgsTypes::PierConnectionType GetConnectionType(pgsTypes::PierFaceType pierFace);
-   const char* GetPrevPierConnection(pgsTypes::PierFaceType pierFace);
-   const char* GetNextPierConnection(pgsTypes::PierFaceType pierFace);
+   LPCTSTR GetPrevPierConnection(pgsTypes::PierFaceType pierFace);
+   LPCTSTR GetNextPierConnection(pgsTypes::PierFaceType pierFace);
    pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
    bool UseSameGirderType();
    bool UseSameNumGirders();

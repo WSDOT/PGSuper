@@ -28,7 +28,7 @@
 #endif // _MSC_VER > 1000
 // ServerDefinitionDlg.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 #include "PGSuperCatalogServers.h"
 #include <MfcTools\ddxFolder.h>

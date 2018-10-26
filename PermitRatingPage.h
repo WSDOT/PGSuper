@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #pragma once
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "EditRatingCriteria.h"
 
 
@@ -37,7 +37,7 @@ public:
 	CCheckListBox 	m_ctlRoutineLL;
 	CCheckListBox 	m_ctlSpecialLL;
 
-   std::vector<std::string> m_AllNames;
+   std::vector<std::_tstring> m_AllNames;
    txnPermitRatingData m_Data;
 
 // Dialog Data

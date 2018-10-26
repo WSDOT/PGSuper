@@ -29,7 +29,7 @@
 // CopyConcreteEntry.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include <vector>
 
 /////////////////////////////////////////////////////////////////////////////

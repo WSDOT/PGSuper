@@ -82,7 +82,7 @@ static const Float64 DLG_TOLER = 1.0e-06;
 static const Float64 STN_TOLER = 1.0e-07;
 
 template <class EntryType, class LibType>
-void use_library_entry( pgsLibraryEntryObserver* pObserver, const std::string& key, EntryType** ppEntry, LibType& prjLib)
+void use_library_entry( pgsLibraryEntryObserver* pObserver, const std::_tstring& key, EntryType** ppEntry, LibType& prjLib)
 {
    if ( key.empty() )
    {
@@ -121,12 +121,12 @@ CProjectAgentImp::CProjectAgentImp()
    m_pBroker = 0;
    m_pLibMgr = 0;
 
-   m_BridgeName = "";
-   m_BridgeId   = "";
-   m_JobNumber  = "";
-   m_Engineer   = "";
-   m_Company    = "";
-   m_Comments   = "";
+   m_BridgeName = _T("");
+   m_BridgeId   = _T("");
+   m_JobNumber  = _T("");
+   m_Engineer   = _T("");
+   m_Company    = _T("");
+   m_Comments   = _T("");
    m_bPropertyUpdatesEnabled = true;
    m_bPropertyUpdatesPending = false;
 
@@ -174,16 +174,16 @@ CProjectAgentImp::CProjectAgentImp()
 
    // Default live loads is HL-93 for design, nothing for permit
    LiveLoadSelection selection;
-   selection.EntryName = "HL-93";
+   selection.EntryName = _T("HL-93");
    m_SelectedLiveLoads[pgsTypes::lltDesign].push_back(selection);
 
-   selection.EntryName = "Fatigue";
+   selection.EntryName = _T("Fatigue");
    m_SelectedLiveLoads[pgsTypes::lltFatigue].push_back(selection);
 
-   selection.EntryName = "AASHTO Legal Loads";
+   selection.EntryName = _T("AASHTO Legal Loads");
    m_SelectedLiveLoads[pgsTypes::lltLegalRating_Routine].push_back(selection);
 
-   selection.EntryName = "Notional Rating Load (NRL)";
+   selection.EntryName = _T("Notional Rating Load (NRL)");
    m_SelectedLiveLoads[pgsTypes::lltLegalRating_Special].push_back(selection);
 
    // Default impact factors
@@ -298,12 +298,12 @@ CProjectAgentImp::CProjectAgentImp()
    m_bEnableRating[pgsTypes::lrPermit_Routine]   = false;
    m_bEnableRating[pgsTypes::lrPermit_Special]   = false;
 
-   m_ReservedLiveLoads.push_back("Pedestrian on Sidewalk");
-   m_ReservedLiveLoads.push_back("HL-93");
-   m_ReservedLiveLoads.push_back("Fatigue");
-   m_ReservedLiveLoads.push_back("AASHTO Legal Loads");
-   m_ReservedLiveLoads.push_back("Notional Rating Load (NRL)");
-   m_ReservedLiveLoads.push_back("Single-Unit SHVs");
+   m_ReservedLiveLoads.push_back(_T("Pedestrian on Sidewalk"));
+   m_ReservedLiveLoads.push_back(_T("HL-93"));
+   m_ReservedLiveLoads.push_back(_T("Fatigue"));
+   m_ReservedLiveLoads.push_back(_T("AASHTO Legal Loads"));
+   m_ReservedLiveLoads.push_back(_T("Notional Rating Load (NRL)"));
+   m_ReservedLiveLoads.push_back(_T("Single-Unit SHVs"));
 
    m_ConstructionLoad = 0;
 }
@@ -319,12 +319,12 @@ HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLo
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit("Specification",2.0);
-      hr = pSave->put_Property("Spec",CComVariant(pObj->m_Spec.c_str()));
+      pSave->BeginUnit(_T("Specification"),2.0);
+      hr = pSave->put_Property(_T("Spec"),CComVariant(pObj->m_Spec.c_str()));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("AnalysisType",CComVariant(pObj->m_AnalysisType));
+      hr = pSave->put_Property(_T("AnalysisType"),CComVariant(pObj->m_AnalysisType));
       if ( FAILED(hr) )
          return hr;
 
@@ -332,7 +332,7 @@ HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLo
    }
    else
    {
-      pLoad->BeginUnit("Specification");
+      pLoad->BeginUnit(_T("Specification"));
 
       double version;
 
@@ -340,16 +340,16 @@ HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLo
 
       CComVariant var;
       var.vt = VT_BSTR;
-      hr = pLoad->get_Property("Spec",&var);
+      hr = pLoad->get_Property(_T("Spec"),&var);
       if ( FAILED(hr) )
          return hr;
 
-      pObj->m_Spec = OLE2A(var.bstrVal);
+      pObj->m_Spec = OLE2T(var.bstrVal);
 
       if ( 1 < version )
       {
          var.vt = VT_I4;
-         hr = pLoad->get_Property("AnalysisType",&var);
+         hr = pLoad->get_Property(_T("AnalysisType"),&var);
          if ( FAILED(hr) )
             return hr;
 
@@ -374,91 +374,91 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit("RatingSpecification",1.0);
-      hr = pSave->put_Property("Name",CComVariant(pObj->m_RatingSpec.c_str()));
+      pSave->BeginUnit(_T("RatingSpecification"),1.0);
+      hr = pSave->put_Property(_T("Name"),CComVariant(pObj->m_RatingSpec.c_str()));
       if ( FAILED(hr) )
          return hr;
 
-      pSave->put_Property("SystemFactorFlexure", CComVariant(pObj->m_SystemFactorFlexure));
-      pSave->put_Property("SystemFactorShear",   CComVariant(pObj->m_SystemFactorShear));
-      pSave->put_Property("ADTT",CComVariant(pObj->m_ADTT));
-      pSave->put_Property("IncludePedestrianLiveLoad",CComVariant(pObj->m_bIncludePedestrianLiveLoad));
+      pSave->put_Property(_T("SystemFactorFlexure"), CComVariant(pObj->m_SystemFactorFlexure));
+      pSave->put_Property(_T("SystemFactorShear"),   CComVariant(pObj->m_SystemFactorShear));
+      pSave->put_Property(_T("ADTT"),CComVariant(pObj->m_ADTT));
+      pSave->put_Property(_T("IncludePedestrianLiveLoad"),CComVariant(pObj->m_bIncludePedestrianLiveLoad));
 
-      pSave->BeginUnit("DesignInventoryRating",1.0);
-      pSave->put_Property("Enabled",CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Inventory]));
-      pSave->put_Property("DC_StrengthI",CComVariant(pObj->m_gDC[pgsTypes::StrengthI_Inventory]));
-      pSave->put_Property("DW_StrengthI",CComVariant(pObj->m_gDW[pgsTypes::StrengthI_Inventory]));
-      pSave->put_Property("LL_StrengthI",CComVariant(pObj->m_gLL[pgsTypes::StrengthI_Inventory]));
-      pSave->put_Property("DC_ServiceIII",CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_Inventory]));
-      pSave->put_Property("DW_ServiceIII",CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_Inventory]));
-      pSave->put_Property("LL_ServiceIII",CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_Inventory]));
-      pSave->put_Property("AllowableTensionCoefficient",CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory]));
-      pSave->put_Property("RateForShear",CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Inventory]));
+      pSave->BeginUnit(_T("DesignInventoryRating"),1.0);
+      pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Inventory]));
+      pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_Inventory]));
+      pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_Inventory]));
+      pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[pgsTypes::StrengthI_Inventory]));
+      pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_Inventory]));
+      pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_Inventory]));
+      pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_Inventory]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory]));
+      pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Inventory]));
       pSave->EndUnit(); // DesignInventoryRating
 
-      pSave->BeginUnit("DesignOperatingRating",1.0);
-      pSave->put_Property("Enabled",CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Operating]));
-      pSave->put_Property("DC_StrengthI",CComVariant(pObj->m_gDC[pgsTypes::StrengthI_Operating]));
-      pSave->put_Property("DW_StrengthI",CComVariant(pObj->m_gDW[pgsTypes::StrengthI_Operating]));
-      pSave->put_Property("LL_StrengthI",CComVariant(pObj->m_gLL[pgsTypes::StrengthI_Operating]));
-      pSave->put_Property("DC_ServiceIII",CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_Operating]));
-      pSave->put_Property("DW_ServiceIII",CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_Operating]));
-      pSave->put_Property("LL_ServiceIII",CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_Operating]));
-      pSave->put_Property("AllowableTensionCoefficient",CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating]));
-      pSave->put_Property("RateForShear",CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Operating]));
+      pSave->BeginUnit(_T("DesignOperatingRating"),1.0);
+      pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Operating]));
+      pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_Operating]));
+      pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_Operating]));
+      pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[pgsTypes::StrengthI_Operating]));
+      pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_Operating]));
+      pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_Operating]));
+      pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_Operating]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating]));
+      pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Operating]));
       pSave->EndUnit(); // DesignOperatingRating
 
-      pSave->BeginUnit("LegalRoutineRating",1.0);
-      pSave->put_Property("Enabled",CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Routine]));
-      pSave->put_Property("DC_StrengthI",CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalRoutine]));
-      pSave->put_Property("DW_StrengthI",CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalRoutine]));
-      pSave->put_Property("LL_StrengthI",CComVariant(pObj->m_gLL[pgsTypes::StrengthI_LegalRoutine]));
-      pSave->put_Property("DC_ServiceIII",CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_LegalRoutine]));
-      pSave->put_Property("DW_ServiceIII",CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_LegalRoutine]));
-      pSave->put_Property("LL_ServiceIII",CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalRoutine]));
-      pSave->put_Property("AllowableTensionCoefficient",CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine]));
-      pSave->put_Property("RateForShear",CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Routine]));
-      pSave->put_Property("RateForStress",CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Routine]));
-      pSave->put_Property("ExcludeLegalLoadLaneLoading",CComVariant(pObj->m_bExcludeLegalLoadLaneLoading));
+      pSave->BeginUnit(_T("LegalRoutineRating"),1.0);
+      pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Routine]));
+      pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalRoutine]));
+      pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalRoutine]));
+      pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[pgsTypes::StrengthI_LegalRoutine]));
+      pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_LegalRoutine]));
+      pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_LegalRoutine]));
+      pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalRoutine]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine]));
+      pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Routine]));
+      pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Routine]));
+      pSave->put_Property(_T("ExcludeLegalLoadLaneLoading"),CComVariant(pObj->m_bExcludeLegalLoadLaneLoading));
       pSave->EndUnit(); // LegalRoutineRating
 
-      pSave->BeginUnit("LegalSpecialRating",1.0);
-      pSave->put_Property("Enabled",CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Special]));
-      pSave->put_Property("DC_StrengthI",CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalSpecial]));
-      pSave->put_Property("DW_StrengthI",CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalSpecial]));
-      pSave->put_Property("LL_StrengthI",CComVariant(pObj->m_gLL[pgsTypes::StrengthI_LegalSpecial]));
-      pSave->put_Property("DC_ServiceIII",CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_LegalSpecial]));
-      pSave->put_Property("DW_ServiceIII",CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_LegalSpecial]));
-      pSave->put_Property("LL_ServiceIII",CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalSpecial]));
-      pSave->put_Property("AllowableTensionCoefficient",CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special]));
-      pSave->put_Property("RateForShear",CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Special]));
-      pSave->put_Property("RateForStress",CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Special]));
+      pSave->BeginUnit(_T("LegalSpecialRating"),1.0);
+      pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Special]));
+      pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalSpecial]));
+      pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalSpecial]));
+      pSave->put_Property(_T("LL_StrengthI"),CComVariant(pObj->m_gLL[pgsTypes::StrengthI_LegalSpecial]));
+      pSave->put_Property(_T("DC_ServiceIII"),CComVariant(pObj->m_gDC[pgsTypes::ServiceIII_LegalSpecial]));
+      pSave->put_Property(_T("DW_ServiceIII"),CComVariant(pObj->m_gDW[pgsTypes::ServiceIII_LegalSpecial]));
+      pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalSpecial]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special]));
+      pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Special]));
+      pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Special]));
       pSave->EndUnit(); // LegalSpecialRating
 
-      pSave->BeginUnit("PermitRoutineRating",1.0);
-      pSave->put_Property("Enabled",CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Routine]));
-      pSave->put_Property("DC_StrengthII",CComVariant(pObj->m_gDC[pgsTypes::StrengthII_PermitRoutine]));
-      pSave->put_Property("DW_StrengthII",CComVariant(pObj->m_gDW[pgsTypes::StrengthII_PermitRoutine]));
-      pSave->put_Property("LL_StrengthII",CComVariant(pObj->m_gLL[pgsTypes::StrengthII_PermitRoutine]));
-      pSave->put_Property("DC_ServiceI",CComVariant(pObj->m_gDC[pgsTypes::ServiceI_PermitRoutine]));
-      pSave->put_Property("DW_ServiceI",CComVariant(pObj->m_gDW[pgsTypes::ServiceI_PermitRoutine]));
-      pSave->put_Property("LL_ServiceI",CComVariant(pObj->m_gLL[pgsTypes::ServiceI_PermitRoutine]));
-      pSave->put_Property("AllowableYieldStressCoefficient",CComVariant(pObj->m_AllowableYieldStressCoefficient));
-      pSave->put_Property("RateForShear",CComVariant(pObj->m_bRateForShear[pgsTypes::lrPermit_Routine]));
-      pSave->put_Property("RateForStress",CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Routine]));
+      pSave->BeginUnit(_T("PermitRoutineRating"),1.0);
+      pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Routine]));
+      pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[pgsTypes::StrengthII_PermitRoutine]));
+      pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[pgsTypes::StrengthII_PermitRoutine]));
+      pSave->put_Property(_T("LL_StrengthII"),CComVariant(pObj->m_gLL[pgsTypes::StrengthII_PermitRoutine]));
+      pSave->put_Property(_T("DC_ServiceI"),CComVariant(pObj->m_gDC[pgsTypes::ServiceI_PermitRoutine]));
+      pSave->put_Property(_T("DW_ServiceI"),CComVariant(pObj->m_gDW[pgsTypes::ServiceI_PermitRoutine]));
+      pSave->put_Property(_T("LL_ServiceI"),CComVariant(pObj->m_gLL[pgsTypes::ServiceI_PermitRoutine]));
+      pSave->put_Property(_T("AllowableYieldStressCoefficient"),CComVariant(pObj->m_AllowableYieldStressCoefficient));
+      pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrPermit_Routine]));
+      pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Routine]));
       pSave->EndUnit(); // PermitRoutineRating
 
-      pSave->BeginUnit("PermitSpecialRating",1.0);
-      pSave->put_Property("Enabled",CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Special]));
-      pSave->put_Property("DC_StrengthII",CComVariant(pObj->m_gDC[pgsTypes::StrengthII_PermitSpecial]));
-      pSave->put_Property("DW_StrengthII",CComVariant(pObj->m_gDW[pgsTypes::StrengthII_PermitSpecial]));
-      pSave->put_Property("LL_StrengthII",CComVariant(pObj->m_gLL[pgsTypes::StrengthII_PermitSpecial]));
-      pSave->put_Property("DC_ServiceI",CComVariant(pObj->m_gDC[pgsTypes::ServiceI_PermitSpecial]));
-      pSave->put_Property("DW_ServiceI",CComVariant(pObj->m_gDW[pgsTypes::ServiceI_PermitSpecial]));
-      pSave->put_Property("LL_ServiceI",CComVariant(pObj->m_gLL[pgsTypes::ServiceI_PermitSpecial]));
-      pSave->put_Property("SpecialPermitType",CComVariant(pObj->m_SpecialPermitType));
-      pSave->put_Property("RateForShear",CComVariant(pObj->m_bRateForShear[pgsTypes::lrPermit_Special]));
-      pSave->put_Property("RateForStress",CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Special]));
+      pSave->BeginUnit(_T("PermitSpecialRating"),1.0);
+      pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Special]));
+      pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[pgsTypes::StrengthII_PermitSpecial]));
+      pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[pgsTypes::StrengthII_PermitSpecial]));
+      pSave->put_Property(_T("LL_StrengthII"),CComVariant(pObj->m_gLL[pgsTypes::StrengthII_PermitSpecial]));
+      pSave->put_Property(_T("DC_ServiceI"),CComVariant(pObj->m_gDC[pgsTypes::ServiceI_PermitSpecial]));
+      pSave->put_Property(_T("DW_ServiceI"),CComVariant(pObj->m_gDW[pgsTypes::ServiceI_PermitSpecial]));
+      pSave->put_Property(_T("LL_ServiceI"),CComVariant(pObj->m_gLL[pgsTypes::ServiceI_PermitSpecial]));
+      pSave->put_Property(_T("SpecialPermitType"),CComVariant(pObj->m_SpecialPermitType));
+      pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrPermit_Special]));
+      pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Special]));
       pSave->EndUnit(); // PermitSpecialRating
 
       pSave->EndUnit();
@@ -466,7 +466,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
    else
    {
       // it is ok if this fails... older versions files don't have this data block
-      if (!FAILED(pLoad->BeginUnit("RatingSpecification")) )
+      if (!FAILED(pLoad->BeginUnit(_T("RatingSpecification"))) )
       {
          double version;
 
@@ -474,265 +474,265 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
          CComVariant var;
          var.vt = VT_BSTR;
-         hr = pLoad->get_Property("Name",&var);
+         hr = pLoad->get_Property(_T("Name"),&var);
          if ( FAILED(hr) )
             return hr;
 
-         pObj->m_RatingSpec = OLE2A(var.bstrVal);
+         pObj->m_RatingSpec = OLE2T(var.bstrVal);
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("SystemFactorFlexure",&var);
+         hr = pLoad->get_Property(_T("SystemFactorFlexure"),&var);
          if ( FAILED(hr) )
             return hr;
 
          pObj->m_SystemFactorFlexure = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("SystemFactorShear",&var);
+         hr = pLoad->get_Property(_T("SystemFactorShear"),&var);
          if ( FAILED(hr) )
             return hr;
 
          pObj->m_SystemFactorShear = var.dblVal;
 
          var.vt = VT_I4;
-         hr = pLoad->get_Property("ADTT",&var);
+         hr = pLoad->get_Property(_T("ADTT"),&var);
          if ( FAILED(hr) )
             return hr;
 
          pObj->m_ADTT = var.iVal;
 
          var.vt = VT_BOOL;
-         hr = pLoad->get_Property("IncludePedestrianLiveLoad",&var);
+         hr = pLoad->get_Property(_T("IncludePedestrianLiveLoad"),&var);
          if ( FAILED(hr) )
             return hr;
 
          pObj->m_bIncludePedestrianLiveLoad = (var.boolVal == VARIANT_TRUE ? true : false);
 
          //////////////////////////////////////////////////////
-         pLoad->BeginUnit("DesignInventoryRating");
+         pLoad->BeginUnit(_T("DesignInventoryRating"));
          var.vt = VT_BOOL;
-         pLoad->get_Property("Enabled",&var);
+         pLoad->get_Property(_T("Enabled"),&var);
          pObj->m_bEnableRating[pgsTypes::lrDesign_Inventory] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.vt = VT_R8;
-         pLoad->get_Property("DC_StrengthI",&var);
+         pLoad->get_Property(_T("DC_StrengthI"),&var);
          pObj->m_gDC[pgsTypes::StrengthI_Inventory] = var.dblVal;
 
-         pLoad->get_Property("DW_StrengthI",&var);
+         pLoad->get_Property(_T("DW_StrengthI"),&var);
          pObj->m_gDW[pgsTypes::StrengthI_Inventory] = var.dblVal;
 
-         pLoad->get_Property("LL_StrengthI",&var);
+         pLoad->get_Property(_T("LL_StrengthI"),&var);
          pObj->m_gLL[pgsTypes::StrengthI_Inventory] = var.dblVal;
 
-         pLoad->get_Property("DC_ServiceIII",&var);
+         pLoad->get_Property(_T("DC_ServiceIII"),&var);
          pObj->m_gDC[pgsTypes::ServiceIII_Inventory] = var.dblVal;
 
-         pLoad->get_Property("DW_ServiceIII",&var);
+         pLoad->get_Property(_T("DW_ServiceIII"),&var);
          pObj->m_gDW[pgsTypes::ServiceIII_Inventory] = var.dblVal;
 
-         pLoad->get_Property("LL_ServiceIII",&var);
+         pLoad->get_Property(_T("LL_ServiceIII"),&var);
          pObj->m_gLL[pgsTypes::ServiceIII_Inventory] = var.dblVal;
 
-         pLoad->get_Property("AllowableTensionCoefficient",&var);
+         pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
          pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory] = var.dblVal;
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("RateForShear",&var);
+         pLoad->get_Property(_T("RateForShear"),&var);
          pObj->m_bRateForShear[pgsTypes::lrDesign_Inventory] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          pLoad->EndUnit(); // DesignInventoryRating
          //////////////////////////////////////////////////////
 
          //////////////////////////////////////////////////////
-         pLoad->BeginUnit("DesignOperatingRating");
+         pLoad->BeginUnit(_T("DesignOperatingRating"));
          var.vt = VT_BOOL;
-         pLoad->get_Property("Enabled",&var);
+         pLoad->get_Property(_T("Enabled"),&var);
          pObj->m_bEnableRating[pgsTypes::lrDesign_Operating] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.vt = VT_R8;
-         pLoad->get_Property("DC_StrengthI",&var);
+         pLoad->get_Property(_T("DC_StrengthI"),&var);
          pObj->m_gDC[pgsTypes::StrengthI_Operating] = var.dblVal;
 
-         pLoad->get_Property("DW_StrengthI",&var);
+         pLoad->get_Property(_T("DW_StrengthI"),&var);
          pObj->m_gDW[pgsTypes::StrengthI_Operating] = var.dblVal;
 
-         pLoad->get_Property("LL_StrengthI",&var);
+         pLoad->get_Property(_T("LL_StrengthI"),&var);
          pObj->m_gLL[pgsTypes::StrengthI_Operating] = var.dblVal;
 
-         pLoad->get_Property("DC_ServiceIII",&var);
+         pLoad->get_Property(_T("DC_ServiceIII"),&var);
          pObj->m_gDC[pgsTypes::ServiceIII_Operating] = var.dblVal;
 
-         pLoad->get_Property("DW_ServiceIII",&var);
+         pLoad->get_Property(_T("DW_ServiceIII"),&var);
          pObj->m_gDW[pgsTypes::ServiceIII_Operating] = var.dblVal;
 
-         pLoad->get_Property("LL_ServiceIII",&var);
+         pLoad->get_Property(_T("LL_ServiceIII"),&var);
          pObj->m_gLL[pgsTypes::ServiceIII_Operating] = var.dblVal;
 
-         pLoad->get_Property("AllowableTensionCoefficient",&var);
+         pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
          pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating] = var.dblVal;
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("RateForShear",&var);
+         pLoad->get_Property(_T("RateForShear"),&var);
          pObj->m_bRateForShear[pgsTypes::lrDesign_Operating] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          pLoad->EndUnit(); // DesignOperatingRating
          //////////////////////////////////////////////////////
 
          //////////////////////////////////////////////////////
-         pLoad->BeginUnit("LegalRoutineRating");
+         pLoad->BeginUnit(_T("LegalRoutineRating"));
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("Enabled",&var);
+         pLoad->get_Property(_T("Enabled"),&var);
          pObj->m_bEnableRating[pgsTypes::lrLegal_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.vt = VT_R8;
-         pLoad->get_Property("DC_StrengthI",&var);
+         pLoad->get_Property(_T("DC_StrengthI"),&var);
          pObj->m_gDC[pgsTypes::StrengthI_LegalRoutine] = var.dblVal;
 
-         pLoad->get_Property("DW_StrengthI",&var);
+         pLoad->get_Property(_T("DW_StrengthI"),&var);
          pObj->m_gDW[pgsTypes::StrengthI_LegalRoutine] = var.dblVal;
 
-         pLoad->get_Property("LL_StrengthI",&var);
+         pLoad->get_Property(_T("LL_StrengthI"),&var);
          pObj->m_gLL[pgsTypes::StrengthI_LegalRoutine] = var.dblVal;
 
-         pLoad->get_Property("DC_ServiceIII",&var);
+         pLoad->get_Property(_T("DC_ServiceIII"),&var);
          pObj->m_gDC[pgsTypes::ServiceIII_LegalRoutine] = var.dblVal;
 
-         pLoad->get_Property("DW_ServiceIII",&var);
+         pLoad->get_Property(_T("DW_ServiceIII"),&var);
          pObj->m_gDW[pgsTypes::ServiceIII_LegalRoutine] = var.dblVal;
 
-         pLoad->get_Property("LL_ServiceIII",&var);
+         pLoad->get_Property(_T("LL_ServiceIII"),&var);
          pObj->m_gLL[pgsTypes::ServiceIII_LegalRoutine] = var.dblVal;
 
-         pLoad->get_Property("AllowableTensionCoefficient",&var);
+         pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
          pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine] = var.dblVal;
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("RateForShear",&var);
+         pLoad->get_Property(_T("RateForShear"),&var);
          pObj->m_bRateForShear[pgsTypes::lrLegal_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
 
-         pLoad->get_Property("RateForStress",&var);
+         pLoad->get_Property(_T("RateForStress"),&var);
          pObj->m_bRateForStress[pgsTypes::lrLegal_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
 
-         pLoad->get_Property("ExcludeLegalLoadLaneLoading",&var);
+         pLoad->get_Property(_T("ExcludeLegalLoadLaneLoading"),&var);
          pObj->m_bExcludeLegalLoadLaneLoading = (var.boolVal == VARIANT_TRUE ? true : false);
 
          pLoad->EndUnit(); // LegalRoutineRating
          //////////////////////////////////////////////////////
 
          //////////////////////////////////////////////////////
-         pLoad->BeginUnit("LegalSpecialRating");
+         pLoad->BeginUnit(_T("LegalSpecialRating"));
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("Enabled",&var);
+         pLoad->get_Property(_T("Enabled"),&var);
          pObj->m_bEnableRating[pgsTypes::lrLegal_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.vt = VT_R8;
-         pLoad->get_Property("DC_StrengthI",&var);
+         pLoad->get_Property(_T("DC_StrengthI"),&var);
          pObj->m_gDC[pgsTypes::StrengthI_LegalSpecial] = var.dblVal;
 
-         pLoad->get_Property("DW_StrengthI",&var);
+         pLoad->get_Property(_T("DW_StrengthI"),&var);
          pObj->m_gDW[pgsTypes::StrengthI_LegalSpecial] = var.dblVal;
 
-         pLoad->get_Property("LL_StrengthI",&var);
+         pLoad->get_Property(_T("LL_StrengthI"),&var);
          pObj->m_gLL[pgsTypes::StrengthI_LegalSpecial] = var.dblVal;
 
-         pLoad->get_Property("DC_ServiceIII",&var);
+         pLoad->get_Property(_T("DC_ServiceIII"),&var);
          pObj->m_gDC[pgsTypes::ServiceIII_LegalSpecial] = var.dblVal;
 
-         pLoad->get_Property("DW_ServiceIII",&var);
+         pLoad->get_Property(_T("DW_ServiceIII"),&var);
          pObj->m_gDW[pgsTypes::ServiceIII_LegalSpecial] = var.dblVal;
 
-         pLoad->get_Property("LL_ServiceIII",&var);
+         pLoad->get_Property(_T("LL_ServiceIII"),&var);
          pObj->m_gLL[pgsTypes::ServiceIII_LegalSpecial] = var.dblVal;
 
-         pLoad->get_Property("AllowableTensionCoefficient",&var);
+         pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
          pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special] = var.dblVal;
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("RateForShear",&var);
+         pLoad->get_Property(_T("RateForShear"),&var);
          pObj->m_bRateForShear[pgsTypes::lrLegal_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
 
-         pLoad->get_Property("RateForStress",&var);
+         pLoad->get_Property(_T("RateForStress"),&var);
          pObj->m_bRateForStress[pgsTypes::lrLegal_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          pLoad->EndUnit(); // LegalSpecialRating
          //////////////////////////////////////////////////////
 
          //////////////////////////////////////////////////////
-         pLoad->BeginUnit("PermitRoutineRating");
+         pLoad->BeginUnit(_T("PermitRoutineRating"));
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("Enabled",&var);
+         pLoad->get_Property(_T("Enabled"),&var);
          pObj->m_bEnableRating[pgsTypes::lrPermit_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.vt = VT_R8;
-         pLoad->get_Property("DC_StrengthII",&var);
+         pLoad->get_Property(_T("DC_StrengthII"),&var);
          pObj->m_gDC[pgsTypes::StrengthII_PermitRoutine] = var.dblVal;
 
-         pLoad->get_Property("DW_StrengthII",&var);
+         pLoad->get_Property(_T("DW_StrengthII"),&var);
          pObj->m_gDW[pgsTypes::StrengthII_PermitRoutine] = var.dblVal;
 
-         pLoad->get_Property("LL_StrengthII",&var);
+         pLoad->get_Property(_T("LL_StrengthII"),&var);
          pObj->m_gLL[pgsTypes::StrengthII_PermitRoutine] = var.dblVal;
 
-         pLoad->get_Property("DC_ServiceI",&var);
+         pLoad->get_Property(_T("DC_ServiceI"),&var);
          pObj->m_gDC[pgsTypes::ServiceI_PermitRoutine] = var.dblVal;
 
-         pLoad->get_Property("DW_ServiceI",&var);
+         pLoad->get_Property(_T("DW_ServiceI"),&var);
          pObj->m_gDW[pgsTypes::ServiceI_PermitRoutine] = var.dblVal;
 
-         pLoad->get_Property("LL_ServiceI",&var);
+         pLoad->get_Property(_T("LL_ServiceI"),&var);
          pObj->m_gLL[pgsTypes::ServiceI_PermitRoutine] = var.dblVal;
 
-         pLoad->get_Property("AllowableYieldStressCoefficient",&var);
+         pLoad->get_Property(_T("AllowableYieldStressCoefficient"),&var);
          pObj->m_AllowableYieldStressCoefficient = var.dblVal;
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("RateForShear",&var);
+         pLoad->get_Property(_T("RateForShear"),&var);
          pObj->m_bRateForShear[pgsTypes::lrPermit_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
          
-         pLoad->get_Property("RateForStress",&var);
+         pLoad->get_Property(_T("RateForStress"),&var);
          pObj->m_bRateForStress[pgsTypes::lrPermit_Routine] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          pLoad->EndUnit(); // PermitRoutineRating
          //////////////////////////////////////////////////////
 
          //////////////////////////////////////////////////////
-         pLoad->BeginUnit("PermitSpecialRating");
+         pLoad->BeginUnit(_T("PermitSpecialRating"));
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("Enabled",&var);
+         pLoad->get_Property(_T("Enabled"),&var);
          pObj->m_bEnableRating[pgsTypes::lrPermit_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.vt = VT_R8;
-         pLoad->get_Property("DC_StrengthII",&var);
+         pLoad->get_Property(_T("DC_StrengthII"),&var);
          pObj->m_gDC[pgsTypes::StrengthII_PermitSpecial] = var.dblVal;
 
-         pLoad->get_Property("DW_StrengthII",&var);
+         pLoad->get_Property(_T("DW_StrengthII"),&var);
          pObj->m_gDW[pgsTypes::StrengthII_PermitSpecial] = var.dblVal;
 
-         pLoad->get_Property("LL_StrengthII",&var);
+         pLoad->get_Property(_T("LL_StrengthII"),&var);
          pObj->m_gLL[pgsTypes::StrengthII_PermitSpecial] = var.dblVal;
 
-         pLoad->get_Property("DC_ServiceI",&var);
+         pLoad->get_Property(_T("DC_ServiceI"),&var);
          pObj->m_gDC[pgsTypes::ServiceI_PermitSpecial] = var.dblVal;
 
-         pLoad->get_Property("DW_ServiceI",&var);
+         pLoad->get_Property(_T("DW_ServiceI"),&var);
          pObj->m_gDW[pgsTypes::ServiceI_PermitSpecial] = var.dblVal;
 
-         pLoad->get_Property("LL_ServiceI",&var);
+         pLoad->get_Property(_T("LL_ServiceI"),&var);
          pObj->m_gLL[pgsTypes::ServiceI_PermitSpecial] = var.dblVal;
 
          var.vt = VT_I4;
-         pLoad->get_Property("SpecialPermitType",&var);
+         pLoad->get_Property(_T("SpecialPermitType"),&var);
          pObj->m_SpecialPermitType = (pgsTypes::SpecialPermitType)var.lVal;
 
          var.vt = VT_BOOL;
-         pLoad->get_Property("RateForShear",&var);
+         pLoad->get_Property(_T("RateForShear"),&var);
          pObj->m_bRateForShear[pgsTypes::lrPermit_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
          
-         pLoad->get_Property("RateForStress",&var);
+         pLoad->get_Property(_T("RateForStress"),&var);
          pObj->m_bRateForStress[pgsTypes::lrPermit_Special] = (var.boolVal == VARIANT_TRUE ? true : false);
 
          pLoad->EndUnit(); // PermitSpecialRating
@@ -757,7 +757,7 @@ HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* p
    if ( pSave )
    {
       unitMode = pDisplayUnits->GetUnitMode();
-      hr = pSave->put_Property("Units",CComVariant(unitMode));
+      hr = pSave->put_Property(_T("Units"),CComVariant(unitMode));
       if ( FAILED(hr) )
          return hr;
    }
@@ -766,7 +766,7 @@ HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* p
       eafTypes::UnitMode unitMode;
       CComVariant var;
       var.vt = VT_I4;
-      hr = pLoad->get_Property("Units",&var);
+      hr = pLoad->get_Property(_T("Units"),&var);
       if ( FAILED(hr) )
          return hr;
 
@@ -784,36 +784,36 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
    if ( pSave )
    {
       // Save the alignment data
-      hr = pSave->BeginUnit("AlignmentData",5.0);
+      hr = pSave->BeginUnit(_T("AlignmentData"),5.0);
       if ( FAILED(hr) )
          return hr;
 
 // eliminated in version 4
-//      hr = pSave->put_Property("AlignmentOffset",CComVariant(pObj->m_AlignmentOffset));
+//      hr = pSave->put_Property(_T("AlignmentOffset"),CComVariant(pObj->m_AlignmentOffset));
 //      if ( FAILED(hr) )
 //         return hr;
       
       // added in version 5
-      hr = pSave->put_Property("RefStation",CComVariant(pObj->m_AlignmentData2.RefStation));
+      hr = pSave->put_Property(_T("RefStation"),CComVariant(pObj->m_AlignmentData2.RefStation));
       if ( FAILED(hr) )
          return hr;
       
       // added in version 5
-      hr = pSave->put_Property("RefPointNorthing",CComVariant(pObj->m_AlignmentData2.yRefPoint));
+      hr = pSave->put_Property(_T("RefPointNorthing"),CComVariant(pObj->m_AlignmentData2.yRefPoint));
       if ( FAILED(hr) )
          return hr;
       
       // added in version 5
-      hr = pSave->put_Property("RefPointEasting",CComVariant(pObj->m_AlignmentData2.xRefPoint));
+      hr = pSave->put_Property(_T("RefPointEasting"),CComVariant(pObj->m_AlignmentData2.xRefPoint));
       if ( FAILED(hr) )
          return hr;
 
 
-      hr = pSave->put_Property("Direction",CComVariant(pObj->m_AlignmentData2.Direction));
+      hr = pSave->put_Property(_T("Direction"),CComVariant(pObj->m_AlignmentData2.Direction));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("HorzCurveCount",CComVariant((long)pObj->m_AlignmentData2.HorzCurves.size()));
+      hr = pSave->put_Property(_T("HorzCurveCount"),CComVariant((long)pObj->m_AlignmentData2.HorzCurves.size()));
       if ( FAILED(hr) )
          return hr;
 
@@ -822,31 +822,31 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
       {
          HorzCurveData& hc = *iter;
 
-         hr = pSave->BeginUnit("HorzCurveData",2.0);
+         hr = pSave->BeginUnit(_T("HorzCurveData"),2.0);
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("PIStation",CComVariant(hc.PIStation));
+         hr = pSave->put_Property(_T("PIStation"),CComVariant(hc.PIStation));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("FwdTangent",CComVariant(hc.FwdTangent));
+         hr = pSave->put_Property(_T("FwdTangent"),CComVariant(hc.FwdTangent));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("Radius",CComVariant(hc.Radius));
+         hr = pSave->put_Property(_T("Radius"),CComVariant(hc.Radius));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("EntrySpiral",CComVariant(hc.EntrySpiral));
+         hr = pSave->put_Property(_T("EntrySpiral"),CComVariant(hc.EntrySpiral));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("ExitSpiral",CComVariant(hc.ExitSpiral));
+         hr = pSave->put_Property(_T("ExitSpiral"),CComVariant(hc.ExitSpiral));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("FwdTangentIsBearing",CComVariant(hc.bFwdTangent));
+         hr = pSave->put_Property(_T("FwdTangentIsBearing"),CComVariant(hc.bFwdTangent));
          if ( FAILED(hr) )
             return hr;
 
@@ -867,7 +867,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 
       // If BeginUnit fails then this file was created before the unit was added
       // If this is the case, the Direction and Tangents need to be converted
-      hr = pLoad->BeginUnit("AlignmentData");
+      hr = pLoad->BeginUnit(_T("AlignmentData"));
       if ( FAILED(hr) )
          bConvert = true; 
 
@@ -883,7 +883,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
       {
          // alignment offset was eliminated in version 4
          var.vt = VT_R8;
-         hr = pLoad->get_Property("AlignmentOffset",&var);
+         hr = pLoad->get_Property(_T("AlignmentOffset"),&var);
          if ( FAILED(hr) )
             return hr;
 
@@ -899,37 +899,37 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
        if ( version < 3 )
        {
          var.vt = VT_I2;
-         hr = pLoad->get_Property("AlignmentMethod",&var);
+         hr = pLoad->get_Property(_T("AlignmentMethod"),&var);
          if ( FAILED(hr) )
             return hr;
          Int16 method = var.iVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("AlignmentDirection",&var);
+         hr = pLoad->get_Property(_T("AlignmentDirection"),&var);
          if ( FAILED(hr) )
             return hr;
          double Direction = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("FwdTangent",&var);
+         hr = pLoad->get_Property(_T("FwdTangent"),&var);
          if ( FAILED(hr) )
             return hr;
          double FwdTangent = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("BkTangent",&var);
+         hr = pLoad->get_Property(_T("BkTangent"),&var);
          if ( FAILED(hr) )
             return hr;
          double BkTangent = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Radius",&var);
+         hr = pLoad->get_Property(_T("Radius"),&var);
          if ( FAILED(hr) )
             return hr;
          double Radius = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("PIStation",&var);
+         hr = pLoad->get_Property(_T("PIStation"),&var);
          if ( FAILED(hr) )
             return hr;
          double PIStation = var.dblVal;
@@ -986,32 +986,32 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          if ( 5 <= version )
          {
             var.vt = VT_R8;
-            hr = pLoad->get_Property("RefStation",&var);
+            hr = pLoad->get_Property(_T("RefStation"),&var);
             if ( FAILED(hr) )
                return hr;
             pObj->m_AlignmentData2.RefStation = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("RefPointNorthing",&var);
+            hr = pLoad->get_Property(_T("RefPointNorthing"),&var);
             if ( FAILED(hr) )
                return hr;
             pObj->m_AlignmentData2.yRefPoint = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("RefPointEasting",&var);
+            hr = pLoad->get_Property(_T("RefPointEasting"),&var);
             if ( FAILED(hr) )
                return hr;
             pObj->m_AlignmentData2.xRefPoint = var.dblVal;
          }
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Direction",&var);
+         hr = pLoad->get_Property(_T("Direction"),&var);
          if ( FAILED(hr) )
             return hr;
          pObj->m_AlignmentData2.Direction = var.dblVal;
 
          var.vt = VT_I4;
-         hr = pLoad->get_Property("HorzCurveCount",&var);
+         hr = pLoad->get_Property(_T("HorzCurveCount"),&var);
          if ( FAILED(hr) )
             return hr;
          int nCurves = var.iVal;
@@ -1020,7 +1020,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          {
             HorzCurveData hc;
 
-            hr = pLoad->BeginUnit("HorzCurveData");
+            hr = pLoad->BeginUnit(_T("HorzCurveData"));
             if ( FAILED(hr) )
                return hr;
 
@@ -1028,31 +1028,31 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             pLoad->get_Version(&hc_version);
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("PIStation",&var);
+            hr = pLoad->get_Property(_T("PIStation"),&var);
             if ( FAILED(hr) )
                return hr;
             hc.PIStation = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("FwdTangent",&var);
+            hr = pLoad->get_Property(_T("FwdTangent"),&var);
             if ( FAILED(hr) )
                return hr;
             hc.FwdTangent = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("Radius",&var);
+            hr = pLoad->get_Property(_T("Radius"),&var);
             if ( FAILED(hr) )
                return hr;
             hc.Radius = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("EntrySpiral",&var);
+            hr = pLoad->get_Property(_T("EntrySpiral"),&var);
             if ( FAILED(hr) )
                return hr;
             hc.EntrySpiral = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("ExitSpiral",&var);
+            hr = pLoad->get_Property(_T("ExitSpiral"),&var);
             if ( FAILED(hr) )
                return hr;
             hc.ExitSpiral = var.dblVal;
@@ -1060,7 +1060,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             if ( 2.0 <= hc_version )
             {
                var.vt = VT_BOOL;
-               hr = pLoad->get_Property("FwdTangentIsBearing",&var);
+               hr = pLoad->get_Property(_T("FwdTangentIsBearing"),&var);
                if ( FAILED(hr) )
                   return hr;
                hc.bFwdTangent = (var.boolVal == VARIANT_TRUE);
@@ -1093,23 +1093,23 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
 
    if ( pSave )
    {
-      hr = pSave->BeginUnit("ProfileData",1.0);
+      hr = pSave->BeginUnit(_T("ProfileData"),1.0);
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("Station",CComVariant(pObj->m_ProfileData2.Station));
+      hr = pSave->put_Property(_T("Station"),CComVariant(pObj->m_ProfileData2.Station));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("Elevation",CComVariant(pObj->m_ProfileData2.Elevation));
+      hr = pSave->put_Property(_T("Elevation"),CComVariant(pObj->m_ProfileData2.Elevation));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("Grade",CComVariant(pObj->m_ProfileData2.Grade));
+      hr = pSave->put_Property(_T("Grade"),CComVariant(pObj->m_ProfileData2.Grade));
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("VertCurveCount",CComVariant((long)pObj->m_ProfileData2.VertCurves.size()));
+      hr = pSave->put_Property(_T("VertCurveCount"),CComVariant((long)pObj->m_ProfileData2.VertCurves.size()));
       if ( FAILED(hr) )
          return hr;
 
@@ -1118,23 +1118,23 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
       {
          VertCurveData& vc = *iter;
 
-         hr = pSave->BeginUnit("VertCurveData",1.0);
+         hr = pSave->BeginUnit(_T("VertCurveData"),1.0);
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("PVIStation",CComVariant(vc.PVIStation));
+         hr = pSave->put_Property(_T("PVIStation"),CComVariant(vc.PVIStation));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("L1",CComVariant(vc.L1));
+         hr = pSave->put_Property(_T("L1"),CComVariant(vc.L1));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("L2",CComVariant(vc.L2));
+         hr = pSave->put_Property(_T("L2"),CComVariant(vc.L2));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("ExitGrade",CComVariant(vc.ExitGrade));
+         hr = pSave->put_Property(_T("ExitGrade"),CComVariant(vc.ExitGrade));
          if ( FAILED(hr) )
             return hr;
 
@@ -1152,7 +1152,7 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
       CComVariant var;
 
       bool bNewFormat = true;
-      hr = pLoad->BeginUnit("ProfileData");
+      hr = pLoad->BeginUnit(_T("ProfileData"));
       if ( FAILED(hr) )
          bNewFormat = false;
 
@@ -1160,55 +1160,55 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
       {
          // read the old data into temporary variables
          var.vt = VT_I4;
-         hr = pLoad->get_Property("ProfileMethod",&var);
+         hr = pLoad->get_Property(_T("ProfileMethod"),&var);
          if ( FAILED(hr) )
             return hr;
          long method = var.lVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Station",&var);
+         hr = pLoad->get_Property(_T("Station"),&var);
          if ( FAILED(hr) )
             return hr;
          double Station = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Elevation",&var);
+         hr = pLoad->get_Property(_T("Elevation"),&var);
          if ( FAILED(hr) )
             return hr;
          double Elevation = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Grade",&var);
+         hr = pLoad->get_Property(_T("Grade"),&var);
          if ( FAILED(hr) )
             return hr;
          double Grade = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("G1",&var);
+         hr = pLoad->get_Property(_T("G1"),&var);
          if ( FAILED(hr) )
             return hr;
          double G1 = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("G2",&var);
+         hr = pLoad->get_Property(_T("G2"),&var);
          if ( FAILED(hr) )
             return hr;
          double G2 = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("PVIStation",&var);
+         hr = pLoad->get_Property(_T("PVIStation"),&var);
          if ( FAILED(hr) )
             return hr;
          double PVIStation = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("PVIElevation",&var);
+         hr = pLoad->get_Property(_T("PVIElevation"),&var);
          if ( FAILED(hr) )
             return hr;
          double PVIElevation = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Length",&var);
+         hr = pLoad->get_Property(_T("Length"),&var);
          if ( FAILED(hr) )
             return hr;
          double Length = var.dblVal;
@@ -1240,25 +1240,25 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
       {
          // reading new format
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Station",&var);
+         hr = pLoad->get_Property(_T("Station"),&var);
          if ( FAILED(hr) )
             return hr;
          pObj->m_ProfileData2.Station = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Elevation",&var);
+         hr = pLoad->get_Property(_T("Elevation"),&var);
          if ( FAILED(hr) )
             return hr;
          pObj->m_ProfileData2.Elevation = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Grade",&var);
+         hr = pLoad->get_Property(_T("Grade"),&var);
          if ( FAILED(hr) )
             return hr;
          pObj->m_ProfileData2.Grade = var.dblVal;
 
          var.vt = VT_I4;
-         hr = pLoad->get_Property("VertCurveCount",&var);
+         hr = pLoad->get_Property(_T("VertCurveCount"),&var);
          if ( FAILED(hr) )
             return hr;
          long nCurves = var.lVal;
@@ -1267,28 +1267,28 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
          {
             VertCurveData vc;
 
-            hr = pLoad->BeginUnit("VertCurveData");
+            hr = pLoad->BeginUnit(_T("VertCurveData"));
             if ( FAILED(hr) )
                return hr;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("PVIStation",&var);
+            hr = pLoad->get_Property(_T("PVIStation"),&var);
             if ( FAILED(hr) )
                return hr;
             vc.PVIStation = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("L1",&var);
+            hr = pLoad->get_Property(_T("L1"),&var);
             if ( FAILED(hr) )
                return hr;
             vc.L1 = var.dblVal;
 
-            hr = pLoad->get_Property("L2",&var);
+            hr = pLoad->get_Property(_T("L2"),&var);
             if ( FAILED(hr) )
                return hr;
             vc.L2 = var.dblVal;
 
-            hr = pLoad->get_Property("ExitGrade",&var);
+            hr = pLoad->get_Property(_T("ExitGrade"),&var);
             if ( FAILED(hr) )
                return hr;
             vc.ExitGrade = var.dblVal;
@@ -1318,11 +1318,11 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
 
    if ( pSave )
    {
-      hr = pSave->BeginUnit("SuperelevationData",1.0);
+      hr = pSave->BeginUnit(_T("SuperelevationData"),1.0);
       if ( FAILED(hr) )
          return hr;
 
-      hr = pSave->put_Property("SectionCount",CComVariant((long)pObj->m_RoadwaySectionData.Superelevations.size()));
+      hr = pSave->put_Property(_T("SectionCount"),CComVariant((long)pObj->m_RoadwaySectionData.Superelevations.size()));
       if ( FAILED(hr) )
          return hr;
 
@@ -1331,23 +1331,23 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
       {
          CrownData2& super = *iter;
 
-         hr = pSave->BeginUnit("CrownSlope",1.0);
+         hr = pSave->BeginUnit(_T("CrownSlope"),1.0);
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("Station",CComVariant(super.Station));
+         hr = pSave->put_Property(_T("Station"),CComVariant(super.Station));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("Left",CComVariant(super.Left));
+         hr = pSave->put_Property(_T("Left"),CComVariant(super.Left));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("Right",CComVariant(super.Right));
+         hr = pSave->put_Property(_T("Right"),CComVariant(super.Right));
          if ( FAILED(hr) )
             return hr;
 
-         hr = pSave->put_Property("CrownPointOffset",CComVariant(super.CrownPointOffset));
+         hr = pSave->put_Property(_T("CrownPointOffset"),CComVariant(super.CrownPointOffset));
          if ( FAILED(hr) )
             return hr;
 
@@ -1365,7 +1365,7 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
       CComVariant var;
 
       bool bNewFormat = true;
-      hr = pLoad->BeginUnit("SuperelevationData");
+      hr = pLoad->BeginUnit(_T("SuperelevationData"));
       if ( FAILED(hr) )
          bNewFormat = false;
 
@@ -1374,13 +1374,13 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
       if ( !bNewFormat )
       {
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Left",&var);
+         hr = pLoad->get_Property(_T("Left"),&var);
          if ( FAILED(hr) )
             return hr;
          double left = var.dblVal;
 
          var.vt = VT_R8;
-         hr = pLoad->get_Property("Right",&var);
+         hr = pLoad->get_Property(_T("Right"),&var);
          if ( FAILED(hr) )
             return hr;
          double right = var.dblVal;
@@ -1395,7 +1395,7 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
       else
       {
          var.vt = VT_I4;
-         hr = pLoad->get_Property("SectionCount",&var);
+         hr = pLoad->get_Property(_T("SectionCount"),&var);
          if ( FAILED(hr) )
             return hr;
          long nSections = var.lVal;
@@ -1404,30 +1404,30 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
          {
             CrownData2 super;
 
-            hr = pLoad->BeginUnit("CrownSlope");
+            hr = pLoad->BeginUnit(_T("CrownSlope"));
             if ( FAILED(hr) )
                return hr;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("Station",&var);
+            hr = pLoad->get_Property(_T("Station"),&var);
             if ( FAILED(hr) )
                return hr;
             super.Station = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("Left",&var);
+            hr = pLoad->get_Property(_T("Left"),&var);
             if ( FAILED(hr) )
                return hr;
             super.Left = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("Right",&var);
+            hr = pLoad->get_Property(_T("Right"),&var);
             if ( FAILED(hr) )
                return hr;
             super.Right = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property("CrownPointOffset",&var);
+            hr = pLoad->get_Property(_T("CrownPointOffset"),&var);
             if ( FAILED(hr) )
                return hr;
             super.CrownPointOffset = var.dblVal;
@@ -1460,11 +1460,11 @@ HRESULT CProjectAgentImp::PierDataProc(IStructuredSave* pSave,IStructuredLoad* p
    }
    else
    {
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
-         pLoad->BeginUnit("Piers");
+         pLoad->BeginUnit(_T("Piers"));
          hr = CProjectAgentImp::PierDataProc2(pSave,pLoad,pProgress,pObj);
          pLoad->EndUnit();
       }
@@ -1492,7 +1492,7 @@ HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* 
       {
          // this parameter is only valid for version 2 of this data block
          var.vt = VT_BOOL;
-         hr = pLoad->get_Property("InputSymmetricalConnections",&var);
+         hr = pLoad->get_Property(_T("InputSymmetricalConnections"),&var);
          bInputSymmetricalPierConnections = (var.boolVal == VARIANT_TRUE ? true : false);
       }
       else
@@ -1501,7 +1501,7 @@ HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* 
       }
 
       var.vt = VT_I4;
-      hr = pLoad->get_Property("PierCount", &var );
+      hr = pLoad->get_Property(_T("PierCount"), &var );
       if ( FAILED(hr) )
          return hr;
 
@@ -1571,11 +1571,11 @@ HRESULT CProjectAgentImp::XSectionDataProc(IStructuredSave* pSave,IStructuredLoa
    }
    else
    {
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
-         pLoad->BeginUnit("CrossSection");
+         pLoad->BeginUnit(_T("CrossSection"));
          hr = CProjectAgentImp::XSectionDataProc2(pSave,pLoad,pProgress,pObj);
          pLoad->EndUnit();
       }
@@ -1725,9 +1725,9 @@ HRESULT CProjectAgentImp::BridgeDescriptionProc(IStructuredSave* pSave,IStructur
    }
    else
    {
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
          return S_OK;
 
       HRESULT hr = pObj->m_BridgeDescription.Load( pLoad, pProgress );
@@ -1748,11 +1748,11 @@ HRESULT CProjectAgentImp::PrestressingDataProc(IStructuredSave* pSave,IStructure
    else
    {
       // reading old format
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
-         pLoad->BeginUnit("Prestressing");
+         pLoad->BeginUnit(_T("Prestressing"));
          hr = CProjectAgentImp::PrestressingDataProc2(pSave,pLoad,pProgress,pObj);
          pLoad->EndUnit();
       }
@@ -1784,7 +1784,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       const matPsStrand* pStrandMaterial = 0;
       if ( version < 3 )
       {
-         hr = pLoad->get_Property("PrestressStrandKey", &var );
+         hr = pLoad->get_Property(_T("PrestressStrandKey"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -1798,7 +1798,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       // than spans exist. we need to trap this
       long nspans = pObj->m_BridgeDescription.GetSpanCount();
 
-      hr = pLoad->get_Property("PrestressDataCount", &var );
+      hr = pLoad->get_Property(_T("PrestressDataCount"), &var );
       if ( FAILED(hr) )
          return hr;
 
@@ -1807,18 +1807,18 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       const ConcreteLibraryEntry* pConcreteLibraryEntry = pObj->GetConcreteEntry(pObj->m_strOldGirderConcreteName.c_str());
       for ( int i = 0; i < cnt; i++ )
       {
-         HRESULT hr = pLoad->BeginUnit("GirderPrestressData");
+         HRESULT hr = pLoad->BeginUnit(_T("GirderPrestressData"));
          if ( FAILED(hr) )
             return hr;
 
          var.vt = VT_I4;
-         hr = pLoad->get_Property("Span", &var );
+         hr = pLoad->get_Property(_T("Span"), &var );
          if ( FAILED(hr) )
             return hr;
          
          SpanIndexType span = var.iVal;
 
-         hr = pLoad->get_Property("Girder", &var );
+         hr = pLoad->get_Property(_T("Girder"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -1898,11 +1898,11 @@ HRESULT CProjectAgentImp::ShearDataProc(IStructuredSave* pSave,IStructuredLoad* 
    else
    {
       // reading old format
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
-         pLoad->BeginUnit("Shear");
+         pLoad->BeginUnit(_T("Shear"));
          hr = CProjectAgentImp::ShearDataProc2(pSave,pLoad,pProgress,pObj);
          pLoad->EndUnit();
       }
@@ -1932,7 +1932,7 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
          // just load it and pretend it doesn't matter
          var.vt = VT_BSTR;
 
-         HRESULT hr = pLoad->get_Property("StirrupMaterial", &var );
+         HRESULT hr = pLoad->get_Property(_T("StirrupMaterial"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -1944,7 +1944,7 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
       long nspans = pObj->m_BridgeDescription.GetSpanCount();
 
       var.vt = VT_I4;
-      HRESULT hr = pLoad->get_Property("ShearDataCount", &var );
+      HRESULT hr = pLoad->get_Property(_T("ShearDataCount"), &var );
       if ( FAILED(hr) )
          return hr;
 
@@ -1952,18 +1952,18 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
 
       for ( int i = 0; i < cnt; i++ )
       {
-         HRESULT hr = pLoad->BeginUnit("GirderShearData");
+         HRESULT hr = pLoad->BeginUnit(_T("GirderShearData"));
          if ( FAILED(hr) )
             return hr;
 
          var.vt = VT_I4;
-         hr = pLoad->get_Property("Span", &var );
+         hr = pLoad->get_Property(_T("Span"), &var );
          if ( FAILED(hr) )
             return hr;
 
          SpanIndexType span = var.iVal;
 
-         hr = pLoad->get_Property("Girder", &var );
+         hr = pLoad->get_Property(_T("Girder"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -2018,9 +2018,9 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc(IStructuredSave* pSave,IStru
    else
    {
       // reading old format
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
          hr = CProjectAgentImp::LongitudinalRebarDataProc2(pSave,pLoad,pProgress,pObj);
       }
@@ -2075,7 +2075,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
          CComVariant var;
          var.vt = VT_BSTR;
 
-         HRESULT hr = pLoad->BeginUnit("LongitudinalRebarData");
+         HRESULT hr = pLoad->BeginUnit(_T("LongitudinalRebarData"));
          if ( FAILED(hr) )
             return hr;
 
@@ -2085,7 +2085,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
          {
             // version 2 and later... this data member is gone
             // just load it and pretend it doesn't matter
-            hr = pLoad->get_Property("LongitudinalRebarMaterial", &var );
+            hr = pLoad->get_Property(_T("LongitudinalRebarMaterial"), &var );
             if ( FAILED(hr) )
                return hr;
 
@@ -2098,7 +2098,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
          long nspans = pObj->m_BridgeDescription.GetSpanCount();
 
          var.vt = VT_I4;
-         hr = pLoad->get_Property("LongitudinalRebarDataCount", &var );
+         hr = pLoad->get_Property(_T("LongitudinalRebarDataCount"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -2106,18 +2106,18 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
 
          for ( int i = 0; i < cnt; i++ )
          {
-            HRESULT hr = pLoad->BeginUnit("GirderLongitudinalRebarData");
+            HRESULT hr = pLoad->BeginUnit(_T("GirderLongitudinalRebarData"));
             if ( FAILED(hr) )
                return hr;
 
             var.vt = VT_I4;
-            hr = pLoad->get_Property("Span", &var );
+            hr = pLoad->get_Property(_T("Span"), &var );
             if ( FAILED(hr) )
                return hr;
 
             SpanIndexType span = var.iVal;
 
-            hr = pLoad->get_Property("Girder", &var );
+            hr = pLoad->get_Property(_T("Girder"), &var );
             if ( FAILED(hr) )
                return hr;
             
@@ -2161,11 +2161,11 @@ HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStru
    else
    {
       // reading old format
-      double parentVersion;
-      pLoad->get_ParentVersion(&parentVersion);
-      if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
+      double version;
+      pLoad->get_Version(&version);
+      if ( version <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
-         pLoad->BeginUnit("LiftingAndHauling");
+         pLoad->BeginUnit(_T("LiftingAndHauling"));
 
          CComVariant var;
 
@@ -2175,7 +2175,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStru
          if ( version < 3 )
          {
             var.vt = VT_I4;
-            HRESULT hr = pLoad->get_Property("LiftingAndHaulingDataCount", &var );
+            HRESULT hr = pLoad->get_Property(_T("LiftingAndHaulingDataCount"), &var );
             if ( FAILED(hr) )
                return hr;
 
@@ -2213,7 +2213,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStru
 
 HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
 {
-   HRESULT hr = pLoad->BeginUnit("LiftingAndHaulingData");
+   HRESULT hr = pLoad->BeginUnit(_T("LiftingAndHaulingData"));
    if ( FAILED(hr) )
       return hr;
 
@@ -2222,14 +2222,14 @@ HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,I
 
    CComVariant var;
    var.ChangeType( VT_I2 );
-   hr = pLoad->get_Property("Span", &var );
+   hr = pLoad->get_Property(_T("Span"), &var );
    if ( FAILED(hr) )
       return hr;
 
    SpanIndexType span = var.iVal;
 
    var.ChangeType( VT_I2 );
-   hr = pLoad->get_Property("Girder", &var );
+   hr = pLoad->get_Property(_T("Girder"), &var );
    if ( FAILED(hr) )
       return hr;
 
@@ -2241,7 +2241,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,I
    {
       // only 1 lift point and truck support point... use same at each end of girder
       var.ChangeType( VT_R8 );
-      hr = pLoad->get_Property("LiftingLoopLocation", &var );
+      hr = pLoad->get_Property(_T("LiftingLoopLocation"), &var );
       if ( FAILED(hr) )
          return hr;
 
@@ -2249,7 +2249,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,I
       handlingData.RightLiftPoint = var.dblVal;
 
       var.ChangeType( VT_R8 );
-      hr = pLoad->get_Property("TruckSupportLocation", &var );
+      hr = pLoad->get_Property(_T("TruckSupportLocation"), &var );
       if ( FAILED(hr) )
          return hr;
 
@@ -2263,28 +2263,28 @@ HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,I
    else
    {
       var.ChangeType( VT_R8 );
-      hr = pLoad->get_Property("LeftLiftingLoopLocation", &var );
+      hr = pLoad->get_Property(_T("LeftLiftingLoopLocation"), &var );
       if ( FAILED(hr) )
          return hr;
 
       handlingData.LeftLiftPoint = var.dblVal;
 
       var.ChangeType( VT_R8 );
-      hr = pLoad->get_Property("RightLiftingLoopLocation", &var );
+      hr = pLoad->get_Property(_T("RightLiftingLoopLocation"), &var );
       if ( FAILED(hr) )
          return hr;
 
       handlingData.RightLiftPoint = var.dblVal;
 
       var.ChangeType( VT_R8 );
-      hr = pLoad->get_Property("LeadingOverhang", &var );
+      hr = pLoad->get_Property(_T("LeadingOverhang"), &var );
       if ( FAILED(hr) )
          return hr;
 
       handlingData.LeadingSupportPoint = var.dblVal;
 
       var.ChangeType( VT_R8 );
-      hr = pLoad->get_Property("TrailingOverhang", &var );
+      hr = pLoad->get_Property(_T("TrailingOverhang"), &var );
       if ( FAILED(hr) )
          return hr;
 
@@ -2316,7 +2316,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc(IStructuredSave* pSave,IStruc
       pLoad->get_ParentVersion(&parentVersion);
       if ( parentVersion <= 1.0 ) // if ProjectData version 1 or less, load the old format, otherwise do nothing
       {
-         if ( !FAILED(pLoad->BeginUnit("DistFactorMethodDetails")) )
+         if ( !FAILED(pLoad->BeginUnit(_T("DistFactorMethodDetails"))) )
          {
             hr = CProjectAgentImp::DistFactorMethodDataProc2(pSave,pLoad,pProgress,pObj);
             pLoad->EndUnit();
@@ -2340,12 +2340,12 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
       CComVariant var;
       var.vt = VT_BSTR;
-      hr = pLoad->get_Property("CalculationMethod", &var );
+      hr = pLoad->get_Property(_T("CalculationMethod"), &var );
       if ( FAILED(hr) )
          return hr;
 
       _bstr_t bval(var.bstrVal);
-      if (bval != _bstr_t("DirectlyInput"))
+      if (bval != _bstr_t(_T("DirectlyInput")))
          return E_FAIL;
 
 
@@ -2361,19 +2361,19 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
          // load data in pre- version 1.1 format
          // Load the old data into temporary variables
          var.vt = VT_R8 ;
-         hr = pLoad->get_Property("ShearDistFactor", &var );
+         hr = pLoad->get_Property(_T("ShearDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          double V = var.dblVal;
 
-         hr = pLoad->get_Property("MomentDistFactor", &var );
+         hr = pLoad->get_Property(_T("MomentDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          double M = var.dblVal;
 
-         hr = pLoad->get_Property("ReactionDistFactor", &var );
+         hr = pLoad->get_Property(_T("ReactionDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -2422,38 +2422,38 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
          double M[2], V[2], R[2];
 
          var.vt = VT_R8 ;
-         hr = pLoad->get_Property("IntShearDistFactor", &var );
+         hr = pLoad->get_Property(_T("IntShearDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          V[pgsTypes::Interior] = var.dblVal;
 
-         hr = pLoad->get_Property("IntMomentDistFactor", &var );
+         hr = pLoad->get_Property(_T("IntMomentDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          M[pgsTypes::Interior] = var.dblVal;
 
-         hr = pLoad->get_Property("IntReactionDistFactor", &var );
+         hr = pLoad->get_Property(_T("IntReactionDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          R[pgsTypes::Interior] = var.dblVal;
 
       
-         hr = pLoad->get_Property("ExtShearDistFactor", &var );
+         hr = pLoad->get_Property(_T("ExtShearDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          V[pgsTypes::Exterior] = var.dblVal;
 
-         hr = pLoad->get_Property("ExtMomentDistFactor", &var );
+         hr = pLoad->get_Property(_T("ExtMomentDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
          M[pgsTypes::Exterior] = var.dblVal;
 
-         hr = pLoad->get_Property("ExtReactionDistFactor", &var );
+         hr = pLoad->get_Property(_T("ExtReactionDistFactor"), &var );
          if ( FAILED(hr) )
             return hr;
 
@@ -2500,34 +2500,34 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
             CPierData* pPier = pObj->m_BridgeDescription.GetPier(0);
             CSpanData* pSpan;
 
-            hr = pLoad->BeginUnit((pgsTypes::GirderLocation)type == pgsTypes::Interior ? "InteriorGirders" : "ExteriorGirders");
+            hr = pLoad->BeginUnit((pgsTypes::GirderLocation)type == pgsTypes::Interior ? _T("InteriorGirders") : _T("ExteriorGirders"));
             if ( FAILED(hr) )
                return hr;
 
             do
             {
                var.vt = VT_R8;
-               hr = pLoad->BeginUnit("Pier");
+               hr = pLoad->BeginUnit(_T("Pier"));
                if ( FAILED(hr) )
                   return hr;
 
 
-               hr = pLoad->get_Property("pM",&var);
+               hr = pLoad->get_Property(_T("pM"),&var);
                if ( FAILED(hr) )
                   return hr;
 
-               hr = pLoad->get_Property("nM",&var);
+               hr = pLoad->get_Property(_T("nM"),&var);
                if ( FAILED(hr) )
                   return hr;
 
                pPier->SetLLDFNegMoment(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
                pPier->SetLLDFNegMoment(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
 
-               hr = pLoad->get_Property("V", &var);
+               hr = pLoad->get_Property(_T("V"), &var);
                if ( FAILED(hr) )
                   return hr;
 
-               hr = pLoad->get_Property("R", &var);
+               hr = pLoad->get_Property(_T("R"), &var);
                if ( FAILED(hr) )
                   return hr;
 
@@ -2540,33 +2540,33 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
                if ( pSpan )
                {
-                  hr = pLoad->BeginUnit("Span");
+                  hr = pLoad->BeginUnit(_T("Span"));
                   if ( FAILED(hr) )
                      return hr;
 
 
-                  hr = pLoad->get_Property("pM",&var);
+                  hr = pLoad->get_Property(_T("pM"),&var);
                   if ( FAILED(hr) )
                      return hr;
 
                   pSpan->SetLLDFPosMoment(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
                   pSpan->SetLLDFPosMoment(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
 
-                  hr = pLoad->get_Property("nM",&var);
+                  hr = pLoad->get_Property(_T("nM"),&var);
                   if ( FAILED(hr) )
                      return hr;
 
                   pSpan->SetLLDFNegMoment(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
                   pSpan->SetLLDFNegMoment(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
 
-                  hr = pLoad->get_Property("V", &var);
+                  hr = pLoad->get_Property(_T("V"), &var);
                   if ( FAILED(hr) )
                      return hr;
 
                   pSpan->SetLLDFShear(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
                   pSpan->SetLLDFShear(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
 
-                  hr = pLoad->get_Property("R", &var);
+                  hr = pLoad->get_Property(_T("R"), &var);
                   if ( FAILED(hr) )
                      return hr;
 
@@ -2588,20 +2588,20 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit("UserDefinedLoads",3.0);
+      pSave->BeginUnit(_T("UserDefinedLoads"),3.0);
 
       pObj->SavePointLoads(pSave);
       pObj->SaveDistributedLoads(pSave);
       pObj->SaveMomentLoads(pSave);
 
-      pSave->put_Property("ConstructionLoad",CComVariant(pObj->m_ConstructionLoad));
+      pSave->put_Property(_T("ConstructionLoad"),CComVariant(pObj->m_ConstructionLoad));
       
       pSave->EndUnit();
    }
    else
    {
       // only load if the user defined loads are in the project. older versions have none
-      if (!FAILED(pLoad->BeginUnit("UserDefinedLoads")))
+      if (!FAILED(pLoad->BeginUnit(_T("UserDefinedLoads"))))
       {
 
          hr = pObj->LoadPointLoads(pLoad);
@@ -2625,7 +2625,7 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
          {
             CComVariant var;
             var.vt = VT_R8;
-            pLoad->get_Property("ConstructionLoad",&var);
+            pLoad->get_Property(_T("ConstructionLoad"),&var);
             pObj->m_ConstructionLoad = var.dblVal;
          }
 
@@ -2643,7 +2643,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit("LiveLoads",5.0);
+      pSave->BeginUnit(_T("LiveLoads"),5.0);
 
       // version 4... added fatigue live load
 
@@ -2652,7 +2652,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
       // changed to enum values in version 3
       int iaction= GetIntForLldfAction(pObj->m_LldfRangeOfApplicabilityAction);
 
-      pSave->put_Property("IngoreLLDFRangeOfApplicability",CComVariant(iaction));
+      pSave->put_Property(_T("IngoreLLDFRangeOfApplicability"),CComVariant(iaction));
 
       CProjectAgentImp::SaveLiveLoad(pSave,pProgress,pObj,_T("DesignLiveLoads"),pgsTypes::lltDesign);
       CProjectAgentImp::SaveLiveLoad(pSave,pProgress,pObj,_T("PermitLiveLoads"),pgsTypes::lltPermit);
@@ -2668,7 +2668,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    else
    {
       // only load if the live loads are in the project. older versions have none
-      if (!FAILED(pLoad->BeginUnit("LiveLoads")))
+      if (!FAILED(pLoad->BeginUnit(_T("LiveLoads"))))
       {
          CComVariant var;
          double version;
@@ -2677,7 +2677,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
          {
             // changed value to enum in Version 3
             var.vt = VT_I4;
-            hr = pLoad->get_Property("IngoreLLDFRangeOfApplicability",&var);
+            hr = pLoad->get_Property(_T("IngoreLLDFRangeOfApplicability"),&var);
             pObj->m_LldfRangeOfApplicabilityAction = GetLldfActionForInt(var.intVal);
             pObj->m_bGetIgnoreROAFromLibrary = false;
          }
@@ -2685,7 +2685,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
          {
             // value was bool in Version 2
             var.vt = VT_BOOL;
-            hr = pLoad->get_Property("IngoreLLDFRangeOfApplicability",&var);
+            hr = pLoad->get_Property(_T("IngoreLLDFRangeOfApplicability"),&var);
             pObj->m_LldfRangeOfApplicabilityAction =(var.boolVal == VARIANT_TRUE ? roaIgnore : roaEnforce);
             pObj->m_bGetIgnoreROAFromLibrary = false;
          }
@@ -2742,19 +2742,19 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
 {
    pSave->BeginUnit(lpszUnitName,1.0);
 
-   pSave->put_Property("TruckImpact",CComVariant(pObj->m_TruckImpact[llType]));
-   pSave->put_Property("LaneImpact", CComVariant(pObj->m_LaneImpact[llType]));
+   pSave->put_Property(_T("TruckImpact"),CComVariant(pObj->m_TruckImpact[llType]));
+   pSave->put_Property(_T("LaneImpact"), CComVariant(pObj->m_LaneImpact[llType]));
 
    long cnt = pObj->m_SelectedLiveLoads[llType].size();
-   pSave->put_Property("VehicleCount", CComVariant(cnt));
+   pSave->put_Property(_T("VehicleCount"), CComVariant(cnt));
    {
-      pSave->BeginUnit("Vehicles",1.0);
+      pSave->BeginUnit(_T("Vehicles"),1.0);
       
       for (long itrk=0; itrk<cnt; itrk++)
       {
          LiveLoadSelection& sel = pObj->m_SelectedLiveLoads[llType][itrk];
-         const std::string& name = sel.EntryName;
-         pSave->put_Property("VehicleName", CComVariant(name.c_str()));
+         const std::_tstring& name = sel.EntryName;
+         pSave->put_Property(_T("VehicleName"), CComVariant(name.c_str()));
       }
 
       pSave->EndUnit(); // Vehicles
@@ -2775,7 +2775,7 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
    CComVariant var;
    var.vt = VT_R8;
-   hr = pLoad->get_Property("TruckImpact",&var);
+   hr = pLoad->get_Property(_T("TruckImpact"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -2783,7 +2783,7 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
    var.Clear();
    var.vt = VT_R8;
-   hr = pLoad->get_Property("LaneImpact",&var);
+   hr = pLoad->get_Property(_T("LaneImpact"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -2792,14 +2792,14 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
    var.Clear();
    var.vt = VT_I4;
-   hr = pLoad->get_Property("VehicleCount", &var);
+   hr = pLoad->get_Property(_T("VehicleCount"), &var);
    if ( FAILED(hr) )
       return hr;
 
    long cnt = var.lVal;
 
    {
-      hr = pLoad->BeginUnit("Vehicles");
+      hr = pLoad->BeginUnit(_T("Vehicles"));
       if ( FAILED(hr) )
          return hr;
 
@@ -2809,7 +2809,7 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
       {
          var.Clear();
          var.vt = VT_BSTR;
-         hr = pLoad->get_Property("VehicleName", &var);
+         hr = pLoad->get_Property(_T("VehicleName"), &var);
          if ( FAILED(hr) )
             return hr;
 
@@ -2861,7 +2861,7 @@ bool CProjectAgentImp::AssertValid() const
       if ( pNextPier->GetStation() <= pPrevPier->GetStation() )
       {
          // Error... piers not sorted correctly
-         WATCH("Piers not sorted correctly");
+         WATCH(_T("Piers not sorted correctly"));
          return false;
       }
 
@@ -2872,35 +2872,35 @@ bool CProjectAgentImp::AssertValid() const
 }
 #endif // _DEBUG
 
-BEGIN_STRSTORAGEMAP(CProjectAgentImp,"ProjectData",2.0)
-   BEGIN_UNIT("ProjectProperties","Project Properties",1.0)
-      PROPERTY("BridgeName",SDT_STDSTRING, m_BridgeName )
-      PROPERTY("BridgeId",  SDT_STDSTRING, m_BridgeId )
-      PROPERTY("JobNumber", SDT_STDSTRING, m_JobNumber )
-      PROPERTY("Engineer",  SDT_STDSTRING, m_Engineer )
-      PROPERTY("Company",   SDT_STDSTRING, m_Company )
-      PROPERTY("Comments",  SDT_STDSTRING, m_Comments )
+BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),2.0)
+   BEGIN_UNIT(_T("ProjectProperties"),_T("Project Properties"),1.0)
+      PROPERTY(_T("BridgeName"),SDT_STDSTRING, m_BridgeName )
+      PROPERTY(_T("BridgeId"),  SDT_STDSTRING, m_BridgeId )
+      PROPERTY(_T("JobNumber"), SDT_STDSTRING, m_JobNumber )
+      PROPERTY(_T("Engineer"),  SDT_STDSTRING, m_Engineer )
+      PROPERTY(_T("Company"),   SDT_STDSTRING, m_Company )
+      PROPERTY(_T("Comments"),  SDT_STDSTRING, m_Comments )
    END_UNIT // Project Properties
 
-   BEGIN_UNIT("ProjectSettings","Project Settings",1.0)
+   BEGIN_UNIT(_T("ProjectSettings"),_T("Project Settings"),1.0)
       PROP_CALLBACK(CProjectAgentImp::UnitModeProc)
-      //PROPERTY("Units", SDT_I4, m_Units )
+      //PROPERTY(_T("Units"), SDT_I4, m_Units )
    END_UNIT // Project Settings
 
-   BEGIN_UNIT("Environment","Environmental Parameters",1.0)
-      PROPERTY("ExpCond", SDT_I4, m_ExposureCondition )
-      PROPERTY("RelHumidity", SDT_R8, m_RelHumidity )
+   BEGIN_UNIT(_T("Environment"),_T("Environmental Parameters"),1.0)
+      PROPERTY(_T("ExpCond"), SDT_I4, m_ExposureCondition )
+      PROPERTY(_T("RelHumidity"), SDT_R8, m_RelHumidity )
    END_UNIT // Environment
 
-   BEGIN_UNIT("Alignment","Roadway Alignment",1.0)
+   BEGIN_UNIT(_T("Alignment"),_T("Roadway Alignment"),1.0)
       PROP_CALLBACK(CProjectAgentImp::AlignmentProc)
    END_UNIT // Alignment
 
-   BEGIN_UNIT("Profile","Roadway Profile",1.0)
+   BEGIN_UNIT(_T("Profile"),_T("Roadway Profile"),1.0)
       PROP_CALLBACK(CProjectAgentImp::ProfileProc)
    END_UNIT // Profile
 
-   BEGIN_UNIT("Crown","Roadway Crown",1.0)
+   BEGIN_UNIT(_T("Crown"),_T("Roadway Crown"),1.0)
       PROP_CALLBACK(CProjectAgentImp::SuperelevationProc)
    END_UNIT // Crown
 
@@ -2912,13 +2912,13 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,"ProjectData",2.0)
    PROP_CALLBACK(CProjectAgentImp::LongitudinalRebarDataProc )
    PROP_CALLBACK(CProjectAgentImp::SpecificationProc)
 
-   BEGIN_UNIT("LoadModifiers","Load Modifiers", 1.0 )
-      PROPERTY("DuctilityLevel",   SDT_I4, m_DuctilityLevel )
-      PROPERTY("DuctilityFactor",  SDT_R8, m_DuctilityFactor )
-      PROPERTY("ImportanceLevel",  SDT_I4, m_ImportanceLevel )
-      PROPERTY("ImportanceFactor", SDT_R8, m_ImportanceFactor )
-      PROPERTY("RedundancyLevel",  SDT_I4, m_RedundancyLevel )
-      PROPERTY("RedundancyFactor", SDT_R8, m_RedundancyFactor )
+   BEGIN_UNIT(_T("LoadModifiers"),_T("Load Modifiers"), 1.0 )
+      PROPERTY(_T("DuctilityLevel"),   SDT_I4, m_DuctilityLevel )
+      PROPERTY(_T("DuctilityFactor"),  SDT_R8, m_DuctilityFactor )
+      PROPERTY(_T("ImportanceLevel"),  SDT_I4, m_ImportanceLevel )
+      PROPERTY(_T("ImportanceFactor"), SDT_R8, m_ImportanceFactor )
+      PROPERTY(_T("RedundancyLevel"),  SDT_I4, m_RedundancyLevel )
+      PROPERTY(_T("RedundancyFactor"), SDT_R8, m_RedundancyFactor )
    END_UNIT // Load Modifiers
 
    PROP_CALLBACK(CProjectAgentImp::LiftingAndHaulingDataProc )
@@ -3151,7 +3151,7 @@ void CProjectAgentImp::UseGirderLibraryEntries()
          for ( long groupIdx = 0; groupIdx < nGroups; groupIdx++ )
          {
             GirderIndexType firstGdrIdx,lastGdrIdx;
-            std::string strGirderName;
+            std::_tstring strGirderName;
 
             girderTypes.GetGirderGroup(groupIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
 
@@ -3277,7 +3277,7 @@ void CProjectAgentImp::ReleaseGirderLibraryEntries()
          for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
          {
             GirderIndexType firstGdrIdx, lastGdrIdx;
-            std::string strGirderName;
+            std::_tstring strGirderName;
             girderTypes.GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
             for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
             {
@@ -3316,7 +3316,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    psgLibraryManager temp_manager;
    try
    {
-//      pProgress->UpdateMessage( _T("Loading the Project Libraries") );
+//      pProgress->UpdateMessage( _T(_T("Loading the Project Libraries")) );
       CStructuredLoad load( pStrLoad );
       if ( !temp_manager.LoadMe( &load ) )
          return E_FAIL;
@@ -3325,19 +3325,19 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    {
       if ( e.GetExplicitReason() == sysXStructuredLoad::BadVersion )
       {
-         WATCH("Project library is new version");
+         WATCH(_T("Project library is new version"));
          return STRLOAD_E_BADVERSION;
       }
       else if ( e.GetExplicitReason() == sysXStructuredLoad::InvalidFileFormat )
       {
-         WATCH("Project library has bad format");
+         WATCH(_T("Project library has bad format"));
          return STRLOAD_E_INVALIDFORMAT;
       }
       else if ( e.GetExplicitReason() == sysXStructuredLoad::UserDefined )
       {
-         WATCH("User defined error");
+         WATCH(_T("User defined error"));
          GET_IFACE(IEAFProjectLog,pLog);
-         std::string strMsg;
+         std::_tstring strMsg;
          e.GetErrorMessage(&strMsg);
          pLog->LogMessage(strMsg.c_str());
          return STRLOAD_E_USERDEFINED;
@@ -3449,7 +3449,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
-      strMsg.Format("The %s library needs at least %d entries. Default entries have been created.",connLib.GetDisplayName().c_str(),nMinEntries);
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),connLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
       for ( int i = 0; i < (nMinEntries-nEntries); i++ )
       {
@@ -3458,7 +3458,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       libKeyListType keys;
       connLib.KeyList(keys);
-      std::string strConnectionName = keys.front();
+      std::_tstring strConnectionName = keys.front();
       PierIndexType nPiers = m_BridgeDescription.GetPierCount();
       for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
       {
@@ -3480,7 +3480,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
-      strMsg.Format("The %s library needs at least %d entries. Default entries have been created.",gdrLib.GetDisplayName().c_str(),nMinEntries);
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),gdrLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
       for ( int i = 0; i < (nMinEntries-nEntries); i++ )
       {
@@ -3491,7 +3491,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       libKeyListType keys;
       gdrLib.KeyList(keys);
-      std::string strGirderName = keys.front();
+      std::_tstring strGirderName = keys.front();
       if (m_BridgeDescription.UseSameGirderForEntireBridge())
       {
          m_BridgeDescription.SetGirderName(strGirderName.c_str());
@@ -3518,7 +3518,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
-      strMsg.Format("The %s library needs at least %d entries. Default entries have been created.",tbLib.GetDisplayName().c_str(),nMinEntries);
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),tbLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
       for ( int i = 0; i < (nMinEntries-nEntries); i++ )
       {
@@ -3529,7 +3529,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       libKeyListType keys;
       tbLib.KeyList(keys);
-      std::string strBarrierName = keys.front();
+      std::_tstring strBarrierName = keys.front();
       CRailingSystem* pLeftRailing = m_BridgeDescription.GetLeftRailingSystem();
       pLeftRailing->strExteriorRailing = strBarrierName;
       if ( pLeftRailing->bUseInteriorRailing )
@@ -3547,7 +3547,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
-      strMsg.Format("The %s library needs at least %d entries. Default entries have been created.",pSpecLib->GetDisplayName().c_str(),nMinEntries);
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pSpecLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
       for ( int i = 0; i < (nMinEntries-nEntries); i++ )
       {
@@ -3556,7 +3556,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       libKeyListType keys;
       pSpecLib->KeyList(keys);
-      std::string strSpecName = keys.front();
+      std::_tstring strSpecName = keys.front();
       InitSpecification(strSpecName);
    }
 
@@ -3566,7 +3566,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
-      strMsg.Format("The %s library needs at least %d entries. Default entries have been created.",pRatingLib->GetDisplayName().c_str(),nMinEntries);
+      strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pRatingLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
       for ( int i = 0; i < (nMinEntries-nEntries); i++ )
       {
@@ -3575,7 +3575,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       libKeyListType keys;
       pRatingLib->KeyList(keys);
-      std::string strSpecName = keys.front();
+      std::_tstring strSpecName = keys.front();
       InitRatingSpecification(strSpecName);
    }
 
@@ -3614,7 +3614,7 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
 
    try
    {
-      pProgress->UpdateMessage( _T("Saving the Project Libraries") );
+      pProgress->UpdateMessage(_T("Saving the Project Libraries") );
       CStructuredSave save( pStrSave );
       temp_manager.SaveMe( &save );
    } 
@@ -3640,7 +3640,7 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
       girder_data.HpOffsetAtEnd = 0.0;
       girder_data.HsoEndMeasurement = hsoLEGACY;
 
-      std::string msg("Vertical adjustment of harped strands at girder end reset to zero. Library entry forbids offset");
+      std::_tstring msg(_T("Vertical adjustment of harped strands at girder end reset to zero. Library entry forbids offset"));
       AddGirderStatusItem(span, girder, msg);
    }
 
@@ -3649,7 +3649,7 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
       girder_data.HpOffsetAtHp = 0.0;
       girder_data.HsoHpMeasurement = hsoLEGACY;
 
-      std::string msg("Vertical adjustment of harped strands at harping points reset to zero. Library entry forbids offset");
+      std::_tstring msg(_T("Vertical adjustment of harped strands at harping points reset to zero. Library entry forbids offset"));
       AddGirderStatusItem(span, girder, msg);
    }
 
@@ -3664,8 +3664,8 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
 
       if (!st || girder_data.Nstrands[pgsTypes::Straight] !=ns || girder_data.Nstrands[pgsTypes::Harped] != nh)
       {
-         std::ostringstream msg;
-         msg<< girder_data.Nstrands[pgsTypes::Permanent]<<" permanent strands no longer fit in girder "<<LABEL_GIRDER(girder)<<", span "<<LABEL_SPAN(span)<<" because library entry changed. All strands were removed.";
+         std::_tostringstream msg;
+         msg<< girder_data.Nstrands[pgsTypes::Permanent]<<_T(" permanent strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All strands were removed.");
          AddGirderStatusItem(span, girder, msg.str());
 
          clean = false;
@@ -3679,8 +3679,8 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
 
       if ( !(vst&&vhp) )
       {
-         std::ostringstream msg;
-         msg<< girder_data.Nstrands[pgsTypes::Straight]<<" straight, "<<girder_data.Nstrands[pgsTypes::Harped]<<" harped strands no longer fit in girder "<<LABEL_GIRDER(girder)<<", span "<<LABEL_SPAN(span)<<" because library entry changed. All strands were removed.";
+         std::_tostringstream msg;
+         msg<< girder_data.Nstrands[pgsTypes::Straight]<<_T(" straight, ")<<girder_data.Nstrands[pgsTypes::Harped]<<_T(" harped strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All strands were removed.");
          AddGirderStatusItem(span, girder, msg.str());
 
          clean = false;
@@ -3692,8 +3692,8 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
    bool vhp = pGirderEntry->IsValidNumberOfTemporaryStrands(girder_data.Nstrands[pgsTypes::Temporary]);
    if ( !vhp )
    {
-      std::ostringstream msg;
-      msg<< girder_data.Nstrands[pgsTypes::Temporary]<<" temporary strands no longer fit in girder "<<LABEL_GIRDER(girder)<<", span "<<LABEL_SPAN(span)<<" because library entry changed. All temporary strands were removed.";
+      std::_tostringstream msg;
+      msg<< girder_data.Nstrands[pgsTypes::Temporary]<<_T(" temporary strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All temporary strands were removed.");
       AddGirderStatusItem(span, girder, msg.str());
 
       clean = false;
@@ -3785,8 +3785,8 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
 
          if (fromLibrary && debond_changed) // no message if strands where trimmed in project due to a strand reduction
          {
-            std::ostringstream msg;
-            msg<< " Girder "<<LABEL_GIRDER(girder)<<", span "<<LABEL_SPAN(span)<<" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.";
+            std::_tostringstream msg;
+            msg<< _T(" Girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
             AddGirderStatusItem(span, girder, msg.str());
          }
       }
@@ -3801,12 +3801,12 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
 
 //////////////////////////////////////////////////////////////////////
 // IProjectProperties
-std::string CProjectAgentImp::GetBridgeName() const
+std::_tstring CProjectAgentImp::GetBridgeName() const
 {
    return m_BridgeName;
 }
 
-void CProjectAgentImp::SetBridgeName(const std::string& name)
+void CProjectAgentImp::SetBridgeName(const std::_tstring& name)
 {
    if ( m_BridgeName != name )
    {
@@ -3819,12 +3819,12 @@ void CProjectAgentImp::SetBridgeName(const std::string& name)
    }
 }
 
-std::string CProjectAgentImp::GetBridgeId() const
+std::_tstring CProjectAgentImp::GetBridgeId() const
 {
    return m_BridgeId;
 }
 
-void CProjectAgentImp::SetBridgeId(const std::string& bid)
+void CProjectAgentImp::SetBridgeId(const std::_tstring& bid)
 {
    if ( m_BridgeId != bid )
    {
@@ -3837,12 +3837,12 @@ void CProjectAgentImp::SetBridgeId(const std::string& bid)
    }
 }
 
-std::string CProjectAgentImp::GetJobNumber() const
+std::_tstring CProjectAgentImp::GetJobNumber() const
 {
    return m_JobNumber;
 }
 
-void CProjectAgentImp::SetJobNumber(const std::string& jid)
+void CProjectAgentImp::SetJobNumber(const std::_tstring& jid)
 {
    if ( m_JobNumber != jid )
    {
@@ -3855,12 +3855,12 @@ void CProjectAgentImp::SetJobNumber(const std::string& jid)
    }
 }
 
-std::string CProjectAgentImp::GetEngineer() const
+std::_tstring CProjectAgentImp::GetEngineer() const
 {
    return m_Engineer;
 }
 
-void CProjectAgentImp::SetEngineer(const std::string& eng)
+void CProjectAgentImp::SetEngineer(const std::_tstring& eng)
 {
    if ( m_Engineer != eng )
    {
@@ -3873,12 +3873,12 @@ void CProjectAgentImp::SetEngineer(const std::string& eng)
    }
 }
 
-std::string CProjectAgentImp::GetCompany() const
+std::_tstring CProjectAgentImp::GetCompany() const
 {
    return m_Company;
 }
 
-void CProjectAgentImp::SetCompany(const std::string& company)
+void CProjectAgentImp::SetCompany(const std::_tstring& company)
 {
    if ( m_Company != company )
    {
@@ -3891,12 +3891,12 @@ void CProjectAgentImp::SetCompany(const std::string& company)
    }
 }
 
-std::string CProjectAgentImp::GetComments() const
+std::_tstring CProjectAgentImp::GetComments() const
 {
    return m_Comments;
 }
 
-void CProjectAgentImp::SetComments(const std::string& comments)
+void CProjectAgentImp::SetComments(const std::_tstring& comments)
 {
    if ( m_Comments != comments )
    {
@@ -4274,13 +4274,13 @@ void CProjectAgentImp::SetGirderTypes(SpanIndexType spanIdx,const CGirderTypes& 
    }
 }
 
-void CProjectAgentImp::SetGirderName( SpanIndexType spanIdx, GirderIndexType gdrIdx, const char* strGirderName)
+void CProjectAgentImp::SetGirderName( SpanIndexType spanIdx, GirderIndexType gdrIdx, LPCTSTR strGirderName)
 {
    ATLASSERT( !m_BridgeDescription.UseSameGirderForEntireBridge() );
    CSpanData* pSpan = m_BridgeDescription.GetSpan(spanIdx);
    CGirderTypes girderTypes = *pSpan->GetGirderTypes();
 
-   if ( std::string(strGirderName) != girderTypes.GetGirderName(gdrIdx) )
+   if ( std::_tstring(strGirderName) != girderTypes.GetGirderName(gdrIdx) )
    {
       ReleaseGirderLibraryEntries();
 
@@ -4419,9 +4419,9 @@ bool CProjectAgentImp::UseSameGirderForEntireBridge()
    return m_BridgeDescription.UseSameGirderForEntireBridge();
 }
 
-void CProjectAgentImp::SetGirderName(const char* strGirderName)
+void CProjectAgentImp::SetGirderName(LPCTSTR strGirderName)
 {
-   if (std::string(m_BridgeDescription.GetGirderName()) != std::string(strGirderName))
+   if (std::_tstring(m_BridgeDescription.GetGirderName()) != std::_tstring(strGirderName))
    {
       ReleaseBridgeLibraryEntries();
       
@@ -4822,13 +4822,13 @@ int CProjectAgentImp::DoSetGirderData(const CGirderData& const_data,SpanIndexTyp
 ////////////////////////////////////////////////////////////////////////
 // IShear Methods
 //
-std::string CProjectAgentImp::GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const
+std::_tstring CProjectAgentImp::GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const
 {
    CShearData shearData = GetShearData(span,gdr);
    return shearData.strRebarMaterial;
 }
 
-void CProjectAgentImp::SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,const char* matName)
+void CProjectAgentImp::SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)
 {
    CShearData shearData = GetShearData(span,gdr);
    if ( shearData.strRebarMaterial != matName )
@@ -4866,13 +4866,13 @@ bool CProjectAgentImp::DoSetShearData(const CShearData& data,SpanIndexType span,
 
 /////////////////////////////////////////////////
 // ILongitudinalRebar
-std::string CProjectAgentImp::GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const
+std::_tstring CProjectAgentImp::GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const
 {
    CLongitudinalRebarData lrd = GetLongitudinalRebarData(span,gdr);
    return lrd.strRebarMaterial;
 }
 
-void CProjectAgentImp::SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,const char* matName)
+void CProjectAgentImp::SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)
 {
    CLongitudinalRebarData lrd = GetLongitudinalRebarData(span,gdr);
    if ( lrd.strRebarMaterial != matName )
@@ -5023,12 +5023,12 @@ void CProjectAgentImp::EnableRating(pgsTypes::LoadRatingType ratingType,bool bEn
    }
 }
 
-std::string CProjectAgentImp::GetRatingSpecification() const
+std::_tstring CProjectAgentImp::GetRatingSpecification() const
 {
    return m_RatingSpec;
 }
 
-void CProjectAgentImp::SetRatingSpecification(const std::string& spec)
+void CProjectAgentImp::SetRatingSpecification(const std::_tstring& spec)
 {
    if ( m_RatingSpec != spec )
    {
@@ -5313,12 +5313,12 @@ pgsTypes::SpecialPermitType CProjectAgentImp::GetSpecialPermitType() const
 ////////////////////////////////////////////////////////////////////////
 // ISpecification Methods
 //
-std::string CProjectAgentImp::GetSpecification() const
+std::_tstring CProjectAgentImp::GetSpecification() const
 {
    return m_Spec;
 }
 
-void CProjectAgentImp::SetSpecification(const std::string& spec)
+void CProjectAgentImp::SetSpecification(const std::_tstring& spec)
 {
    if ( m_Spec != spec )
    {
@@ -5418,19 +5418,19 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderI
 ////////////////////////////////////////////////////////////////////////
 // ILibraryNames Methods
 //
-void CProjectAgentImp::EnumGdrConnectionNames( std::vector<std::string>* pNames ) const
+void CProjectAgentImp::EnumGdrConnectionNames( std::vector<std::_tstring>* pNames ) const
 {
    const ConnectionLibrary& prj_lib = m_pLibMgr->GetConnectionLibrary();
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumGirderNames( std::vector<std::string>* pNames ) const
+void CProjectAgentImp::EnumGirderNames( std::vector<std::_tstring>* pNames ) const
 {
    const GirderLibrary& prj_lib = m_pLibMgr->GetGirderLibrary();
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumGirderNames( const char* strGirderFamily, std::vector<std::string>* pNames ) const
+void CProjectAgentImp::EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std::_tstring>* pNames ) const
 {
    const GirderLibrary& prj_lib = m_pLibMgr->GetGirderLibrary();
    pNames->clear();
@@ -5444,7 +5444,7 @@ void CProjectAgentImp::EnumGirderNames( const char* strGirderFamily, std::vector
       const libLibraryEntry* pEntry = prj_lib.GetEntry( (*iter).c_str() );
       const GirderLibraryEntry* pGirderEntry = (GirderLibraryEntry*)pEntry;
 
-      std::string strFamilyName = pGirderEntry->GetGirderFamilyName();
+      std::_tstring strFamilyName = pGirderEntry->GetGirderFamilyName();
 
       if ( strFamilyName == strGirderFamily )
       {
@@ -5453,43 +5453,43 @@ void CProjectAgentImp::EnumGirderNames( const char* strGirderFamily, std::vector
    }
 }
 
-void CProjectAgentImp::EnumConcreteNames( std::vector<std::string>* pNames ) const
+void CProjectAgentImp::EnumConcreteNames( std::vector<std::_tstring>* pNames ) const
 {
    const ConcreteLibrary& prj_lib = m_pLibMgr->GetConcreteLibrary();
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumDiaphragmNames( std::vector<std::string>* pNames ) const
+void CProjectAgentImp::EnumDiaphragmNames( std::vector<std::_tstring>* pNames ) const
 {
    const DiaphragmLayoutLibrary& prj_lib = m_pLibMgr->GetDiaphragmLayoutLibrary();
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumTrafficBarrierNames( std::vector<std::string>* pNames ) const
+void CProjectAgentImp::EnumTrafficBarrierNames( std::vector<std::_tstring>* pNames ) const
 {
    const TrafficBarrierLibrary& prj_lib = m_pLibMgr->GetTrafficBarrierLibrary();
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumSpecNames( std::vector<std::string>* pNames) const
+void CProjectAgentImp::EnumSpecNames( std::vector<std::_tstring>* pNames) const
 {
    const SpecLibrary& prj_lib = *(m_pLibMgr->GetSpecLibrary());
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumRatingCriteriaNames( std::vector<std::string>* pNames) const
+void CProjectAgentImp::EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const
 {
    const RatingLibrary& prj_lib = *(m_pLibMgr->GetRatingLibrary());
    psglibCreateLibNameEnum( pNames, prj_lib);
 }
 
-void CProjectAgentImp::EnumLiveLoadNames( std::vector<std::string>* pNames) const
+void CProjectAgentImp::EnumLiveLoadNames( std::vector<std::_tstring>* pNames) const
 {
    const LiveLoadLibrary& prj_lib = *(m_pLibMgr->GetLiveLoadLibrary());
    psglibCreateLibNameEnum( pNames, prj_lib);
 
-   std::vector<std::string>::const_iterator iter = m_ReservedLiveLoads.begin();
-   ATLASSERT( *iter == "Pedestrian on Sidewalk" ); // Pedestrian on Sidewalk is first reserved name... 
+   std::vector<std::_tstring>::const_iterator iter = m_ReservedLiveLoads.begin();
+   ATLASSERT( *iter == _T("Pedestrian on Sidewalk") ); // Pedestrian on Sidewalk is first reserved name... 
    if ( !CanHavePedestrianLoad() )
       iter++; // ... skip if we can't have pedestrain loads
 
@@ -5499,7 +5499,7 @@ void CProjectAgentImp::EnumLiveLoadNames( std::vector<std::string>* pNames) cons
    }
 }
 
-void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::string>* pNames )
+void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames )
 {
    USES_CONVERSION;
    if ( m_GirderFamilyNames.size() == 0 )
@@ -5508,7 +5508,7 @@ void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::string>* pNames )
       std::vector<CString>::iterator iter;
       for ( iter = names.begin(); iter != names.end(); iter++ )
       {
-         m_GirderFamilyNames.push_back( std::string(*iter) );
+         m_GirderFamilyNames.push_back( std::_tstring(*iter) );
       }
    }
 
@@ -5516,14 +5516,14 @@ void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::string>* pNames )
    pNames->insert(pNames->begin(),m_GirderFamilyNames.begin(),m_GirderFamilyNames.end());
 }
 
-void CProjectAgentImp::GetBeamFactory(const std::string& strBeamFamily,const std::string& strBeamName,IBeamFactory** ppFactory)
+void CProjectAgentImp::GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory)
 {
-   std::vector<std::string> strBeamNames;
+   std::vector<std::_tstring> strBeamNames;
    EnumGirderNames(strBeamFamily.c_str(),&strBeamNames);
 
    ATLASSERT( strBeamNames.size() != 0 );
 
-   std::vector<std::string>::iterator found = std::find(strBeamNames.begin(),strBeamNames.end(),strBeamName);
+   std::vector<std::_tstring>::iterator found = std::find(strBeamNames.begin(),strBeamNames.end(),strBeamName);
    if ( found == strBeamNames.end() )
    {
       ATLASSERT(false); // beam not found
@@ -5577,7 +5577,7 @@ psgLibraryManager* CProjectAgentImp::GetLibraryManager()
    return m_pLibMgr;
 }
 
-const ConnectionLibraryEntry* CProjectAgentImp::GetConnectionEntry(const char* lpszName ) const
+const ConnectionLibraryEntry* CProjectAgentImp::GetConnectionEntry(LPCTSTR lpszName ) const
 {
    const ConnectionLibraryEntry* pEntry;
    const ConnectionLibrary& prj_lib = m_pLibMgr->GetConnectionLibrary();
@@ -5589,7 +5589,7 @@ const ConnectionLibraryEntry* CProjectAgentImp::GetConnectionEntry(const char* l
    return pEntry;
 }
 
-const GirderLibraryEntry* CProjectAgentImp::GetGirderEntry( const char* lpszName ) const
+const GirderLibraryEntry* CProjectAgentImp::GetGirderEntry( LPCTSTR lpszName ) const
 {
    const GirderLibraryEntry* pEntry;
    const GirderLibrary& prj_lib = m_pLibMgr->GetGirderLibrary();
@@ -5601,7 +5601,7 @@ const GirderLibraryEntry* CProjectAgentImp::GetGirderEntry( const char* lpszName
    return pEntry;
 }
 
-const ConcreteLibraryEntry* CProjectAgentImp::GetConcreteEntry( const char* lpszName ) const
+const ConcreteLibraryEntry* CProjectAgentImp::GetConcreteEntry( LPCTSTR lpszName ) const
 {
    const ConcreteLibraryEntry* pEntry;
    const ConcreteLibrary& prj_lib = m_pLibMgr->GetConcreteLibrary();
@@ -5613,7 +5613,7 @@ const ConcreteLibraryEntry* CProjectAgentImp::GetConcreteEntry( const char* lpsz
    return pEntry;
 }
 
-const DiaphragmLayoutEntry* CProjectAgentImp::GetDiaphragmEntry( const char* lpszName ) const
+const DiaphragmLayoutEntry* CProjectAgentImp::GetDiaphragmEntry( LPCTSTR lpszName ) const
 {
    const DiaphragmLayoutEntry* pEntry;
    const DiaphragmLayoutLibrary& prj_lib = m_pLibMgr->GetDiaphragmLayoutLibrary();
@@ -5625,7 +5625,7 @@ const DiaphragmLayoutEntry* CProjectAgentImp::GetDiaphragmEntry( const char* lps
    return pEntry;
 }
 
-const TrafficBarrierEntry* CProjectAgentImp::GetTrafficBarrierEntry( const char* lpszName ) const
+const TrafficBarrierEntry* CProjectAgentImp::GetTrafficBarrierEntry( LPCTSTR lpszName ) const
 {
    const TrafficBarrierEntry* pEntry;
    const TrafficBarrierLibrary& prj_lib = m_pLibMgr->GetTrafficBarrierLibrary();
@@ -5637,7 +5637,7 @@ const TrafficBarrierEntry* CProjectAgentImp::GetTrafficBarrierEntry( const char*
    return pEntry;
 }
 
-const SpecLibraryEntry* CProjectAgentImp::GetSpecEntry( const char* lpszName ) const
+const SpecLibraryEntry* CProjectAgentImp::GetSpecEntry( LPCTSTR lpszName ) const
 {
    const SpecLibraryEntry* pEntry;
    const SpecLibrary& prj_lib = *(m_pLibMgr->GetSpecLibrary());
@@ -5699,13 +5699,13 @@ std::vector<libEntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() cons
    return m_pLibMgr->GetInUseLibraryEntries();
 }
 
-void CProjectAgentImp::GetMasterLibraryInfo(std::string& strPublisher,std::string& strMasterLib,sysTime& time) const
+void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const
 {
    m_pLibMgr->GetMasterLibraryInfo(strPublisher,strMasterLib);
    time = m_pLibMgr->GetTimeStamp();
 }
 
-const LiveLoadLibraryEntry* CProjectAgentImp::GetLiveLoadEntry( const char* lpszName ) const
+const LiveLoadLibraryEntry* CProjectAgentImp::GetLiveLoadEntry( LPCTSTR lpszName ) const
 {
    const LiveLoadLibraryEntry* pEntry;
    const LiveLoadLibrary* prj_lib = m_pLibMgr->GetLiveLoadLibrary();
@@ -5717,7 +5717,7 @@ const LiveLoadLibraryEntry* CProjectAgentImp::GetLiveLoadEntry( const char* lpsz
    return pEntry;
 }
 
-const RatingLibraryEntry* CProjectAgentImp::GetRatingEntry( const char* lpszName ) const
+const RatingLibraryEntry* CProjectAgentImp::GetRatingEntry( LPCTSTR lpszName ) const
 {
    const RatingLibraryEntry* pEntry;
    const RatingLibrary* prj_lib = m_pLibMgr->GetRatingLibrary();
@@ -5806,7 +5806,7 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    // Get the lookup key for the strand material based on the current units
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   std::map<SpanGirderHashType,Int32> keys[3]; // map "key" is span/girder, map "value" is strand pool key
+   std::map<SpanGirderHashType,Int32> keys[3]; // map _T("key") is span/girder, map _T("value") is strand pool key
    SpanIndexType nSpans;
    nSpans   = m_BridgeDescription.GetSpanCount();
 
@@ -6035,9 +6035,9 @@ HRESULT CProjectAgentImp::SavePointLoads(IStructuredSave* pSave)
 {
    HRESULT hr=S_OK;
 
-   pSave->BeginUnit("UserDefinedPointLoads",1.0);
+   pSave->BeginUnit(_T("UserDefinedPointLoads"),1.0);
 
-   hr = pSave->put_Property("Count",CComVariant((long)m_PointLoads.size()));
+   hr = pSave->put_Property(_T("Count"),CComVariant((long)m_PointLoads.size()));
    if ( FAILED(hr) )
       return hr;
 
@@ -6056,13 +6056,13 @@ HRESULT CProjectAgentImp::LoadPointLoads(IStructuredLoad* pLoad)
 {
    HRESULT hr=S_OK;
 
-   hr = pLoad->BeginUnit("UserDefinedPointLoads");
+   hr = pLoad->BeginUnit(_T("UserDefinedPointLoads"));
    if ( FAILED(hr) )
       return hr;
 
    CComVariant var;
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Count",&var);
+   hr = pLoad->get_Property(_T("Count"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -6088,9 +6088,9 @@ HRESULT CProjectAgentImp::SaveDistributedLoads(IStructuredSave* pSave)
 {
    HRESULT hr=S_OK;
 
-   pSave->BeginUnit("UserDefinedDistributedLoads",1.0);
+   pSave->BeginUnit(_T("UserDefinedDistributedLoads"),1.0);
 
-   hr = pSave->put_Property("Count",CComVariant((long)m_DistributedLoads.size()));
+   hr = pSave->put_Property(_T("Count"),CComVariant((long)m_DistributedLoads.size()));
    if ( FAILED(hr) )
       return hr;
 
@@ -6109,13 +6109,13 @@ HRESULT CProjectAgentImp::LoadDistributedLoads(IStructuredLoad* pLoad)
 {
    HRESULT hr=S_OK;
 
-   hr = pLoad->BeginUnit("UserDefinedDistributedLoads");
+   hr = pLoad->BeginUnit(_T("UserDefinedDistributedLoads"));
    if ( FAILED(hr) )
       return hr;
 
    CComVariant var;
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Count",&var);
+   hr = pLoad->get_Property(_T("Count"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -6141,9 +6141,9 @@ HRESULT CProjectAgentImp::SaveMomentLoads(IStructuredSave* pSave)
 {
    HRESULT hr=S_OK;
 
-   pSave->BeginUnit("UserDefinedMomentLoads",1.0);
+   pSave->BeginUnit(_T("UserDefinedMomentLoads"),1.0);
 
-   hr = pSave->put_Property("Count",CComVariant((long)m_MomentLoads.size()));
+   hr = pSave->put_Property(_T("Count"),CComVariant((long)m_MomentLoads.size()));
    if ( FAILED(hr) )
       return hr;
 
@@ -6162,13 +6162,13 @@ HRESULT CProjectAgentImp::LoadMomentLoads(IStructuredLoad* pLoad)
 {
    HRESULT hr=S_OK;
 
-   hr = pLoad->BeginUnit("UserDefinedMomentLoads");
+   hr = pLoad->BeginUnit(_T("UserDefinedMomentLoads"));
    if ( FAILED(hr) )
       return hr;
 
    CComVariant var;
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Count",&var);
+   hr = pLoad->get_Property(_T("Count"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -6362,7 +6362,7 @@ bool CProjectAgentImp::IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType)
    for ( iter = m_SelectedLiveLoads[llType].begin(); iter != m_SelectedLiveLoads[llType].end(); iter++ )
    {
       LiveLoadSelection& llselection = *iter;
-      if ( llselection.EntryName == "Pedestrian on Sidewalk" )
+      if ( llselection.EntryName == _T("Pedestrian on Sidewalk") )
          return true;
    }
 
@@ -6377,7 +6377,7 @@ void CProjectAgentImp::EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bE
       if ( !IsPedestianLoadEnabled(llType) )
       {
          LiveLoadSelection llselection;
-         llselection.EntryName = "Pedestrian on Sidewalk";
+         llselection.EntryName = _T("Pedestrian on Sidewalk");
          llselection.pEntry = NULL;
          m_SelectedLiveLoads[llType].push_back(llselection);
       }
@@ -6388,7 +6388,7 @@ void CProjectAgentImp::EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bE
       for ( iter = m_SelectedLiveLoads[llType].begin(); iter != m_SelectedLiveLoads[llType].end(); iter++ )
       {
          LiveLoadSelection& llselection = *iter;
-         if ( llselection.EntryName == "Pedestrian on Sidewalk" )
+         if ( llselection.EntryName == _T("Pedestrian on Sidewalk") )
          {
             m_SelectedLiveLoads[llType].erase(iter);
             return;
@@ -6397,9 +6397,9 @@ void CProjectAgentImp::EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bE
    }
 }
 
-std::vector<std::string> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoadType llType)
+std::vector<std::_tstring> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoadType llType)
 {
-   std::vector<std::string> strNames;
+   std::vector<std::_tstring> strNames;
    strNames.reserve(m_SelectedLiveLoads[llType].size());
 
    bool bCanHavePedLoad = CanHavePedestrianLoad();
@@ -6408,7 +6408,7 @@ std::vector<std::string> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoadTy
    {
       const LiveLoadSelection& lls = *it;
 
-      if ( lls.EntryName == "Pedestrian on Sidewalk" && !bCanHavePedLoad )
+      if ( lls.EntryName == _T("Pedestrian on Sidewalk") && !bCanHavePedLoad )
          continue; // if pedestrian is in the list, and can't have ped load, then skip it.
 
       strNames.push_back(lls.EntryName);
@@ -6417,7 +6417,7 @@ std::vector<std::string> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoadTy
    return strNames;
 }
 
-void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::string>& names)
+void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names)
 {
    bool change = false;
 
@@ -6426,7 +6426,7 @@ void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std:
    {
       for (LiveLoadSelectionIterator it = m_SelectedLiveLoads[llType].begin(); it != m_SelectedLiveLoads[llType].end(); it++)
       {
-         std::vector<std::string>::const_iterator its = std::find(names.begin(), names.end(), it->EntryName);
+         std::vector<std::_tstring>::const_iterator its = std::find(names.begin(), names.end(), it->EntryName);
          if (its == names.end())
          {
             change = true;
@@ -6459,9 +6459,9 @@ void CProjectAgentImp::SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std:
       m_SelectedLiveLoads[llType].clear();
 
       // add new references
-      for (std::vector<std::string>::const_iterator its = names.begin(); its != names.end(); its++)
+      for (std::vector<std::_tstring>::const_iterator its = names.begin(); its != names.end(); its++)
       {
-         const std::string& strLLName = *its;
+         const std::_tstring& strLLName = *its;
 
          LiveLoadSelection selection;
          selection.EntryName = strLLName;
@@ -6509,9 +6509,9 @@ void CProjectAgentImp::SetLaneImpact(pgsTypes::LiveLoadType llType,double impact
    }
 }
 
-bool CProjectAgentImp::IsReservedLiveLoad(const std::string& strName)
+bool CProjectAgentImp::IsReservedLiveLoad(const std::_tstring& strName)
 {
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_ReservedLiveLoads.begin(); iter != m_ReservedLiveLoads.end(); iter++ )
    {
       if ( (*iter) == strName )
@@ -6562,27 +6562,27 @@ bool CProjectAgentImp::IgnoreLLDFRangeOfApplicability()
       return false;
 }
 
-std::string CProjectAgentImp::GetLLDFSpecialActionText()
+std::_tstring CProjectAgentImp::GetLLDFSpecialActionText()
 {
    if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::DirectlyInput)
    {
-      return std::string(" Note: The project criteria was overriden: Live load distribution factors input directly by user.");
+      return std::_tstring(_T(" Note: The project criteria was overriden: Live load distribution factors input directly by user."));
    }
    if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::LeverRule)
    {
-      return std::string("  Note: The project criteria was overriden: All live load distribution factors computed using the Lever Rule.");
+      return std::_tstring(_T("  Note: The project criteria was overriden: All live load distribution factors computed using the Lever Rule."));
    }
    else if (m_LldfRangeOfApplicabilityAction==roaIgnore)
    {
-      return std::string(" Note that range of applicability requirements are ignored. Equations are used regardless of their validity");
+      return std::_tstring(_T(" Note that range of applicability requirements are ignored. Equations are used regardless of their validity"));
    }
    else if (m_LldfRangeOfApplicabilityAction==roaIgnoreUseLeverRule)
    {
-      return std::string(" Note that the lever rule used to compute distribution factors if the range of applicability requirements are exceeded.");
+      return std::_tstring(_T(" Note that the lever rule used to compute distribution factors if the range of applicability requirements are exceeded."));
    }
    else
    {
-      return std::string(); //  nothing special
+      return std::_tstring(); //  nothing special
    }
 }
 
@@ -6594,7 +6594,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
 {
    // NOTE: that the name of this function is misleading. It not only deals with conflicts,
    //       it also creates the library entries.
-   std::string new_name;
+   std::_tstring new_name;
 
    // Connections
    ConnectionLibrary& rconlib = m_pLibMgr->GetConnectionLibrary();
@@ -6660,7 +6660,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
       for ( GroupIndexType groupIdx = 0; groupIdx < nGroups; groupIdx++ )
       {
          GirderIndexType firstGdrIdx,lastGdrIdx;
-         std::string strGirderName;
+         std::_tstring strGirderName;
 
          girderTypes.GetGirderGroup(groupIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
          if (rList.IsConflict(girderLibrary, strGirderName, &new_name))
@@ -6740,8 +6740,8 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    // spec lib entry. We need to release that entry and hook onto the
    // the real entry. Save the current name, clear the m_Spec data entry
    // so it looks like the spec is being changed, then set the specification
-   std::string specName = m_Spec;
-   m_Spec = "";
+   std::_tstring specName = m_Spec;
+   m_Spec = _T("");
    InitSpecification(specName);
 
 
@@ -6756,8 +6756,8 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    // spec lib entry. We need to release that entry and hook onto the
    // the real entry. Save the current name, clear the m_Spec data entry
    // so it looks like the spec is being changed, then set the specification
-   std::string ratingSpecName = m_RatingSpec;
-   m_RatingSpec = "";
+   std::_tstring ratingSpecName = m_RatingSpec;
+   m_RatingSpec = _T("");
    InitRatingSpecification(ratingSpecName);
 
    if (rList.AreThereAnyConflicts())
@@ -6856,8 +6856,8 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
          if (min_xfer < xfer_length)
          {
-            std::ostringstream os;
-            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << ": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check." << std::endl;
+            std::_tostringstream os;
+            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
             AddGirderStatusItem(spanIdx, gdrIdx, os.str() );
          }
       }
@@ -6874,8 +6874,8 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
    bool is_ubiquitous_spacing = IsBridgeSpacing( GetGirderSpacingType() );
 
    bool problem = false;
-   std::ostringstream os;
-   os << "Warning: The girder spacing at ";
+   std::_tostringstream os;
+   os << _T("Warning: The girder spacing at ");
 
    SpanIndexType nSpans   = m_BridgeDescription.GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
@@ -6905,7 +6905,7 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
             pStartSpacing->SetMeasurementLocation(pgsTypes::AtCenterlinePier);
          }
 
-         os << "left end of Span " << LABEL_SPAN(spanIdx) <<", ";
+         os << _T("left end of Span ") << LABEL_SPAN(spanIdx) <<_T(", ");
       }
 
       mtBearingOffset = end_connection_entry->GetBearingOffsetMeasurementType();
@@ -6918,7 +6918,7 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
             pEndSpacing->SetMeasurementLocation(pgsTypes::AtCenterlinePier);
          }
 
-         os << "right end of Span " << LABEL_SPAN(spanIdx) <<", ";
+         os << _T("right end of Span ") << LABEL_SPAN(spanIdx) <<_T(", ");
       }
 
    }
@@ -6934,7 +6934,7 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
 
       // one status message for all changes made
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      os << "was measured from the bearing line; and the connection's bearing offset was measured along the girder. These settings are not compatible. The spacing was Automatically Forced to be measured from CL Pier. Please check your bearing locations and span length!";
+      os << _T("was measured from the bearing line; and the connection's bearing offset was measured along the girder. These settings are not compatible. The spacing was Automatically Forced to be measured from CL Pier. Please check your bearing locations and span length!");
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,124,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
    }
@@ -6977,7 +6977,7 @@ bool CProjectAgentImp::CanHavePedestrianLoad() const
 }
 
 
-void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType girder, std::string& message)
+void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType girder, std::_tstring& message)
 {
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -7023,7 +7023,7 @@ void CProjectAgentImp::RemoveGirderStatusItems(SpanIndexType span,GirderIndexTyp
    }
 }
 
-void CProjectAgentImp::InitSpecification(const std::string& spec)
+void CProjectAgentImp::InitSpecification(const std::_tstring& spec)
 {
    if ( m_Spec != spec )
    {
@@ -7044,7 +7044,7 @@ void CProjectAgentImp::InitSpecification(const std::string& spec)
    }
 }
 
-void CProjectAgentImp::InitRatingSpecification(const std::string& spec)
+void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
 {
    if ( m_RatingSpec != spec )
    {

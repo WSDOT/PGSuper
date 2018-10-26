@@ -84,7 +84,7 @@ END_MESSAGE_MAP()
 
 CLibraryEditorDoc::CLibraryEditorDoc()
 {
-   m_LibraryManager.SetName("Master Libraries");
+   m_LibraryManager.SetName(_T("Master Libraries"));
    m_pMyToolBar = NULL;
 
    // library editor doesn't use the status center
@@ -102,7 +102,7 @@ CLibraryEditorDoc::~CLibraryEditorDoc()
 
 CString CLibraryEditorDoc::GetToolbarSectionName()
 {
-   return CString("LibraryEditor Toolbars");
+   return CString(_T("LibraryEditor Toolbars"));
 }
 
 CATID CLibraryEditorDoc::GetDocumentPluginCATID()
@@ -137,7 +137,7 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
    {
       // set up the toolbar here
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      UINT tbID = pFrame->CreateToolBar("Library",GetPluginCommandManager());
+      UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
       m_pMyToolBar = pFrame->GetToolBar(tbID);
       m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
       m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,NULL,BTNS_DROPDOWN);
@@ -162,11 +162,11 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
    {
       // save editor-specific information
       CEAFApp* pApp = EAFGetApp();
-      mysave.BeginUnit("LIBRARY_EDITOR", 1.0);
+      mysave.BeginUnit(_T("LIBRARY_EDITOR"), 1.0);
       if (pApp->GetUnitsMode() == eafTypes::umUS)
-         mysave.Property("EDIT_UNITS", "US");
+         mysave.Property(_T("EDIT_UNITS"), _T("US"));
       else
-         mysave.Property("EDIT_UNITS", "SI");
+         mysave.Property(_T("EDIT_UNITS"), _T("SI"));
 
       // save library manager and all the library data
       m_LibraryManager.SaveMe(&mysave);
@@ -176,7 +176,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
    catch (const sysXStructuredSave& rXSave)
    {
       rXSave; // unused
-      AfxMessageBox("Error saving library data. You may have a full hard disk",MB_OK|MB_ICONEXCLAMATION);
+      AfxMessageBox(_T("Error saving library data. You may have a full hard disk"),MB_OK|MB_ICONEXCLAMATION);
       return E_FAIL;
    }
 	
@@ -242,7 +242,7 @@ CString CLibraryEditorDoc::GetRootNodeName()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString strAppUnit = AfxGetApp()->m_pszAppName;
    strAppUnit.Trim();
-   strAppUnit.Replace(" ","");
+   strAppUnit.Replace(_T(" "),_T(""));
 
    return strAppUnit;
 }
@@ -252,8 +252,8 @@ void CLibraryEditorDoc::OnImport()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// ask user for file name
-   CFileDialog  fildlg(TRUE,"pgs",NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
-                   "PGSuper Project File (*.pgs)|*.pgs||");
+   CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
+                   _T("PGSuper Project File (*.pgs)|*.pgs||"));
    int stf = fildlg.DoModal();
    if (stf==IDOK)
    {
@@ -299,7 +299,7 @@ void CLibraryEditorDoc::OnImport()
          }
 
          // advance the structured load pointer to the correct point for agent
-         hr = pStrLoad->BeginUnit("PGSuper");
+         hr = pStrLoad->BeginUnit(_T("PGSuper"));
          if ( FAILED(hr) )
          {
             HandleOpenDocumentError( hr, rPath );
@@ -315,25 +315,25 @@ void CLibraryEditorDoc::OnImport()
          {
             CComVariant var;
             var.vt = VT_BSTR;
-            if ( FAILED(pStrLoad->get_Property("Version",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("Version"),&var)) )
             {
                HandleOpenDocumentError( hr, rPath );
                ASSERT(FALSE);
             }
 
-            if ( FAILED(pStrLoad->BeginUnit("Broker")) )
+            if ( FAILED(pStrLoad->BeginUnit(_T("Broker"))) )
             {
                HandleOpenDocumentError( hr, rPath );
                ASSERT(FALSE);
             }
 
-            if ( FAILED(pStrLoad->BeginUnit("Agent")) )
+            if ( FAILED(pStrLoad->BeginUnit(_T("Agent"))) )
             {
                HandleOpenDocumentError( hr, rPath );
                ASSERT(FALSE);
             }
 
-            if ( FAILED(pStrLoad->get_Property("CLSID",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("CLSID"),&var)) )
             {
                HandleOpenDocumentError( hr, rPath );
                ASSERT(FALSE);
@@ -399,7 +399,7 @@ void CLibraryEditorDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathNam
    default:
       {
          CString log_msg;
-         log_msg.Format("An unknown error occured while opening the file (hr = %d)",hr);
+         log_msg.Format(_T("An unknown error occured while opening the file (hr = %d)"),hr);
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
       break;
@@ -428,7 +428,7 @@ void CLibraryEditorDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathNam
    default:
       {
          CString log_msg;
-         log_msg.Format("An unknown error occured while closing the file (hr = %d)",hr);
+         log_msg.Format(_T("An unknown error occured while closing the file (hr = %d)"),hr);
          AfxFormatString1( msg1, IDS_E_WRITE, lpszPathName );
       }
       break;

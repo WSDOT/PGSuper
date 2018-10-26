@@ -29,7 +29,7 @@
 // BridgeDescGeneralPage.h : header file
 //
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include <IFace\BeamFactory.h>
 #include <PgsExt\DeckDescription.h>
 

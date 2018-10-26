@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "mfcdual.h"

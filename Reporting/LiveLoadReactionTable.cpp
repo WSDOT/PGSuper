@@ -111,34 +111,34 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if ( bPedLoading )
       nCols += 2;
 
- 	p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Reactions without Impact");
+ 	p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reactions without Impact"));
    p_table->SetNumberOfHeaderRows(2);
 
    p_table->SetRowSpan(0,0,2);
    p_table->SetRowSpan(1,0,-1);
-   (*p_table)(0,0) << "";
+   (*p_table)(0,0) << _T("");
 
  	ColumnIndexType col1 = 1;
    ColumnIndexType col2 = 1;
 	if ( analysisType == pgsTypes::Envelope )
 	{
       p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << symbol(SUM) << "DC";
-      (*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      (*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(0,col1++) << symbol(SUM) << _T("DC");
+      (*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
       p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << symbol(SUM) << "DW";
-      (*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      (*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(0,col1++) << symbol(SUM) << _T("DW");
+      (*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 	else
 	{
       p_table->SetRowSpan(0,col1,2);
-		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << "DC",          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
       p_table->SetRowSpan(0,col1,2);
-		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << "DW",          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
       p_table->SetRowSpan(1,col2++,-1);
       p_table->SetRowSpan(1,col2++,-1);
@@ -147,35 +147,35 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if ( bPedLoading )
    {
       p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << "* PL";
-		(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(0,col1++) << _T("* PL");
+		(*p_table)(1,col2++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
 
    p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << "* LL Design";
-	(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-	(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,col1++) << _T("* LL Design");
+	(*p_table)(1,col2++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+	(*p_table)(1,col2++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
 	if ( bPermit )
 	{
       p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << "* LL Permit";
-		(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(0,col1++) << _T("* LL Permit");
+		(*p_table)(1,col2++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 
    p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << "Strength I";
-	(*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-	(*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*p_table)(0,col1++) << _T("Strength I");
+	(*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+	(*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
 	if ( bPermit )
 	{
       p_table->SetColumnSpan(0,col1,2);
-		(*p_table)(0,col1++) << "Strength II";
-		(*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(0,col1++) << _T("Strength II");
+		(*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 
    for ( ColumnIndexType i = col1; i < nCols; i++ )
@@ -188,7 +188,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
-   (*p_table)(0,0) << "";
+   (*p_table)(0,0) << _T("");
 
    // Fill up the table
    Float64 min, max;
@@ -196,9 +196,9 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    for ( PierIndexType pier = startPier; pier < endPier; pier++ )
    {
       if (pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,0) << "Abutment " << LABEL_PIER(pier);
+         (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*p_table)(row,0) << "Pier " << LABEL_PIER(pier);
+         (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);
 
      ColumnIndexType col = 1;
 

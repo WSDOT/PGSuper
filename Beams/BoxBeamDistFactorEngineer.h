@@ -83,7 +83,7 @@ public:
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetReactionDF(SpanIndexType pier,GirderIndexType gdr);
    virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual std::string GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::string& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
+   virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
 
 private:
 //   IBroker* m_pBroker;

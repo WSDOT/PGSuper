@@ -94,7 +94,7 @@ public:
    // advanced. If false is returned, the file pointer does not advance.
    // After a unit has been entered, GetVersion may be called to get its
    // version
-   virtual bool BeginUnit(const char* name);
+   virtual bool BeginUnit(LPCTSTR name);
 
    //------------------------------------------------------------------------
    // Check for the end of a structured data chunk that was started by a call to 
@@ -109,6 +109,8 @@ public:
    // Get the version number of the parent to the current unit
    virtual double GetParentVersion();
 
+   virtual std::_tstring GetParentUnit();
+
    //------------------------------------------------------------------------
    // Get the version number of the top-most unit
    virtual double GetTopVersion();
@@ -120,31 +122,31 @@ public:
    // the property was not at the current locaton and the file pointer does not
    // advance.
    // Read a string property
-   virtual bool Property(const char* name, std::string* pvalue);
+   virtual bool Property(LPCTSTR name, std::_tstring* pvalue);
 
    //------------------------------------------------------------------------
    // Read a real number property
-   virtual bool Property(const char* name, Float64* pvalue);
+   virtual bool Property(LPCTSTR name, Float64* pvalue);
 
    //------------------------------------------------------------------------
    // Read an integral property
-   virtual bool Property(const char* name, Int16* pvalue);
+   virtual bool Property(LPCTSTR name, Int16* pvalue);
 
    //------------------------------------------------------------------------
    // Read an unsigned integral property
-   virtual bool Property(const char* name, Uint16* pvalue);
+   virtual bool Property(LPCTSTR name, Uint16* pvalue);
 
    //------------------------------------------------------------------------
    // Read an integral property
-   virtual bool Property(const char* name, Int32* pvalue);
+   virtual bool Property(LPCTSTR name, Int32* pvalue);
 
    //------------------------------------------------------------------------
    // Read an unsigned integral property
-   virtual bool Property(const char* name, Uint32* pvalue);
+   virtual bool Property(LPCTSTR name, Uint32* pvalue);
 
    //------------------------------------------------------------------------
    // Read a bool property
-   virtual bool Property(const char* name, bool* pvalue);
+   virtual bool Property(LPCTSTR name, bool* pvalue);
 
    //------------------------------------------------------------------------
    // Am I at the end of the "File"?
@@ -153,9 +155,9 @@ public:
    //------------------------------------------------------------------------
    // Dump state as a text string into os. This is primarily to be used for
    // error handling.
-   virtual std::string GetStateDump() const;
+   virtual std::_tstring GetStateDump() const;
 
-   virtual std::string GetUnit() const;
+   virtual std::_tstring GetUnit() const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

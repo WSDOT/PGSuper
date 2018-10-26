@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // ProjectPropertiesDlg.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CProjectPropertiesDlg dialog
@@ -43,12 +43,12 @@ public:
 	//{{AFX_DATA(CProjectPropertiesDlg)
 	enum { IDD = IDD_PROJECTPROPERTIES };
 	//}}AFX_DATA
-	std::string	m_Bridge;
-	std::string	m_BridgeID;
-	std::string	m_Comments;
-	std::string	m_Company;
-	std::string	m_Engineer;
-	std::string	m_JobNumber;
+	std::_tstring	m_Bridge;
+	std::_tstring	m_BridgeID;
+	std::_tstring	m_Comments;
+	std::_tstring	m_Company;
+	std::_tstring	m_Engineer;
+	std::_tstring	m_JobNumber;
 	bool	m_bShowProjectProperties;
 
 

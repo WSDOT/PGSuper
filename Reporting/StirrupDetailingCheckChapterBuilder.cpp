@@ -102,28 +102,28 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
   // Av/S check 5.8.2.5
    // picture depends on units
-   std::string strImage;
+   std::_tstring strImage;
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
    pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,girder);
    bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,girder);
    switch( concType )
    {
    case pgsTypes::Normal:
-      strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_NWC_US.png" : "AvOverSMin_NWC_SI.png");
+      strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
       break;
 
    case pgsTypes::AllLightweight:
       if ( bHasAggSplittingStrength )
-         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_LWC_US.png" : "AvOverSMin_LWC_SI.png");
+         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
       else
-         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_ALWC_US.png" : "AvOverSMin_ALWC_SI.png");
+         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
       break;
 
    case pgsTypes::SandLightweight:
       if ( bHasAggSplittingStrength )
-         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_LWC_US.png" : "AvOverSMin_LWC_SI.png");
+         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
       else
-         strImage = (IS_US_UNITS(pDisplayUnits) ? "AvOverSMin_SLWC_US.png" : "AvOverSMin_SLWC_SI.png");
+         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
       break;
 
    default:
@@ -145,15 +145,15 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
    CHECK(pstirrup_artifact);
 
-   *pParagraph << RPT_FC << " = "<<stress.SetValue(pstirrup_artifact->GetFc())<<" "<< stress.GetUnitTag()<<rptNewLine;
-   *pParagraph << RPT_FY << " = "<<stress.SetValue(pstirrup_artifact->GetFy())<<" "<< stress.GetUnitTag()<<rptNewLine;
+   *pParagraph << RPT_FC << _T(" = ")<<stress.SetValue(pstirrup_artifact->GetFc())<<_T(" ")<< stress.GetUnitTag()<<rptNewLine;
+   *pParagraph << RPT_FY << _T(" = ")<<stress.SetValue(pstirrup_artifact->GetFy())<<_T(" ")<< stress.GetUnitTag()<<rptNewLine;
 
    if ( concType != pgsTypes::Normal && bHasAggSplittingStrength )
    {
-      *pParagraph << RPT_STRESS("ct") << " = "<<stress.SetValue(pMaterial->GetGdrConcreteAggSplittingStrength(span,girder))<<" "<< stress.GetUnitTag()<<rptNewLine;
+      *pParagraph << RPT_STRESS(_T("ct")) << _T(" = ")<<stress.SetValue(pMaterial->GetGdrConcreteAggSplittingStrength(span,girder))<<_T(" ")<< stress.GetUnitTag()<<rptNewLine;
    }
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
 
    if ( span == ALL_SPANS )
    {
@@ -163,15 +163,15 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
    *pParagraph << table << rptNewLine;
 
-   table->TableLabel() << "Details for Minimum Transverse Reinforcement Check - 5.8.2.5-1";
+   table->TableLabel() << _T("Details for Minimum Transverse Reinforcement Check - 5.8.2.5-1");
   
    if ( stage == pgsTypes::CastingYard )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,2)  << COLHDR("A" << Sub("v")<<"/S"<<Sub("min") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,1)  << COLHDR(_T("b")<<Sub(_T("v")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,2)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S")<<Sub(_T("min")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // Fill up the table
 
@@ -222,11 +222,11 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
 
    if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "Strength I";
+      *pParagraph << _T("Strength I");
    else
-      *pParagraph << "Strength II";
+      *pParagraph << _T("Strength II");
 
-   *pParagraph <<" - Details for Maximum Transverse Reinforcement Spacing Check - 5.8.2.7"<<rptNewLine;
+   *pParagraph <<_T(" - Details for Maximum Transverse Reinforcement Spacing Check - 5.8.2.7")<<rptNewLine;
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
@@ -238,7 +238,7 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    // get a little fancy here with the equation so it lines up
-   rptRcTable* petable = pgsReportStyleHolder::CreateDefaultTable(2,"");
+   rptRcTable* petable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
 
    if ( span == ALL_SPANS )
    {
@@ -258,15 +258,15 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
 
    if ( bAfter1999 )
-      (*petable)(1,0) << "if V"<<Sub("u")<<" < 0.125 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v")<<" : ";
+      (*petable)(1,0) << _T("if V")<<Sub(_T("u"))<<_T(" < 0.125 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"))<<_T(" : ");
    else
-      (*petable)(1,0) << "if V"<<Sub("u")<<" < 0.1 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v")<<" : ";
+      (*petable)(1,0) << _T("if V")<<Sub(_T("u"))<<_T(" < 0.1 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v"))<<_T(" : ");
 
-   (*petable)(1,1) << " S"<<Sub("max")<<"= min(0.8 d"<<Sub("v")<<", "<<dim.SetValue(s_under)<<dim.GetUnitTag()<<")";
-   (*petable)(2,0) <<"Else : ";
-   (*petable)(2,1) <<" S"<<Sub("max")<<"= min(0.4 d"<<Sub("v")<<", "<<dim.SetValue(s_over)<<dim.GetUnitTag()<<")";
+   (*petable)(1,1) << _T(" S")<<Sub(_T("max"))<<_T("= min(0.8 d")<<Sub(_T("v"))<<_T(", ")<<dim.SetValue(s_under)<<dim.GetUnitTag()<<_T(")");
+   (*petable)(2,0) <<_T("Else : ");
+   (*petable)(2,1) <<_T(" S")<<Sub(_T("max"))<<_T("= min(0.4 d")<<Sub(_T("v"))<<_T(", ")<<dim.SetValue(s_over)<<dim.GetUnitTag()<<_T(")");
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
    *pParagraph << table << rptNewLine;
 
    if ( stage == pgsTypes::CastingYard )
@@ -274,16 +274,16 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("V"<<Sub("u"),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   (*table)(0,1)  << COLHDR(_T("V")<<Sub(_T("u")),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    if ( bAfter1999 )
-      (*table)(0,2)  << COLHDR("0.125 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,2)  << COLHDR(_T("0.125 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    else
-      (*table)(0,2)  << COLHDR("0.1 " << RPT_FC <<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+      (*table)(0,2)  << COLHDR(_T("0.1 ") << RPT_FC <<_T("b")<<Sub(_T("v"))<<_T("d")<<Sub(_T("v")),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
-   (*table)(0,3)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4)  << COLHDR("d"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5)  << COLHDR("S" << Sub("max"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3)  << COLHDR(_T("b")<<Sub(_T("v")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4)  << COLHDR(_T("d")<<Sub(_T("v")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5)  << COLHDR(_T("S") << Sub(_T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);

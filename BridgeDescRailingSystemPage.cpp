@@ -233,13 +233,13 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
    {
-      GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Density");
-      GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText("Density");
+      GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText(_T("Density"));
+      GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText(_T("Density"));
    }
    else
    {
-      GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Unit Weight");
-      GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText("Unit Weight");
+      GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText(_T("Unit Weight"));
+      GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText(_T("Unit Weight"));
    }
 
    // Update the UI elements
@@ -264,8 +264,8 @@ void CBridgeDescRailingSystemPage::FillTrafficBarrierComboBoxes()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   std::vector<std::string> names;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring> names;
+   std::vector<std::_tstring>::iterator iter;
 
    CComboBox* pLeftExteriorBarrier  = (CComboBox*)GetDlgItem( IDC_LEFT_EXTERIORBARRIER );
    CComboBox* pRightExteriorBarrier = (CComboBox*)GetDlgItem( IDC_RIGHT_EXTERIORBARRIER );
@@ -276,7 +276,7 @@ void CBridgeDescRailingSystemPage::FillTrafficBarrierComboBoxes()
    pLibNames->EnumTrafficBarrierNames( &names );
    for ( iter = names.begin(); iter < names.end(); iter++ )
    {
-      std::string& name = *iter;
+      std::_tstring& name = *iter;
       pLeftExteriorBarrier->AddString( name.c_str() );
       pRightExteriorBarrier->AddString( name.c_str() );
 
@@ -645,8 +645,8 @@ void CBridgeDescRailingSystemPage::UpdateRightEc()
       pWndFc->GetWindowText(strFc);
       pWndDensity->GetWindowText(strDensity);
 
-      strK1.Format("%f",m_RightRailingSystem.EcK1);
-      strK2.Format("%f",m_RightRailingSystem.EcK2);
+      strK1.Format(_T("%f"),m_RightRailingSystem.EcK1);
+      strK2.Format(_T("%f"),m_RightRailingSystem.EcK2);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       pWndEc->SetWindowText(strEc);
@@ -671,8 +671,8 @@ void CBridgeDescRailingSystemPage::UpdateLeftEc()
       pWndFc->GetWindowText(strFc);
       pWndDensity->GetWindowText(strDensity);
 
-      strK1.Format("%f",m_LeftRailingSystem.EcK1);
-      strK2.Format("%f",m_LeftRailingSystem.EcK2);
+      strK1.Format(_T("%f"),m_LeftRailingSystem.EcK1);
+      strK2.Format(_T("%f"),m_LeftRailingSystem.EcK2);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       pWndEc->SetWindowText(strEc);
@@ -785,19 +785,19 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
-   strTip.Format("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s",
-      "Type", matConcrete::GetTypeName((matConcrete::Type)pRailingSystem->ConcreteType,true).c_str(),
-      "Unit Weight",FormatDimension(pRailingSystem->StrengthDensity,density),
-      "Unit Weight (w/ reinforcement)",  FormatDimension(pRailingSystem->WeightDensity,density),
-      "Max Aggregate Size",  FormatDimension(pRailingSystem->MaxAggSize,aggsize)
+   strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pRailingSystem->ConcreteType,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pRailingSystem->StrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pRailingSystem->WeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->MaxAggSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    //{
    //   // add K1 parameter
    //   CString strK1;
-   //   strK1.Format("\r\n%-20s %s",
-   //      "K1",FormatScalar(pRailingSystem->K1,scalar));
+   //   strK1.Format(_T("\r\n%-20s %s"),
+   //      _T("K1"),FormatScalar(pRailingSystem->K1,scalar));
 
    //   strTip += strK1;
    //}
@@ -805,13 +805,13 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
    if ( pRailingSystem->ConcreteType != pgsTypes::Normal && pRailingSystem->bHasFct )
    {
       CString strLWC;
-      strLWC.Format("\r\n%-20s %s",
-         "fct",FormatDimension(pRailingSystem->Fct,stress));
+      strLWC.Format(_T("\r\n%-20s %s"),
+         _T("fct"),FormatDimension(pRailingSystem->Fct,stress));
 
       strTip += strLWC;
    }
 
-   CString strPress("\r\n\r\nPress button to edit");
+   CString strPress(_T("\r\n\r\nPress button to edit"));
    strTip += strPress;
 
    return strTip;

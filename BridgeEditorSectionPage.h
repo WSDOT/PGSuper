@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // BridgeEditorSectionPage.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeEditorSectionPage dialog

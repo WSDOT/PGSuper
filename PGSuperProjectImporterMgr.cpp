@@ -43,7 +43,7 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
    HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
    if ( FAILED(hr) )
    {
-      AfxMessageBox("Failed to create the component category manager");
+      AfxMessageBox(_T("Failed to create the component category manager"));
       return false;
    }
 
@@ -68,9 +68,9 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
       {
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Enabled"));
+         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
 
-         if ( strState.CompareNoCase("Enabled") == 0 )
+         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
          {
             CComPtr<IPGSuperProjectImporter> importer;
             importer.CoCreateInstance(clsid[i]);
@@ -80,10 +80,10 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
                LPOLESTR pszUserType;
                OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
                CString strMsg;
-               strMsg.Format("Failed to load %s PGSuper Project Importer plug in.\n\nWould you like to disable this plug-in?",OLE2A(pszUserType));
+               strMsg.Format(_T("Failed to load %s PGSuper Project Importer plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
                if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
                {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Disabled"));
+                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
                }
             }
             else

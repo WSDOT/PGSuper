@@ -84,7 +84,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
    {
       rptParagraph* pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << "This girder has not been designed" << rptNewLine;
+      (*pPara) << _T("This girder has not been designed") << rptNewLine;
       return pChapter;
    }
 
@@ -137,7 +137,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             {
                pParagraph = new rptParagraph();
                *pChapter << pParagraph;
-               *pParagraph << color(Blue)<<"Note that strand fill order has been changed from "<<Bold("Number of Permanent")<<" to "<< Bold("Number of Straight and Number of Harped") << color(Black) << " strands.";
+               *pParagraph << color(Blue)<<_T("Note that strand fill order has been changed from ")<<Bold(_T("Number of Permanent"))<<_T(" to ")<< Bold(_T("Number of Straight and Number of Harped")) << color(Black) << _T(" strands.");
             }
          }
       }
@@ -145,7 +145,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,"");
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
       *pParagraph << pTable;
 
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -154,9 +154,9 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       int row=0;
 
 
-      (*pTable)(row,0) << "Parameter";
-      (*pTable)(row,1) << "Proposed Design";
-      (*pTable)(row,2) << "Current Value";
+      (*pTable)(row,0) << _T("Parameter");
+      (*pTable)(row,1) << _T("Proposed Design");
+      (*pTable)(row,2) << _T("Current Value");
 
       row++;
 
@@ -173,7 +173,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       Float64 abs_offset_end, abs_offset_hp;
       pStrandGeometry->GetHarpStrandOffsets(span,gdr,&abs_offset_end,&abs_offset_hp);
 
-      (*pTable)(row,0) << "Number of Straight Strands";
+      (*pTable)(row,0) << _T("Number of Straight Strands");
       (*pTable)(row,1) << config.Nstrands[pgsTypes::Straight];
       (*pTable)(row,2) << girderData.Nstrands[pgsTypes::Straight];
 
@@ -182,38 +182,38 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       long pdb = pStrandGeometry->GetNumDebondedStrands(span,gdr,pgsTypes::Straight);
       if (ddb>0 || pdb>0)
       {
-         (*pTable)(row,1) << " ("<<ddb<<" debonded)";
-         (*pTable)(row,2) << " ("<<pdb<<" debonded)";
+         (*pTable)(row,1) << _T(" (")<<ddb<<_T(" debonded)");
+         (*pTable)(row,2) << _T(" (")<<pdb<<_T(" debonded)");
       }
 
       row++;
 
-      (*pTable)(row,0) << "Number of Harped Strands";
+      (*pTable)(row,0) << _T("Number of Harped Strands");
       (*pTable)(row,1) << config.Nstrands[pgsTypes::Harped];
       (*pTable)(row,2) << girderData.Nstrands[pgsTypes::Harped];
       row++;
 
       if ( 0 < pStrandGeometry->GetMaxStrands(span,gdr,pgsTypes::Temporary) )
       {
-         (*pTable)(row,0) << "Number of Temporary Strands";
+         (*pTable)(row,0) << _T("Number of Temporary Strands");
          (*pTable)(row,1) << config.Nstrands[pgsTypes::Temporary];
          (*pTable)(row,2) << girderData.Nstrands[pgsTypes::Temporary];
          row++;
       }
 
-      (*pTable)(row,0) << "Straight Strand Jacking Force";
+      (*pTable)(row,0) << _T("Straight Strand Jacking Force");
       (*pTable)(row,1) << force.SetValue(config.Pjack[pgsTypes::Straight]);
       (*pTable)(row,2) << force.SetValue(girderData.Pjack[pgsTypes::Straight]);
       row++;
 
-      (*pTable)(row,0) << "Harped Strand Jacking Force";
+      (*pTable)(row,0) << _T("Harped Strand Jacking Force");
       (*pTable)(row,1) << force.SetValue(config.Pjack[pgsTypes::Harped]);
       (*pTable)(row,2) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
       row++;
 
       if ( 0 < pStrandGeometry->GetMaxStrands(span,gdr,pgsTypes::Temporary) )
       {
-         (*pTable)(row,0) << "Temporary Strand Jacking Force";
+         (*pTable)(row,0) << _T("Temporary Strand Jacking Force");
          (*pTable)(row,1) << force.SetValue(config.Pjack[pgsTypes::Temporary]);
          (*pTable)(row,2) << force.SetValue(girderData.Pjack[pgsTypes::Temporary]);
          row++;
@@ -225,11 +225,11 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          switch( HsoEnd )
          {
          case hsoCGFROMTOP:
-            (*pTable)(row,0) << "Distance from top of girder to" << rptNewLine << "CG of harped strand group at ends of girder";
+            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
             break;
 
          case hsoCGFROMBOTTOM:
-            (*pTable)(row,0) << "Distance from bottom of girder to" << rptNewLine << "CG of harped strand group at ends of girder";
+            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
             break;
 
          case hsoLEGACY:
@@ -238,19 +238,19 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             HsoEnd = hsoTOP2TOP;
 
          case hsoTOP2TOP:
-            (*pTable)(row,0) << "Distance from top of girder to" << rptNewLine << "top of harped strand group at ends of girder";
+            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
             break;
 
          case hsoTOP2BOTTOM:
-            (*pTable)(row,0) << "Distance from bottom of girder" << rptNewLine << "to top of harped strand group at ends of girder";
+            (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top of harped strand group at ends of girder");
             break;
 
          case hsoBOTTOM2BOTTOM:
-            (*pTable)(row,0) << "Distance from bottom of girder" << rptNewLine << "to bottom of harped strand group at ends of girder";
+            (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to bottom of harped strand group at ends of girder");
             break;
 
          case hsoECCENTRICITY:
-            (*pTable)(row,0) << "Eccentricity of harped strand" << rptNewLine << "group at ends of girder";
+            (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ends of girder");
             break;
 
          default:
@@ -274,19 +274,19 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          switch( HsoHp )
          {
          case hsoCGFROMTOP:
-            (*pTable)(row,0) << "Distance from top of girder to" << rptNewLine << "CG of harped strand group at harping point";
+            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
             break;
 
          case hsoCGFROMBOTTOM:
-            (*pTable)(row,0) << "Distance from bottom of girder to" << rptNewLine << "CG of harped strand group at harping point";
+            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
             break;
 
          case hsoTOP2TOP:
-            (*pTable)(row,0) << "Distance from top of girder to" << rptNewLine << "top of harped strand group at harping point";
+            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at harping point");
             break;
 
          case hsoTOP2BOTTOM:
-            (*pTable)(row,0) << "Distance from bottom of girder to" << rptNewLine << "top of harped strand group at harping point";
+            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("top of harped strand group at harping point");
             break;
 
          case hsoLEGACY:
@@ -294,12 +294,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             HsoHp = hsoBOTTOM2BOTTOM;
 
          case hsoBOTTOM2BOTTOM:
-            (*pTable)(row,0) << "Distance from bottom of girder to" << rptNewLine << "bottom of harped strand group at harping point";
+            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at harping point");
             break;
 
 
          case hsoECCENTRICITY:
-            (*pTable)(row,0) << "Eccentricity of harped strand" << rptNewLine << "group at harping point";
+            (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at harping point");
             break;
 
          default:
@@ -340,19 +340,19 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          if ( pIBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
          {
             // slab offset is for the entire bridge... the start value contains this parameter
-            (*pTable)(row,0) << "Slab Offset (\"A\" Dimension)";
+            (*pTable)(row,0) << _T("Slab Offset (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
             (*pTable)(row,2) << length.SetValue( pGirderTypes->GetSlabOffset(gdr,pgsTypes::metStart) );
             row++;
          }
          else
          {
-            (*pTable)(row,0) << "Slab Offset at Start (\"A\" Dimension)";
+            (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
             (*pTable)(row,2) << length.SetValue( pGirderTypes->GetSlabOffset(gdr,pgsTypes::metStart) );
             row++;
 
-            (*pTable)(row,0) << "Slab Offset at End (\"A\" Dimension)";
+            (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metEnd) );
             (*pTable)(row,2) << length.SetValue( pGirderTypes->GetSlabOffset(gdr,pgsTypes::metEnd) );
             row++;
@@ -361,12 +361,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       if (options.doDesignLifting)
       {
-         (*pTable)(row,0) << "Lifting Point Location (Left)";
+         (*pTable)(row,0) << _T("Lifting Point Location (Left)");
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetLeftLiftingLocation() );
          (*pTable)(row,2) << distance.SetValue( pGirderLifting->GetLeftLiftingLoopLocation(span,gdr) );
          row++;
 
-         (*pTable)(row,0) << "Lifting Point Location (Right)";
+         (*pTable)(row,0) << _T("Lifting Point Location (Right)");
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetRightLiftingLocation() );
          (*pTable)(row,2) << distance.SetValue( pGirderLifting->GetRightLiftingLoopLocation(span,gdr) );
          row++;
@@ -374,12 +374,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       if (options.doDesignHauling)
       {
-         (*pTable)(row,0) << "Truck Support Location (Leading)";
+         (*pTable)(row,0) << _T("Truck Support Location (Leading)");
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetLeadingOverhang() );
          (*pTable)(row,2) << distance.SetValue( pGirderHauling->GetLeadingOverhang(span,gdr) );
          row++;
 
-         (*pTable)(row,0) << "Truck Support Location (Trailing)";
+         (*pTable)(row,0) << _T("Truck Support Location (Trailing)");
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetTrailingOverhang() );
          (*pTable)(row,2) << distance.SetValue( pGirderHauling->GetTrailingOverhang(span,gdr) );
          row++;
@@ -389,7 +389,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    {
       rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       *pChapter << pParagraph;
-      *pParagraph << "Flexure Design Not Requested"<<rptNewLine;
+      *pParagraph << _T("Flexure Design Not Requested")<<rptNewLine;
    }
 
 
@@ -398,12 +398,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       *pChapter << pParagraph;
-      *pParagraph << "Shear Design:";
+      *pParagraph << _T("Shear Design:");
 
       pParagraph = new rptParagraph();
 
       *pChapter << pParagraph;
-      *pParagraph << Bold("Proposed Design:") << rptNewLine;
+      *pParagraph << Bold(_T("Proposed Design:")) << rptNewLine;
 
      // stirrup design results
       ZoneIndexType nz = pArtifact->GetNumberOfStirrupZonesDesigned();
@@ -411,16 +411,16 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       if (nz>0)
       {
 
-         rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(4,"");
+         rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(4,_T(""));
          *pParagraph << pTables;
 
          INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
          INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
-         (*pTables)(0,0) << "Zone #";
-         (*pTables)(0,1) << COLHDR("Zone End", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*pTables)(0,2) << "Bar Size";
-         (*pTables)(0,3) << COLHDR("Spacing", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTables)(0,0) << _T("Zone #");
+         (*pTables)(0,1) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTables)(0,2) << _T("Bar Size");
+         (*pTables)(0,3) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          CHECK(pool!=0);
@@ -436,7 +436,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             if (i<nz-1)
                (*pTables)(row,1) << location.SetValue(zone_end);
             else
-               (*pTables)(row,1) << "Mid-Girder";
+               (*pTables)(row,1) << _T("Mid-Girder");
 
             const matRebar* prb = pool->GetRebar(szdata.VertBarSize);
             if (prb!=0)
@@ -446,40 +446,40 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             }
             else
             {
-               (*pTables)(row,2) << "none";
-               (*pTables)(row,3) << "--";
+               (*pTables)(row,2) << _T("none");
+               (*pTables)(row,3) << _T("--");
             }
          }
 
          // confinement
          BarSizeType cbs = pArtifact->GetConfinementBarSize();
          const matRebar* pcrb = pool->GetRebar(cbs);
-         *pParagraph<<"Confinement rebar size is "<<pcrb->GetName()<<rptNewLine;
-         *pParagraph<<"Confinement rebar ends in zone "<<(pArtifact->GetLastConfinementZone()+1)<<rptNewLine;
+         *pParagraph<<_T("Confinement rebar size is ")<<pcrb->GetName()<<rptNewLine;
+         *pParagraph<<_T("Confinement rebar ends in zone ")<<(pArtifact->GetLastConfinementZone()+1)<<rptNewLine;
       }
       else
       {
-         *pParagraph << "No Zones Designed"<<rptNewLine;
+         *pParagraph << _T("No Zones Designed")<<rptNewLine;
       }
 
       // Current configuration
-      *pParagraph << Bold("Current Values:") << rptNewLine;
+      *pParagraph << Bold(_T("Current Values:")) << rptNewLine;
 
       GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
       Uint32 ncz = pStirrupGeometry->GetNumZones(span,gdr);
 
       if (0 < ncz)
       {
-         rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(4,"");
+         rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(4,_T(""));
          *pParagraph << pTables;
 
          INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
          INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
-         (*pTables)(0,0) << "Zone #";
-         (*pTables)(0,1) << COLHDR("Zone End", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*pTables)(0,2) << "Bar Size";
-         (*pTables)(0,3) << COLHDR("Spacing", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTables)(0,0) << _T("Zone #");
+         (*pTables)(0,1) << COLHDR(_T("Zone End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTables)(0,2) << _T("Bar Size");
+         (*pTables)(0,3) << COLHDR(_T("Spacing"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          CHECK(pool!=0);
@@ -495,18 +495,18 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             if (i<nhz-1)
                (*pTables)(row,1) << location.SetValue(pStirrupGeometry->GetZoneEnd(span,gdr,i));
             else
-               (*pTables)(row,1) << "Mid-Girder";
+               (*pTables)(row,1) << _T("Mid-Girder");
 
             BarSizeType barSize = pStirrupGeometry->GetVertStirrupBarSize(span,gdr,i);
             if ( barSize != 0 )
             {
-               (*pTables)(row,2) << "#" << barSize;
+               (*pTables)(row,2) << _T("#") << barSize;
                (*pTables)(row,3) << length.SetValue(pStirrupGeometry->GetS(span,gdr,i));
             }
             else
             {
-               (*pTables)(row,2) << "none";
-               (*pTables)(row,3) << "--";
+               (*pTables)(row,2) << _T("none");
+               (*pTables)(row,3) << _T("--");
             }
          }
 
@@ -515,17 +515,17 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          BarSizeType size = pStirrupGeometry->GetConfinementBarSize(span,gdr);
          if (lz!=0 && size!=0)
          {
-            *pParagraph << "Confinement rebar size is #" << size << rptNewLine;
-            *pParagraph << "Confinement rebar ends in zone " << lz << rptNewLine;
+            *pParagraph << _T("Confinement rebar size is #") << size << rptNewLine;
+            *pParagraph << _T("Confinement rebar ends in zone ") << lz << rptNewLine;
          }
          else
          {
-            *pParagraph<<"Bottom flange confinement steel not present"<<rptNewLine;
+            *pParagraph<<_T("Bottom flange confinement steel not present")<<rptNewLine;
          }
       }
       else
       {
-         *pParagraph << "No Shear Zones in current girder"<<rptNewLine;
+         *pParagraph << _T("No Shear Zones in current girder")<<rptNewLine;
       }
    }
 
@@ -535,7 +535,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
       *pChapter << pParagraph;
-      *pParagraph << "Design Notes:" << rptNewLine;
+      *pParagraph << _T("Design Notes:") << rptNewLine;
 
       pParagraph = new rptParagraph();
 
@@ -546,12 +546,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       Float64 max_girder_fc = pLimits->GetMaxGirderFc(concType);
       if (pArtifact->GetReleaseStrength() > max_girder_fci)
       {
-         *pParagraph <<color(Red)<< "Warning: The designed girder release strength exceeds the normal value of "<<stress.SetValue(max_girder_fci)<<color(Black)<< rptNewLine;
+         *pParagraph <<color(Red)<< _T("Warning: The designed girder release strength exceeds the normal value of ")<<stress.SetValue(max_girder_fci)<<color(Black)<< rptNewLine;
       }
 
       if (pArtifact->GetConcreteStrength() > max_girder_fc)
       {
-         *pParagraph <<color(Red)<< "Warning: The designed girder final concrete strength exceeds the normal value of "<<stress.SetValue(max_girder_fc)<<color(Black)<< rptNewLine;
+         *pParagraph <<color(Red)<< _T("Warning: The designed girder final concrete strength exceeds the normal value of ")<<stress.SetValue(max_girder_fc)<<color(Black)<< rptNewLine;
       }
 
       // Negative camber is not technically a spec check, but a warning
@@ -566,22 +566,22 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       double excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
       if ( excess_camber < 0 )
       {
-         *pParagraph<<color(Red)<< "Warning:  Excess camber is negative, indicating a potential sag in the beam."<<color(Black)<< rptNewLine;
+         *pParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
       }
 
-      *pParagraph << "Concrete release strength was controlled by "<<pArtifact->GetReleaseDesignState().AsString() << rptNewLine;
-      *pParagraph << "Concrete final strength was controlled by "<<pArtifact->GetFinalDesignState().AsString() << rptNewLine;
+      *pParagraph << _T("Concrete release strength was controlled by ")<<pArtifact->GetReleaseDesignState().AsString() << rptNewLine;
+      *pParagraph << _T("Concrete final strength was controlled by ")<<pArtifact->GetFinalDesignState().AsString() << rptNewLine;
       *pParagraph << rptNewLine;
 
       if ( options.doDesignSlabOffset && (pBridge->GetDeckType()!=pgsTypes::sdtNone) )
       {
          if ( pIBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
          {
-            *pParagraph << "Slab Offset will be applied to the bridge" << rptNewLine;
+            *pParagraph << _T("Slab Offset will be applied to the bridge") << rptNewLine;
          }
          else
          {
-            *pParagraph << "Slab Offset will be applied to this girder" << rptNewLine;
+            *pParagraph << _T("Slab Offset will be applied to this girder") << rptNewLine;
          }
       }
 
@@ -596,9 +596,9 @@ void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,r
    *pChapter << pParagraph;
 
    *pParagraph << color(Green)
-               << "The design for Span " << LABEL_SPAN(pArtifact->GetSpan())
-               << " Girder " << LABEL_GIRDER(pArtifact->GetGirder())
-               << " was successful." 
+               << _T("The design for Span ") << LABEL_SPAN(pArtifact->GetSpan())
+               << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
+               << _T(" was successful.") 
                << color(Black)
                << rptNewLine;
 
@@ -612,9 +612,9 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
    *pChapter << pParagraph;
 
    *pParagraph << color(Red)
-               << "The design attempt for Span " << LABEL_SPAN(pArtifact->GetSpan())
-               << " Girder " << LABEL_GIRDER(pArtifact->GetGirder())
-               << " failed." 
+               << _T("The design attempt for Span ") << LABEL_SPAN(pArtifact->GetSpan())
+               << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
+               << _T(" failed.") 
                << color(Black)
                << rptNewLine;
 
@@ -627,76 +627,76 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
          break;
 
       case pgsDesignArtifact::NoDesignRequested:
-         *pParagraph << "No Design was requested." << rptNewLine;
+         *pParagraph << _T("No Design was requested.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::TooManyStrandsReqd:
-         *pParagraph << "Too many strands are required to satisfy the stress criteria." << rptNewLine;
+         *pParagraph << _T("Too many strands are required to satisfy the stress criteria.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::OverReinforced:
-         *pParagraph << "The section is over reinforced and the number of strands cannot be reduced." << rptNewLine;
+         *pParagraph << _T("The section is over reinforced and the number of strands cannot be reduced.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::UnderReinforced:
-         *pParagraph << "The section is under reinforced and the number of strands cannot be increased." << rptNewLine;
-         *pParagraph << "Increasing the compressive strength of the deck will improve section capacity." << rptNewLine;
+         *pParagraph << _T("The section is under reinforced and the number of strands cannot be increased.") << rptNewLine;
+         *pParagraph << _T("Increasing the compressive strength of the deck will improve section capacity.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::UltimateMomentCapacity:
-         *pParagraph << "Too many strands are required to satisfy ultimate moment capacity criteria." << rptNewLine;
+         *pParagraph << _T("Too many strands are required to satisfy ultimate moment capacity criteria.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::MaxIterExceeded:
-         *pParagraph << "After several iterations, a successful design could not be found." << rptNewLine;
+         *pParagraph << _T("After several iterations, a successful design could not be found.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::ReleaseStrength:
-         *pParagraph << "An acceptable concrete release strength could not be found." << rptNewLine;
+         *pParagraph << _T("An acceptable concrete release strength could not be found.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::ExceededMaxHoldDownForce:
-         *pParagraph << "Design is such that maximum allowable hold down force in casting yard is exceeded."<<rptNewLine;
+         *pParagraph << _T("Design is such that maximum allowable hold down force in casting yard is exceeded.")<<rptNewLine;
          break;
 
       case pgsDesignArtifact::StrandSlopeOutOfRange:
-         *pParagraph << "Design is such that maximum strand slope is exceeded."<<rptNewLine;
+         *pParagraph << _T("Design is such that maximum strand slope is exceeded.")<<rptNewLine;
          break;
 
       case pgsDesignArtifact::ShearExceedsMaxConcreteStrength:
-         *pParagraph << "Section is too small to carry ultimate shear. Crushing capacity was exceeded" << rptNewLine;
+         *pParagraph << _T("Section is too small to carry ultimate shear. Crushing capacity was exceeded") << rptNewLine;
          break;
 
       case pgsDesignArtifact::TooManyStirrupsReqd:
-         *pParagraph << "Could not design stirrups - Minimum spacing requirements were violated" << rptNewLine;
+         *pParagraph << _T("Could not design stirrups - Minimum spacing requirements were violated") << rptNewLine;
          break;
 
       case pgsDesignArtifact::GirderLiftingStability:
-         *pParagraph << "Could not satisfy stability requirements for lifting" << rptNewLine;
+         *pParagraph << _T("Could not satisfy stability requirements for lifting") << rptNewLine;
          break;
 
       case pgsDesignArtifact::GirderLiftingConcreteStrength:
-         *pParagraph << "Could not find a concrete strength to satisfy stress limits for lifting" << rptNewLine;
+         *pParagraph << _T("Could not find a concrete strength to satisfy stress limits for lifting") << rptNewLine;
          break;
 
       case pgsDesignArtifact::GirderShippingStability:
-         *pParagraph << "Could not satisfy stability requirements for shipping" << rptNewLine;
+         *pParagraph << _T("Could not satisfy stability requirements for shipping") << rptNewLine;
          break;
 
       case pgsDesignArtifact::GirderShippingConfiguration:
-         *pParagraph << "Could not satisfy trucking configuration requirements for shipping" << rptNewLine;
+         *pParagraph << _T("Could not satisfy trucking configuration requirements for shipping") << rptNewLine;
          break;
 
       case pgsDesignArtifact::GirderShippingConcreteStrength:
-         *pParagraph << "Could not find a concrete strength to satisfy stress limits for shipping" << rptNewLine;
+         *pParagraph << _T("Could not find a concrete strength to satisfy stress limits for shipping") << rptNewLine;
          break;
 
       case pgsDesignArtifact::StressExceedsConcreteStrength:
-         *pParagraph << "Could not find a concrete strength to satisfy stress limits" << rptNewLine;
+         *pParagraph << _T("Could not find a concrete strength to satisfy stress limits") << rptNewLine;
          break;
       
       case pgsDesignArtifact::DebondDesignFailed:
-         *pParagraph << "Unable to find an adequate debond design" << rptNewLine;
+         *pParagraph << _T("Unable to find an adequate debond design") << rptNewLine;
          break;
 
       default:
@@ -704,7 +704,7 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
    }
 
    pParagraph = new rptParagraph();
-   *pParagraph << Bold("Results from last trial:") << rptNewLine;
+   *pParagraph << Bold(_T("Results from last trial:")) << rptNewLine;
    *pChapter << pParagraph;
    write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }

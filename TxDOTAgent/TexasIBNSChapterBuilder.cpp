@@ -91,13 +91,13 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << "The Specification Check was Successful" << rptNewLine;
+      *pPara << _T("The Specification Check was Successful") << rptNewLine;
    }
    else
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << color(Red) << "The Specification Check Was Not Successful" << color(Black);
+      *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black);
    }
 
 #if defined IGNORE_2007_CHANGES
@@ -110,7 +110,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << "Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored." << bold(OFF) << color(Black) << rptNewLine;
+      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
    }
 #endif
 

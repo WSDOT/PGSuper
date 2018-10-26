@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPierDetailsDlg, CPropertySheet)
 
 CPierDetailsDlg::CPierDetailsDlg(const CPierData* pPier,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet("", pParentWnd, iSelectPage)
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    Init();
    if ( pPier )
@@ -70,8 +70,8 @@ void CPierDetailsDlg::SetPierData(const CPierData* pPier)
 
    // Set dialog title
    CString strTitle;
-   strTitle.Format("%s %d Details",
-      m_pPrevSpan == NULL || m_pNextSpan == NULL ? "Abutment" : "Pier",
+   strTitle.Format(_T("%s %d Details"),
+      m_pPrevSpan == NULL || m_pNextSpan == NULL ? _T("Abutment") : _T("Pier"),
       pPier->GetPierIndex()+1);
    
    SetTitle(strTitle);
@@ -121,7 +121,7 @@ txnEditPierData CPierDetailsDlg::GetEditPierData()
    return editPierData;
 }
 
-const char* CPierDetailsDlg::GetConnection(pgsTypes::PierFaceType pierFace)
+LPCTSTR CPierDetailsDlg::GetConnection(pgsTypes::PierFaceType pierFace)
 {
    return m_ConnectionName[pierFace];
 }
@@ -141,7 +141,7 @@ double CPierDetailsDlg::GetStation()
    return m_PierLayoutPage.m_Station;
 }   
 
-const char* CPierDetailsDlg::GetOrientation()
+LPCTSTR CPierDetailsDlg::GetOrientation()
 {
    return m_PierLayoutPage.m_strOrientation.c_str();
 }

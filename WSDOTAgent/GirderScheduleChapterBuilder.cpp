@@ -86,13 +86,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << "The Specification Check was Successful" << rptNewLine;
+      *pPara << _T("The Specification Check was Successful") << rptNewLine;
    }
    else
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << color(Red) << "The Specification Check Was Not Successful" << color(Black) << rptNewLine;
+      *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black) << rptNewLine;
    }
 
    rptRcScalar scalar;
@@ -129,7 +129,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec );
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
    Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
@@ -141,34 +141,34 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone && pConstArtifact->IsSlabOffsetApplicable() )
    {
-      *p << "Dimension \"A\" at CL Bearing = "<< titledim1.SetValue(pConstArtifact->GetProvidedSlabOffset())
-         << " based on a deflection (D at " << max_days << " days) of "<< titledim2.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME )) << 
-            " at the time of slab casting"<<rptNewLine;
+      *p << _T("Dimension \"A\" at CL Bearing = ")<< titledim1.SetValue(pConstArtifact->GetProvidedSlabOffset())
+         << _T(" based on a deflection (D at ") << max_days << _T(" days) of ")<< titledim2.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME )) << 
+            _T(" at the time of slab casting")<<rptNewLine;
    }
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    *p << p_table;
 
    RowIndexType row = 0;
-   (*p_table)(row,0) << "Span";
+   (*p_table)(row,0) << _T("Span");
    (*p_table)(row,1) << LABEL_SPAN(span);
 
-   (*p_table)(++row,0) << "Girder";
+   (*p_table)(++row,0) << _T("Girder");
    (*p_table)(row  ,1) << LABEL_GIRDER(girder);
 
-   std::string start_connection = pBridge->GetRightSidePierConnection(span);
-   (*p_table)(++row,0) << "End 1 Type";
+   std::_tstring start_connection = pBridge->GetRightSidePierConnection(span);
+   (*p_table)(++row,0) << _T("End 1 Type");
    (*p_table)(row  ,1) << start_connection;
 
-   std::string end_connection = pBridge->GetLeftSidePierConnection(span+1);
-   (*p_table)(++row,0) << "End 2 Type";
+   std::_tstring end_connection = pBridge->GetLeftSidePierConnection(span+1);
+   (*p_table)(++row,0) << _T("End 2 Type");
    (*p_table)(row  ,1) << end_connection;
 
    const pgsLiftingCheckArtifact* pLiftArtifact = pGdrArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=NULL)
    {
       Float64 L = (pLiftArtifact->GetGirderLength() - pLiftArtifact->GetClearSpanBetweenPickPoints())/2.0;
-      (*p_table)(++row,0) << "Location of Lifting Loops, L";
+      (*p_table)(++row,0) << _T("Location of Lifting Loops, L");
       (*p_table)(row  ,1) << loc.SetValue(L);
    }
 
@@ -176,10 +176,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    if ( pHaulingArtifact != NULL )
    {
       Float64 L = pHaulingArtifact->GetLeadingOverhang();
-      (*p_table)(++row,0) << "Location of Lead Shipping Support, " << Sub2("L","L");
+      (*p_table)(++row,0) << _T("Location of Lead Shipping Support, ") << Sub2(_T("L"),_T("L"));
       (*p_table)(row  ,1) << loc.SetValue(L);
       L = pHaulingArtifact->GetTrailingOverhang();
-      (*p_table)(++row,0) << "Location of Trailing Shipping Support, " << Sub2("L","T");
+      (*p_table)(++row,0) << _T("Location of Trailing Shipping Support, ") << Sub2(_T("L"),_T("T"));
       (*p_table)(row  ,1) << loc.SetValue(L);
    }
 
@@ -211,20 +211,20 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    t1 -= M_PI;
    t2 -= M_PI;
 
-   (*p_table)(++row,0) << Sub2(symbol(theta),"1");
+   (*p_table)(++row,0) << Sub2(symbol(theta),_T("1"));
    (*p_table)(row  ,1) << angle.SetValue(t1);
 
-   (*p_table)(++row,0) << Sub2(symbol(theta),"2");
+   (*p_table)(++row,0) << Sub2(symbol(theta),_T("2"));
    (*p_table)(row  ,1) << angle.SetValue(t2);
 
    const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry( start_connection.c_str() );
    Float64 N1 = pConnEntry->GetGirderEndDistance();
-   (*p_table)(++row,0) << Sub2("N","1");
+   (*p_table)(++row,0) << Sub2(_T("N"),_T("1"));
    (*p_table)(row  ,1) << gdim.SetValue(N1);
 
    pConnEntry = pLib->GetConnectionEntry( end_connection.c_str() );
    Float64 N2 = pConnEntry->GetGirderEndDistance();
-   (*p_table)(++row,0) << Sub2("N","2");
+   (*p_table)(++row,0) << Sub2(_T("N"),_T("2"));
    (*p_table)(row  ,1) << gdim.SetValue(N2);
 
    PierIndexType prevPierIdx = (PierIndexType)span;
@@ -234,10 +234,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    pBridge->IsContinuousAtPier(prevPierIdx,&bContinuousLeft,&bContinuousRight);
    pBridge->IsIntegralAtPier(prevPierIdx,&bIntegralLeft,&bIntegralRight);
 
-   (*p_table)(++row,0) << Sub2("P","1");
+   (*p_table)(++row,0) << Sub2(_T("P"),_T("1"));
    if ( bContinuousLeft || bIntegralLeft )
    {
-      (*p_table)(row,1) << "-";
+      (*p_table)(row,1) << _T("-");
    }
    else
    {
@@ -247,10 +247,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    pBridge->IsContinuousAtPier(nextPierIdx,&bContinuousLeft,&bContinuousRight);
    pBridge->IsIntegralAtPier(nextPierIdx,&bIntegralLeft,&bIntegralRight);
-   (*p_table)(++row,0) << Sub2("P","2");
+   (*p_table)(++row,0) << Sub2(_T("P"),_T("2"));
    if ( bContinuousRight || bIntegralRight )
    {
-      (*p_table)(row,1) << "-";
+      (*p_table)(row,1) << _T("-");
    }
    else
    {
@@ -258,57 +258,57 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(row  ,1) << gdim.SetValue(P2);
    }
 
-   (*p_table)(++row,0) << "Plan Length (Along Girder Grade)";
+   (*p_table)(++row,0) << _T("Plan Length (Along Girder Grade)");
    (*p_table)(row  ,1) << glength.SetValue(pBridge->GetGirderPlanLength(span,girder));
 
    GET_IFACE2(pBroker, IBridgeMaterial, pMaterial);
-   (*p_table)(++row,0) << RPT_FC << " (at 28 days)";
+   (*p_table)(++row,0) << RPT_FC << _T(" (at 28 days)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFcGdr(span,girder));
 
-   (*p_table)(++row,0) << RPT_FCI << " (at Release)";
+   (*p_table)(++row,0) << RPT_FCI << _T(" (at Release)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    
    StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
-   (*p_table)(++row,0) << "Number of Harped Strands";
+   (*p_table)(++row,0) << _T("Number of Harped Strands");
    (*p_table)(row  ,1) << nh;
 
    Float64 hj = pStrandGeometry->GetPjack(span,girder,pgsTypes::Harped);
-   (*p_table)(++row,0) << "Jacking Force, Harped Strands";
+   (*p_table)(++row,0) << _T("Jacking Force, Harped Strands");
    (*p_table)(row  ,1) << force.SetValue(hj);
 
    StrandIndexType ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
-   (*p_table)(++row,0) << "Number of Straight Strands";
+   (*p_table)(++row,0) << _T("Number of Straight Strands");
    (*p_table)(row  ,1) << ns;
    StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
    if ( nDebonded != 0 )
-      (*p_table)(row,1) << " (" << nDebonded << " debonded)";
+      (*p_table)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
 
    Float64 sj = pStrandGeometry->GetPjack(span,girder,pgsTypes::Straight);
-   (*p_table)(++row,0) << "Jacking Force, Straight Strands";
+   (*p_table)(++row,0) << _T("Jacking Force, Straight Strands");
    (*p_table)(row  ,1) << force.SetValue(sj);
 
    if ( 0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary ) )
    {
       StrandIndexType nt = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Temporary);
-      (*p_table)(++row,0) << "Number of Temporary Strands";
+      (*p_table)(++row,0) << _T("Number of Temporary Strands");
 
       switch ( girderData.TempStrandUsage )
       {
       case pgsTypes::ttsPTAfterLifting:
-         (*p_table)(row,0) << rptNewLine << "Temporary strands post-tensioned immediately after lifting";
+         (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");
          break;
 
       case pgsTypes::ttsPTBeforeShipping:
-         (*p_table)(row,0) << rptNewLine << "Temporary strands post-tensioned immediately before shipping";
+         (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately before shipping");
          break;
       }
 
       (*p_table)(row  ,1) << nt;
 
       Float64 tj = pStrandGeometry->GetPjack(span,girder,pgsTypes::Temporary);
-      (*p_table)(++row,0) << "Jacking Force, Temporary Strands";
+      (*p_table)(++row,0) << _T("Jacking Force, Temporary Strands");
       (*p_table)(row  ,1) << force.SetValue(tj);
    }
 
@@ -316,21 +316,21 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 ybg = pSectProp2->GetYb(pgsTypes::CastingYard,pmid[0]);
    Float64 nEff;
    Float64 sse = pStrandGeometry->GetSsEccentricity(pmid[0], &nEff);
-   (*p_table)(++row,0) << "E";
+   (*p_table)(++row,0) << _T("E");
    if (0 < ns)
       (*p_table)(row,1) << gdim.SetValue(ybg-sse);
    else
       (*p_table)(row,1) << RPT_NA;
 
    Float64 hse = pStrandGeometry->GetHsEccentricity(pmid[0], &nEff);
-   (*p_table)(++row,0) << Sub2("F","C.L.");
+   (*p_table)(++row,0) << Sub2(_T("F"),_T("C.L."));
    if (0 < nh)
       (*p_table)(row,1) << gdim.SetValue(ybg-hse);
    else
       (*p_table)(row,1) << RPT_NA;
 
    // get location of first harped strand
-   (*p_table)(++row,0) << Sub2("F","b");
+   (*p_table)(++row,0) << Sub2(_T("F"),_T("b"));
    if (0 < nh)
    {
       GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
@@ -350,7 +350,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    Float64 ytg = pSectProp2->GetYtGirder(pgsTypes::CastingYard,pois);
    Float64 hss = pStrandGeometry->GetHsEccentricity(pois, &nEff);
-   (*p_table)(++row,0) << Sub2("F","o");
+   (*p_table)(++row,0) << Sub2(_T("F"),_T("o"));
    if (0 < nh)
    {
       (*p_table)(row,1) << gdim.SetValue(ytg+hss);
@@ -360,17 +360,17 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(row,1) << RPT_NA;
    }
 
-   (*p_table)(++row,0) << "Screed Camber, C";
+   (*p_table)(++row,0) << _T("Screed Camber, C");
    (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetScreedCamber( pmid[0] ) );
 
    // get # of days for creep
-   (*p_table)(++row,0) << "Estimated camber at "<< min_days<<" days, D";
+   (*p_table)(++row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
    (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MINTIME) );
-   (*p_table)(++row,0) << "Estimated camber at "<< max_days<<" days, D";
+   (*p_table)(++row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
    (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME) );
 
    // Figure
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + "GirderSchedule.jpg") << rptNewLine;
+   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderSchedule.jpg")) << rptNewLine;
 
    return pChapter;
 }

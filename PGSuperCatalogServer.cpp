@@ -36,31 +36,31 @@ static char THIS_FILE[] = __FILE__;
 // Functions to save and create our servers to/from a string
 CPGSuperCatalogServer* CreateCatalogServer(const CString& createString)
 {
-   int p = createString.Find('|');
+   int p = createString.Find(_T('|'));
    if ( p != -1 )
    {
       CString strType = createString.Left(p);
       CString strNext = createString.Mid(p+1);
-      p = strNext.Find('|');
+      p = strNext.Find(_T('|'));
       if ( p != -1 )
       {
          CString strName = strNext.Left(p);
          CString strAddress = strNext.Mid(p+1);
 
-         if (strType=="FTP")
+         if (strType==_T("FTP"))
          {
             CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress);
             return psvr;
          }
-         else if (strType=="HTTP")
+         else if (strType==_T("HTTP"))
          {
             CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strName, strAddress);
             return psvr;
          }
          else
          {
-            ATLASSERT(strType=="FILSYS");
-            p = strAddress.Find('|');
+            ATLASSERT(strType==_T("FILSYS"));
+            p = strAddress.Find(_T('|'));
             if ( p != -1 )
             {
                CString strLibraryFileName = strAddress.Left(p);
@@ -85,7 +85,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString)
    {
       // old style string - equal or previous to pgsuper 2.2.3
       // only supported ftp at that time
-      p = createString.Find('!');
+      p = createString.Find(_T('!'));
       if ( p != -1 )
       {
          CString strName = createString.Left(p);
@@ -109,19 +109,19 @@ CString GetCreationString(const CPGSuperCatalogServer* pServer)
    {
       const CFtpPGSuperCatalogServer* psvr = dynamic_cast<const CFtpPGSuperCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      creastr.Format("FTP|%s|%s",psvr->GetServerName(), psvr->GetAddress());
+      creastr.Format(_T("FTP|%s|%s"),psvr->GetServerName(), psvr->GetAddress());
    }
    else if (type==srtInternetHttp)
    {
       const CHttpPGSuperCatalogServer* psvr = dynamic_cast<const CHttpPGSuperCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      creastr.Format("HTTP|%s|%s",psvr->GetServerName(), psvr->GetAddress());
+      creastr.Format(_T("HTTP|%s|%s"),psvr->GetServerName(), psvr->GetAddress());
    }
    else if (type==srtLocal)
    {
       const CFileSystemPGSuperCatalogServer* psvr = dynamic_cast<const CFileSystemPGSuperCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      creastr.Format("FILSYS|%s|%s|%s",psvr->GetServerName(), psvr->GetLibraryFileName(), psvr->GetTemplateFolderPath());
+      creastr.Format(_T("FILSYS|%s|%s|%s"),psvr->GetServerName(), psvr->GetLibraryFileName(), psvr->GetTemplateFolderPath());
    }
 
    return creastr;
@@ -130,46 +130,46 @@ CString GetCreationString(const CPGSuperCatalogServer* pServer)
 // Temporary locations to download md5 files before comparisons
 static CString GetLocalMasterLibraryMD5Filename()
 {
-   char buffer[256];
+   TCHAR buffer[256];
    ::GetTempPath(256,buffer);
 
    CString cbuf;
-   cbuf.Format("%sMasterLib.md5",buffer);
+   cbuf.Format(_T("%sMasterLib.md5"),buffer);
    return cbuf;
 }
 
 static CString GetLocalWorkgroupTemplateFolderMD5Filename()
 {
-   char buffer[256];
+   TCHAR buffer[256];
    ::GetTempPath(256,buffer);
    CString cbuf;
-   cbuf.Format("%sWorkgroupTemplates.md5",buffer);
+   cbuf.Format(_T("%sWorkgroupTemplates.md5"),buffer);
    return cbuf;
 }
 
 static CString GetPgzFilename()
 {
-   return CString("PGSuper.pgz");
+   return CString(_T("PGSuper.pgz"));
 }
 
 static CString GetPgzMd5Filename()
 {
-   return CString("PGSuper.pgz.md5");
+   return CString(_T("PGSuper.pgz.md5"));
 }
 
 static CString GetTempPgzMD5Filename()
 {
-   char buffer[256];
+   TCHAR buffer[256];
    ::GetTempPath(256,buffer);
 
    CString cbuf;
-   cbuf.Format("%sPGSuper.pgz.md5",buffer);
+   cbuf.Format(_T("%sPGSuper.pgz.md5"),buffer);
    return cbuf;
 }
 
 static CString GetCatalogFileName()
 {
-   return CString("PGSuperPackages.ini");
+   return CString(_T("PGSuperPackages.ini"));
 }
 
 // return true if check passes
@@ -178,23 +178,27 @@ static bool CheckFileAgainstMd5(const CString& testFile, const CString& md5File)
    CEAFApp* pApp = EAFGetApp();
    CString strAppPath = pApp->GetAppLocation();
 
-   CString strMD5Deep = strAppPath + CString("md5deep.exe");
+   CString strMD5Deep = strAppPath + CString(_T("md5deep.exe"));
 
    CFileFind finder;
    BOOL bFound = finder.FindFile(strMD5Deep);
    if ( !bFound )
    {
       CString strMessage;
-      strMessage.Format("The program %s is missing. This program is required for PGSuper to access the Internet for Master Library and Workgroup Templates. Please repair PGSuper.",strMD5Deep);
+      strMessage.Format(_T("The program %s is missing. This program is required for PGSuper to access the Internet for Master Library and Workgroup Templates. Please repair PGSuper."),strMD5Deep);
 
       throw CCatalogServerException(CCatalogServerException::ceMissingMd5Deep, strMessage);
    }
 
-   CString strArg1 = CString("-x ") + CString("\"") + md5File + CString("\"");
-   CString strArg2 = CString("\"") + testFile + CString("\"");
-   LOG(strMD5Deep << " " << strArg1 << " " << strArg2);
+   CString strArg1 = CString(_T("-x ")) + CString(_T("\"")) + md5File + CString(_T("\""));
+   CString strArg2 = CString(_T("\"")) + testFile + CString(_T("\""));
+   LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
+#if defined _UNICODE
+   int pgz_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+#else
    int pgz_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
-   LOG("pgz_result = " << pgz_result);
+#endif
+   LOG(_T("pgz_result = ") << pgz_result);
 
    return pgz_result==0;
 }
@@ -207,17 +211,17 @@ static CString CleanFTPURL(const CString& strURL, bool isFile)
    CString url = strURL;
    CString left = url.Left(3);
    left.MakeLower();
-   if ( left == "ftp" )
-      url.Replace("\\","/");
+   if ( left == _T("ftp") )
+      url.Replace(_T("\\"),_T("/"));
 
    // if it doesn't start with ftp:// add it
    left = url.Left(4);
    left.MakeLower();
-   if (left == "ftp.")
-      url.Insert(0,"ftp://");
+   if (left == _T("ftp."))
+      url.Insert(0,_T("ftp://"));
 
-   if (!isFile && url.Right(1) != "/" )
-      url += "/";
+   if (!isFile && url.Right(1) != _T("/") )
+      url += _T("/");
 
    return url;
 }
@@ -228,17 +232,17 @@ static CString CleanHTTPURL(const CString& strURL, bool isFile)
    CString url = strURL;
    CString left = url.Left(4);
    left.MakeLower();
-   if ( left == "http" )
-      url.Replace("\\","/");
+   if ( left == _T("http") )
+      url.Replace(_T("\\"),_T("/"));
 
    // if it doesn't start with http:// add it
    left = url.Left(5);
    left.MakeLower();
-   if (left == "http.")
-      url.Insert(0,"http://");
+   if (left == _T("http."))
+      url.Insert(0,_T("http://"));
 
-   if (!isFile && url.Right(1) != "/" )
-      url += "/";
+   if (!isFile && url.Right(1) != _T("/") )
+      url += _T("/");
 
    return url;
 }
@@ -284,38 +288,46 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
    CEAFApp* pApp = EAFGetApp();
    CString strAppPath = pApp->GetAppLocation();
 
-   CString strMD5Deep = strAppPath + CString("md5deep.exe");
+   CString strMD5Deep = strAppPath + CString(_T("md5deep.exe"));
 
    CFileFind finder;
    BOOL bFound = finder.FindFile(strMD5Deep);
    if ( !bFound )
    {
       CString strMessage;
-      strMessage.Format("The program %s is missing. This program is required for PGSuper to access the Internet for Master Library and Workgroup Templates. Please repair PGSuper.",strMD5Deep);
+      strMessage.Format(_T("The program %s is missing. This program is required for PGSuper to access the Internet for Master Library and Workgroup Templates. Please repair PGSuper."),strMD5Deep);
 
       throw CCatalogServerException(CCatalogServerException::ceMissingMd5Deep, strMessage);
    }
 
    // Master library
-   CString strArg1 = CString("-x ") + CString("\"") + strLocalMasterLibMD5 + CString("\"");
-   CString strArg2 = CString("\"") + cachedMasterLibFile + CString("\"");
-   LOG(strMD5Deep << " " << strArg1 << " " << strArg2);
+   CString strArg1 = CString(_T("-x ")) + CString(_T("\"")) + strLocalMasterLibMD5 + CString(_T("\""));
+   CString strArg2 = CString(_T("\"")) + cachedMasterLibFile + CString(_T("\""));
+   LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
+#if defined _UNICODE
+   int master_lib_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+#else
    int master_lib_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
-   LOG("master_lib_result = " << master_lib_result);
+#endif
+   LOG(_T("master_lib_result = ") << master_lib_result);
 
    // Workgroup templates
    CString strWorkgroupTemplateFolderCache = cachedTemplateFolder;
 
    // remove the last \\ because md5deep doesn't like it
    int loc = strWorkgroupTemplateFolderCache.GetLength()-1;
-   if ( strWorkgroupTemplateFolderCache.GetAt(loc) == '\\' )
-      strWorkgroupTemplateFolderCache.SetAt(loc,'\0');
+   if ( strWorkgroupTemplateFolderCache.GetAt(loc) == _T('\\') )
+      strWorkgroupTemplateFolderCache.SetAt(loc,_T('\0'));
 
-   strArg1 = CString("-x ") + CString("\"") + strLocalWorkgroupTemplateMD5 + CString("\"");
-   strArg2 = CString("-r ") + CString("\"") + strWorkgroupTemplateFolderCache + CString("\"");
-   LOG(strMD5Deep << " " << strArg1 << " " << strArg2);
+   strArg1 = CString(_T("-x ")) + CString(_T("\"")) + strLocalWorkgroupTemplateMD5 + CString(_T("\""));
+   strArg2 = CString(_T("-r ")) + CString(_T("\"")) + strWorkgroupTemplateFolderCache + CString(_T("\""));
+   LOG(strMD5Deep << _T(" ") << strArg1 << _T(" ") << strArg2);
+#if defined _UNICODE
+   int workgroup_template_result = _wspawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
+#else
    int workgroup_template_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
-   LOG("workgroup_template_result = " << workgroup_template_result);
+#endif
+   LOG(_T("workgroup_template_result = ") << workgroup_template_result);
 
    if ( master_lib_result != 0 || workgroup_template_result != 0 )
       bUpdatePending = true;
@@ -327,8 +339,8 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
 /// CFtpPGSuperCatalogServer ///
 // default ftp to wsdot
 CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer():
-CPGSuperCatalogServer("WSDOT",srtInternetFtp),
-m_ServerAddress("ftp://ftp.wsdot.wa.gov/public/bridge/software/PGSuper/")
+CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp),
+m_ServerAddress(_T("ftp://ftp.wsdot.wa.gov/public/bridge/software/PGSuper/"))
 {
    Init();
 }
@@ -364,7 +376,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       if (pProgress!=NULL)
          pProgress->put_Message(0, CComBSTR("Reading Library Publishers from the Internet"));
 
-      char buffer[256];
+      TCHAR buffer[256];
       ::GetTempPath(256,buffer);
 
       m_strLocalCatalog = buffer;
@@ -373,7 +385,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       if (toTempfolder)
       {
          // not our 'real' catalog file - give it a bogus name
-         m_strLocalCatalog += ".tmp";
+         m_strLocalCatalog += _T(".tmp");
       }
 
       // pull the catalog down from the one and only catalog server
@@ -392,7 +404,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
          if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP )
          {
             CString msg;
-            msg.Format("Error parsing catalog URL: %s", catURL);
+            msg.Format(_T("Error parsing catalog URL: %s"), catURL);
             throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
          }
          else
@@ -406,7 +418,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
             {
                // could not find or get the file (it may not be on the server)
                CString msg;
-               msg.Format("Could not find catalog file on server at: %s", catURL);
+               msg.Format(_T("Could not find catalog file on server at: %s"), catURL);
                throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
             }
          }
@@ -416,7 +428,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
          pException->Delete();
 
          CString msg;
-         msg.Format("An unknown ftp error occurred while trying to download the catalog file at: %s",catURL);
+         msg.Format(_T("An unknown ftp error occurred while trying to download the catalog file at: %s"),catURL);
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
       }
 
@@ -426,7 +438,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
       {
          CString msg;
-         msg.Format("Error occurred while reading the catalog file at: %s",catURL);
+         msg.Format(_T("Error occurred while reading the catalog file at: %s"),catURL);
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
       }
 
@@ -495,7 +507,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgre
       // happen if registry values get trashed in the App class
       ATLASSERT(0);
       CString msg;
-      msg.Format("The publisher %s was not found in the current catalog. This appears to be a programing bug.", publisher);
+      msg.Format(_T("The publisher %s was not found in the current catalog. This appears to be a programing bug."), publisher);
       throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
    }
 
@@ -515,8 +527,8 @@ bool CFtpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgre
 bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher, IProgressMonitor* pProgress, 
                                                        const CString& cacheFolder) const
 {
-   CString cachedMasterLibFile  = cacheFolder + CString("\\") + GetMasterLibraryFileName();
-   CString cachedTemplateFolder = cacheFolder + CString("\\") + GetTemplateSubFolderName()+ CString("\\");
+   CString cachedMasterLibFile  = cacheFolder + CString(_T("\\")) + GetMasterLibraryFileName();
+   CString cachedTemplateFolder = cacheFolder + CString(_T("\\")) + GetTemplateSubFolderName()+ CString(_T("\\"));
 
    CString strRawMasterLibraryUrl, strRawWorkgroupTemplatesUrl;
    m_Catalog.GetCatalogSettings(publisher, strRawMasterLibraryUrl, strRawWorkgroupTemplatesUrl);
@@ -531,7 +543,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
    if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP)
    {
       CString strMessage;
-      strMessage.Format("The published Master library file location, %s, for publisher %s is invalid. Library and Template settings will be restored to original defaults.",strRawMasterLibraryUrl,publisher);
+      strMessage.Format(_T("The published Master library file location, %s, for publisher %s is invalid. Library and Template settings will be restored to original defaults."),strRawMasterLibraryUrl,publisher);
 
       throw CCatalogServerException(CCatalogServerException::ceParsingURL, strMessage);
    }
@@ -541,7 +553,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
    if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP)
    {
       CString strMessage;
-      strMessage.Format("The Template folder location, %s, for publisher %s is invalid. Library and Template settings will be restored to original defaults.",strRawWorkgroupTemplatesUrl,publisher);
+      strMessage.Format(_T("The Template folder location, %s, for publisher %s is invalid. Library and Template settings will be restored to original defaults."),strRawWorkgroupTemplatesUrl,publisher);
 
       throw CCatalogServerException(CCatalogServerException::ceParsingURL, strMessage);
    }
@@ -558,10 +570,10 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
       pFTP = inetSession.GetFtpConnection(strMasterLibraryServer);
       CFtpFileFind master_library_file_find(pFTP);
 
-      CString strMasterLibMD5 = strMasterLibraryObject + CString(".md5");
+      CString strMasterLibMD5 = strMasterLibraryObject + CString(_T(".md5"));
       strLocalFile = GetLocalMasterLibraryMD5Filename();
       
-      LOG("Getting " << strMasterLibMD5 << " from " << strMasterLibraryServer);
+      LOG(_T("Getting ") << strMasterLibMD5 << _T(" from ") << strMasterLibraryServer);
 
       if ( !master_library_file_find.FindFile(strMasterLibMD5) || !pFTP->GetFile(strMasterLibMD5,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
@@ -569,7 +581,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
          delete pFTP;
 
          CString msg;
-         msg.Format("Error getting %s from %s.", strMasterLibMD5, strMasterLibraryServer);
+         msg.Format(_T("Error getting %s from %s."), strMasterLibMD5, strMasterLibraryServer);
          LOG(msg);
          throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
       }
@@ -581,10 +593,10 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
       pFTP = inetSession.GetFtpConnection(strWorkgroupTemplatesServer);
       CFtpFileFind workgroup_template_file_find(pFTP);
 
-      CString strWorkgroupTemplateMD5 = strWorkgroupTemplatesObject + CString("WorkgroupTemplates.md5");
+      CString strWorkgroupTemplateMD5 = strWorkgroupTemplatesObject + CString(_T("WorkgroupTemplates.md5"));
       strLocalFolder = GetLocalWorkgroupTemplateFolderMD5Filename();
 
-      LOG("Getting " << strWorkgroupTemplateMD5 << " from " << strWorkgroupTemplatesServer);
+      LOG(_T("Getting ") << strWorkgroupTemplateMD5 << _T(" from ") << strWorkgroupTemplatesServer);
 
       if ( !workgroup_template_file_find.FindFile(strWorkgroupTemplateMD5) || !pFTP->GetFile(strWorkgroupTemplateMD5,strLocalFolder,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
@@ -592,7 +604,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
          delete pFTP;
 
          CString msg;
-         msg.Format("Error getting %s from %s.", strWorkgroupTemplateMD5, strWorkgroupTemplatesServer);
+         msg.Format(_T("Error getting %s from %s."), strWorkgroupTemplateMD5, strWorkgroupTemplatesServer);
          LOG(msg);
          throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
       }
@@ -607,7 +619,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesOriginal(const CString& publisher,
       pException->Delete();
 
       CString msg;
-      msg.Format("A network error occured while trying determine if an update was pending. Last message was %s",lmsg);
+      msg.Format(_T("A network error occured while trying determine if an update was pending. Last message was %s"),lmsg);
       LOG(msg);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
@@ -626,7 +638,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesPgz(const CString& publisher, IPro
    m_Catalog.GetCatalogSettings(publisher, strRawPgzUrl);
 
    // name of md5 on server
-   strRawPgzUrl += CString(".md5");
+   strRawPgzUrl += CString(_T(".md5"));
 
    // Check the URL and parse it
    DWORD dwServiceType;
@@ -640,7 +652,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesPgz(const CString& publisher, IPro
    if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP)
    {
       CString strMessage;
-      strMessage.Format("The published md5 file location, %s, for publisher %s has invalid format. Library and Template settings will be restored to original defaults.",strRawPgzUrl,publisher);
+      strMessage.Format(_T("The published md5 file location, %s, for publisher %s has invalid format. Library and Template settings will be restored to original defaults."),strRawPgzUrl,publisher);
       throw CCatalogServerException(CCatalogServerException::ceParsingURL, strMessage);
    }
 
@@ -656,16 +668,16 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesPgz(const CString& publisher, IPro
       pFTP = inetSession.GetFtpConnection(strPgzServer);
       CFtpFileFind pgz_file_find(pFTP);
       
-      LOG("Getting " << strPgzObject << " from " << strPgzServer);
+      LOG(_T("Getting ") << strPgzObject << _T(" from ") << strPgzServer);
 
       if ( !pgz_file_find.FindFile(strPgzObject) || !pFTP->GetFile(strPgzObject,strTempMd5File,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
       {
          pFTP->Close();
          delete pFTP;
 
-         LOG("Error getting " << strPgzObject << " from " << strPgzServer);
+         LOG(_T("Error getting ") << strPgzObject << _T(" from ") << strPgzServer);
          CString strMessage;
-         strMessage.Format("Error getting md5 file , %s, from publisher %s . Contact server owner.",strRawPgzUrl,publisher);
+         strMessage.Format(_T("Error getting md5 file , %s, from publisher %s . Contact server owner."),strRawPgzUrl,publisher);
          throw CCatalogServerException(CCatalogServerException::ceParsingURL, strMessage);
       }
 
@@ -679,7 +691,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdatesPgz(const CString& publisher, IPro
       pException->Delete();
 
       CString msg;
-      msg.Format("A network error occured while trying download pgz md5 file. Last message was %s",lmsg);
+      msg.Format(_T("A network error occured while trying download pgz md5 file. Last message was %s"),lmsg);
       LOG(msg);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
@@ -704,8 +716,8 @@ bool CFtpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgre
 
    if (type==CPGSuperCatalog::ctOriginal)
    {
-      CString cachedMasterLibFile  = cacheFolder + CString("\\") + GetMasterLibraryFileName();
-      CString cachedTemplateFolder = cacheFolder + CString("\\") + GetTemplateSubFolderName()+ CString("\\");
+      CString cachedMasterLibFile  = cacheFolder + CString(_T("\\")) + GetMasterLibraryFileName();
+      CString cachedTemplateFolder = cacheFolder + CString(_T("\\")) + GetTemplateSubFolderName()+ CString(_T("\\"));
 
       CString strMasterLibraryURL;
       CString strWorkgroupTemplatesURL;
@@ -774,7 +786,7 @@ bool CFtpPGSuperCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,c
          delete pFTP;
 
          CString msg;
-         msg.Format("An error occured while downloading master library file %s.",strMasterLibraryFile);
+         msg.Format(_T("An error occured while downloading master library file %s."),strMasterLibraryFile);
 
          if(pProgress!=NULL)
             pProgress->put_Message(0,CComBSTR(msg));
@@ -795,7 +807,7 @@ bool CFtpPGSuperCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,c
       pException->Delete();
 
       CString msg;
-      msg.Format("A network error occured while trying to download Master library file %s. Last message was %s",strMasterLibraryFile,lmsg);
+      msg.Format(_T("A network error occured while trying to download Master library file %s. Last message was %s"),strMasterLibraryFile,lmsg);
       LOG(msg);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
@@ -846,7 +858,7 @@ bool CFtpPGSuperCatalogServer::PopulateTemplateFolder(IProgressMonitor* pProgres
       pException->Delete();
 
       CString msg;
-      msg.Format("A network error occured while trying to download Template library files at %s. Last message was %s",strWorkgroupTemplateFolder,lmsg);
+      msg.Format(_T("A network error occured while trying to download Template library files at %s. Last message was %s"),strWorkgroupTemplateFolder,lmsg);
       LOG(msg);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
@@ -909,7 +921,7 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
       }
 
       CString strMessage;
-      strMessage.Format("Error opening the Compressed Library/Template file from %s.",strPgzFile);
+      strMessage.Format(_T("Error opening the Compressed Library/Template file from %s."),strPgzFile);
 
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, strMessage);
    }
@@ -922,9 +934,9 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
    if( CheckForUpdatesPgz(publisher, pProgress, cacheFolder) )
    {
       CString strMessage;
-      strMessage.Format("It appears that there was an error downloading the file \"%s\"  The md5 file hash does not match that on the server. Try updating again, and contact the server owner if this error persists",pgzCachedFile);
+      strMessage.Format(_T("It appears that there was an error downloading the file \"%s\"  The md5 file hash does not match that on the server. Try updating again, and contact the server owner if this error persists"),pgzCachedFile);
 
-      ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMessage,"Error", MB_OK );
+      ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMessage,_T("Error"), MB_OK );
       return false;
    }
 
@@ -945,15 +957,15 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
       CString msg;
       if (st==uzErrorOpeningFile)
       {
-         msg.Format("Error opening the file %s.",pgzCachedFile);
+         msg.Format(_T("Error opening the file %s."),pgzCachedFile);
       }
       else if (st==uzErrorGettingFileList || st==uzExtractingFile)
       {
-         msg.Format("Error extracting files from %s.",pgzCachedFile);
+         msg.Format(_T("Error extracting files from %s."),pgzCachedFile);
       }
       else if (st==uzNoFilesFound)
       {
-         msg.Format("Error - no files found in %s.",pgzCachedFile);
+         msg.Format(_T("Error - no files found in %s."),pgzCachedFile);
       }
 
       ::AfxMessageBox(msg,MB_ICONEXCLAMATION | MB_OK);
@@ -981,7 +993,7 @@ bool CFtpPGSuperCatalogServer::IsNetworkError() const
    catch(...)
    {
       ATLASSERT(0);
-      LOG("Unknown network error in IsNetworkError");
+      LOG(_T("Unknown network error in IsNetworkError"));
       return true;
    }
 
@@ -1004,7 +1016,7 @@ bool CFtpPGSuperCatalogServer::TestServer(CString& errorMessage) const
    BOOL bSuccess = AfxParseURL(catalog_file,dwServiceType,strServer,strObject,nPort);
    if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP )
    {
-      errorMessage.Format("Error parsing URL - Please check the ftp string for errors");
+      errorMessage.Format(_T("Error parsing URL - Please check the ftp string for errors"));
       return false;
    }
 
@@ -1015,7 +1027,7 @@ bool CFtpPGSuperCatalogServer::TestServer(CString& errorMessage) const
    CFtpFileFind ftpFind(pFTP);
    if ( !ftpFind.FindFile(strObject))
    {
-      errorMessage.Format("Error - Unable to find catalog file: %s on the server.",strObject);
+      errorMessage.Format(_T("Error - Unable to find catalog file: %s on the server."),strObject);
       return false;
    }
 
@@ -1056,7 +1068,7 @@ void CHttpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       if (pProgress!=NULL)
          pProgress->put_Message(0,CComBSTR("Reading Library Publishers from the Internet"));
 
-      char buffer[256];
+      TCHAR buffer[256];
       ::GetTempPath(256,buffer);
 
       m_strLocalCatalog = buffer;
@@ -1073,14 +1085,14 @@ void CHttpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
          if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
          {
             CString msg;
-            msg.Format("Error occurred while reading the catalog file at: %s",catalogURL);
+            msg.Format(_T("Error occurred while reading the catalog file at: %s"),catalogURL);
             throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
          }
       }
       else
       {
          CString msg;
-         msg.Format("Error parsing catalog URL: %s", catalogURL);
+         msg.Format(_T("Error parsing catalog URL: %s"), catalogURL);
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
       }
 
@@ -1136,14 +1148,14 @@ bool CHttpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgr
       // happen if registry values get trashed in the App class
       ATLASSERT(0);
       CString msg;
-      msg.Format("The publisher %s was not found in the current catalog. This appears to be a programing bug.", publisher);
+      msg.Format(_T("The publisher %s was not found in the current catalog. This appears to be a programing bug."), publisher);
       throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
    }
 
    // name of md5 on server
    CString strRawPgzUrl;
    m_Catalog.GetCatalogSettings(publisher, strRawPgzUrl);
-   strRawPgzUrl += CString(".md5");
+   strRawPgzUrl += CString(_T(".md5"));
 
    // name of md5p to be copied to temp folder
    CString strTempMd5File = GetTempPgzMD5Filename();
@@ -1157,13 +1169,13 @@ bool CHttpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgr
    if (gwresult==gwInvalidUrl)
    {
       CString strMessage;
-      strMessage.Format("The published Pgz md5 file location, %s, for publisher %s has invalid format. Library and Template settings will be restored to original defaults.",strRawPgzUrl,publisher);
+      strMessage.Format(_T("The published Pgz md5 file location, %s, for publisher %s has invalid format. Library and Template settings will be restored to original defaults."),strRawPgzUrl,publisher);
       throw CCatalogServerException(CCatalogServerException::ceParsingURL, strMessage);
    }
    else if (gwresult==gwNotFound)
    {
       CString msg;
-      msg.Format("Md5 file %s not found on server. Contact server owner.",strRawPgzUrl);
+      msg.Format(_T("Md5 file %s not found on server. Contact server owner."),strRawPgzUrl);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
    else
@@ -1185,7 +1197,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
 
    if (m_Catalog.GetFormat(publisher)!=CPGSuperCatalog::ctPgz)
    {
-      CString strMessage("Error - Bad catalog type. Only pgz compressed catalogs are supported on http servers. Please contact the server owner");
+      CString strMessage(_T("Error - Bad catalog type. Only pgz compressed catalogs are supported on http servers. Please contact the server owner"));
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, strMessage);
    }
 
@@ -1209,7 +1221,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
    else
    {
       CString msg;
-      msg.Format("Error downloading the Compressed Library/Template File %s",strPgzFile);
+      msg.Format(_T("Error downloading the Compressed Library/Template File %s"),strPgzFile);
       throw CCatalogServerException(CCatalogServerException::ceFindingFile, msg);
    }
 
@@ -1218,9 +1230,9 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
    if( CheckForUpdates(publisher, pProgress, cacheFolder) )
    {
       CString strMessage;
-      strMessage.Format("It appears that there was an error downloading the file \"%s\"  The md5 file hash does not match that on the server. Try updating again, and contact the server owner if this error persists",strPgzFile);
+      strMessage.Format(_T("It appears that there was an error downloading the file \"%s\"  The md5 file hash does not match that on the server. Try updating again, and contact the server owner if this error persists"),strPgzFile);
 
-      ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMessage,"Error", MB_OK );
+      ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMessage,_T("Error"), MB_OK );
       return false;
    }
 
@@ -1241,15 +1253,15 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
       CString msg;
       if (uzst==uzErrorOpeningFile)
       {
-         msg.Format("Error opening the file %s.",pgzCachedFile);
+         msg.Format(_T("Error opening the file %s."),pgzCachedFile);
       }
       else if (uzst==uzErrorGettingFileList || uzst==uzExtractingFile)
       {
-         msg.Format("Error extracting files from %s.",pgzCachedFile);
+         msg.Format(_T("Error extracting files from %s."),pgzCachedFile);
       }
       else if (uzst==uzNoFilesFound)
       {
-         msg.Format("Error - no files found in %s.",pgzCachedFile);
+         msg.Format(_T("Error - no files found in %s."),pgzCachedFile);
       }
 
       ::AfxMessageBox(msg,MB_ICONEXCLAMATION | MB_OK);
@@ -1280,22 +1292,22 @@ bool CHttpPGSuperCatalogServer::TestServer(CString& errorMessage) const
 {
    // if we can get the catalog file - good enough
    // copy to a harmless location
-   char buffer[256];
+   TCHAR buffer[256];
    ::GetTempPath(256,buffer);
    CString cbuf;
-   cbuf.Format("%sPGSuper.tmp",buffer);
+   cbuf.Format(_T("%sPGSuper.tmp"),buffer);
 
    CString catalog_fileurl = m_ServerAddress+GetCatalogFileName();
 
    gwResult res = GetWebFile(catalog_fileurl, cbuf);
    if ( res==gwInvalidUrl )
    {
-      errorMessage.Format("Error parsing URL - Please check the http string for errors");
+      errorMessage.Format(_T("Error parsing URL - Please check the http string for errors"));
       return false;
    }
    else if ( res==gwNotFound )
    {
-      errorMessage.Format("Error - Unable to find catalog file: %s on the server.",catalog_fileurl);
+      errorMessage.Format(_T("Error - Unable to find catalog file: %s on the server."),catalog_fileurl);
       return false;
    }
    else
@@ -1315,11 +1327,11 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 	  client making the request. If this NULL the frame work will
 	  call  the global function AfxGetAppName which returns the application
 	  name.*/
-	LPCTSTR pstrAgent = "Pgsuper";
+	LPCTSTR pstrAgent = _T("Pgsuper");
 
 	//the verb we will be using for this connection
 	//if NULL then GET is assumed
-	LPCTSTR pstrVerb = "GET";
+	LPCTSTR pstrVerb = _T("GET");
 	
 	//the address of the url in the request was obtained from
 	LPCTSTR pstrReferer = NULL;
@@ -1329,7 +1341,7 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 
 	//For the Accept request headers if we need them later on
 	LPCTSTR pstrAcceptTypes = NULL;
-	CString szHeaders = "Accept: audio/x-aiff, audio/basic, audio/midi, audio/mpeg, audio/wav, image/jpeg, image/gif, image/jpg, image/png, image/mng, image/bmp, text/plain, text/html, text/htm\r\n";
+	CString szHeaders = _T("Accept: audio/x-aiff, audio/basic, audio/midi, audio/mpeg, audio/wav, image/jpeg, image/gif, image/jpg, image/png, image/mng, image/bmp, text/plain, text/html, text/htm\r\n");
 
 	//Username we will use if a secure site comes into play
 	LPCTSTR pstrUserName = NULL; 
@@ -1378,7 +1390,7 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 			1, &pstrAcceptTypes, pstrVersion, dwHttpRequestFlags);
 
 		pFile->AddRequestHeaders(szHeaders);
-		pFile->AddRequestHeaders("User-Agent: PGSuper/3.3\r\n", HTTP_ADDREQ_FLAG_ADD_IF_NEW);
+		pFile->AddRequestHeaders(_T("User-Agent: PGSuper/3.3\r\n"), HTTP_ADDREQ_FLAG_ADD_IF_NEW);
 		pFile->SendRequest();
 
 		pFile->QueryInfoStatusCode(dwRet);//Check wininet.h for info
@@ -1443,12 +1455,12 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
       {
          // Copy file
 			ULONGLONG len = pFile->GetLength();
-			char buf[2000];
+			TCHAR buf[2000];
 			int numread;
 			CFile myfile(strLocalTargetFile, CFile::modeCreate|CFile::modeWrite|CFile::typeBinary);
-			while ((numread = pFile->Read(buf,sizeof(buf)-1)) > 0)
+			while ((numread = pFile->Read(buf,sizeof(buf)/sizeof(TCHAR)-1)) > 0)
 			{
-				buf[numread] = '\0';
+				buf[numread] = _T('\0');
 				strObject += buf;
 				myfile.Write(buf, numread);
 				PeekAndPump();
@@ -1473,10 +1485,10 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 	{
       // catch any exceptions from WinINet      
 		TCHAR szErr[1024];
-		szErr[0] = '\0';
+		szErr[0] = _T('\0');
       if(!pEx->GetErrorMessage(szErr, 1024))
-			strcpy_s(szErr,1024,"Some crazy unknown error");
-		LOG("File transfer failed!!");      
+			_tcscpy_s(szErr,1024,_T("Some crazy unknown error"));
+		LOG(_T("File transfer failed!!"));      
 		pEx->Delete();
 		if(pFile)
 			delete pFile;
@@ -1555,31 +1567,31 @@ bool CFileSystemPGSuperCatalogServer::CheckForUpdates(const CString& publisher, 
 #else
    bool bUpdatePending = true;
 #endif
-   CString cachedMasterLibFile  = cacheFolder + CString("\\") + GetMasterLibraryFileName();
-   CString cachedTemplateFolder = cacheFolder + CString("\\") + GetTemplateSubFolderName()+ CString("\\");
+   CString cachedMasterLibFile  = cacheFolder + CString(_T("\\")) + GetMasterLibraryFileName();
+   CString cachedTemplateFolder = cacheFolder + CString(_T("\\")) + GetTemplateSubFolderName()+ CString(_T("\\"));
 
    // Master Library File
-   CString strMasterLibMD5 = GetLibraryFileName() + ".md5";
+   CString strMasterLibMD5 = GetLibraryFileName() + _T(".md5");
    CString strLocalMasterLibMD5 = GetLocalMasterLibraryMD5Filename();
    BOOL bMasterLibrarySuccess = ::CopyFile(strMasterLibMD5,strLocalMasterLibMD5,FALSE);
 
-   LOG("Getting " << strMasterLibMD5);
+   LOG(_T("Getting ") << strMasterLibMD5);
    if ( !bMasterLibrarySuccess )
    {
       CString msg;
-      msg.Format("Error getting master library file md5 checksum %s",strMasterLibMD5);
+      msg.Format(_T("Error getting master library file md5 checksum %s"),strMasterLibMD5);
       LOG(msg);
    }
 
    // Workgroup Template Folder
-   CString strWorkgroupTemplateMD5 = GetTemplateFolderPath() + CString("WorkgroupTemplates.md5");
+   CString strWorkgroupTemplateMD5 = GetTemplateFolderPath() + CString(_T("WorkgroupTemplates.md5"));
    CString strLocalTemplateMD5 = GetLocalWorkgroupTemplateFolderMD5Filename();
    BOOL bWorkgroupTemplateSuccess = ::CopyFile(strWorkgroupTemplateMD5,strLocalTemplateMD5,FALSE);
 
-   LOG("Getting " << strWorkgroupTemplateMD5);
+   LOG(_T("Getting ") << strWorkgroupTemplateMD5);
    if ( !bWorkgroupTemplateSuccess )
    {
-      LOG("Error getting " << strWorkgroupTemplateMD5);
+      LOG(_T("Error getting ") << strWorkgroupTemplateMD5);
    }
 
    if ( bMasterLibrarySuccess && bWorkgroupTemplateSuccess )
@@ -1594,13 +1606,13 @@ bool CFileSystemPGSuperCatalogServer::PopulateCatalog(const CString& publisher, 
                                                       const CString& cacheFolder) const
 {
 
-   CString cachedMasterLibFile  = cacheFolder + CString("\\") + GetMasterLibraryFileName();
-   CString cachedTemplateFolder = cacheFolder + CString("\\") + GetTemplateSubFolderName()+ CString("\\");
+   CString cachedMasterLibFile  = cacheFolder + CString(_T("\\")) + GetMasterLibraryFileName();
+   CString cachedTemplateFolder = cacheFolder + CString(_T("\\")) + GetTemplateSubFolderName()+ CString(_T("\\"));
 
    // copy the network file to the cache
    CString localMasterLibraryFile = GetLibraryFileName();
 
-   if ( localMasterLibraryFile != "" )
+   if ( localMasterLibraryFile != _T("") )
    {
       if(pProgress != NULL)
          pProgress->put_Message(0,CComBSTR("Copying the Master Library"));
@@ -1612,7 +1624,7 @@ bool CFileSystemPGSuperCatalogServer::PopulateCatalog(const CString& publisher, 
             pProgress->put_Message(0,CComBSTR("Error copying the Master Library"));
 
          CString strMessage;
-         strMessage.Format("Error opening Master library file from %s",localMasterLibraryFile);
+         strMessage.Format(_T("Error opening Master library file from %s"),localMasterLibraryFile);
 
          AfxMessageBox(strMessage,MB_ICONEXCLAMATION | MB_OK);
 
@@ -1630,7 +1642,7 @@ bool CFileSystemPGSuperCatalogServer::PopulateCatalog(const CString& publisher, 
    if ( bst==0 )
    {
       CString strMessage;
-      strMessage.Format("Error creating Template Folder at %s",cachedTemplateFolder);
+      strMessage.Format(_T("Error creating Template Folder at %s"),cachedTemplateFolder);
 
       if(pProgress!=NULL)
          pProgress->put_Message(0,CComBSTR(strMessage));
@@ -1664,12 +1676,12 @@ bool CFileSystemPGSuperCatalogServer::TestServer(CString& errorMessage) const
 
    CFileFind libfinder;
    CString strLibraryFileName = GetLibraryFileName();
-   if ( strLibraryFileName != "" )
+   if ( strLibraryFileName != _T("") )
    {
       BOOL bFound = libfinder.FindFile(GetLibraryFileName());
       if (!bFound)
       {
-         errorMessage.Format("Error finding master library file at: %s",GetLibraryFileName());
+         errorMessage.Format(_T("Error finding master library file at: %s"),GetLibraryFileName());
          return false;
       }
    }
@@ -1682,7 +1694,7 @@ bool CFileSystemPGSuperCatalogServer::TestServer(CString& errorMessage) const
    BOOL bFound = tempfinder.FindFile(templpath);
    if (!bFound)
    {
-      errorMessage.Format("Error finding template folder at: %s",GetTemplateFolderPath());
+      errorMessage.Format(_T("Error finding template folder at: %s"),GetTemplateFolderPath());
       return false;
    }
 

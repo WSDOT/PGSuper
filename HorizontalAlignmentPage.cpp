@@ -88,7 +88,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       m_Grid.SortCurves();
       if ( !m_Grid.GetCurveData(m_AlignmentData.HorzCurves) )
       {
-         AfxMessageBox("Invalid curve data");
+         AfxMessageBox(_T("Invalid curve data"));
          pDX->Fail();
       }
 
@@ -100,7 +100,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
          if ( hc.Radius < 0 )
          {
             CString strMsg;
-            strMsg.Format("Curve Radius cannot be less than zero for curve # %d",curveID);
+            strMsg.Format(_T("Curve Radius cannot be less than zero for curve # %d"),curveID);
             AfxMessageBox(strMsg);
             pDX->Fail();
          }
@@ -108,7 +108,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
          if ( hc.EntrySpiral < 0 || (IsZero(hc.Radius) && 0 < hc.EntrySpiral))
          {
             CString strMsg;
-            strMsg.Format("Invalid Entry Spiral Length for curve # %d",curveID);
+            strMsg.Format(_T("Invalid Entry Spiral Length for curve # %d"),curveID);
             AfxMessageBox(strMsg);
             pDX->Fail();
          }
@@ -116,7 +116,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
          if ( hc.ExitSpiral < 0 || (IsZero(hc.Radius) && 0 < hc.ExitSpiral) )
          {
             CString strMsg;
-            strMsg.Format("Invalid Exit Spiral Length for curve # %d",curveID);
+            strMsg.Format(_T("Invalid Exit Spiral Length for curve # %d"),curveID);
             AfxMessageBox(strMsg);
             pDX->Fail();
          }

@@ -201,7 +201,7 @@ void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const gpPoint2d& loc, Stran
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
 
    CString str;
-   str.Format("%d",strandIdx);
+   str.Format(_T("%d"),strandIdx);
 
    pDC->TextOut(x, y, str);
 }
@@ -285,7 +285,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
 {
    pDC->SetTextAlign(TA_CENTER);
    CFont font;
-   font.CreatePointFont(80,"Arial",pDC);
+   font.CreatePointFont(80,_T("Arial"),pDC);
    CFont* pOldFont = pDC->SelectObject(&font);
    pDC->SetBkMode(TRANSPARENT);
 
@@ -544,7 +544,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    Kb = ::ConvertFromSysUnits(Kb,pDisplayUnits->ComponentDim.UnitOfMeasure);
    strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
 
-   strProps.Format("Area = %.0f %s\t\tYt = %0.f %s\t\tYb = %0.f %s\nIx = %0.f %s\t\tSt = %0.f %s\t\tSb = %0.f %s\nH = %0.f %s\t\tKt = %0.f %s\t\tKb = %0.f %s",Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
+   strProps.Format(_T("Area = %.0f %s\t\tYt = %0.f %s\t\tYb = %0.f %s\nIx = %0.f %s\t\tSt = %0.f %s\t\tSb = %0.f %s\nH = %0.f %s\t\tKt = %0.f %s\t\tKb = %0.f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
    pShapeProps->SetWindowText(strProps);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

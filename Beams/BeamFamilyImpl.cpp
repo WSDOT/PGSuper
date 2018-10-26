@@ -46,7 +46,7 @@ HRESULT IBeamFamilyImpl::Init()
    if ( FAILED(hr) )
    {
       CString msg;
-      msg.Format("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed", hr);
+      msg.Format(_T("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed"), hr);
       AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
       return hr;
    }
@@ -97,7 +97,7 @@ std::vector<CString> IBeamFamilyImpl::GetFactoryNames()
    return names;
 }
 
-CLSID IBeamFamilyImpl::GetFactoryCLSID(const char* strName)
+CLSID IBeamFamilyImpl::GetFactoryCLSID(LPCTSTR strName)
 {
    FactoryContainer::iterator found = m_Factories.find(CString(strName));
    if ( found == m_Factories.end() )
@@ -106,7 +106,7 @@ CLSID IBeamFamilyImpl::GetFactoryCLSID(const char* strName)
    return found->second;
 }
 
-HRESULT IBeamFamilyImpl::CreateFactory(const char* strName,IBeamFactory** ppFactory)
+HRESULT IBeamFamilyImpl::CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory)
 {
    FactoryContainer::iterator found = m_Factories.find(CString(strName));
    if ( found == m_Factories.end() )

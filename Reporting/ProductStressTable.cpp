@@ -203,7 +203,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          nCols += 2;
    }
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Bridge Site Stress");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Bridge Site Stress"));
 
    if ( span == ALL_SPANS )
    {
@@ -443,30 +443,30 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
       (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
-      (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopGirder[index]) << rptNewLine;
-      (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotGirder[index]);
+      (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder[index]) << rptNewLine;
+      (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder[index]);
       col++;
 
-      (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopDiaphragm[index]) << rptNewLine;
-      (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotDiaphragm[index]);
+      (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDiaphragm[index]) << rptNewLine;
+      (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDiaphragm[index]);
       col++;
 
       if ( bShearKey )
       {
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxShearKey[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinShearKey[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinShearKey[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinShearKey[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinShearKey[index]);
             col++;
          }
          else
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxShearKey[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
             col++;
          }
       }
@@ -475,36 +475,36 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxConstruction[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinConstruction[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinConstruction[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinConstruction[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinConstruction[index]);
             col++;
          }
          else
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxConstruction[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
             col++;
          }
       }
 
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxSlab[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinSlab[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinSlab[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlab[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlab[index]);
          col++;
       }
       else
       {
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxSlab[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
          col++;
       }
 
@@ -512,18 +512,18 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxSlabPanel[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinSlabPanel[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinSlabPanel[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlabPanel[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlabPanel[index]);
             col++;
          }
          else
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxSlabPanel[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);
             col++;
          }
       }
@@ -532,46 +532,46 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( bSidewalk )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxSidewalk[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSidewalk[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinSidewalk[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinSidewalk[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSidewalk[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSidewalk[index]);
             col++;
          }
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxTrafficBarrier[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxTrafficBarrier[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinTrafficBarrier[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinTrafficBarrier[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinTrafficBarrier[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinTrafficBarrier[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxOverlay[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxOverlay[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinOverlay[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinOverlay[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinOverlay[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinOverlay[index]);
          col++;
       }
       else
       {
          if ( bSidewalk )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxSidewalk[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSidewalk[index]);
             col++;
          }
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxTrafficBarrier[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxTrafficBarrier[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxOverlay[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxOverlay[index]);
          col++;
       }
 
@@ -580,42 +580,42 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( bPedLoading )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPedestrianLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPedestrianLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPedestrianLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPedestrianLL[index]);
             col++;
          }
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxDesignLL[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
          col++;
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinFatigueLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinFatigueLL[index]);
             col++;
          }
 
          if ( bPermit )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitLL[index]);
             col++;
          }
       }
@@ -624,56 +624,56 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxDesignLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
             col++;
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxLegalRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxLegalRoutineLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalRoutineLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinLegalRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinLegalRoutineLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalRoutineLL[index]);
             col++;
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxLegalSpecialLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinLegalSpecialLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
             col++;
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitRoutineLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitRoutineLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitRoutineLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitRoutineLL[index]);
             col++;
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
          {
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitSpecialLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitSpecialLL[index]);
             col++;
 
-            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitSpecialLL[index]);
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitSpecialLL[index]);
             col++;
          }
       }

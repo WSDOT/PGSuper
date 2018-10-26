@@ -87,8 +87,8 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       {
          int l = bs.GetLength();
          CString s2 = bs.Right(l-1);
-         int i = atoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!='0'))
+         int i = _tstoi(s2);
+         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
          {
             ASSERT(0);
             m_ShearData.ConfinementBarSize=0;
@@ -113,8 +113,8 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       {
          int l = bs.GetLength();
          CString s2 = bs.Right(l-1);
-         int i = atoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!='0'))
+         int i = _tstoi(s2);
+         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
          {
             ASSERT(0);
             m_ShearData.TopFlangeBarSize=0;
@@ -152,7 +152,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
                if (lsi.ZoneLength<lsi.StirrupSpacing)
                {
                   CString msg;
-                  msg.Format("Bar spacing must be less than zone length in Shear Zone %d",zn);
+                  msg.Format(_T("Bar spacing must be less than zone length in Shear Zone %d"),zn);
                   AfxMessageBox(msg);
                   pDX->Fail();
                }
@@ -162,7 +162,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
             if ( (0 < lsi.VertBarSize || 0 < lsi.HorzBarSize) && lsi.StirrupSpacing<=0.0)
             {
                CString msg;
-               msg.Format("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d",zn);
+               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn);
                AfxMessageBox(msg);
                pDX->Fail();
             }
@@ -171,7 +171,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
             if (zn-1<m_ShearData.NumConfinementZones && lsi.StirrupSpacing<=0.0)
             {
                CString msg;
-               msg.Format("Bar spacing must be >0.0 in Confinment Zone %d",zn);
+               msg.Format(_T("Bar spacing must be >0.0 in Confinment Zone %d"),zn);
                AfxMessageBox(msg);
                pDX->Fail();
             }
@@ -217,7 +217,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       if (siz>0)
       {
          CString tmp;
-         tmp.Format("#%d",siz);
+         tmp.Format(_T("#%d"),siz);
          int idx = m_BarSize.SelectString(0,tmp);
          if (idx==CB_ERR)
             m_BarSize.SetCurSel(0);
@@ -243,7 +243,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       if (siz>0)
       {
          CString tmp;
-         tmp.Format("#%d",siz);
+         tmp.Format(_T("#%d"),siz);
          int idx = m_TfBarSize.SelectString(0,tmp);
          if (idx==CB_ERR)
             m_TfBarSize.SetCurSel(0);
@@ -349,10 +349,10 @@ void CGirderDescShearPage::FillLastZone(int siz)
 {
    CString tmp;
    m_LastZone.ResetContent();
-   m_LastZone.AddString("none");
+   m_LastZone.AddString(_T("none"));
    for (int i=1; i<=siz; i++)
    {
-      tmp.Format("Zone %d",i);
+      tmp.Format(_T("Zone %d"),i);
       m_LastZone.AddString(tmp);
    }
 }

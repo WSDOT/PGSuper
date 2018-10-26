@@ -78,18 +78,21 @@ private:
 
 int main(int argc, char* argv[])
 {
+   double pd_max   = 0.02;    // default max percent difference is 2%
+   double zero_tol = 1.0e-05; //  default zero tolerance
+
    std::cout<< "NCRHP 12-50 File Diff Engine..."<<std::endl;
    if (argc<3)
    {
       std::cout<< "Syntax is..\n"<<std::endl;
       std::cout<< "1250_Diff datumFile testFile <percentDiff> <ZeroTolerance>"<<std::endl;
+      std::cout<< "   The default percentDiff = "<< pd_max*100<<"%" <<std::endl;
+      std::cout<< "   The default ZeroTolerance = "<< zero_tol <<std::endl;
       std::cout<< "Report ID's to Ignore are read from 'ignore.txt'"<<std::endl;
       return 1;
    }
 
    // Process our input
-   double pd_max   = 0.02;    // default max percent difference is 2%
-   double zero_tol = 1.0e-05; //  default zero tolerance
    if (argc>3)
    {
       if (sysTokenizer::ParseDouble(argv[3], &pd_max))

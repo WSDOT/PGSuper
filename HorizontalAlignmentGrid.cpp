@@ -135,7 +135,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
-   std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
+   std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -172,7 +172,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 			.SetValue(_T("Curve\n#"))
 		);
 
-   CString cv = "PI\nStation";
+   CString cv = _T("PI\nStation");
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -186,11 +186,11 @@ void CHorizontalAlignmentGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue("* Forward\nTangent\nor\nDelta")
+			.SetValue(_T("* Forward\nTangent\nor\nDelta"))
 		);
 
    CString strRadius;
-   strRadius.Format("Radius\n(%s)",strUnitTag.c_str());
+   strRadius.Format(_T("Radius\n(%s)"),strUnitTag.c_str());
 	SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -200,7 +200,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 		);
 
    CString strEntrySpiral;
-   strEntrySpiral.Format("Entry\nSpiral\n(%s)",strUnitTag.c_str());
+   strEntrySpiral.Format(_T("Entry\nSpiral\n(%s)"),strUnitTag.c_str());
 	SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -210,7 +210,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 		);
 
    CString strExitSpiral;
-   strExitSpiral.Format("Exit\nSpiral\n(%s)",strUnitTag.c_str());
+   strExitSpiral.Format(_T("Exit\nSpiral\n(%s)"),strUnitTag.c_str());
 	SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -356,15 +356,15 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* p
    }
 
    CString strRadius = GetCellValue(nRow,3);
-   *pRadius = atof(strRadius);
+   *pRadius = _tstof(strRadius);
    *pRadius = ::ConvertToSysUnits(*pRadius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strEntrySpiral = GetCellValue(nRow,4);
-   *pEntrySpiral = atof(strEntrySpiral);
+   *pEntrySpiral = _tstof(strEntrySpiral);
    *pEntrySpiral = ::ConvertToSysUnits(*pEntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strExitSpiral = GetCellValue(nRow,5);
-   *pExitSpiral = atof(strExitSpiral);
+   *pExitSpiral = _tstof(strExitSpiral);
    *pExitSpiral = ::ConvertToSysUnits(*pExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    return true;

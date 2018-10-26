@@ -88,12 +88,12 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
       bool bSuccess = pBridge->GetSkewAngle(m_Station,m_strOrientation.c_str(),&skewAngle);
       if ( !bSuccess )
       {
-         AfxMessageBox("Invalid pier orientation");
+         AfxMessageBox(_T("Invalid pier orientation"));
          pDX->Fail();
       }
       else if ( bSuccess && IsLT(fabs(skewAngle),0.0) || IsGE(MAX_SKEW_ANGLE,fabs(skewAngle)) )
       {
-         AfxMessageBox("Pier skew must be less than 88°\r\nPier skew is measured from the alignment normal");
+         AfxMessageBox(_T("Pier skew must be less than 88°\r\nPier skew is measured from the alignment normal"));
          pDX->Fail();
       }
    }
@@ -126,8 +126,8 @@ BOOL CPierLayoutPage::OnInitDialog()
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
    CString strPierLabel;
-   strPierLabel.Format("%s %d",
-      pParent->m_pPrevSpan == NULL || pParent->m_pNextSpan == NULL ? "Abutment" : "Pier",
+   strPierLabel.Format(_T("%s %d"),
+      pParent->m_pPrevSpan == NULL || pParent->m_pNextSpan == NULL ? _T("Abutment") : _T("Pier"),
       m_PierIdx+1);
 
    GetDlgItem(IDC_PIER_LABEL)->SetWindowText(strPierLabel);
@@ -209,12 +209,12 @@ void CPierLayoutPage::UpdateMoveOptionList()
 
    pOptions->ResetContent();
 
-   CString strName = (m_PierIdx == 0 || m_PierIdx == m_nSpans ? "Abutment" : "Pier");
+   CString strName = (m_PierIdx == 0 || m_PierIdx == m_nSpans ? _T("Abutment") : _T("Pier"));
 
 
    CWnd* pMove = GetDlgItem(IDC_MOVE_LABEL);
    CString strMove;
-   strMove.Format("Move %s %d from %s to %s",
+   strMove.Format(_T("Move %s %d from %s to %s"),
                   strName,
                   m_PierIdx+1,
                   FormatStation(pDisplayUnits->GetStationFormat(),m_FromStation),
@@ -224,7 +224,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
 
    CString strOptions[4];
    pgsTypes::MovePierOption options[4];
-   strOptions[0].Format("Move bridge retaining all span lengths");
+   strOptions[0].Format(_T("Move bridge retaining all span lengths"));
    options[0] = pgsTypes::MoveBridge;
 
    int nOptions = 1;
@@ -234,7 +234,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
         m_PrevPierStation < toStation && toStation < m_NextPierStation ) // can't move pier beyond adjacent piers
    {
       options[nOptions] = pgsTypes::AdjustAdjacentSpans;
-      strOptions[nOptions++].Format("Adjust the length of Spans %d and %d",
+      strOptions[nOptions++].Format(_T("Adjust the length of Spans %d and %d"),
                                     m_PierIdx,m_PierIdx+1);
    }
 
@@ -244,12 +244,12 @@ void CPierLayoutPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustNextSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format("Adjust the length of Span %d by moving %s %d",
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
                                        LABEL_SPAN(m_PierIdx),strName,LABEL_SPAN(m_PierIdx));
       }
       else
       {
-         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx));
       }
    }
@@ -259,12 +259,12 @@ void CPierLayoutPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustPrevSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format("Adjust the length of Span %d by moving %s %d",
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
                                        LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
       }
       else
       {
-         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx-1));
       }
    }
@@ -274,7 +274,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
       {
          // adjust length of previous span only
          options[nOptions] = pgsTypes::AdjustPrevSpan;
-         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx-1));
       }
 
@@ -282,7 +282,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
       {
          // adjust length of next span only
          options[nOptions] = pgsTypes::AdjustNextSpan;
-         strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx));
       }
    }

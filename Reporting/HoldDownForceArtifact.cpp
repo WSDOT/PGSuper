@@ -80,11 +80,11 @@ rptRcTable* CHoldDownForceCheck::Build(IBroker* pBroker,SpanIndexType span,Girde
    {
       INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,"Hold Down Force");
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Hold Down Force"));
 
-      (*pTable)(0,0) << COLHDR("Hold Down Force",    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(0,1) << COLHDR("Max Hold Down Force",   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(0,2) << "Status";
+      (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+      (*pTable)(0,1) << COLHDR(_T("Max Hold Down Force"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+      (*pTable)(0,2) << _T("Status");
 
       (*pTable)(1,0) << force.SetValue(pArtifact->GetDemand());
       (*pTable)(1,1) << force.SetValue(pArtifact->GetCapacity());
@@ -141,7 +141,7 @@ bool CHoldDownForceCheck::AssertValid() const
 
 void CHoldDownForceCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CHoldDownForceCheck" << endl;
+   os << _T("Dump for CHoldDownForceCheck") << endl;
 }
 #endif // _DEBUG
 

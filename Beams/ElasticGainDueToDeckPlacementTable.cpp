@@ -51,12 +51,12 @@ rptRcTable(NumColumns,0)
 CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
-   ColumnIndexType numColumns = 10;
+   ColumnIndexType numColumns = 6;
 
    CElasticGainDueToDeckPlacementTable* table = new CElasticGainDueToDeckPlacementTable( numColumns, pDisplayUnits);
    pgsReportStyleHolder::ConfigureTable(table);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    double Ec = pMaterial->GetEcGdr(span,gdr);
@@ -64,31 +64,27 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Elastic Gain Due to Deck Placement [5.9.5.2.3a]" << rptNewLine;
+   *pParagraph << _T("Elastic Gain Due to Deck Placement [5.9.5.2.3a]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + "DeltaFcd.png") << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + "ElasticGain.png") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd.png")) << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("ElasticGain.png")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
-   *pParagraph << Sub2("E","p") << " = " << table->mod_e.SetValue( Ep ) << rptNewLine;
-   *pParagraph << Sub2("E","c") << " = " << table->mod_e.SetValue( Ec ) << rptNewLine;
+   *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue( Ep ) << rptNewLine;
+   *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue( Ec ) << rptNewLine;
    table->mod_e.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2("M","Slab") << " + " << Sub2("M","Dia"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,2) << COLHDR(Sub2("M","sidl"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,3) << COLHDR(Sub2("e","perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,5) << COLHDR(Sub2("I","c"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,6) << COLHDR(Sub2("Y","bc"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,7) << COLHDR(Sub2("Y","bg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << italic(ON) << Sub2("f'","cd") << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,9) << COLHDR(symbol(DELTA) << RPT_STRESS("pED"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(Sub2(_T("M"),_T("Slab")) << _T(" + ") << Sub2(_T("M"),_T("Dia")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,2) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,4) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'"),_T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }
@@ -96,12 +92,8 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << moment.SetValue( details.pLosses->GetAddlGdrMoment() );
-   (*this)(row,2) << moment.SetValue( details.pLosses->GetSidlMoment() );
-   (*this)(row,3) << ecc.SetValue( details.pLosses->GetEccPermanent() );
-   (*this)(row,4) << mom_inertia.SetValue( details.pLosses->GetIg() );
-   (*this)(row,5) << mom_inertia.SetValue( details.pLosses->GetIc() );
-   (*this)(row,6) << cg.SetValue( details.pLosses->GetYbc() );
-   (*this)(row,7) << cg.SetValue( details.pLosses->GetYbg() );
-   (*this)(row,8) << stress.SetValue( details.pLosses->GetDeltaFcd1() );
-   (*this)(row,9) << stress.SetValue( details.pLosses->ElasticGainDueToDeckPlacement() );
+   (*this)(row,2) << ecc.SetValue( details.pLosses->GetEccPermanent() );
+   (*this)(row,3) << mom_inertia.SetValue( details.pLosses->GetIg() );
+   (*this)(row,4) << stress.SetValue( details.pLosses->GetDeltaFcd1() );
+   (*this)(row,5) << stress.SetValue( details.pLosses->ElasticGainDueToDeckPlacement() );
 }

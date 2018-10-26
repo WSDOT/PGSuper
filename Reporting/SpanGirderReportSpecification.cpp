@@ -149,7 +149,7 @@ int CSpanGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* p
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-CSpanReportSpecification::CSpanReportSpecification(const char* strReportName,IBroker* pBroker,SpanIndexType spanIdx) :
+CSpanReportSpecification::CSpanReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetSpan(spanIdx);
@@ -159,11 +159,11 @@ CSpanReportSpecification::~CSpanReportSpecification(void)
 {
 }
 
-std::string CSpanReportSpecification::GetReportTitle() const
+std::_tstring CSpanReportSpecification::GetReportTitle() const
 {
    CString msg;
-   msg.Format("%s - Span %d",GetReportName().c_str(),LABEL_SPAN(GetSpan()));
-   return std::string(msg);
+   msg.Format(_T("%s - Span %d"),GetReportName().c_str(),LABEL_SPAN(GetSpan()));
+   return std::_tstring(msg);
 }
 
 void CSpanReportSpecification::SetSpan(SpanIndexType spanIdx)
@@ -190,7 +190,7 @@ HRESULT CSpanReportSpecification::Validate() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderReportSpecification::CGirderReportSpecification(const char* strReportName,IBroker* pBroker,GirderIndexType gdrIdx) :
+CGirderReportSpecification::CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetGirder(gdrIdx);
@@ -200,11 +200,11 @@ CGirderReportSpecification::~CGirderReportSpecification(void)
 {
 }
 
-std::string CGirderReportSpecification::GetReportTitle() const
+std::_tstring CGirderReportSpecification::GetReportTitle() const
 {
    CString msg;
-   msg.Format("%s - Girder Line %s",GetReportName().c_str(),LABEL_GIRDER(GetGirder()));
-   return std::string(msg);
+   msg.Format(_T("%s - Girder Line %s"),GetReportName().c_str(),LABEL_GIRDER(GetGirder()));
+   return std::_tstring(msg);
 }
 
 void CGirderReportSpecification::SetGirder(GirderIndexType gdrIdx)
@@ -237,7 +237,7 @@ HRESULT CGirderReportSpecification::Validate() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-CSpanGirderReportSpecification::CSpanGirderReportSpecification(const char* strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx) :
+CSpanGirderReportSpecification::CSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx) :
 CSpanReportSpecification(strReportName,pBroker,spanIdx)
 {
    SetGirder(gdrIdx);
@@ -247,11 +247,11 @@ CSpanGirderReportSpecification::~CSpanGirderReportSpecification(void)
 {
 }
 
-std::string CSpanGirderReportSpecification::GetReportTitle() const
+std::_tstring CSpanGirderReportSpecification::GetReportTitle() const
 {
    CString msg;
-   msg.Format("%s - Span %d, Girder %s",GetReportName().c_str(),LABEL_SPAN(GetSpan()),LABEL_GIRDER(GetGirder()));
-   return std::string(msg);
+   msg.Format(_T("%s - Span %d, Girder %s"),GetReportName().c_str(),LABEL_SPAN(GetSpan()),LABEL_GIRDER(GetGirder()));
+   return std::_tstring(msg);
 }
 
 void CSpanGirderReportSpecification::SetGirder(GirderIndexType gdrIdx)

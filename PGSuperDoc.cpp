@@ -279,7 +279,7 @@ m_bAutoCalcEnabled(true)
    m_Selection.SpanIdx   = INVALID_INDEX;
    m_Selection.GirderIdx = INVALID_INDEX;
 
-   m_LibMgr.SetName( "PGSuper Library" );
+   m_LibMgr.SetName( _T("PGSuper Library") );
 
    CEAFAutoCalcDocMixin::SetDocument(this);
 
@@ -388,7 +388,7 @@ void CPGSuperDoc::EditAlignmentDescription(int nPage)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IRoadwayData,pAlignment);
-   CAlignmentDescriptionDlg dlg("Alignment Description",m_pBroker);
+   CAlignmentDescriptionDlg dlg(_T("Alignment Description"),m_pBroker);
 
    dlg.m_AlignmentPage.m_AlignmentData = pAlignment->GetAlignmentData2();
    dlg.m_ProfilePage.m_ProfileData = pAlignment->GetProfileData2();
@@ -543,7 +543,7 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    bool bUseSameGirder              = pBridgeDesc->UseSameGirderForEntireBridge();
-   std::string strGirderName        = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
+   std::_tstring strGirderName        = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
    CGirderData girderData           = pGirderData->GetGirderData(spanIdx,gdrIdx);
    CShearData  shearData            = pShear->GetShearData(spanIdx,gdrIdx);
    CLongitudinalRebarData rebarData = pLongitudinalRebar->GetLongitudinalRebarData( spanIdx, gdrIdx );
@@ -797,7 +797,7 @@ void CPGSuperDoc::EditBridgeViewSettings(int nPage)
 BOOL CPGSuperDoc::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 {
    CFileFind dir_finder;
-   BOOL bMoreDir = dir_finder.FindFile(CString(lpszDir)+"\\*");
+   BOOL bMoreDir = dir_finder.FindFile(CString(lpszDir)+_T("\\*"));
 
    // recursively go through the directories
    while ( bMoreDir )
@@ -811,17 +811,17 @@ BOOL CPGSuperDoc::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 
    // done with the directories below this leave. Process the templates at this level
    CString strMessage;
-   strMessage.Format("Updating templates in %s",lpszDir);
+   strMessage.Format(_T("Updating templates in %s"),lpszDir);
    pProgress->UpdateMessage(strMessage);
 
    CFileFind template_finder;
-   BOOL bMoreTemplates = template_finder.FindFile(CString(lpszDir) + "\\*.pgt");
+   BOOL bMoreTemplates = template_finder.FindFile(CString(lpszDir) + _T("\\*.pgt"));
    while ( bMoreTemplates )
    {
       bMoreTemplates      = template_finder.FindNextFile();
       CString strTemplate = template_finder.GetFilePath();
 
-      strMessage.Format("Updating %s",template_finder.GetFileTitle());
+      strMessage.Format(_T("Updating %s"),template_finder.GetFileTitle());
       pProgress->UpdateMessage(strMessage);
 
       if ( !OpenTheDocument(strTemplate) )
@@ -990,8 +990,8 @@ void CPGSuperDoc::InitProjectProperties()
 
    GET_IFACE( IProjectProperties, pProjProp );
 
-   pProjProp->SetEngineer(std::string(engineer_name));
-   pProjProp->SetCompany(std::string(company));
+   pProjProp->SetEngineer(std::_tstring(engineer_name));
+   pProjProp->SetCompany(std::_tstring(company));
 
    if ( ShowProjectPropertiesOnNewProject() )
       OnFileProjectProperties();
@@ -1029,7 +1029,7 @@ BOOL CPGSuperDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
    CString file_ext;
    CString file_name(lpszPathName);
-	int charpos = file_name.ReverseFind('.');
+	int charpos = file_name.ReverseFind(_T('.'));
 	if (0 <= charpos)
    {
 		file_ext = file_name.Right(file_name.GetLength() - charpos);
@@ -1077,7 +1077,7 @@ HRESULT CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFile
    ifile.getline(line,50);
    CString strLine(line);
    strLine.TrimLeft();
-   int loc = strLine.Find(">",0);
+   int loc = strLine.Find(_T(">"),0);
    if (loc!=-1)
    {
       strLine = strLine.Left(loc+1);
@@ -1087,7 +1087,7 @@ HRESULT CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFile
          ifile.close();
 
          _PgsFileConvert1 convert;
-         if ( !convert.CreateDispatch("convert.PgsFileConvert1") )
+         if ( !convert.CreateDispatch(_T("convert.PgsFileConvert1")) )
          {
             return REGDB_E_CLASSNOTREG;
          }
@@ -1131,7 +1131,7 @@ HRESULT CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFile
 
 CString CPGSuperDoc::GetRootNodeName()
 {
-   return "PGSuper";
+   return _T("PGSuper");
 }
 
 Float64 CPGSuperDoc::GetRootNodeVersion()
@@ -1145,7 +1145,7 @@ HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
   if ( FAILED(hr) )
      return hr;
 
-  hr = pStrSave->put_Property("Version",CComVariant(theApp.GetVersion(true)));
+  hr = pStrSave->put_Property(_T("Version"),CComVariant(theApp.GetVersion(true)));
   if ( FAILED(hr) )
      return hr;
 
@@ -1167,17 +1167,16 @@ HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
    {
       CComVariant var;
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Version",&var);
+      hr = pStrLoad->get_Property(_T("Version"),&var);
       if ( FAILED(hr) )
          return hr;
 
    #if defined _DEBUG
-      USES_CONVERSION;
-      TRACE("Loading data saved with PGSuper Version %s\n",OLE2A(var.bstrVal));
+      TRACE(_T("Loading data saved with PGSuper Version %s\n"),CComBSTR(var.bstrVal));
    }
    else
    {
-      TRACE("Loading data saved with PGSuper Version 2.1 or earlier\n");
+      TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
    #endif
    } // clses the bracket for if ( 1.0 < version )
 
@@ -1190,18 +1189,18 @@ void CPGSuperDoc::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup
 
    GET_IFACE(IEAFProjectLog,pLog);
 
-   pLog->LogMessage("");
-   pLog->LogMessage("An error occured while recovering your last successful save.");
-   msg.Format("It is highly likely that the file %s is corrupt.", lpszPathName);
+   pLog->LogMessage(_T(""));
+   pLog->LogMessage(_T("An error occured while recovering your last successful save."));
+   msg.Format(_T("It is highly likely that the file %s is corrupt."), lpszPathName);
    pLog->LogMessage( msg );
-   pLog->LogMessage("To recover from this error,");
-   msg.Format("   1. Delete %s", lpszPathName );
+   pLog->LogMessage(_T("To recover from this error,"));
+   msg.Format(_T("   1. Delete %s"), lpszPathName );
    pLog->LogMessage( msg );
-   msg.Format("   2. Rename %s to %s", lpszBackup, lpszPathName );
+   msg.Format(_T("   2. Rename %s to %s"), lpszBackup, lpszPathName );
    pLog->LogMessage( msg );
-   pLog->LogMessage("");
+   pLog->LogMessage(_T(""));
 
-   std::string strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = pLog->GetName();
 
    AfxFormatString2( msg, IDS_E_SAVERECOVER1, lpszPathName, CString(strLogFileName.c_str()) );
    AfxMessageBox(msg );
@@ -1213,18 +1212,18 @@ void CPGSuperDoc::OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBac
 
    GET_IFACE(IEAFProjectLog,pLog);
 
-   pLog->LogMessage("");
-   pLog->LogMessage("An error occured while recovering your last successful save.");
-   msg.Format("It is highly likely that the file %s no longer exists.", lpszPathName);
+   pLog->LogMessage(_T(""));
+   pLog->LogMessage(_T("An error occured while recovering your last successful save."));
+   msg.Format(_T("It is highly likely that the file %s no longer exists."), lpszPathName);
    pLog->LogMessage( msg );
-   pLog->LogMessage("To recover from this error,");
-   msg.Format("   1. If %s exists, delete it.", lpszPathName );
+   pLog->LogMessage(_T("To recover from this error,"));
+   msg.Format(_T("   1. If %s exists, delete it."), lpszPathName );
    pLog->LogMessage( msg );
-   msg.Format("   2. Rename %s to %s", lpszBackup, lpszPathName );
+   msg.Format(_T("   2. Rename %s to %s"), lpszBackup, lpszPathName );
    pLog->LogMessage( msg );
-   pLog->LogMessage("");
+   pLog->LogMessage(_T(""));
 
-   std::string strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = pLog->GetName();
 
    AfxFormatString2( msg, IDS_E_SAVERECOVER2, lpszPathName, CString(strLogFileName.c_str()) );
    AfxMessageBox( msg );
@@ -1345,7 +1344,7 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format("The following error occured while opening %s",lpszPathName );
+   log_msg_header.Format(_T("The following error occured while opening %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -1383,7 +1382,7 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    default:
       {
          CString log_msg;
-         log_msg.Format("An unknown error occured while opening the file (hr = %d)",hr);
+         log_msg.Format(_T("An unknown error occured while opening the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -1392,7 +1391,7 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::string strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -1407,7 +1406,7 @@ void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format("The following error occured while saving %s",lpszPathName );
+   log_msg_header.Format(_T("The following error occured while saving %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -1431,7 +1430,7 @@ void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    default:
       {
          CString log_msg;
-         log_msg.Format("An unknown error occured while closing the file (hr = %d)",hr);
+         log_msg.Format(_T("An unknown error occured while closing the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_WRITE, lpszPathName );
       }
@@ -1440,7 +1439,7 @@ void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::string strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -1456,7 +1455,7 @@ void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format("The following error occured while converting %s",lpszPathName );
+   log_msg_header.Format(_T("The following error occured while converting %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -1468,14 +1467,14 @@ void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
       break;
 
    case E_INVALIDARG:
-      msg1.Format( "%s could not be opened",lpszPathName);
+      msg1.Format( _T("%s could not be opened"),lpszPathName);
       pLog->LogMessage( msg1 );
       break;
 
    default:
       {
          CString log_msg;
-         log_msg.Format("An unknown error occured while converting the file (hr = %d)",hr);
+         log_msg.Format(_T("An unknown error occured while converting the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -1484,7 +1483,7 @@ void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::string strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -1529,13 +1528,13 @@ void CPGSuperDoc::OnProjectSpec()
 
    GET_IFACE( ILibraryNames, pLibNames );
 
-   std::vector<std::string> specs;
+   std::vector<std::_tstring> specs;
    pLibNames->EnumSpecNames( &specs );
 	CSpecDlg dlg(specs);
 
    GET_IFACE( ISpecification, pSpec );
 
-   std::string cur_spec = pSpec->GetSpecification();
+   std::_tstring cur_spec = pSpec->GetSpecification();
    dlg.m_Spec = cur_spec;
    if ( dlg.DoModal() )
    {
@@ -1557,17 +1556,17 @@ void CPGSuperDoc::OnRatingSpec()
    CRatingOptionsDlg dlg;
    txnRatingCriteriaData oldData;
 
-   std::vector<std::string> specs;
+   std::vector<std::_tstring> specs;
    pLibNames->EnumRatingCriteriaNames( &specs );
    dlg.m_GeneralPage.m_RatingSpecs = specs;
 
-   std::vector<std::string> all_names;
+   std::vector<std::_tstring> all_names;
    pLibNames->EnumLiveLoadNames( &all_names );
    dlg.m_LegalPage.m_AllNames  = all_names;
    dlg.m_PermitPage.m_AllNames = all_names;
 
    GET_IFACE( IRatingSpecification, pSpec );
-   std::string cur_spec = pSpec->GetRatingSpecification();
+   std::_tstring cur_spec = pSpec->GetRatingSpecification();
    oldData.m_General.CriteriaName  = cur_spec;
    oldData.m_General.bIncludePedestrianLiveLoad = pSpec->IncludePedestrianLiveLoad();
 
@@ -1678,9 +1677,9 @@ void CPGSuperDoc::OnProjectAutoCalc()
 void CPGSuperDoc::OnUpdateProjectAutoCalc(CCmdUI* pCmdUI) 
 {
 	if ( IsAutoCalcEnabled() )
-      pCmdUI->SetText( "Turn AutoCalc Off" );
+      pCmdUI->SetText( _T("Turn AutoCalc Off") );
    else
-      pCmdUI->SetText( "Turn AutoCalc On" );
+      pCmdUI->SetText( _T("Turn AutoCalc On") );
 }
 
 /*--------------------------------------------------------------------*/
@@ -1689,13 +1688,13 @@ void CPGSuperDoc::OnExportToTemplateFile()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // select inital directory to try and save in
-   CString default_name = "PGSuper.pgt";
+   CString default_name = _T("PGSuper.pgt");
    CString initial_filespec;
    CString initial_dir;
    
    // prompt user to save current project to a template file
-   CFileDialog  fildlg(FALSE,"pgt",default_name,OFN_HIDEREADONLY,
-                   "PGSuper Template Files (*.pgt)|*.pgt||");
+   CFileDialog  fildlg(FALSE,_T("pgt"),default_name,OFN_HIDEREADONLY,
+                   _T("PGSuper Template Files (*.pgt)|*.pgt||"));
 
 #if defined _DEBUG
    // If this is a debug build, then the developers are probably running
@@ -1721,8 +1720,8 @@ void CPGSuperDoc::OnExportToTemplateFile()
       // check if file exists and prompt user if he wants to overwrite
       if (DoesFileExist(file_path))
       {
-         CString msg(" The file: ");
-         msg += file_path + " exists. Overwrite it?";
+         CString msg(_T(" The file: "));
+         msg += file_path + _T(" exists. Overwrite it?");
          int stm = AfxMessageBox(msg,MB_YESNOCANCEL|MB_ICONQUESTION);
          if (stm!=IDYES)
             return;
@@ -1741,7 +1740,7 @@ bool DoesFolderExist(const CString& dirname)
    {
       CFileFind finder;
       BOOL is_file;
-      CString nam = dirname + CString("\\*.*");
+      CString nam = dirname + CString(_T("\\*.*"));
       is_file = finder.FindFile(nam);
       return (is_file!=0);
    }
@@ -1817,7 +1816,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
-      AfxMessageBox("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details.",MB_OK);
+      AfxMessageBox(_T("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details."),MB_OK);
       return;
    }
 
@@ -1925,12 +1924,12 @@ void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const ar
 
    if ( pArtifact == NULL )
    {
-      AfxMessageBox("Design Cancelled",MB_OK);
+      AfxMessageBox(_T("Design Cancelled"),MB_OK);
       return;
    }
 
    GET_IFACE(IReportManager,pReportMgr);
-   CReportDescription rptDesc = pReportMgr->GetReportDescription("Design Outcome Report");
+   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
    boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    boost::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
    boost::shared_ptr<CSpanGirderReportSpecification> pSGRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification,CReportSpecification>(pRptSpec);
@@ -1951,7 +1950,7 @@ void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const ar
 
 bool CPGSuperDoc::LoadMasterLibrary()
 {
-   WATCH("Loading Master Library");
+   WATCH(_T("Loading Master Library"));
 
    // Load the master library
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
@@ -1961,8 +1960,8 @@ bool CPGSuperDoc::LoadMasterLibrary()
 
    CString strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
 
-   std::string strPublisher = pPGSuper->GetMasterLibraryPublisher();
-   std::string strMasterLibFile = pPGSuper->GetMasterLibraryFile();
+   std::_tstring strPublisher = pPGSuper->GetMasterLibraryPublisher();
+   std::_tstring strMasterLibFile = pPGSuper->GetMasterLibraryFile();
 
    m_LibMgr.SetMasterLibraryInfo(strPublisher.c_str(),strMasterLibFile.c_str());
 
@@ -1987,7 +1986,7 @@ bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
       HRESULT hr = pgslibLoadLibrary(strFile,&m_LibMgr,&unitMode);
       if ( FAILED(hr) )
       {
-         WATCH("Failed to load master library");
+         WATCH(_T("Failed to load master library"));
          AfxFormatString1(err_msg, IDS_CORRUPTED_LIBRARY_FILE, strFile);
 
          // if we are here, an error occured. Issue the message and give
@@ -2151,8 +2150,8 @@ void CPGSuperDoc::OnImportProjectLibrary()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// ask user for file name
-   CFileDialog  fildlg(TRUE,"pgs",NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
-                   "PGSuper Project File (*.pgs)|*.pgs||");
+   CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
+                   _T("PGSuper Project File (*.pgs)|*.pgs||"));
    int stf = fildlg.DoModal();
    if (stf==IDOK)
    {
@@ -2334,12 +2333,12 @@ void CPGSuperDoc::OnLiveLoads()
    GET_IFACE( ILibraryNames, pLibNames );
    GET_IFACE( ILiveLoads, pLiveLoad );
 
-   std::vector<std::string> all_names;
+   std::vector<std::_tstring> all_names;
    pLibNames->EnumLiveLoadNames( &all_names );
 
-   std::vector<std::string> design_names = pLiveLoad->GetLiveLoadNames(pgsTypes::lltDesign);
-   std::vector<std::string> fatigue_names = pLiveLoad->GetLiveLoadNames(pgsTypes::lltFatigue);
-   std::vector<std::string> permit_names = pLiveLoad->GetLiveLoadNames(pgsTypes::lltPermit);
+   std::vector<std::_tstring> design_names = pLiveLoad->GetLiveLoadNames(pgsTypes::lltDesign);
+   std::vector<std::_tstring> fatigue_names = pLiveLoad->GetLiveLoadNames(pgsTypes::lltFatigue);
+   std::vector<std::_tstring> permit_names = pLiveLoad->GetLiveLoadNames(pgsTypes::lltPermit);
 
    CLiveLoadSelectDlg dlg(all_names, design_names, fatigue_names, permit_names);
 
@@ -2480,17 +2479,17 @@ void CPGSuperDoc::OnEditPier()
    {
       CString strItem;
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
-         strItem.Format("Abutment %d\n",pierIdx+1);
+         strItem.Format(_T("Abutment %d\n"),pierIdx+1);
       else
-         strItem.Format("Pier %d\n",pierIdx+1);
+         strItem.Format(_T("Pier %d\n"),pierIdx+1);
 
       strItems += strItem;
    }
 
    CSelectItemDlg dlg;
-   dlg.m_strTitle = "Select pier to edit";
+   dlg.m_strTitle = _T("Select pier to edit");
    dlg.m_strItems = strItems;
-   dlg.m_strLabel = "Select pier to edit";
+   dlg.m_strLabel = _T("Select pier to edit");
    dlg.m_ItemIdx = m_Selection.PierIdx;
 
    if ( dlg.DoModal() == IDOK )
@@ -2511,15 +2510,15 @@ void CPGSuperDoc::OnEditSpan()
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       CString strItem;
-      strItem.Format("Span %d\n",LABEL_SPAN(spanIdx));
+      strItem.Format(_T("Span %d\n"),LABEL_SPAN(spanIdx));
 
       strItems += strItem;
    }
 
    CSelectItemDlg dlg;
-   dlg.m_strTitle = "Select span to edit";
+   dlg.m_strTitle = _T("Select span to edit");
    dlg.m_strItems = strItems;
-   dlg.m_strLabel = "Select span to edit";
+   dlg.m_strLabel = _T("Select span to edit");
    dlg.m_ItemIdx = m_Selection.SpanIdx;
 
    if ( dlg.DoModal() == IDOK )
@@ -2542,20 +2541,20 @@ void CPGSuperDoc::DeletePier(PierIndexType pierIdx)
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
    CString strTitle;
-   strTitle.Format("Deleting %s %d",(pierIdx == 0 || pierIdx == nPiers-1 ? "Abutment" : "Pier"),pierIdx+1);
+   strTitle.Format(_T("Deleting %s %d"),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier")),pierIdx+1);
    dlg.m_strTitle = strTitle;
 
    CString strLabel;
-   strLabel.Format("%s. Select the span to be deleted with the pier",strTitle);
+   strLabel.Format(_T("%s. Select the span to be deleted with the pier"),strTitle);
    dlg.m_strLabel = strLabel;
 
    CString strItems;
    if ( pierIdx == 0 )
-      strItems.Format("%s","Span 1\n");
+      strItems.Format(_T("%s"),_T("Span 1\n"));
    else if ( pierIdx == nPiers-1)
-      strItems.Format("Span %d\n",LABEL_SPAN(pierIdx-1));
+      strItems.Format(_T("Span %d\n"),LABEL_SPAN(pierIdx-1));
    else
-      strItems.Format("Span %d\nSpan %d\n",LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
+      strItems.Format(_T("Span %d\nSpan %d\n"),LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
 
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
@@ -2582,20 +2581,20 @@ void CPGSuperDoc::DeleteSpan(SpanIndexType spanIdx)
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
    CString strTitle;
-   strTitle.Format("Deleting Span %d",LABEL_SPAN(spanIdx));
+   strTitle.Format(_T("Deleting Span %d"),LABEL_SPAN(spanIdx));
    dlg.m_strTitle = strTitle;
 
    CString strLabel;
-   strLabel.Format("%s. Select the pier to be deleted with the span",strTitle);
+   strLabel.Format(_T("%s. Select the pier to be deleted with the span"),strTitle);
    dlg.m_strLabel = strLabel;
 
    CString strItems;
    if ( spanIdx == 0 )
-      strItems.Format("%s","Abutment 1\nPier 2\n");
+      strItems.Format(_T("%s"),_T("Abutment 1\nPier 2\n"));
    else if ( spanIdx == nSpans-1)
-      strItems.Format("Pier %d\nAbutment %d\n",LABEL_PIER(nSpans-1),LABEL_PIER(nSpans));
+      strItems.Format(_T("Pier %d\nAbutment %d\n"),LABEL_PIER(nSpans-1),LABEL_PIER(nSpans));
    else
-      strItems.Format("Pier %d\nPier %d\n",LABEL_PIER(spanIdx),LABEL_PIER(spanIdx+1));
+      strItems.Format(_T("Pier %d\nPier %d\n"),LABEL_PIER(spanIdx),LABEL_PIER(spanIdx+1));
 
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
@@ -2638,9 +2637,9 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
       long nPiers = pBridgeDesc->GetPierCount();
       CString strLabel;
       if ( m_Selection.PierIdx == 0 || m_Selection.PierIdx == nPiers-1 )
-         strLabel.Format("Delete Abutment %d",m_Selection.PierIdx+1);
+         strLabel.Format(_T("Delete Abutment %d"),m_Selection.PierIdx+1);
       else
-         strLabel.Format("Delete Pier %d",m_Selection.PierIdx+1);
+         strLabel.Format(_T("Delete Pier %d"),m_Selection.PierIdx+1);
 
       pCmdUI->SetText(strLabel);
       pCmdUI->Enable(TRUE);
@@ -2656,7 +2655,7 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
       {
          // only span is selected
          CString strLabel;
-         strLabel.Format("Delete Span %d",LABEL_SPAN(m_Selection.SpanIdx));
+         strLabel.Format(_T("Delete Span %d"),LABEL_SPAN(m_Selection.SpanIdx));
          pCmdUI->SetText(strLabel);
          pCmdUI->Enable(TRUE);
       }
@@ -2698,23 +2697,23 @@ void CPGSuperDoc::OnInsert()
       CString strItem;
       CString strPier;
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
-         strPier = "Abutment";
+         strPier = _T("Abutment");
       else 
-         strPier = "Pier";
+         strPier = _T("Pier");
 
-      strItem.Format("Before %s %d\n",strPier,pierIdx+1);
+      strItem.Format(_T("Before %s %d\n"),strPier,pierIdx+1);
       strItems += strItem;
       keys.push_back( std::make_pair(pierIdx,pgsTypes::Back) );
 
-      strItem.Format("After %s %d\n",strPier,pierIdx+1);
+      strItem.Format(_T("After %s %d\n"),strPier,pierIdx+1);
       strItems += strItem;
       keys.push_back( std::make_pair(pierIdx,pgsTypes::Ahead) );
    }
 
    CSelectItemDlg dlg;
-   dlg.m_strTitle = "Insert Span";
+   dlg.m_strTitle = _T("Insert Span");
    dlg.m_strItems = strItems;
-   dlg.m_strLabel = "Select location to insert span";
+   dlg.m_strLabel = _T("Select location to insert span");
    dlg.m_ItemIdx = 0;
 
    if ( dlg.DoModal() == IDOK )
@@ -2735,7 +2734,7 @@ void CPGSuperDoc::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
 void CPGSuperDoc::OnOptionsHints() 
 {
    CString strText;
-   strText = "Reset all user interface hints";
+   strText = _T("Reset all user interface hints");
    int result = AfxMessageBox(strText,MB_YESNO);
    if ( result == IDYES )
    {
@@ -2788,13 +2787,13 @@ void CPGSuperDoc::PopulateReportMenu()
 {
    CEAFMenu* pMainMenu = GetMainMenu();
 
-   UINT viewPos = pMainMenu->FindMenuItem("&View");
+   UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
    ASSERT( 0 <= viewPos );
 
    CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
    ASSERT( pViewMenu != NULL );
 
-   UINT reportsPos = pViewMenu->FindMenuItem("&Reports");
+   UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
    ASSERT( 0 <= reportsPos );
 
    // Get the reports menu
@@ -2903,7 +2902,7 @@ void CPGSuperDoc::OnLogFileOpened()
 
    GET_IFACE(IEAFProjectLog,pLog);
    CString strMsg;
-   strMsg.Format("PGSuper version %s",theApp.GetVersion(false).GetBuffer(100));
+   strMsg.Format(_T("PGSuper version %s"),theApp.GetVersion(false).GetBuffer(100));
    pLog->LogMessage(strMsg);
 }
 
@@ -2923,7 +2922,7 @@ void CPGSuperDoc::OnStatusChanged()
 
 CString CPGSuperDoc::GetToolbarSectionName()
 {
-   return CString("PGSuper Toolbars");
+   return CString(_T("PGSuper Toolbars"));
 }
 
 void CPGSuperDoc::OnUpdateViewReports(CCmdUI* pCmdUI)
@@ -2983,7 +2982,7 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
    Uint32 nImporters = m_PluginMgr.GetImporterCount();
    if ( nImporters == 0 )
    {
-      pCmdUI->SetText("Custom importers not installed");
+      pCmdUI->SetText(_T("Custom importers not installed"));
       pCmdUI->Enable(FALSE);
       return;
    }
@@ -3006,7 +3005,7 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
 
          CComBSTR bstrMenuText;
          importer->GetMenuText(&bstrMenuText);
-         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2A(bstrMenuText));
+         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
 
          const CBitmap* pBmp = m_PluginMgr.GetPGSuperImporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);
@@ -3038,7 +3037,7 @@ void CPGSuperDoc::OnExportMenu(CCmdUI* pCmdUI)
    Uint32 nExporters = m_PluginMgr.GetExporterCount();
    if ( nExporters == 0 )
    {
-      pCmdUI->SetText("Custom exporters not installed");
+      pCmdUI->SetText(_T("Custom exporters not installed"));
       pCmdUI->Enable(FALSE);
       return;
    }
@@ -3060,7 +3059,7 @@ void CPGSuperDoc::OnExportMenu(CCmdUI* pCmdUI)
          CComBSTR bstrMenuText;
          exporter->GetMenuText(&bstrMenuText);
 
-         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2A(bstrMenuText));
+         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
 
          const CBitmap* pBmp = m_PluginMgr.GetPGSuperExporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);

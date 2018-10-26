@@ -215,7 +215,7 @@ void CGirderStrandGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format("Xt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Xt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -224,7 +224,7 @@ void CGirderStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Yt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Yt\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -275,19 +275,19 @@ bool CGirderStrandGrid::GetRowData(ROWCOL nRow, Float64* pX, Float64* pY)
    double x,y;
 
    CString s = GetCellValue(nRow, 1);
-   Float64 d = atof(s);
+   Float64 d = _tstof(s);
    if (s.IsEmpty())
       return false;
-   else if (d==0.0 && s[0]!='0')
+   else if (d==0.0 && s[0]!=_T('0'))
       return false;
    
    x = d;
 
    s = GetCellValue(nRow, 2);
-   d = atof(s);
+   d = _tstof(s);
    if (s.IsEmpty())
       return false;
-   else if (d==0.0 && s[0]!='0')
+   else if (d==0.0 && s[0]!=_T('0'))
       return false;
    
    y = d;

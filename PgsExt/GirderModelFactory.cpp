@@ -275,24 +275,29 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
       DiaphragmLoad& diaphragmLoad = *diaLoadIter;
 
       mbrID = 0;
-      prevJointIter = xsPOI.begin();
-      jointIter = prevJointIter;
-      jointIter++;
-      for ( ; jointIter < xsPOI.end(); jointIter++, prevJointIter++, mbrID++ )
-      {
-         pgsPointOfInterest prevPoi = *prevJointIter;
-         pgsPointOfInterest poi     = *jointIter;
 
-         if ( !bIncludeCantilevers && (prevPoi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < prevPoi.GetDistFromStart()) )
+      CollectionIndexType nJoints;
+      joints->get_Count(&nJoints);
+      for ( CollectionIndexType jntIdx = 1; jntIdx < nJoints; jntIdx++, mbrID++ )
+      {
+         CComPtr<IFem2dJoint> prevJoint, nextJoint;
+         joints->get_Item(jntIdx-1,&prevJoint);
+         joints->get_Item(jntIdx,&nextJoint);
+
+         Float64 xPrev, xNext;
+         prevJoint->get_X(&xPrev);
+         nextJoint->get_X(&xNext);
+
+         if ( !bIncludeCantilevers && (xPrev < leftSupportLoc || rightSupportLoc < xPrev) )
          {
             // location is before or after the left/right support and we arn't modeling
             // the cantilevers... next member
             continue;
          }
 
-         if ( InRange(prevPoi.GetDistFromStart(),diaphragmLoad.Loc,poi.GetDistFromStart()) )
+         if ( InRange(xPrev,diaphragmLoad.Loc,xNext) )
          {
-            x = diaphragmLoad.Loc - prevPoi.GetDistFromStart();
+            x = diaphragmLoad.Loc - xPrev;
             break;
          }
       }

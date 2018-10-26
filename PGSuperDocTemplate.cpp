@@ -59,7 +59,7 @@ void CPGSuperDocTemplate::SetPlugin(IEAFAppPlugin* pPlugin)
 CString CPGSuperDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const
 {
    CString strDescription;
-   strDescription.Format("Create a new PGSuper project using the %s template",pItem->GetName());
+   strDescription.Format(_T("Create a new PGSuper project using the %s template"),pItem->GetName());
    return strDescription;
 }
 
@@ -79,7 +79,7 @@ void CPGSuperDocTemplate::LoadTemplateInformation()
    {
       FindInFolder(strWorkgroupFolderName,&m_TemplateGroup,defaultIcon);
 
-      CEAFSplashScreen::SetText("");
+      CEAFSplashScreen::SetText(_T(""));
    }
 }
 
@@ -88,18 +88,18 @@ void CPGSuperDocTemplate::SetDocStrings(const CString& str)
    m_strDocStrings = str;
 }
 
-void CPGSuperDocTemplate::FindInFolder(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon)
+void CPGSuperDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon)
 {
    HICON folderIcon = defaultIcon;
 
    CString strMsg;
-   strMsg.Format("Searching for PGSuper Project Templates in %s",strPath);
+   strMsg.Format(_T("Searching for PGSuper Project Templates in %s"),strPath);
    CEAFSplashScreen::SetText(strMsg);
 
    CString strIconFile = strPath;
-   int i = strIconFile.ReverseFind('\\');
+   int i = strIconFile.ReverseFind(_T('\\'));
    strIconFile += strIconFile.Mid(i);
-   strIconFile += ".ico";
+   strIconFile += _T(".ico");
    HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
    if ( hIcon )
       folderIcon = hIcon;
@@ -107,7 +107,7 @@ void CPGSuperDocTemplate::FindInFolder(LPCSTR strPath,CEAFTemplateGroup* pGroup,
    FindTemplateFiles(strPath,pGroup,folderIcon); // find template files in this folder
 
    // Drill down into sub-folders
-   CString strDirectoryName = strPath + CString("\\*.*");
+   CString strDirectoryName = strPath + CString(_T("\\*.*"));
    CFileFind finder;
    BOOL bHasFiles = finder.FindFile(strDirectoryName);
    while ( bHasFiles )
@@ -128,7 +128,7 @@ void CPGSuperDocTemplate::FindInFolder(LPCSTR strPath,CEAFTemplateGroup* pGroup,
    }
 }
 
-void CPGSuperDocTemplate::FindTemplateFiles(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
+void CPGSuperDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -137,7 +137,7 @@ void CPGSuperDocTemplate::FindTemplateFiles(LPCSTR strPath,CEAFTemplateGroup* pG
    ASSERT(!strTemplateSuffix.IsEmpty());
 
    CFileFind finder;
-   CString strTemplateFileSpec = strPath + CString("\\*.") + strTemplateSuffix;
+   CString strTemplateFileSpec = strPath + CString(_T("\\*.")) + strTemplateSuffix;
    BOOL bHasTemplateFiles = finder.FindFile(strTemplateFileSpec);
    while ( bHasTemplateFiles )
    {
@@ -146,7 +146,7 @@ void CPGSuperDocTemplate::FindTemplateFiles(LPCSTR strPath,CEAFTemplateGroup* pG
       HICON fileIcon = folderIcon;
 
       CString strIconFile = finder.GetFilePath();
-      strIconFile.Replace(strTemplateSuffix,"ico");
+      strIconFile.Replace(strTemplateSuffix,_T("ico"));
       HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
       if ( hIcon )
          fileIcon = hIcon;

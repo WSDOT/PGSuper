@@ -217,7 +217,7 @@ bool pgsLiftingStressAnalysisArtifact::AssertValid() const
 
 void pgsLiftingStressAnalysisArtifact::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsLiftingStressAnalysisArtifact" << endl;
+   os << _T("Dump for pgsLiftingStressAnalysisArtifact") << endl;
 }
 #endif // _DEBUG
 
@@ -374,7 +374,7 @@ bool pgsLiftingCrackingAnalysisArtifact::AssertValid() const
 
 void pgsLiftingCrackingAnalysisArtifact::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsLiftingCrackingAnalysisArtifact" << endl;
+   os << _T("Dump for pgsLiftingCrackingAnalysisArtifact") << endl;
 }
 #endif // _DEBUG
 
@@ -651,16 +651,6 @@ void pgsLiftingAnalysisArtifact::SetCamberDueToSelfWeight(Float64 val)
    m_CamberDueToSelfWeight = val;
 }
 
-Float64 pgsLiftingAnalysisArtifact::GetCamberDueToSelfWeightOverhang() const
-{
-   return m_CamberDueToSelfWeightOverhang;
-}
-
-void pgsLiftingAnalysisArtifact::SetCamberDueToSelfWeightOverhang(Float64 val)
-{
-   m_CamberDueToSelfWeightOverhang = val;
-}
-
 Float64 pgsLiftingAnalysisArtifact::GetCamberDueToPrestress() const
 {
    return m_CamberDueToPrestress;
@@ -689,6 +679,16 @@ Float64 pgsLiftingAnalysisArtifact::GetAdjustedYr() const
 void pgsLiftingAnalysisArtifact::SetAdjustedYr(Float64 val)
 {
    m_AdjustedYr = val;
+}
+
+Float64 pgsLiftingAnalysisArtifact::GetIx() const
+{
+   return m_Ix;
+}
+
+void pgsLiftingAnalysisArtifact::SetIx(Float64 ix)
+{
+   m_Ix = ix;
 }
 
 Float64 pgsLiftingAnalysisArtifact::GetIy() const
@@ -1180,10 +1180,10 @@ void pgsLiftingAnalysisArtifact::MakeCopy(const pgsLiftingAnalysisArtifact& rOth
    m_OffsetFactor = rOther.m_OffsetFactor;
    m_TotalInitialEccentricity = rOther.m_TotalInitialEccentricity;
    m_CamberDueToSelfWeight = rOther.m_CamberDueToSelfWeight;
-   m_CamberDueToSelfWeightOverhang = rOther.m_CamberDueToSelfWeightOverhang;
    m_CamberDueToPrestress = rOther.m_CamberDueToPrestress;
    m_AdjustedTotalCamberAtLifting = rOther.m_AdjustedTotalCamberAtLifting;
    m_AdjustedYr = rOther.m_AdjustedYr;
+   m_Ix = rOther.m_Ix;
    m_Iy = rOther.m_Iy;
    m_Zo = rOther.m_Zo;
    m_ZoPrime = rOther.m_ZoPrime;
@@ -1232,49 +1232,49 @@ bool pgsLiftingAnalysisArtifact::AssertValid() const
 
 void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsLiftingAnalysisArtifact" << endl;
-   os << "===================================" <<endl;
+   os << _T("Dump for pgsLiftingAnalysisArtifact") << endl;
+   os << _T("===================================") <<endl;
 
-   os <<" Stress Artifacts"<<endl;
-   os << "================" <<endl;
+   os <<_T(" Stress Artifacts")<<endl;
+   os << _T("================") <<endl;
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
       double loc = rpoi.GetDistFromStart();
-      os <<"At " << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << " ft: ";
+      os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_LiftingStressAnalysisArtifacts.find( loc );
 /*
       os<<endl;
       double fps, fup, fno, fdown;
       found->second.GetTopFiberStress(&fps, &fup, &fno, &fdown);
-      os<<"TopStress fps="<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<"ksi, fup="<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<"ksi, fno="<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<"ksi, fdown="<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
       found->second.GetBottomFiberStress(&fps, &fup, &fno, &fdown);
-      os<<"BotStress fps="<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<"ksi, fup="<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<"ksi, fno="<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<"ksi, fdown="<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("BotStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 */
       Float64 max_stress = found->second.GetMaximumConcreteCompressiveStress();
       Float64 min_stress = found->second.GetMaximumConcreteTensileStress();
-      os<<"Total Stress: Min ="<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<"ksi, Max="<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("Total Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
 
-   os <<" Cracking Artifacts"<<endl;
-   os << "==================" <<endl;
+   os <<_T(" Cracking Artifacts")<<endl;
+   os << _T("==================") <<endl;
    for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
       double loc = rpoi.GetDistFromStart();
-      os <<"At " << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << " ft: ";
+      os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_LiftingCrackingAnalysisArtifacts.find( loc );
 
       CrackedFlange flange = found->second.GetCrackedFlange();
-      os<<"Flange="<<(flange==TopFlange?"TopFlange":"BottomFlange");
+      os<<_T("Flange=")<<(flange==TopFlange?_T("TopFlange"):_T("BottomFlange"));
 
       Float64 stress = found->second.GetLateralMomentStress();
       Float64 fs = found->second.GetFsCracking();
-      os<<" Lateral Stress = "<<::ConvertFromSysUnits(stress,unitMeasure::KSI)<<"ksi, FS ="<<fs<<endl;
+      os<<_T(" Lateral Stress = ")<<::ConvertFromSysUnits(stress,unitMeasure::KSI)<<_T("ksi, FS =")<<fs<<endl;
    }
 }
 #endif // _DEBUG

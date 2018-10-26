@@ -179,6 +179,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\junk.bat"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration

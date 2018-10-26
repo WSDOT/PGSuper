@@ -116,7 +116,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          if (!sysTokenizer::ParseDouble(str, &lft_locval))
          {
       	   HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_LEFT_LOCATION);
-            ::AfxMessageBox("Please enter a number");
+            ::AfxMessageBox(_T("Please enter a number"));
             pDX->Fail();
          }
 
@@ -124,14 +124,14 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          if (!sysTokenizer::ParseDouble(str, &rgt_locval))
          {
       	   HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_RIGHT_LOCATION);
-            ::AfxMessageBox("Please enter a number");
+            ::AfxMessageBox(_T("Please enter a number"));
             pDX->Fail();
          }
 
          if (lft_locval >= rgt_locval)
          {
       	   HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_LEFT_LOCATION);
-            ::AfxMessageBox("Invalid Value: The left location value must be greater than the right location value");
+            ::AfxMessageBox(_T("Invalid Value: The left location value must be greater than the right location value"));
             pDX->Fail();
          }
 
@@ -146,7 +146,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
             else
             {
       	      HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_LEFT_LOCATION);
-               ::AfxMessageBox("Invalid Value: Fractional values must range from 0.0 to 1.0");
+               ::AfxMessageBox(_T("Invalid Value: Fractional values must range from 0.0 to 1.0"));
                pDX->Fail();
             }
 
@@ -157,7 +157,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
             else
             {
       	      HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_RIGHT_LOCATION);
-               ::AfxMessageBox("Invalid Value: Fractional values must range from 0.0 to 1.0");
+               ::AfxMessageBox(_T("Invalid Value: Fractional values must range from 0.0 to 1.0"));
                pDX->Fail();
             }
          }
@@ -170,7 +170,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
             else
             {
       	      HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_LEFT_LOCATION);
-               ::AfxMessageBox("Invalid Value: Location values must be zero or greater");
+               ::AfxMessageBox(_T("Invalid Value: Location values must be zero or greater"));
                pDX->Fail();
             }
 
@@ -181,7 +181,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
             else
             {
       	      HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_RIGHT_LOCATION);
-               ::AfxMessageBox("Invalid Value: Location values must be zero or greater");
+               ::AfxMessageBox(_T("Invalid Value: Location values must be zero or greater"));
                pDX->Fail();
             }
          }
@@ -248,11 +248,11 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
    {
       CString str;
-      str.Format("Span %d", LABEL_SPAN(spanIdx));
+      str.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
       m_SpanCB.AddString(str);
    }
 
-    m_SpanCB.AddString("All Spans");
+    m_SpanCB.AddString(_T("All Spans"));
 
     if (m_Load.m_Span==UserLoads::AllSpans)
     {
@@ -266,7 +266,7 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
       }
       else
       {
-         ::AfxMessageBox("Warning - The Span for this load is out of range. Resetting to Span 1");
+         ::AfxMessageBox(_T("Warning - The Span for this load is out of range. Resetting to Span 1"));
          m_Load.m_Span = 0;
          m_SpanCB.SetCurSel(m_Load.m_Span);
       }
@@ -286,7 +286,7 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
       }
       else
       {
-         ::AfxMessageBox("Warning - The Girder for this load is out of range. Resetting to girder A");
+         ::AfxMessageBox(_T("Warning - The Girder for this load is out of range. Resetting to girder A"));
          m_Load.m_Girder=0;
          m_GirderCB.SetCurSel(m_Load.m_Girder);
       }
@@ -328,7 +328,7 @@ void CEditDistributedLoadDlg::UpdateLocationUnit()
 
    if (chk)
    {
-      m_LocationUnitCtrl.SetWindowText("(0.0 - 1.0)");
+      m_LocationUnitCtrl.SetWindowText(_T("(0.0 - 1.0)"));
    }
    else
    {
@@ -443,7 +443,7 @@ void CEditDistributedLoadDlg::UpdateSpanLength()
 
    if (spn == m_SpanCB.GetCount()-1 || gdr == m_GirderCB.GetCount()-1)
    {
-      m_SpanLengthCtrl.SetWindowText("N/A");
+      m_SpanLengthCtrl.SetWindowText(_T("N/A"));
    }
    else
    {
@@ -451,7 +451,7 @@ void CEditDistributedLoadDlg::UpdateSpanLength()
       Float64 span_length = pBridge->GetSpanLength(spn, gdr);
       Float64 val = ::ConvertFromSysUnits(span_length, *m_pLengthUnit);
       sysNumericFormatTool tool;
-      std::string str = tool.AsString(val) + std::string(" ") +  m_pLengthUnit->UnitTag();
+      std::_tstring str = tool.AsString(val) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
       m_SpanLengthCtrl.SetWindowText(str.c_str());
    }
 }
@@ -496,11 +496,11 @@ void CEditDistributedLoadDlg::UpdateGirderList()
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
       CString str;
-      str.Format("Girder %s", LABEL_GIRDER(gdrIdx));
+      str.Format(_T("Girder %s"), LABEL_GIRDER(gdrIdx));
       m_GirderCB.AddString(str);
    }
 
-    m_GirderCB.AddString("All Girders");
+    m_GirderCB.AddString(_T("All Girders"));
     if ( curSel != CB_ERR )
     {
        if ( bAllSelected )

@@ -74,7 +74,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       (*pChapter) << pPara;
-      pPara->SetName("Design Load Rating");
+      pPara->SetName(_T("Design Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
@@ -85,7 +85,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       (*pChapter) << pPara;
-      pPara->SetName("Legal Load Rating");
+      pPara->SetName(_T("Legal Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
@@ -117,11 +117,11 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       (*pChapter) << pPara;
-      pPara->SetName("Permit Load Rating");
+      pPara->SetName(_T("Permit Load Rating"));
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << Super("*") << "MBE 6A.4.5.2 Permit load rating should only be used if the bridge has a rating factor greater than 1.0 when evaluated for AASHTO legal loads." << rptNewLine;
+      (*pPara) << Super(_T("*")) << _T("MBE 6A.4.5.2 Permit load rating should only be used if the bridge has a rating factor greater than 1.0 when evaluated for AASHTO legal loads.") << rptNewLine;
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {

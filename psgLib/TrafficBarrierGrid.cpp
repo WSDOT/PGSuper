@@ -248,7 +248,7 @@ void CTrafficBarrierGrid::ResetGrid()
 		);
 
    CString cv;
-   cv.Format("X (%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("X (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -257,7 +257,7 @@ void CTrafficBarrierGrid::ResetGrid()
 			.SetValue(cv)
 		);
 
-   cv.Format("Y (%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Y (%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

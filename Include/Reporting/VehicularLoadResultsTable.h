@@ -74,7 +74,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LiveLoadType llType,
-                             const std::string& strLLName,VehicleIndexType vehicleIndex,
+                             const std::_tstring& strLLName,VehicleIndexType vehicleIndex,
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,
                              IEAFDisplayUnits* pDisplayUnits) const;

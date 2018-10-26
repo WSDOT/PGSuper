@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00     1     1 WF95G  *    42   5/8  270 42.55 22.67  10 90.5  5.100  6.400    3.381   -3.547  14458  0.565  0.671  0.27 -0.13 -0.01 -0.01 -0.15 149.34 362.32   2.75  15.00  20.00
+ 34.25   6  6.00     1     1 WF95G  *    42   5/8  270 42.60 19.03  12 90.5  4.900  6.400    3.381   -3.547  14371  0.565  0.671  0.26 -0.13 -0.01 -0.01 -0.15 151.88 373.51   3.75  15.00  20.00
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00     1     2 WF95G  *    42   5/8  270 42.55 22.67  10 90.5  5.100  6.400    3.407   -3.572  14458  0.565  0.671  0.26 -0.13 -0.01 -0.01 -0.16 149.34 360.52   2.75  15.00  20.00
+ 34.25   6  6.00     1     2 WF95G  *    42   5/8  270 42.55 22.67  10 90.5  5.100  6.400    3.407   -3.572  14458  0.565  0.671  0.26 -0.13 -0.01 -0.01 -0.16 149.34 360.52   3.00  15.00  20.00
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00     1     4 WF95G  *    42   5/8  270 42.55 22.67  10 90.5  5.100  6.400    3.407   -3.572  14458  0.565  0.671  0.26 -0.13 -0.01 -0.01 -0.16 149.34 360.52   2.75  15.00  20.00
+ 34.25   6  6.00     1     4 WF95G  *    42   5/8  270 42.55 22.67  10 90.5  5.100  6.400    3.407   -3.572  14458  0.565  0.671  0.26 -0.13 -0.01 -0.01 -0.16 149.34 360.52   3.00  15.00  20.00
 
 
 The Specification Check was Not Successful

@@ -91,7 +91,7 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    rptParagraph* pPara;
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
@@ -111,10 +111,10 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
-   std::string strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
+   std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pPara) << "Method of Computation:"<<rptNewLine;
+   (*pPara) << _T("Method of Computation:")<<rptNewLine;
    (*pChapter) << pPara;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
@@ -125,74 +125,74 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor Parameters" << rptNewLine;
+   (*pPara) << _T("Distribution Factor Parameters") << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Girder Spacing: " << Sub2("S","avg") << " = " << xdim.SetValue(span_lldf.Savg) << rptNewLine;
+   (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
    Float64 station,offset;
    pBridge->GetStationAndOffset(pgsPointOfInterest(span,gdr,span_lldf.ControllingLocation),&station, &offset);
    Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetGirderStartConnectionLength(span,gdr);
-   (*pPara) << "Measurement of Girder Spacing taken at " << location.SetValue(supp_dist)<< " from left support, measured along girder, or station = "<< rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << rptNewLine;
-   (*pPara) << "Girder Width: b = " << xdim.SetValue(span_lldf.b) << rptNewLine;
-   (*pPara) << "Bridge Width: W = " << xdim.SetValue(span_lldf.W) << rptNewLine;
-   (*pPara) << "Lane Width: wLane = " << xdim.SetValue(span_lldf.wLane) << rptNewLine;
-   (*pPara) << "Curb Offset = " << xdim.SetValue(span_lldf.CurbOffset) << rptNewLine;
+   (*pPara) << _T("Measurement of Girder Spacing taken at ") << location.SetValue(supp_dist)<< _T(" from left support, measured along girder, or station = ")<< rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << rptNewLine;
+   (*pPara) << _T("Girder Width: b = ") << xdim.SetValue(span_lldf.b) << rptNewLine;
+   (*pPara) << _T("Bridge Width: W = ") << xdim.SetValue(span_lldf.W) << rptNewLine;
+   (*pPara) << _T("Lane Width: wLane = ") << xdim.SetValue(span_lldf.wLane) << rptNewLine;
+   (*pPara) << _T("Curb Offset = ") << xdim.SetValue(span_lldf.CurbOffset) << rptNewLine;
    Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe : span_lldf.rightDe;
-   (*pPara) << Sub2("d","e") << " = " << xdim.SetValue(de) << rptNewLine;
+   (*pPara) << Sub2(_T("d"),_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
    Float64 ro = span_lldf.Side==dfLeft ? span_lldf.leftCurbOverhang : span_lldf.rightCurbOverhang;
-   (*pPara) << "Roadway overhang = " << xdim.SetValue(ro) << rptNewLine;
-   (*pPara) << "Number of Design Lanes: N" << Sub("L") << " = " << span_lldf.Nl << rptNewLine;
+   (*pPara) << _T("Roadway overhang = ") << xdim.SetValue(ro) << rptNewLine;
+   (*pPara) << _T("Number of Design Lanes: N") << Sub(_T("L")) << _T(" = ") << span_lldf.Nl << rptNewLine;
 
    if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
    {
       if(span_lldf.Method==LLDF_TXDOT || !span_lldf.connectedAsUnit)
       {
-         (*pPara) << "Area: A = " << area.SetValue(span_lldf.A) << rptNewLine;
-         (*pPara) << "Moment of Inertia: I = " << inertia.SetValue(span_lldf.I) << rptNewLine;
-         (*pPara) << "Possion Ratio: " << symbol(mu) << " = " << span_lldf.PossionRatio << rptNewLine << rptNewLine;
+         (*pPara) << _T("Area: A = ") << area.SetValue(span_lldf.A) << rptNewLine;
+         (*pPara) << _T("Moment of Inertia: I = ") << inertia.SetValue(span_lldf.I) << rptNewLine;
+         (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine << rptNewLine;
       }
 
       if(span_lldf.Method == LLDF_TXDOT)
       {
-        (*pPara) << "For TxDOT Method, for all distribution factor types, always use AASHTO Type (j) connected only enough to prevent relative vertical displacement, regardless of input. Use 4.6.2.2.2b-1, with TxDOT modifications (K="<< GetTxDOTKfactor() <<", g not to exceed S/10). Effects of skew will be ignored." << rptNewLine;
-        (*pPara) << rptRcImage(strImagePath + "LLDF_Type_HIJ_TxDOT.png") << rptNewLine;
+        (*pPara) << _T("For TxDOT Method, for all distribution factor types, always use AASHTO Type (j) connected only enough to prevent relative vertical displacement, regardless of input. Use 4.6.2.2.2b-1, with TxDOT modifications (K=")<< GetTxDOTKfactor() <<_T(", g not to exceed S/10). Effects of skew will be ignored.") << rptNewLine;
+        (*pPara) << rptRcImage(strImagePath + _T("LLDF_Type_HIJ_TxDOT.png")) << rptNewLine;
       }
       else if (span_lldf.connectedAsUnit)
       {
-         (*pPara) << "Modular ratio: n = " << scalar.SetValue(span_lldf.n) << rptNewLine;
-         (*pPara) << "Area: A"<<Sub("g")<<" = "<< area.SetValue(span_lldf.Ag) << rptNewLine;
-         (*pPara) << "Moment of Inertia: I"<<Sub("g")<<" = "<< inertia.SetValue(span_lldf.Ig) << rptNewLine;
-         (*pPara) << "Top centroidal distance: Y" << Sub("tg") << " = " << xdim2.SetValue(span_lldf.Yt) << rptNewLine;
+         (*pPara) << _T("Modular ratio: n = ") << scalar.SetValue(span_lldf.n) << rptNewLine;
+         (*pPara) << _T("Area: A")<<Sub(_T("g"))<<_T(" = ")<< area.SetValue(span_lldf.Ag) << rptNewLine;
+         (*pPara) << _T("Moment of Inertia: I")<<Sub(_T("g"))<<_T(" = ")<< inertia.SetValue(span_lldf.Ig) << rptNewLine;
+         (*pPara) << _T("Top centroidal distance: Y") << Sub(_T("tg")) << _T(" = ") << xdim2.SetValue(span_lldf.Yt) << rptNewLine;
 
          if(pBridge->IsCompositeDeck())
          {
-            (*pPara) << "Slab Thickness (depth of CIP deck + top flange thickness): t" << Sub("s") << " = " << xdim2.SetValue(span_lldf.ts) << rptNewLine;
-            (*pPara) << "Distance between CG of slab and girder: e" << Sub("g") <<" = " << xdim2.SetValue(span_lldf.eg) << rptNewLine;
+            (*pPara) << _T("Slab Thickness (depth of CIP deck + top flange thickness): t") << Sub(_T("s")) << _T(" = ") << xdim2.SetValue(span_lldf.ts) << rptNewLine;
+            (*pPara) << _T("Distance between CG of slab and girder: e") << Sub(_T("g")) <<_T(" = ") << xdim2.SetValue(span_lldf.eg) << rptNewLine;
          }
          else
          {
-            (*pPara) << "Slab Thickness (since there is no CIP deck, use top flange thickness): t" << Sub("s") << " = " << xdim2.SetValue(span_lldf.ts) << rptNewLine;
-            (*pPara) << "Distance between CG of slab and girder: e" << Sub("g") <<" = " << xdim2.SetValue(span_lldf.eg) << rptNewLine;
+            (*pPara) << _T("Slab Thickness (since there is no CIP deck, use top flange thickness): t") << Sub(_T("s")) << _T(" = ") << xdim2.SetValue(span_lldf.ts) << rptNewLine;
+            (*pPara) << _T("Distance between CG of slab and girder: e") << Sub(_T("g")) <<_T(" = ") << xdim2.SetValue(span_lldf.eg) << rptNewLine;
          }
-         (*pPara) << "Stiffness Parameter: " << rptRcImage(strImagePath + "Kg.png") << rptTab
-                  << "K" << Sub("g") << " = " << inertia.SetValue(span_lldf.Kg) << rptNewLine;
+         (*pPara) << _T("Stiffness Parameter: ") << rptRcImage(strImagePath + _T("Kg.png")) << rptTab
+                  << _T("K") << Sub(_T("g")) << _T(" = ") << inertia.SetValue(span_lldf.Kg) << rptNewLine;
       }
       else
       {
-         (*pPara) << "Note that skew correction is undefined for this section type (see 4.6.2.2.2e)"<< rptNewLine;
+         (*pPara) << _T("Note that skew correction is undefined for this section type (see 4.6.2.2.2e)")<< rptNewLine;
       }
    }
 
-   (*pPara) << "Skew Angle at start: " << symbol(theta) << " = " << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
-   (*pPara) << "Skew Angle at end: " << symbol(theta) << " = " << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
+   (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
+   (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
 
 
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pPara) << "Strength and Service Limit States";
+      (*pPara) << _T("Strength and Service Limit States");
       (*pChapter) << pPara;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
@@ -208,12 +208,12 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Negative Moment over Pier " << long(pier1+1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier1+1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((pier1_lldf.skew1 + pier1_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << "Span Length: L = " << xdim.SetValue(pier1_lldf.L) << rptNewLine << rptNewLine;
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier1_lldf.skew1 + pier1_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier1_lldf.L) << rptNewLine << rptNewLine;
 
       // Negative moment DF from pier1_lldf
       ReportMoment(pPara,
@@ -228,14 +228,14 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
    if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
-      (*pPara) << "Distribution Factor for Positive and Negative Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
    else
-      (*pPara) << "Distribution Factor for Positive Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
 
    ReportMoment(pPara,
                 span_lldf,
@@ -248,12 +248,12 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Negative Moment over Pier " << long(pier2+1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier2+1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((pier2_lldf.skew1 + pier2_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << "Span Length: L = " << xdim.SetValue(pier2_lldf.L) << rptNewLine << rptNewLine;
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier2_lldf.skew1 + pier2_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier2_lldf.L) << rptNewLine << rptNewLine;
 
       // Negative moment DF from pier2_lldf
       ReportMoment(pPara,
@@ -270,12 +270,12 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    //////////////////////////////////////////////////////////////
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Shear in Span " << LABEL_SPAN(span) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(span) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
 
    ReportShear(pPara,
                span_lldf,
@@ -289,12 +289,12 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    //////////////////////////////////////////////////////////////
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Reaction at Pier " << long(pier1+1) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier1+1) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
 
    ReportShear(pPara,
                reaction1_lldf,
@@ -307,12 +307,12 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << "Distribution Factor for Reaction at Pier " << long(pier2+1) << rptNewLine;
+   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier2+1) << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   (*pPara) << "Average Skew Angle: " << symbol(theta) << " = " << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << "Span Length: L = " << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
+   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
+   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
 
    ReportShear(pPara,
                reaction2_lldf,
@@ -328,12 +328,12 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pPara) << "Fatigue Limit States";
+      (*pPara) << _T("Fatigue Limit States");
       (*pChapter) << pPara;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      std::string superscript;
+      std::_tstring superscript;
 
       rptRcScalar scalar2 = scalar;
 
@@ -344,37 +344,37 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          (*pChapter) << pPara;
-         (*pPara) << "Distribution Factor for Negative Moment over Pier " << LABEL_PIER(pier1) << rptNewLine;
+         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier1) << rptNewLine;
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
-         superscript = (pier1_lldf.bExteriorGirder ? "ME" : "MI");
-         (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(pier1_lldf.gM1.mg) << "/1.2 = " << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
+         superscript = (pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
       }
 
       // Positive moment DF
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
       if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
-         (*pPara) << "Distribution Factor for Positive and Negative Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+         (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
       else
-         (*pPara) << "Distribution Factor for Positive Moment in Span " << LABEL_SPAN(span) << rptNewLine;
+         (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (span_lldf.bExteriorGirder ? "ME" : "MI");
-      (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(span_lldf.gM1.mg) << "/1.2 = " << scalar2.SetValue(span_lldf.gM1.mg/1.2);
+      superscript = (span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gM1.mg/1.2);
 
       if ( bContinuousAtEnd || bIntegralAtEnd )
       {
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          (*pChapter) << pPara;
-         (*pPara) << "Distribution Factor for Negative Moment over Pier " << LABEL_PIER(pier2) << rptNewLine;
+         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier2) << rptNewLine;
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
-         superscript = (pier2_lldf.bExteriorGirder ? "ME" : "MI");
-         (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(pier2_lldf.gM1.mg) << "/1.2 = " << scalar2.SetValue(pier2_lldf.gM1.mg/1.2);
+         superscript = (pier2_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier2_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier2_lldf.gM1.mg/1.2);
       }
 
       //////////////////////////////////////////////////////////////
@@ -382,41 +382,42 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
       //////////////////////////////////////////////////////////////
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Shear in Span " << LABEL_SPAN(span) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(span) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (span_lldf.bExteriorGirder ? "VE" : "VI");
-      (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(span_lldf.gV1.mg) << "/1.2 = " << scalar2.SetValue(span_lldf.gV1.mg/1.2);
+      superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gV1.mg/1.2);
 
       //////////////////////////////////////////////////////////////
       // Reactions
       //////////////////////////////////////////////////////////////
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Reaction at Pier " << LABEL_PIER(pier1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (reaction1_lldf.bExteriorGirder ? "VE" : "VI");
-      (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(reaction1_lldf.gR1.mg) << "/1.2 = " << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
+      superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
 
         ///////
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << "Distribution Factor for Reaction at Pier " << LABEL_PIER(pier2) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (reaction2_lldf.bExteriorGirder ? "VE" : "VI");
-      (*pPara) << "g" << superscript << Sub("Fatigue") << " = " << "mg" << superscript << Sub("1") << "/m =" << scalar.SetValue(reaction2_lldf.gR1.mg) << "/1.2 = " << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
+      superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
    }
 }
 
 lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,MULTIWEB_LLDFDETAILS* plldf)
 {
    GET_IFACE(IBridgeMaterial,   pMaterial);
+   GET_IFACE(IBridgeMaterialEx, pMaterialEx);
    GET_IFACE(ISectProp2,        pSectProp2);
    GET_IFACE(IGirder,           pGirder);
    GET_IFACE(ILibrary,          pLib);
@@ -483,9 +484,10 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    }
    else
    {
-      Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
-                                          pMaterial->GetStrDensityGdr(span,gdr),
-                                          pMaterial->GetK1Gdr(span,gdr));
+      Float64 Ecgdr = pMaterialEx->GetEconc(fcgdr,
+                                             pMaterial->GetStrDensityGdr(span,gdr),
+                                             pMaterialEx->GetEccK1Gdr(span,gdr),
+                                             pMaterialEx->GetEccK2Gdr(span,gdr));
 
       plldf->n     = Ecgdr / pMaterial->GetEcSlab();
    }
@@ -620,7 +622,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
 
 void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -644,47 +646,47 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
       // Distribution factor for exterior girder
       if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE || gM1.ControllingMethod & LANES_DIV_BEAMS))
       {
-         std::string msg(!(gM1.ControllingMethod & SPECIAL_OVERRIDE)?"Spec Equation, same as for interior single lane.":"Controlled by S/10.0");
+         std::_tstring msg(!(gM1.ControllingMethod & SPECIAL_OVERRIDE)?_T("Spec Equation, same as for interior single lane."):_T("Controlled by S/10.0"));
 
-         (*pPara) << Bold("1 Loaded Lane: ")<< Bold(msg) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: "))<< Bold(msg) << rptNewLine;
          if(!(gM1.ControllingMethod & SPECIAL_OVERRIDE))
          {
             ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
-            (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
-            (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
-            (*pPara)<< "D = "<< xdim.SetValue(gM1.EqnData.D) << rptNewLine<< rptNewLine;
+            (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
+            (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
+            (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine<< rptNewLine;
          }
 
-         (*pPara) << "mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
          (*pPara) << rptNewLine;
          if ( 2 <= lldf.Nl )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: ")<< Bold(msg) << rptNewLine;
-            (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: "))<< Bold(msg) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
             (*pPara) << rptNewLine;
          }
 
-         (*pPara) << Bold("Skew Correction Ignored for TxDOT Method") << rptNewLine;
-         (*pPara) << "Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
+         (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          if ( lldf.Nl >= 2 )
          {
-            (*pPara) << "Corrected Factor: mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
       }
       else
       {
          if ( gM1.LeverRuleData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gM1.LanesBeamsData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-            (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
             ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
 
@@ -695,38 +697,38 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          {
             if ( gM2.EqnData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Spec Equation") << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
 
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_ME_Type_K_SI.png" : "mg_2_ME_Type_K_US.png")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
-               (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
-               (*pPara) << "e = " << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_K_SI.png") : _T("mg_2_ME_Type_K_US.png"))) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_K_SI.png") : _T("mg_2_MI_Type_K_US.png"))) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+               (*pPara) << _T("e = ") << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
 
-               (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg*gM2.EqnData.e) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg*gM2.EqnData.e) << rptNewLine;
             }
 
             if ( gM2.LeverRuleData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gM2.RigidData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Rigid Method") << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
                ReportRigidMethod(pPara,gM2.RigidData,m_pBroker,pDisplayUnits);
             }
 
             if ( gM2.LeverRuleData.bWasUsed && gM2.EqnData.bWasUsed )
             {
                (*pPara) << rptNewLine;
-               (*pPara) << "Controlling value is lesser of Equation and Lever Rule mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg) << rptNewLine;
+               (*pPara) << _T("Controlling value is lesser of Equation and Lever Rule mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
             }
 
             if ( gM2.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
          }
@@ -735,24 +737,24 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
          if (lldf.connectedAsUnit)
          {
-            (*pPara) << Bold("Skew Correction") << rptNewLine;
+            (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
             Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Moment_SI.png" : "SkewCorrection_Moment_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Moment_SI.png") : _T("SkewCorrection_Moment_US.png"))) << rptNewLine;
 
-            (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
-            (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
-            (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+            (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             if ( lldf.Nl >= 2 )
             {
-               (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg);
-               (gM2.mg > gM1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+               (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+               (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             }
          }
          else
          {
-            (*pPara) << "Controlling mg" << Super("ME")  << " = " << scalar.SetValue(max(gM1.mg,gM2.mg)) << rptNewLine;
+            (*pPara) << _T("Controlling mg") << Super(_T("ME"))  << _T(" = ") << scalar.SetValue(max(gM1.mg,gM2.mg)) << rptNewLine;
          }
       }
 
@@ -764,32 +766,32 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
       // Distribution factor for interior girder
       if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE || gM1.ControllingMethod & LANES_DIV_BEAMS))
       {
-         std::string msg(!(gM1.ControllingMethod & SPECIAL_OVERRIDE)?"Spec Equation":"Controlled by S/10.0");
+         std::_tstring msg(!(gM1.ControllingMethod & SPECIAL_OVERRIDE)?_T("Spec Equation"):_T("Controlled by S/10.0"));
 
-         (*pPara) << Bold("1 Loaded Lane: ")<< Bold(msg) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: "))<< Bold(msg) << rptNewLine;
          if (gM1.ControllingMethod & S_OVER_D_METHOD)
          {
-            (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
-            (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
-            (*pPara)<< "D = "<< xdim.SetValue(gM1.EqnData.D) << rptNewLine<< rptNewLine;
+            (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
+            (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
+            (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine<< rptNewLine;
          }
 
-         (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.mg) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
          (*pPara) << rptNewLine;
          if ( 2 <= lldf.Nl )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: ")<< Bold(msg) << Bold(", same as for interior single lane moment.") << rptNewLine;
-            (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.mg) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: "))<< Bold(msg) << Bold(_T(", same as for interior single lane moment.")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
             (*pPara) << rptNewLine;
          }
 
-         (*pPara) << Bold("Skew Correction Ignored for TxDOT Method") << rptNewLine;
-         (*pPara) << "Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
+         (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          if ( lldf.Nl >= 2 )
          {
-            (*pPara) << "Corrected Factor: mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
       }
       else
@@ -799,27 +801,27 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          {
             if (gM1.EqnData.bWasUsed )
             {
-               (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_MI_Type_K_SI.png" : "mg_1_MI_Type_K_US.png")) << rptNewLine;
-               (*pPara) << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+               (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_K_SI.png") : _T("mg_1_MI_Type_K_US.png"))) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
             }
 
             if ( gM1.LeverRuleData.bWasUsed )
             {
-               (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+               (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
                ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gM1.EqnData.bWasUsed && gM1.LeverRuleData.bWasUsed )
             {
                (*pPara) << rptNewLine;
-               (*pPara) << "Controlling value is lesser of Equation and Lever Rule mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg) << rptNewLine;
+               (*pPara) << _T("Controlling value is lesser of Equation and Lever Rule mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
             }
 
             if ( gM1.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
 
@@ -829,27 +831,27 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                if (gM2.EqnData.bWasUsed )
                {
-                  (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_MI_Type_K_SI.png" : "mg_2_MI_Type_K_US.png")) << rptNewLine;
-                  (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+                  (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_K_SI.png") : _T("mg_2_MI_Type_K_US.png"))) << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                }
 
                if ( gM2.LeverRuleData.bWasUsed )
                {
-                  (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+                  (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                   ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
                }
 
                if (gM2.EqnData.bWasUsed && gM2.LeverRuleData.bWasUsed )
                {
                   (*pPara) << rptNewLine;
-                  (*pPara) << "Controlling value is lesser of Equation and Lever Rule mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg) << rptNewLine;
+                  (*pPara) << _T("Controlling value is lesser of Equation and Lever Rule mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
                }
 
                if ( gM2.LanesBeamsData.bWasUsed )
                {
-                  (*pPara) << Bold("2+ Loaded Lanes: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-                  (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+                  (*pPara) << Bold(_T("2+ Loaded Lanes: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+                  (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                   ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
                }
 
@@ -860,43 +862,43 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          {
             if (gM1.LeverRuleData.bWasUsed)
             {
-               (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+               (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
                ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if (gM1.EqnData.bWasUsed)
             {
-               (*pPara) << Bold("St. Venant torsional inertia constant") << rptNewLine;
-               (*pPara) << "Polar Moment of Inertia: I" << Sub("p") << " = " << inertia.SetValue(lldf.Ip) << rptNewLine;
-               (*pPara) << "Torsional Constant: " << rptRcImage(strImagePath + "J.png") << rptTab
-                        << "J" << " = " << inertia.SetValue(lldf.J) << rptNewLine;
+               (*pPara) << Bold(_T("St. Venant torsional inertia constant")) << rptNewLine;
+               (*pPara) << _T("Polar Moment of Inertia: I") << Sub(_T("p")) << _T(" = ") << inertia.SetValue(lldf.Ip) << rptNewLine;
+               (*pPara) << _T("Torsional Constant: ") << rptRcImage(strImagePath + _T("J.png")) << rptTab
+                        << _T("J") << _T(" = ") << inertia.SetValue(lldf.J) << rptNewLine;
 
-               (*pPara) << Bold("Regardless of the Number of Loaded Lanes:") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "LLDF_Type_HIJ_SI.png" : "LLDF_Type_HIJ_US.png")) << rptNewLine;
+               (*pPara) << Bold(_T("Regardless of the Number of Loaded Lanes:")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("LLDF_Type_HIJ_SI.png") : _T("LLDF_Type_HIJ_US.png"))) << rptNewLine;
 
                if (gM1.ControllingMethod & S_OVER_D_METHOD)
                {
                   (*pPara) << rptNewLine;
-                  (*pPara)<< "K = "<< gM1.EqnData.K << rptNewLine;
-                  (*pPara)<< "C = "<< gM1.EqnData.C << rptNewLine;
-                  (*pPara)<< "D = "<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+                  (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
+                  (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
+                  (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
                }
 
-               (*pPara) << "mg" << Super("MI") << Sub("1") << " = " 
-                        << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") 
+                        << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
             }
 
             if ( gM1.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
 
             if ( lldf.Nl>=2 && gM2.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
          }
@@ -905,24 +907,24 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
          if (lldf.connectedAsUnit)
          {
-            (*pPara) << Bold("Skew Correction") << rptNewLine;
+            (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
             Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Moment_SI.png" : "SkewCorrection_Moment_US.png")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Moment_SI.png") : _T("SkewCorrection_Moment_US.png"))) << rptNewLine;
 
-            (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
-            (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
-            (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+            (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             if ( lldf.Nl >= 2 )
             {
-               (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("2+") << " = " << scalar.SetValue(gM2.mg);
-               (gM2.mg > gM1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+               (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+               (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             }
          }
          else
          {
-            (*pPara) << "Controlling mg" << Super("MI")  << " = " << scalar.SetValue(max(gM1.mg,gM2.mg)) << rptNewLine;
+            (*pPara) << _T("Controlling mg") << Super(_T("MI"))  << _T(" = ") << scalar.SetValue(max(gM1.mg,gM2.mg)) << rptNewLine;
          }
       }
 
@@ -932,7 +934,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
 void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -950,25 +952,25 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
    {
       if (lldf.Method == LLDF_TXDOT && !(gV1.ControllingMethod & LEVER_RULE || gV1.ControllingMethod & LANES_DIV_BEAMS))
       {
-         std::string msg(!(gV1.ControllingMethod & SPECIAL_OVERRIDE)?"Spec Equation, same as for interior single lane moment.":"Controlled by S/10.0");
+         std::_tstring msg(!(gV1.ControllingMethod & SPECIAL_OVERRIDE)?_T("Spec Equation, same as for interior single lane moment."):_T("Controlled by S/10.0"));
 
-         (*pPara) << Bold("1 Loaded Lane: ")<< Bold(msg) << rptNewLine;
-         (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: "))<< Bold(msg) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
          (*pPara) << rptNewLine;
          if ( 2 <= lldf.Nl )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: ")<< Bold(msg) << rptNewLine;
-            (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.mg) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: "))<< Bold(msg) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
             (*pPara) << rptNewLine;
          }
 
-         (*pPara) << Bold("Skew Correction Ignored for TxDOT Method") << rptNewLine;
-         (*pPara) << "Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
-         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
+         (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          if ( lldf.Nl >= 2 )
          {
-            (*pPara) << "Corrected Factor: mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.mg);
-            (gV2.mg > gV1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
 
       }
@@ -976,21 +978,21 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
       {
          if ( gV1.LeverRuleData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV1.RigidData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Rigid Method") << rptNewLine;
-            (*pPara) << "mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.RigidData.mg) << rptNewLine;
-            (*pPara) << "See Moment for details" << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Rigid Method")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.RigidData.mg) << rptNewLine;
+            (*pPara) << _T("See Moment for details") << rptNewLine;
          }
 
          if ( gV1.LanesBeamsData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-            (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
             ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
 
@@ -1000,32 +1002,32 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          {
             if ( gV2.EqnData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Spec Equation") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VE_Type_K_SI.png" : "mg_2_VE_Type_K_US.png")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
-               (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
-               (*pPara) << "e = " << scalar.SetValue(gV2.EqnData.e) << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VE_Type_K_SI.png") : _T("mg_2_VE_Type_K_US.png"))) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
+               (*pPara) << _T("e = ") << scalar.SetValue(gV2.EqnData.e) << rptNewLine;
 
-               (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
             }
 
             if ( gV2.LeverRuleData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gV2.RigidData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Rigid Method") << rptNewLine;
-               (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.RigidData.mg) << rptNewLine;
-               (*pPara) << "See Moment for details" << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.RigidData.mg) << rptNewLine;
+               (*pPara) << _T("See Moment for details") << rptNewLine;
             }
 
             if ( gV2.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
          }
@@ -1033,22 +1035,22 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          (*pPara) << rptNewLine;
          if (lldf.connectedAsUnit)
          {
-            (*pPara) << Bold("Skew Correction") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_SI.png" : "SkewCorrection_Shear_US.png")) << rptNewLine;
-            (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_SI.png") : _T("SkewCorrection_Shear_US.png"))) << rptNewLine;
+            (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
-            (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
-            (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+            (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             if ( lldf.Nl >= 2 )
             {
-               (*pPara) << "Skew Corrected Factor: mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.mg);
-               (gV2.mg > gV1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara)  << rptNewLine;
+               (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+               (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara)  << rptNewLine;
             }
          }
          else
          {
             // skew makes no sense for unconnected
-            (*pPara) << "Controlling Factor: mg" << Super("VE") << " = " << scalar.SetValue(max(gV1.mg,gV2.mg));
+            (*pPara) << _T("Controlling Factor: mg") << Super(_T("VE")) << _T(" = ") << scalar.SetValue(max(gV1.mg,gV2.mg));
          }
       }
    }
@@ -1057,25 +1059,25 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
       // Distribution factor for interior girder
       if (lldf.Method == LLDF_TXDOT && !(gV1.ControllingMethod & LEVER_RULE || gV1.ControllingMethod & LANES_DIV_BEAMS))
       {
-         std::string msg(!(gV1.ControllingMethod & SPECIAL_OVERRIDE)?"Spec Equation, same as for interior single lane moment.":"Controlled by S/10.0");
+         std::_tstring msg(!(gV1.ControllingMethod & SPECIAL_OVERRIDE)?_T("Spec Equation, same as for interior single lane moment."):_T("Controlled by S/10.0"));
 
-         (*pPara) << Bold("1 Loaded Lane: ")<< Bold(msg) << rptNewLine;
-         (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: "))<< Bold(msg) << rptNewLine;
+         (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
          (*pPara) << rptNewLine;
          if ( 2 <= lldf.Nl )
          {
-            (*pPara) << Bold("2+ Loaded Lanes: ")<< Bold(msg) << rptNewLine;
-            (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.mg) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: "))<< Bold(msg) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
             (*pPara) << rptNewLine;
          }
 
-         (*pPara) << Bold("Skew Correction Ignored for TxDOT Method") << rptNewLine;
-         (*pPara) << "Corrected Factor: mg" << Super("VE") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
-         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
+         (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          if ( lldf.Nl >= 2 )
          {
-            (*pPara) << "Corrected Factor: mg" << Super("VE") << Sub("2+") << " = " << scalar.SetValue(gV2.mg);
-            (gV2.mg > gV1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
 
       }
@@ -1084,21 +1086,21 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          if ( gV1.EqnData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_1_VI_Type_K_SI.png" : "mg_1_VI_Type_K_US.png")) << rptNewLine;
-            (*pPara) << "mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_K_SI.png") : _T("mg_1_VI_Type_K_US.png"))) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
          }
 
          if ( gV1.LeverRuleData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV1.LanesBeamsData.bWasUsed )
          {
-            (*pPara) << Bold("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-            (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
             ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
 
@@ -1108,21 +1110,21 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          {
             if ( gV2.EqnData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg_2_VI_Type_K_SI.png" : "mg_2_VI_Type_K_US.png")) << rptNewLine;
-               (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
             }
 
             if ( gV2.LeverRuleData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Lever Rule") << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gV2.LanesBeamsData.bWasUsed )
             {
-               (*pPara) << Bold("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this") << rptNewLine;
-               (*pPara) << "Skew correction is not applied to Lanes/Beams method"<< rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
                ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
 
@@ -1131,27 +1133,27 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          if (lldf.connectedAsUnit)
          {
-            (*pPara) << Bold("Skew Correction") << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? "SkewCorrection_Shear_SI.png" : "SkewCorrection_Shear_US.png")) << rptNewLine;
-            (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << Bold(_T("Skew Correction")) << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_SI.png") : _T("SkewCorrection_Shear_US.png"))) << rptNewLine;
+            (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
-            (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("1") << " = " << scalar.SetValue(gV1.mg);
-            (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+            (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             if ( lldf.Nl >= 2 )
             {
-               (*pPara) << "Skew Corrected Factor: mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.mg);
-               (gV2.mg > gV1.mg) ? (*pPara) << Bold(" < Controls") << rptNewLine : (*pPara) << rptNewLine;
+               (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+               (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             }
          }
          else
          {
             // skew makes no sense for unconnected
-            (*pPara) << "Controlling Factor: mg" << Super("VE") << " = " << scalar.SetValue(max(gV1.mg,gV2.mg));
+            (*pPara) << _T("Controlling Factor: mg") << Super(_T("VE")) << _T(" = ") << scalar.SetValue(max(gV1.mg,gV2.mg));
          }
       }
    }
 }
 
-std::string CMultiWebDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::string& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -1159,20 +1161,20 @@ std::string CMultiWebDistFactorEngineer::GetComputationDescription(SpanIndexType
 
    Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
 
-   std::ostringstream osdescr;
+   std::_tostringstream osdescr;
 
    if ( lldfMethod == LLDF_TXDOT )
    {
-      osdescr <<"TxDOT modifications. Treat as AASHTO Type (i,j) connected only enough to prevent relative vertical displacement, regardless of deck or connectivity input. (K="<< this->GetTxDOTKfactor() << ", S/10 max). Effects of skew will be ignored.";
+      osdescr <<_T("TxDOT modifications. Treat as AASHTO Type (i,j) connected only enough to prevent relative vertical displacement, regardless of deck or connectivity input. (K=")<< this->GetTxDOTKfactor() << _T(", S/10 max). Effects of skew will be ignored.");
    }
    else if ( lldfMethod == LLDF_WSDOT || lldfMethod == LLDF_LRFD )
    {
-      osdescr << "AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section ";
+      osdescr << _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section ");
 
       if (connect == pgsTypes::atcConnectedAsUnit)
-         osdescr << "connected transversely sufficiently to act as a unit.";
+         osdescr << _T("connected transversely sufficiently to act as a unit.");
       else
-         osdescr << "connected transversely only enough to prevent relative vertical displacement along interface.";
+         osdescr << _T("connected transversely only enough to prevent relative vertical displacement along interface.");
    }
    else
    {
@@ -1181,7 +1183,7 @@ std::string CMultiWebDistFactorEngineer::GetComputationDescription(SpanIndexType
 
    // Special text if ROA is ignored
    GET_IFACE(ILiveLoads,pLiveLoads);
-   std::string straction = pLiveLoads->GetLLDFSpecialActionText();
+   std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
    if ( !straction.empty() )
    {
       osdescr << straction;

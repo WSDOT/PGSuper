@@ -120,7 +120,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    ColumnIndexType col = 0;
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Shear",false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,_T("Shear"),false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    if ( span == ALL_SPANS )
    {
@@ -179,7 +179,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       }
 
       GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"Shear");
+      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Shear"));
       row2 = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table2,false,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
       *p << p_table2;
    }
@@ -914,7 +914,7 @@ bool CCombinedShearTable::AssertValid() const
 
 void CCombinedShearTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CCombinedShearTable" << endl;
+   os << _T("Dump for CCombinedShearTable") << endl;
 }
 #endif // _DEBUG
 

@@ -140,54 +140,54 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("TxDOTOptionalGirderData",1.0);
+   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),1.0);
 
    // Template Data
-   pStrSave->BeginUnit("TemplateData",1.0);
-   pStrSave->put_Property("GirderEntryName",         CComVariant(m_GirderEntryName));
-   pStrSave->put_Property("LeftConnectionEntryName", CComVariant(m_LeftConnectionEntryName));
-   pStrSave->put_Property("RightConnectionEntryName",CComVariant(m_RightConnectionEntryName));
-   pStrSave->put_Property("PGSuperFileName", CComVariant(m_PGSuperFileName));
+   pStrSave->BeginUnit(_T("TemplateData"),1.0);
+   pStrSave->put_Property(_T("GirderEntryName"),         CComVariant(m_GirderEntryName));
+   pStrSave->put_Property(_T("LeftConnectionEntryName"), CComVariant(m_LeftConnectionEntryName));
+   pStrSave->put_Property(_T("RightConnectionEntryName"),CComVariant(m_RightConnectionEntryName));
+   pStrSave->put_Property(_T("PGSuperFileName"), CComVariant(m_PGSuperFileName));
    pStrSave->EndUnit();
 
-   pStrSave->BeginUnit("BridgeInputData",2.0);
-   pStrSave->put_Property("Bridge",         CComVariant(m_Bridge));
-   pStrSave->put_Property("BridgeID",         CComVariant(m_BridgeID));
-   pStrSave->put_Property("JobNumber",         CComVariant(m_JobNumber));
-   pStrSave->put_Property("Engineer",         CComVariant(m_Engineer));
-   pStrSave->put_Property("Company",         CComVariant(m_Company));
-   pStrSave->put_Property("Comments",         CComVariant(m_Comments));
+   pStrSave->BeginUnit(_T("BridgeInputData"),2.0);
+   pStrSave->put_Property(_T("Bridge"),         CComVariant(m_Bridge));
+   pStrSave->put_Property(_T("BridgeID"),         CComVariant(m_BridgeID));
+   pStrSave->put_Property(_T("JobNumber"),         CComVariant(m_JobNumber));
+   pStrSave->put_Property(_T("Engineer"),         CComVariant(m_Engineer));
+   pStrSave->put_Property(_T("Company"),         CComVariant(m_Company));
+   pStrSave->put_Property(_T("Comments"),         CComVariant(m_Comments));
 
-   pStrSave->put_Property("SpanNo",         CComVariant(m_SpanNo));
-   pStrSave->put_Property("BeamNo",         CComVariant(m_BeamNo));
-   pStrSave->put_Property("BeamType",         CComVariant(m_BeamType));
-   pStrSave->put_Property("BeamSpacing",         CComVariant(m_BeamSpacing));
-   pStrSave->put_Property("SpanLength",         CComVariant(m_SpanLength));
-   pStrSave->put_Property("SlabThickness",         CComVariant(m_SlabThickness));
+   pStrSave->put_Property(_T("SpanNo"),         CComVariant(m_SpanNo));
+   pStrSave->put_Property(_T("BeamNo"),         CComVariant(m_BeamNo));
+   pStrSave->put_Property(_T("BeamType"),         CComVariant(m_BeamType));
+   pStrSave->put_Property(_T("BeamSpacing"),         CComVariant(m_BeamSpacing));
+   pStrSave->put_Property(_T("SpanLength"),         CComVariant(m_SpanLength));
+   pStrSave->put_Property(_T("SlabThickness"),         CComVariant(m_SlabThickness));
 
-   pStrSave->put_Property("RelativeHumidity",         CComVariant(m_RelativeHumidity));
-   pStrSave->put_Property("LldfMoment",         CComVariant(m_LldfMoment));
-   pStrSave->put_Property("LldfShear",         CComVariant(m_LldfShear));
-   pStrSave->put_Property("EcSlab",         CComVariant(m_EcSlab));
-   pStrSave->put_Property("EcBeam",         CComVariant(m_EcBeam));
-   pStrSave->put_Property("FcSlab",         CComVariant(m_FcSlab));
+   pStrSave->put_Property(_T("RelativeHumidity"),         CComVariant(m_RelativeHumidity));
+   pStrSave->put_Property(_T("LldfMoment"),         CComVariant(m_LldfMoment));
+   pStrSave->put_Property(_T("LldfShear"),         CComVariant(m_LldfShear));
+   pStrSave->put_Property(_T("EcSlab"),         CComVariant(m_EcSlab));
+   pStrSave->put_Property(_T("EcBeam"),         CComVariant(m_EcBeam));
+   pStrSave->put_Property(_T("FcSlab"),         CComVariant(m_FcSlab));
 
-   pStrSave->put_Property("Ft",         CComVariant(m_Ft));
-   pStrSave->put_Property("Fb",         CComVariant(m_Fb));
-   pStrSave->put_Property("Mu",         CComVariant(m_Mu));
-   pStrSave->put_Property("WNonCompDc",         CComVariant(m_WNonCompDc));
-   pStrSave->put_Property("WCompDc",         CComVariant(m_WCompDc));
-   pStrSave->put_Property("WCompDw",         CComVariant(m_WCompDw));
+   pStrSave->put_Property(_T("Ft"),         CComVariant(m_Ft));
+   pStrSave->put_Property(_T("Fb"),         CComVariant(m_Fb));
+   pStrSave->put_Property(_T("Mu"),         CComVariant(m_Mu));
+   pStrSave->put_Property(_T("WNonCompDc"),         CComVariant(m_WNonCompDc));
+   pStrSave->put_Property(_T("WCompDc"),         CComVariant(m_WCompDc));
+   pStrSave->put_Property(_T("WCompDw"),         CComVariant(m_WCompDw));
 
-   pStrSave->put_Property("UseHigherCompressionAllowable", CComVariant(m_UseHigherCompressionAllowable!=FALSE)); // added version 2.0
+   pStrSave->put_Property(_T("UseHigherCompressionAllowable"), CComVariant(m_UseHigherCompressionAllowable!=FALSE)); // added version 2.0
 
    pStrSave->EndUnit(); // BridgeInputData
 
-   pStrSave->BeginUnit("OriginalDesignGirderData",1.0);
+   pStrSave->BeginUnit(_T("OriginalDesignGirderData"),1.0);
    m_OriginalDesignGirderData.Save(pStrSave, pProgress);
    pStrSave->EndUnit();
 
-   pStrSave->BeginUnit("PrecasterDesignGirderData",1.0);
+   pStrSave->BeginUnit(_T("PrecasterDesignGirderData"),1.0);
    m_PrecasterDesignGirderData.Save(pStrSave, pProgress);
    pStrSave->EndUnit();
 
@@ -204,161 +204,161 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
 
    try
    {
-      hr = pStrLoad->BeginUnit("TxDOTOptionalGirderData");
+      hr = pStrLoad->BeginUnit(_T("TxDOTOptionalGirderData"));
       double version;
       pStrLoad->get_Version(&version);
 
       // Template Data
-      hr = pStrLoad->BeginUnit("TemplateData");
+      hr = pStrLoad->BeginUnit(_T("TemplateData"));
 
       CComVariant var;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("GirderEntryName", &var );
+      hr = pStrLoad->get_Property(_T("GirderEntryName"), &var );
       m_GirderEntryName = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("LeftConnectionEntryName", &var );
+      hr = pStrLoad->get_Property(_T("LeftConnectionEntryName"), &var );
       m_LeftConnectionEntryName = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("RightConnectionEntryName", &var );
+      hr = pStrLoad->get_Property(_T("RightConnectionEntryName"), &var );
       m_RightConnectionEntryName = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("PGSuperFileName", &var );
+      hr = pStrLoad->get_Property(_T("PGSuperFileName"), &var );
       m_PGSuperFileName = var.bstrVal;
 
       hr = pStrLoad->EndUnit(); // end TemplateData
 
       // Bridge Input Data
-      hr = pStrLoad->BeginUnit("BridgeInputData");
+      hr = pStrLoad->BeginUnit(_T("BridgeInputData"));
 
       double brgversion;
       pStrLoad->get_Version(&brgversion);
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Bridge", &var );
+      hr = pStrLoad->get_Property(_T("Bridge"), &var );
       m_Bridge = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("BridgeID", &var );
+      hr = pStrLoad->get_Property(_T("BridgeID"), &var );
       m_BridgeID = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("JobNumber", &var );
+      hr = pStrLoad->get_Property(_T("JobNumber"), &var );
       m_JobNumber = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Engineer", &var );
+      hr = pStrLoad->get_Property(_T("Engineer"), &var );
       m_Engineer = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Company", &var );
+      hr = pStrLoad->get_Property(_T("Company"), &var );
       m_Company = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("Comments", &var );
+      hr = pStrLoad->get_Property(_T("Comments"), &var );
       m_Comments = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("SpanNo", &var );
+      hr = pStrLoad->get_Property(_T("SpanNo"), &var );
       m_SpanNo = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("BeamNo", &var );
+      hr = pStrLoad->get_Property(_T("BeamNo"), &var );
       m_BeamNo = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
-      hr = pStrLoad->get_Property("BeamType", &var );
+      hr = pStrLoad->get_Property(_T("BeamType"), &var );
       m_BeamType = var.bstrVal;
       
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("BeamSpacing", &var );
+      hr = pStrLoad->get_Property(_T("BeamSpacing"), &var );
       m_BeamSpacing = var.dblVal;
       
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SpanLength", &var );
+      hr = pStrLoad->get_Property(_T("SpanLength"), &var );
       m_SpanLength = var.dblVal;
       
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("SlabThickness", &var );
+      hr = pStrLoad->get_Property(_T("SlabThickness"), &var );
       m_SlabThickness = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("RelativeHumidity", &var );
+      hr = pStrLoad->get_Property(_T("RelativeHumidity"), &var );
       m_RelativeHumidity = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("LldfMoment", &var );
+      hr = pStrLoad->get_Property(_T("LldfMoment"), &var );
       m_LldfMoment = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("LldfShear", &var );
+      hr = pStrLoad->get_Property(_T("LldfShear"), &var );
       m_LldfShear = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("EcSlab", &var );
+      hr = pStrLoad->get_Property(_T("EcSlab"), &var );
       m_EcSlab = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("EcBeam", &var );
+      hr = pStrLoad->get_Property(_T("EcBeam"), &var );
       m_EcBeam = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("FcSlab", &var );
+      hr = pStrLoad->get_Property(_T("FcSlab"), &var );
       m_FcSlab = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Ft", &var );
+      hr = pStrLoad->get_Property(_T("Ft"), &var );
       m_Ft = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Fb", &var );
+      hr = pStrLoad->get_Property(_T("Fb"), &var );
       m_Fb = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Mu", &var );
+      hr = pStrLoad->get_Property(_T("Mu"), &var );
       m_Mu = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("WNonCompDc", &var );
+      hr = pStrLoad->get_Property(_T("WNonCompDc"), &var );
       m_WNonCompDc = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("WCompDc", &var );
+      hr = pStrLoad->get_Property(_T("WCompDc"), &var );
       m_WCompDc = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("WCompDw", &var );
+      hr = pStrLoad->get_Property(_T("WCompDw"), &var );
       m_WCompDw = var.dblVal;
 
       if (brgversion < 2.0)
@@ -369,7 +369,7 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       {
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("UseHigherCompressionAllowable", &var );
+         hr = pStrLoad->get_Property(_T("UseHigherCompressionAllowable"), &var );
          m_UseHigherCompressionAllowable = var.boolVal==VARIANT_FALSE ? FALSE : TRUE;
       }
 
@@ -377,11 +377,11 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
 
 
       // Girder Data
-      hr = pStrLoad->BeginUnit("OriginalDesignGirderData");
+      hr = pStrLoad->BeginUnit(_T("OriginalDesignGirderData"));
       m_OriginalDesignGirderData.Load(pStrLoad, pProgress);
       hr = pStrLoad->EndUnit();
 
-      hr = pStrLoad->BeginUnit("PrecasterDesignGirderData");
+      hr = pStrLoad->BeginUnit(_T("PrecasterDesignGirderData"));
       m_PrecasterDesignGirderData.Load(pStrLoad, pProgress);
       hr = pStrLoad->EndUnit();
 

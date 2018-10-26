@@ -79,7 +79,7 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>("Shear - User Defined Loads",false,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(_T("Shear - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    if ( span == ALL_SPANS )
    {
@@ -218,7 +218,7 @@ bool CUserShearTable::AssertValid() const
 
 void CUserShearTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CUserShearTable" << endl;
+   os << _T("Dump for CUserShearTable") << endl;
 }
 #endif // _DEBUG
 

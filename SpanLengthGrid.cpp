@@ -208,7 +208,7 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
       {
          double L = *iter;
          CString strLength;
-         strLength.Format("%s",FormatDimension(L,pDisplayUnits->GetSpanLengthUnit(),false));
+         strLength.Format(_T("%s"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit(),false));
          SetValueRange(CGXRange(nRow,1),strLength);
          nRow++;
       }
@@ -237,7 +237,7 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<double>& vSpanLengths)
    ROWCOL rows = GetRowCount();
    for ( ROWCOL row = 1; row <= rows; row++ )
    {
-      double L = atof(GetCellValue(row,1));
+      double L = _tstof(GetCellValue(row,1));
       L = ::ConvertToSysUnits(L,um);
       vSpanLengths.push_back(L);
    }

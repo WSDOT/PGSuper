@@ -211,7 +211,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    CComPtr<iTool> point_load_tool;
    ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
    point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
-   point_load_tool->SetToolTipText("Drag me onto girder to create a point load");
+   point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
 
    CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
    HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
@@ -223,7 +223,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    CComPtr<iTool> distributed_load_tool;
    ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
    distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
-   distributed_load_tool->SetToolTipText("Drag me onto girder to create a distributed load");
+   distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
 
    CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
    hr = dti->SetIcon(::AfxGetInstanceHandle(), IDI_DISTRIBUTED_LOAD);
@@ -235,7 +235,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    CComPtr<iTool> moment_load_tool;
    ::CoCreateInstance(CLSID_Tool,NULL,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
    moment_load_tool->SetID(IDC_MOMENT_LOAD_DRAG);
-   moment_load_tool->SetToolTipText("Drag me onto girder to create a moment load");
+   moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
    
    CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
    hr = mti->SetIcon(::AfxGetInstanceHandle(), IDI_MOMENT_LOAD);
@@ -329,7 +329,7 @@ void CGirderModelChildFrame::UpdateBar()
       CString csv;
       for (SpanIndexType i=0; i<num_spans; i++)
       {
-         csv.Format("Span %i", LABEL_SPAN(i));
+         csv.Format(_T("Span %i"), LABEL_SPAN(i));
          pspan_ctrl->AddString(csv);
       }
    }
@@ -343,7 +343,7 @@ void CGirderModelChildFrame::UpdateBar()
       CString csv;
       for (GirderIndexType i=0; i<num_girders; i++)
       {
-         csv.Format("Girder %s", LABEL_GIRDER(i));
+         csv.Format(_T("Girder %s"), LABEL_GIRDER(i));
          pgirder_ctrl->AddString(csv);
       }
       pgirder_ctrl->SetCurSel(gdrIdx);
@@ -405,7 +405,7 @@ void CGirderModelChildFrame::UpdateBar()
 
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CString msg;
-      msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
+      msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
 
       plocation_static->SetWindowText(msg);
       plocation_static->EnableWindow();
@@ -620,9 +620,9 @@ void CGirderModelChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
       GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
       CString msg;
       if (  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS  )
-         msg.Format("Girder Model View - Span %d, Girder %s", LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx));
+         msg.Format(_T("Girder Model View - Span %d, Girder %s"), LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx));
       else
-         msg.Format("%s","Girder Model View");
+         msg.Format(_T("%s"),_T("Girder Model View"));
 
       // set our title
 		AfxSetWindowText(m_hWnd, msg);

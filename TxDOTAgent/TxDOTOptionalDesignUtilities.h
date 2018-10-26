@@ -69,8 +69,8 @@ inline CString GetTOGAFolder()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CString strHelpFolderName =  AfxGetApp()->m_pszHelpFilePath;
-   int loc = strHelpFolderName.ReverseFind('\\');
-   CString strWorkgroupFolderName = strHelpFolderName.Left(loc+1) + "TogaTemplates";
+   int loc = strHelpFolderName.ReverseFind(_T('\\'));
+   CString strWorkgroupFolderName = strHelpFolderName.Left(loc+1) + _T("TogaTemplates");
 
    return strWorkgroupFolderName;
 }
@@ -82,39 +82,39 @@ inline CString get_strand_size( matPsStrand::Size size )
    switch( size )
    {
    case matPsStrand::D635:
-      sz = "1/4\"";
+      sz = _T("1/4\"");
       break;
 
    case matPsStrand::D794:
-      sz ="5/16\"";
+      sz = _T("5/16\"");
       break;
 
    case matPsStrand::D953:
-      sz ="3/8\"";
+      sz = _T("3/8\"");
       break;
 
    case matPsStrand::D1111:
-      sz ="7/16\"";
+      sz = _T("7/16\"");
       break;
 
    case matPsStrand::D1270:
-      sz ="1/2\"";
+      sz = _T("1/2\"");
       break;
 
    case matPsStrand::D1320:
-      sz ="1/2\" Special (0.52\")";
+      sz = _T("1/2\" Special (0.52\")");
       break;
 
    case matPsStrand::D1524:
-      sz ="0.6\"";
+      sz = _T("0.6\"");
       break;
 
    case matPsStrand::D1575:
-      sz ="0.62\"";
+      sz = _T("0.62\"");
       break;
 
    case matPsStrand::D1778:
-      sz ="0.7\"";
+      sz = _T("0.7\"");
       break;
 
    default:
@@ -127,29 +127,29 @@ inline CString get_strand_size( matPsStrand::Size size )
 inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, CString& leftConnEntry, CString& rightConnEntry)
 {
    // Read girder type, connection types, and pgsuper template file name
-   std::ifstream ifile(lpszPathName);
+   std::_tifstream ifile(lpszPathName);
    if ( !ifile )
    {
       CString msg;
-      msg.Format("Error opening template file: %s - File not found?",lpszPathName);
+      msg.Format(_T("Error opening template file: %s - File not found?"),lpszPathName);
       AfxMessageBox(msg );
       ASSERT( 0 ); // this should never happen
       return FALSE;
    }
 
-   char line[1024];
+   TCHAR line[1024];
    ifile.getline(line,1024);
 
    // comma delimited file in format of:
    // GirderEntryName, EndConnection, StartConnection, TemplateFile
-   sysTokenizer tokenizer(",");
+   sysTokenizer tokenizer(_T(","));
    tokenizer.push_back(line);
 
    int nitems = tokenizer.size();
    if (nitems!=4 && nitems!=3)
    {
       CString msg;
-      msg.Format("Error reading template file: %s - Invalid Format",lpszPathName);
+      msg.Format(_T("Error reading template file: %s - Invalid Format"),lpszPathName);
       AfxMessageBox(msg );
       return FALSE;
    }

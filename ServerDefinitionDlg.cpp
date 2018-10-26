@@ -139,14 +139,14 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
       pDX->PrepareEditCtrl(IDC_NAME);
       if ( m_ServerName.GetLength()==0 )
       {
-         AfxMessageBox("Please enter a server name",MB_OK | MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Please enter a server name"),MB_OK | MB_ICONEXCLAMATION);
          pDX->Fail();
       }
 
       if ( m_OriginalServerName != m_ServerName && m_Servers.IsServerDefined(m_ServerName) )
       {
          CString strMsg;
-         strMsg.Format("A server with the name %s is already defined. Please use a different name",m_ServerName);
+         strMsg.Format(_T("A server with the name %s is already defined. Please use a different name"),m_ServerName);
          AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
          pDX->Fail();
       }
@@ -154,7 +154,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
       pDX->PrepareEditCtrl(IDC_URL);
       if ( m_ServerAddress.GetLength()==0 && (m_ServerType==srtInternetFtp || m_ServerType==srtInternetHttp) )
       {
-         AfxMessageBox("Please enter a server address",MB_OK | MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Please enter a server address"),MB_OK | MB_ICONEXCLAMATION);
          pDX->Fail();
       }
    }
@@ -175,11 +175,11 @@ BOOL CServerDefinitionDlg::OnInitDialog()
 {
    CComboBox* ptype_ctrl = (CComboBox*)GetDlgItem(IDC_SERVER_TYPE);
    ASSERT(ptype_ctrl!=0);
-   int idx = ptype_ctrl->AddString("Internet FTP Server");
+   int idx = ptype_ctrl->AddString(_T("Internet FTP Server"));
    ptype_ctrl->SetItemData(idx,srtInternetFtp);
-   idx = ptype_ctrl->AddString("Internet HTTP Server");
+   idx = ptype_ctrl->AddString(_T("Internet HTTP Server"));
    ptype_ctrl->SetItemData(idx,srtInternetHttp);
-   idx = ptype_ctrl->AddString("Local or Network File System");
+   idx = ptype_ctrl->AddString(_T("Local or Network File System"));
    ptype_ctrl->SetItemData(idx,srtLocal);
 
 	CDialog::OnInitDialog();
@@ -200,14 +200,14 @@ void CServerDefinitionDlg::ConfigureControls(SharedResourceType type)
 
    if (type==srtInternetFtp || type==srtInternetHttp)
    {
-      GetDlgItem(IDC_URL_STATIC)->SetWindowText("Server Address (URL)");
+      GetDlgItem(IDC_URL_STATIC)->SetWindowText(_T("Server Address (URL)"));
       show_local = SW_HIDE;
       show_internet = SW_SHOW;
    }
    else
    {
       ATLASSERT(type==srtLocal);
-      GetDlgItem(IDC_URL_STATIC)->SetWindowText("Master Library File Name (full path)");
+      GetDlgItem(IDC_URL_STATIC)->SetWindowText(_T("Master Library File Name (full path)"));
    }
 
    GetDlgItem(IDC_URL)->ShowWindow(show_internet);
@@ -226,7 +226,7 @@ void CServerDefinitionDlg::OnBnClickedTestServer()
       CPGSuperCatalogServer* psvr = CreateServer();
       if (psvr==NULL)
       {
-         AfxMessageBox("Failed to create server. Check your input data");
+         AfxMessageBox(_T("Failed to create server. Check your input data"));
       }
       else
       {
@@ -246,7 +246,7 @@ void CServerDefinitionDlg::OnBnClickedTestServer()
          }
          else
          {
-            AfxMessageBox("Connected to server successfully");
+            AfxMessageBox(_T("Connected to server successfully"));
          }
       }
    }

@@ -91,7 +91,7 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   static void ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
+   static void ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
    // GROUP: ACCESS
    // GROUP: INQUIRY
 };

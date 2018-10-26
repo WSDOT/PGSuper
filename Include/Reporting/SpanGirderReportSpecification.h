@@ -81,10 +81,10 @@ class REPORTINGCLASS CSpanReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CSpanReportSpecification(const char* strReportName,IBroker* pBroker,SpanIndexType spanIdx);
+   CSpanReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx);
    ~CSpanReportSpecification(void);
 
-   virtual std::string GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const;
 
    void SetSpan(SpanIndexType spanIdx);
    SpanIndexType GetSpan() const;
@@ -100,10 +100,10 @@ class REPORTINGCLASS CGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderReportSpecification(const char* strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
    ~CGirderReportSpecification(void);
 
-   virtual std::string GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const;
 
    void SetGirder(GirderIndexType gdrIdx);
    GirderIndexType GetGirder() const;
@@ -119,10 +119,10 @@ class REPORTINGCLASS CSpanGirderReportSpecification :
    public CSpanReportSpecification
 {
 public:
-   CSpanGirderReportSpecification(const char* strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   CSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    ~CSpanGirderReportSpecification(void);
    
-   virtual std::string GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const;
 
    void SetGirder(GirderIndexType gdrIdx);
    GirderIndexType GetGirder() const;

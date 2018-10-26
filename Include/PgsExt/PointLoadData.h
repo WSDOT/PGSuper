@@ -70,22 +70,22 @@ namespace UserLoads
       }
    }
 
-   static std::string GetStageName(Int32 stagenum)
+   static std::_tstring GetStageName(Int32 stagenum)
    {
       switch(stagenum)
       {
       case BridgeSite1:
-         return std::string("Bridge Site 1");
+         return std::_tstring(_T("Bridge Site 1"));
          break;
       case BridgeSite2:
-         return std::string("Bridge Site 2");
+         return std::_tstring(_T("Bridge Site 2"));
          break;
       case BridgeSite3:
-         return std::string("Bridge Site 3");
+         return std::_tstring(_T("Bridge Site 3"));
          break;
       default:
          CHECK(0);
-         return std::string("Error");
+         return std::_tstring(_T("Error"));
       }
    }
 
@@ -113,22 +113,22 @@ namespace UserLoads
       }
    }
 
-   static std::string GetLoadCaseName(Int32 load_casenum)
+   static std::_tstring GetLoadCaseName(Int32 load_casenum)
    {
       switch(load_casenum)
       {
       case DC:
-         return std::string("DC");
+         return std::_tstring(_T("DC"));
          break;
       case DW:
-         return std::string("DW");
+         return std::_tstring(_T("DW"));
          break;
       case LL_IM:
-         return std::string("LL + IM");
+         return std::_tstring(_T("LL + IM"));
          break;
       default:
          CHECK(0);
-         return std::string("Error");
+         return std::_tstring(_T("Error"));
       }
    }
 
@@ -153,19 +153,19 @@ namespace UserLoads
       }
    }
 
-   static std::string GetDistributedLoadTypeName(Int32 num)
+   static std::_tstring GetDistributedLoadTypeName(Int32 num)
    {
       switch(num)
       {
          case Uniform:
-            return std::string("Uniform over entire span");
+            return std::_tstring(_T("Uniform over entire span"));
             break;
          case Trapezoidal:
-            return std::string("Trapezoidal");
+            return std::_tstring(_T("Trapezoidal"));
             break;
          default:
             CHECK(0);
-            return std::string("Error");
+            return std::_tstring(_T("Error"));
       }
    }
 
@@ -193,7 +193,7 @@ public:
    Float64  m_Location;   // cannot be negative
    bool     m_Fractional;
    Float64  m_Magnitude;
-   std::string m_Description;
+   std::_tstring m_Description;
 };
 
 #endif // !defined(AFX_POINTLOADDATA_H__9A3E66DC_E7F7_494B_A4FC_CE1C68668647__INCLUDED_)

@@ -86,7 +86,7 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints) = 0;
 
    virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
-   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const char* pid,const char* bridgeId,std::ofstream& resultsFile, std::ofstream& poiFile) = 0;
+   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType span) = 0;
    virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType span,Float64* pDistToSection,Float64* pCurbToCurb) = 0;
    //---------------------------------------------------------------------

@@ -122,7 +122,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(3,"Camber and Deflection");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(3,_T("Camber and Deflection"));
    *p << pTable << rptNewLine;
 
    // Right justify columns with numbers
@@ -146,7 +146,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,girder);
 
-   std::string spec_name = pSpec->GetSpecification();
+   std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    bool do_defl = pSpecEntry->GetDoEvaluateLLDeflection();
@@ -201,7 +201,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    // Populate the table
    bool is_negative_camber = false;
    Uint16 row = 0;
-   (*pTable)(row,0) << "Estimated camber at "<< min_days<<" days, D";
+   (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
    double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
    if ( D < 0 )
    {
@@ -215,7 +215,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    }
    row++;
 
-   (*pTable)(row,0) << "Estimated camber at "<< max_days<<" days, D";
+   (*pTable)(row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
    D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
    if ( D < 0 )
    {
@@ -231,13 +231,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    if ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
    {
-      (*pTable)(row,0) << "Deflection (Prestressing including temp strands)";
+      (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
       (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,true) );
       (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,true) );
    }
    else
    {
-      (*pTable)(row,0) << "Deflection (Prestressing)";
+      (*pTable)(row,0) << _T("Deflection (Prestressing)");
       (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,false) );
       (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,false) );
    }
@@ -245,25 +245,25 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    if ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
    {
-      (*pTable)(row,0) << "Deflection (Temporary Strand Removal)";
+      (*pTable)(row,0) << _T("Deflection (Temporary Strand Removal)");
       (*pTable)(row,1) << disp.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
       (*pTable)(row,2) << dispft.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
       row++;
    }
 
-   (*pTable)(row,0) << "Deflection (Girder)";
+   (*pTable)(row,0) << _T("Deflection (Girder)");
    (*pTable)(row,1) << disp.SetValue( delta_gdr );
    (*pTable)(row,2) << dispft.SetValue( delta_gdr );
    row++;
 
-   (*pTable)(row,0) << "Deflection (Slab and Diaphragms)";
+   (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
    (*pTable)(row,1) << disp.SetValue( delta_dl );
    (*pTable)(row,2) << dispft.SetValue( delta_dl );
    row++;
 
    if ( pProductLoads->HasShearKeyLoad(span,girder) )
    {
-      (*pTable)(row,0) << "Deflection (Shear Key)";
+      (*pTable)(row,0) << _T("Deflection (Shear Key)");
       (*pTable)(row,1) << disp.SetValue( delta_sk );
       (*pTable)(row,2) << dispft.SetValue( delta_sk );
       row++;
@@ -271,38 +271,38 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    if ( pProductLoads->HasSidewalkLoad(span,girder) )
    {
-      (*pTable)(row,0) << "Deflection (Sidewalk)";
+      (*pTable)(row,0) << _T("Deflection (Sidewalk)");
       (*pTable)(row,1) << disp.SetValue( delta_sw );
       (*pTable)(row,2) << dispft.SetValue( delta_sw );
       row++;
    }
 
-   (*pTable)(row,0) << "Deflection (Traffic Barrier)";
+   (*pTable)(row,0) << _T("Deflection (Traffic Barrier)");
    (*pTable)(row,1) << disp.SetValue( delta_tb );
    (*pTable)(row,2) << dispft.SetValue( delta_tb );
    row++;
 
-   (*pTable)(row,0) << "Deflection (Overlay)";
+   (*pTable)(row,0) << _T("Deflection (Overlay)");
    (*pTable)(row,1) << disp.SetValue( delta_ol );
    (*pTable)(row,2) << dispft.SetValue( delta_ol );
    row++;
 
-   (*pTable)(row,0) << "Deflection (User Defined DC)";
+   (*pTable)(row,0) << _T("Deflection (User Defined DC)");
    (*pTable)(row,1) << disp.SetValue( delta_dcu );
    (*pTable)(row,2) << dispft.SetValue( delta_dcu );
    row++;
 
-   (*pTable)(row,0) << "Deflection (User Defined DW)";
+   (*pTable)(row,0) << _T("Deflection (User Defined DW)");
    (*pTable)(row,1) << disp.SetValue( delta_dwu );
    (*pTable)(row,2) << dispft.SetValue( delta_dwu );
    row++;
 
-   (*pTable)(row,0) << "Screed Camber, C";
+   (*pTable)(row,0) << _T("Screed Camber, C");
    (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi) );
    (*pTable)(row,2) << dispft.SetValue( pCamber->GetScreedCamber(poi) );
    row++;
 
-   (*pTable)(row,0) << "Excess Camber" << rptNewLine << "(based on D at " << max_days << " days)";
+   (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
    double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
    if ( excess_camber < 0 )
    {
@@ -317,14 +317,14 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    }
    row++;
 
-   (*pTable)(row,0) << "Live Load Deflection (HL93 - Per Lane)";
+   (*pTable)(row,0) << _T("Live Load Deflection (HL93 - Per Lane)");
    (*pTable)(row,1) << disp.SetValue( delta_ll );
    (*pTable)(row,2) << dispft.SetValue( delta_ll );
    row++;
 
    if (do_defl)
    {
-      (*pTable)(row,0) << "Optional Live Load Deflection (LRFD 3.6.1.3.2)";
+      (*pTable)(row,0) << _T("Optional Live Load Deflection (LRFD 3.6.1.3.2)");
       (*pTable)(row,1) << disp.SetValue( delta_oll );
       (*pTable)(row,2) << dispft.SetValue( delta_oll );
       row++;
@@ -332,7 +332,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    if (is_negative_camber)
    {
-      *p<<color(Red) << "Warning:  Excess camber is negative indicating a potential sag in the beam." << color(Black) << rptNewLine;
+      *p<<color(Red) << _T("Warning:  Excess camber is negative indicating a potential sag in the beam.") << color(Black) << rptNewLine;
    }
 }
 

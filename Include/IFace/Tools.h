@@ -25,6 +25,7 @@
 
 #include <WBFLCore.h>
 #include <AgentTools.h>
+#include <string>
 
 #define VALIDATE_AND_CHECK_TO_LEVEL(lvl,bfn,cfn) \
 if ( level >= lvl && m_Level < lvl ) \
@@ -77,14 +78,14 @@ dbgLogDumpContext m_Log;
    DWORD __dwCookie__; \
    HRESULT _xxHRxx_ = ::CoCreateInstance( CLSID_SysAgent, 0, CLSCTX_INPROC_SERVER,IID_ILogFile,(void**)&__pLogFile__); \
    ATLASSERT(SUCCEEDED(_xxHRxx_)); \
-   __pLogFile__->Open( TEXT(std::string(std::string(##name)+std::string(".log")).c_str()), &__dwCookie__ ); \
+   __pLogFile__->Open( std::_tstring(std::_tstring(_T(##name))+std::_tstring(_T(".log"))).c_str(), &__dwCookie__ ); \
    m_Log.SetLog( __pLogFile__, __dwCookie__ ); \
    __pLogFile__->Release(); \
    __pLogFile__ = 0; \
-   LOG(std::string(##name)+std::string(" Log Opened"))
+   LOG(std::_tstring(_T(##name))+std::_tstring(_T(" Log Opened")))
 
 #define LOG(x) m_Log << x << endl
-#define LOGX(x) m_Log << __FILE__ << " " << "(" << __LINE__ << ") " << x << endl
+#define LOGX(x) m_Log << _T(__FILE__) << _T(" ") << _T("(") << __LINE__ << _T(") ") << x << endl
 
 #define CLOSE_LOGFILE m_Log.SetLog(NULL,0)
 

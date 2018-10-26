@@ -134,9 +134,9 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("TxDOTOptionalGirderData",1.0);
+   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),1.0);
 
-   pStrSave->put_Property("StandardStrandFill",         CComVariant(m_StandardStrandFill));
+   pStrSave->put_Property(_T("StandardStrandFill"),         CComVariant(m_StandardStrandFill));
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type,m_Size);
@@ -150,47 +150,47 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       ASSERT(0);
    }
 
-   pStrSave->put_Property("StrandMaterialKey",         CComVariant(key));
+   pStrSave->put_Property(_T("StrandMaterialKey"),         CComVariant(key));
 
-   pStrSave->put_Property("Fci", CComVariant(m_Fci));
-   pStrSave->put_Property("Fc", CComVariant(m_Fc));
+   pStrSave->put_Property(_T("Fci"), CComVariant(m_Fci));
+   pStrSave->put_Property(_T("Fc"), CComVariant(m_Fc));
 
    if (m_StandardStrandFill)
    {
       // Data for standard fill
       // ======================
-      pStrSave->BeginUnit("StandardFillData",1.0);
+      pStrSave->BeginUnit(_T("StandardFillData"),1.0);
 
-      pStrSave->put_Property("NumStrands", CComVariant(m_NumStrands));
-      pStrSave->put_Property("StrandTo", CComVariant(m_StrandTo));
+      pStrSave->put_Property(_T("NumStrands"), CComVariant(m_NumStrands));
+      pStrSave->put_Property(_T("StrandTo"), CComVariant(m_StrandTo));
       pStrSave->EndUnit(); //StandardFillData
    }
    else
    {
       // Data for non-standard fill
       // ==========================
-      pStrSave->BeginUnit("NonstandardFillData",1.0);
-      pStrSave->put_Property("UseDepressedStrands", CComVariant(m_UseDepressedStrands));
+      pStrSave->BeginUnit(_T("NonstandardFillData"),1.0);
+      pStrSave->put_Property(_T("UseDepressedStrands"), CComVariant(m_UseDepressedStrands));
 
       Int32 rowcount = m_StrandRowsAtCL.size();
-      pStrSave->put_Property("StrandRowsAtCLCount",CComVariant(rowcount));
+      pStrSave->put_Property(_T("StrandRowsAtCLCount"),CComVariant(rowcount));
       for (StrandRowIterator it = m_StrandRowsAtCL.begin(); it!=m_StrandRowsAtCL.end(); it++)
       {
-         pStrSave->BeginUnit("StrandRowAtCL",1.0);
+         pStrSave->BeginUnit(_T("StrandRowAtCL"),1.0);
          StrandRow& row = *it;
-         pStrSave->put_Property("RowElev", CComVariant(row.RowElev));
-         pStrSave->put_Property("StrandsInRow", CComVariant(row.StrandsInRow));
+         pStrSave->put_Property(_T("RowElev"), CComVariant(row.RowElev));
+         pStrSave->put_Property(_T("StrandsInRow"), CComVariant(row.StrandsInRow));
          pStrSave->EndUnit();
       }
 
       rowcount = m_StrandRowsAtEnds.size();
-      pStrSave->put_Property("StrandRowsAtEndsCount",CComVariant(rowcount));
+      pStrSave->put_Property(_T("StrandRowsAtEndsCount"),CComVariant(rowcount));
       for (StrandRowIterator it = m_StrandRowsAtEnds.begin(); it!=m_StrandRowsAtEnds.end(); it++)
       {
-         pStrSave->BeginUnit("StrandRowAtEnds",1.0);
+         pStrSave->BeginUnit(_T("StrandRowAtEnds"),1.0);
          StrandRow& row = *it;
-         pStrSave->put_Property("RowElev", CComVariant(row.RowElev));
-         pStrSave->put_Property("StrandsInRow", CComVariant(row.StrandsInRow));
+         pStrSave->put_Property(_T("RowElev"), CComVariant(row.RowElev));
+         pStrSave->put_Property(_T("StrandsInRow"), CComVariant(row.StrandsInRow));
          pStrSave->EndUnit();
       }
 
@@ -211,7 +211,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
    try
    {
-      hr = pStrLoad->BeginUnit("TxDOTOptionalGirderData");
+      hr = pStrLoad->BeginUnit(_T("TxDOTOptionalGirderData"));
       double version;
       pStrLoad->get_Version(&version);
 
@@ -219,12 +219,12 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
       var.Clear();
       var.vt = VT_BOOL;
-      hr = pStrLoad->get_Property("StandardStrandFill", &var );
+      hr = pStrLoad->get_Property(_T("StandardStrandFill"), &var );
       m_StandardStrandFill = var.boolVal!=VARIANT_FALSE;
 
       var.Clear();
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("StrandMaterialKey", &var );
+      hr = pStrLoad->get_Property(_T("StrandMaterialKey"), &var );
       Int32 key = var.lVal;
 
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -242,58 +242,58 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Fci", &var );
+      hr = pStrLoad->get_Property(_T("Fci"), &var );
       m_Fci = var.dblVal;
 
       var.Clear();
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Fc", &var );
+      hr = pStrLoad->get_Property(_T("Fc"), &var );
       m_Fc = var.dblVal;
 
       if (m_StandardStrandFill)
       {
-         hr = pStrLoad->BeginUnit("StandardFillData");
+         hr = pStrLoad->BeginUnit(_T("StandardFillData"));
 
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("NumStrands", &var );
+         hr = pStrLoad->get_Property(_T("NumStrands"), &var );
          m_NumStrands = var.lVal;
 
          var.Clear();
          var.vt = VT_R8;
-         hr = pStrLoad->get_Property("StrandTo", &var );
+         hr = pStrLoad->get_Property(_T("StrandTo"), &var );
          m_StrandTo = var.dblVal;
 
          hr = pStrLoad->EndUnit(); // end BridgeInputData
       }
       else
       {
-         hr = pStrLoad->BeginUnit("NonstandardFillData");
+         hr = pStrLoad->BeginUnit(_T("NonstandardFillData"));
 
          var.Clear();
          var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property("UseDepressedStrands", &var );
+         hr = pStrLoad->get_Property(_T("UseDepressedStrands"), &var );
          m_UseDepressedStrands = var.boolVal!=VARIANT_FALSE;
 
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("StrandRowsAtCLCount", &var );
+         hr = pStrLoad->get_Property(_T("StrandRowsAtCLCount"), &var );
          Int32 rowcount = var.lVal;
 
          for (Int32 ir=0; ir<rowcount; ir++)
          {
-            hr = pStrLoad->BeginUnit("StrandRowAtCL");
+            hr = pStrLoad->BeginUnit(_T("StrandRowAtCL"));
 
             StrandRow row;
 
             var.Clear();
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("RowElev", &var );
+            hr = pStrLoad->get_Property(_T("RowElev"), &var );
             row.RowElev = var.dblVal;
 
             var.Clear();
             var.vt = VT_I4;
-            hr = pStrLoad->get_Property("StrandsInRow", &var );
+            hr = pStrLoad->get_Property(_T("StrandsInRow"), &var );
             row.StrandsInRow = var.lVal;
 
             m_StrandRowsAtCL.insert(row);
@@ -303,23 +303,23 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
          var.Clear();
          var.vt = VT_I4;
-         hr = pStrLoad->get_Property("StrandRowsAtEndsCount", &var );
+         hr = pStrLoad->get_Property(_T("StrandRowsAtEndsCount"), &var );
          rowcount = var.lVal;
 
          for (Int32 ir=0; ir<rowcount; ir++)
          {
-            hr = pStrLoad->BeginUnit("StrandRowAtEnds");
+            hr = pStrLoad->BeginUnit(_T("StrandRowAtEnds"));
 
             StrandRow row;
 
             var.Clear();
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("RowElev", &var );
+            hr = pStrLoad->get_Property(_T("RowElev"), &var );
             row.RowElev = var.dblVal;
 
             var.Clear();
             var.vt = VT_I4;
-            hr = pStrLoad->get_Property("StrandsInRow", &var );
+            hr = pStrLoad->get_Property(_T("StrandsInRow"), &var );
             row.StrandsInRow = var.lVal;
 
             m_StrandRowsAtEnds.insert(row);
@@ -452,7 +452,7 @@ std::vector<StrandIndexType> CTxDOTOptionalDesignGirderData::ComputeAvailableNum
    if (pGdrEntry==NULL)
    {
       CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       msg.Format(stmp,girder_name);
       ::AfxMessageBox(msg);
    }
@@ -485,7 +485,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
    {
       ASSERT(0);
       CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       msg.Format(stmp,girder_name);
       ::AfxMessageBox(msg);
    }
@@ -541,7 +541,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
       {
          ASSERT(0);
          CString msg;
-         msg.Format("%d Strands do not fit in this girder. This is a programming error",ns);
+         msg.Format(_T("%d Strands do not fit in this girder. This is a programming error"),ns);
          ::AfxMessageBox(msg);
          return false;
       }
@@ -563,7 +563,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
    if (pGdrEntry==NULL)
    {
       CString msg, stmp;
-      stmp.LoadStringA(IDS_GDR_ERROR);
+      stmp.LoadString(IDS_GDR_ERROR);
       msg.Format(stmp,girder_name);
       ::AfxMessageBox(msg);
       return false;
@@ -859,7 +859,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       else
       {
          Float64 elev_in = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
-         rErrMsg.Format("Non-Standard strand input data at girder centerline specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library.",elev_in);
+         rErrMsg.Format(_T("Non-Standard strand input data at girder centerline specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
          return false;
       }
 
@@ -894,7 +894,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       else
       {
          Float64 elev_in = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
-         rErrMsg.Format("Non-Standard strand input data at girder ends specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library.",elev_in);
+         rErrMsg.Format(_T("Non-Standard strand input data at girder ends specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
          return false;
       }
 
@@ -933,7 +933,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
 
    if (tot_nh_end != tot_nh_cl)
    {
-      rErrMsg.Format("The number of depressed strands at the girder ends and centerline do not match. Ncl=%d, Nends=%d. Cannot continue",tot_nh_cl,tot_nh_end);
+      rErrMsg.Format(_T("The number of depressed strands at the girder ends and centerline do not match. Ncl=%d, Nends=%d. Cannot continue"),tot_nh_cl,tot_nh_end);
       return false;
    }
 
@@ -945,7 +945,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       if (shrow.NumStraightCL != shrow.NumStraightEnd)
       {
          Float64 elev_in = ::ConvertFromSysUnits(shrow.RowElev, unitMeasure::Inch);
-         rErrMsg.Format("The number of straight strands in each row at the C.L. and ends must be the same. They are not at row %.3f in. Ncl=%d, Nends=%d.",elev_in, shrow.NumStraightCL, shrow.NumStraightEnd);
+         rErrMsg.Format(_T("The number of straight strands in each row at the C.L. and ends must be the same. They are not at row %.3f in. Ncl=%d, Nends=%d."),elev_in, shrow.NumStraightCL, shrow.NumStraightEnd);
          return false;
       }
    }
@@ -973,14 +973,14 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
             if(shit_end==shrows.end())
             {
                ASSERT(0);
-               rErrMsg.Format("Programming error computing harped strands - cannot continue.");
+               rErrMsg.Format(_T("Programming error computing harped strands - cannot continue."));
                return false;
             }
 
             if (shit_cl->NumHarpedCL != shit_end->NumHarpedEnd)
             {
                Float64 elev_in = ::ConvertFromSysUnits(shit_cl->RowElev, unitMeasure::Inch);
-               rErrMsg.Format("The number of harped strands at connecting locations must be the same. They are not at CL row %.3f in. Ncl=%d, Nends=%d.",elev_in, shit_cl->NumHarpedCL, shit_end->NumHarpedEnd);
+               rErrMsg.Format(_T("The number of harped strands at connecting locations must be the same. They are not at CL row %.3f in. Ncl=%d, Nends=%d."),elev_in, shit_cl->NumHarpedCL, shit_end->NumHarpedEnd);
                return false;
             }
 

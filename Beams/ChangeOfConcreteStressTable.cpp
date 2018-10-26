@@ -53,34 +53,34 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    pgsReportStyleHolder::ConfigureTable(table);
 
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Change in Concrete Stress at Level of Prestressing [5.9.5.4.3]" << rptNewLine;
+   *pParagraph << _T("Change in Concrete Stress at Level of Prestressing [5.9.5.4.3]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + "Delta_Fcdp.png") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_Fcdp.png")) << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2("M","adl"),  rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,2) << COLHDR(Sub2("M","sidl"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,3) << COLHDR(Sub2("e","ps"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR(Sub2("Y","bg"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR(Sub2("Y","bc"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,6) << COLHDR(Sub2("I","g"),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,7) << COLHDR(Sub2("I","c"),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS("cdp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(Sub2(_T("M"),_T("adl")),  rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,2) << COLHDR(Sub2(_T("M"),_T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,3) << COLHDR(Sub2(_T("e"),_T("ps")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4) << COLHDR(Sub2(_T("Y"),_T("bg")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5) << COLHDR(Sub2(_T("Y"),_T("bc")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,6) << COLHDR(Sub2(_T("I"),_T("g")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,7) << COLHDR(Sub2(_T("I"),_T("c")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
+   (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << Sub2("M","adl") << " = Moment due to permanent loads applied to the noncomposite girder section after the prestressing force is applied" << rptNewLine;
-   *pParagraph << Sub2("M","sidl") << " = Moment due to permanent loads applied to the composite girder section after the prestressing force is applied" << rptNewLine;
+   *pParagraph << Sub2(_T("M"),_T("adl")) << _T(" = Moment due to permanent loads applied to the noncomposite girder section after the prestressing force is applied") << rptNewLine;
+   *pParagraph << Sub2(_T("M"),_T("sidl")) << _T(" = Moment due to permanent loads applied to the composite girder section after the prestressing force is applied") << rptNewLine;
    
    return table;
 }

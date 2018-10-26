@@ -28,7 +28,7 @@
 #endif // _MSC_VER > 1000
 // PierLayoutPage.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 class CPierData;
 
@@ -53,7 +53,7 @@ public:
 
    double m_Station;
    pgsTypes::MovePierOption m_MovePierOption;
-   std::string m_strOrientation;
+   std::_tstring m_strOrientation;
 
    void Init(const CPierData* pPier);
 

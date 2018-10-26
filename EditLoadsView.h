@@ -40,7 +40,7 @@
 #include <afxext.h>
 #endif
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 
 class CEditLoadsView : public CFormView
 {
@@ -131,7 +131,7 @@ protected:
    void Sort(int columnIdx,bool bReverse=true);
 
    sysNumericFormatTool m_FormatTool;
-   std::string D2S(Float64 val);
+   std::_tstring D2S(Float64 val);
 public:
    afx_msg void OnDestroy();
 };

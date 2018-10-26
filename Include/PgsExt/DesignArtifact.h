@@ -122,7 +122,7 @@ public:
       pgsTypes::LimitState LimitState() const;
       pgsTypes::StressLocation StressLocation() const;
 
-      std::string AsString() const;
+      std::_tstring AsString() const;
 
       bool operator==(const ConcreteStrengthDesignState& rOther) const;
 

@@ -83,8 +83,8 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Check for Hauling to Bridge Site [5.5.4.3]"<<rptNewLine;
-   *pTitle << "Hauling Stresses and Factor of Safety Against Cracking"<<rptNewLine;
+   *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Hauling Stresses and Factor of Safety Against Cracking")<<rptNewLine;
 
    rptRcScalar scalar;
    scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
@@ -109,13 +109,13 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
    if (!pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
    {
-      *p <<color(Red)<<"Hauling analysis disabled in Project Criteria library entry. No analysis performed."<<color(Black)<<rptNewLine;
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
       return;
    }
 
    GET_IFACE2(pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker, ILibrary,       pLib );
-   std::string specName = pSpec->GetSpecification();
+   std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
    double c; // compression coefficient
@@ -133,31 +133,31 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
    const pgsHaulingCheckArtifact* pHaulArtifact = pArtifact->GetHaulingCheckArtifact();
 
-   *p <<"Maximum allowable concrete compressive stress = -" << c << RPT_FC << " = " << 
-      stress.SetValue(pHaulArtifact->GetAllowableCompressionStress())<< " " <<
+   *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
+      stress.SetValue(pHaulArtifact->GetAllowableCompressionStress())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
-   *p <<"Maximum allowable concrete tensile stress, plumb girder with impact = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
+   *p <<_T("Maximum allowable concrete tensile stress, plumb girder with impact = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
    if ( b_t_max )
-      *p << " but not more than: " << stress.SetValue(t_max);
+      *p << _T(" but not more than: ") << stress.SetValue(t_max);
       
-   *p << " = " << stress.SetValue(pHaulArtifact->GetAllowableTensileStress())<< " " <<
+   *p << _T(" = ") << stress.SetValue(pHaulArtifact->GetAllowableTensileStress())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
    double As_reqd = pHaulArtifact->GetAlterantiveTensileStressAsMax();
-   *p <<"Maximum allowable concrete tensile stress, plumb girder with impact = " << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
-       << " = " << stress.SetValue(pHaulArtifact->GetAlternativeTensionAllowableStress()) << " " << stress.GetUnitTag();
+   *p <<_T("Maximum allowable concrete tensile stress, plumb girder with impact = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
+       << _T(" = ") << stress.SetValue(pHaulArtifact->GetAlternativeTensionAllowableStress()) << _T(" ") << stress.GetUnitTag();
    if ( !IsZero(As_reqd) )
-       *p << " if at least " << area.SetValue(As_reqd) << " of mild reinforcement is provided" << rptNewLine;
+       *p << _T(" if at least ") << area.SetValue(As_reqd) << _T(" of mild reinforcement is provided") << rptNewLine;
    else
-       *p << " if bonded reinforcement sufficient to resist the tensile force in the concrete is provided." << rptNewLine;
+       *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
    t = pSpecEntry->GetHaulingModulusOfRuptureCoefficient(pMaterial->GetGdrConcreteType(span,girder));
-   *p <<"Maximum allowable concrete tensile stress, inclined girder without impact = " << RPT_STRESS("r") << " = " << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
-   *p << " = " << stress.SetValue(pHaulArtifact->GetModRupture())<< " " <<
+   *p <<_T("Maximum allowable concrete tensile stress, inclined girder without impact = ") << RPT_STRESS(_T("r")) << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
+   *p << _T(" = ") << stress.SetValue(pHaulArtifact->GetModRupture())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   *p <<"Allowable factor of safety against cracking = "<<pHaulArtifact->GetAllowableFsForCracking()<<rptNewLine;
+   *p <<_T("Allowable factor of safety against cracking = ")<<pHaulArtifact->GetAllowableFsForCracking()<<rptNewLine;
 
    double fcMax = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
 
@@ -168,29 +168,29 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    double fc_reqd = max(fc_reqd_comp,fc_reqd_tens);
 
    if ( 0 < fc_reqd )
-      *p << RPT_FC << " required to satisfy stress and stability criteria = " << stress_u.SetValue( fc_reqd ) << rptNewLine;
+      *p << RPT_FC << _T(" required to satisfy stress and stability criteria = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
    else
-      *p << "There is no concrete strength that will satisfy the stress and stability criteria." << rptNewLine;
+      *p << _T("There is no concrete strength that will satisfy the stress and stability criteria.") << rptNewLine;
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
    poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(10,"");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
    *p << p_table << rptNewLine;
-   (*p_table)(0,0) << COLHDR("Location from" << rptNewLine << "Left Bunk Point",    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("Min" << rptNewLine << "Stress" << Super("#"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,2) << COLHDR("Max" << rptNewLine << "Stress" << Super("#"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,3) << COLHDR("Min" << rptNewLine << "Stress" << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,4) << COLHDR("Max" << rptNewLine << "Stress" << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,5) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/o Rebar";
-   (*p_table)(0,6) << "Tension" << rptNewLine << "Status" << rptNewLine << "w/  Rebar";
-   (*p_table)(0,7) << "Compression" << rptNewLine << "Status";
-   (*p_table)(0,8) << Sub2("FS","cr");
-   (*p_table)(0,9) << "FS" << rptNewLine << "Status";
+   (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(_T("Min") << rptNewLine << _T("Stress") << Super(_T("#")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Max") << rptNewLine << _T("Stress") << Super(_T("#")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,3) << COLHDR(_T("Min") << rptNewLine << _T("Stress") << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,4) << COLHDR(_T("Max") << rptNewLine << _T("Stress") << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(0,5) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/o Rebar");
+   (*p_table)(0,6) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/  Rebar");
+   (*p_table)(0,7) << _T("Compression") << rptNewLine << _T("Status");
+   (*p_table)(0,8) << Sub2(_T("FS"),_T("cr"));
+   (*p_table)(0,9) << _T("FS") << rptNewLine << _T("Status");
 
-   *p << Super("#") << " based on inclined girder without impact" << rptNewLine;
-   *p << Super("*") << " based on plumb girder with impact" << rptNewLine;
+   *p << Super(_T("#")) << _T(" based on inclined girder without impact") << rptNewLine;
+   *p << Super(_T("*")) << _T(" based on plumb girder with impact") << rptNewLine;
 
    Float64 overhang = pHaulArtifact->GetTrailingOverhang();
 
@@ -239,21 +239,21 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    // FS for failure
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Factor of Safety Against Rollover";
+   *pTitle << _T("Factor of Safety Against Rollover");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"");
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
 
-   (*p_table)(0,0) << "Factor of Safety Against Rollover (FS" << Sub("r") << ")";
-   (*p_table)(1,0) << "Allowable Factor of Safety Against Rollover";
-   (*p_table)(2,0) << "Status";
+   (*p_table)(0,0) << _T("Factor of Safety Against Rollover (FS") << Sub(_T("r")) << _T(")");
+   (*p_table)(1,0) << _T("Allowable Factor of Safety Against Rollover");
+   (*p_table)(2,0) << _T("Status");
    Float64 fs_fail  = pHaulArtifact->GetFsRollover();
    Float64 all_fail = pHaulArtifact->GetAllowableFsForRollover();
    (*p_table)(0,1) << scalar.SetValue(pHaulArtifact->GetFsRollover());
@@ -266,20 +266,20 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    // Truck support spacing
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Spacing Between Truck Supports for Hauling";
+   *pTitle << _T("Spacing Between Truck Supports for Hauling");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"");
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
-   (*p_table)(0,0) << "Distance Between Supports";
-   (*p_table)(1,0) << "Max. Allowable Distance Between Supports";
-   (*p_table)(2,0) << "Status";
+   (*p_table)(0,0) << _T("Distance Between Supports");
+   (*p_table)(1,0) << _T("Max. Allowable Distance Between Supports");
+   (*p_table)(2,0) << _T("Status");
 
    Float64 span_length  = pHaulArtifact->GetClearSpanBetweenSupportLocations();
    Float64 allowable_span_length = pHaulArtifact->GetAllowableSpanBetweenSupportLocations();
@@ -297,21 +297,21 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    // Truck support spacing
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Girder Support Configuration";
+   *pTitle << _T("Girder Support Configuration");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"");
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
 
-   (*p_table)(0,0) << "Leading Overhang (closest to cab of truck)";
-   (*p_table)(1,0) << "Max. Allowable Leading Overhang";
-   (*p_table)(2,0) << "Status";
+   (*p_table)(0,0) << _T("Leading Overhang (closest to cab of truck)");
+   (*p_table)(1,0) << _T("Max. Allowable Leading Overhang");
+   (*p_table)(2,0) << _T("Status");
    Float64 oh  = pHaulArtifact->GetLeadingOverhang();
    Float64 all_oh = pHaulArtifact->GetAllowableLeadingOverhang();
    (*p_table)(0,1) << loc.SetValue(oh);
@@ -329,20 +329,20 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    // Max Girder Weight
    pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << "Maximum Girder Weight";
+   *pTitle << _T("Maximum Girder Weight");
 
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"");
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
    *p << p_table;
-   (*p_table)(0,0) << "Girder Weight";
-   (*p_table)(1,0) << "Maximum Allowable Weight";
-   (*p_table)(2,0) << "Status";
+   (*p_table)(0,0) << _T("Girder Weight");
+   (*p_table)(1,0) << _T("Maximum Allowable Weight");
+   (*p_table)(2,0) << _T("Status");
    Float64 wgt  = pHaulArtifact->GetGirderWeight();
    Float64 maxwgt = pHaulArtifact->GetMaxGirderWgt();
    force.ShowUnitTag(true);
@@ -394,7 +394,7 @@ bool CHaulingCheck::AssertValid() const
 
 void CHaulingCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CHaulingCheck" << endl;
+   os << _T("Dump for CHaulingCheck") << endl;
 }
 #endif // _DEBUG
 

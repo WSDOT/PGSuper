@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 37.0
+#define CURRENT_VERSION 38.0
 
 /****************************************************************************
 CLASS
@@ -153,6 +153,7 @@ m_LldfMethod(LLDF_LRFD),
 m_BeforeTempStrandRemovalLosses(0),
 m_AfterTempStrandRemovalLosses(0),
 m_AfterDeckPlacementLosses(0),
+m_AfterSIDLLosses(0),
 m_Dset(::ConvertToSysUnits(0.375,unitMeasure::Inch)),
 m_WobbleFriction(::ConvertToSysUnits(0.0002,unitMeasure::PerFeet)),
 m_FrictionCoefficient(0.25),
@@ -321,356 +322,357 @@ HICON  SpecLibraryEntry::GetIcon() const
 
 bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("SpecificationLibraryEntry", CURRENT_VERSION);
-   pSave->Property("Name",this->GetName().c_str());
-   pSave->Property("Description",this->GetDescription().c_str());
+   pSave->BeginUnit(_T("SpecificationLibraryEntry"), CURRENT_VERSION);
+   pSave->Property(_T("Name"),this->GetName().c_str());
+   pSave->Property(_T("Description"),this->GetDescription().c_str());
 
    if (m_SpecificationType==lrfdVersionMgr::FirstEdition1994)
-      pSave->Property("SpecificationType", "AashtoLrfd1994");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1994"));
    else if (m_SpecificationType==lrfdVersionMgr::FirstEditionWith1996Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd1996");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1996"));
    else if (m_SpecificationType==lrfdVersionMgr::FirstEditionWith1997Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd1997");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1997"));
    else if (m_SpecificationType==lrfdVersionMgr::SecondEdition1998)
-      pSave->Property("SpecificationType", "AashtoLrfd1998");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1998"));
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith1999Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd1999");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1999"));
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2000Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2000");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2000"));
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2001Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2001");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2001"));
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2002Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2002");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2002"));
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2003Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2003");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2003"));
    else if (m_SpecificationType==lrfdVersionMgr::ThirdEdition2004)
-      pSave->Property("SpecificationType", "AashtoLrfd2004");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2004"));
    else if (m_SpecificationType==lrfdVersionMgr::ThirdEditionWith2005Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2005");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2005"));
    else if (m_SpecificationType==lrfdVersionMgr::ThirdEditionWith2006Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2006");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2006"));
    else if (m_SpecificationType==lrfdVersionMgr::FourthEdition2007)
-      pSave->Property("SpecificationType", "AashtoLrfd2007");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2007"));
    else if (m_SpecificationType==lrfdVersionMgr::FourthEditionWith2008Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2008");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2008"));
    else if (m_SpecificationType==lrfdVersionMgr::FourthEditionWith2009Interims)
-      pSave->Property("SpecificationType", "AashtoLrfd2009");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2009"));
    else if (m_SpecificationType==lrfdVersionMgr::FifthEdition2010)
-      pSave->Property("SpecificationType", "AashtoLrfd2010");
+      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2010"));
    else
       ASSERT(false); // is there a new version?
 
    if (m_SpecificationUnits==lrfdVersionMgr::SI)
-      pSave->Property("SpecificationUnits", "SiUnitsSpec");
+      pSave->Property(_T("SpecificationUnits"), _T("SiUnitsSpec"));
    else if (m_SpecificationUnits==lrfdVersionMgr::US)
-      pSave->Property("SpecificationUnits", "UsUnitsSpec");
+      pSave->Property(_T("SpecificationUnits"), _T("UsUnitsSpec"));
    else
       ASSERT(0);
 
-   pSave->Property("DoCheckStrandSlope", m_DoCheckStrandSlope);
-   pSave->Property("DoDesignStrandSlope", m_DoDesignStrandSlope);
-   pSave->Property("MaxSlope05", m_MaxSlope05);
-   pSave->Property("MaxSlope06", m_MaxSlope06);
-   pSave->Property("MaxSlope07", m_MaxSlope07); // added in version 35
-   pSave->Property("DoCheckHoldDown", m_DoCheckHoldDown);
-   pSave->Property("DoDesignHoldDown", m_DoDesignHoldDown);
-   pSave->Property("HoldDownForce", m_HoldDownForce);
-   pSave->Property("DoCheckAnchorage", m_DoCheckAnchorage);
-   pSave->Property("MaxStirrupSpacing", m_MaxStirrupSpacing);
-   pSave->Property("CyLiftingCrackFs", m_CyLiftingCrackFs);
-   pSave->Property("CyLiftingFailFs", m_CyLiftingFailFs);
-   pSave->Property("CyCompStressServ", m_CyCompStressServ);
-   pSave->Property("CyCompStressLifting", m_CyCompStressLifting);
-   pSave->Property("CyTensStressServ", m_CyTensStressServ);
-   pSave->Property("CyDoTensStressServMax", m_CyDoTensStressServMax);
-   pSave->Property("CyTensStressServMax", m_CyTensStressServMax);
-   pSave->Property("CyTensStressLifting", m_CyTensStressLifting);
-   pSave->Property("CyDoTensStressLiftingMax",m_CyDoTensStressLiftingMax);
-   pSave->Property("CyTensStressLiftingMax",m_CyTensStressLiftingMax);
-   pSave->Property("BurstingZoneLengthFactor", m_SplittingZoneLengthFactor),
-   pSave->Property("LiftingUpwardImpact",m_LiftingUpwardImpact);
-   pSave->Property("LiftingDownwardImpact",m_LiftingDownwardImpact);
-   pSave->Property("HaulingUpwardImpact",m_HaulingUpwardImpact);
-   pSave->Property("HaulingDownwardImpact",m_HaulingDownwardImpact);
-   pSave->Property("CuringMethod", (Int16)m_CuringMethod);
-   pSave->Property("EnableLiftingCheck", m_EnableLiftingCheck);
-   pSave->Property("EnableLiftingDesign", m_EnableLiftingDesign);
-   pSave->Property("PickPointHeight", m_PickPointHeight);
-   pSave->Property("LiftingLoopTolerance",m_LiftingLoopTolerance);
-   pSave->Property("MinCableInclination",m_MinCableInclination);
-   pSave->Property("MaxGirderSweepLifting", m_MaxGirderSweepLifting);
-   pSave->Property("EnableHaulingCheck", m_EnableHaulingCheck);
-   pSave->Property("EnableHaulingDesign", m_EnableHaulingDesign);
-   pSave->Property("MaxGirderSweepHauling", m_MaxGirderSweepHauling);
-   pSave->Property("HaulingSupportDistance",m_HaulingSupportDistance);
-   pSave->Property("MaxHaulingOverhang", m_MaxHaulingOverhang);
-   pSave->Property("HaulingSupportPlacementTolerance",m_HaulingSupportPlacementTolerance);
-   pSave->Property("HaulingCamberPercentEstimate",m_HaulingCamberPercentEstimate);
-   pSave->Property("CompStressHauling", m_CompStressHauling);
-   pSave->Property("TensStressHauling",m_TensStressHauling);
-   pSave->Property("DoTensStressHaulingMax",m_DoTensStressHaulingMax); 
-   pSave->Property("TensStressHaulingMax", m_TensStressHaulingMax);
-   pSave->Property("HeHaulingCrackFs", m_HeHaulingCrackFs);
-   pSave->Property("HeHaulingFailFs", m_HeHaulingRollFs);
-   pSave->Property("RoadwaySuperelevation", m_RoadwaySuperelevation);
-   pSave->Property("TruckRollStiffnessMethod", (long)m_TruckRollStiffnessMethod);
-   pSave->Property("TruckRollStiffness", m_TruckRollStiffness);
-   pSave->Property("AxleWeightLimit", m_AxleWeightLimit);
-   pSave->Property("AxleStiffness",m_AxleStiffness);
-   pSave->Property("MinRollStiffness",m_MinRollStiffness);
-   pSave->Property("TruckGirderHeight", m_TruckGirderHeight);
-   pSave->Property("TruckRollCenterHeight", m_TruckRollCenterHeight);
-   pSave->Property("TruckAxleWidth", m_TruckAxleWidth);
-   pSave->Property("HeErectionCrackFs", m_HeErectionCrackFs);
-   pSave->Property("HeErectionFailFs", m_HeErectionFailFs);
-   pSave->Property("MaxGirderWgt",m_MaxGirderWgt);
+   pSave->Property(_T("DoCheckStrandSlope"), m_DoCheckStrandSlope);
+   pSave->Property(_T("DoDesignStrandSlope"), m_DoDesignStrandSlope);
+   pSave->Property(_T("MaxSlope05"), m_MaxSlope05);
+   pSave->Property(_T("MaxSlope06"), m_MaxSlope06);
+   pSave->Property(_T("MaxSlope07"), m_MaxSlope07); // added in version 35
+   pSave->Property(_T("DoCheckHoldDown"), m_DoCheckHoldDown);
+   pSave->Property(_T("DoDesignHoldDown"), m_DoDesignHoldDown);
+   pSave->Property(_T("HoldDownForce"), m_HoldDownForce);
+   pSave->Property(_T("DoCheckAnchorage"), m_DoCheckAnchorage);
+   pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing);
+   pSave->Property(_T("CyLiftingCrackFs"), m_CyLiftingCrackFs);
+   pSave->Property(_T("CyLiftingFailFs"), m_CyLiftingFailFs);
+   pSave->Property(_T("CyCompStressServ"), m_CyCompStressServ);
+   pSave->Property(_T("CyCompStressLifting"), m_CyCompStressLifting);
+   pSave->Property(_T("CyTensStressServ"), m_CyTensStressServ);
+   pSave->Property(_T("CyDoTensStressServMax"), m_CyDoTensStressServMax);
+   pSave->Property(_T("CyTensStressServMax"), m_CyTensStressServMax);
+   pSave->Property(_T("CyTensStressLifting"), m_CyTensStressLifting);
+   pSave->Property(_T("CyDoTensStressLiftingMax"),m_CyDoTensStressLiftingMax);
+   pSave->Property(_T("CyTensStressLiftingMax"),m_CyTensStressLiftingMax);
+   pSave->Property(_T("BurstingZoneLengthFactor"), m_SplittingZoneLengthFactor),
+   pSave->Property(_T("LiftingUpwardImpact"),m_LiftingUpwardImpact);
+   pSave->Property(_T("LiftingDownwardImpact"),m_LiftingDownwardImpact);
+   pSave->Property(_T("HaulingUpwardImpact"),m_HaulingUpwardImpact);
+   pSave->Property(_T("HaulingDownwardImpact"),m_HaulingDownwardImpact);
+   pSave->Property(_T("CuringMethod"), (Int16)m_CuringMethod);
+   pSave->Property(_T("EnableLiftingCheck"), m_EnableLiftingCheck);
+   pSave->Property(_T("EnableLiftingDesign"), m_EnableLiftingDesign);
+   pSave->Property(_T("PickPointHeight"), m_PickPointHeight);
+   pSave->Property(_T("LiftingLoopTolerance"),m_LiftingLoopTolerance);
+   pSave->Property(_T("MinCableInclination"),m_MinCableInclination);
+   pSave->Property(_T("MaxGirderSweepLifting"), m_MaxGirderSweepLifting);
+   pSave->Property(_T("EnableHaulingCheck"), m_EnableHaulingCheck);
+   pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
+   pSave->Property(_T("MaxGirderSweepHauling"), m_MaxGirderSweepHauling);
+   pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance);
+   pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang);
+   pSave->Property(_T("HaulingSupportPlacementTolerance"),m_HaulingSupportPlacementTolerance);
+   pSave->Property(_T("HaulingCamberPercentEstimate"),m_HaulingCamberPercentEstimate);
+   pSave->Property(_T("CompStressHauling"), m_CompStressHauling);
+   pSave->Property(_T("TensStressHauling"),m_TensStressHauling);
+   pSave->Property(_T("DoTensStressHaulingMax"),m_DoTensStressHaulingMax); 
+   pSave->Property(_T("TensStressHaulingMax"), m_TensStressHaulingMax);
+   pSave->Property(_T("HeHaulingCrackFs"), m_HeHaulingCrackFs);
+   pSave->Property(_T("HeHaulingFailFs"), m_HeHaulingRollFs);
+   pSave->Property(_T("RoadwaySuperelevation"), m_RoadwaySuperelevation);
+   pSave->Property(_T("TruckRollStiffnessMethod"), (long)m_TruckRollStiffnessMethod);
+   pSave->Property(_T("TruckRollStiffness"), m_TruckRollStiffness);
+   pSave->Property(_T("AxleWeightLimit"), m_AxleWeightLimit);
+   pSave->Property(_T("AxleStiffness"),m_AxleStiffness);
+   pSave->Property(_T("MinRollStiffness"),m_MinRollStiffness);
+   pSave->Property(_T("TruckGirderHeight"), m_TruckGirderHeight);
+   pSave->Property(_T("TruckRollCenterHeight"), m_TruckRollCenterHeight);
+   pSave->Property(_T("TruckAxleWidth"), m_TruckAxleWidth);
+   pSave->Property(_T("HeErectionCrackFs"), m_HeErectionCrackFs);
+   pSave->Property(_T("HeErectionFailFs"), m_HeErectionFailFs);
+   pSave->Property(_T("MaxGirderWgt"),m_MaxGirderWgt);
 
    // modified in version 37 (see below)
-   //pSave->Property("HaulingModulusOfRuptureCoefficient",m_HaulingModulusOfRuptureCoefficient); // added for version 12.0
-   //pSave->Property("LiftingModulusOfRuptureCoefficient",m_LiftingModulusOfRuptureCoefficient); // added for version 20.0
+   //pSave->Property(_T("HaulingModulusOfRuptureCoefficient"),m_HaulingModulusOfRuptureCoefficient); // added for version 12.0
+   //pSave->Property(_T("LiftingModulusOfRuptureCoefficient"),m_LiftingModulusOfRuptureCoefficient); // added for version 20.0
 
 
    // Added at version 25
-   pSave->Property("MinLiftingPointLocation",       m_MinLiftPoint        );
-   pSave->Property("LiftingPointLocationAccuracy",  m_LiftPointAccuracy   );
-   pSave->Property("MinHaulingSupportLocation",     m_MinHaulPoint        );
-   pSave->Property("HaulingSupportLocationAccuracy",m_HaulPointAccuracy   );
+   pSave->Property(_T("MinLiftingPointLocation"),       m_MinLiftPoint        );
+   pSave->Property(_T("LiftingPointLocationAccuracy"),  m_LiftPointAccuracy   );
+   pSave->Property(_T("MinHaulingSupportLocation"),     m_MinHaulPoint        );
+   pSave->Property(_T("HaulingSupportLocationAccuracy"),m_HaulPointAccuracy   );
 
    // Added at version 4.0
-   pSave->Property("CastingYardTensileStressLimitWithMildRebar",m_CyTensStressServWithRebar);
-   pSave->Property("LiftingTensileStressLimitWithMildRebar",m_TensStressLiftingWithRebar);
-   pSave->Property("HaulingTensileStressLimitWithMildRebar",m_TensStressHaulingWithRebar);
+   pSave->Property(_T("CastingYardTensileStressLimitWithMildRebar"),m_CyTensStressServWithRebar);
+   pSave->Property(_T("LiftingTensileStressLimitWithMildRebar"),m_TensStressLiftingWithRebar);
+   pSave->Property(_T("HaulingTensileStressLimitWithMildRebar"),m_TensStressHaulingWithRebar);
 
    // Added at version 30
-   pSave->Property("TempStrandRemovalCompStress" ,     m_TempStrandRemovalCompStress);
-   pSave->Property("TempStrandRemovalTensStress" ,     m_TempStrandRemovalTensStress);
-   pSave->Property("TempStrandRemovalDoTensStressMax" ,m_TempStrandRemovalDoTensStressMax);
-   pSave->Property("TempStrandRemovalTensStressMax" ,  m_TempStrandRemovalTensStressMax);
+   pSave->Property(_T("TempStrandRemovalCompStress") ,     m_TempStrandRemovalCompStress);
+   pSave->Property(_T("TempStrandRemovalTensStress") ,     m_TempStrandRemovalTensStress);
+   pSave->Property(_T("TempStrandRemovalDoTensStressMax") ,m_TempStrandRemovalDoTensStressMax);
+   pSave->Property(_T("TempStrandRemovalTensStressMax") ,  m_TempStrandRemovalTensStressMax);
 
-   pSave->Property("Bs1CompStress" ,     m_Bs1CompStress); // removed m_ in version 30
-   pSave->Property("Bs1TensStress" ,     m_Bs1TensStress); // removed m_ in version 30
-   pSave->Property("Bs1DoTensStressMax" ,m_Bs1DoTensStressMax); // removed m_ in version 30
-   pSave->Property("Bs1TensStressMax" ,  m_Bs1TensStressMax); // removed m_ in version 30
-   pSave->Property("Bs2CompStress" ,     m_Bs2CompStress); // removed m_ in version 30
-   pSave->Property("Bs2TrafficBarrierDistributionType",(Int16)m_TrafficBarrierDistributionType); // added in version 36
-   pSave->Property("Bs2MaxGirdersTrafficBarrier", m_Bs2MaxGirdersTrafficBarrier);
-   pSave->Property("Bs2MaxGirdersUtility", m_Bs2MaxGirdersUtility);
-   pSave->Property("OverlayLoadDistribution", (Int32)m_OverlayLoadDistribution); // added in version 34
-   pSave->Property("Bs3CompStressServ", m_Bs3CompStressServ);
-   pSave->Property("Bs3CompStressService1A", m_Bs3CompStressService1A);
-   pSave->Property("Bs3TensStressServNc", m_Bs3TensStressServNc);
-   pSave->Property("Bs3DoTensStressServNcMax", m_Bs3DoTensStressServNcMax);
-   pSave->Property("Bs3TensStressServNcMax", m_Bs3TensStressServNcMax);
-   pSave->Property("Bs3TensStressServSc",    m_Bs3TensStressServSc);   
-   pSave->Property("Bs3DoTensStressServScMax", m_Bs3DoTensStressServScMax);
-   pSave->Property("Bs3TensStressServScMax", m_Bs3TensStressServScMax);
+   pSave->Property(_T("Bs1CompStress") ,     m_Bs1CompStress); // removed m_ in version 30
+   pSave->Property(_T("Bs1TensStress") ,     m_Bs1TensStress); // removed m_ in version 30
+   pSave->Property(_T("Bs1DoTensStressMax") ,m_Bs1DoTensStressMax); // removed m_ in version 30
+   pSave->Property(_T("Bs1TensStressMax") ,  m_Bs1TensStressMax); // removed m_ in version 30
+   pSave->Property(_T("Bs2CompStress") ,     m_Bs2CompStress); // removed m_ in version 30
+   pSave->Property(_T("Bs2TrafficBarrierDistributionType"),(Int16)m_TrafficBarrierDistributionType); // added in version 36
+   pSave->Property(_T("Bs2MaxGirdersTrafficBarrier"), m_Bs2MaxGirdersTrafficBarrier);
+   pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility);
+   pSave->Property(_T("OverlayLoadDistribution"), (Int32)m_OverlayLoadDistribution); // added in version 34
+   pSave->Property(_T("Bs3CompStressServ"), m_Bs3CompStressServ);
+   pSave->Property(_T("Bs3CompStressService1A"), m_Bs3CompStressService1A);
+   pSave->Property(_T("Bs3TensStressServNc"), m_Bs3TensStressServNc);
+   pSave->Property(_T("Bs3DoTensStressServNcMax"), m_Bs3DoTensStressServNcMax);
+   pSave->Property(_T("Bs3TensStressServNcMax"), m_Bs3TensStressServNcMax);
+   pSave->Property(_T("Bs3TensStressServSc"),    m_Bs3TensStressServSc);   
+   pSave->Property(_T("Bs3DoTensStressServScMax"), m_Bs3DoTensStressServScMax);
+   pSave->Property(_T("Bs3TensStressServScMax"), m_Bs3TensStressServScMax);
 
    // removed in version 29
-   // pSave->Property("Bs3IgnoreRangeOfApplicability", m_Bs3IgnoreRangeOfApplicability);
+   // pSave->Property(_T("Bs3IgnoreRangeOfApplicability"), m_Bs3IgnoreRangeOfApplicability);
 
    // moved into MomentCapacity data block (version 37)
-   //pSave->Property("Bs3LRFDOverreinforcedMomentCapacity",(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
-   //pSave->Property("IncludeRebar_MomentCapacity",m_bIncludeRebar_Moment); // added for version 7.0
+   //pSave->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
+   //pSave->Property(_T("IncludeRebar_MomentCapacity"),m_bIncludeRebar_Moment); // added for version 7.0
 
    // added in version 37
-   pSave->BeginUnit("MomentCapacity",1.0);
-      pSave->Property("Bs3LRFDOverreinforcedMomentCapacity",(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
-      pSave->Property("IncludeRebarForCapacity",m_bIncludeRebar_Moment);
-      pSave->BeginUnit("ReductionFactor",1.0);
-         pSave->BeginUnit("NormalWeight",1.0);
-            pSave->Property("TensionControlled_RC",m_PhiFlexureTensionRC[pgsTypes::Normal]);
-            pSave->Property("TensionControlled_PS",m_PhiFlexureTensionPS[pgsTypes::Normal]);
-            pSave->Property("CompressionControlled",m_PhiFlexureCompression[pgsTypes::Normal]);
+   pSave->BeginUnit(_T("MomentCapacity"),1.0);
+      pSave->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
+      pSave->Property(_T("IncludeRebarForCapacity"),m_bIncludeRebar_Moment);
+      pSave->BeginUnit(_T("ReductionFactor"),1.0);
+         pSave->BeginUnit(_T("NormalWeight"),1.0);
+            pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::Normal]);
+            pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::Normal]);
+            pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::Normal]);
          pSave->EndUnit(); // NormalWeight
-         pSave->BeginUnit("AllLightweight",1.0);
-            pSave->Property("TensionControlled_RC",m_PhiFlexureTensionRC[pgsTypes::AllLightweight]);
-            pSave->Property("TensionControlled_PS",m_PhiFlexureTensionPS[pgsTypes::AllLightweight]);
-            pSave->Property("CompressionControlled",m_PhiFlexureCompression[pgsTypes::AllLightweight]);
+         pSave->BeginUnit(_T("AllLightweight"),1.0);
+            pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::AllLightweight]);
+            pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::AllLightweight]);
+            pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::AllLightweight]);
          pSave->EndUnit(); // AllLightweight
-         pSave->BeginUnit("SandLightweight",1.0);
-            pSave->Property("TensionControlled_RC",m_PhiFlexureTensionRC[pgsTypes::SandLightweight]);
-            pSave->Property("TensionControlled_PS",m_PhiFlexureTensionPS[pgsTypes::SandLightweight]);
-            pSave->Property("CompressionControlled",m_PhiFlexureCompression[pgsTypes::SandLightweight]);
+         pSave->BeginUnit(_T("SandLightweight"),1.0);
+            pSave->Property(_T("TensionControlled_RC"),m_PhiFlexureTensionRC[pgsTypes::SandLightweight]);
+            pSave->Property(_T("TensionControlled_PS"),m_PhiFlexureTensionPS[pgsTypes::SandLightweight]);
+            pSave->Property(_T("CompressionControlled"),m_PhiFlexureCompression[pgsTypes::SandLightweight]);
          pSave->EndUnit(); // SandLightweight
       pSave->EndUnit(); // ReductionFactor
    pSave->EndUnit(); // MomentCapacity
 
    // changed in version 37
-   //pSave->Property("ModulusOfRuptureCoefficient",m_FlexureModulusOfRuptureCoefficient); // added for version 9.0
-   //pSave->Property("ShearModulusOfRuptureCoefficient",m_ShearModulusOfRuptureCoefficient); // added for version 18
-   pSave->BeginUnit("ModulusOfRuptureCoefficient",1.0);
-      pSave->BeginUnit("Moment",1.0);
-         pSave->Property("Normal",m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]);
-         pSave->Property("AllLightweight",m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property("SandLightweight",m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+   //pSave->Property(_T("ModulusOfRuptureCoefficient"),m_FlexureModulusOfRuptureCoefficient); // added for version 9.0
+   //pSave->Property(_T("ShearModulusOfRuptureCoefficient"),m_ShearModulusOfRuptureCoefficient); // added for version 18
+   pSave->BeginUnit(_T("ModulusOfRuptureCoefficient"),1.0);
+      pSave->BeginUnit(_T("Moment"),1.0);
+         pSave->Property(_T("Normal"),m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // Moment
-      pSave->BeginUnit("Shear",1.0);
-         pSave->Property("Normal",m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]);
-         pSave->Property("AllLightweight",m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property("SandLightweight",m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+      pSave->BeginUnit(_T("Shear"),1.0);
+         pSave->Property(_T("Normal"),m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // Shear
-      pSave->BeginUnit("Lifting",1.0);
-         pSave->Property("Normal",m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]);
-         pSave->Property("AllLightweight",m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property("SandLightweight",m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+      pSave->BeginUnit(_T("Lifting"),1.0);
+         pSave->Property(_T("Normal"),m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // Lifting
-      pSave->BeginUnit("Shipping",1.0);
-         pSave->Property("Normal",m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]);
-         pSave->Property("AllLightweight",m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property("SandLightweight",m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+      pSave->BeginUnit(_T("Shipping"),1.0);
+         pSave->Property(_T("Normal"),m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // Shipping
    pSave->EndUnit(); // ModulusOfRuptureCoefficient
 
-   pSave->Property("BsLldfMethod", (Int16)m_LldfMethod );  // added LLDF_TXDOT for version 21.0
+   pSave->Property(_T("BsLldfMethod"), (Int16)m_LldfMethod );  // added LLDF_TXDOT for version 21.0
    // added in version 29
-   pSave->Property("MaxAngularDeviationBetweenGirders",m_MaxAngularDeviationBetweenGirders);
-   pSave->Property("MinGirderStiffnessRatio",m_MinGirderStiffnessRatio);
-   pSave->Property("LLDFGirderSpacingLocation",m_LLDFGirderSpacingLocation);
+   pSave->Property(_T("MaxAngularDeviationBetweenGirders"),m_MaxAngularDeviationBetweenGirders);
+   pSave->Property(_T("MinGirderStiffnessRatio"),m_MinGirderStiffnessRatio);
+   pSave->Property(_T("LLDFGirderSpacingLocation"),m_LLDFGirderSpacingLocation);
 
    // added in version 31
-   pSave->Property("LimitDistributionFactorsToLanesBeams",m_LimitDistributionFactorsToLanesBeams);
+   pSave->Property(_T("LimitDistributionFactorsToLanesBeams"),m_LimitDistributionFactorsToLanesBeams);
 
    // moved into Shear block in version 37
-   //pSave->Property("LongReinfShearMethod",(Int16)m_LongReinfShearMethod); // added for version 1.2
-   //pSave->Property("IncludeRebar_Shear",m_bIncludeRebar_Shear); // added for version 7.0
-   pSave->Property("CreepMethod", (Int16)m_CreepMethod );
-   pSave->Property("CreepFactor",m_CreepFactor);
-   pSave->Property("CreepDuration1Min",m_CreepDuration1Min);
-   pSave->Property("CreepDuration1Max",m_CreepDuration1Max);
-   pSave->Property("CreepDuration2Min",m_CreepDuration2Min);
-   pSave->Property("CreepDuration2Max",m_CreepDuration2Max);
-   pSave->Property("XferTime",m_XferTime);
-   pSave->Property("TotalCreepDuration",m_TotalCreepDuration);
+   //pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
+   //pSave->Property(_T("IncludeRebar_Shear"),m_bIncludeRebar_Shear); // added for version 7.0
+   pSave->Property(_T("CreepMethod"), (Int16)m_CreepMethod );
+   pSave->Property(_T("CreepFactor"),m_CreepFactor);
+   pSave->Property(_T("CreepDuration1Min"),m_CreepDuration1Min);
+   pSave->Property(_T("CreepDuration1Max"),m_CreepDuration1Max);
+   pSave->Property(_T("CreepDuration2Min"),m_CreepDuration2Min);
+   pSave->Property(_T("CreepDuration2Max"),m_CreepDuration2Max);
+   pSave->Property(_T("XferTime"),m_XferTime);
+   pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
 
-   pSave->Property("LossMethod",(Int16)m_LossMethod);
-   pSave->Property("FinalLosses",m_FinalLosses);
-   pSave->Property("ShippingLosses",m_ShippingLosses);
-   pSave->Property("BeforeXferLosses",m_BeforeXferLosses);
-   pSave->Property("AfterXferLosses",m_AfterXferLosses);
-   pSave->Property("ShippingTime",m_ShippingTime);
+   pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
+   pSave->Property(_T("FinalLosses"),m_FinalLosses);
+   pSave->Property(_T("ShippingLosses"),m_ShippingLosses);
+   pSave->Property(_T("BeforeXferLosses"),m_BeforeXferLosses);
+   pSave->Property(_T("AfterXferLosses"),m_AfterXferLosses);
+   pSave->Property(_T("ShippingTime"),m_ShippingTime);
 
    // added in version 22
-   pSave->Property("LiftingLosses",m_LiftingLosses);
-   pSave->Property("BeforeTempStrandRemovalLosses",m_BeforeTempStrandRemovalLosses);
-   pSave->Property("AfterTempStrandRemovalLosses",m_AfterTempStrandRemovalLosses);
-   pSave->Property("AfterDeckPlacementLosses",m_AfterDeckPlacementLosses);
+   pSave->Property(_T("LiftingLosses"),m_LiftingLosses);
+   pSave->Property(_T("BeforeTempStrandRemovalLosses"),m_BeforeTempStrandRemovalLosses);
+   pSave->Property(_T("AfterTempStrandRemovalLosses"),m_AfterTempStrandRemovalLosses);
+   pSave->Property(_T("AfterDeckPlacementLosses"),m_AfterDeckPlacementLosses);
+   pSave->Property(_T("AfterSIDLLosses"),m_AfterSIDLLosses); // added in version 38
 
 
-   pSave->Property("CuringMethodFactor",m_CuringMethodTimeAdjustmentFactor);
+   pSave->Property(_T("CuringMethodFactor"),m_CuringMethodTimeAdjustmentFactor);
 
    // Added in version 1.5
-   pSave->Property("CheckStrandStressAtJacking",m_bCheckStrandStress[AT_JACKING]);
-   pSave->Property("Coeff_AtJacking_StressRel",m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
-   pSave->Property("Coeff_AtJacking_LowRelax",m_StrandStressCoeff[AT_JACKING][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressAtJacking"),m_bCheckStrandStress[AT_JACKING]);
+   pSave->Property(_T("Coeff_AtJacking_StressRel"),m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
+   pSave->Property(_T("Coeff_AtJacking_LowRelax"),m_StrandStressCoeff[AT_JACKING][LOW_RELAX]);
 
-   pSave->Property("CheckStrandStressBeforeTransfer",m_bCheckStrandStress[BEFORE_TRANSFER]);
-   pSave->Property("Coeff_BeforeTransfer_StressRel",m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]);
-   pSave->Property("Coeff_BeforeTransfer_LowRelax",m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressBeforeTransfer"),m_bCheckStrandStress[BEFORE_TRANSFER]);
+   pSave->Property(_T("Coeff_BeforeTransfer_StressRel"),m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]);
+   pSave->Property(_T("Coeff_BeforeTransfer_LowRelax"),m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]);
 
-   pSave->Property("CheckStrandStressAfterTransfer",m_bCheckStrandStress[AFTER_TRANSFER]);
-   pSave->Property("Coeff_AfterTransfer_StressRel",m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]);
-   pSave->Property("Coeff_AfterTransfer_LowRelax",m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressAfterTransfer"),m_bCheckStrandStress[AFTER_TRANSFER]);
+   pSave->Property(_T("Coeff_AfterTransfer_StressRel"),m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]);
+   pSave->Property(_T("Coeff_AfterTransfer_LowRelax"),m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
 
-   pSave->Property("CheckStrandStressAfterAllLosses",m_bCheckStrandStress[AFTER_ALL_LOSSES]);
-   pSave->Property("Coeff_AfterAllLosses_StressRel",m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
-   pSave->Property("Coeff_AfterAllLosses_LowRelax",m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   pSave->Property(_T("CheckStrandStressAfterAllLosses"),m_bCheckStrandStress[AFTER_ALL_LOSSES]);
+   pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+   pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
 
    // added in version 23
-   pSave->Property("AnchorSet",m_Dset);
-   pSave->Property("WobbleFriction",m_WobbleFriction);
-   pSave->Property("CoefficientOfFriction",m_FrictionCoefficient);
+   pSave->Property(_T("AnchorSet"),m_Dset);
+   pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
+   pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
 
    // Added in 1.7
-   pSave->Property("CheckLiveLoadDeflection",m_bDoEvaluateDeflection);
-   pSave->Property("LiveLoadDeflectionLimit",m_DeflectionLimit);
+   pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
+   pSave->Property(_T("LiveLoadDeflectionLimit"),m_DeflectionLimit);
 
 //   // Added in 8.0, removed in version 28
-//   pSave->Property("AnalysisType",(long)m_AnalysisType);
+//   pSave->Property(_T("AnalysisType"),(long)m_AnalysisType);
 
    // Added in 10.0, updated in version 37
-   pSave->BeginUnit("Limits",1.0);
-      pSave->BeginUnit("Normal",1.0);
-         pSave->Property("MaxSlabFc",             m_MaxSlabFc[pgsTypes::Normal]);
-         pSave->Property("MaxGirderFci",          m_MaxGirderFci[pgsTypes::Normal]);
-         pSave->Property("MaxGirderFc",           m_MaxGirderFc[pgsTypes::Normal]);
-         pSave->Property("MaxConcreteUnitWeight", m_MaxConcreteUnitWeight[pgsTypes::Normal]);
-         pSave->Property("MaxConcreteAggSize",    m_MaxConcreteAggSize[pgsTypes::Normal]);
+   pSave->BeginUnit(_T("Limits"),1.0);
+      pSave->BeginUnit(_T("Normal"),1.0);
+         pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::Normal]);
+         pSave->Property(_T("MaxGirderFci"),          m_MaxGirderFci[pgsTypes::Normal]);
+         pSave->Property(_T("MaxGirderFc"),           m_MaxGirderFc[pgsTypes::Normal]);
+         pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::Normal]);
+         pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::Normal]);
       pSave->EndUnit(); // Normal;
-      pSave->BeginUnit("AllLightweight",1.0);
-         pSave->Property("MaxSlabFc",             m_MaxSlabFc[pgsTypes::AllLightweight]);
-         pSave->Property("MaxGirderFci",          m_MaxGirderFci[pgsTypes::AllLightweight]);
-         pSave->Property("MaxGirderFc",           m_MaxGirderFc[pgsTypes::AllLightweight]);
-         pSave->Property("MaxConcreteUnitWeight", m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]);
-         pSave->Property("MaxConcreteAggSize",    m_MaxConcreteAggSize[pgsTypes::AllLightweight]);
+      pSave->BeginUnit(_T("AllLightweight"),1.0);
+         pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxGirderFci"),          m_MaxGirderFci[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxGirderFc"),           m_MaxGirderFc[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::AllLightweight]);
       pSave->EndUnit(); // AllLightweight;
-      pSave->BeginUnit("SandLightweight",1.0);
-         pSave->Property("MaxSlabFc",             m_MaxSlabFc[pgsTypes::SandLightweight]);
-         pSave->Property("MaxGirderFci",          m_MaxGirderFci[pgsTypes::SandLightweight]);
-         pSave->Property("MaxGirderFc",           m_MaxGirderFc[pgsTypes::SandLightweight]);
-         pSave->Property("MaxConcreteUnitWeight", m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]);
-         pSave->Property("MaxConcreteAggSize",    m_MaxConcreteAggSize[pgsTypes::SandLightweight]);
+      pSave->BeginUnit(_T("SandLightweight"),1.0);
+         pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxGirderFci"),          m_MaxGirderFci[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxGirderFc"),           m_MaxGirderFc[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // SandLightweight;
    pSave->EndUnit(); // Limits
 
 
    // Added in 14.0
-   std::string strLimitState[] = {"ServiceI","ServiceIA","ServiceIII","StrengthI","StrengthII","FatigueI"};
+   std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
 
-   pSave->BeginUnit("LoadFactors",3.0);
-   int nLimitStates = sizeof(strLimitState)/sizeof(std::string); // Added StrengthII in version 26
+   pSave->BeginUnit(_T("LoadFactors"),3.0);
+   int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring); // Added StrengthII in version 26
    for ( int i = 0; i < nLimitStates; i++ )
    {
       pSave->BeginUnit(strLimitState[i].c_str(),1.0);
       
-      pSave->Property("DCmin",  m_DCmin[i]);
-      pSave->Property("DCmax",  m_DCmax[i]);
-      pSave->Property("DWmin",  m_DWmin[i]);
-      pSave->Property("DWmax",  m_DWmax[i]);
-      pSave->Property("LLIMmin",m_LLIMmin[i]);
-      pSave->Property("LLIMmax",m_LLIMmax[i]);
+      pSave->Property(_T("DCmin"),  m_DCmin[i]);
+      pSave->Property(_T("DCmax"),  m_DCmax[i]);
+      pSave->Property(_T("DWmin"),  m_DWmin[i]);
+      pSave->Property(_T("DWmax"),  m_DWmax[i]);
+      pSave->Property(_T("LLIMmin"),m_LLIMmin[i]);
+      pSave->Property(_T("LLIMmax"),m_LLIMmax[i]);
 
       pSave->EndUnit();
    }
    pSave->EndUnit();
 
    // added in version 15
-   pSave->Property("EnableSlabOffsetCheck", m_EnableSlabOffsetCheck);
-   pSave->Property("EnableSlabOffsetDesign", m_EnableSlabOffsetDesign);
+   pSave->Property(_T("EnableSlabOffsetCheck"), m_EnableSlabOffsetCheck);
+   pSave->Property(_T("EnableSlabOffsetDesign"), m_EnableSlabOffsetDesign);
 
-   pSave->Property("DesignStrandFillType", (long)m_DesignStrandFillType);
+   pSave->Property(_T("DesignStrandFillType"), (long)m_DesignStrandFillType);
 
    // added in version 16
-   pSave->Property("EffectiveFlangeWidthMethod",(long)m_EffFlangeWidthMethod);
+   pSave->Property(_T("EffectiveFlangeWidthMethod"),(long)m_EffFlangeWidthMethod);
 
 //   // added in version 17, removed version 24
-//   pSave->Property("SlabOffsetMethod",(long)m_SlabOffsetMethod);
+//   pSave->Property(_T("SlabOffsetMethod"),(long)m_SlabOffsetMethod);
 
    // reconfigured in version 37 and added Phi
-   pSave->BeginUnit("Shear",1.0);
+   pSave->BeginUnit(_T("Shear"),1.0);
       // moved here in version 37
-      pSave->Property("LongReinfShearMethod",(Int16)m_LongReinfShearMethod); // added for version 1.2
+      pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
 
       // moved here in version 37
-      pSave->Property("IncludeRebarForCapacity",m_bIncludeRebar_Shear); // added for version 7.0
+      pSave->Property(_T("IncludeRebarForCapacity"),m_bIncludeRebar_Shear); // added for version 7.0
 
       // added in version 18 (moved into datablock in version 37)
-      pSave->Property("ShearFlowMethod",(long)m_ShearFlowMethod);
-      pSave->Property("ShearCapacityMethod",(long)m_ShearCapacityMethod);
+      pSave->Property(_T("ShearFlowMethod"),(long)m_ShearFlowMethod);
+      pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
 
       // added inv ersion 37
-      pSave->BeginUnit("ReductionFactor",1.0);
-         pSave->Property("Normal",m_PhiShear[pgsTypes::Normal]);
-         pSave->Property("AllLightweight",m_PhiShear[pgsTypes::AllLightweight]);
-         pSave->Property("SandLightweight",m_PhiShear[pgsTypes::SandLightweight]);
+      pSave->BeginUnit(_T("ReductionFactor"),1.0);
+         pSave->Property(_T("Normal"),m_PhiShear[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_PhiShear[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_PhiShear[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // ReductionFactor
    pSave->EndUnit(); // Shear
 
    // added in version 26
-   pSave->Property("PedestrianLoad",m_PedestrianLoad);
-   pSave->Property("MinSidewalkWidth",m_MinSidewalkWidth);
+   pSave->Property(_T("PedestrianLoad"),m_PedestrianLoad);
+   pSave->Property(_T("MinSidewalkWidth"),m_MinSidewalkWidth);
 
    // added in vers 32
-   pSave->Property("PrestressTransferComputationType",(long)m_PrestressTransferComputationType);
+   pSave->Property(_T("PrestressTransferComputationType"),(long)m_PrestressTransferComputationType);
 
    pSave->EndUnit();
 
@@ -682,57 +684,57 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    Int16 temp;
    ShearCapacityMethod shear_capacity_method = m_ShearCapacityMethod; // used as a temporary storage for shear capacity method before file version 18
 
-   if(pLoad->BeginUnit("SpecificationLibraryEntry"))
+   if(pLoad->BeginUnit(_T("SpecificationLibraryEntry")))
    {
       Float64 version = pLoad->GetVersion();
       if (version < 1.0 || CURRENT_VERSION < version)
          THROW_LOAD(BadVersion,pLoad);
 
-      std::string name;
-      if(pLoad->Property("Name",&name))
+      std::_tstring name;
+      if(pLoad->Property(_T("Name"),&name))
          this->SetName(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(pLoad->Property("Description",&name))
+      if(pLoad->Property(_T("Description"),&name))
          this->SetDescription(name.c_str());
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      std::string tmp;
-      if(pLoad->Property("SpecificationType",&tmp))
+      std::_tstring tmp;
+      if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp=="AashtoLrfd2010")
+         if(tmp==_T("AashtoLrfd2010"))
             m_SpecificationType = lrfdVersionMgr::FifthEdition2010;
-         else if(tmp=="AashtoLrfd2009")
+         else if(tmp==_T("AashtoLrfd2009"))
             m_SpecificationType = lrfdVersionMgr::FourthEditionWith2009Interims;
-         else if(tmp=="AashtoLrfd2008")
+         else if(tmp==_T("AashtoLrfd2008"))
             m_SpecificationType = lrfdVersionMgr::FourthEditionWith2008Interims;
-         else if(tmp=="AashtoLrfd2007")
+         else if(tmp==_T("AashtoLrfd2007"))
             m_SpecificationType = lrfdVersionMgr::FourthEdition2007;
-         else if(tmp=="AashtoLrfd2006")
+         else if(tmp==_T("AashtoLrfd2006"))
             m_SpecificationType = lrfdVersionMgr::ThirdEditionWith2006Interims;
-         else if(tmp=="AashtoLrfd2005")
+         else if(tmp==_T("AashtoLrfd2005"))
             m_SpecificationType = lrfdVersionMgr::ThirdEditionWith2005Interims;
-         else if(tmp=="AashtoLrfd2004")
+         else if(tmp==_T("AashtoLrfd2004"))
             m_SpecificationType = lrfdVersionMgr::ThirdEdition2004;
-         else if(tmp=="AashtoLrfd2003")
+         else if(tmp==_T("AashtoLrfd2003"))
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2003Interims;
-         else if(tmp=="AashtoLrfd2002")
+         else if(tmp==_T("AashtoLrfd2002"))
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2002Interims;
-         else if(tmp=="AashtoLrfd2001")
+         else if(tmp==_T("AashtoLrfd2001"))
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2001Interims;
-         else if(tmp=="AashtoLrfd2000")
+         else if(tmp==_T("AashtoLrfd2000"))
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2000Interims;
-         else if(tmp=="AashtoLrfd1999")
+         else if(tmp==_T("AashtoLrfd1999"))
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith1999Interims;
-         else if(tmp=="AashtoLrfd1998")
+         else if(tmp==_T("AashtoLrfd1998"))
             m_SpecificationType = lrfdVersionMgr::SecondEdition1998;
-         else if(tmp=="AashtoLrfd1997")
+         else if(tmp==_T("AashtoLrfd1997"))
             m_SpecificationType = lrfdVersionMgr::FirstEditionWith1997Interims;
-         else if(tmp=="AashtoLrfd1996")
+         else if(tmp==_T("AashtoLrfd1996"))
             m_SpecificationType = lrfdVersionMgr::FirstEditionWith1996Interims;
-         else if (tmp=="AashtoLrfd1994")
+         else if (tmp==_T("AashtoLrfd1994"))
             m_SpecificationType = lrfdVersionMgr::FirstEdition1994;
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -741,11 +743,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-      if(pLoad->Property("SpecificationUnits",&tmp))
+      if(pLoad->Property(_T("SpecificationUnits"),&tmp))
       {
-         if (tmp=="SiUnitsSpec")
+         if (tmp==_T("SiUnitsSpec"))
             m_SpecificationUnits = lrfdVersionMgr::SI;
-         else if(tmp=="UsUnitsSpec")
+         else if(tmp==_T("UsUnitsSpec"))
             m_SpecificationUnits = lrfdVersionMgr::US;
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -753,7 +755,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("DoCheckStrandSlope", &m_DoCheckStrandSlope))
+      if(!pLoad->Property(_T("DoCheckStrandSlope"), &m_DoCheckStrandSlope))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if (version<15)
@@ -762,23 +764,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if(!pLoad->Property("DoDesignStrandSlope", &m_DoDesignStrandSlope))
+         if(!pLoad->Property(_T("DoDesignStrandSlope"), &m_DoDesignStrandSlope))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("MaxSlope05", &m_MaxSlope05))
+      if(!pLoad->Property(_T("MaxSlope05"), &m_MaxSlope05))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("MaxSlope06", &m_MaxSlope06))
+      if(!pLoad->Property(_T("MaxSlope06"), &m_MaxSlope06))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( 35 <= version )
       {
-         if(!pLoad->Property("MaxSlope07", &m_MaxSlope07))
+         if(!pLoad->Property(_T("MaxSlope07"), &m_MaxSlope07))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("DoCheckHoldDown", &m_DoCheckHoldDown))
+      if(!pLoad->Property(_T("DoCheckHoldDown"), &m_DoCheckHoldDown))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if (version<15)
@@ -787,91 +789,91 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if(!pLoad->Property("DoDesignHoldDown", &m_DoDesignHoldDown))
+         if(!pLoad->Property(_T("DoDesignHoldDown"), &m_DoDesignHoldDown))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("HoldDownForce", &m_HoldDownForce))
+      if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if (version>32)
       {
-         if(!pLoad->Property("DoCheckAnchorage", &m_DoCheckAnchorage))
+         if(!pLoad->Property(_T("DoCheckAnchorage"), &m_DoCheckAnchorage))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("MaxStirrupSpacing", &m_MaxStirrupSpacing))
+      if(!pLoad->Property(_T("MaxStirrupSpacing"), &m_MaxStirrupSpacing))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyLiftingCrackFs", &m_CyLiftingCrackFs))
+      if(!pLoad->Property(_T("CyLiftingCrackFs"), &m_CyLiftingCrackFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyLiftingFailFs", &m_CyLiftingFailFs))
+      if(!pLoad->Property(_T("CyLiftingFailFs"), &m_CyLiftingFailFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyCompStressServ", &m_CyCompStressServ))
+      if(!pLoad->Property(_T("CyCompStressServ"), &m_CyCompStressServ))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyCompStressLifting", &m_CyCompStressLifting))
+      if(!pLoad->Property(_T("CyCompStressLifting"), &m_CyCompStressLifting))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyTensStressServ", &m_CyTensStressServ))
+      if(!pLoad->Property(_T("CyTensStressServ"), &m_CyTensStressServ))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyDoTensStressServMax", &m_CyDoTensStressServMax))
+      if(!pLoad->Property(_T("CyDoTensStressServMax"), &m_CyDoTensStressServMax))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyTensStressServMax", &m_CyTensStressServMax))
+      if(!pLoad->Property(_T("CyTensStressServMax"), &m_CyTensStressServMax))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyTensStressLifting", &m_CyTensStressLifting))
+      if(!pLoad->Property(_T("CyTensStressLifting"), &m_CyTensStressLifting))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyDoTensStressLiftingMax",&m_CyDoTensStressLiftingMax))
+      if(!pLoad->Property(_T("CyDoTensStressLiftingMax"),&m_CyDoTensStressLiftingMax))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CyTensStressLiftingMax",&m_CyTensStressLiftingMax))
+      if(!pLoad->Property(_T("CyTensStressLiftingMax"),&m_CyTensStressLiftingMax))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
      // at version 27 we moved debonding to the girder library. Data here is ignored
 	  if ( 6.0 <= version && 27 > version)
 	  {
         Float64 debond_junk;
-		  if (!pLoad->Property("MaxDebondStrands",&debond_junk))
+		  if (!pLoad->Property(_T("MaxDebondStrands"),&debond_junk))
 			 THROW_LOAD(InvalidFileFormat,pLoad);
 
-		  if (!pLoad->Property("MaxDebondStrandsPerRow",&debond_junk))
+		  if (!pLoad->Property(_T("MaxDebondStrandsPerRow"),&debond_junk))
 			 THROW_LOAD(InvalidFileFormat,pLoad);
 
-        if ( !pLoad->Property("MaxNumDebondedStrandsPerSection",&debond_junk))
+        if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&debond_junk))
            THROW_LOAD(InvalidFileFormat,pLoad);
 
-        if ( !pLoad->Property("MaxDebondedStrandsPerSection",&debond_junk))
+        if ( !pLoad->Property(_T("MaxDebondedStrandsPerSection"),&debond_junk))
            THROW_LOAD(InvalidFileFormat,pLoad);
 
-        if ( !pLoad->Property("DefaultDebondLength",&debond_junk))
+        if ( !pLoad->Property(_T("DefaultDebondLength"),&debond_junk))
            THROW_LOAD(InvalidFileFormat,pLoad);
 	  }
 
       if ( 1.4 <= version )
       {
-         if (!pLoad->Property("BurstingZoneLengthFactor", &m_SplittingZoneLengthFactor))
+         if (!pLoad->Property(_T("BurstingZoneLengthFactor"), &m_SplittingZoneLengthFactor))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("LiftingUpwardImpact",&m_LiftingUpwardImpact))
+      if(!pLoad->Property(_T("LiftingUpwardImpact"),&m_LiftingUpwardImpact))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("LiftingDownwardImpact",&m_LiftingDownwardImpact))
+      if(!pLoad->Property(_T("LiftingDownwardImpact"),&m_LiftingDownwardImpact))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HaulingUpwardImpact",&m_HaulingUpwardImpact))
+      if(!pLoad->Property(_T("HaulingUpwardImpact"),&m_HaulingUpwardImpact))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HaulingDownwardImpact",&m_HaulingDownwardImpact))
+      if(!pLoad->Property(_T("HaulingDownwardImpact"),&m_HaulingDownwardImpact))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if ( !pLoad->Property("CuringMethod", &temp ) )
+      if ( !pLoad->Property(_T("CuringMethod"), &temp ) )
          THROW_LOAD(InvalidFileFormat, pLoad );
       m_CuringMethod = temp;
 
@@ -882,7 +884,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if(!pLoad->Property("EnableLiftingCheck", &m_EnableLiftingCheck))
+         if(!pLoad->Property(_T("EnableLiftingCheck"), &m_EnableLiftingCheck))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if (version<15)
@@ -891,21 +893,21 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
          else
          {
-            if(!pLoad->Property("EnableLiftingDesign", &m_EnableLiftingDesign))
+            if(!pLoad->Property(_T("EnableLiftingDesign"), &m_EnableLiftingDesign))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
 
-      if(!pLoad->Property("PickPointHeight", &m_PickPointHeight))
+      if(!pLoad->Property(_T("PickPointHeight"), &m_PickPointHeight))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("LiftingLoopTolerance", &m_LiftingLoopTolerance))
+      if(!pLoad->Property(_T("LiftingLoopTolerance"), &m_LiftingLoopTolerance))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("MinCableInclination", &m_MinCableInclination))
+      if(!pLoad->Property(_T("MinCableInclination"), &m_MinCableInclination))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("MaxGirderSweepLifting", &m_MaxGirderSweepLifting))
+      if(!pLoad->Property(_T("MaxGirderSweepLifting"), &m_MaxGirderSweepLifting))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if (version<11)
@@ -915,7 +917,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if(!pLoad->Property("EnableHaulingCheck", &m_EnableHaulingCheck))
+         if(!pLoad->Property(_T("EnableHaulingCheck"), &m_EnableHaulingCheck))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if (version<15)
@@ -924,20 +926,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
          else
          {
-            if(!pLoad->Property("EnableHaulingDesign", &m_EnableHaulingDesign))
+            if(!pLoad->Property(_T("EnableHaulingDesign"), &m_EnableHaulingDesign))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
 
-      if(!pLoad->Property("MaxGirderSweepHauling", &m_MaxGirderSweepHauling))
+      if(!pLoad->Property(_T("MaxGirderSweepHauling"), &m_MaxGirderSweepHauling))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HaulingSupportDistance", &m_HaulingSupportDistance))
+      if(!pLoad->Property(_T("HaulingSupportDistance"), &m_HaulingSupportDistance))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( 2.0 <= version )
       {
-         if(!pLoad->Property("MaxHaulingOverhang", &m_MaxHaulingOverhang))
+         if(!pLoad->Property(_T("MaxHaulingOverhang"), &m_MaxHaulingOverhang))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else
@@ -945,36 +947,36 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_MaxHaulingOverhang = ::ConvertToSysUnits(15.0,unitMeasure::Feet);
       }
 
-      if(!pLoad->Property("HaulingSupportPlacementTolerance", &m_HaulingSupportPlacementTolerance))
+      if(!pLoad->Property(_T("HaulingSupportPlacementTolerance"), &m_HaulingSupportPlacementTolerance))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HaulingCamberPercentEstimate", &m_HaulingCamberPercentEstimate))
+      if(!pLoad->Property(_T("HaulingCamberPercentEstimate"), &m_HaulingCamberPercentEstimate))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("CompStressHauling", &m_CompStressHauling))
+      if(!pLoad->Property(_T("CompStressHauling"), &m_CompStressHauling))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("TensStressHauling", &m_TensStressHauling))
+      if(!pLoad->Property(_T("TensStressHauling"), &m_TensStressHauling))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("DoTensStressHaulingMax",&m_DoTensStressHaulingMax))
+      if(!pLoad->Property(_T("DoTensStressHaulingMax"),&m_DoTensStressHaulingMax))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("TensStressHaulingMax", &m_TensStressHaulingMax))
+      if(!pLoad->Property(_T("TensStressHaulingMax"), &m_TensStressHaulingMax))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HeHaulingCrackFs", &m_HeHaulingCrackFs))
+      if(!pLoad->Property(_T("HeHaulingCrackFs"), &m_HeHaulingCrackFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HeHaulingFailFs", &m_HeHaulingRollFs))
+      if(!pLoad->Property(_T("HeHaulingFailFs"), &m_HeHaulingRollFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("RoadwaySuperelevation", &m_RoadwaySuperelevation))
+      if(!pLoad->Property(_T("RoadwaySuperelevation"), &m_RoadwaySuperelevation))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( version < 1.9 )
       {
-         if(!pLoad->Property("TruckRollStiffness", &m_TruckRollStiffness))
+         if(!pLoad->Property(_T("TruckRollStiffness"), &m_TruckRollStiffness))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_TruckRollStiffnessMethod = 0;
@@ -982,42 +984,42 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          long method;
-         if(!pLoad->Property("TruckRollStiffnessMethod", &method))
+         if(!pLoad->Property(_T("TruckRollStiffnessMethod"), &method))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_TruckRollStiffnessMethod = (int)method;
 
-         if(!pLoad->Property("TruckRollStiffness", &m_TruckRollStiffness))
+         if(!pLoad->Property(_T("TruckRollStiffness"), &m_TruckRollStiffness))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("AxleWeightLimit", &m_AxleWeightLimit))
+         if(!pLoad->Property(_T("AxleWeightLimit"), &m_AxleWeightLimit))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("AxleStiffness", &m_AxleStiffness))
+         if(!pLoad->Property(_T("AxleStiffness"), &m_AxleStiffness))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("MinRollStiffness",&m_MinRollStiffness))
+         if (!pLoad->Property(_T("MinRollStiffness"),&m_MinRollStiffness))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property("TruckGirderHeight", &m_TruckGirderHeight))
+      if(!pLoad->Property(_T("TruckGirderHeight"), &m_TruckGirderHeight))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("TruckRollCenterHeight", &m_TruckRollCenterHeight))
+      if(!pLoad->Property(_T("TruckRollCenterHeight"), &m_TruckRollCenterHeight))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("TruckAxleWidth", &m_TruckAxleWidth))
+      if(!pLoad->Property(_T("TruckAxleWidth"), &m_TruckAxleWidth))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HeErectionCrackFs", &m_HeErectionCrackFs))
+      if(!pLoad->Property(_T("HeErectionCrackFs"), &m_HeErectionCrackFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if(!pLoad->Property("HeErectionFailFs", &m_HeErectionFailFs))
+      if(!pLoad->Property(_T("HeErectionFailFs"), &m_HeErectionFailFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if ( version >= 1.3 )
       {
-         if (!pLoad->Property("MaxGirderWgt", &m_MaxGirderWgt))
+         if (!pLoad->Property(_T("MaxGirderWgt"), &m_MaxGirderWgt))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1026,13 +1028,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // changed in version 37
          if ( 12 <= version )
          {
-            if ( !pLoad->Property("HaulingModulusOfRuptureCoefficient",&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+            if ( !pLoad->Property(_T("HaulingModulusOfRuptureCoefficient"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
          if ( 20 <= version )
          {
-            if ( !pLoad->Property("LiftingModulusOfRuptureCoefficient",&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+            if ( !pLoad->Property(_T("LiftingModulusOfRuptureCoefficient"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
@@ -1040,28 +1042,28 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 25 <= version )
       {
          // Added at version 25
-         if ( !pLoad->Property("MinLiftingPointLocation",&m_MinLiftPoint) )
+         if ( !pLoad->Property(_T("MinLiftingPointLocation"),&m_MinLiftPoint) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("LiftingPointLocationAccuracy",&m_LiftPointAccuracy) )
+         if ( !pLoad->Property(_T("LiftingPointLocationAccuracy"),&m_LiftPointAccuracy) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("MinHaulingSupportLocation",&m_MinHaulPoint) )
+         if ( !pLoad->Property(_T("MinHaulingSupportLocation"),&m_MinHaulPoint) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("HaulingSupportLocationAccuracy",&m_HaulPointAccuracy) )
+         if ( !pLoad->Property(_T("HaulingSupportLocationAccuracy"),&m_HaulPointAccuracy) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 3.2 < version )
       {
-         if (!pLoad->Property("CastingYardTensileStressLimitWithMildRebar",&m_CyTensStressServWithRebar) )
+         if (!pLoad->Property(_T("CastingYardTensileStressLimitWithMildRebar"),&m_CyTensStressServWithRebar) )
              THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("LiftingTensileStressLimitWithMildRebar",&m_TensStressLiftingWithRebar) )
+         if (!pLoad->Property(_T("LiftingTensileStressLimitWithMildRebar"),&m_TensStressLiftingWithRebar) )
              THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("HaulingTensileStressLimitWithMildRebar",&m_TensStressHaulingWithRebar) )
+         if (!pLoad->Property(_T("HaulingTensileStressLimitWithMildRebar"),&m_TensStressHaulingWithRebar) )
              THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else
@@ -1076,48 +1078,48 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // in version 1.0, limits were for all BS stages.
       if (version==1.0)
       {
-         if(!pLoad->Property("BsCompStressServ", &m_Bs3CompStressServ))
+         if(!pLoad->Property(_T("BsCompStressServ"), &m_Bs3CompStressServ))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("BsCompStressService1A", &m_Bs3CompStressService1A))
+         if(!pLoad->Property(_T("BsCompStressService1A"), &m_Bs3CompStressService1A))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          Float64 tmp;
-         if(!pLoad->Property("BsCompStressService1B", &tmp))
+         if(!pLoad->Property(_T("BsCompStressService1B"), &tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          // stage 1 and 2 are permanent loads only
          m_Bs2CompStress = tmp;
          m_Bs1CompStress = tmp;
 
-         if(!pLoad->Property("BsTensStressServNc", &m_Bs3TensStressServNc))
+         if(!pLoad->Property(_T("BsTensStressServNc"), &m_Bs3TensStressServNc))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_Bs1TensStress = m_Bs3TensStressServNc;
 
-         if(!pLoad->Property("BsDoTensStressServNcMax", &m_Bs3DoTensStressServNcMax))
+         if(!pLoad->Property(_T("BsDoTensStressServNcMax"), &m_Bs3DoTensStressServNcMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_Bs1DoTensStressMax = m_Bs3DoTensStressServNcMax;
 
-         if(!pLoad->Property("BsTensStressServNcMax", &m_Bs3TensStressServNcMax))
+         if(!pLoad->Property(_T("BsTensStressServNcMax"), &m_Bs3TensStressServNcMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_Bs1TensStressMax = m_Bs3TensStressServNcMax;
 
-         if(!pLoad->Property("BsTensStressServSc",    &m_Bs3TensStressServSc))
+         if(!pLoad->Property(_T("BsTensStressServSc"),    &m_Bs3TensStressServSc))
             THROW_LOAD(InvalidFileFormat,pLoad);
    
-         if(!pLoad->Property("BsDoTensStressServScMax", &m_Bs3DoTensStressServScMax))
+         if(!pLoad->Property(_T("BsDoTensStressServScMax"), &m_Bs3DoTensStressServScMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("BsTensStressServScMax", &m_Bs3TensStressServScMax))
+         if(!pLoad->Property(_T("BsTensStressServScMax"), &m_Bs3TensStressServScMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("BsMaxGirdersTrafficBarrier", &m_Bs2MaxGirdersTrafficBarrier))
+         if(!pLoad->Property(_T("BsMaxGirdersTrafficBarrier"), &m_Bs2MaxGirdersTrafficBarrier))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("BsMaxGirdersUtility", &m_Bs2MaxGirdersUtility))
+         if(!pLoad->Property(_T("BsMaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_TempStrandRemovalCompStress      = m_Bs1CompStress;
@@ -1130,49 +1132,49 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 29 < version )
          {
             // added in version 30
-            if(!pLoad->Property("TempStrandRemovalCompStress" ,     &m_TempStrandRemovalCompStress))
+            if(!pLoad->Property(_T("TempStrandRemovalCompStress") ,     &m_TempStrandRemovalCompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("TempStrandRemovalTensStress" ,     &m_TempStrandRemovalTensStress))
+            if(!pLoad->Property(_T("TempStrandRemovalTensStress") ,     &m_TempStrandRemovalTensStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("TempStrandRemovalDoTensStressMax",  &m_TempStrandRemovalDoTensStressMax))
+            if(!pLoad->Property(_T("TempStrandRemovalDoTensStressMax"),  &m_TempStrandRemovalDoTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("TempStrandRemovalTensStressMax" ,  &m_TempStrandRemovalTensStressMax))
+            if(!pLoad->Property(_T("TempStrandRemovalTensStressMax") ,  &m_TempStrandRemovalTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             // for the following 5 items, the m_ was removed from the keyword in version 30
-            if(!pLoad->Property("Bs1CompStress" ,     &m_Bs1CompStress))
+            if(!pLoad->Property(_T("Bs1CompStress") ,     &m_Bs1CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("Bs1TensStress" ,     &m_Bs1TensStress))
+            if(!pLoad->Property(_T("Bs1TensStress") ,     &m_Bs1TensStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("Bs1DoTensStressMax",  &m_Bs1DoTensStressMax))
+            if(!pLoad->Property(_T("Bs1DoTensStressMax"),  &m_Bs1DoTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("Bs1TensStressMax" ,  &m_Bs1TensStressMax))
+            if(!pLoad->Property(_T("Bs1TensStressMax") ,  &m_Bs1TensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("Bs2CompStress" ,     &m_Bs2CompStress))
+            if(!pLoad->Property(_T("Bs2CompStress") ,     &m_Bs2CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
          else
          {
-            if(!pLoad->Property("m_Bs1CompStress" ,     &m_Bs1CompStress))
+            if(!pLoad->Property(_T("m_Bs1CompStress") ,     &m_Bs1CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("m_Bs1TensStress" ,     &m_Bs1TensStress))
+            if(!pLoad->Property(_T("m_Bs1TensStress") ,     &m_Bs1TensStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("m_Bs1DoTensStressMax",  &m_Bs1DoTensStressMax))
+            if(!pLoad->Property(_T("m_Bs1DoTensStressMax"),  &m_Bs1DoTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("m_Bs1TensStressMax" ,  &m_Bs1TensStressMax))
+            if(!pLoad->Property(_T("m_Bs1TensStressMax") ,  &m_Bs1TensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property("m_Bs2CompStress" ,     &m_Bs2CompStress))
+            if(!pLoad->Property(_T("m_Bs2CompStress") ,     &m_Bs2CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_TempStrandRemovalCompStress      = m_Bs1CompStress;
@@ -1185,64 +1187,64 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
              // this parameters were removed.... just gobble them up if this is an older file
              Float64 dummy;
-             if(!pLoad->Property("m_Bs2TensStress" ,     &dummy))
+             if(!pLoad->Property(_T("m_Bs2TensStress") ,     &dummy))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-             if(!pLoad->Property("m_Bs2DoTensStressMax",  &dummy))
+             if(!pLoad->Property(_T("m_Bs2DoTensStressMax"),  &dummy))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-             if(!pLoad->Property("m_Bs2TensStressMax" ,  &dummy))
+             if(!pLoad->Property(_T("m_Bs2TensStressMax") ,  &dummy))
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
          if ( 36 <= version )
          {
             Int16 value;
-            if ( !pLoad->Property("Bs2TrafficBarrierDistributionType",&value) )
+            if ( !pLoad->Property(_T("Bs2TrafficBarrierDistributionType"),&value) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
             m_TrafficBarrierDistributionType = (pgsTypes::TrafficBarrierDistribution)value;
          }
 
-         if(!pLoad->Property("Bs2MaxGirdersTrafficBarrier", &m_Bs2MaxGirdersTrafficBarrier))
+         if(!pLoad->Property(_T("Bs2MaxGirdersTrafficBarrier"), &m_Bs2MaxGirdersTrafficBarrier))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs2MaxGirdersUtility", &m_Bs2MaxGirdersUtility))
+         if(!pLoad->Property(_T("Bs2MaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( version > 33.0 )
          {
             long oldt;
-            if(!pLoad->Property("OverlayLoadDistribution", &oldt))
+            if(!pLoad->Property(_T("OverlayLoadDistribution"), &oldt))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_OverlayLoadDistribution = (pgsTypes::OverlayLoadDistributionType)oldt==pgsTypes::olDistributeTributaryWidth ? 
                                         pgsTypes::olDistributeTributaryWidth : pgsTypes::olDistributeEvenly;
          }
 
-         if(!pLoad->Property("Bs3CompStressServ", &m_Bs3CompStressServ))
+         if(!pLoad->Property(_T("Bs3CompStressServ"), &m_Bs3CompStressServ))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3CompStressService1A", &m_Bs3CompStressService1A))
+         if(!pLoad->Property(_T("Bs3CompStressService1A"), &m_Bs3CompStressService1A))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3TensStressServNc", &m_Bs3TensStressServNc))
+         if(!pLoad->Property(_T("Bs3TensStressServNc"), &m_Bs3TensStressServNc))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3DoTensStressServNcMax", &m_Bs3DoTensStressServNcMax))
+         if(!pLoad->Property(_T("Bs3DoTensStressServNcMax"), &m_Bs3DoTensStressServNcMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3TensStressServNcMax", &m_Bs3TensStressServNcMax))
+         if(!pLoad->Property(_T("Bs3TensStressServNcMax"), &m_Bs3TensStressServNcMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3TensStressServSc",    &m_Bs3TensStressServSc))
+         if(!pLoad->Property(_T("Bs3TensStressServSc"),    &m_Bs3TensStressServSc))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3DoTensStressServScMax", &m_Bs3DoTensStressServScMax))
+         if(!pLoad->Property(_T("Bs3DoTensStressServScMax"), &m_Bs3DoTensStressServScMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("Bs3TensStressServScMax", &m_Bs3TensStressServScMax))
+         if(!pLoad->Property(_T("Bs3TensStressServScMax"), &m_Bs3TensStressServScMax))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1251,14 +1253,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( version < 29 )
          {
             // removed in version 29
-            if (!pLoad->Property("Bs3IgnoreRangeOfApplicability", &m_Bs3IgnoreRangeOfApplicability))
+            if (!pLoad->Property(_T("Bs3IgnoreRangeOfApplicability"), &m_Bs3IgnoreRangeOfApplicability))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
          // this parameter removed in version 18
          if ( version < 18 )
          {
-            if (!pLoad->Property("Bs3LRFDShear",&temp))
+            if (!pLoad->Property(_T("Bs3LRFDShear"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             switch(temp)
@@ -1289,14 +1291,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          if ( version >= 1.8 )
          {
-            if (!pLoad->Property("Bs3LRFDOverreinforcedMomentCapacity",&temp))
+            if (!pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
             m_Bs3LRFDOverReinforcedMomentCapacity = temp;
          }
       
          if ( version >= 7.0 )
          {
-            if (!pLoad->Property("IncludeRebar_MomentCapacity",&temp))
+            if (!pLoad->Property(_T("IncludeRebar_MomentCapacity"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_bIncludeRebar_Moment = (temp == 0 ? false : true);
@@ -1304,63 +1306,63 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if ( !pLoad->BeginUnit("MomentCapacity") )
+         if ( !pLoad->BeginUnit(_T("MomentCapacity")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("Bs3LRFDOverreinforcedMomentCapacity",&temp) )
+            if ( !pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_Bs3LRFDOverReinforcedMomentCapacity = temp;
 
-            if ( !pLoad->Property("IncludeRebarForCapacity",&temp) )
+            if ( !pLoad->Property(_T("IncludeRebarForCapacity"),&temp) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_bIncludeRebar_Moment = (temp == 0 ? false : true);
 
-            if ( !pLoad->BeginUnit("ReductionFactor") )
+            if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->BeginUnit("NormalWeight") )
+            if ( !pLoad->BeginUnit(_T("NormalWeight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("TensionControlled_RC",&m_PhiFlexureTensionRC[pgsTypes::Normal]) )
+            if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("TensionControlled_PS",&m_PhiFlexureTensionPS[pgsTypes::Normal]) )
+            if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("CompressionControlled",&m_PhiFlexureCompression[pgsTypes::Normal]) )
+            if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
              if ( !pLoad->EndUnit() ) // NormalWeight
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->BeginUnit("AllLightweight") )
+            if ( !pLoad->BeginUnit(_T("AllLightweight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("TensionControlled_RC",&m_PhiFlexureTensionRC[pgsTypes::AllLightweight]) )
+            if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::AllLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("TensionControlled_PS",&m_PhiFlexureTensionPS[pgsTypes::AllLightweight]) )
+            if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::AllLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("CompressionControlled",&m_PhiFlexureCompression[pgsTypes::AllLightweight]) )
+            if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::AllLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
              if ( !pLoad->EndUnit() ) // AllLightweight
                THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-            if ( !pLoad->BeginUnit("SandLightweight") )
+            if ( !pLoad->BeginUnit(_T("SandLightweight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("TensionControlled_RC",&m_PhiFlexureTensionRC[pgsTypes::SandLightweight]) )
+            if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("TensionControlled_PS",&m_PhiFlexureTensionPS[pgsTypes::SandLightweight]) )
+            if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("CompressionControlled",&m_PhiFlexureCompression[pgsTypes::SandLightweight]) )
+            if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
             
              if ( !pLoad->EndUnit() ) // SandLightweight
@@ -1378,78 +1380,78 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          if ( version >= 9.0 )
          {
-            if (!pLoad->Property("ModulusOfRuptureCoefficient",&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]))
+            if (!pLoad->Property(_T("ModulusOfRuptureCoefficient"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
          if ( 18 <= version && version )
          {
             // added in version 18
-            if ( !pLoad->Property("ShearModulusOfRuptureCoefficient",&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal])) 
+            if ( !pLoad->Property(_T("ShearModulusOfRuptureCoefficient"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal])) 
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
       else 
       {
-         if ( !pLoad->BeginUnit("ModulusOfRuptureCoefficient") )
+         if ( !pLoad->BeginUnit(_T("ModulusOfRuptureCoefficient")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->BeginUnit("Moment") )
+         if ( !pLoad->BeginUnit(_T("Moment")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Normal",&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("Normal"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("AllLightweight",&m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         if ( !pLoad->Property(_T("AllLightweight"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("SandLightweight",&m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         if ( !pLoad->Property(_T("SandLightweight"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Moment
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->BeginUnit("Shear") )
+         if ( !pLoad->BeginUnit(_T("Shear")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Normal",&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("Normal"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("AllLightweight",&m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         if ( !pLoad->Property(_T("AllLightweight"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("SandLightweight",&m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         if ( !pLoad->Property(_T("SandLightweight"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Shear
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->BeginUnit("Lifting") )
+         if ( !pLoad->BeginUnit(_T("Lifting")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Normal",&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("Normal"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("AllLightweight",&m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         if ( !pLoad->Property(_T("AllLightweight"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("SandLightweight",&m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         if ( !pLoad->Property(_T("SandLightweight"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Lifting
             THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-         if ( !pLoad->BeginUnit("Shipping") )
+         if ( !pLoad->BeginUnit(_T("Shipping")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Normal",&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("Normal"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("AllLightweight",&m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         if ( !pLoad->Property(_T("AllLightweight"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("SandLightweight",&m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         if ( !pLoad->Property(_T("SandLightweight"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Shipping
@@ -1459,26 +1461,26 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( !pLoad->Property("BsLldfMethod", &temp ) )
+      if ( !pLoad->Property(_T("BsLldfMethod"), &temp ) )
          THROW_LOAD(InvalidFileFormat,pLoad);
       m_LldfMethod = temp;
 
       if ( 28 < version )
       {
          // added in version 29
-         if ( !pLoad->Property("MaxAngularDeviationBetweenGirders",&m_MaxAngularDeviationBetweenGirders) )
+         if ( !pLoad->Property(_T("MaxAngularDeviationBetweenGirders"),&m_MaxAngularDeviationBetweenGirders) )
             THROW_LOAD(InvalidFileFormat,pLoad);
    
-         if ( !pLoad->Property("MinGirderStiffnessRatio",&m_MinGirderStiffnessRatio) )
+         if ( !pLoad->Property(_T("MinGirderStiffnessRatio"),&m_MinGirderStiffnessRatio) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("LLDFGirderSpacingLocation",&m_LLDFGirderSpacingLocation) )
+         if ( !pLoad->Property(_T("LLDFGirderSpacingLocation"),&m_LLDFGirderSpacingLocation) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 30 < version )
       {
-         if ( !pLoad->Property("LimitDistributionFactorsToLanesBeams",&m_LimitDistributionFactorsToLanesBeams) )
+         if ( !pLoad->Property(_T("LimitDistributionFactorsToLanesBeams"),&m_LimitDistributionFactorsToLanesBeams) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1489,7 +1491,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // added longitudinal reinforcement for shear method to version 1.2 (this was the only change)
          if (version >= 1.2)
          {
-            if ( !pLoad->Property("LongReinfShearMethod", &temp ) )
+            if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
                THROW_LOAD(InvalidFileFormat,pLoad);
             m_LongReinfShearMethod = temp;
 
@@ -1504,18 +1506,18 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    
          if ( version >= 7.0 )
          {
-            if (!pLoad->Property("IncludeRebar_Shear",&temp))
+            if (!pLoad->Property(_T("IncludeRebar_Shear"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_bIncludeRebar_Shear = (temp == 0 ? false : true);
          }
       }
 
-      if ( !pLoad->Property("CreepMethod",&temp) )
+      if ( !pLoad->Property(_T("CreepMethod"),&temp) )
          THROW_LOAD(InvalidFileFormat,pLoad);
       m_CreepMethod = temp;
 
-      if (!pLoad->Property("CreepFactor",&m_CreepFactor))
+      if (!pLoad->Property(_T("CreepFactor"),&m_CreepFactor))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       // WSDOT has abandonded it's creep method and use the LRFD calculations
@@ -1524,56 +1526,56 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 3.0 <= version )
       {
-         if (!pLoad->Property("CreepDuration1Min",&m_CreepDuration1Min))
+         if (!pLoad->Property(_T("CreepDuration1Min"),&m_CreepDuration1Min))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("CreepDuration1Max",&m_CreepDuration1Max))
+         if (!pLoad->Property(_T("CreepDuration1Max"),&m_CreepDuration1Max))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("CreepDuration2Min",&m_CreepDuration2Min))
+         if (!pLoad->Property(_T("CreepDuration2Min"),&m_CreepDuration2Min))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("CreepDuration2Max",&m_CreepDuration2Max))
+         if (!pLoad->Property(_T("CreepDuration2Max"),&m_CreepDuration2Max))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("XferTime",&m_XferTime))
+         if ( !pLoad->Property(_T("XferTime"),&m_XferTime))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( 3.1 <= version && version < 3.2 )
          {
-            if ( !pLoad->Property("NoncompositeCreepDuration",&m_TotalCreepDuration))
+            if ( !pLoad->Property(_T("NoncompositeCreepDuration"),&m_TotalCreepDuration))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
          if ( 3.2 <= version )
          {
-            if ( !pLoad->Property("TotalCreepDuration",&m_TotalCreepDuration))
+            if ( !pLoad->Property(_T("TotalCreepDuration"),&m_TotalCreepDuration))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
       else if (1.6 <= version && version < 3.0)
       {
-         if (!pLoad->Property("CreepDuration1",&m_CreepDuration1Min))
+         if (!pLoad->Property(_T("CreepDuration1"),&m_CreepDuration1Min))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_CreepDuration1Max = m_CreepDuration1Min;
 
-         if (!pLoad->Property("CreepDuration2",&m_CreepDuration2Min))
+         if (!pLoad->Property(_T("CreepDuration2"),&m_CreepDuration2Min))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_CreepDuration2Max = m_CreepDuration2Min;
 
-         if ( !pLoad->Property("XferTime",&m_XferTime))
+         if ( !pLoad->Property(_T("XferTime"),&m_XferTime))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else
       {
          // only one creep duration was entered - need to make some assumptions here
-         if (!pLoad->Property("CreepDuration",&m_CreepDuration2Min))
+         if (!pLoad->Property(_T("CreepDuration"),&m_CreepDuration2Min))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_CreepDuration2Max = m_CreepDuration2Min;
 
-         if ( !pLoad->Property("XferTime",&m_XferTime))
+         if ( !pLoad->Property(_T("XferTime"),&m_XferTime))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          Float64 duration_days = ::ConvertFromSysUnits(m_CreepDuration2Min,unitMeasure::Day);
@@ -1590,41 +1592,51 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
  
-      if ( !pLoad->Property("LossMethod",&temp) )
+      if ( !pLoad->Property(_T("LossMethod"),&temp) )
          THROW_LOAD(InvalidFileFormat,pLoad );
       m_LossMethod = temp;
 
-      if ( !pLoad->Property("FinalLosses",&m_FinalLosses) )
+      if ( !pLoad->Property(_T("FinalLosses"),&m_FinalLosses) )
          THROW_LOAD(InvalidFileFormat,pLoad );
 
-      if ( !pLoad->Property("ShippingLosses",&m_ShippingLosses) )
+      if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
          THROW_LOAD(InvalidFileFormat,pLoad );
 
-      if ( !pLoad->Property("BeforeXferLosses",&m_BeforeXferLosses) )
+      if ( !pLoad->Property(_T("BeforeXferLosses"),&m_BeforeXferLosses) )
          THROW_LOAD(InvalidFileFormat,pLoad );
 
-      if ( !pLoad->Property("AfterXferLosses",&m_AfterXferLosses) )
+      if ( !pLoad->Property(_T("AfterXferLosses"),&m_AfterXferLosses) )
          THROW_LOAD(InvalidFileFormat,pLoad );
 
       if ( 13.0 <= version )
       {
-         if ( !pLoad->Property("ShippingTime",&m_ShippingTime) )
+         if ( !pLoad->Property(_T("ShippingTime"),&m_ShippingTime) )
             THROW_LOAD(InvalidFileFormat,pLoad );
       }
 
       if ( 22 <= version )
       {
-         if ( !pLoad->Property("LiftingLosses",&m_LiftingLosses) )
+         if ( !pLoad->Property(_T("LiftingLosses"),&m_LiftingLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("BeforeTempStrandRemovalLosses",&m_BeforeTempStrandRemovalLosses) )
+         if ( !pLoad->Property(_T("BeforeTempStrandRemovalLosses"),&m_BeforeTempStrandRemovalLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("AfterTempStrandRemovalLosses",&m_AfterTempStrandRemovalLosses) )
+         if ( !pLoad->Property(_T("AfterTempStrandRemovalLosses"),&m_AfterTempStrandRemovalLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("AfterDeckPlacementLosses",&m_AfterDeckPlacementLosses) )
+         if ( !pLoad->Property(_T("AfterDeckPlacementLosses"),&m_AfterDeckPlacementLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( 38 <= version )
+         {
+            if ( !pLoad->Property(_T("AfterSIDLLosses"),&m_AfterSIDLLosses) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         else
+         {
+            m_AfterSIDLLosses = m_AfterDeckPlacementLosses;
+         }
       }
       else
       {
@@ -1632,54 +1644,55 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_BeforeTempStrandRemovalLosses = m_ShippingLosses < 0 ? m_LiftingLosses : m_ShippingLosses;
          m_AfterTempStrandRemovalLosses  = m_BeforeTempStrandRemovalLosses;
          m_AfterDeckPlacementLosses      = m_FinalLosses;
+         m_AfterSIDLLosses               = m_FinalLosses;
       }
 
       if ( 19 <= version )
       {
-         if ( !pLoad->Property("CuringMethodFactor",&m_CuringMethodTimeAdjustmentFactor) )
+         if ( !pLoad->Property(_T("CuringMethodFactor"),&m_CuringMethodTimeAdjustmentFactor) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       // added in version 1.6
       if ( version >= 1.5 )
       {
-         if (!pLoad->Property("CheckStrandStressAtJacking",&m_bCheckStrandStress[AT_JACKING]))
+         if (!pLoad->Property(_T("CheckStrandStressAtJacking"),&m_bCheckStrandStress[AT_JACKING]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("Coeff_AtJacking_StressRel",&m_StrandStressCoeff[AT_JACKING][STRESS_REL]))
+         if (!pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_StrandStressCoeff[AT_JACKING][STRESS_REL]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("Coeff_AtJacking_LowRelax",&m_StrandStressCoeff[AT_JACKING][LOW_RELAX]))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-
-         if (!pLoad->Property("CheckStrandStressBeforeTransfer",&m_bCheckStrandStress[BEFORE_TRANSFER]))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if (!pLoad->Property("Coeff_BeforeTransfer_StressRel",&m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if (!pLoad->Property("Coeff_BeforeTransfer_LowRelax",&m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]))
+         if (!pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_StrandStressCoeff[AT_JACKING][LOW_RELAX]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-         if (!pLoad->Property("CheckStrandStressAfterTransfer",&m_bCheckStrandStress[AFTER_TRANSFER]))
+         if (!pLoad->Property(_T("CheckStrandStressBeforeTransfer"),&m_bCheckStrandStress[BEFORE_TRANSFER]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("Coeff_AfterTransfer_StressRel",&m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]))
+         if (!pLoad->Property(_T("Coeff_BeforeTransfer_StressRel"),&m_StrandStressCoeff[BEFORE_TRANSFER][STRESS_REL]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("Coeff_AfterTransfer_LowRelax",&m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]))
+         if (!pLoad->Property(_T("Coeff_BeforeTransfer_LowRelax"),&m_StrandStressCoeff[BEFORE_TRANSFER][LOW_RELAX]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-         if (!pLoad->Property("CheckStrandStressAfterAllLosses",&m_bCheckStrandStress[AFTER_ALL_LOSSES]))
+         if (!pLoad->Property(_T("CheckStrandStressAfterTransfer"),&m_bCheckStrandStress[AFTER_TRANSFER]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("Coeff_AfterAllLosses_StressRel",&m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]))
+         if (!pLoad->Property(_T("Coeff_AfterTransfer_StressRel"),&m_StrandStressCoeff[AFTER_TRANSFER][STRESS_REL]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("Coeff_AfterAllLosses_LowRelax",&m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]))
+         if (!pLoad->Property(_T("Coeff_AfterTransfer_LowRelax"),&m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+
+         if (!pLoad->Property(_T("CheckStrandStressAfterAllLosses"),&m_bCheckStrandStress[AFTER_ALL_LOSSES]))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if (!pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if (!pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
       }
@@ -1711,23 +1724,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 22 < version )
       {
          // added in version 23
-         if ( !pLoad->Property("AnchorSet",&m_Dset) )
+         if ( !pLoad->Property(_T("AnchorSet"),&m_Dset) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("WobbleFriction",&m_WobbleFriction) )
+         if ( !pLoad->Property(_T("WobbleFriction"),&m_WobbleFriction) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("CoefficientOfFriction",&m_FrictionCoefficient) )
+         if ( !pLoad->Property(_T("CoefficientOfFriction"),&m_FrictionCoefficient) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       // added in version 1.7
       if ( 1.6 < version )
       {
-         if (!pLoad->Property("CheckLiveLoadDeflection",&m_bDoEvaluateDeflection))
+         if (!pLoad->Property(_T("CheckLiveLoadDeflection"),&m_bDoEvaluateDeflection))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if (!pLoad->Property("LiveLoadDeflectionLimit",&m_DeflectionLimit))
+         if (!pLoad->Property(_T("LiveLoadDeflectionLimit"),&m_DeflectionLimit))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
       }
@@ -1741,7 +1754,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 8.0 <= version && version < 28 )
       {
          long value;
-         if ( !pLoad->Property("AnalysisType",&value) )
+         if ( !pLoad->Property(_T("AnalysisType"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_AnalysisType = (pgsTypes::AnalysisType)(value);
@@ -1749,85 +1762,85 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 10.0 <= version && version < 37 )
       {
-         if ( !pLoad->Property("MaxSlabFc",&m_MaxSlabFc[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("MaxGirderFci",&m_MaxGirderFci[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("MaxGirderFc",&m_MaxGirderFc[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("MaxConcreteUnitWeight",&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("MaxConcreteAggSize",&m_MaxConcreteAggSize[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else if ( 37 <= version )
       {
-         if ( !pLoad->BeginUnit("Limits") )
+         if ( !pLoad->BeginUnit(_T("Limits")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->BeginUnit("Normal") )
+            if ( !pLoad->BeginUnit(_T("Normal")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxSlabFc",&m_MaxSlabFc[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxGirderFci",&m_MaxGirderFci[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxGirderFc",&m_MaxGirderFc[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxConcreteUnitWeight",&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxConcreteAggSize",&m_MaxConcreteAggSize[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
             if ( !pLoad->EndUnit() ) // Normal
                THROW_LOAD(InvalidFileFormat,pLoad);
 
 
-            if ( !pLoad->BeginUnit("AllLightweight") )
+            if ( !pLoad->BeginUnit(_T("AllLightweight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxSlabFc",&m_MaxSlabFc[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxGirderFci",&m_MaxGirderFci[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxGirderFc",&m_MaxGirderFc[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxConcreteUnitWeight",&m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxConcreteAggSize",&m_MaxConcreteAggSize[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
             if ( !pLoad->EndUnit() ) // AllLightweight
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->BeginUnit("SandLightweight") )
+            if ( !pLoad->BeginUnit(_T("SandLightweight")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxSlabFc",&m_MaxSlabFc[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxGirderFci",&m_MaxGirderFci[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxGirderFc",&m_MaxGirderFc[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxConcreteUnitWeight",&m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property("MaxConcreteAggSize",&m_MaxConcreteAggSize[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
             if ( !pLoad->EndUnit() ) // SandLightweight
@@ -1840,9 +1853,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // Added in 14.0
       if ( 14.0 <= version )
       {
-         std::string strLimitState[] = {"ServiceI","ServiceIA","ServiceIII","StrengthI","StrengthII","FatigueI"};
+         std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
 
-         pLoad->BeginUnit("LoadFactors");
+         pLoad->BeginUnit(_T("LoadFactors"));
          Float64 lf_version = pLoad->GetVersion();
          int nLimitStates = 4;
          if ( 2 <= lf_version  )
@@ -1855,12 +1868,12 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             pLoad->BeginUnit(strLimitState[i].c_str());
 
-            pLoad->Property("DCmin",  &m_DCmin[i]);
-            pLoad->Property("DCmax",  &m_DCmax[i]);
-            pLoad->Property("DWmin",  &m_DWmin[i]);
-            pLoad->Property("DWmax",  &m_DWmax[i]);
-            pLoad->Property("LLIMmin",&m_LLIMmin[i]);
-            pLoad->Property("LLIMmax",&m_LLIMmax[i]);
+            pLoad->Property(_T("DCmin"),  &m_DCmin[i]);
+            pLoad->Property(_T("DCmax"),  &m_DCmax[i]);
+            pLoad->Property(_T("DWmin"),  &m_DWmin[i]);
+            pLoad->Property(_T("DWmax"),  &m_DWmax[i]);
+            pLoad->Property(_T("LLIMmin"),&m_LLIMmin[i]);
+            pLoad->Property(_T("LLIMmax"),&m_LLIMmax[i]);
 
             pLoad->EndUnit();
          }
@@ -1875,10 +1888,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if(!pLoad->Property("EnableSlabOffsetCheck", &m_EnableSlabOffsetCheck))
+         if(!pLoad->Property(_T("EnableSlabOffsetCheck"), &m_EnableSlabOffsetCheck))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property("EnableSlabOffsetDesign", &m_EnableSlabOffsetDesign))
+         if(!pLoad->Property(_T("EnableSlabOffsetDesign"), &m_EnableSlabOffsetDesign))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1889,7 +1902,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          long ftype;
-         if(!pLoad->Property("DesignStrandFillType", &ftype))
+         if(!pLoad->Property(_T("DesignStrandFillType"), &ftype))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_DesignStrandFillType = ftype==(long)ftGridOrder ? ftGridOrder : ftMinimizeHarping;
@@ -1898,7 +1911,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 16 <= version )
       {
          long value;
-         if ( !pLoad->Property("EffectiveFlangeWidthMethod",&value) )
+         if ( !pLoad->Property(_T("EffectiveFlangeWidthMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_EffFlangeWidthMethod = (pgsTypes::EffectiveFlangeWidthMethod)(value);
@@ -1908,19 +1921,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 17 <= version && version <= 23)
       {
          long value;
-         if ( !pLoad->Property("SlabOffsetMethod",&value) )
+         if ( !pLoad->Property(_T("SlabOffsetMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 18 <= version && version < 37 )
       {
          long value;
-         if ( !pLoad->Property("ShearFlowMethod",&value) )
+         if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
 
-         if ( !pLoad->Property("ShearCapacityMethod",&value) )
+         if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          switch(value)
@@ -1961,28 +1974,28 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          ATLASSERT( 37 <= version );
-         if ( !pLoad->BeginUnit("Shear") )
+         if ( !pLoad->BeginUnit(_T("Shear")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("LongReinfShearMethod", &temp ) )
+         if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
             THROW_LOAD(InvalidFileFormat,pLoad);
          m_LongReinfShearMethod = temp;
 
          // WSDOT method has been recinded
          m_LongReinfShearMethod = LRFD_METHOD;
 
-         if (!pLoad->Property("IncludeRebarForCapacity",&temp))
+         if (!pLoad->Property(_T("IncludeRebarForCapacity"),&temp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_bIncludeRebar_Shear = (temp == 0 ? false : true);
 
          long value;
-         if ( !pLoad->Property("ShearFlowMethod",&value) )
+         if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
 
-         if ( !pLoad->Property("ShearCapacityMethod",&value) )
+         if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          switch(value)
@@ -2014,16 +2027,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == scmWSDOT2007 )
             m_ShearCapacityMethod = scmBTEquations;
 
-         if ( !pLoad->BeginUnit("ReductionFactor") )
+         if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("Normal",&m_PhiShear[pgsTypes::Normal]) )
+            if ( !pLoad->Property(_T("Normal"),&m_PhiShear[pgsTypes::Normal]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("AllLightweight",&m_PhiShear[pgsTypes::AllLightweight]) )
+            if ( !pLoad->Property(_T("AllLightweight"),&m_PhiShear[pgsTypes::AllLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( !pLoad->Property("SandLightweight",&m_PhiShear[pgsTypes::SandLightweight]) )
+            if ( !pLoad->Property(_T("SandLightweight"),&m_PhiShear[pgsTypes::SandLightweight]) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // ReductionFactor
@@ -2049,17 +2062,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          // added in version 26
-         if ( !pLoad->Property("PedestrianLoad",&m_PedestrianLoad) )
+         if ( !pLoad->Property(_T("PedestrianLoad"),&m_PedestrianLoad) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("MinSidewalkWidth",&m_MinSidewalkWidth) )
+         if ( !pLoad->Property(_T("MinSidewalkWidth"),&m_MinSidewalkWidth) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
 
       if (32 <= version)
       {
-         if ( !pLoad->Property("PrestressTransferComputationType",(long*)&m_PrestressTransferComputationType) )
+         if ( !pLoad->Property(_T("PrestressTransferComputationType"),(long*)&m_PrestressTransferComputationType) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2198,6 +2211,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_BeforeTempStrandRemovalLosses , rOther.m_BeforeTempStrandRemovalLosses );
    TESTD(m_AfterTempStrandRemovalLosses  , rOther.m_AfterTempStrandRemovalLosses );
    TESTD(m_AfterDeckPlacementLosses      , rOther.m_AfterDeckPlacementLosses );
+   TESTD(m_AfterSIDLLosses               , rOther.m_AfterSIDLLosses );
 
    TESTD(m_Dset,rOther.m_Dset);
    TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
@@ -2310,13 +2324,13 @@ lrfdVersionMgr::Units SpecLibraryEntry::GetSpecificationUnits() const
    return m_SpecificationUnits;
 }
 
-void SpecLibraryEntry::SetDescription(const char* name)
+void SpecLibraryEntry::SetDescription(LPCTSTR name)
 {
    m_Description.erase();
    m_Description = name;
 }
 
-std::string SpecLibraryEntry::GetDescription() const
+std::_tstring SpecLibraryEntry::GetDescription() const
 {
    return m_Description;
 }
@@ -3273,6 +3287,16 @@ void SpecLibraryEntry::SetAfterDeckPlacementLosses(Float64 loss)
    m_AfterDeckPlacementLosses = loss;
 }
 
+Float64 SpecLibraryEntry::GetAfterSIDLLosses() const
+{
+   return m_AfterSIDLLosses;
+}
+
+void SpecLibraryEntry::SetAfterSIDLLosses(Float64 loss)
+{
+   m_AfterSIDLLosses = loss;
+}
+
 Float64 SpecLibraryEntry::GetAnchorSet() const
 {
    return m_Dset;
@@ -3829,6 +3853,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_BeforeTempStrandRemovalLosses = rOther.m_BeforeTempStrandRemovalLosses;
    m_AfterTempStrandRemovalLosses  = rOther.m_AfterTempStrandRemovalLosses;
    m_AfterDeckPlacementLosses      = rOther.m_AfterDeckPlacementLosses;
+   m_AfterSIDLLosses               = rOther.m_AfterSIDLLosses;
+
    m_Dset = rOther.m_Dset;
    m_WobbleFriction = rOther.m_WobbleFriction;
    m_FrictionCoefficient = rOther.m_FrictionCoefficient;

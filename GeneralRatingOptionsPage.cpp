@@ -60,7 +60,7 @@ void CGeneralRatingOptionsPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Text(pDX,   IDC_SYSTEM_FACTOR_FLEXURE, m_Data.SystemFactorFlexure);
    DDX_Text(pDX,   IDC_SYSTEM_FACTOR_SHEAR,   m_Data.SystemFactorShear);
-   DDX_Keyword(pDX,IDC_ADTT,"Unknown",m_Data.ADTT);
+   DDX_Keyword(pDX,IDC_ADTT,_T("Unknown"),m_Data.ADTT);
 
    DDX_Check_Bool(pDX, IDC_PEDESTRIAN, m_Data.bIncludePedestrianLiveLoad);
 
@@ -84,7 +84,7 @@ BOOL CGeneralRatingOptionsPage::OnInitDialog()
 
    CComboBox* pcbRatingSpec = (CComboBox*)GetDlgItem( IDC_RATING_CRITERIA );
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_RatingSpecs.begin(); iter < m_RatingSpecs.end(); iter++ )
    {
       CString spec( (*iter).c_str() );
@@ -107,7 +107,7 @@ BOOL CGeneralRatingOptionsPage::OnApply()
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
    if ( m_Data.bLegalRating && pParent->m_LegalPage.m_Data.RoutineNames.size() == 0 && pParent->m_LegalPage.m_Data.SpecialNames.size() == 0 )
    {
-      int result = AfxChoose("Load Rating Specification","Legal Load Rating is selected, however live loads are not defined.","Select Live Loads\nSkip Legal Load Rating");
+      int result = AfxChoose(_T("Load Rating Specification"),_T("Legal Load Rating is selected, however live loads are not defined."),_T("Select Live Loads\nSkip Legal Load Rating"));
       if ( result == 0 )
       {
          pParent->SetActivePage(&(pParent->m_LegalPage));
@@ -121,7 +121,7 @@ BOOL CGeneralRatingOptionsPage::OnApply()
 
    if ( m_Data.bPermitRating && pParent->m_PermitPage.m_Data.RoutinePermitNames.size() == 0 && pParent->m_PermitPage.m_Data.SpecialPermitNames.size() == 0 )
    {
-      int result = AfxChoose("Load Rating Specification","Permit Load Rating is selected, however live loads are not defined.","Select Live Loads\nSkip Permit Load Rating");
+      int result = AfxChoose(_T("Load Rating Specification"),_T("Permit Load Rating is selected, however live loads are not defined."),_T("Select Live Loads\nSkip Permit Load Rating"));
       if ( result == 0 )
       {
          pParent->SetActivePage(&(pParent->m_PermitPage));
@@ -148,11 +148,11 @@ BOOL CGeneralRatingOptionsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* 
       switch(nID)
       {
       case IDC_ADTT:
-         m_strTip = "Enter an ADTT value or enter the keyword Unknown";
+         m_strTip = _T("Enter an ADTT value or enter the keyword Unknown");
          break;
 
       case IDC_PEDESTRIAN:
-         m_strTip = "MBE 6A.2.3.4 - Pedestrian loads on sidewalks need not be considered simultaneously with vehicluar loads when load rating a bridge unless the Engineer has reason to expect that significant pedestrian loading will coincide with maximum vehicular loading";
+         m_strTip = _T("MBE 6A.2.3.4 - Pedestrian loads on sidewalks need not be considered simultaneously with vehicluar loads when load rating a bridge unless the Engineer has reason to expect that significant pedestrian loading will coincide with maximum vehicular loading");
          break;
 
       default:

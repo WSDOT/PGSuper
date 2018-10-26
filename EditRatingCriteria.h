@@ -27,7 +27,7 @@
 class txnGeneralRatingData
 {
 public:
-   std::string CriteriaName;
+   std::_tstring CriteriaName;
    Int16 ADTT; // < 0 means unknown
    Float64 SystemFactorFlexure;
    Float64 SystemFactorShear;
@@ -68,8 +68,8 @@ public:
 class txnLegalRatingData
 {
 public:
-   std::vector<std::string> RoutineNames;
-   std::vector<std::string> SpecialNames;
+   std::vector<std::_tstring> RoutineNames;
+   std::vector<std::_tstring> SpecialNames;
    Float64 IM_Truck_Routine;
    Float64 IM_Lane_Routine;
    Float64 IM_Truck_Special;
@@ -99,8 +99,8 @@ public:
 class txnPermitRatingData
 {
 public:
-   std::vector<std::string> RoutinePermitNames;
-   std::vector<std::string> SpecialPermitNames;
+   std::vector<std::_tstring> RoutinePermitNames;
+   std::vector<std::_tstring> SpecialPermitNames;
    Float64 IM_Truck_Routine;
    Float64 IM_Lane_Routine;
    Float64 IM_Truck_Special;
@@ -166,7 +166,7 @@ public:
    virtual bool Execute();
    virtual void Undo();
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool IsUndoable();
    virtual bool IsRepeatable();
 

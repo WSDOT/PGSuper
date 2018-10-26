@@ -24,6 +24,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -50,7 +51,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include"
 				PreprocessorDefinitions="BUILDPSGLIBLIB;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -126,6 +127,8 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -151,7 +154,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -186,6 +194,9 @@
 				IgnoreDefaultLibraryNames="PGSuperExt.lib"
 				ModuleDefinitionFile=".\psgLib.def"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"

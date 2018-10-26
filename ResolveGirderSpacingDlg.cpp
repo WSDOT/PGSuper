@@ -75,21 +75,21 @@ END_MESSAGE_MAP()
 BOOL CResolveGirderSpacingDlg::OnInitDialog() 
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_MEASUREMENT_DATUM);
-   int idx = pCB->AddString("Measured at and along the CL pier");
+   int idx = pCB->AddString(_T("Measured at and along the CL pier"));
    DWORD item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::AlongItem);
    pCB->SetItemData(idx,item_data);
    
-   idx = pCB->AddString("Measured normal to alignment at CL pier");
+   idx = pCB->AddString(_T("Measured normal to alignment at CL pier"));
    item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::NormalToItem);
    pCB->SetItemData(idx,item_data);
    
    if (!m_RestrictSpacing)
    {
-      idx = pCB->AddString("Measured at and along the CL bearing");
+      idx = pCB->AddString(_T("Measured at and along the CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem);
       pCB->SetItemData(idx,item_data);
 
-      idx = pCB->AddString("Measured normal to alignment at CL bearing");
+      idx = pCB->AddString(_T("Measured normal to alignment at CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::NormalToItem);
       pCB->SetItemData(idx,item_data);
    }
@@ -97,12 +97,12 @@ BOOL CResolveGirderSpacingDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
    // fill up the list of girder spacings
-   sysTokenizer tokenizer("\n");
+   sysTokenizer tokenizer(_T("\n"));
    tokenizer.push_back(m_strSpacings);
    sysTokenizer::iterator iter;
    for ( iter = tokenizer.begin(); iter != tokenizer.end(); iter++ )
    {
-      std::string strItem = *iter;
+      std::_tstring strItem = *iter;
       m_cbList.AddString(strItem.c_str());
    }
 

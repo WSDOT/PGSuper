@@ -402,7 +402,10 @@
 #define IDC_AFTER_DECK_PLACEMENT_TAG    1125
 #define IDC_CY_ALLOW_LIFTING_COMP       1126
 #define IDC_HAULING_MAX_TENSSQRT2       1126
+#define IDC_AFTER_SIDL                  1126
 #define IDC_LIFTING_NORMAL_MAX_SQRT     1127
+#define IDC_AFTER_DECK_PLACEMENT_TAG2   1127
+#define IDC_AFTER_SIDL_TAG              1127
 #define IDC_LIFTING_NORMAL_MAX_SQRT_UNITS 1128
 #define IDC_CHECK_LIFTING_NORMAL_MAX_MAX 1129
 #define IDC_LIFTING_NORMAL_MAX_MAX      1130
@@ -460,6 +463,7 @@
 #define IDC_ABSOLUTE                    1177
 #define IDC_AFTER_DECK_PLACEMENT_LABEL  1177
 #define IDC_LLDF                        1178
+#define IDC_AFTER_SIDL_LABEL            1178
 #define IDC_SHEAR_CAPACITY              1181
 #define IDC_LRSH                        1182
 #define IDC_CONFLICT_TOP                1182

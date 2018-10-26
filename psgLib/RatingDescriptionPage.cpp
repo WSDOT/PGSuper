@@ -81,10 +81,10 @@ BOOL CRatingDescriptionPage::OnInitDialog()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx;
-   idx = pSpec->AddString("1st Edition, 2008");
+   idx = pSpec->AddString(_T("1st Edition, 2008"));
    pSpec->SetItemData(idx,(DWORD)lrfrVersionMgr::FirstEdition2008);
 
-   idx = pSpec->AddString("1st Edition, 2008 with 2010 interim provisions");
+   idx = pSpec->AddString(_T("1st Edition, 2008 with 2010 interim provisions"));
    pSpec->SetItemData(idx,(DWORD)lrfrVersionMgr::FirstEditionWith2010Interims);
 
    CPropertyPage::OnInitDialog();

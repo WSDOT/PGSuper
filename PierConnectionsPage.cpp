@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperDoc.h"
 #include "PierConnectionsPage.h"
 #include "PierDetailsDlg.h"
@@ -168,13 +168,13 @@ void CPierConnectionsPage::FillWithConnections(CComboBox* pCB)
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
 
-   std::vector<std::string> strNames;
+   std::vector<std::_tstring> strNames;
    pLibNames->EnumGdrConnectionNames( &strNames );
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
 
    for ( iter = strNames.begin(); iter != strNames.end(); iter++ )
    {
-      const std::string& strConnection = *iter;
+      const std::_tstring& strConnection = *iter;
 
       pCB->AddString( strConnection.c_str() );
    }

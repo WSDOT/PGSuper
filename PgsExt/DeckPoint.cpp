@@ -111,34 +111,34 @@ HRESULT CDeckPoint::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    try
    {
-      hr = pStrLoad->BeginUnit("DeckPoint");
+      hr = pStrLoad->BeginUnit(_T("DeckPoint"));
       double version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;
 
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("Station", &var );
+      hr = pStrLoad->get_Property(_T("Station"), &var );
       Station = var.dblVal;
 
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("LeftEdge", &var );
+      hr = pStrLoad->get_Property(_T("LeftEdge"), &var );
       LeftEdge = var.dblVal;
 
       var.vt = VT_R8;
-      hr = pStrLoad->get_Property("RightEdge", &var );
+      hr = pStrLoad->get_Property(_T("RightEdge"), &var );
       RightEdge = var.dblVal;
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("MeasurementType", &var );
+      hr = pStrLoad->get_Property(_T("MeasurementType"), &var );
       MeasurementType = (pgsTypes::OffsetMeasurementType)var.lVal;
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("LeftTransitionType", &var );
+      hr = pStrLoad->get_Property(_T("LeftTransitionType"), &var );
       LeftTransitionType = (pgsTypes::DeckPointTransitionType)var.lVal;
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property("RightTransitionType", &var );
+      hr = pStrLoad->get_Property(_T("RightTransitionType"), &var );
       RightTransitionType = (pgsTypes::DeckPointTransitionType)var.lVal;
 
       hr = pStrLoad->EndUnit();
@@ -155,14 +155,14 @@ HRESULT CDeckPoint::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("DeckPoint",1.0);
+   pStrSave->BeginUnit(_T("DeckPoint"),1.0);
 
-   pStrSave->put_Property("Station",             CComVariant(Station));
-   pStrSave->put_Property("LeftEdge",            CComVariant(LeftEdge));
-   pStrSave->put_Property("RightEdge",           CComVariant(RightEdge));
-   pStrSave->put_Property("MeasurementType",     CComVariant(MeasurementType));
-   pStrSave->put_Property("LeftTransitionType",  CComVariant(LeftTransitionType));
-   pStrSave->put_Property("RightTransitionType", CComVariant(RightTransitionType));
+   pStrSave->put_Property(_T("Station"),             CComVariant(Station));
+   pStrSave->put_Property(_T("LeftEdge"),            CComVariant(LeftEdge));
+   pStrSave->put_Property(_T("RightEdge"),           CComVariant(RightEdge));
+   pStrSave->put_Property(_T("MeasurementType"),     CComVariant(MeasurementType));
+   pStrSave->put_Property(_T("LeftTransitionType"),  CComVariant(LeftTransitionType));
+   pStrSave->put_Property(_T("RightTransitionType"), CComVariant(RightTransitionType));
 
    pStrSave->EndUnit();
 

@@ -70,8 +70,8 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   std::string strExteriorRailing; // name of the exterior railing from the library
-   std::string strInteriorRailing; // name of the interior railing from the library
+   std::_tstring strExteriorRailing; // name of the exterior railing from the library
+   std::_tstring strInteriorRailing; // name of the interior railing from the library
 
    const TrafficBarrierEntry* GetExteriorRailing() const;
    void SetExteriorRailing(const TrafficBarrierEntry* pRailing);

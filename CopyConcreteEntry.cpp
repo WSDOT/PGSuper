@@ -89,7 +89,7 @@ BOOL CCopyConcreteEntry::OnInitDialog()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
-   std::vector<std::string> names;
+   std::vector<std::_tstring> names;
    pLibNames->EnumConcreteNames(&names);
 
    CComboBox* pBox = (CComboBox*)GetDlgItem( IDC_CONC_ENTRIES );
@@ -105,7 +105,7 @@ BOOL CCopyConcreteEntry::OnInitDialog()
    {
 
       bool first = true;
-      std::vector<std::string>::iterator iter;
+      std::vector<std::_tstring>::iterator iter;
       for ( iter = names.begin(); iter < names.end(); iter++ )
       {
          CString conc( (*iter).c_str() );

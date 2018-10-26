@@ -160,7 +160,7 @@ BOOL CStrandGridLocation::OnInitDialog()
 	CDialog::OnInitDialog();
 	
    CString strg;
-   strg.Format("Starting Fill Order is %d", m_Row);
+   strg.Format(_T("Starting Fill Order is %d"), m_Row);
    CWnd* pdel = GetDlgItem(IDC_FILL_ORDER);
    ASSERT(pdel);
    pdel->SetWindowText(strg);
@@ -182,7 +182,7 @@ void CStrandGridLocation::OnSelchangeStrandType()
    CString str;
    pdel->GetWindowText(str);
 
-   if (str=="Harped")
+   if (str==_T("Harped"))
    {
       ShowDebondCtrl(FALSE);
 
@@ -193,16 +193,16 @@ void CStrandGridLocation::OnSelchangeStrandType()
          CWnd* pdel = GetDlgItem(IDC_GEX);
          ASSERT(pdel);
          CString strg;
-         strg.Format("%g",(float)m_EndX);
+         strg.Format(_T("%g"),(float)m_EndX);
          pdel->SetWindowText(strg);
 
          pdel = GetDlgItem(IDC_GEY);
          ASSERT(pdel);
-         strg.Format("%g",(float)m_EndY);
+         strg.Format(_T("%g"),(float)m_EndY);
          pdel->SetWindowText(strg);
       }
    }
-   else if (str=="Straight")
+   else if (str==_T("Straight"))
    {
       ShowDebondCtrl(TRUE);
 

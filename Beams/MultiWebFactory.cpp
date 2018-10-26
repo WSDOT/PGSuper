@@ -54,13 +54,13 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CMultiWebFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("D1");
-   m_DimNames.push_back("D2");
-   m_DimNames.push_back("T1");
-   m_DimNames.push_back("T2");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("Wmax");
-   m_DimNames.push_back("Wmin");
+   m_DimNames.push_back(_T("D1"));
+   m_DimNames.push_back(_T("D2"));
+   m_DimNames.push_back(_T("T1"));
+   m_DimNames.push_back(_T("T2"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("Wmax"));
+   m_DimNames.push_back(_T("Wmin"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
@@ -364,7 +364,7 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::string> CMultiWebFactory::GetDimensionNames()
+std::vector<std::_tstring> CMultiWebFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -379,7 +379,7 @@ std::vector<const unitLength*> CMultiWebFactory::GetDimensionUnits(bool bSIUnits
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double d1,d2;
    double w1,wmin,wmax;
@@ -398,16 +398,16 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    if ( d1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
-      std::ostringstream os;
-      os << "D1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( d2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "D2 must be a positive value" << std::ends;
+      std::_tostringstream os;
+      os << _T("D2 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -415,8 +415,8 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    if ( w1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
-      std::ostringstream os;
-      os << "W1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -425,8 +425,8 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    if ( t1 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
-      std::ostringstream os;
-      os << "T1 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -434,8 +434,8 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    if ( t2 <= 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
-      std::ostringstream os;
-      os << "T2 must be greater than 0.0 " << pUnit->UnitTag() << std::ends;
+      std::_tostringstream os;
+      os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -444,16 +444,16 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    if (wmin < web_wid)
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][5];
-      std::ostringstream os;
-      os << "Wmin must be greater than the width of the webs, which is "<< ::ConvertFromSysUnits(web_wid,*pUnit) << " " << pUnit->UnitTag()<< std::ends;
+      std::_tostringstream os;
+      os << _T("Wmin must be greater than the width of the webs, which is ")<< ::ConvertFromSysUnits(web_wid,*pUnit) << _T(" ") << pUnit->UnitTag()<< std::ends;
       *strErrMsg = os.str();
       return false;
    }   
 
    if (wmin > wmax)
    {
-      std::ostringstream os;
-      os << "Wmin must be less than or equal to Wmax" << std::ends;
+      std::_tostringstream os;
+      os << _T("Wmin must be less than or equal to Wmax") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
@@ -463,11 +463,11 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
 
 void CMultiWebFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("MultiWebDimensions",1.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("MultiWebDimensions"),1.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -480,13 +480,13 @@ IBeamFactory::Dimensions CMultiWebFactory::LoadSectionDimensions(sysIStructuredL
 
    Float64 parent_version = pLoad->GetVersion();
 
-   if ( 14 <= parent_version && !pLoad->BeginUnit("MultiWebDimensions") )
+   if ( 14 <= parent_version && !pLoad->BeginUnit(_T("MultiWebDimensions")) )
       THROW_LOAD(InvalidFileFormat,pLoad);
 
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       pLoad->Property(name.c_str(),&value);
       dimensions.push_back( std::make_pair(name,value) );
@@ -529,23 +529,23 @@ Float64 CMultiWebFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,
    return surface_area;
 }
 
-std::string CMultiWebFactory::GetImage()
+std::_tstring CMultiWebFactory::GetImage()
 {
-   return std::string("MultiWeb.jpg");
+   return std::_tstring(_T("MultiWeb.jpg"));
 }
 
-std::string CMultiWebFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "TripleTee_Composite.gif";
+      strImage =  _T("TripleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "TripleTee_Noncomposite.gif";
+      strImage =  _T("TripleTee_Noncomposite.gif");
       break;
 
    default:
@@ -556,18 +556,18 @@ std::string CMultiWebFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType
    return strImage;
 }
 
-std::string CMultiWebFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_TripleTee_Composite.gif";
+      strImage =  _T("+Mn_TripleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "+Mn_TripleTee_Noncomposite.gif";
+      strImage =  _T("+Mn_TripleTee_Noncomposite.gif");
       break;
 
    default:
@@ -578,18 +578,18 @@ std::string CMultiWebFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::
    return strImage;
 }
 
-std::string CMultiWebFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_TripleTee_Composite.gif";
+      strImage =  _T("-Mn_TripleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "-Mn_TripleTee_Noncomposite.gif";
+      strImage =  _T("-Mn_TripleTee_Noncomposite.gif");
       break;
 
    default:
@@ -600,18 +600,18 @@ std::string CMultiWebFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::
    return strImage;
 }
 
-std::string CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_TripleTee_Composite.gif";
+      strImage =  _T("Vn_TripleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "Vn_TripleTee_Noncomposite.gif";
+      strImage =  _T("Vn_TripleTee_Noncomposite.gif");
       break;
 
    default:
@@ -622,33 +622,33 @@ std::string CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::Support
    return strImage;
 }
 
-std::string CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "TripleTee_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("TripleTee_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "TripleTee_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("TripleTee_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "TripleTee_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("TripleTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "TripleTee_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("TripleTee_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -662,17 +662,17 @@ CLSID CMultiWebFactory::GetFamilyCLSID()
    return CLSID_RibbedBeamFamily;
 }
 
-std::string CMultiWebFactory::GetGirderFamilyName()
+std::_tstring CMultiWebFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CMultiWebFactory::GetPublisher()
+std::_tstring CMultiWebFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CMultiWebFactory::GetResourceInstance()
@@ -698,17 +698,17 @@ void CMultiWebFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                   double& t1,double& t2,
                                   long& nWebs)
 {
-   d1 = GetDimension(dimensions,"D1");
-   d2 = GetDimension(dimensions,"D2");
-   w  = GetDimension(dimensions,"W1");
-   wmin = GetDimension(dimensions,"Wmin");
-   wmax = GetDimension(dimensions,"Wmax");
-   t1 = GetDimension(dimensions,"T1");
-   t2 = GetDimension(dimensions,"T2");
+   d1 = GetDimension(dimensions,_T("D1"));
+   d2 = GetDimension(dimensions,_T("D2"));
+   w  = GetDimension(dimensions,_T("W1"));
+   wmin = GetDimension(dimensions,_T("Wmin"));
+   wmax = GetDimension(dimensions,_T("Wmax"));
+   t1 = GetDimension(dimensions,_T("T1"));
+   t2 = GetDimension(dimensions,_T("T2"));
    nWebs = 3;
 }
 
-double CMultiWebFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CMultiWebFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -751,8 +751,8 @@ void CMultiWebFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& 
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double gw_min = GetDimension(dimensions,"Wmin");
-   double gw_max = GetDimension(dimensions,"Wmax");
+   double gw_min = GetDimension(dimensions,_T("Wmin"));
+   double gw_max = GetDimension(dimensions,_T("Wmax"));
 
    if ( sdt == pgsTypes::sdtNone || sdt == pgsTypes::sdtCompositeOverlay )
    {
@@ -779,15 +779,15 @@ long CMultiWebFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimension
 
 Float64 CMultiWebFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,"D1");
-   double D2 = GetDimension(dimensions,"D2");
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
 
    return D1 + D2;
 }
 
 Float64 CMultiWebFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   return GetDimension(dimensions,"Wmax");
+   return GetDimension(dimensions,_T("Wmax"));
 }
 
 bool CMultiWebFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)

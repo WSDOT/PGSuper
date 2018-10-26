@@ -429,9 +429,6 @@ public:
    Float64 GetCamberDueToSelfWeight() const;
    void SetCamberDueToSelfWeight(Float64 val);
 
-   Float64 GetCamberDueToSelfWeightOverhang() const;
-   void SetCamberDueToSelfWeightOverhang(Float64 val);
-
    Float64 GetCamberDueToPrestress() const;
    void SetCamberDueToPrestress(Float64 val);
 
@@ -443,6 +440,9 @@ public:
 
    Float64 GetZo() const;
    void SetZo(Float64 zo);
+
+   Float64 GetIx() const;
+   void SetIx(Float64 ix);
 
    Float64 GetIy() const;
    void SetIy(Float64 iy);
@@ -542,10 +542,10 @@ private:
    Float64 m_OffsetFactor;
    Float64 m_TotalInitialEccentricity;
    Float64 m_CamberDueToSelfWeight;
-   Float64 m_CamberDueToSelfWeightOverhang;
    Float64 m_CamberDueToPrestress;
    Float64 m_AdjustedTotalCamberAtLifting;
    Float64 m_AdjustedYr;
+   Float64 m_Ix;
    Float64 m_Iy;
    Float64 m_Zo;
    Float64 m_ZoPrime;

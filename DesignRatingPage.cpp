@@ -51,12 +51,12 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Text(pDX,IDC_STRENGTH_I_DC,m_Data.StrengthI_DC);
    DDX_Text(pDX,IDC_STRENGTH_I_DW,m_Data.StrengthI_DW);
-   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_INVENTORY,"Compute",m_Data.StrengthI_LL_Inventory);
-   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_OPERATING,"Compute",m_Data.StrengthI_LL_Operating);
+   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_INVENTORY,_T("Compute"),m_Data.StrengthI_LL_Inventory);
+   DDX_Keyword(pDX,IDC_STRENGTH_I_LL_OPERATING,_T("Compute"),m_Data.StrengthI_LL_Operating);
    
    DDX_Text(pDX,IDC_SERVICE_III_DC,m_Data.ServiceIII_DC);
    DDX_Text(pDX,IDC_SERVICE_III_DW,m_Data.ServiceIII_DW);
-   DDX_Keyword(pDX,IDC_SERVICE_III_LL,"Compute",m_Data.ServiceIII_LL);
+   DDX_Keyword(pDX,IDC_SERVICE_III_LL,_T("Compute"),m_Data.ServiceIII_LL);
 
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,m_Data.bRateForShear);
 
@@ -65,7 +65,7 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
-   CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? "sqrt( f'c (MPa) )" : "sqrt( f'c (KSI) )";
+   CString tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )");
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 }
 
@@ -102,7 +102,7 @@ BOOL CDesignRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       switch(nID)
       {
       case IDC_RATE_FOR_SHEAR:
-         m_strTip = "In-service concrete bridges that show no visible signs of shear distress need not be checked for shear when rating for the design loads (MBE 6A.5.9)";
+         m_strTip = _T("In-service concrete bridges that show no visible signs of shear distress need not be checked for shear when rating for the design loads (MBE 6A.5.9)");
          break;
 
       case IDC_STRENGTH_I_LL_INVENTORY:
@@ -156,8 +156,8 @@ BOOL CDesignRatingPage::OnSetActive()
    Float64 gLL = -1;
    if ( !inventory.AllowUserOverride() )
    {
-      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_INVENTORY,"Compute",gLL);
-      DDX_Keyword(&dx,IDC_SERVICE_III_LL,"Compute",gLL);
+      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_INVENTORY,_T("Compute"),gLL);
+      DDX_Keyword(&dx,IDC_SERVICE_III_LL,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(FALSE);
    }
@@ -171,7 +171,7 @@ BOOL CDesignRatingPage::OnSetActive()
    const CLiveLoadFactorModel& operating = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
    if ( !operating.AllowUserOverride() )
    {
-      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_OPERATING,"Compute",gLL);
+      DDX_Keyword(&dx,IDC_STRENGTH_I_LL_OPERATING,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(FALSE);
    }
    else

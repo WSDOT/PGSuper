@@ -125,16 +125,16 @@ void CPGSuperProjectImporterAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
 
-   UINT filePos = pMainMenu->FindMenuItem("&File");
+   UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
 
-   UINT managePos = pFileMenu->FindMenuItem("Manage");
+   UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
    if ( bIntegrate )
    {
       // Append to the end of the Manage menu
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"Manage PGSuper Project Importers...",this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("Manage PGSuper Project Importers..."),this);
    }
    else
    {
@@ -179,7 +179,7 @@ UINT CPGSuperProjectImporterAppPlugin::GetDocumentResourceID()
 
 CString CPGSuperProjectImporterAppPlugin::GetName()
 {
-   return CString("PGSuper Project Importer");
+   return CString(_T("PGSuper Project Importer"));
 }
 
 //////////////////////////
@@ -197,7 +197,7 @@ BOOL CPGSuperProjectImporterAppPlugin::GetStatusBarMessageString(UINT nID, CStri
 	if ( rMessage.LoadString(nID) )
 	{
 		// first newline terminates actual string
-      rMessage.Replace('\n','\0');
+      rMessage.Replace(_T('\n'),_T('\0'));
 	}
 	else
 	{

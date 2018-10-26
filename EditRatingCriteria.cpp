@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
 
 txnGeneralRatingData::txnGeneralRatingData()
 {
-   CriteriaName = "";
+   CriteriaName = _T("");
    SystemFactorFlexure = 1.0;
    SystemFactorShear   = 1.0;
    ADTT                = -1; // unknown
@@ -464,9 +464,9 @@ txnTransaction* txnEditRatingCriteria::CreateClone() const
    return new txnEditRatingCriteria(m_Data[0],m_Data[1]);
 }
 
-std::string txnEditRatingCriteria::Name() const
+std::_tstring txnEditRatingCriteria::Name() const
 {
-   return "Edit Rating Criteria";
+   return _T("Edit Rating Criteria");
 }
 
 bool txnEditRatingCriteria::IsUndoable()

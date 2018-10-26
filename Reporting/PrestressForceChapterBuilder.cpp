@@ -121,52 +121,52 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
          // Write out what we have for prestressing in this girder
          rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         (*pPara) << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << rptNewLine;
+         (*pPara) << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
          pPara = new rptParagraph;
          *pChapter << pPara;
          StrandIndexType Ns = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight);
-         *pPara << "Number of straight strands (N" << Sub("s") << ") = " << Ns << " " 
-            << "(P" << Sub("jack") << " = " << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Straight)) << ")" << rptNewLine;
-         *pPara << "Number of harped strands (N" << Sub("h") << ") = " << pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped) << " " 
-            << "(P" << Sub("jack") << " = " << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Harped)) << ")" << rptNewLine;
+         *pPara << _T("Number of straight strands (N") << Sub(_T("s")) << _T(") = ") << Ns << _T(" ") 
+            << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Straight)) << _T(")") << rptNewLine;
+         *pPara << _T("Number of harped strands (N") << Sub(_T("h")) << _T(") = ") << pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped) << _T(" ") 
+            << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Harped)) << _T(")") << rptNewLine;
 
          if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary ) )
          {
-            *pPara << "Number of temporary strands (N" << Sub("t") << ") = " << pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Temporary) << " " 
-               << "(P" << Sub("jack") << " = " << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Temporary)) << ")" << rptNewLine;
+            *pPara << _T("Number of temporary strands (N") << Sub(_T("t")) << _T(") = ") << pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Temporary) << _T(" ") 
+               << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Temporary)) << _T(")") << rptNewLine;
 
                
             switch(girderData.TempStrandUsage)
             {
             case pgsTypes::ttsPretensioned:
-               *pPara << "Temporary Strands pretensioned with permanent strands" << rptNewLine;
+               *pPara << _T("Temporary Strands pretensioned with permanent strands") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTBeforeShipping:
-               *pPara << "Temporary Strands post-tensioned immedately before shipping" << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned immedately before shipping") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTAfterLifting:
-               *pPara << "Temporary Strands post-tensioned immedately after lifting" << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned immedately after lifting") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTBeforeLifting:
-               *pPara << "Temporary Strands post-tensioned before lifting" << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned before lifting") << rptNewLine;
                break;
             }
 
-            *pPara << "Permanent Strands: " << RPT_APS << " = " << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Permanent)) << rptNewLine;
-            *pPara << "Temporary Strands: " << RPT_APS << " = " << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Temporary)) << rptNewLine;
-            *pPara << "Total Strand Area: " << RPT_APS << " = " << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,true)) << rptNewLine;
-            *pPara << "Prestress Transfer Length (Permanent) = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent) ) << rptNewLine;
-            *pPara << "Prestress Transfer Length (Temporary) = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Temporary) ) << rptNewLine;
+            *pPara << _T("Permanent Strands: ") << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Permanent)) << rptNewLine;
+            *pPara << _T("Temporary Strands: ") << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Temporary)) << rptNewLine;
+            *pPara << _T("Total Strand Area: ") << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,true)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Permanent) = ") << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Temporary) ) << rptNewLine;
          }
          else
          {
-            *pPara << RPT_APS << " = " << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,false)) << rptNewLine;
-            *pPara << Sub2("P","jack") << " = " << force.SetValue( pStrandGeom->GetPjack(spanIdx,gdrIdx,false)) << rptNewLine;
-            *pPara << "Prestress Transfer Length = " << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,false)) << rptNewLine;
+            *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(spanIdx,gdrIdx,false)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length = ") << len.SetValue( pPrestressForce->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent) ) << rptNewLine;
          }
 
          // Write out strand forces and stresses at the various stages of prestress loss

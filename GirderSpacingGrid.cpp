@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "GirderSpacingGrid.h"
 
 #include "PGSuperDoc.h"
@@ -255,11 +255,11 @@ void CGirderSpacingGrid::FillGrid()
       CString strHeading;
       if ( firstGdrIdx == lastGdrIdx )
       {
-         strHeading.Format("%s (%s)",LABEL_GIRDER(firstGdrIdx),spacingUnit.UnitOfMeasure.UnitTag().c_str());
+         strHeading.Format(_T("%s (%s)"),LABEL_GIRDER(firstGdrIdx),spacingUnit.UnitOfMeasure.UnitTag().c_str());
       }
       else
       {
-         strHeading.Format("%s-%s (%s)",LABEL_GIRDER(firstGdrIdx),LABEL_GIRDER(lastGdrIdx),spacingUnit.UnitOfMeasure.UnitTag().c_str());
+         strHeading.Format(_T("%s-%s (%s)"),LABEL_GIRDER(firstGdrIdx),LABEL_GIRDER(lastGdrIdx),spacingUnit.UnitOfMeasure.UnitTag().c_str());
       }
 
       UserData* pUserData = new UserData(firstGdrIdx,lastGdrIdx); // the grid will delete this
@@ -311,7 +311,7 @@ void CGirderSpacingGrid::FillGrid()
 
 
       CString strSpacing;
-      strSpacing.Format("%s",FormatDimension(spacing,spacingUnit,false));
+      strSpacing.Format(_T("%s"),FormatDimension(spacing,spacingUnit,false));
       SetStyleRange(CGXRange(1,grpIdx+1), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
          .SetEnabled(TRUE)
@@ -326,21 +326,21 @@ void CGirderSpacingGrid::FillGrid()
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {
             // girder spacing
-            strSpacing.Format("%s - %s", 
+            strSpacing.Format(_T("%s - %s"), 
                FormatDimension(minGirderSpacing,spacingUnit,false),
                FormatDimension(maxGirderSpacing,spacingUnit,false));
          }
          else
          {
             // joint spacing
-            strSpacing.Format("%s - %s", 
+            strSpacing.Format(_T("%s - %s"), 
                FormatDimension(0.0,spacingUnit,false),
                FormatDimension(maxGirderSpacing-minGirderSpacing,spacingUnit,false));
          }
       }
       else
       {
-         strSpacing.Format("%s or more", 
+         strSpacing.Format(_T("%s or more"), 
             FormatDimension(minGirderSpacing,spacingUnit,false));
       }
 
@@ -355,7 +355,7 @@ void CGirderSpacingGrid::FillGrid()
    }
 
    CString strPier;
-   strPier.Format("%s %d", m_bAbutment ? "Abut" : "Pier", m_PierIdx+1);
+   strPier.Format(_T("%s %d"), m_bAbutment ? _T("Abut") : _T("Pier"), m_PierIdx+1);
 
    SetStyleRange(CGXRange(0,0), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -366,13 +366,13 @@ void CGirderSpacingGrid::FillGrid()
    SetStyleRange(CGXRange(1,0), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetEnabled(FALSE)
-      .SetValue(m_GridData.m_PierFace == pgsTypes::Ahead ? "Ahead" : "Back")
+      .SetValue(m_GridData.m_PierFace == pgsTypes::Ahead ? _T("Ahead") : _T("Back"))
       );
 
    SetStyleRange(CGXRange(2,0), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetEnabled(FALSE)
-      .SetValue("Allowable")
+      .SetValue(_T("Allowable"))
       );
 
    // make it so that text fits correctly in header row
@@ -669,7 +669,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
 
 
-   double spacing = atof(strText); // returns zero if error
+   double spacing = _tstof(strText); // returns zero if error
    if ( spacing <= 0 )
    {
       if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -730,7 +730,7 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       CString strValue;
       GetCurrentCellControl()->GetCurrentText(strValue);
 
-      double spacing = atof(strValue);
+      double spacing = _tstof(strValue);
 
       if ( IsGirderSpacing(m_GirderSpacingType) )
       {

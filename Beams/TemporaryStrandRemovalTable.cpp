@@ -52,7 +52,7 @@ rptRcTable(NumColumns,0)
 CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
-   ColumnIndexType numColumns = 7;
+   ColumnIndexType numColumns = 10;
    CTemporaryStrandRemovalTable* table = new CTemporaryStrandRemovalTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
@@ -69,19 +69,19 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    ///////////////////////////////////////////////////////////////////////////////////////
    // Change in stress due to removal of temporary strands
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Effect of temporary strand removal on permanent strands" << rptNewLine;
+   *pParagraph << _T("Effect of temporary strand removal on permanent strands") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -92,29 +92,29 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
    {
       if ( bIgnoreInitialRelaxation )
-         *pParagraph << rptRcImage(strImagePath + "Ptr_LRFD.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Ptr_LRFD.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + "Ptr_WSDOT.png") << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Ptr_WSDOT.png")) << rptNewLine;
    }
    else if (girderData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
    {
-      *pParagraph << rptRcImage(strImagePath + "Ptr_PTBeforeShipping.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Ptr_PTBeforeShipping.png")) << rptNewLine;
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + "Ptr_PT.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Ptr_PT.png")) << rptNewLine;
    }
 
-   *pParagraph << rptRcImage(strImagePath + "Delta_Fptr.png") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_Fptr.png")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->ecc.ShowUnitTag(true);
    table->area.ShowUnitTag(true);
 
-   *pParagraph << Sub2("E","p") << " = " << table->mod_e.SetValue(Ep) << rptNewLine;
-   *pParagraph << Sub2("E","c") << " = " << table->mod_e.SetValue(Ec) << rptNewLine;
-   *pParagraph << Sub2("A","pt") << " = " << table->area.SetValue(Apt) << rptNewLine;
-   *pParagraph << Sub2("e","pt") << " = " << table->ecc.SetValue(ept) << rptNewLine;
+   *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue(Ep) << rptNewLine;
+   *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue(Ec) << rptNewLine;
+   *pParagraph << Sub2(_T("A"),_T("t")) << _T(" = ") << table->area.SetValue(Apt) << rptNewLine;
+   *pParagraph << Sub2(_T("e"),_T("t")) << _T(" = ") << table->ecc.SetValue(ept) << rptNewLine;
 
    table->mod_e.ShowUnitTag(false);
    table->ecc.ShowUnitTag(false);
@@ -122,13 +122,16 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2("P","tr"),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-   (*table)(0,2) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-   (*table)(0,3) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-   (*table)(0,4) << COLHDR(Sub2("e","perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*table)(0,5) << COLHDR(RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS("ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(RPT_STRESS(_T("pj")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(Sub2(_T("P"),_T("tr")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   (*table)(0,5) << COLHDR(Sub2(_T("A"),_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+   (*table)(0,6) << COLHDR(Sub2(_T("I"),_T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+   (*table)(0,7) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(0,8) << COLHDR(RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,9) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
@@ -136,10 +139,13 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 void CTemporaryStrandRemovalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
 //   (*this)(row,0) << spanloc.SetValue(poi,end_size);
-   (*this)(row,1) << force.SetValue(details.pLosses->GetPtr());
-   (*this)(row,2) << area.SetValue(details.pLosses->GetAg());
-   (*this)(row,3) << mom_inertia.SetValue(details.pLosses->GetIg());
-   (*this)(row,4) << ecc.SetValue(details.pLosses->GetEccPermanent());
-   (*this)(row,5) << stress.SetValue( details.pLosses->GetFptr() );
-   (*this)(row,6) << stress.SetValue( details.pLosses->GetDeltaFptr() );
+   (*this)(row,1) << stress.SetValue(details.pLosses->GetFpjTemporary());
+   (*this)(row,2) << stress.SetValue(details.pLosses->ElasticShortening().TemporaryStrand_ElasticShorteningLosses());
+   (*this)(row,3) << stress.SetValue(details.pLosses->TemporaryStrand_AtShipping());
+   (*this)(row,4) << force.SetValue(details.pLosses->GetPtr());
+   (*this)(row,5) << area.SetValue(details.pLosses->GetAg());
+   (*this)(row,6) << mom_inertia.SetValue(details.pLosses->GetIg());
+   (*this)(row,7) << ecc.SetValue(details.pLosses->GetEccPermanent());
+   (*this)(row,8) << stress.SetValue( details.pLosses->GetFptr() );
+   (*this)(row,9) << stress.SetValue( details.pLosses->GetDeltaFptr() );
 }

@@ -215,8 +215,8 @@ interface IBridge : IUnknown
    virtual Float64 GetBackBearingStation(PierIndexType pier,GirderIndexType gdr) = 0;
    virtual void GetPierDirection(PierIndexType pier,IDirection** ppDirection) = 0;
    virtual void GetPierSkew(PierIndexType pier,IAngle** ppAngle) = 0;
-   virtual std::string GetLeftSidePierConnection(PierIndexType pier) = 0;
-   virtual std::string GetRightSidePierConnection(PierIndexType pier) = 0;
+   virtual std::_tstring GetLeftSidePierConnection(PierIndexType pier) = 0;
+   virtual std::_tstring GetRightSidePierConnection(PierIndexType pier) = 0;
    virtual void GetPierPoints(PierIndexType pier,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) = 0;
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
@@ -225,7 +225,7 @@ interface IBridge : IUnknown
    // returns the skew angle of a line define defined by the orientation string at a given station
    // this is usefuly for determing the skew angle of piers that aren't in the bridge model yet
    // returns false if there is an error in the strOrientation string
-   virtual bool GetSkewAngle(Float64 station,const char* strOrientation,Float64* pSkew) = 0;
+   virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew) = 0;
 
    // negative moment calculations and results need not be processed if a simple span analysis is
    // used or if there isn't any continuity.
@@ -282,15 +282,15 @@ interface IBridgeMaterial : IUnknown
 
    // Properties of Girder Longitudinal Rebar
    virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy) = 0;
-   virtual std::string GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual std::_tstring GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr) = 0;
 
    // Properties of Girder Transverse Rebar
    virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy) = 0;
-   virtual std::string GetTransverseRebarName(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual std::_tstring GetTransverseRebarName(SpanIndexType span,GirderIndexType gdr) = 0;
 
    // Rebar properties for design
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy) = 0;
-   virtual std::string GetDeckRebarName() = 0;
+   virtual std::_tstring GetDeckRebarName() = 0;
 
    virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1) = 0; /// obsolete
 
@@ -503,7 +503,7 @@ interface IStrandGeometry : IUnknown
 
    virtual StrandIndexType GetNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) = 0;
    virtual StrandIndexType GetMaxStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) = 0;
-   virtual StrandIndexType GetMaxStrands(const char* strGirderName,pgsTypes::StrandType type) = 0;
+   virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) = 0;
 
    virtual Float64 GetStrandArea(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) = 0;
    virtual Float64 GetAreaPrestressStrands(SpanIndexType span,GirderIndexType gdr,bool bIncTemp) = 0;
@@ -805,7 +805,7 @@ interface IUserDefinedLoads : IUnknown
       UserDefinedLoadCase m_LoadCase;
       Float64             m_Location; // from left support
       Float64             m_Magnitude;
-      std::string         m_Description;
+      std::_tstring         m_Description;
    };
 
    // distributed loads always in general trapezoidal form
@@ -816,7 +816,7 @@ interface IUserDefinedLoads : IUnknown
       Float64             m_EndLocation; // from left support
       Float64             m_WStart;
       Float64             m_WEnd;
-      std::string         m_Description;
+      std::_tstring         m_Description;
    };
 
    // moment and point loads are the same, except for the interpretation of Magnitude

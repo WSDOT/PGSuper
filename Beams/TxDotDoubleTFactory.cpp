@@ -53,18 +53,18 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CTxDotDoubleTFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back("C1");
-   m_DimNames.push_back("C2");
-   m_DimNames.push_back("H1");
-   m_DimNames.push_back("H2");
-   m_DimNames.push_back("H3");
-   m_DimNames.push_back("T1");
-   m_DimNames.push_back("T2");
-   m_DimNames.push_back("T3");
-   m_DimNames.push_back("F1");
-   m_DimNames.push_back("W1");
-   m_DimNames.push_back("W2");
-   m_DimNames.push_back("J");
+   m_DimNames.push_back(_T("C1"));
+   m_DimNames.push_back(_T("C2"));
+   m_DimNames.push_back(_T("H1"));
+   m_DimNames.push_back(_T("H2"));
+   m_DimNames.push_back(_T("H3"));
+   m_DimNames.push_back(_T("T1"));
+   m_DimNames.push_back(_T("T2"));
+   m_DimNames.push_back(_T("T3"));
+   m_DimNames.push_back(_T("F1"));
+   m_DimNames.push_back(_T("W1"));
+   m_DimNames.push_back(_T("W2"));
+   m_DimNames.push_back(_T("J"));
 
    m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
    m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C2
@@ -357,7 +357,7 @@ void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::string> CTxDotDoubleTFactory::GetDimensionNames()
+std::vector<std::_tstring> CTxDotDoubleTFactory::GetDimensionNames()
 {
    return m_DimNames;
 }
@@ -372,7 +372,7 @@ std::vector<const unitLength*> CTxDotDoubleTFactory::GetDimensionUnits(bool bSIU
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
+bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
    double h1,h2,h3;
    double c1,c2;
@@ -397,32 +397,32 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
    // values that must be postive
    if ( h1 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H1 must be greater than 0.0"<< std::ends;
+      std::_tostringstream os;
+      os << _T("H1 must be greater than 0.0")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( h3 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "H3 must be greater than 0.0"<< std::ends;
+      std::_tostringstream os;
+      os << _T("H3 must be greater than 0.0")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( t2 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "T2 must be greater than 0.0"<< std::ends;
+      std::_tostringstream os;
+      os << _T("T2 must be greater than 0.0")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( w1 <= 0.0 )
    {
-      std::ostringstream os;
-      os << "W1 must be greater than 0.0"<< std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than 0.0")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -430,56 +430,56 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
    // values that cant be negative
    if ( f1 < 0.0 )
    {
-      std::ostringstream os;
-      os << "F1 must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("F1 must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( h2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "H2 must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("H2 must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( c1 < 0.0 )
    {
-      std::ostringstream os;
-      os << "C1 must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("C1 must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( c2 < 0.0 )
    {
-      std::ostringstream os;
-      os << "C2 must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("C2 must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( t1 < 0.0 )
    {
-      std::ostringstream os;
-      os << "T1 must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("T1 must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( t3 < 0.0 )
    {
-      std::ostringstream os;
-      os << "T3 must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("T3 must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( j < 0.0 )
    {
-      std::ostringstream os;
-      os << "J must be zero or greater"<< std::ends;
+      std::_tostringstream os;
+      os << _T("J must be zero or greater")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -487,32 +487,32 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
    // relations
    if ( w1 < f1 )
    {
-      std::ostringstream os;
-      os << "W1 must be greater than F1"<< std::ends;
+      std::_tostringstream os;
+      os << _T("W1 must be greater than F1")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( w2 < 2*f1 )
    {
-      std::ostringstream os;
-      os << "W2 must be greater than 2*F1"<< std::ends;
+      std::_tostringstream os;
+      os << _T("W2 must be greater than 2*F1")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( c1 > t2/2.0 )
    {
-      std::ostringstream os;
-      os << "T2 must be greater than 2 * C1"<< std::ends;
+      std::_tostringstream os;
+      os << _T("T2 must be greater than 2 * C1")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( c2 > h3 )
    {
-      std::ostringstream os;
-      os << "C2 must be less than H3"<< std::ends;
+      std::_tostringstream os;
+      os << _T("C2 must be less than H3")<< std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -522,11 +522,11 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
 
 void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
-   std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("TxDOTDoubleTeeDimensions",1.0);
+   std::vector<std::_tstring>::iterator iter;
+   pSave->BeginUnit(_T("TxDOTDoubleTeeDimensions"),1.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
@@ -538,12 +538,12 @@ IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructu
    Float64 parent_version = pLoad->GetVersion();
 
    IBeamFactory::Dimensions dimensions;
-   std::vector<std::string>::iterator iter;
+   std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit("TxDOTDoubleTeeDimensions") )
+      if ( pLoad->BeginUnit(_T("TxDOTDoubleTeeDimensions")) )
          dimVersion = pLoad->GetVersion();
       else
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -551,13 +551,13 @@ IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructu
 
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::string name = *iter;
+      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
          // failed to read dimension value...
          
-         if ( dimVersion < 2 && parent_version < 3.0 && (name == "C1" || name == "C2") )
+         if ( dimVersion < 2 && parent_version < 3.0 && (name == _T("C1") || name == _T("C2")) )
          {
             value = 0.0; // set the default value
          }
@@ -606,23 +606,23 @@ Float64 CTxDotDoubleTFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType span
    return surface_area;
 }
 
-std::string CTxDotDoubleTFactory::GetImage()
+std::_tstring CTxDotDoubleTFactory::GetImage()
 {
-   return std::string("TxDotDoubleT.gif");
+   return std::_tstring(_T("TxDotDoubleT.gif"));
 }
 
-std::string CTxDotDoubleTFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "DoubleTee_Composite.gif";
+      strImage =  _T("DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "DoubleTee_Noncomposite.gif";
+      strImage =  _T("DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -633,18 +633,18 @@ std::string CTxDotDoubleTFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeck
    return strImage;
 }
 
-std::string CTxDotDoubleTFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_DoubleTee_Composite.gif";
+      strImage =  _T("+Mn_DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "+Mn_DoubleTee_Noncomposite.gif";
+      strImage =  _T("+Mn_DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -655,18 +655,18 @@ std::string CTxDotDoubleTFactory::GetPositiveMomentCapacitySchematicImage(pgsTyp
    return strImage;
 }
 
-std::string CTxDotDoubleTFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_DoubleTee_Composite.gif";
+      strImage =  _T("-Mn_DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "-Mn_DoubleTee_Noncomposite.gif";
+      strImage =  _T("-Mn_DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -677,18 +677,18 @@ std::string CTxDotDoubleTFactory::GetNegativeMomentCapacitySchematicImage(pgsTyp
    return strImage;
 }
 
-std::string CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
 {
-   std::string strImage;
+   std::_tstring strImage;
 
    switch(deckType)
    {
    case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_DoubleTee_Composite.gif";
+      strImage =  _T("Vn_DoubleTee_Composite.gif");
       break;
 
    case pgsTypes::sdtNone:
-      strImage =  "Vn_DoubleTee_Noncomposite.gif";
+      strImage =  _T("Vn_DoubleTee_Noncomposite.gif");
       break;
 
    default:
@@ -699,33 +699,33 @@ std::string CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::Sup
    return strImage;
 }
 
-std::string CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "DoubleTee_Effective_Flange_Width_Interior_Girder_2008.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
    else
    {
-      return "DoubleTee_Effective_Flange_Width_Interior_Girder.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Interior_Girder.gif");
    }
 }
 
-std::string CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
-      return "DoubleTee_Effective_Flange_Width_Exterior_Girder_2008.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
    else
    {
-      return "DoubleTee_Effective_Flange_Width_Exterior_Girder.gif";
+      return _T("DoubleTee_Effective_Flange_Width_Exterior_Girder.gif");
    }
 }
 
@@ -739,17 +739,17 @@ CLSID CTxDotDoubleTFactory::GetFamilyCLSID()
    return CLSID_DoubleTeeBeamFamily;
 }
 
-std::string CTxDotDoubleTFactory::GetGirderFamilyName()
+std::_tstring CTxDotDoubleTFactory::GetGirderFamilyName()
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
    OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::string CTxDotDoubleTFactory::GetPublisher()
+std::_tstring CTxDotDoubleTFactory::GetPublisher()
 {
-   return std::string("WSDOT");
+   return std::_tstring(_T("WSDOT"));
 }
 
 HINSTANCE CTxDotDoubleTFactory::GetResourceInstance()
@@ -776,21 +776,21 @@ void CTxDotDoubleTFactory::GetDimensions(const IBeamFactory::Dimensions& dimensi
                                       double& c1,double& c2,
                                       double& w1,double& w2,double& j)
 {
-   c1 = GetDimension(dimensions,"C1");
-   c2 = GetDimension(dimensions,"C2");
-   h1 = GetDimension(dimensions,"H1");
-   h2 = GetDimension(dimensions,"H2");
-   h3 = GetDimension(dimensions,"H3");
-   t1 = GetDimension(dimensions,"T1");
-   t2 = GetDimension(dimensions,"T2");
-   t3 = GetDimension(dimensions,"T3");
-   f1 = GetDimension(dimensions,"F1");
-   w1 = GetDimension(dimensions,"W1");
-   w2 = GetDimension(dimensions,"W2");
-   j = GetDimension(dimensions,"J");
+   c1 = GetDimension(dimensions,_T("C1"));
+   c2 = GetDimension(dimensions,_T("C2"));
+   h1 = GetDimension(dimensions,_T("H1"));
+   h2 = GetDimension(dimensions,_T("H2"));
+   h3 = GetDimension(dimensions,_T("H3"));
+   t1 = GetDimension(dimensions,_T("T1"));
+   t2 = GetDimension(dimensions,_T("T2"));
+   t3 = GetDimension(dimensions,_T("T3"));
+   f1 = GetDimension(dimensions,_T("F1"));
+   w1 = GetDimension(dimensions,_T("W1"));
+   w2 = GetDimension(dimensions,_T("W2"));
+   j = GetDimension(dimensions,_T("J"));
 }
 
-double CTxDotDoubleTFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name)
+double CTxDotDoubleTFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -836,12 +836,12 @@ void CTxDotDoubleTFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensio
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double T1 = GetDimension(dimensions,"T1");
-   double T2 = GetDimension(dimensions,"T2");
-   double T3 = GetDimension(dimensions,"T3");
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
-   double  J = GetDimension(dimensions,"J");
+   double T1 = GetDimension(dimensions,_T("T1"));
+   double T2 = GetDimension(dimensions,_T("T2"));
+   double T3 = GetDimension(dimensions,_T("T3"));
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double  J = GetDimension(dimensions,_T("J"));
 
    double gw_min = W2 + 2.0*(W1 + T1 + T2 + T3);
 
@@ -872,21 +872,21 @@ long CTxDotDoubleTFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimen
 
 Float64 CTxDotDoubleTFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double H1 = GetDimension(dimensions,"H1");
-   double H2 = GetDimension(dimensions,"H2");
-   double H3 = GetDimension(dimensions,"H3");
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
 
    return H1 + H2 + H3;
 }
 
 Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double T1 = GetDimension(dimensions,"T1");
-   double T2 = GetDimension(dimensions,"T2");
-   double T3 = GetDimension(dimensions,"T3");
+   double T1 = GetDimension(dimensions,_T("T1"));
+   double T2 = GetDimension(dimensions,_T("T2"));
+   double T3 = GetDimension(dimensions,_T("T3"));
 
-   double W1 = GetDimension(dimensions,"W1");
-   double W2 = GetDimension(dimensions,"W2");
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
 
    return 2*(T1+T2+T3+W1) + W2;
 }

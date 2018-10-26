@@ -88,7 +88,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
 
          GET_IFACE2(pBroker,IProgress,pProgress);
          CEAFAutoProgress ap(pProgress);
-         pProgress->UpdateMessage("Building Report");
+         pProgress->UpdateMessage(_T("Building Report"));
 
          if (m_pBrowser==NULL)
          {
@@ -120,7 +120,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
       {
          ASSERT(0);
          TxDOTBrokerRetrieverException exc;
-         exc.Message = "An Unknown Error has Occurred";
+         exc.Message = _T("An Unknown Error has Occurred");
          DisplayErrorMode(exc);
       }
    }
@@ -136,8 +136,8 @@ void CTxDOTOptionalDesignReportPage::DisplayErrorMode(TxDOTBrokerRetrieverExcept
    m_pBrowser = boost::shared_ptr<CReportBrowser>();
 
    CString msg;
-   msg.Format("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center",exc.Message);
-   m_ErrorStatic.SetWindowTextA(msg);
+   msg.Format(_T("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center"),exc.Message);
+   m_ErrorStatic.SetWindowText(msg);
    m_ErrorStatic.ShowWindow(SW_SHOW);
 }
 
@@ -172,7 +172,7 @@ boost::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSe
    ASSERT(curidx==0 || curidx==1);
 
    // Two choices here
-   const char* spec_name = curidx==0 ? "TxDOT Optional Girder Analysis (TOGA) - Short Report" : "TxDOT Optional Girder Analysis (TOGA) - Long Report";
+   LPCTSTR spec_name = curidx==0 ? _T("TxDOT Optional Girder Analysis (TOGA) - Short Report") : _T("TxDOT Optional Girder Analysis (TOGA) - Long Report");
 
    // Get our report description
    CReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
@@ -327,7 +327,7 @@ void CTxDOTOptionalDesignReportPage::OnCbnSelchangeReportCombo()
    {
       ASSERT(0);
       TxDOTBrokerRetrieverException exc;
-      exc.Message = "An Unknown Error has Occurred";
+      exc.Message = _T("An Unknown Error has Occurred");
       DisplayErrorMode(exc);
    }
 }

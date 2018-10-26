@@ -34,9 +34,9 @@ struct txnEditPierData
    txnEditPierData();
    txnEditPierData(const CPierData* pPier);
    double Station;
-   std::string Orientation;
+   std::_tstring Orientation;
    GirderIndexType nGirders[2];
-   std::string Connection[2];
+   std::_tstring Connection[2];
    pgsTypes::PierConnectionType ConnectionType;
    CGirderSpacing GirderSpacing[2];
 
@@ -62,7 +62,7 @@ public:
    virtual bool Execute();
    virtual void Undo();
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool IsUndoable();
    virtual bool IsRepeatable();
 
@@ -73,7 +73,7 @@ private:
    txnEditPierData m_PierData[2];
    pgsTypes::MovePierOption m_MoveOption;
 
-   std::string m_strPierType; // abutment or pier
+   std::_tstring m_strPierType; // abutment or pier
 };
 
 #endif // INCLUDED_EDITPIER_H_

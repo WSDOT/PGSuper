@@ -122,7 +122,7 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
          for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
          {
             GirderIndexType firstGdrIdx,lastGdrIdx;
-            std::string strGirderName;
+            std::_tstring strGirderName;
             girderTypes.GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
 
             if ( girderTypes.GetGirderLibraryEntry(firstGdrIdx) == pSubject )
@@ -238,7 +238,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
          {
             CProjectAgentImp::LiveLoadSelection& ll = *found;
 
-            std::string strOldName = ll.EntryName;
+            std::_tstring strOldName = ll.EntryName;
             
             ll.EntryName = pSubject->GetName();
             ll.pEntry = pSubject;

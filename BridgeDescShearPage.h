@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // BridgeDescShearPage.h : header file
 //
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "BridgeDescShearGrid.h"
 #include <Units\Measure.h>
 #include <pgsExt\ShearData.h>
@@ -59,7 +59,7 @@ public:
 	//}}AFX_DATA
 
    CGirderDescShearGrid m_Grid;
-   std::string m_CurGrdName;
+   std::_tstring m_CurGrdName;
 
 // Overrides
 	// ClassWizard generate virtual function overrides

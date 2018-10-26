@@ -21,10 +21,10 @@ struct StrandType
    matPsStrand::Grade Grade;
 };
 
-static StrandType StrandTypeList[NUM_TYPES] = { {"Grade 250, Low Relaxation",matPsStrand::LowRelaxation,matPsStrand::Gr1725},
-                                                {"Grade 250, Stress Relieved",matPsStrand::StressRelieved,matPsStrand::Gr1725},
-                                                {"Grade 270, Low Relaxation",matPsStrand::LowRelaxation,matPsStrand::Gr1860},
-                                                {"Grade 270, Stress Relieved",matPsStrand::StressRelieved,matPsStrand::Gr1860} };
+static StrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1725},
+                                                {_T("Grade 250, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1725},
+                                                {_T("Grade 270, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1860},
+                                                {_T("Grade 270, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1860} };
 
 static int GetStrandTypeIndex(matPsStrand::Type type, matPsStrand::Grade grade)
 {
@@ -150,7 +150,7 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    {
       if (m_OptFc < m_OptFci)
       {
-         ::AfxMessageBox("f'ci may not be larger than f'c",MB_OK | MB_ICONEXCLAMATION);
+         ::AfxMessageBox(_T("f'ci may not be larger than f'c"),MB_OK | MB_ICONEXCLAMATION);
          pDX->PrepareCtrl(IDC_OPT_FCI);
          pDX->Fail();
       }
@@ -170,7 +170,7 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    {
       if (m_OrigFc < m_OrigFci)
       {
-         ::AfxMessageBox("f'ci may not be larger than f'c",MB_OK | MB_ICONEXCLAMATION);
+         ::AfxMessageBox(_T("f'ci may not be larger than f'c"),MB_OK | MB_ICONEXCLAMATION);
          pDX->PrepareCtrl(IDC_ORIG_FCI);
          pDX->Fail();
       }
@@ -251,7 +251,7 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
    m_OptFci = pOptGirderData->GetFci();
 
    m_OptIsStandardFill = pOptGirderData->GetStandardStrandFill();
-   m_strOptNoStrands.Format("%d", pOptGirderData->GetNumStrands() );
+   m_strOptNoStrands.Format(_T("%d"), pOptGirderData->GetNumStrands() );
    m_OptUseDepressed = pOptGirderData->GetUseDepressedStrands();
 
    // original
@@ -261,7 +261,7 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
    m_OrigFci = pOrigGirderData->GetFci();
 
    m_OrigIsStandardFill = pOrigGirderData->GetStandardStrandFill();
-   m_strOrigNoStrands.Format("%d", pOrigGirderData->GetNumStrands() );
+   m_strOrigNoStrands.Format(_T("%d"), pOrigGirderData->GetNumStrands() );
    m_OrigUseDepressed = pOrigGirderData->GetUseDepressedStrands();
 }
 

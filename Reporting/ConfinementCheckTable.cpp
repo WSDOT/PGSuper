@@ -81,16 +81,16 @@ rptRcTable* CConfinementCheckTable::Build(IBroker* pBroker,SpanIndexType span,Gi
    CHECK(pcz0->IsApplicable()); // should be blocked by caller
    Float64 conend = pcz0->GetApplicableZoneLength();
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7," ");
-   table->TableLabel() << "Confinement Stirrup Check [5.10.10.2]"<< rptNewLine <<"Length of confinement zone is "<<location.SetValue(conend)<<location.GetUnitTag();
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T(" "));
+   table->TableLabel() << _T("Confinement Stirrup Check [5.10.10.2]")<< rptNewLine <<_T("Length of confinement zone is ")<<location.SetValue(conend)<<location.GetUnitTag();
   
-   (*table)(0,0)  << "Zone #";
-   (*table)(0,1)  << COLHDR("End Location"<<rptNewLine<<"From Girder End", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,2)  << COLHDR("S" ,  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,3)  << COLHDR("S" << Sub("max") ,  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4)  << "Bar"<<rptNewLine<<"Size";
-   (*table)(0,5)  << "Min"<<rptNewLine<<"Bar"<<rptNewLine<<"Size";
-   (*table)(0,6)  << "Status";
+   (*table)(0,0)  << _T("Zone #");
+   (*table)(0,1)  << COLHDR(_T("End Location")<<rptNewLine<<_T("From Girder End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,2)  << COLHDR(_T("S") ,  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3)  << COLHDR(_T("S") << Sub(_T("max")) ,  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4)  << _T("Bar")<<rptNewLine<<_T("Size");
+   (*table)(0,5)  << _T("Min")<<rptNewLine<<_T("Bar")<<rptNewLine<<_T("Size");
+   (*table)(0,6)  << _T("Status");
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
    CHECK(pool!=0);
@@ -121,13 +121,13 @@ rptRcTable* CConfinementCheckTable::Build(IBroker* pBroker,SpanIndexType span,Gi
          if (bs!=0)
             (*table)(row,4) << pool->GetRebar(bs)->GetName();
          else
-            (*table)(row,4) << "none";
+            (*table)(row,4) << _T("none");
 
          bs= pArtifact->GetMinBarSize();
          if (bs!=0)
             (*table)(row,5) << pool->GetRebar(bs)->GetName();
          else
-            (*table)(row,5) << "none";
+            (*table)(row,5) << _T("none");
 
          if ( pArtifact->Passed() )
             (*table)(row,6) << RPT_PASS;
@@ -136,10 +136,10 @@ rptRcTable* CConfinementCheckTable::Build(IBroker* pBroker,SpanIndexType span,Gi
       }
       else
       {
-         (*table)(row,2) << "-";
-         (*table)(row,3) << "-";
-         (*table)(row,4) << "-";
-         (*table)(row,5) << "-";
+         (*table)(row,2) << _T("-");
+         (*table)(row,3) << _T("-");
+         (*table)(row,4) << _T("-");
+         (*table)(row,5) << _T("-");
          (*table)(row,6) << RPT_NA;
       }
 
@@ -177,7 +177,7 @@ bool CConfinementCheckTable::AssertValid() const
 
 void CConfinementCheckTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CConfinementCheckTable" << endl;
+   os << _T("Dump for CConfinementCheckTable") << endl;
 }
 #endif // _DEBUG
 

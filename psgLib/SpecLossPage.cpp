@@ -139,6 +139,10 @@ void CSpecLossPage::EnableGeneralLumpSum(BOOL bEnable)
    ENABLE_WINDOW(IDC_AFTER_DECK_PLACEMENT);
    ENABLE_WINDOW(IDC_AFTER_DECK_PLACEMENT_TAG);
 
+   ENABLE_WINDOW(IDC_AFTER_SIDL_LABEL);
+   ENABLE_WINDOW(IDC_AFTER_SIDL);
+   ENABLE_WINDOW(IDC_AFTER_SIDL_TAG);
+
    ENABLE_WINDOW(IDC_FINAL_LABEL);
    ENABLE_WINDOW(IDC_FINAL);
    ENABLE_WINDOW(IDC_FINAL_TAG);
@@ -162,17 +166,17 @@ BOOL CSpecLossPage::OnInitDialog()
 {
    // Fill up combo box for loss methods
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
-   pBox->AddString("Refined Estimate per LRFD 5.9.5.4");
-   pBox->AddString("Refined Estimate per WSDOT Bridge Design Manual");
-   pBox->AddString("Refined Estimate per TxDOT Bridge Design Manual");
-   pBox->AddString("Approximate Lump Sum per LRFD 5.9.5.3");
-   pBox->AddString("Approximate Lump Sum per WSDOT Bridge Design Manual");
-   pBox->AddString("General Lump Sum");
+   pBox->AddString(_T("Refined Estimate per LRFD 5.9.5.4"));
+   pBox->AddString(_T("Refined Estimate per WSDOT Bridge Design Manual"));
+   pBox->AddString(_T("Refined Estimate per TxDOT Bridge Design Manual"));
+   pBox->AddString(_T("Approximate Lump Sum per LRFD 5.9.5.3"));
+   pBox->AddString(_T("Approximate Lump Sum per WSDOT Bridge Design Manual"));
+   pBox->AddString(_T("General Lump Sum"));
    pBox->SetCurSel(0);
 
    pBox = (CComboBox*)GetDlgItem(IDC_SHIPPING_LOSS_METHOD);
-   pBox->AddString("Use a lump sum loss for shipping");
-   pBox->AddString("Use a percentage of the final losses for shipping");
+   pBox->AddString(_T("Use a lump sum loss for shipping"));
+   pBox->AddString(_T("Use a percentage of the final losses for shipping"));
    pBox->SetCurSel(0);
 
    CPropertyPage::OnInitDialog();
@@ -207,7 +211,7 @@ void CSpecLossPage::OnShippingLossMethodChanged()
 
 	if ( IsFractionalShippingLoss() )
    {
-      pTag->SetWindowText("%");
+      pTag->SetWindowText(_T("%"));
    }
    else
    {

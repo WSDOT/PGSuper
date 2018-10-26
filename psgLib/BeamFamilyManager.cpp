@@ -40,7 +40,7 @@ HRESULT CBeamFamilyManager::Init()
    if ( FAILED(hr) )
    {
       CString msg;
-      msg.Format("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed", hr);
+      msg.Format(_T("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed"), hr);
       AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
       return hr;
    }
@@ -80,7 +80,7 @@ std::vector<CString> CBeamFamilyManager::GetBeamFamilyNames()
    return names;
 }
 
-HRESULT CBeamFamilyManager::GetBeamFamily(const char* strName,IBeamFamily** ppFamily)
+HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily)
 {
    FamilyContainer::iterator found = m_Families.find(CString(strName));
    if ( found == m_Families.end() )
@@ -97,7 +97,7 @@ HRESULT CBeamFamilyManager::GetBeamFamily(const char* strName,IBeamFamily** ppFa
    return S_OK;
 }
 
-CLSID CBeamFamilyManager::GetBeamFamilyCLSID(const char* strName)
+CLSID CBeamFamilyManager::GetBeamFamilyCLSID(LPCTSTR strName)
 {
    FamilyContainer::iterator found = m_Families.find(CString(strName));
    if ( found == m_Families.end() )

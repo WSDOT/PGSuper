@@ -531,7 +531,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    gdr_length  = pBridge->GetGirderLength(span,girder);
    span_length = pBridge->GetSpanLength(span,girder);
    CString strMsg1;
-   strMsg1.Format("Girder: %s\r\nGirder Length: %s\r\nSpan Length: %s",
+   strMsg1.Format(_T("Girder: %s\r\nGirder Length: %s\r\nSpan Length: %s"),
                   pBridgeDesc->GetSpan(span)->GetGirderTypes()->GetGirderName(girder),
                   FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
                   FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
@@ -543,7 +543,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    fci = pBridgeMaterial->GetFciGdr(span,girder);
 
    CString strMsg2;
-   strMsg2.Format("\r\n\r\nf'ci: %s\r\nf'c: %s",
+   strMsg2.Format(_T("\r\n\r\nf'ci: %s\r\nf'c: %s"),
                   FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                   FormatDimension(fc, pDisplayUnits->GetStressUnit())
                   );
@@ -563,12 +563,12 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                          pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
       }
       else
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
                          pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
       }
    }
@@ -576,12 +576,12 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
                          pStrand->GetName().c_str(),Ns,Nh);
       }
       else
       {
-         strMsg3.Format("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d",
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
                          pStrand->GetName().c_str(),Ns,Nsd,Nh);
       }
    }
@@ -1130,7 +1130,7 @@ void CTogaGirderModelElevationView::BuildSectionCutDisplayObjects(CTxDOTOptional
    disp_obj->GetEventSink(&sink);
 
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
-   point_disp->SetToolTipText("Click on me and drag to move section cut");
+   point_disp->SetToolTipText(_T("Click on me and drag to move section cut"));
 
    CComQIPtr<iTogaSectionCutDrawStrategy,&IID_iTogaSectionCutDrawStrategy> sc_strat(sink);
    sc_strat->Init(point_disp, pBroker, span, girder, m_pFrame);
@@ -1430,7 +1430,7 @@ void CTogaGirderModelElevationView::OnDraw(CDC* pDC)
    if ( m_bUpdateError )
    {
       CString msg;
-      msg.Format("The following error occured while updating the views.\n\n%s.",m_ErrorMsg.c_str());
+      msg.Format(_T("The following error occured while updating the views.\n\n%s."),m_ErrorMsg.c_str());
       MultiLineTextOut(pDC,0,0,msg);
       return;
    }
@@ -1444,7 +1444,7 @@ void CTogaGirderModelElevationView::OnDraw(CDC* pDC)
    }
    else
    {
-      CString msg("Select a girder to display");
+      CString msg(_T("Select a girder to display"));
       MultiLineTextOut(pDC,0,0,msg);
    }
 }

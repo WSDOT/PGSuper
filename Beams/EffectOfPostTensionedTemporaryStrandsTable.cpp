@@ -56,7 +56,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    CEffectOfPostTensionedTemporaryStrandsTable* table = new CEffectOfPostTensionedTemporaryStrandsTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
@@ -76,30 +76,30 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    // add content to chapter
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << "Effect of post-tensioned strands on permanent strands" << rptNewLine;
+   *pParagraph << _T("Effect of post-tensioned strands on permanent strands") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
    if ( tempStrandUsage == pgsTypes::ttsPTBeforeShipping )
-      *pParagraph << rptRcImage(strImagePath + "Delta_Fpp_BeforeShipping.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_Fpp_BeforeShipping.png")) << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_Fpp.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_Fpp.png")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->ecc.ShowUnitTag(true);
    table->area.ShowUnitTag(true);
 
-   *pParagraph << Sub2("E","p") << " = " << table->mod_e.SetValue(Ep) << rptNewLine;
+   *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue(Ep) << rptNewLine;
 
    if ( tempStrandUsage == pgsTypes::ttsPTBeforeShipping )
-      *pParagraph << Sub2("E","c") << " = " << table->mod_e.SetValue(Eci) << rptNewLine;
+      *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue(Eci) << rptNewLine;
    else
-      *pParagraph << Sub2("E","ci") << " = " << table->mod_e.SetValue(Eci) << rptNewLine;
+      *pParagraph << Sub2(_T("E"),_T("ci")) << _T(" = ") << table->mod_e.SetValue(Eci) << rptNewLine;
 
-   *pParagraph << Sub2("e","pt") << " = " << table->ecc.SetValue(ept) << rptNewLine;
-   *pParagraph << Sub2("N","pt") << " = " << Npt << rptNewLine;
-   *pParagraph << Sub2("A","pt") << " = " << table->area.SetValue(Apt) << rptNewLine;
+   *pParagraph << Sub2(_T("e"),_T("pt")) << _T(" = ") << table->ecc.SetValue(ept) << rptNewLine;
+   *pParagraph << Sub2(_T("N"),_T("pt")) << _T(" = ") << Npt << rptNewLine;
+   *pParagraph << Sub2(_T("A"),_T("pt")) << _T(" = ") << table->area.SetValue(Apt) << rptNewLine;
 
    table->mod_e.ShowUnitTag(false);
    table->ecc.ShowUnitTag(false);
@@ -107,16 +107,16 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,2) << COLHDR("x",rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,3) << COLHDR(RPT_STRESS("pt max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(RPT_STRESS("pt min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5) << COLHDR(RPT_STRESS("pt avg"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,6) << COLHDR(Sub2("P","pt avg"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*table)(0,7) << COLHDR(Sub2("e","perm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,8) << COLHDR(RPT_STRESS("cgpp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,9) << COLHDR(symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,2) << COLHDR(_T("x"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,3) << COLHDR(RPT_STRESS(_T("pt max")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR(RPT_STRESS(_T("pt min")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5) << COLHDR(RPT_STRESS(_T("pt avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,6) << COLHDR(Sub2(_T("P"),_T("pt avg")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*table)(0,7) << COLHDR(Sub2(_T("e"),_T("perm")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,8) << COLHDR(RPT_STRESS(_T("cgpp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,9) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }

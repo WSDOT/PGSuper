@@ -71,7 +71,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
 
    rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
-   *p <<"Debonding Limits"<<rptNewLine;
+   *p <<_T("Debonding Limits")<<rptNewLine;
 
    p = new rptParagraph;
    *pChapter << p;
@@ -83,10 +83,10 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
 
    if (total_fra>limit_fra)
    {
-      *p <<Bold("Warning: ");
+      *p <<Bold(_T("Warning: "));
    }
 
-   *p << ndb <<", or "<< total_fra << "% of total strands are debonded. Debonded strands should not exceed " << limit_fra << "% of the total." << rptNewLine;
+   *p << ndb <<_T(", or ")<< total_fra << _T("% of total strands are debonded. Debonded strands should not exceed ") << limit_fra << _T("% of the total.") << rptNewLine;
 
    // check debond lengths 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    loc, pDisplayUnits->GetSpanLengthUnit(),   true );
@@ -97,18 +97,18 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
    pDebondArtifact->GetDebondLengthLimit(&dbl_limit, &control);
    Float64 maxdbl = pDebondArtifact->GetMaxDebondLength();
 
-   *p << "The longest debond length = "<< loc.SetValue(maxdbl) <<", and the allowable length is "<<loc2.SetValue(dbl_limit)<<" controlled by ";
+   *p << _T("The longest debond length = ")<< loc.SetValue(maxdbl) <<_T(", and the allowable length is ")<<loc2.SetValue(dbl_limit)<<_T(" controlled by ");
    if (control==pgsTypes::mdbDefault)
    {
-      *p<<"development length from mid-girder  ";
+      *p<<_T("development length from mid-girder  ");
    }
    else if (control==pgsTypes::mbdFractional)
    {
-      *p<<"user input fraction of girder length  ";
+      *p<<_T("user input fraction of girder length  ");
    }
    else
    {
-      *p<<"user-input length  ";
+      *p<<_T("user-input length  ");
    }
 
    if (maxdbl - 1.0e-5 >dbl_limit)
@@ -119,36 +119,36 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexTy
    // debond section length
    Float64 mndbs = pDebondArtifact->GetMinDebondSectionSpacing();
    Float64 mndbsl = pDebondArtifact->GetDebondSectionSpacingLimit();
-   *p << "The shortest distance between debond sections  = "<< loc.SetValue(mndbs) <<", and the minimum allowable = "<<loc2.SetValue(mndbsl);
+   *p << _T("The shortest distance between debond sections  = ")<< loc.SetValue(mndbs) <<_T(", and the minimum allowable = ")<<loc2.SetValue(mndbsl);
    // need a tolerance here
    if (mndbs + 1.0e-5 < mndbsl)
-      *p<<"  "<<RPT_FAIL<<rptNewLine;
+      *p<<_T("  ")<<RPT_FAIL<<rptNewLine;
    else
-      *p<<"  "<<RPT_PASS<<rptNewLine;
+      *p<<_T("  ")<<RPT_PASS<<rptNewLine;
 
    // tables
    Float64 Lg = pBridge->GetGirderLength(span,girder);
 
    *p << CDebondCheckTable().Build1(pDebondArtifact,span,girder,pgsTypes::Straight, pDisplayUnits);
-   *p << Super("*") << "Exterior strands shall not be debonded" << rptNewLine << rptNewLine;
+   *p << Super(_T("*")) << _T("Exterior strands shall not be debonded") << rptNewLine << rptNewLine;
 
    *p << CDebondCheckTable().Build2(pDebondArtifact,span,girder,Lg, pgsTypes::Straight, pDisplayUnits);
-   *p << Super("*") << "Not more than " << debond_limits->GetMaxDebondedStrandsPerSection(span,girder)*100 << "% of the debonded strands, or " << debond_limits->GetMaxNumDebondedStrandsPerSection(span,girder) << " strands, whichever is greatest, shall have debonding terminated at any section" << rptNewLine;
+   *p << Super(_T("*")) << _T("Not more than ") << debond_limits->GetMaxDebondedStrandsPerSection(span,girder)*100 << _T("% of the debonded strands, or ") << debond_limits->GetMaxNumDebondedStrandsPerSection(span,girder) << _T(" strands, whichever is greatest, shall have debonding terminated at any section") << rptNewLine;
 }
 
 rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7," ");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T(" "));
    table->TableCaption().SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
-   table->TableCaption() << "Requirements for Partially Debonded Strands [5.11.4.3]";
+   table->TableCaption() << _T("Requirements for Partially Debonded Strands [5.11.4.3]");
 
-   (*table)(0,0) << "Row";
-   (*table)(0,1) << "Number" << rptNewLine << "Strands";
-   (*table)(0,2) << "Number" << rptNewLine << "Debonded" << rptNewLine << "Strands";
-   (*table)(0,3) << "% Debonded";
-   (*table)(0,4) << "Maximum" << rptNewLine << "% Debonded";
-   (*table)(0,5) << "Exterior" << rptNewLine << "Strands" << rptNewLine << "Debonded" << Super("*");
-   (*table)(0,6) << "Status";
+   (*table)(0,0) << _T("Row");
+   (*table)(0,1) << _T("Number") << rptNewLine << _T("Strands");
+   (*table)(0,2) << _T("Number") << rptNewLine << _T("Debonded") << rptNewLine << _T("Strands");
+   (*table)(0,3) << _T("% Debonded");
+   (*table)(0,4) << _T("Maximum") << rptNewLine << _T("% Debonded");
+   (*table)(0,5) << _T("Exterior") << rptNewLine << _T("Strands") << rptNewLine << _T("Debonded") << Super(_T("*"));
+   (*table)(0,6) << _T("Status");
 
    // Fill up the table
    table->TableLabel().SetStyleName(pgsReportStyleHolder::GetFootnoteStyle());
@@ -169,9 +169,9 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,S
       (*table)(table_row,0) << row;
       (*table)(table_row,1) << nStrandsInRow[index];
       (*table)(table_row,2) << nDebondedStrandsInRow[index];
-      (*table)(table_row,3) << vFra[index]*100. << "%";
-      (*table)(table_row,4) << vMaxFra[index]*100. << "%";
-      (*table)(table_row,5) << (bExteriorDebonded[index] == true ? "Yes" : "No");
+      (*table)(table_row,3) << vFra[index]*100. << _T("%");
+      (*table)(table_row,4) << vMaxFra[index]*100. << _T("%");
+      (*table)(table_row,5) << (bExteriorDebonded[index] == true ? _T("Yes") : _T("No"));
 
       if ( pDebondArtifact->RowPassed(index) )
          (*table)(table_row,6) << RPT_PASS;
@@ -189,7 +189,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,S
 
 rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,Float64 Lg, pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4," ");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4,_T(" "));
 
 
    if ( span == ALL_SPANS )
@@ -199,9 +199,9 @@ rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,S
    }
 
    (*table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << "Number" << rptNewLine << "Debonded" << rptNewLine << "Strands";
-   (*table)(0,2) << "Maximum" << rptNewLine << "Debonded" << rptNewLine << "Strands" << Super("*");
-   (*table)(0,3) << "Status";
+   (*table)(0,1) << _T("Number") << rptNewLine << _T("Debonded") << rptNewLine << _T("Strands");
+   (*table)(0,2) << _T("Maximum") << rptNewLine << _T("Debonded") << rptNewLine << _T("Strands") << Super(_T("*"));
+   (*table)(0,3) << _T("Status");
 
    // Fill up the table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );

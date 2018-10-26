@@ -43,11 +43,11 @@ CLASS
 
 
 // old data storage format
-BEGIN_STRSTORAGEMAP(CPierData,"PierData",1.0)
-   PROPERTY("Station",     SDT_R8, m_Station )
-   PROPERTY("Orientation", SDT_I4, Orientation )
-   PROPERTY("Angle",       SDT_R8, Angle )
-   PROPERTY("Connection",  SDT_STDSTRING, m_Connection[pgsTypes::Back] )
+BEGIN_STRSTORAGEMAP(CPierData,_T("PierData"),1.0)
+   PROPERTY(_T("Station"),     SDT_R8, m_Station )
+   PROPERTY(_T("Orientation"), SDT_I4, Orientation )
+   PROPERTY(_T("Angle"),       SDT_R8, Angle )
+   PROPERTY(_T("Connection"),  SDT_STDSTRING, m_Connection[pgsTypes::Back] )
 END_STRSTORAGEMAP
 
 CPierData::CPierData()
@@ -63,12 +63,12 @@ CPierData::CPierData()
    Angle       = 0.0;
 
    m_ConnectionType                    = pgsTypes::Hinged;
-   m_Connection[pgsTypes::Back]        = "";
-   m_Connection[pgsTypes::Ahead]       = "";
+   m_Connection[pgsTypes::Back]        = _T("");
+   m_Connection[pgsTypes::Ahead]       = _T("");
    m_pConnectionEntry[pgsTypes::Back]  = 0;
    m_pConnectionEntry[pgsTypes::Ahead] = 0;
 
-   m_strOrientation = "Normal";
+   m_strOrientation = _T("Normal");
 
    // strength/service limit states
    m_gM[pgsTypes::Interior][0] = 1.0;
@@ -96,12 +96,12 @@ CPierData::CPierData(const CPierData& rOther)
    Orientation = Normal;
    Angle       = 0.0;
 
-   m_Connection[pgsTypes::Back]   = "";
-   m_Connection[pgsTypes::Ahead]  = "";
+   m_Connection[pgsTypes::Back]   = _T("");
+   m_Connection[pgsTypes::Ahead]  = _T("");
    m_pConnectionEntry[pgsTypes::Back]  = 0;
    m_pConnectionEntry[pgsTypes::Ahead] = 0;
    
-   m_strOrientation = "Normal";
+   m_strOrientation = _T("Normal");
 
    MakeCopy(rOther);
 }
@@ -166,46 +166,46 @@ bool CPierData::operator!=(const CPierData& rOther) const
    return !operator==(rOther);
 }
 
-const char* CPierData::AsString(pgsTypes::PierConnectionType type)
+LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
 {
    switch(type)
    { 
    case pgsTypes::Hinged:
-      return "Hinged";
+      return _T("Hinged");
 
    case pgsTypes::Roller:
-      return "Roller";
+      return _T("Roller");
 
    case pgsTypes::ContinuousAfterDeck:
-      return "Continuous after deck placement";
+      return _T("Continuous after deck placement");
 
    case pgsTypes::ContinuousBeforeDeck:
-      return "Continuous before deck placement";
+      return _T("Continuous before deck placement");
 
    case pgsTypes::IntegralAfterDeck:
-      return "Integral after deck placement";
+      return _T("Integral after deck placement");
 
    case pgsTypes::IntegralBeforeDeck:
-      return "Integral before deck placement";
+      return _T("Integral before deck placement");
 
    case pgsTypes::IntegralAfterDeckHingeBack:
-      return "Hinged on back side; Integral on ahead side after deck placement";
+      return _T("Hinged on back side; Integral on ahead side after deck placement");
 
    case pgsTypes::IntegralBeforeDeckHingeBack:
-      return "Hinged on back side; Integral on ahead side before deck placement";
+      return _T("Hinged on back side; Integral on ahead side before deck placement");
 
    case pgsTypes::IntegralAfterDeckHingeAhead:
-      return "Integral on back side after deck placement; Hinged on ahead side";
+      return _T("Integral on back side after deck placement; Hinged on ahead side");
 
    case pgsTypes::IntegralBeforeDeckHingeAhead:
-      return "Integral on back side before deck placement; Hinged on ahead side";
+      return _T("Integral on back side before deck placement; Hinged on ahead side");
    
    default:
       ATLASSERT(0);
 
    };
 
-   return "";
+   return _T("");
 }
 
 HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -213,7 +213,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    USES_CONVERSION;
    HRESULT hr = S_OK;
 
-   HRESULT hr2 = pStrLoad->BeginUnit("PierDataDetails");
+   HRESULT hr2 = pStrLoad->BeginUnit(_T("PierDataDetails"));
 
    double version;
    pStrLoad->get_Version(&version);
@@ -231,7 +231,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       switch(Orientation)
       {
       case Normal:
-         m_strOrientation = "Normal";
+         m_strOrientation = _T("Normal");
          break;
 
       case Skew:
@@ -240,7 +240,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          angleFormatter->put_Signed(VARIANT_FALSE);
 
          angleFormatter->Format(Angle,NULL,&bstrOrientation);
-         m_strOrientation = OLE2A(bstrOrientation);
+         m_strOrientation = OLE2T(bstrOrientation);
          break;
       
       case Bearing:
@@ -249,7 +249,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          dirFormatter->put_BearingFormat(VARIANT_TRUE);
 
          dirFormatter->Format(Angle,NULL,&bstrOrientation);
-         m_strOrientation = OLE2A(bstrOrientation);
+         m_strOrientation = OLE2T(bstrOrientation);
          break;
 
       default:
@@ -276,7 +276,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       // greater than version 1
       CComVariant var;
       var.vt = VT_R8;
-      if ( FAILED(pStrLoad->get_Property("Station",&var)) )
+      if ( FAILED(pStrLoad->get_Property(_T("Station"),&var)) )
          return STRLOAD_E_INVALIDFORMAT;
       else
          m_Station = var.dblVal;
@@ -284,10 +284,10 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 #pragma Reminder("UPDATE: Need to validate string... make sure it is a valid pier orientation")
       var.Clear();
       var.vt = VT_BSTR;
-      if (FAILED(pStrLoad->get_Property("Orientation", &var )) )
+      if (FAILED(pStrLoad->get_Property(_T("Orientation"), &var )) )
          return STRLOAD_E_INVALIDFORMAT;
       else
-         m_strOrientation = OLE2A(var.bstrVal);
+         m_strOrientation = OLE2T(var.bstrVal);
 
       if ( 4.0 <= version )
       {
@@ -296,7 +296,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( 6.0 <= version && version < 8 )
          {
             var.vt = VT_R8;
-            if ( FAILED(pStrLoad->get_Property("AlignmentOffset",&var)))
+            if ( FAILED(pStrLoad->get_Property(_T("AlignmentOffset"),&var)))
                return STRLOAD_E_INVALIDFORMAT;
 //            else // removed in version 8
 //               m_AlignmentOffset = var.dblVal;
@@ -309,23 +309,23 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( 5.0 <= version && version < 7.0 )
          {
             var.vt = VT_BOOL;
-            if (FAILED(pStrLoad->get_Property("UseSameConnectionOnBothSides",&var)))
+            if (FAILED(pStrLoad->get_Property(_T("UseSameConnectionOnBothSides"),&var)))
                return STRLOAD_E_INVALIDFORMAT;
             else
                use_same_both = (var.boolVal == VARIANT_TRUE);
          }
 
          var.vt = VT_BSTR;
-         if (FAILED(pStrLoad->get_Property("LeftConnection", &var )) )
+         if (FAILED(pStrLoad->get_Property(_T("LeftConnection"), &var )) )
             return STRLOAD_E_INVALIDFORMAT;
          else
-            m_Connection[pgsTypes::Back] = OLE2A(var.bstrVal);
+            m_Connection[pgsTypes::Back] = OLE2T(var.bstrVal);
 
          if ( version < 7.0 )
          {
             var.Clear();
             var.vt = VT_I4;
-            if ( FAILED(pStrLoad->get_Property("LeftConnectionType",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("LeftConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
                back_conn_type = (pgsTypes::PierConnectionType)var.lVal;
@@ -333,13 +333,13 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          var.Clear();
          var.vt = VT_BSTR;
-         if (FAILED(pStrLoad->get_Property("RightConnection", &var )) )
+         if (FAILED(pStrLoad->get_Property(_T("RightConnection"), &var )) )
             return STRLOAD_E_INVALIDFORMAT;
          else
          {
             if (!use_same_both)
             {
-               m_Connection[pgsTypes::Ahead] = OLE2A(var.bstrVal);
+               m_Connection[pgsTypes::Ahead] = OLE2T(var.bstrVal);
             }
             else
             {
@@ -352,7 +352,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             // After version 7.0, we have single definition for boundary conditions over pier
             var.Clear();
             var.vt = VT_I4;
-            if ( FAILED(pStrLoad->get_Property("ConnectionType",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("ConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
                m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
@@ -361,7 +361,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             var.Clear();
             var.vt = VT_I4;
-            if ( FAILED(pStrLoad->get_Property("RightConnectionType",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("RightConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
                ahead_conn_type = (pgsTypes::PierConnectionType)var.lVal;
@@ -427,10 +427,10 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          var.Clear();
          var.vt = VT_BSTR;
-         if (FAILED(pStrLoad->get_Property("Connection", &var )) )
+         if (FAILED(pStrLoad->get_Property(_T("Connection"), &var )) )
             return STRLOAD_E_INVALIDFORMAT;
          else
-            m_Connection[pgsTypes::Back] = OLE2A(var.bstrVal);
+            m_Connection[pgsTypes::Back] = OLE2T(var.bstrVal);
 
          m_Connection[pgsTypes::Ahead] = m_Connection[pgsTypes::Back];
 
@@ -438,7 +438,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             var.Clear();
             var.vt = VT_I4;
-            if ( FAILED(pStrLoad->get_Property("ConnectionType",&var)) )
+            if ( FAILED(pStrLoad->get_Property(_T("ConnectionType"),&var)) )
                return STRLOAD_E_INVALIDFORMAT;
             else
                m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
@@ -450,35 +450,35 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          // LLDF stuff added in version 5
          if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
          {
-            pStrLoad->BeginUnit("LLDF");
+            pStrLoad->BeginUnit(_T("LLDF"));
             double lldf_version;
             pStrLoad->get_Version(&lldf_version);
 
             if ( lldf_version < 2 )
             {
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gM_Interior",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gM_Interior"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gM[pgsTypes::Interior][0] = var.dblVal;
                m_gM[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gM_Exterior",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gM[pgsTypes::Exterior][0] = var.dblVal;
                m_gM[pgsTypes::Exterior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gR_Interior",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gR[pgsTypes::Interior][0] = var.dblVal;
                m_gR[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gR_Exterior",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gR[pgsTypes::Exterior][0] = var.dblVal;
@@ -487,49 +487,49 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             else
             {
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gM_Interior_Strength",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Strength"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gM[pgsTypes::Interior][0] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gM_Exterior_Strength",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Strength"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gM[pgsTypes::Exterior][0] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gR_Interior_Strength",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Strength"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gR[pgsTypes::Interior][0] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gR_Exterior_Strength",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Strength"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gR[pgsTypes::Exterior][0] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gM_Interior_Fatigue",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Fatigue"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gM[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gM_Exterior_Fatigue",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Fatigue"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gM[pgsTypes::Exterior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gR_Interior_Fatigue",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gR[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property("gR_Exterior_Fatigue",&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Fatigue"),&var)) )
                   return STRLOAD_E_INVALIDFORMAT;
 
                m_gR[pgsTypes::Exterior][1] = var.dblVal;
@@ -543,7 +543,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.Clear();
          var.vt = VT_BOOL;
          bool bIsLinked;
-         if ( FAILED(pStrLoad->get_Property("IsLinked",&var)) )
+         if ( FAILED(pStrLoad->get_Property(_T("IsLinked"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
             bIsLinked = (var.boolVal == VARIANT_TRUE ? true : false);
@@ -561,33 +561,33 @@ HRESULT CPierData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("PierDataDetails",8.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),8.0);
 
-   pStrSave->put_Property("Station",         CComVariant(m_Station) );
-   pStrSave->put_Property("Orientation",     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
-   //pStrSave->put_Property("AlignmentOffset", CComVariant( m_AlignmentOffset) ); // added in version 6, removed in version 8
-   pStrSave->put_Property("LeftConnection",  CComVariant( CComBSTR(m_Connection[pgsTypes::Back].c_str()) ) );
-   pStrSave->put_Property("RightConnection", CComVariant( CComBSTR(m_Connection[pgsTypes::Ahead].c_str()) ) );
-   pStrSave->put_Property("ConnectionType",  CComVariant( m_ConnectionType ) ); // changed from left and right to a single value in version 7
+   pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
+   pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
+   //pStrSave->put_Property(_T("AlignmentOffset"), CComVariant( m_AlignmentOffset) ); // added in version 6, removed in version 8
+   pStrSave->put_Property(_T("LeftConnection"),  CComVariant( CComBSTR(m_Connection[pgsTypes::Back].c_str()) ) );
+   pStrSave->put_Property(_T("RightConnection"), CComVariant( CComBSTR(m_Connection[pgsTypes::Ahead].c_str()) ) );
+   pStrSave->put_Property(_T("ConnectionType"),  CComVariant( m_ConnectionType ) ); // changed from left and right to a single value in version 7
 
    // added in version 5
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pStrSave->BeginUnit("LLDF",2.0);
-      pStrSave->put_Property("gM_Interior_Strength",CComVariant(m_gM[pgsTypes::Interior][0]));
-      pStrSave->put_Property("gM_Exterior_Strength",CComVariant(m_gM[pgsTypes::Exterior][0]));
-      pStrSave->put_Property("gR_Interior_Strength",CComVariant(m_gR[pgsTypes::Interior][0]));
-      pStrSave->put_Property("gR_Exterior_Strength",CComVariant(m_gR[pgsTypes::Exterior][0]));
+      pStrSave->BeginUnit(_T("LLDF"),2.0);
+      pStrSave->put_Property(_T("gM_Interior_Strength"),CComVariant(m_gM[pgsTypes::Interior][0]));
+      pStrSave->put_Property(_T("gM_Exterior_Strength"),CComVariant(m_gM[pgsTypes::Exterior][0]));
+      pStrSave->put_Property(_T("gR_Interior_Strength"),CComVariant(m_gR[pgsTypes::Interior][0]));
+      pStrSave->put_Property(_T("gR_Exterior_Strength"),CComVariant(m_gR[pgsTypes::Exterior][0]));
 
-      pStrSave->put_Property("gM_Interior_Fatigue",CComVariant(m_gM[pgsTypes::Interior][1]));
-      pStrSave->put_Property("gM_Exterior_Fatigue",CComVariant(m_gM[pgsTypes::Exterior][1]));
-      pStrSave->put_Property("gR_Interior_Fatigue",CComVariant(m_gR[pgsTypes::Interior][1]));
-      pStrSave->put_Property("gR_Exterior_Fatigue",CComVariant(m_gR[pgsTypes::Exterior][1]));
+      pStrSave->put_Property(_T("gM_Interior_Fatigue"),CComVariant(m_gM[pgsTypes::Interior][1]));
+      pStrSave->put_Property(_T("gM_Exterior_Fatigue"),CComVariant(m_gM[pgsTypes::Exterior][1]));
+      pStrSave->put_Property(_T("gR_Interior_Fatigue"),CComVariant(m_gR[pgsTypes::Interior][1]));
+      pStrSave->put_Property(_T("gR_Exterior_Fatigue"),CComVariant(m_gR[pgsTypes::Exterior][1]));
       pStrSave->EndUnit();
    }
 
    // added in version 5 - RAB: 10/17/2008 - not linking any more
-   pStrSave->put_Property("IsLinked",CComVariant(VARIANT_FALSE));
+   pStrSave->put_Property(_T("IsLinked"),CComVariant(VARIANT_FALSE));
 
    pStrSave->EndUnit();
 
@@ -693,12 +693,12 @@ void CPierData::SetStation(double station)
    m_Station = station;
 }
 
-const char* CPierData::GetOrientation() const
+LPCTSTR CPierData::GetOrientation() const
 {
    return m_strOrientation.c_str();
 }
 
-void CPierData::SetOrientation(const char* strOrientation)
+void CPierData::SetOrientation(LPCTSTR strOrientation)
 {
    m_strOrientation = strOrientation;
 }
@@ -713,12 +713,12 @@ void CPierData::SetConnectionType(pgsTypes::PierConnectionType type)
    m_ConnectionType = type;
 }
 
-const char* CPierData::GetConnection(pgsTypes::PierFaceType pierFace) const
+LPCTSTR CPierData::GetConnection(pgsTypes::PierFaceType pierFace) const
 {
    return m_Connection[pierFace].c_str();
 }
 
-void CPierData::SetConnection(pgsTypes::PierFaceType pierFace,const char* strConnection)
+void CPierData::SetConnection(pgsTypes::PierFaceType pierFace,LPCTSTR strConnection)
 {
    m_Connection[pierFace] = strConnection;
 }

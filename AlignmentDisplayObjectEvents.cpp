@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "AlignmentDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"
 #include "BridgeModelViewChildFrame.h"
@@ -32,6 +32,8 @@
 #include "pgsuperdoc.h"
 #include <IFace\Bridge.h>
 #include <WBFLDManip.h>
+
+#include <PgsExt\BridgeDescription.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -258,7 +260,7 @@ STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::OnDropped(COleData
    METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
 
    // Something was dropped on a display object that represents a Alignment
-   AfxMessageBox("Alignment drop");
+   AfxMessageBox(_T("Alignment drop"));
 }
 
 STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::SetDisplayObject(iDisplayObject* pDO)

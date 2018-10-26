@@ -25,6 +25,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\resource.h"
 
 #include "EditLoadsChildFrm.h"
 

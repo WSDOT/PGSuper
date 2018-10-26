@@ -94,17 +94,17 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pChapter << pTitle;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
-   *pTitle << "Longitudinal Reinforcement for Shear Check - " << OLE2A(pStageMap->GetLimitStateName(ls)) << " [5.8.3.5]";
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << OLE2T(pStageMap->GetLimitStateName(ls)) << _T(" [5.8.3.5]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear2005.png")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
    else
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear.png")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pBody << table;
 
    if ( stage == pgsTypes::CastingYard )
@@ -112,10 +112,10 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("Capacity",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,2)  << COLHDR("Demand",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,3)  << "Equation";
-   (*table)(0,4)  << "Status" << rptNewLine << "(C/D)";
+   (*table)(0,1)  << COLHDR(_T("Capacity"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,2)  << COLHDR(_T("Demand"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,3)  << _T("Equation");
+   (*table)(0,4)  << _T("Status") << rptNewLine << _T("(C/D)");
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -156,7 +156,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          (*table)(row,1) << shear.SetValue( C );
          (*table)(row,2) << shear.SetValue( D );
 
-         (*table)(row,3) << "5.8.3.5-" << pArtifact->GetEquation();
+         (*table)(row,3) << _T("5.8.3.5-") << pArtifact->GetEquation();
 
          bool bPassed = pArtifact->Passed();
          if ( bPassed )
@@ -168,10 +168,10 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          if ( bPassed && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
          {
             bAddFootnote = true;
-            (*table)(row,4) << "*";
+            (*table)(row,4) << _T("*");
          }
 
-         (*table)(row,4) << rptNewLine << "(" << cap_demand.SetValue(C,D,bPassed) << ")";
+         (*table)(row,4) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
 
          row++;
       }
@@ -182,7 +182,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       rptParagraph* pFootnote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pFootnote;
 
-      *pFootnote << "* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone" << rptNewLine;
+      *pFootnote << _T("* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone") << rptNewLine;
    }
 }
 
@@ -206,17 +206,17 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    *pChapter << pTitle;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
-   *pTitle << "Longitudinal Reinforcement for Shear Check - " << OLE2A(pStageMap->GetLimitStateName(ls)) << " [5.8.3.5]";
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << OLE2T(pStageMap->GetLimitStateName(ls)) << _T(" [5.8.3.5]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear2005.png")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
    else
-      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + "LongitudinalReinforcementForShear.png")<<rptNewLine;
+      *pBody <<rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pBody << table;
 
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -224,10 +224,10 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("Capacity",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,2)  << COLHDR("Demand",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,3)  << "Equation";
-   (*table)(0,4)  << "Status" << rptNewLine << "(C/D)";
+   (*table)(0,1)  << COLHDR(_T("Capacity"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,2)  << COLHDR(_T("Demand"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,3)  << _T("Equation");
+   (*table)(0,4)  << _T("Status") << rptNewLine << _T("(C/D)");
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -259,7 +259,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          (*table)(row,1) << shear.SetValue( C );
          (*table)(row,2) << shear.SetValue( D );
 
-         (*table)(row,3) << "5.8.3.5-" << artifact.GetEquation();
+         (*table)(row,3) << _T("5.8.3.5-") << artifact.GetEquation();
 
          bool bPassed = artifact.Passed();
          if ( bPassed )
@@ -271,10 +271,10 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          if ( artifact.Passed() && fabs(artifact.GetMu()) <= fabs(artifact.GetMr()) && ratio < 1.0 )
          {
             bAddFootnote = true;
-            (*table)(row,4) << "*";
+            (*table)(row,4) << _T("*");
          }
 
-         (*table)(row,4) << rptNewLine << "(" << cap_demand.SetValue(C,D,bPassed) << ")";
+         (*table)(row,4) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
 
          row++;
       }
@@ -285,7 +285,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       rptParagraph* pFootnote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pFootnote;
 
-      *pFootnote << "* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone" << rptNewLine;
+      *pFootnote << _T("* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone") << rptNewLine;
    }
 }
 
@@ -327,7 +327,7 @@ bool CLongReinfShearCheck::AssertValid() const
 
 void CLongReinfShearCheck::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CLongReinfShearCheck" << endl;
+   os << _T("Dump for CLongReinfShearCheck") << endl;
 }
 #endif // _DEBUG
 

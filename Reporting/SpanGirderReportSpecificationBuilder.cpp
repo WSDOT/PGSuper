@@ -60,7 +60,7 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateR
    {
       boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Span) );
 
-      std::vector<std::string> chList = dlg.m_ChapterList;
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
       AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
@@ -115,7 +115,7 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
    {
       boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder) );
 
-      std::vector<std::string> chList = dlg.m_ChapterList;
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
       AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
@@ -173,7 +173,7 @@ boost::shared_ptr<CReportSpecification> CSpanGirderReportSpecificationBuilder::C
    {
       boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Span,dlg.m_Girder) );
 
-      std::vector<std::string> chList = dlg.m_ChapterList;
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
       AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;

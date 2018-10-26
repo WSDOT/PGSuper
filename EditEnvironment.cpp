@@ -77,9 +77,9 @@ txnTransaction* txnEditEnvironment::CreateClone() const
                                  m_RelHumidity[0],       m_RelHumidity[1]);
 }
 
-std::string txnEditEnvironment::Name() const
+std::_tstring txnEditEnvironment::Name() const
 {
-   return "Edit Environmental Conditions";
+   return _T("Edit Environmental Conditions");
 }
 
 bool txnEditEnvironment::IsUndoable()

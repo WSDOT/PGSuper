@@ -101,7 +101,7 @@ public:
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   static const char* AsString(pgsTypes::PierConnectionType type);
+   static LPCTSTR AsString(pgsTypes::PierConnectionType type);
 
    void SetPierIndex(PierIndexType pierIdx);
    PierIndexType GetPierIndex() const;
@@ -121,14 +121,14 @@ public:
    double GetStation() const;
    void SetStation(double station);
 
-   const char* GetOrientation() const;
-   void SetOrientation(const char* strOrientation);
+   LPCTSTR GetOrientation() const;
+   void SetOrientation(LPCTSTR strOrientation);
 
    pgsTypes::PierConnectionType GetConnectionType() const;
    void SetConnectionType(pgsTypes::PierConnectionType type);
 
-   const char* GetConnection(pgsTypes::PierFaceType pierFace) const;
-   void SetConnection(pgsTypes::PierFaceType pierFace,const char* strConnection);
+   LPCTSTR GetConnection(pgsTypes::PierFaceType pierFace) const;
+   void SetConnection(pgsTypes::PierFaceType pierFace,LPCTSTR strConnection);
 
    const ConnectionLibraryEntry* GetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace) const;
    void SetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace,const ConnectionLibraryEntry* pLibEntry);
@@ -173,9 +173,9 @@ private:
 
    PierIndexType m_PierIdx;
    double m_Station;
-   std::string m_strOrientation;
+   std::_tstring m_strOrientation;
    pgsTypes::PierConnectionType m_ConnectionType;
-   std::string m_Connection[2];
+   std::_tstring m_Connection[2];
    const ConnectionLibraryEntry* m_pConnectionEntry[2];
 
    CSpanData* m_pPrevSpan;

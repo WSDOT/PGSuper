@@ -28,21 +28,21 @@
 class txnEditProjectCriteria : public txnTransaction
 {
 public:
-   txnEditProjectCriteria(const char* strOldCriteria,const char* strNewCriteria);
+   txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria);
 
    ~txnEditProjectCriteria();
 
    virtual bool Execute();
    virtual void Undo();
    virtual txnTransaction* CreateClone() const;
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual bool IsUndoable();
    virtual bool IsRepeatable();
 
 private:
    void Execute(int i);
 
-   std::string m_strProjectCriteria[2];
+   std::_tstring m_strProjectCriteria[2];
 };
 
 #endif // INCLUDED_EDITPROJECTCRITERIATXN_H_

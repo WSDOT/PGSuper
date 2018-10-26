@@ -169,13 +169,13 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-      std::string msg("An error occured while computing shear capacity");
+      std::_tstring msg(_T("An error occured while computing shear capacity"));
       pgsGirderDescriptionStatusItem* pStatusItem =
             new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
       pStatusCenter->Add(pStatusItem);
 
-      msg += std::string("\nSee Status Center for Details");
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),-1);
    }
 
@@ -330,7 +330,7 @@ bool pgsShearCapacityEngineer::AssertValid() const
 
 void pgsShearCapacityEngineer::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsShearCapacityEngineer" << endl;
+   os << _T("Dump for pgsShearCapacityEngineer") << endl;
 }
 #endif // _DEBUG
 
@@ -803,13 +803,13 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-         std::string msg("Error computing shear capacity - could not converge on a solution");
+         std::_tstring msg(_T("Error computing shear capacity - could not converge on a solution"));
          pgsGirderDescriptionStatusItem* pStatusItem =
             new pgsGirderDescriptionStatusItem(poi.GetSpan(),poi.GetGirder(),2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
          pStatusCenter->Add(pStatusItem);
 
-         msg += std::string("\nSee Status Center for Details");
+         msg += std::_tstring(_T("\nSee Status Center for Details"));
          THROW_UNWIND(msg.c_str(),-1);
       }
       else 

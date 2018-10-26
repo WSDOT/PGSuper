@@ -32,7 +32,7 @@ class txnEditBoundaryConditions : public txnTransaction
 {
 public:
    txnEditBoundaryConditions(PierIndexType pierIdx,CPGSuperDoc* pDoc,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC);
-   virtual std::string Name() const;
+   virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
    virtual void Undo();

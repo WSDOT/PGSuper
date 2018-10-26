@@ -24,12 +24,12 @@
 
 #pragma once
 
-#define RPT_GDR_END_LOCATION      "Location from" << rptNewLine << "End of Girder"
-#define RPT_LFT_SUPPORT_LOCATION  "Location from" << rptNewLine << "Left Support"
+#define RPT_GDR_END_LOCATION      _T("Location from") << rptNewLine << _T("End of Girder")
+#define RPT_LFT_SUPPORT_LOCATION  _T("Location from") << rptNewLine << _T("Left Support")
 
-#define LIVELOAD_PER_LANE             "* Live Load values are per lane and include impact."
-#define LIVELOAD_PER_GIRDER           "* Live Load values are per girder and include impact."
-#define LIVELOAD_PER_GIRDER_NO_IMPACT "* Live Load values are per girder and do not include impact."
+#define LIVELOAD_PER_LANE             _T("* Live Load values are per lane and include impact.")
+#define LIVELOAD_PER_GIRDER           _T("* Live Load values are per girder and include impact.")
+#define LIVELOAD_PER_GIRDER_NO_IMPACT _T("* Live Load values are per girder and do not include impact.")
 
-#define STRUT_AND_TIE_REQUIRED "* [LRFD 5.8.3.2] The shear stress at the critical section exceeds 0.18f'c and the beam-type element is not built integrally with the support. The end region shall be designed using the strut-and-tie model specified in LRFD 5.6.3"
-#define SUPPORT_COMPRESSION    "$ [LRFD 5.8.3.2] The reaction introduces compression into the end of the girder. Sectional design is not used at this location." << rptNewLine << "[LRFD C5.8.3.2] Loads close to the support are transferred directly to the support by compressive arching action without causing additional stresses in the stirrups. Av/S at this section has been compared to Av/S at the critical section."
+#define STRUT_AND_TIE_REQUIRED _T("* [LRFD 5.8.3.2] The shear stress at the critical section exceeds 0.18") << RPT_FC << _T(" and the beam-type element is not built integrally with the support. The end region shall be designed using the strut-and-tie model specified in LRFD 5.6.3")
+#define SUPPORT_COMPRESSION    _T("$ [LRFD 5.8.3.2] The reaction introduces compression into the end of the girder. Sectional design is not used at this location.") << rptNewLine << _T("[LRFD C5.8.3.2] Loads close to the support are transferred directly to the support by compressive arching action without causing additional stresses in the stirrups. ") << Sub2(_T("A"),_T("v")) << _T("/S at this section has been compared to ") << Sub2(_T("A"),_T("v")) << _T("/S at the critical section.")

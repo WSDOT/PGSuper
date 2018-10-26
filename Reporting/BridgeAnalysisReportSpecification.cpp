@@ -30,7 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(const char* strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
+CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
 CGirderReportSpecification(strReportName,pBroker,gdrIdx)
 {
    SetOptions(bDesign,bRating);

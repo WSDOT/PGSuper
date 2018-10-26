@@ -25,23 +25,23 @@
 
 bool pgsGirderLabel::ms_bUseAlpha = true;
 
-std::string pgsGirderLabel::GetGirderLabel(GirderIndexType gdrIdx)
+std::_tstring pgsGirderLabel::GetGirderLabel(GirderIndexType gdrIdx)
 {
-   std::string strLabel;
+   std::_tstring strLabel;
    if ( ms_bUseAlpha )
    {
-      strLabel += ((char)((gdrIdx % 26) + 'A'));
+      strLabel += ((TCHAR)((gdrIdx % 26) + _T('A')));
       gdrIdx = ((gdrIdx - (gdrIdx % 26))/26);
       if ( 0 < gdrIdx )
       {
-         std::string strTemp = strLabel;
+         std::_tstring strTemp = strLabel;
          strLabel = pgsGirderLabel::GetGirderLabel(gdrIdx-1);
          strLabel += strTemp;
       }
    }
    else
    {
-      std::ostringstream os;
+      std::_tostringstream os;
       os << (long)(gdrIdx+1L);
       strLabel = os.str();
    }

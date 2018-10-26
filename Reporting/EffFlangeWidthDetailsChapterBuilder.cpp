@@ -104,8 +104,8 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
             {
                pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
                *pChapter << pPara;
-               std::ostringstream os;
-               os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx);
+               std::_tostringstream os;
+               os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
                pPara->SetName( os.str().c_str() );
                (*pPara) << pPara->GetName() << rptNewLine;
             }
@@ -118,7 +118,7 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << "Bridge does not have a composite deck." << rptNewLine;
+      *pPara << _T("Bridge does not have a composite deck.") << rptNewLine;
    }
 
    return pChapter;

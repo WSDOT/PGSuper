@@ -44,7 +44,7 @@ m_Girder(0),
 m_Magnitude(0.0),
 m_Location(0.5),
 m_Fractional(true),
-m_Description("")
+m_Description(_T(""))
 {
 
 }
@@ -93,37 +93,37 @@ HRESULT CMomentLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit("MomentLoad",1.0);
+   pSave->BeginUnit(_T("MomentLoad"),1.0);
 
-   hr = pSave->put_Property("LoadCase",CComVariant((long)m_LoadCase));
+   hr = pSave->put_Property(_T("LoadCase"),CComVariant((long)m_LoadCase));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Stage",CComVariant((long)m_Stage));
+   hr = pSave->put_Property(_T("Stage"),CComVariant((long)m_Stage));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Span",CComVariant(m_Span));
+   hr = pSave->put_Property(_T("Span"),CComVariant(m_Span));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Girder",CComVariant(m_Girder));
+   hr = pSave->put_Property(_T("Girder"),CComVariant(m_Girder));
    if ( FAILED(hr) )
       return hr;
    
-   hr = pSave->put_Property("Location",CComVariant(m_Location));
+   hr = pSave->put_Property(_T("Location"),CComVariant(m_Location));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Magnitude",CComVariant(m_Magnitude));
+   hr = pSave->put_Property(_T("Magnitude"),CComVariant(m_Magnitude));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Fractional",CComVariant((long)m_Fractional));
+   hr = pSave->put_Property(_T("Fractional"),CComVariant((long)m_Fractional));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property("Description",CComVariant(m_Description.c_str()));
+   hr = pSave->put_Property(_T("Description"),CComVariant(m_Description.c_str()));
    if ( FAILED(hr) )
       return hr;
 
@@ -138,13 +138,13 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
    USES_CONVERSION;
    HRESULT hr;
 
-   hr = pLoad->BeginUnit("MomentLoad");
+   hr = pLoad->BeginUnit(_T("MomentLoad"));
    if ( FAILED(hr) )
       return hr;
 
    CComVariant var;
    var.vt = VT_I4;
-   hr = pLoad->get_Property("LoadCase",&var);
+   hr = pLoad->get_Property(_T("LoadCase"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -160,7 +160,7 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
       return STRLOAD_E_INVALIDFORMAT;
    }
 
-   hr = pLoad->get_Property("Stage",&var);
+   hr = pLoad->get_Property(_T("Stage"),&var);
    if ( FAILED(hr) )
       return hr;
 
@@ -178,45 +178,45 @@ HRESULT CMomentLoadData::Load(IStructuredLoad* pLoad)
 
 
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Span",&var);
+   hr = pLoad->get_Property(_T("Span"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Span = var.iVal;
 
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Girder",&var);
+   hr = pLoad->get_Property(_T("Girder"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Girder = var.iVal;
    
    var.vt = VT_R8;
-   hr = pLoad->get_Property("Location",&var);
+   hr = pLoad->get_Property(_T("Location"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Location = var.dblVal;
 
-   hr = pLoad->get_Property("Magnitude",&var);
+   hr = pLoad->get_Property(_T("Magnitude"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Magnitude = var.dblVal;
 
    var.vt = VT_I4;
-   hr = pLoad->get_Property("Fractional",&var);
+   hr = pLoad->get_Property(_T("Fractional"),&var);
    if ( FAILED(hr) )
       return hr;
 
    m_Fractional = var.lVal != 0;
 
   var.vt = VT_BSTR;
-  hr = pLoad->get_Property("Description",&var);
+  hr = pLoad->get_Property(_T("Description"),&var);
   if ( FAILED(hr) )
      return hr;
 
-  m_Description = OLE2A(var.bstrVal);
+  m_Description = OLE2T(var.bstrVal);
 
    hr = pLoad->EndUnit();
    return hr;

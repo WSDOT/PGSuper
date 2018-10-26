@@ -63,7 +63,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::string strSpecName = pSpec->GetSpecification();
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
@@ -79,35 +79,35 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    table->m_bTemporaryStrands = bTemporaryStrands;
    table->m_GirderData = girderData;
 
-   std::string strImagePath(pgsReportStyleHolder::GetImagePath());
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    
-   *pParagraph << "[5.9.5.4.2b] Creep of Girder Concrete : " << symbol(DELTA) << RPT_STRESS("pCRH") << rptNewLine;
+   *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << rptNewLine;
 
    if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH_PT.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH_PT.png")) << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + "Delta_FpCRH.png") << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH.png")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
    table->time.ShowUnitTag(true);
-   *pParagraph << Sub2("k","td") << " = " << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetKtd()) << rptNewLine;
-   *pParagraph << Sub2("t","i")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge())   << rptNewLine;
-   *pParagraph << Sub2("t","h")  << " = " << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
-   *pParagraph << Sub2("K","1")  << " = " << details.RefinedLosses2005.GetGdrK1Creep() << rptNewLine;
-   *pParagraph << Sub2("K","2")  << " = " << details.RefinedLosses2005.GetGdrK2Creep() << rptNewLine;
-   *pParagraph << Sub2(symbol(psi),"b") << "(" << Sub2("t","h") << "," << Sub2("t","i") << ")" << " = " << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
+   *pParagraph << Sub2(_T("k"),_T("td")) << _T(" = ") << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetKtd()) << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge())   << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
+   *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << details.RefinedLosses2005.GetGdrK1Creep() << rptNewLine;
+   *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << details.RefinedLosses2005.GetGdrK2Creep() << rptNewLine;
+   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
    table->time.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    if ( bTemporaryStrands )
    {
@@ -119,10 +119,10 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
       table->SetRowSpan(1,1,-1);
 
       table->SetColumnSpan(0,2,3);
-      (*table)(0,col++) << "Permanent Strands";
+      (*table)(0,col++) << _T("Permanent Strands");
 
       table->SetColumnSpan(0,3,3);
-      (*table)(0,col++) << "Temporary Strands";
+      (*table)(0,col++) << _T("Temporary Strands");
 
       for ( ColumnIndexType i = col; i < numColumns; i++ )
          table->SetColumnSpan(0,i,-1);
@@ -130,30 +130,30 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
       col = 2;
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-         (*table)(1,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
-         (*table)(1,col++) << COLHDR(RPT_STRESS("cgp") << " + " << symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
-      (*table)(1,col++) << Sub2("K","ih");
-      (*table)(1,col++) << COLHDR(symbol(DELTA) <<RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << Sub2(_T("K"),_T("ih"));
+      (*table)(1,col++) << COLHDR(symbol(DELTA) <<RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( bTemporaryStrands )
       {
-         (*table)(1,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*table)(1,col++) << Sub2("K","ih");
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(1,col++) << Sub2(_T("K"),_T("ih"));
+         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
    else
    {
       if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
-         (*table)(0,col++) << COLHDR(RPT_STRESS("cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
-         (*table)(0,col++) << COLHDR(RPT_STRESS("cgp") << " + " << symbol(DELTA) << RPT_STRESS("pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(0,col++) << Sub2("K","ih");
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS("pCRH"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << Sub2(_T("K"),_T("ih"));
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    return table;

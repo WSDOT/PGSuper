@@ -73,7 +73,7 @@ public:
    void CutAt(Float64 cut);
    void ShowCutDlg();
 
-   const char* GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const;
+   LPCTSTR GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const;
 
    CBridgePlanView* GetBridgePlanView();
    CBridgeSectionView* GetBridgeSectionView();

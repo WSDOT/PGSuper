@@ -24,7 +24,7 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescDlg.h"
 #include "PGSuperDoc.h"
@@ -139,25 +139,25 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
 void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
 {
    // Item data is the rebar key for the lrfdRebarPool object
-   int idx = pcbRebar->AddString("None");
+   int idx = pcbRebar->AddString(_T("None"));
    pcbRebar->SetItemData(idx,-1);
 
-   idx = pcbRebar->AddString("#4");
+   idx = pcbRebar->AddString(_T("#4"));
    pcbRebar->SetItemData(idx,4);
 
-   idx = pcbRebar->AddString("#5");
+   idx = pcbRebar->AddString(_T("#5"));
    pcbRebar->SetItemData(idx,5);
 
-   idx = pcbRebar->AddString("#6");
+   idx = pcbRebar->AddString(_T("#6"));
    pcbRebar->SetItemData(idx,6);
 
-   idx = pcbRebar->AddString("#7");
+   idx = pcbRebar->AddString(_T("#7"));
    pcbRebar->SetItemData(idx,7);
 
-   idx = pcbRebar->AddString("#8");
+   idx = pcbRebar->AddString(_T("#8"));
    pcbRebar->SetItemData(idx,8);
 
-   idx = pcbRebar->AddString("#9");
+   idx = pcbRebar->AddString(_T("#9"));
    pcbRebar->SetItemData(idx,9);
 }
 
@@ -179,19 +179,19 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
    {
       bEnableTop    = FALSE;
       bEnableBottom = FALSE;
-      GetDlgItem(IDC_DECK)->SetWindowText("Deck reinforcement cannot be described because deck type is None.");
+      GetDlgItem(IDC_DECK)->SetWindowText(_T("Deck reinforcement cannot be described because deck type is None."));
    }
    else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
    {
       bEnableTop    = TRUE;
       bEnableBottom = FALSE;
-      GetDlgItem(IDC_DECK)->SetWindowText("Bottom mat reinforcement cannot be described because deck type is Stay in Place deck panels.");
+      GetDlgItem(IDC_DECK)->SetWindowText(_T("Bottom mat reinforcement cannot be described because deck type is Stay in Place deck panels."));
    }
    else
    {
       bEnableTop    = TRUE;
       bEnableBottom = TRUE;
-      GetDlgItem(IDC_DECK)->SetWindowText("Describe top and bottom mat of deck reinforcement.");
+      GetDlgItem(IDC_DECK)->SetWindowText(_T("Describe top and bottom mat of deck reinforcement."));
    }
 
    GetDlgItem(IDC_TOP_COVER)->EnableWindow(bEnableTop);
@@ -243,11 +243,11 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
       switch(nID)
       {
       case IDC_TOP_COVER:
-         m_strTip = "Measured from top of deck to center of top mat of reinforcing";
+         m_strTip = _T("Measured from top of deck to center of top mat of reinforcing");
          break;
 
       case IDC_BOTTOM_COVER:
-         m_strTip = "Measured from bottom of deck to center of bottom mat of reinforcing";
+         m_strTip = _T("Measured from bottom of deck to center of bottom mat of reinforcing");
          break;
 
       default:

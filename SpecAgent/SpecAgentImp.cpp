@@ -214,7 +214,7 @@ const SpecLibraryEntry* CSpecAgentImp::GetSpec() const
    GET_IFACE( ISpecification, pSpec );
    GET_IFACE( ILibrary,       pLib );
 
-   std::string specName = pSpec->GetSpecification();
+   std::_tstring specName = pSpec->GetSpecification();
    return pLib->GetSpecEntry( specName.c_str() );
 }
 

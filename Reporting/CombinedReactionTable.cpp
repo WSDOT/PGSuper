@@ -112,7 +112,7 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Reaction",true,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,_T("Reaction"),true,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
    // Get the interface pointers we need
@@ -124,9 +124,9 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    for ( pier = startPier; pier < endPier; pier++ )
    {
       if (pier == 0 || pier == pBridge->GetPierCount()-1 )
-         (*p_table)(row,0) << "Abutment " << LABEL_PIER(pier);
+         (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*p_table)(row,0) << "Pier " << LABEL_PIER(pier);
+         (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);
 
       if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
       {
@@ -424,21 +424,21 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
       }
 
       GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Reaction");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reaction"));
       row = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
       *p << p_table;
 
       ColumnIndexType col = 0;
-      (*p_table)(0,col++) << "";
+      (*p_table)(0,col++) << _T("");
 
 
       for ( PierIndexType pier = startPier; pier < endPier; pier++ )
       {
          col = 0;
          if (pier == 0 || pier == nPiers-1 )
-            (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
+            (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
          else
-            (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
+            (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
          if ( analysisType == pgsTypes::Envelope )
          {
@@ -692,7 +692,7 @@ bool CCombinedReactionTable::AssertValid() const
 
 void CCombinedReactionTable::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for CCombinedReactionTable" << endl;
+   os << _T("Dump for CCombinedReactionTable") << endl;
 }
 #endif // _DEBUG
 

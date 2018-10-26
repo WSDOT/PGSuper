@@ -46,7 +46,7 @@ IMPLEMENT_DYNAMIC(CRatingDialog, CPropertySheet)
 CRatingDialog::CRatingDialog( RatingLibraryEntry& rentry,
                                    bool allowEditing,
                                    CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet("Load Rating Criteria", pParentWnd, iSelectPage),
+	:CPropertySheet(_T("Load Rating Criteria"), pParentWnd, iSelectPage),
    m_Entry(rentry),
    m_AllowEditing(allowEditing)
 {
@@ -109,14 +109,14 @@ BOOL CRatingDialog::OnInitDialog()
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
-   head += " - ";
+   head += _T(" - ");
    head += m_Entry.GetName().c_str();
 	if (!m_AllowEditing)
    {
       CWnd* pbut = GetDlgItem(IDOK);
       ASSERT(pbut);
       pbut->EnableWindow(m_AllowEditing);
-      head += " (Read Only)";
+      head += _T(" (Read Only)");
    }
    SetWindowText(head);
 	
@@ -140,7 +140,7 @@ void CRatingDialog::ExchangeDescriptionData(CDataExchange* pDX)
 	   DDX_Text(pDX, IDC_NAME, m_Name);
       if (m_Name.IsEmpty())
       {
-         AfxMessageBox("Name cannot be blank");
+         AfxMessageBox(_T("Name cannot be blank"));
          pDX->Fail();
       }
       m_Entry.SetName(m_Name);
@@ -258,7 +258,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorMod
          if ( pModel->m_ADTT[1] < pModel->m_ADTT[0] )
          {
             pDX->PrepareEditCtrl(IDC_ADTT2);
-            AfxMessageBox("The ADTT < value must be less than the ADTT > value",MB_OK | MB_ICONEXCLAMATION);
+            AfxMessageBox(_T("The ADTT < value must be less than the ADTT > value"),MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }
@@ -282,7 +282,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorMod
               !(pModel->m_ADTT[1] < pModel->m_ADTT[2]) )
          {
             pDX->PrepareEditCtrl(IDC_ADTT1);
-            AfxMessageBox("ADTT values are incorrect",MB_OK | MB_ICONEXCLAMATION);
+            AfxMessageBox(_T("ADTT values are incorrect"),MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }
@@ -314,14 +314,14 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorMod
               !(pModel->m_ADTT[1] < pModel->m_ADTT[2]) )
          {
             pDX->PrepareEditCtrl(IDC_ADTT1);
-            AfxMessageBox("ADTT values are incorrect",MB_OK | MB_ICONEXCLAMATION);
+            AfxMessageBox(_T("ADTT values are incorrect"),MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
 
          if ( IsLE(pModel->m_Wupper,pModel->m_Wlower) )
          {
             pDX->PrepareEditCtrl(IDC_UPPER_VEHICLE_WEIGHT);
-            AfxMessageBox("Vehicle weight must be greater than the lower limit value",MB_OK | MB_ICONEXCLAMATION);
+            AfxMessageBox(_T("Vehicle weight must be greater than the lower limit value"),MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }

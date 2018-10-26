@@ -80,7 +80,7 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, SpanIn
       shearData.CopyGirderEntryData(*pGirderLib);
       if (rGdrData.ShearData != shearData)
       {
-         *pParagraph<<color(Red)<<"Trans. Reinforcement data for Span "<< LABEL_SPAN(span)<<", Girder "<< LABEL_GIRDER(igdr) << " does not match Girder Library entry "<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
+         *pParagraph<<color(Red)<<_T("Trans. Reinforcement data for Span ")<< LABEL_SPAN(span)<<_T(", Girder ")<< LABEL_GIRDER(igdr) << _T(" does not match Girder Library entry ")<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
          was_diff = true;
       }
 
@@ -89,7 +89,7 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, SpanIn
       longData.CopyGirderEntryData(*pGirderLib);
       if (rGdrData.LongitudinalRebarData != longData)
       {
-         *pParagraph<<color(Red)<<"Long. Reinforcement data for Span "<< LABEL_SPAN(span)<<", Girder "<< LABEL_GIRDER(igdr) << " does not match Girder Library entry "<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
+         *pParagraph<<color(Red)<<_T("Long. Reinforcement data for Span ")<< LABEL_SPAN(span)<<_T(", Girder ")<< LABEL_GIRDER(igdr) << _T(" does not match Girder Library entry ")<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
          was_diff = true;
       }
    }

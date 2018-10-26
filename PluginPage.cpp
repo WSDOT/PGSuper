@@ -96,7 +96,7 @@ bool CPluginPage::InitList(const CATID& catid)
    HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
    if ( FAILED(hr) )
    {
-      AfxMessageBox("Failed to create the component category manager");
+      AfxMessageBox(_T("Failed to create the component category manager"));
       return false;
    }
 
@@ -113,7 +113,7 @@ bool CPluginPage::InitList(const CATID& catid)
    CLSID clsid[nPlugins]; 
    ULONG nFetched = 0;
 
-   CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? "Extensions" : "Plugins" );
+   CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? _T("Extensions") : _T("Plugins") );
 
    // Load Importers
    CEAFApp* pApp = EAFGetApp();
@@ -124,17 +124,17 @@ bool CPluginPage::InitList(const CATID& catid)
       {
          LPOLESTR pszUserType;
          OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-         int idx = m_ctlPluginList.AddString(OLE2A(pszUserType));
+         int idx = m_ctlPluginList.AddString(OLE2T(pszUserType));
 
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
          
-         CString strState = pApp->GetProfileString(strSection,OLE2A(pszCLSID),_T("Enabled"));
+         CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
          m_CLSIDs.push_back(CString(pszCLSID));
 
          ::CoTaskMemFree((void*)pszCLSID);
 
-         if ( strState.CompareNoCase("Enabled") == 0 )
+         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
             m_ctlPluginList.SetCheck(idx,TRUE);
          else
             m_ctlPluginList.SetCheck(idx,FALSE);
@@ -148,7 +148,7 @@ void CPluginPage::OnOK()
 {
    CEAFApp* pApp = EAFGetApp();
 
-   CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? "Extensions" : "Plugins" );
+   CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? _T("Extensions") : _T("Plugins") );
 
    int nItems = m_ctlPluginList.GetCount();
    for (int idx = 0; idx < nItems; idx++ )

@@ -63,13 +63,13 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
    USES_CONVERSION;
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   std::ostringstream os;
-   os << "Stage: " << OLE2A(pStageMap->GetStageName(stage)) << ", ";
+   std::_tostringstream os;
+   os << _T("Stage: ") << OLE2T(pStageMap->GetStageName(stage)) << _T(", ");
 
    if ( StageCompare(stage,pgsTypes::BridgeSite2) < 0 )
-      os << "Section: Non-composite" << std::endl;
+      os << _T("Section: Non-composite") << std::endl;
    else
-      os << "Section: Composite" << std::endl;
+      os << _T("Section: Composite") << std::endl;
 
    Uint16 nCol;
    if ( stage == pgsTypes::CastingYard || stage == pgsTypes::BridgeSite1 )
@@ -94,33 +94,33 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
    else
       (*xs_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-   (*xs_table)(0,col++) << COLHDR("Area",   rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
-   (*xs_table)(0,col++) << COLHDR("Depth",  rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
+   (*xs_table)(0,col++) << COLHDR(_T("Area"),   rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
+   (*xs_table)(0,col++) << COLHDR(_T("Depth"),  rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_IX,   rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_IY,   rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_YTOP, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
 
    if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
-      (*xs_table)(0,col++) << COLHDR(Sub2("Y","t") << "" << rptNewLine << "Girder", rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
+      (*xs_table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("t")) << _T("") << rptNewLine << _T("Girder"), rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    
    (*xs_table)(0,col++) << COLHDR(RPT_YBOT, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_STOP, rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
    
    if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
-      (*xs_table)(0,col++) << COLHDR(Sub2("S","t") << "" << rptNewLine << "Girder", rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+      (*xs_table)(0,col++) << COLHDR(Sub2(_T("S"),_T("t")) << _T("") << rptNewLine << _T("Girder"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
 
    (*xs_table)(0,col++) << COLHDR(RPT_SBOT, rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-   (*xs_table)(0,col++) << Sub2("k","t") << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")" << rptNewLine << "(Top" << rptNewLine << "kern" << rptNewLine << "point)";
-   (*xs_table)(0,col++) << Sub2("k","b")  << " (" << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<")" << rptNewLine << "(Bottom" << rptNewLine << "kern" << rptNewLine << "point)";
+   (*xs_table)(0,col++) << Sub2(_T("k"),_T("t")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Top") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
+   (*xs_table)(0,col++) << Sub2(_T("k"),_T("b"))  << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Bottom") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
 
    if ( pgsTypes::BridgeSite2 <= stage && pBridge->IsCompositeDeck() )
    {
-      (*xs_table)(0,col++) << COLHDR(Sub2("Q","slab"), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-      (*xs_table)(0,col++) << COLHDR("Effective" << rptNewLine << "Flange" << rptNewLine << "Width", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*xs_table)(0,col++) << COLHDR(Sub2(_T("Q"),_T("slab")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+      (*xs_table)(0,col++) << COLHDR(_T("Effective") << rptNewLine << _T("Flange") << rptNewLine << _T("Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
    else
    {
-      (*xs_table)(0,col++) << COLHDR("Perimeter", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*xs_table)(0,col++) << COLHDR(_T("Perimeter"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false );
