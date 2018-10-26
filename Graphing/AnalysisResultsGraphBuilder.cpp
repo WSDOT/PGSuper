@@ -242,7 +242,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    {
       vRailingSystemIntervals.push_back(rintervalIdx);
    }
-//   vRailingSystemIntervals.push_back(railingSystemIntervalIdx);
 
    std::vector<IntervalIndexType> vOverlayIntervals;
    vOverlayIntervals.push_back(overlayIntervalIdx);

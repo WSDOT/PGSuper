@@ -137,8 +137,8 @@ BOOL CConstructSegmentsDlg::OnInitDialog()
    else
    {
       SetWindowText(_T("Construct Segments"));
-      GetDlgItem(IDC_SOURCE_LABEL)->SetWindowText(_T("Girders to be erected"));
-      GetDlgItem(IDC_TARGET_LABEL)->SetWindowText(_T("Girders erected during this activity"));
+      GetDlgItem(IDC_SOURCE_LABEL)->SetWindowText(_T("Segments to be constructed"));
+      GetDlgItem(IDC_TARGET_LABEL)->SetWindowText(_T("Segments constructed during this activity"));
       GetDlgItem(IDC_NOTE)->SetWindowText(_T("This activity includes lifting of the precast segments from the casting bed and placing them into storage."));
    }
 

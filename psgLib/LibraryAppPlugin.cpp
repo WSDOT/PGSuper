@@ -48,7 +48,7 @@ void CMyCmdTarget::OnManagePlugins()
 ///////////////////////////////////////////////////////////////////
 void CLibraryAppPlugin::ManagePlugins()
 {
-   std::vector<CEAFPluginState> pluginStates = EAFManageApplicationPlugins(_T("Manage Library Editor Plugins"),NULL,CATID_PGSuperLibraryManagerPlugin,EAFGetMainFrame());
+   std::vector<CEAFPluginState> pluginStates = EAFManageApplicationPlugins(_T("Manage PGSLibrary Editor Plugins"),_T("Select the PGSLibrary Editor plugins that you want to be available"),CATID_PGSuperLibraryManagerPlugin,EAFGetMainFrame());
 
    if ( pluginStates.size() == 0 )
       return;
@@ -103,7 +103,7 @@ void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 
    if ( bIntegrate )
    {
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("Library Editor Plugins..."),this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSLibrary Editor Plugins..."),this);
    }
    else
    {

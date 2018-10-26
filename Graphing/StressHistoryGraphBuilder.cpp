@@ -210,6 +210,7 @@ BOOL CStressHistoryGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 void CStressHistoryGraphBuilder::OnTopDeck()
 {
    m_bPlot[pgsTypes::TopDeck] = !m_bPlot[pgsTypes::TopDeck];
+   InvalidateGraph();
    Update();
    GetView()->Invalidate();
 }
@@ -217,6 +218,7 @@ void CStressHistoryGraphBuilder::OnTopDeck()
 void CStressHistoryGraphBuilder::OnBottomDeck()
 {
    m_bPlot[pgsTypes::BottomDeck] = !m_bPlot[pgsTypes::BottomDeck];
+   InvalidateGraph();
    Update();
    GetView()->Invalidate();
 }
@@ -224,6 +226,7 @@ void CStressHistoryGraphBuilder::OnBottomDeck()
 void CStressHistoryGraphBuilder::OnTopGirder()
 {
    m_bPlot[pgsTypes::TopGirder] = !m_bPlot[pgsTypes::TopGirder];
+   InvalidateGraph();
    Update();
    GetView()->Invalidate();
 }
@@ -231,6 +234,7 @@ void CStressHistoryGraphBuilder::OnTopGirder()
 void CStressHistoryGraphBuilder::OnBottomGirder()
 {
    m_bPlot[pgsTypes::BottomGirder] = !m_bPlot[pgsTypes::BottomGirder];
+   InvalidateGraph();
    Update();
    GetView()->Invalidate();
 }
@@ -310,8 +314,8 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    int penWeight = GRAPH_PEN_WEIGHT;
 
    IndexType dataSeries[4];
-   dataSeries[pgsTypes::TopDeck]         = m_Graph.CreateDataSeries(_T("Top of Slab"),     PS_SOLID, penWeight, ORANGE);
-   dataSeries[pgsTypes::BottomDeck]      = m_Graph.CreateDataSeries(_T("Bottom of Slab"),  PS_SOLID, penWeight, RED);
+   dataSeries[pgsTypes::TopDeck]         = m_Graph.CreateDataSeries(_T("Top of Deck"),     PS_SOLID, penWeight, ORANGE);
+   dataSeries[pgsTypes::BottomDeck]      = m_Graph.CreateDataSeries(_T("Bottom of Deck"),  PS_SOLID, penWeight, RED);
    dataSeries[pgsTypes::TopGirder]       = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID, penWeight, GREEN);
    dataSeries[pgsTypes::BottomGirder]    = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID, penWeight, BLUE);
 

@@ -21,6 +21,7 @@ xcopy /Y /d %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
+xcopy /Y /d TxDOTAgent\TogaTemplates\*.lbr		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 
 REM - KDOT
 xcopy /Y /d %REGFREECOM%\Win32\Release\KDOTExport.dll   %BINTARGET%\Extensions\KDOT\Win32\

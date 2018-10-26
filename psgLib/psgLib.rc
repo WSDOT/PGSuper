@@ -68,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,54
- PRODUCTVERSION 3,0,0,54
+ FILEVERSION 3,0,0,55
+ PRODUCTVERSION 3,0,0,55
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.54"
+            VALUE "FileVersion", "3.0.0.55"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.54"
+            VALUE "ProductVersion", "3.0.0.55"
         END
     END
     BLOCK "VarFileInfo"
@@ -2527,7 +2527,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_MANAGE_PLUGINS       "Manage Library Editor Plug-ins"
+    ID_MANAGE_PLUGINS       "Manage PGSLibrary Editor Plug-ins"
 END
 
 STRINGTABLE 

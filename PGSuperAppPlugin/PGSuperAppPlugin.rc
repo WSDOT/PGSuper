@@ -1208,7 +1208,7 @@ BEGIN
     GROUPBOX        "Copy Properties From",IDC_STATIC,7,7,139,89
     GROUPBOX        "Select Properties to be Copied:",IDC_STATIC,7,103,333,119
     GROUPBOX        "Copy Properties To",IDC_STATIC,160,7,180,89
-    LISTBOX         IDC_LIST,17,119,314,92,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST,17,119,314,92,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SECTION_CUT_DIALOG DIALOG  0, 0, 226, 62
@@ -3398,8 +3398,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,54
- PRODUCTVERSION 3,0,0,54
+ FILEVERSION 3,0,0,55
+ PRODUCTVERSION 3,0,0,55
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3416,12 +3416,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.54"
+            VALUE "FileVersion", "3.0.0.55"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.54"
+            VALUE "ProductVersion", "3.0.0.55"
         END
     END
     BLOCK "VarFileInfo"
