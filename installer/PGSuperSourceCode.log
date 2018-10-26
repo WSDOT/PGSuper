@@ -1,5 +1,5 @@
-Build started at  May 01, 2012  10:49:00
-Output Package: F:\ARP_INSTALLER\Install_PGSuper_Source_2.6.0.3.exe
+Build started at  June 04, 2012  10:33:39
+Output Package: F:\ARP_INSTALLER\Install_PGSuper_Source_2.6.1.0.exe
 Creating Package
      File 'AASHTO.lbr' in package.
      File 'AlignmentDescriptionDlg.cpp' in package.
@@ -2609,6 +2609,8 @@ Creating Package
      File 'wf83g.pgs' in package.
      File 'wf95g.pgs' in package.
      File 'dodiff.bat' in package.
+     File 'VoidedSlab_Extended_Debonded.pgs' in package.
+     File 'WF_Extended.pgs' in package.
      File 'BoxAdjBeam_AASHTO_1.pgs' in package.
      File 'BoxAdjBeam_AASHTO_1_si.pgs' in package.
      File 'BoxAdjBeam_AASHTO_2.pgs' in package.
@@ -3345,6 +3347,10 @@ Creating Package
      File 'wf95g.dbr' in package.
      File 'wf95g@TxDT_All_EI.Test' in package.
      File 'WF@TxDT_All_EI.Test' in package.
+     File 'VoidedSlab_Extended_Debonded.dbr' in package.
+     File 'VoidedSlab_Extended_Debonded@TxAT_All_EI.Test' in package.
+     File 'WF_Extended.dbr' in package.
+     File 'WF_Extended@TxAT_All_EI.Test' in package.
      File 'BoxAdjBeam_AASHTO_1@TestDF_All_EI.Test' in package.
      File 'BoxAdjBeam_AASHTO_1_si@TestDF_All_EI.Test' in package.
      File 'BoxAdjBeam_AASHTO_2@TestDF_All_EI.Test' in package.
@@ -4428,4 +4434,4 @@ Creating EXE
      Creating data section...
      Appending Data Section
      Appending File Groups
-Build completed at  May 01, 2012  10:56:30
+Build completed at  June 04, 2012  10:34:22

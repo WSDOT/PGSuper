@@ -73,6 +73,7 @@ protected:
    CGirderDescDebondGrid m_Grid;
 
    StrandIndexType GetNumStrands();
+   StrandIndexType GetNumPermanentStrands();
    bool CanDebondMore();
    void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
    void DrawStrands(CDC* pDC,grlibPointMapper& mapper);

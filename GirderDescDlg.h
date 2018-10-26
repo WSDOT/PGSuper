@@ -86,6 +86,7 @@ public:
 protected:
    void Init();
    StrandIndexType GetStraightStrandCount();
+   StrandIndexType GetHarpedStrandCount();
    void SetDebondTabName();
 
    friend CGirderDescGeneralPage;

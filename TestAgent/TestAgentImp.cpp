@@ -37,6 +37,7 @@
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>
+#include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
@@ -47,6 +48,7 @@
 #include <PgsExt\DesignArtifact.h>
 #include <PgsExt\LiftingCheckArtifact.h>
 #include <PgsExt\HaulingCheckArtifact.h>
+#include <PgsExt\RatingArtifact.h>
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -207,6 +209,13 @@ bool CTestAgentImp::RunTest(long type,
          if ( RunFabOptimizationTest(resf, poif, span, 0) )
             return RunFabOptimizationTest(resf, poif, span, 1);
          break;
+      case 501:
+         if ( span == 0 )
+         {
+            if ( RunLoadRatingTest(resf, poif, 0) )
+               return RunLoadRatingTest(resf, poif, 1);
+            break;
+         }
       case 777:
          if ( RunDesignTest(resf, poif, span, 0) )
             return RunDesignTest(resf, poif, span, 1);
@@ -241,6 +250,12 @@ bool CTestAgentImp::RunTest(long type,
 
          VERIFY( RunFabOptimizationTest(resf, poif, span, 0) );
          VERIFY( RunFabOptimizationTest(resf, poif, span, 1) );
+
+         if ( span == 0 )
+         {
+            VERIFY( RunLoadRatingTest(resf, poif, 0) );
+            VERIFY( RunLoadRatingTest(resf, poif, 1) );
+         }
 
          return true;
          break;
@@ -321,6 +336,10 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          if ( !RunFabOptimizationTest(resf, poif, span, girder) )
             return false;
          break;
+      case 501:
+         if ( !RunLoadRatingTest(resf, poif, girder) )
+            return false;
+         break;
       case 777:
          if ( !RunDesignTest(resf, poif, span, girder) )
             return false;
@@ -355,6 +374,9 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          if (!RunCamberTest(resf,poif,span, girder) )
             return false;
          if (!RunFabOptimizationTest(resf, poif, span, girder) )
+            return false;
+
+         if (!RunLoadRatingTest(resf, poif, girder) )
             return false;
       }
    }
@@ -999,9 +1021,12 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
          const pgsFlexuralCapacityArtifact* pCompositeCap;
          pCompositeCap = gdrArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
+         if ( pCompositeCap )
+         {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122016, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122017, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetCapacity() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122018, ")<<loc<<_T(", ")<<(int)(pCompositeCap->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+         }
 
          // negative moment capacity
          pMomentCapacity->GetCrackingMomentDetails(pgsTypes::BridgeSite3,poi,false,&cmd);
@@ -1019,9 +1044,12 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50141, ")<<loc<<_T(", ")<<QUITE(IsZero(mmcd.Mu) ? 0 : mmcd.Mr/mmcd.Mu)<< _T(",15, ")<<gdr<<std::endl;
 
          pCompositeCap = gdrArtifact->GetNegativeMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
+         if ( pCompositeCap )
+         {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122116, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122117, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetCapacity() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122118, ")<<loc<<_T(", ")<<(int)(pCompositeCap->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+         }
 
 
          // shear capacity
@@ -1050,6 +1078,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
          psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3, pgsTypes::StrengthI,poi.GetDistFromStart()) );
          ATLASSERT(psArtifact != NULL);
+         if ( psArtifact )
+         {
          pArtifact = psArtifact->GetLongReinfShearArtifact();
 
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50061, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetDemandForce(), unitMeasure::Newton)) <<  _T(",15, ")<<gdr<<std::endl;
@@ -1059,18 +1089,25 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50063, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetSMax(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50064, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetAvsMin(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50065, ")<<loc<<_T(", ")<< QUITE(scd.Vn/scd.Vu) <<_T(", 15 ")<<gdr<<std::endl;
+         }
 
          const pgsStirrupCheckAtPoisArtifact* pspArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3, pgsTypes::StrengthI,poi.GetDistFromStart()) );
+         if ( pspArtifact )
+         {
          pAHsrtifact = pspArtifact->GetHorizontalShearArtifact();
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50067, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetCapacity()*pAHsrtifact->GetPhi(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50068, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetCapacity(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
+         }
 
+         if ( psArtifact )
+         {
          const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();
 
 
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50069, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAcv(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50070, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverS(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetNormalCompressionForce(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
+         }
       }
 
       // pass/fail cases
@@ -1455,6 +1492,79 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155011, ") << ::ConvertFromSysUnits(details.LUmin,unitMeasure::Millimeter) << _T(", ") << gdr << std::endl;
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155012, ") << ::ConvertFromSysUnits(details.LUmax,unitMeasure::Millimeter) << _T(", ") << gdr << std::endl;
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155013, ") << ::ConvertFromSysUnits(details.LUsum,unitMeasure::Millimeter) << _T(", ") << gdr << std::endl;
+   }
+
+   return true;
+}
+
+bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, GirderIndexType gdr)
+{
+   std::_tstring pid      = GetProcessID();
+   std::_tstring bridgeId = GetBridgeID();
+
+   GET_IFACE(IProductLoads,pProductLoads);
+   GET_IFACE(IArtifact,pArtifacts);
+
+   GET_IFACE(IBridge,pBridge);
+   bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
+   
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+
+
+   for ( int i = 0; i < 6; i++ )
+   {
+      pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
+      if ( !pRatingSpec->IsRatingEnabled(ratingType) )
+         continue;
+
+      pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+      VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+      for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+      {
+         const pgsRatingArtifact* pArtifact = pArtifacts->GetRatingArtifact(gdr,ratingType,vehIdx);
+         if ( pArtifact == NULL )
+            continue;
+
+         Float64 RF = pArtifact->GetMomentRatingFactor(true);
+	      resultsFile << bridgeId << _T(", ") << pid << _T(", 881001, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+
+         if ( bNegMoments )
+         {
+            RF = pArtifact->GetMomentRatingFactor(false);
+	         resultsFile << bridgeId << _T(", ") << pid << _T(", 881002, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+         }
+         
+         if ( pRatingSpec->RateForShear(ratingType) )
+         {
+            RF = pArtifact->GetShearRatingFactor();
+	         resultsFile << bridgeId << _T(", ") << pid << _T(", 881003, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+         }
+
+         if ( pRatingSpec->RateForStress(ratingType) )
+         {
+            if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
+            {
+               // Service I reinforcement yield check if permit rating
+               RF = pArtifact->GetYieldStressRatio(true);
+	            resultsFile << bridgeId << _T(", ") << pid << _T(", 881004, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+
+               if ( bNegMoments )
+               {
+                  RF = pArtifact->GetYieldStressRatio(false);
+	               resultsFile << bridgeId << _T(", ") << pid << _T(", 881005, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+               }
+            }
+            else
+            {
+               // Service III flexure if other rating type
+               RF = pArtifact->GetStressRatingFactor();
+	            resultsFile << bridgeId << _T(", ") << pid << _T(", 881006, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            }
+         }
+
+         RF = pArtifact->GetRatingFactor();
+	      resultsFile << bridgeId << _T(", ") << pid << _T(", 881007, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+      }
    }
 
    return true;

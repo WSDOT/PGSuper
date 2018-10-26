@@ -258,9 +258,19 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                // there is bad data
 
                // fixed the last girder index and remove extra groups
-               m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].second = m_nGirders-1;
-               if (m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].first >= m_GirderSpacing[endType].m_SpacingGroups[nGroups-1].second )
-                  m_GirderSpacing[endType].m_SpacingGroups.pop_back();
+               std::vector<CGirderSpacingData::SpacingGroup>::iterator iter(m_GirderSpacing[endType].m_SpacingGroups.begin());
+               std::vector<CGirderSpacingData::SpacingGroup>::iterator end(m_GirderSpacing[endType].m_SpacingGroups.end());
+               for ( ; iter != end; iter++ )
+               {
+                  CGirderSpacingData::SpacingGroup group = *iter;
+                  if ( m_nGirders <= group.second )
+                  {
+                     // found what should be the last group
+                     break;
+                  }
+               }
+               m_GirderSpacing[endType].m_SpacingGroups.erase(iter,end);
+               m_GirderSpacing[endType].m_SpacingGroups.back().second = m_nGirders-1;
 
                // remove extra girder spacing data
                std::vector<Float64>::iterator spacing_begin = m_GirderSpacing[endType].m_GirderSpacing.begin() + (m_nGirders-1);

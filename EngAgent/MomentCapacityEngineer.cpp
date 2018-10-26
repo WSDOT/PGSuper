@@ -408,7 +408,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       Float64 t = 0; // summ of the tension forces in the strands
       Float64 tde = 0; // summ of location of strand time tension force in strand
       // de = tde/t
-      if ( 0 <  Ns + Nh )
+      if ( bPositiveMoment && 0 <  Ns + Nh )
       {
          CComPtr<IStressStrain> ssStrand;
          ssStrand.CoCreateInstance(CLSID_PSPowerFormula);
@@ -455,15 +455,20 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
          fps_avg /= (Ns+Nh);
 
+         pmcd->de_shear = IsZero(t) ? 0 : H - tde/t;
+      } // if ( Ns+Nh
+      else
+      {
          if ( bPositiveMoment )
          {
-            pmcd->de_shear = H - tde/t;
+            // this happens when Ns+Nh is zero
+            pmcd->de_shear = 0; 
          }
          else
          {
             pmcd->de_shear = pmcd->de;
          }
-      } // if ( Ns+Nh
+      }
    }
    else
    {

@@ -201,6 +201,11 @@ StrandIndexType CGirderDescDlg::GetStraightStrandCount()
    return  m_GirderData.Nstrands[pgsTypes::Straight];
 }
 
+StrandIndexType CGirderDescDlg::GetHarpedStrandCount()
+{
+   return  m_GirderData.Nstrands[pgsTypes::Harped];
+}
+
 void CGirderDescDlg::FillMaterialComboBox(CComboBox* pCB)
 {
    pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );

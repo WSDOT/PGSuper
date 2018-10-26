@@ -571,6 +571,16 @@ StrandIndexType CGirderDescDebondPage::GetNumStrands()
    return nStrands;
 }
 
+StrandIndexType CGirderDescDebondPage::GetNumPermanentStrands()
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   StrandIndexType nStrands =  pParent->GetStraightStrandCount();
+   nStrands += pParent->GetHarpedStrandCount();
+
+   return nStrands;
+}
+
 bool CGirderDescDebondPage:: CanDebondMore()
 {
    // how many can be debonded?
@@ -661,14 +671,14 @@ void CGirderDescDebondPage::OnHelp()
 
 void CGirderDescDebondPage::OnChange() 
 {
-   StrandIndexType ns = GetNumStrands(); 
+   StrandIndexType ns = GetNumPermanentStrands(); 
    StrandIndexType ndbs =  m_Grid.GetNumDebondedStrands();
    Float64 percent = 0.0;
-   if (ns < 0 && ns != INVALID_INDEX)
-      percent = 100.0 * (Float64)ndbs/ns;
+   if (0 < ns && ns != INVALID_INDEX)
+      percent = 100.0 * (Float64)ndbs/(Float64)ns;
 
    CString str;
-   str.Format(_T("Number of straight strands = %d"), ns);
+   str.Format(_T("Number of straight strands = %d  Number of harped strands = %d"), GetNumStrands(),ns-GetNumStrands());
    CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
    pNs->SetWindowText(str);
 

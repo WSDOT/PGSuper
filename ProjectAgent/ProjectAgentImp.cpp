@@ -4812,6 +4812,17 @@ bool CProjectAgentImp::SetGirderData(const CGirderData& data,SpanIndexType span,
    {
       lHint |= GCH_STRAND_MATERIAL;
    }
+
+   if ( change_type & CGirderData::ctStirrups )
+   {
+      lHint |= GCH_STIRRUPS;
+   }
+
+   if ( change_type & CGirderData::ctLongitRebar )
+   {
+      lHint |= GCH_LONGITUDINAL_REBAR;
+   }
+
    Fire_GirderChanged(span,gdr,lHint);
 
    return true;

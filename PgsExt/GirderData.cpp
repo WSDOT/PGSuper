@@ -378,6 +378,16 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
       ct |= ctCondition;
    }
 
+   if ( ShearData != rOther.ShearData )
+   {
+      ct |= ctStirrups;
+   }
+
+   if ( LongitudinalRebarData != rOther.LongitudinalRebarData )
+   {
+      ct |= ctLongitRebar;
+   }
+
    return ct;
 }
 
