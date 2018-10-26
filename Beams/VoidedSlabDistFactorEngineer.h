@@ -27,42 +27,8 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
-
-struct VOIDEDSLAB_J_SOLID
-{
-   Float64 A;
-   Float64 Ip;
-};
-
-struct VOIDEDSLAB_J_VOID
-{
-   Float64 Ao;
-   typedef std::pair<Float64,Float64> Element; // first = s, second = t
-   std::vector<Element> Elements;
-   Float64 S_over_T; // Sum of s/t for all the elements
-};
-
-struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
-{
-   Float64 L;
-   Float64 I;
-   Float64 b;
-   Float64 d;
-   Float64 leftDe;
-   Float64 rightDe;
-   Float64 J;
-   Float64 PossionRatio;
-   pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity;
-
-   VOIDEDSLAB_J_SOLID Jsolid;
-   VOIDEDSLAB_J_VOID  Jvoid;
-
-   IndexType nVoids;
-};
-
-// {DA437468-B32C-4012-8B8E-51BAE278C170}
-DEFINE_GUID(CLSID_VoidedSlabDistFactorEngineer, 
-0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
+#include "VoidedSlabDistFactorEngineerTypes.h"
+#include <Plugins\Beams.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CVoidedSlabDistFactorEngineer
@@ -78,6 +44,8 @@ public:
 	}
 
    HRESULT FinalConstruct();
+
+DECLARE_REGISTRY_RESOURCEID(IDR_VOIDEDSLABDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CVoidedSlabDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)

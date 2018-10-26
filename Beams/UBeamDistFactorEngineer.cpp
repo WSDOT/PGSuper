@@ -22,6 +22,7 @@
 
 // UBeamDistFactorEngineer.cpp : Implementation of CUBeamDistFactorEngineer
 #include "stdafx.h"
+#include <Plugins\Beams.h>
 #include "UBeamDistFactorEngineer.h"
 #include "..\PGSuperException.h"
 #include <Units\SysUnits.h>
@@ -1070,7 +1071,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(SpanIndexType 
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {
-      descr += std::_tstring(_T("TxDOT Method per Section 3 of the TxDOT LRFD Bridge Design Manual, Revised April, 2007"));
+      descr += std::_tstring(_T("TxDOT Method per per TxDOT Bridge Design Manual - LRFD"));
    }
    else if ( lldfMethod == LLDF_LRFD )
    {

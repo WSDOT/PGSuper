@@ -193,7 +193,7 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
    CAutoRegistry autoReg(GetAppName());
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
 
    // Options settings
    VERIFY(pApp->WriteProfileString(_T("Options"), _T("CompanyName"), m_CompanyName));
@@ -750,7 +750,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    {
       m_MasterLibraryFileCache = GetDefaultMasterLibraryFile();
       m_WorkgroupTemplateFolderCache = GetDefaultWorkgroupTemplateFolder();
-      return true;
+      bSuccessful = true;
    }
    else if ( m_SharedResourceType == srtInternetFtp ||
              m_SharedResourceType == srtInternetHttp ||

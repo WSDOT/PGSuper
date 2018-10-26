@@ -388,7 +388,9 @@
 #define IDC_XFER_TIME                   1104
 #define IDC_NORMAL_MAX_MAX_UNITS3       1104
 #define IDC_CREEP_DURATION2_TAG         1105
+#define IDC_NORMAL_MAX_SQRT4            1105
 #define IDC_XFER_TIME_TAG               1106
+#define IDC_NORMAL_MAX_SQRT5            1106
 #define IDC_CREEP_METHOD                1107
 #define IDC_RADIO2                      1108
 #define IDC_CURING_METHOD               1110
@@ -439,8 +441,10 @@
 #define IDC_CYS_TENS_BYLINE2            1136
 #define IDC_HAUL_TENS                   1137
 #define IDC_LIFT_TENS2                  1137
+#define IDC_CYS_TENS_BYLINE3            1137
 #define IDC_BS_NORMAL_TENS              1138
 #define IDC_HAUL_TENS2                  1138
+#define IDC_CYS_TENS_BYLINE4            1138
 #define IDC_BS_EXTREME_TENS             1139
 #define IDC_ADD_STRAIGHT_STRAND         1142
 #define IDC_APPEND_STRAIGHT_STRAND      1143
@@ -1034,14 +1038,13 @@
 #define IDC_ADJUSTABLE_NOTE             1569
 #define IDC_ADTT1_LABEL                 1570
 #define IDC_CLEARANCE_LABEL             1570
+#define IDC_STRAIGHT_FCI                1570
 #define IDC_ADTT1                       1571
 #define IDC_CLEARANCE                   1571
+#define IDC_STRAIGHT_FC                 1571
 #define IDC_LF_LOWER1_LABEL             1572
 #define IDC_CLEARANCE_UNIT              1572
-#define IDC_STRAIGHT_FCI                1570
-#define IDC_STRAIGHT_FC                 1571
 #define IDC_STRAIGHT_UNITS              1572
-
 #define IDC_LF_LOWER1                   1573
 #define IDC_DEBOND_FCI                  1573
 #define IDC_LF_UPPER1_LABEL             1574

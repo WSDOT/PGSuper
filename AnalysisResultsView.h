@@ -102,6 +102,7 @@ private:
    void LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
    void ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
    void PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void DeckShrinkageLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
    void CyStressCapacityGraph(int graphIdx, SpanIndexType span,GirderIndexType girder);
 
    void InitializeGraph(int graphIdx,ActionType action,pgsTypes::Stage stage,bool bIsFinalShear,IndexType* pDataSeriesID,BridgeAnalysisType* pBAT,Uint16* pAnalysisTypeCount);

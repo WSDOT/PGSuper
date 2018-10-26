@@ -714,6 +714,7 @@ private:
 
    OverhangLoadSet m_OverhangLoadSet;
 
+   void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot);
 };
 
 #endif //__ANALYSISAGENT_H_

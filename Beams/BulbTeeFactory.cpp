@@ -902,6 +902,14 @@ CLSID CBulbTeeFactory::GetCLSID()
    return CLSID_BulbTeeFactory;
 }
 
+std::_tstring CBulbTeeFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CBulbTeeFactory::GetFamilyCLSID()
 {
    return CLSID_DeckBulbTeeBeamFamily;
@@ -918,6 +926,11 @@ std::_tstring CBulbTeeFactory::GetGirderFamilyName()
 std::_tstring CBulbTeeFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CBulbTeeFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CBulbTeeFactory::GetResourceInstance()

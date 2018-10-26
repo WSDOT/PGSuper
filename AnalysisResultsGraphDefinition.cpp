@@ -191,7 +191,7 @@ COLORREF c
    m_Color = c;
 }
 
-// constructor for prestress
+// constructor for prestress and deck shrink
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 int id,
 const CString name,
@@ -200,13 +200,27 @@ COLORREF c
 ): m_ID(id),m_Name(name)
 {
    m_GraphType = type;
-   m_StageApplicability.insert(pgsTypes::CastingYard);
-   m_StageApplicability.insert(pgsTypes::GirderPlacement);
-   m_StageApplicability.insert(pgsTypes::TemporaryStrandRemoval);
-   m_StageApplicability.insert(pgsTypes::BridgeSite1);
-   m_StageApplicability.insert(pgsTypes::BridgeSite2);
-   m_StageApplicability.insert(pgsTypes::BridgeSite3);
-   m_ApplicableActions = ACTIONS_STRESS_ONLY | ACTIONS_DISPLACEMENT_ONLY;
+
+   if(graphPrestress == m_GraphType)
+   {
+      m_StageApplicability.insert(pgsTypes::CastingYard);
+      m_StageApplicability.insert(pgsTypes::GirderPlacement);
+      m_StageApplicability.insert(pgsTypes::TemporaryStrandRemoval);
+      m_StageApplicability.insert(pgsTypes::BridgeSite1);
+      m_StageApplicability.insert(pgsTypes::BridgeSite2);
+      m_StageApplicability.insert(pgsTypes::BridgeSite3);
+      m_ApplicableActions = ACTIONS_STRESS_ONLY | ACTIONS_DISPLACEMENT_ONLY;
+   }
+   else if(graphDeckShrinkage == m_GraphType)
+   {
+      m_StageApplicability.insert(pgsTypes::BridgeSite2);
+      m_ApplicableActions = ACTIONS_STRESS_ONLY;
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+
    m_Color = c;
 }
 

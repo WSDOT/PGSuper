@@ -27,6 +27,12 @@
 #include <Beams\BeamsExp.h>
 
 #include <EAF\EAFDisplayUnits.h>
+#include <LRFD\LiveLoadDistributionFactorBase.h>
+
 void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+
+IndexType BEAMSFUNC GetBeamTypeCount();
+CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);
+CATID BEAMSFUNC GetBeamCATID(IndexType idx);

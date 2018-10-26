@@ -358,6 +358,19 @@ Float64 CSpecAgentImp::GetCastingYardWithMildRebarAllowableStress(SpanIndexType 
    return x*sqrt(fci);
 }
 
+Float64 CSpecAgentImp::GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr)
+{
+   GET_IFACE(IBridgeMaterial,pMat);
+
+   Float64 fc = pMat->GetFcGdr(span,gdr);
+
+   const SpecLibraryEntry* pSpec = GetSpec();
+
+   Float64 x = pSpec->GetTempStrandRemovalMaxConcreteTensWithRebar();
+
+   return x*sqrt(fc);
+}
+
 Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStressFactor()
 {
    const SpecLibraryEntry* pSpec = GetSpec();
@@ -623,6 +636,12 @@ Float64 CSpecAgentImp::GetCastingYardAllowableTensionStressCoefficientWithRebar(
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetCyMaxConcreteTensWithRebar();
+}
+
+Float64 CSpecAgentImp::GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetTempStrandRemovalMaxConcreteTensWithRebar();
 }
 
 bool CSpecAgentImp::CheckTemporaryStresses()

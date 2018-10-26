@@ -264,6 +264,27 @@ Float64 pgsGirderArtifact::GetCastingYardCapacityWithMildRebar() const
 {
     return m_CastingYardAllowable;
 }
+
+void pgsGirderArtifact::SetTempStrandRemovalCapacityWithMildRebar(Float64 fAllow)
+{
+   m_TempStrandRemovalAllowable = fAllow;
+}
+
+Float64 pgsGirderArtifact::GetTempStrandRemovalCapacityWithMildRebar() const
+{
+   return m_TempStrandRemovalAllowable;
+}
+
+void pgsGirderArtifact::SetDeckCastingCapacityWithMildRebar(Float64 fAllow)
+{
+   m_DeckCastingAllowable = fAllow;
+}
+
+Float64 pgsGirderArtifact::GetDeckCastingCapacityWithMildRebar() const
+{
+   return m_DeckCastingAllowable;
+}
+
 pgsDebondArtifact* pgsGirderArtifact::GetDebondArtifact(pgsTypes::StrandType strandType)
 {
    return &m_DebondArtifact[strandType];
@@ -476,6 +497,8 @@ void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
 
    m_DeflectionCheckArtifact         = rOther.m_DeflectionCheckArtifact;
    m_CastingYardAllowable            = rOther.m_CastingYardAllowable;
+   m_TempStrandRemovalAllowable      = rOther.m_TempStrandRemovalAllowable;
+   m_DeckCastingAllowable            = rOther.m_DeckCastingAllowable;
 
    for ( Uint16 i = 0; i < 3; i++ )
       m_DebondArtifact[i] = rOther.m_DebondArtifact[i];

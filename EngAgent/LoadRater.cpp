@@ -680,6 +680,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       Float64 K = pRatingSpec->GetYieldStressLimitCoefficient();
       Float64 fr = K*fy; // 6A.5.4.2.2b 
 
+      Float64 gM;
       if ( ratingType == pgsTypes::lrPermit_Special ) // if it is any of the special permit types
       {
          // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
@@ -689,21 +690,29 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
          //
          // vLLIMmin and vLLIMmax includes the one lane LLDF... divide out this LLDF and multiply by the correct LLDF
 
-         Float64 gpM_Old, gnM_Old, gV;
-         Float64 gpM_New, gnM_New;
-         pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Old,&gnM_Old,&gV);
-         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_New,&gnM_New,&gV);
+         Float64 gpM_Service, gnM_Service, gV;
+         Float64 gpM_Fatigue, gnM_Fatigue;
+
+         pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Fatigue,&gnM_Fatigue,&gV);
+         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_Service,&gnM_Service,&gV);
 
          if ( bPositiveMoment )
          {
-            Float64 g = gpM_New/gpM_Old;
-            vLLIMmax[i] *= g;
+            gM = gpM_Fatigue;
+            vLLIMmax[i] *= gpM_Fatigue/gpM_Service;
          }
          else
          {
-            Float64 g = gnM_New/gnM_Old;
-            vLLIMmin[i] *= g;
+            gM = gnM_Fatigue;
+            vLLIMmin[i] *= gnM_Fatigue/gnM_Service;
          }
+      }
+      else
+      {
+         ATLASSERT(ratingType == pgsTypes::lrPermit_Routine);
+         Float64 gpM, gnM, gV;
+         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitRoutine,&gpM,&gnM,&gV);
+         gM = (bPositiveMoment ? gpM : gnM);
       }
 
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
@@ -780,6 +789,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       stressRatioArtifact.SetDeadLoadMoment(DC);
       stressRatioArtifact.SetWearingSurfaceFactor(gDW);
       stressRatioArtifact.SetWearingSurfaceMoment(DW);
+      stressRatioArtifact.SetLiveLoadDistributionFactor(gM);
       stressRatioArtifact.SetLiveLoadFactor(gLL);
       stressRatioArtifact.SetLiveLoadMoment(LLIM+PL);
       stressRatioArtifact.SetCrackingMoment(Mcr);

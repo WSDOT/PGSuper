@@ -689,6 +689,14 @@ CLSID CNUBeamFactory::GetCLSID()
    return CLSID_NUBeamFactory;
 }
 
+std::_tstring CNUBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CNUBeamFactory::GetFamilyCLSID()
 {
    return CLSID_WFBeamFamily;
@@ -705,6 +713,11 @@ std::_tstring CNUBeamFactory::GetGirderFamilyName()
 std::_tstring CNUBeamFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CNUBeamFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CNUBeamFactory::GetResourceInstance()

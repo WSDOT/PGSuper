@@ -95,6 +95,8 @@ public:
    bool IsEditableItemSelected()const;
    // delete selected entry - must be an item selected
    void DeleteSelectedEntry();
+   // indicates if an entry can be duplicated
+   bool CanDuplicateEntry();
    // duplicate selected entry
    void DuplicateSelectedEntry();
    // edit selected entry

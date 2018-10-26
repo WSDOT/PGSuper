@@ -87,7 +87,9 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableGeneralLumpSum(FALSE);
       EnableTxDOT2013(method==3);
       
-      EnableElasticGains(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE);
+      BOOL enElas = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
+      BOOL enDeckShr = (enElas && method != 4) ? TRUE : FALSE;
+      EnableElasticGains(enElas, enDeckShr);
    }
    else
    {
@@ -96,11 +98,12 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableApproximateShippingTime(FALSE);
       EnableGeneralLumpSum(TRUE);
       EnableTxDOT2013(FALSE);
-      EnableElasticGains(FALSE);
+      EnableElasticGains(FALSE, FALSE);
    }
 }
 
 #define ENABLE_WINDOW(x) pWnd = GetDlgItem(x); pWnd->EnableWindow(bEnable); pWnd->ShowWindow(bEnable ? SW_SHOW : SW_HIDE)
+#define ENABLE_WINDOW_EX(x, y) pWnd = GetDlgItem(x); pWnd->EnableWindow(y); pWnd->ShowWindow(y ? SW_SHOW : SW_HIDE)
 void CSpecLossPage::EnableShippingLosses(BOOL bEnable)
 {
    CWnd* pWnd;
@@ -174,7 +177,7 @@ void CSpecLossPage::EnableTxDOT2013(BOOL bEnable)
    ENABLE_WINDOW(IDC_FCPG_COMBO);
 }
 
-void CSpecLossPage::EnableElasticGains(BOOL bEnable)
+void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL enDeckShr)
 {
    CWnd* pWnd;
    ENABLE_WINDOW(IDC_ELASTIC_GAINS_GROUP);
@@ -220,9 +223,9 @@ void CSpecLossPage::EnableElasticGains(BOOL bEnable)
    ENABLE_WINDOW(IDC_EG_OVERLAY_UNIT);
    ENABLE_WINDOW(IDC_EG_OVERLAY_LABEL);
 
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE);
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE_UNIT);
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE_LABEL);
+   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE,enDeckShr);
+   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE_UNIT,enDeckShr);
+   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE_LABEL,enDeckShr);
 
    ENABLE_WINDOW(IDC_EG_LIVELOAD);
    ENABLE_WINDOW(IDC_EG_LIVELOAD_UNIT);

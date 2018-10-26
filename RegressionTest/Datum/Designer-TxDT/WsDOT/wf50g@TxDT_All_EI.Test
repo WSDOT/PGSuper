@@ -1,36 +1,27 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    WF50G  *    40  0.60  270 21.22  9.82  12 46.0  5.900  6.800    4.030   -4.516   7499  0.539  0.671  0.44 -0.18  0.00 -0.02 -0.20 171.94 287.20   1.75   5.00   5.00
+ 28.25   5  6.00  1     1    WF50G  *    42  0.60  270 21.17 10.31  12 46.0  6.300  7.200    4.814   -4.777   7710  0.542  0.671  0.45 -0.18  0.00 -0.02 -0.20 185.32 292.43   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    WF50G  *    40  0.60  270 21.22  9.82  12 46.0  5.900  6.700    4.014   -4.504   7484  0.538  0.671  0.44 -0.18  0.00 -0.02 -0.20 171.94 286.92   1.75   5.00   5.00
+ 28.25   5  6.00  1     2    WF50G  *    42  0.60  270 21.17 10.31  12 46.0  6.300  7.200    4.798   -4.760   7711  0.540  0.671  0.45 -0.18  0.00 -0.02 -0.20 185.32 293.25   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     3    WF50G  *    40  0.60  270 21.22  9.82  12 46.0  5.900  6.700    4.014   -4.504   7484  0.538  0.671  0.44 -0.18  0.00 -0.02 -0.20 171.94 286.92   1.75   5.00   5.00
+ 28.25   5  6.00  1     3    WF50G  *    42  0.60  270 21.17 10.31  12 46.0  6.300  7.200    4.798   -4.760   7711  0.540  0.671  0.45 -0.18  0.00 -0.02 -0.20 185.32 293.25   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone checks failed.
 
 

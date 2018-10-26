@@ -49,7 +49,8 @@ enum GraphType
    graphDemand, 
    graphAllowable, 
    graphCapacity,
-   graphMinCapacity
+   graphMinCapacity,
+   graphDeckShrinkage
 };
 
 enum ActionType 
@@ -102,7 +103,7 @@ public:
    CAnalysisResultsGraphDefinition(int id,const CString name,
                 bool apcy, bool apgdrplacement, bool aptsr, bool apbs1, bool apbs2, bool apbs3,int actions,COLORREF c);
    
-   // constructor for prestress
+   // constructor for prestress and deck shrinkage
    CAnalysisResultsGraphDefinition(int id,const CString name,GraphType type,COLORREF c);
    
    // constructor for demands

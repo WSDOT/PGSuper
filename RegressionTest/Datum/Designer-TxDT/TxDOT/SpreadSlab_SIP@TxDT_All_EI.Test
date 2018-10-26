@@ -1,40 +1,36 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.00   4  7.00  1     1   5SB15       40   1/2  270  4.40  4.14  12  2.50  28  12  6  2  4  0  0  0  0  0  0  0  4.400  5.000    2.744   -3.650    1585 0.541  0.676  0.29 -0.07  0.00 -0.01 -0.08 101.38 280.96   1.00   1.00   1.00
+ 26.00   4  7.00  1     1   5SB15       42   1/2  270  4.33  4.07  12  2.50  28  12  8  2  2  0  0  0  0  0  0  0  4.800  5.000    2.744   -3.650    1585 0.541  0.676  0.29 -0.07  0.00 -0.01 -0.08 107.34 300.87   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.00   4  7.00  1     2   5SB15       40   1/2  270  4.40  4.14  12  2.50  28  12  6  2  4  0  0  0  0  0  0  0  4.400  5.000    2.740   -3.665    1598 0.541  0.676  0.28 -0.06  0.00 -0.01 -0.07 101.38 281.20   1.00   1.00   1.00
+ 26.00   4  7.00  1     2   5SB15       42   1/2  270  4.33  4.07  12  2.50  28  12  8  2  2  0  0  0  0  0  0  0  4.800  5.000    2.740   -3.665    1598 0.541  0.676  0.28 -0.06  0.00 -0.01 -0.07 107.34 300.35   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.00   4  7.00  2     1   5SB15       54   1/2  270  4.04  3.76  12  2.50  28  12  6  4  2  0  0  0  0  0  0  0  5.900  5.900    3.309   -4.352    1854 0.528  0.669  0.33 -0.10  0.00 -0.01 -0.11 150.31 438.90   1.00   1.00   1.00
+ 26.00   4  7.00  2     1   5SB15       56   1/2  270  4.00  3.73  12  2.50  28  12  6  2  4  0  0  0  0  0  0  0  6.000  6.000    3.309   -4.352    1854 0.528  0.669  0.35 -0.10  0.00 -0.01 -0.11 160.04 463.84   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.00   4  7.00  2     2   5SB15       54   1/2  270  4.04  3.76  12  2.50  28  12  6  2  4  0  0  0  0  0  0  0  5.800  5.800    3.304   -4.370    1869 0.528  0.669  0.33 -0.09  0.00 -0.01 -0.10 151.34 439.95   1.00   1.00   1.00
+ 26.00   4  7.00  2     2   5SB15       56   1/2  270  4.00  3.73  12  2.50  28  12  6  2  4  0  0  0  0  0  0  0  6.000  6.000    3.304   -4.370    1869 0.528  0.669  0.34 -0.09  0.00 -0.01 -0.10 160.04 463.00   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
 
 

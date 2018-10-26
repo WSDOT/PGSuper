@@ -40,6 +40,7 @@ class IBeamFamilyImpl :
 public:
    // IBeamFactory
    virtual CString GetName();
+   virtual void RefreshFactoryList();
    virtual std::vector<CString> GetFactoryNames();
    virtual CLSID GetFactoryCLSID(LPCTSTR strName);
    virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory);

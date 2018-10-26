@@ -39,6 +39,50 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+void CGirderComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
+
+   CDC dc;
+   dc.Attach(lpDrawItemStruct->hDC);
+
+   COLORREF oldTextColor = dc.GetTextColor();
+   COLORREF oldBkColor   = dc.GetBkColor();
+   
+   CString lpszText;
+   GetLBText(lpDrawItemStruct->itemID,lpszText);
+
+   if ( (lpDrawItemStruct->itemAction | ODA_SELECT) &&
+        (lpDrawItemStruct->itemState & ODS_SELECTED) )
+   {
+      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
+
+      // Tell the parent page to update the girder image
+      CLSID* pCLSID = (CLSID*)GetItemDataPtr(lpDrawItemStruct->itemID);
+      CGirderDimensionsPage* pParent = (CGirderDimensionsPage*)GetParent();
+      pParent->UpdateGirderImage(*pCLSID);
+   }
+   else
+   {
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem,oldBkColor);
+   }
+
+   dc.DrawText(lpszText,&lpDrawItemStruct->rcItem,DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+   if ( lpDrawItemStruct->itemState & ODS_FOCUS )
+   {
+      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
+   }
+   
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkColor(oldBkColor);
+
+   dc.Detach();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDimensionsPage property page
 
@@ -60,6 +104,8 @@ void CGirderDimensionsPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGirderDimensionsPage)
 	//}}AFX_DATA_MAP
+
+   DDX_Control(pDX,IDC_BEAMTYPES,m_cbGirder);
 
    DDV_GXGridWnd(pDX, &m_Grid);
 
@@ -124,10 +170,21 @@ BOOL CGirderDimensionsPage::OnInitDialog()
       for ( factoryIter = factoryNames.begin(); factoryIter != factoryNames.end(); factoryIter++ )
       {
          CString factoryName = *factoryIter;   
-         int idx = pComboBox->AddString(factoryName);
-         CLSID* clsid = new CLSID;
-         *clsid = beamFamily->GetFactoryCLSID(factoryName);
-         pComboBox->SetItemDataPtr(idx,(void*)clsid);
+         
+         CLSID* pCLSID = new CLSID;
+         *pCLSID = beamFamily->GetFactoryCLSID(factoryName);
+
+         CComPtr<IBeamFactory> pFactory;
+         HRESULT hr = ::CoCreateInstance(*pCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+         if ( SUCCEEDED(hr) )
+         {
+            int idx = pComboBox->AddString(factoryName);
+            pComboBox->SetItemDataPtr(idx,(void*)pCLSID);
+         }
+         else
+         {
+            delete pCLSID;
+         }
       }
    }
 
@@ -140,6 +197,15 @@ BOOL CGirderDimensionsPage::OnInitDialog()
          pComboBox->SetCurSel(i);
          break;
       }
+   }
+
+   if ( pComboBox->GetCurSel() == CB_ERR )
+   {
+      // the girder type isn't in the list (probably because it isn't registered with the component category)
+      // set the name string in the combobox and disable the box
+      int idx = pComboBox->AddString(pFactory->GetName().c_str());
+      pComboBox->SetCurSel(idx);
+      pComboBox->EnableWindow(FALSE); // disable it the combo box
    }
 
    // Need to initialize to actual shape
@@ -227,4 +293,16 @@ void CGirderDimensionsPage::OnDestroy()
    }
 
    CPropertyPage::OnDestroy();
+}
+
+void CGirderDimensionsPage::UpdateGirderImage(const CLSID& factoryCLSID)
+{
+   CComPtr<IBeamFactory> pFactory;
+   HRESULT hr = ::CoCreateInstance(factoryCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
+   if ( FAILED(hr) )
+   {
+      return;
+   }
+   CDataExchange dx(this,FALSE);
+	DDX_MetaFileStatic(&dx, IDC_GIRDER_MF, m_GirderPicture, pFactory->GetResourceInstance(), pFactory->GetImageResourceName(), _T("Metafile") );
 }

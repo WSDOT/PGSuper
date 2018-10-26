@@ -27,39 +27,8 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
-#include <Plugins\CLSID.h>
-
-struct VOIDEDSLAB_J_SOLID
-{
-   Float64 A;
-   Float64 Ip;
-};
-
-struct VOIDEDSLAB_J_VOID
-{
-   Float64 Ao;
-   typedef std::pair<Float64,Float64> Element; // first = s, second = t
-   std::vector<Element> Elements;
-   Float64 S_over_T; // Sum of s/t for all the elements
-};
-
-struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
-{
-   Float64 L;
-   Float64 I;
-   Float64 b;
-   Float64 d;
-   Float64 leftDe;
-   Float64 rightDe;
-   Float64 J;
-   Float64 PossionRatio;
-   pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity;
-
-   VOIDEDSLAB_J_SOLID Jsolid;
-   VOIDEDSLAB_J_VOID  Jvoid;
-
-   IndexType nVoids;
-};
+#include "VoidedSlabDistFactorEngineerTypes.h"
+#include <Plugins\Beams.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CVoidedSlab2DistFactorEngineer

@@ -80,7 +80,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  4     1   Strai       46   1/2  270  8.05  7.74   8  2.50  12   4  0  0  0  0  2  0  2  0  0  0  5.600  5.600    3.315   -4.128    3151 0.648  0.849  0.30 -0.14  0.00 -0.01 -0.15 153.48 424.10   1.00   1.00   1.00
+ 38.00   5  8.50  4     1   Strai       46   1/2  270  8.05  7.74   8  2.50  12   4  0  0  0  0  2  0  2  0  0  0  5.600  5.600    3.315   -4.129    3151 0.648  0.849  0.30 -0.14  0.00 -0.01 -0.15 153.48 424.10   1.00   1.00   1.00
                                                                        4.50  12   4  2  0  2  0  0  0  0  0  0  0 
 
 
@@ -96,7 +96,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
@@ -108,7 +108,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 

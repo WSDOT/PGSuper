@@ -555,15 +555,10 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      Float64 pM, nM, V;
-      pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
-      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
-
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3,  poi, end_size );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
-      (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
+      (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadDistributionFactor());
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetCrackingMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetExcessMoment());

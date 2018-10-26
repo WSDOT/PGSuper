@@ -22,6 +22,7 @@
 
 // BoxBeamDistFactorEngineer.cpp : Implementation of CBoxBeamDistFactorEngineer
 #include "stdafx.h"
+#include <Plugins\Beams.h>
 #include "BoxBeamDistFactorEngineer.h"
 #include <WBFLCore.h>
 #include <Units\SysUnits.h>

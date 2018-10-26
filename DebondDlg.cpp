@@ -233,36 +233,17 @@ void CGirderDescDebondPage::OnPaint()
    lp->Move(0,0);
    position->put_LocatorPoint(lpBottomCenter,lp);
 
-
-   // Get the world height to be equal to the height of the area 
-   // occupied by the strands
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   Float64 y_min =  DBL_MAX;
-   Float64 y_max = -DBL_MAX;
-   StrandIndexType nStrands = GetNumStrands();
-
-   ConfigStrandFillVector  fillvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-   PRESTRESSCONFIG config;
-   config.SetStrandFill(pgsTypes::Straight, fillvec);
-
-   CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
-   for ( StrandIndexType strIdx = 0; strIdx < nStrands; strIdx++ )
-   {
-      CComPtr<IPoint2d> point;
-      points->get_Item(strIdx,&point);
-      Float64 y;
-      point->get_Y(&y);
-      y_min = _cpp_min(y,y_min);
-      y_max = _cpp_max(y,y_max);
-   }
    gpSize2d size;
    
    Float64 bottom_width;
    gdrSection->get_BottomWidth(&bottom_width);
-   size.Dx() = bottom_width;
+   Float64 top_width;
+   gdrSection->get_TopWidth(&top_width);
+   size.Dx() = max(top_width,bottom_width);
 
-   size.Dy() = (y_max - y_min);
+   Float64 height;
+   gdrSection->get_GirderHeight(&height);
+   size.Dy() = height;
    if ( IsZero(size.Dy()) )
       size.Dy() = size.Dx()/2;
 
@@ -285,8 +266,16 @@ void CGirderDescDebondPage::OnPaint()
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
-   mapper.SetDeviceExt(csize.cx-10,csize.cy-10);
-   mapper.SetDeviceOrg(csize.cx/2,csize.cy-5);
+   mapper.SetDeviceExt(csize.cx,csize.cy);
+   mapper.SetDeviceOrg(csize.cx/2+5,csize.cy+5);
+
+   // find the world coordinates of the screen center and move to center the shape to it
+   Float64 cwx, cwy;
+   csize = redit.Size();
+   mapper.DPtoWP(csize.cx/2,csize.cy/2, &cwx, &cwy);
+   Float64 dist = cwy - size.Dy()/2.0;
+
+   mapper.SetWorldOrg(org.X(), org.Y()-dist);
 
 
    CPen solid_pen(PS_SOLID,1,GIRDER_BORDER_COLOR);

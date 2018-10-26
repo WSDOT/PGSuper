@@ -346,7 +346,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bFutureOverlay = pBridge->IsFutureOverlay();
-   pgsTypes::Stage overlay_stage = bFutureOverlay ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+   pgsTypes::Stage overlay_stage = pgsTypes::BridgeSite2;
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    SpanIndexType startSpan, nSpans;

@@ -180,6 +180,14 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
    {
       ct |= ctConcrete;
    }
+   else if ( Material.bHasFct != rOther.Material.bHasFct )
+   {
+      ct |= ctConcrete;
+   }
+   else if ( Material.bHasFct && !IsEqual(Material.Fct,rOther.Material.Fct) )
+   {
+      ct |= ctConcrete;
+   }
 
    if ( !IsEqual(HandlingData.LeftLiftPoint,  rOther.HandlingData.LeftLiftPoint) ||
         !IsEqual(HandlingData.RightLiftPoint, rOther.HandlingData.RightLiftPoint) )

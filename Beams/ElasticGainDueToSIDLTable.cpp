@@ -56,7 +56,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay = pBridge->HasOverlay();
-   pgsTypes::Stage overlayStage = (pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2);
+   pgsTypes::Stage overlayStage = pgsTypes::BridgeSite2;
 
    GET_IFACE2(pBroker,IProductLoads,pLoad);
    bool bHasSidewalk = pLoad->HasSidewalkLoad(span,gdr);

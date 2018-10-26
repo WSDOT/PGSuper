@@ -93,11 +93,11 @@ void CSpecCastingYardPage::DoDataExchange(CDataExchange* pDX)
       pnote = (CEdit*)GetDlgItem(IDC_ANCHORAGE_NOTE);
       if (!m_DoCheckSplitting)
       {
-         pnote->SetWindowText(_T("Splitting Check (5.10.10) is Disabled on Design Tab"));
+         pnote->SetWindowText(_T("Splitting Check is Disabled on Design Tab"));
       }
       else
       {
-         pnote->SetWindowText(_T("Splitting Check (5.10.10) is Enabled on Design Tab"));
+         pnote->SetWindowText(_T("Splitting Check is Enabled on Design Tab"));
       }
    }
 }

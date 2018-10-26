@@ -44,7 +44,7 @@ import "WBFLGenericBridgeTools.idl";
 [
    uuid(D3810B3E-91D6-4aed-A748-8ABEB87FCF44)
 ]
-interface DummyBeamFactory : IUnknown
+interface IDummyInterface : IUnknown
 {
    [helpstring("method Dummy")] HRESULT Dummy();
 };
@@ -89,7 +89,7 @@ library PGSuperBeamFactory
 	]
 	coclass WFBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -97,7 +97,7 @@ library PGSuperBeamFactory
 	]
 	coclass TaperedIBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -105,7 +105,7 @@ library PGSuperBeamFactory
 	]
 	coclass NUBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -113,7 +113,7 @@ library PGSuperBeamFactory
 	]
 	coclass UBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -121,7 +121,7 @@ library PGSuperBeamFactory
 	]
 	coclass UBeam2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -129,7 +129,7 @@ library PGSuperBeamFactory
 	]
 	coclass BulbTeeFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -137,7 +137,7 @@ library PGSuperBeamFactory
 	]
 	coclass MultiWebFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -145,7 +145,7 @@ library PGSuperBeamFactory
 	]
 	coclass MultiWeb2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -153,7 +153,7 @@ library PGSuperBeamFactory
 	]
 	coclass DoubleTeeFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -161,7 +161,7 @@ library PGSuperBeamFactory
 	]
 	coclass VoidedSlabFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -169,7 +169,7 @@ library PGSuperBeamFactory
 	]
 	coclass VoidedSlab2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -177,15 +177,15 @@ library PGSuperBeamFactory
 	]
 	coclass BoxBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
 		uuid(09D3E8EA-B66F-4d99-8DDE-3F55BBC14D54)
 	]
-	coclass BoxBeamFactory2
+	coclass BoxBeam2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -202,7 +202,7 @@ library PGSuperBeamFactory
 	]
 	coclass TxDotDoubleTFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -210,6 +210,63 @@ library PGSuperBeamFactory
 	]
 	coclass DeckedSlabBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
+
+   // Distribution Factor Engineers
+   [
+      uuid(3AC40380-8764-4087-BD7C-47A50A369AE6)
+   ]
+   coclass IBeamDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(E5597CC7-8499-4dbd-9FB4-3E7C529F2C3B)
+   ]
+   coclass BoxBeamDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(DA437468-B32C-4012-8B8E-51BAE278C170)
+   ]
+   coclass BulbTeeDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(5F9F0F5B-0BCE-4aad-B2A6-47FC36BB331A)
+   ]
+   coclass MultiWebDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(41AB468B-C89F-4153-96FC-A37E18A33C68)
+   ]
+   coclass UBeamDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(F8E32DC6-9B2F-45fa-8C67-E9788DD48BAC)
+   ]
+   coclass VoidedSlabDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(43BA23FE-C697-4277-A1C0-943E6E9DFBF9)
+   ]
+   coclass VoidedSlab2DistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
 };

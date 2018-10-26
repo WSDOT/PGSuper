@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperDistFactorEngineer.UBeamDistFactorEngineer.1 = s 'U Beam Distribution Factor Engineer'
+	{
+		CLSID = s '{41AB468B-C89F-4153-96FC-A37E18A33C68}'
+	}
+	PGSuperDistFactorEngineer.UBeamDistFactorEngineer = s 'U Beam Distribution Factor Engineer'
+	{
+		CLSID = s '{41AB468B-C89F-4153-96FC-A37E18A33C68}'
+		CurVer = s 'PGSuperDistFactorEngineer.UBeamDistFactorEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {41AB468B-C89F-4153-96FC-A37E18A33C68} = s 'U Beam Distribution Factor Engineer'
+		{
+			ProgID = s 'PGSuperDistFactorEngineer.UBeamDistFactorEngineer.1'
+			VersionIndependentProgID = s 'PGSuperDistFactorEngineer.UBeamDistFactorEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

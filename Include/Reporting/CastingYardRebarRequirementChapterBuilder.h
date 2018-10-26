@@ -87,6 +87,8 @@ private:
    CCastingYardRebarRequirementChapterBuilder(const CCastingYardRebarRequirementChapterBuilder&);
    CCastingYardRebarRequirementChapterBuilder& operator=(const CCastingYardRebarRequirementChapterBuilder&);
 
+   void Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,Uint16 level) const;
+
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    // GROUP: ACCESS

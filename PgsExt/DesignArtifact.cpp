@@ -643,6 +643,10 @@ void pgsDesignArtifact::ModGirderDataForFlexureDesign(IBroker* pBroker, CGirderD
 
    rdata.PrestressData.TempStrandUsage = this->GetTemporaryStrandUsage();
 
+   // Designer doesn't do extended strands
+   rdata.PrestressData.ClearExtendedStrands(pgsTypes::Straight, pgsTypes::metStart);
+   rdata.PrestressData.ClearExtendedStrands(pgsTypes::Straight, pgsTypes::metEnd);
+
    // Get debond information from design artifact
    rdata.PrestressData.ClearDebondData();
    rdata.PrestressData.bSymmetricDebond = true;  // design is always symmetric

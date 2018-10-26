@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  8.00  1     1     B          22   1/2  270 11.11  7.29   6 20.0  5.700  5.800    2.726   -3.636   2262  0.655  0.814  0.28 -0.07  0.00 -0.00 -0.08  71.15 196.58   1.00   1.00   1.00
+ 28.00   4  8.00  1     1     B          22   1/2  270 11.11  7.29   6 20.0  5.700  5.800    2.726   -3.636   2262  0.655  0.814  0.28 -0.07  0.00 -0.00 -0.08  71.15 193.83   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -10,11 +10,10 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  8.00  1     2     B          22   1/2  270 11.11  7.29   6 20.0  5.700  5.800    2.898   -3.792   2316  0.655  0.814  0.28 -0.08  0.00 -0.00 -0.09  71.15 193.67   0.00   0.00   0.00
+ 28.00   4  8.00  1     2     B          24   1/2  270 10.76  6.76   8 20.0  6.100  6.100    2.898   -3.792   2316  0.655  0.814  0.28 -0.08  0.00 -0.00 -0.09  79.90 219.43   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 

@@ -109,6 +109,7 @@ public:
    virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type);
    virtual Float64 GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls);
    virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
    virtual Float64 GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
@@ -118,6 +119,7 @@ public:
    virtual Float64 GetFinalAllowableCompressiveStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc);
    virtual Float64 GetFinalAllowableTensileStress(pgsTypes::Stage stage, Float64 fc);
    virtual Float64 GetCastingYardAllowableTensionStressCoefficientWithRebar();
+   virtual Float64 GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar();
    virtual bool CheckTemporaryStresses();
    virtual bool CheckFinalDeadLoadTensionStress();
 

@@ -161,14 +161,14 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,SpanIn
 
    if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
    {
-      rFailures.push_back(_T("Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2)."));
+      rFailures.push_back(_T("Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2)."));
    }
 
    if ( pAllowable->CheckFinalDeadLoadTensionStress() )
    {
       if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
       {
-         rFailures.push_back(_T("Tension stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2)."));
+         rFailures.push_back(_T("Tension stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2)."));
       }
    }
 

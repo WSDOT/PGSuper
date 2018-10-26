@@ -40,7 +40,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 48.0
+// *!*!*!*!*! STOP *!*!*!*!*!*!*!*!
+// That's it... we don't have any more room to add versions before
+// coliding with PGSuper V3.0
+//
+// WHATEVER FEATURE YOU ARE ADDING, STOP... IT MUST BE PART OF PGS VERSION 3
+#define CURRENT_VERSION 49.0
 // NOTE: CURRENT_VERSION CANNOT BE GREATER THAN 49.0
 // Version 3.0 branch starts at data block version 50.0
 
@@ -120,12 +125,13 @@ m_HeErectionCrackFs(1.0),
 m_HeErectionFailFs(1.5),
 m_RoadwaySuperelevation(0.06),
 m_TempStrandRemovalCompStress(0.45),
-m_TempStrandRemovalTensStress(0.0),
+m_TempStrandRemovalTensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_TempStrandRemovalTensStressWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_TempStrandRemovalDoTensStressMax(false),
-m_TempStrandRemovalTensStressMax(0.0),
+m_TempStrandRemovalTensStressMax(::ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_bCheckTemporaryStresses(true), // true is consistant with the original default value
 m_Bs1CompStress(0.6),
-m_Bs1TensStress(0.0),
+m_Bs1TensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
 m_Bs1DoTensStressMax(false),
 m_Bs1TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_Bs2CompStress(0.6),
@@ -490,6 +496,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TempStrandRemovalTensStress") ,     m_TempStrandRemovalTensStress);
    pSave->Property(_T("TempStrandRemovalDoTensStressMax") ,m_TempStrandRemovalDoTensStressMax);
    pSave->Property(_T("TempStrandRemovalTensStressMax") ,  m_TempStrandRemovalTensStressMax);
+   pSave->Property(_T("TempStrandRemovalTensStressWithRebar"), m_TempStrandRemovalTensStressWithRebar); // added version 49
 
    pSave->Property(_T("CheckTemporaryStresses"),m_bCheckTemporaryStresses); // added in version 47
    pSave->Property(_T("Bs1CompStress") ,     m_Bs1CompStress); // removed m_ in version 30
@@ -1300,6 +1307,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          m_TempStrandRemovalCompStress      = m_Bs1CompStress;
          m_TempStrandRemovalTensStress      = m_Bs1TensStress;
+         m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar;
          m_TempStrandRemovalDoTensStressMax = m_Bs1DoTensStressMax;
          m_TempStrandRemovalTensStressMax   = m_Bs1TensStressMax;
       }
@@ -1319,6 +1327,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if(!pLoad->Property(_T("TempStrandRemovalTensStressMax") ,  &m_TempStrandRemovalTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( 48 < version )
+            {
+               // added version 49
+               if(!pLoad->Property(_T("TempStrandRemovalTensStressWithRebar") ,     &m_TempStrandRemovalTensStressWithRebar))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( 46 < version )
             {
@@ -1382,6 +1397,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_TempStrandRemovalTensStress      = m_Bs1TensStress;
             m_TempStrandRemovalDoTensStressMax = m_Bs1DoTensStressMax;
             m_TempStrandRemovalTensStressMax   = m_Bs1TensStressMax;
+            m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar;
          }
 
          if ( version < 5.0 )
@@ -2552,6 +2568,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_TempStrandRemovalTensStress     , rOther.m_TempStrandRemovalTensStress              );
    TEST (m_TempStrandRemovalDoTensStressMax, rOther.m_TempStrandRemovalDoTensStressMax         );
    TESTD(m_TempStrandRemovalTensStressMax  , rOther.m_TempStrandRemovalTensStressMax           );
+   TESTD(m_TempStrandRemovalTensStressWithRebar, rOther.m_TempStrandRemovalTensStressWithRebar );
 
    TEST(m_bCheckTemporaryStresses, rOther.m_bCheckTemporaryStresses);
    TESTD(m_Bs1CompStress              , rOther.m_Bs1CompStress              );
@@ -3402,6 +3419,16 @@ void SpecLibraryEntry::SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Floa
 {
    m_TempStrandRemovalDoTensStressMax = doCheck;
    m_TempStrandRemovalTensStressMax   = stress;
+}
+
+void SpecLibraryEntry::SetTempStrandRemovalMaxConcreteTensWithRebar(Float64 stress)
+{
+   m_TempStrandRemovalTensStressWithRebar = stress;
+}
+
+Float64 SpecLibraryEntry::GetTempStrandRemovalMaxConcreteTensWithRebar() const
+{
+   return m_TempStrandRemovalTensStressWithRebar;
 }
 
 void SpecLibraryEntry::CheckTemporaryStresses(bool bCheck)
@@ -4538,6 +4565,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TempStrandRemovalTensStress              = rOther.m_TempStrandRemovalTensStress;
    m_TempStrandRemovalDoTensStressMax         = rOther.m_TempStrandRemovalDoTensStressMax;
    m_TempStrandRemovalTensStressMax           = rOther.m_TempStrandRemovalTensStressMax;
+   m_TempStrandRemovalTensStressWithRebar     = rOther.m_TempStrandRemovalTensStressWithRebar;
 
    m_bCheckTemporaryStresses    = rOther.m_bCheckTemporaryStresses;
    m_Bs1CompStress              = rOther.m_Bs1CompStress;

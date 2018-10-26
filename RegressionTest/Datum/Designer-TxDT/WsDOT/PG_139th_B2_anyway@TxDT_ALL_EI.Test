@@ -1,6 +1,18 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  1     1    WF74G  *    58  0.60  270 31.66 17.24  14 70.0  7.100  8.800    5.014   -5.357  15349  0.643  0.814  0.52 -0.28  0.00 -0.02 -0.30 272.05 408.60   3.75  11.67  11.67
+ 93.29  12  8.00  1     1    WF74G  *    60  0.60  270 31.52 17.59  14 70.0  7.200  8.900    5.949   -5.754  15744  0.719  0.814  0.55 -0.28  0.00 -0.02 -0.30 289.77 434.90   3.75  11.17  11.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Splitting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 93.29  12  8.00  1     2    WF74G  *    60  0.60  270 31.59 15.99  16 70.0  7.100  9.000    5.995   -5.736  15766  0.644  0.814  0.53 -0.29  0.00 -0.02 -0.31 291.92 430.94   3.75  11.17  11.17
 
 
 The Specification Check was Not Successful
@@ -11,11 +23,23 @@ Splitting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  1     2    WF74G  *    60  0.60  270 31.59 15.99  16 70.0  7.100  8.800    5.125   -5.479  15756  0.643  0.814  0.53 -0.30  0.00 -0.02 -0.32 291.92 428.82   3.75  11.67  11.67
+ 93.29  12  8.00  1     7    WF74G  *    57  0.60  270 31.76 16.22  15 70.0  6.800  8.800    5.883   -5.514  15029  0.643  0.814  0.53 -0.30  0.00  0.00 -0.30 268.90 409.80   4.25  11.67  11.67
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 93.29  12  8.00  2     1    WF74G  *    63  0.60  270 31.44 15.82  17 70.0  7.600  8.900    6.016   -6.005  16622  0.719  0.814  0.56 -0.27  0.00 -0.02 -0.29 316.18 440.39   2.25  10.17  10.17
+
+
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Splitting zone checks failed.
@@ -23,29 +47,7 @@ Splitting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  1     7    WF74G  *    57  0.60  270 31.76 16.22  15 70.0  6.800  8.300    5.010   -5.255  15002  0.641  0.814  0.53 -0.31  0.00  0.00 -0.31 268.90 404.49   4.25  11.67  11.67
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  2     1    WF74G  *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.200    5.100   -5.619  16193  0.646  0.814  0.55 -0.26  0.00 -0.02 -0.28 299.07 423.12   2.25   9.67   9.67
-
-
-The Specification Check was Not Successful
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  2     2    WF74G  *    62  0.60  270 31.46 16.37  16 70.0  7.500  9.200    5.204   -5.738  16451  0.646  0.814  0.54 -0.28  0.00 -0.02 -0.30 307.59 423.41   2.25   9.67   9.67
+ 93.29  12  8.00  2     2    WF74G  *    62  0.60  270 31.46 16.37  16 70.0  7.500  9.100    6.065   -5.991  16447  0.646  0.814  0.54 -0.28  0.00 -0.02 -0.30 307.59 422.25   2.25   9.67   9.67
 
 
 The Specification Check was Not Successful
@@ -56,51 +58,51 @@ Splitting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  2     7    WF74G  *    56  0.60  270 31.80 15.09  16 70.0  6.700  8.200    4.910   -5.157  14767  0.643  0.814  0.50 -0.29  0.00  0.00 -0.29 263.05 400.89   3.75  10.17  10.17
+ 93.29  12  8.00  2     7    WF74G  *    56  0.60  270 31.80 15.09  16 70.0  6.700  8.600    5.773   -5.413  14790  0.644  0.814  0.50 -0.29  0.00  0.00 -0.29 263.05 405.10   3.75  10.17  10.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  3     1    WF74G  *    52  0.60  270 31.97 15.89  14 70.0  6.100  7.600    4.341   -4.706  13880  0.652  0.820  0.49 -0.23  0.00 -0.02 -0.24 244.85 391.81   1.75   6.17   6.17
+ 93.29  12  8.00  3     1    WF74G  *    54  0.60  270 31.88 16.40  14 70.0  6.400  7.800    5.272   -5.115  14366  0.734  0.820  0.50 -0.23  0.00 -0.02 -0.24 259.44 408.10   1.75   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  3     2    WF74G  *    52  0.60  270 31.97 15.89  14 70.0  6.100  7.500    4.362   -4.734  13885  0.652  0.820  0.48 -0.23  0.00 -0.02 -0.25 244.85 388.13   1.75   6.17   6.17
+ 93.29  12  8.00  3     2    WF74G  *    52  0.60  270 31.97 15.89  14 70.0  6.100  7.700    5.190   -4.978  13897  0.653  0.820  0.48 -0.23  0.00 -0.02 -0.25 244.85 390.36   1.75   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  12  8.00  3     7    WF74G  *    50  0.60  270 32.06 15.34  14 70.0  5.800  7.100    4.247   -4.515  13270  0.650  0.820  0.46 -0.24  0.00  0.00 -0.24 230.48 385.03   1.75   6.17   6.17
+ 93.29  12  8.00  3     7    WF74G  *    50  0.60  270 32.06 15.34  14 70.0  5.800  7.500    5.074   -4.759  13296  0.652  0.820  0.46 -0.23  0.00  0.00 -0.23 230.48 389.21   1.75   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  10  9.77  4     1    WF74G  *    28  0.60  270 32.80 20.80   6 62.0  4.000  5.000    2.014   -2.398   8460  0.820  0.937  0.23 -0.06  0.00 -0.00 -0.06 103.30 235.74   1.75   6.17   6.17
+ 93.29  10  9.77  4     1    WF74G  *    28  0.60  270 32.80 20.80   6 62.0  4.000  5.000    2.735   -2.609   8460  0.820  0.937  0.23 -0.06  0.00 -0.00 -0.06 103.30 235.74   1.75   6.17   6.17
 
 
 The Specification Check was Not Successful
@@ -111,7 +113,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  10  9.77  4     2    WF74G  *    31  0.60  270 32.69 19.72   7 64.0  4.100  5.000    2.274   -2.695   9115  0.811  0.937  0.27 -0.08  0.00 -0.00 -0.08 122.94 259.46   1.75   6.17   6.17
+ 93.29  10  9.77  4     2    WF74G  *    31  0.60  270 32.69 19.72   7 64.0  4.100  5.000    3.019   -2.913   9115  0.811  0.937  0.27 -0.08  0.00 -0.00 -0.08 122.94 259.46   1.75   6.17   6.17
 
 
 The Specification Check was Not Successful
@@ -122,7 +124,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 93.29  10  9.77  4     6    WF74G  *    38  0.60  270 32.50 19.24   8 70.0  4.800  5.800    3.004   -3.367  10647  0.782  0.937  0.33 -0.13  0.00  0.00 -0.13 160.16 312.99   1.75   6.17   6.17
+ 93.29  10  9.77  4     6    WF74G  *    38  0.60  270 32.50 19.24   8 70.0  4.800  5.800    3.791   -3.598  10647  0.782  0.937  0.33 -0.13  0.00  0.00 -0.13 160.16 312.99   1.75   6.17   6.17
 
 
 The Specification Check was Not Successful

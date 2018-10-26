@@ -255,9 +255,6 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Dsidewalk  = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
       Doverlay   = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
 
-      // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
-      ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
-
       // Table 1
       col = 0;
       (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );

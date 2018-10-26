@@ -84,6 +84,10 @@ public:
    void SetWearingSurfaceMoment(Float64 Mdw);
    Float64 GetWearingSurfaceMoment() const;
 
+   
+   void SetLiveLoadDistributionFactor(Float64 gM);
+   Float64 GetLiveLoadDistributionFactor() const;
+
    void SetLiveLoadFactor(Float64 gLL);
    Float64 GetLiveLoadFactor() const;
 
@@ -147,4 +151,5 @@ protected:
    Float64 m_gDC;
    Float64 m_gDW;
    Float64 m_gLL;
+   Float64 m_gM;   // LLDF used.. in Mllim... just holding on to it here for reporting
 };

@@ -95,6 +95,7 @@ interface IAllowableConcreteStress : IUnknown
    virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type) = 0;
    virtual Float64 GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc) = 0;
    virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual Float64 GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
 
    virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls) = 0;
    virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
@@ -107,6 +108,7 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetFinalAllowableTensileStress(pgsTypes::Stage stage, Float64 fc)=0;
 
    virtual Float64 GetCastingYardAllowableTensionStressCoefficientWithRebar() = 0;
+   virtual Float64 GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar() = 0;
 
    // returns true if the girder stress checks are to include intermediate, temporary
    // loading conditions

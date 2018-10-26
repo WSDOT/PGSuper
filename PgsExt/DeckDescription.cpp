@@ -162,6 +162,12 @@ bool CDeckDescription::operator == (const CDeckDescription& rOther) const
    if ( !IsEqual(SlabEc,rOther.SlabEc) )
       return false;
 
+   if ( SlabHasFct != rOther.SlabHasFct )
+      return false;
+
+   if ( SlabHasFct && !IsEqual(SlabFct,rOther.SlabFct) )
+      return false;
+
    if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
       return false;
 

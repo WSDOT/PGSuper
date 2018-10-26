@@ -40,6 +40,7 @@ public:
    static HRESULT GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily);
    static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
    static void Reset();
+   static void UpdateFactories();
 
 private:
    typedef std::map<CString,CLSID> FamilyContainer;

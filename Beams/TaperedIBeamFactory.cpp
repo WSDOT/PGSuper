@@ -801,6 +801,14 @@ CLSID CTaperedIBeamFactory::GetCLSID()
    return CLSID_TaperedIBeamFactory;
 }
 
+std::_tstring CTaperedIBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CTaperedIBeamFactory::GetFamilyCLSID()
 {
    return CLSID_WFBeamFamily;
@@ -817,6 +825,11 @@ std::_tstring CTaperedIBeamFactory::GetGirderFamilyName()
 std::_tstring CTaperedIBeamFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CTaperedIBeamFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CTaperedIBeamFactory::GetResourceInstance()

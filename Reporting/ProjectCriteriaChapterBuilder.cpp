@@ -633,8 +633,10 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
          *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
          Float64 fts = pAllowableConcreteStress->GetAllowableStress(poi, pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI, pgsTypes::Tension);
+         Float64 ft  = pAllowableConcreteStress->GetTempStrandRemovalWithMildRebarAllowableStress(poi.GetSpan(),poi.GetGirder());
          *pPara<<_T("Allowable Tensile Concrete Stresses")<<rptNewLine;
-         *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
+         *pPara<<_T("- Service I (w/o mild rebar) = ")<<stress.SetValue(fts) << rptNewLine;
+         *pPara<<_T("- Service I (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
       }
    }
 }
@@ -1054,6 +1056,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
    else
    {
       bool bReportElasticGainParameters = false;
+      bool bReportDeckShrinkageParameters = false;
       std::_tstring relaxation_method[3] = {
          _T("LRFD Equation 5.9.5.4.2c-1"),
          _T("LRFD Equation C5.9.5.4.2c-1"),
@@ -1065,11 +1068,13 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4")<<rptNewLine;
          *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+         bReportDeckShrinkageParameters = bReportElasticGainParameters;
          break;
       case LOSSES_WSDOT_REFINED:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and WSDOT Bridge Design")<<rptNewLine;
          *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+         bReportDeckShrinkageParameters = bReportElasticGainParameters;
          break;
       case LOSSES_TXDOT_REFINED_2004:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and TxDOT Bridge Design")<<rptNewLine;
@@ -1118,7 +1123,9 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          *pPara << _T("Overlay = ") << pSpecEntry->GetOverlayElasticGain()*100.0 << _T("%") << rptNewLine;
          *pPara << _T("User DC (Bridge Site 2) = ") << pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite2)*100.0 << _T("%") << rptNewLine;
          *pPara << _T("User DW (Bridge Site 2) = ") << pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite2)*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Deck Shrinkage = ") << pSpecEntry->GetDeckShrinkageElasticGain()*100.0 << _T("%") << rptNewLine;
+
+         if (bReportDeckShrinkageParameters)
+            *pPara << _T("Deck Shrinkage = ") << pSpecEntry->GetDeckShrinkageElasticGain()*100.0 << _T("%") << rptNewLine;
       }
    }
 }

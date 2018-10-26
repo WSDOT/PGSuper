@@ -67,6 +67,7 @@ protected:
 
 public:
    afx_msg void OnBnClickedCheckTension();
+   afx_msg void OnBnClickedTensionLimit();
 };
 
 //{{AFX_INSERT_LOCATION}}

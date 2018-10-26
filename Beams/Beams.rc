@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,8
- PRODUCTVERSION 2,9,0,8
+ FILEVERSION 2,9,0,9
+ PRODUCTVERSION 2,9,0,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "Beams Module for PGSuper"
-            VALUE "FileVersion", "2.9.0.8"
+            VALUE "FileVersion", "2.9.0.9"
             VALUE "InternalName", "Beams"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "Beams.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.0.8"
+            VALUE "ProductVersion", "2.9.0.9"
         END
     END
     BLOCK "VarFileInfo"
@@ -143,8 +143,14 @@ IDR_DOUBLETEEBEAMFAMILY REGISTRY                "DoubleTeeFamily.rgs"
 IDR_RIBBEDBEAMFAMILY    REGISTRY                "MultiWebFamily.rgs"
 IDR_SLABBEAMFAMILY      REGISTRY                "VoidedSlabFamily.rgs"
 IDR_DECKEDSLABBEAMFAMILY REGISTRY                "DeckedSlabBeamFamily.rgs"
-IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY       "VoidedSlab2DistFactorEngineer.rgs"
 IDR_PSBEAMLOSSENGINEER REGISTRY                 "PsBeamLossEngineer.rgs"
+IDR_IBEAMDISTFACTORENGINEER REGISTRY           "IBeamDistFactorEngineer.rgs"
+IDR_BOXBEAMDISTFACTORENGINEER REGISTRY          "BoxBeamDistFactorEngineer.rgs"
+IDR_BULBTEEDISTFACTORENGINEER REGISTRY          "BulbTeeDistFactorEngineer.rgs"
+IDR_MULTIWEBDISTFACTORENGINEER REGISTRY          "MultiWebDistFactorEngineer.rgs"
+IDR_UBEAMDISTFACTORENGINEER REGISTRY           "UBeamDistFactorEngineer.rgs"
+IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY           "VoidedSlabDistFactorEngineer.rgs"
+IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY           "VoidedSlab2DistFactorEngineer.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

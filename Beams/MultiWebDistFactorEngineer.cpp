@@ -22,6 +22,7 @@
 
 // MultiWebDistFactorEngineer.cpp : Implementation of CMultiWebDistFactorEngineer
 #include "stdafx.h"
+#include <Plugins\Beams.h>
 #include "MultiWebDistFactorEngineer.h"
 #include "..\PGSuperException.h"
 #include <Units\SysUnits.h>
@@ -1220,7 +1221,7 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(SpanIndexTy
 
    if ( lldfMethod == LLDF_TXDOT )
    {
-      osdescr <<_T("TxDOT modifications. Treat as AASHTO Type (i,j) connected only enough to prevent relative vertical displacement, regardless of deck or connectivity input. (K=")<< this->GetTxDOTKfactor() << _T(", S/10 max). Effects of skew will be ignored.");
+      osdescr <<_T("TxDOT modifications per TxDOT Bridge Design Manual - LRFD");
    }
    else if ( lldfMethod == LLDF_WSDOT || lldfMethod == LLDF_LRFD )
    {
@@ -1245,4 +1246,14 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(SpanIndexTy
    }
 
    return osdescr.str();
+}
+
+IMultiWebDistFactorEngineer::BeamType CMultiWebDistFactorEngineer::GetBeamType()
+{
+   return m_BeamType;
+}
+
+void CMultiWebDistFactorEngineer::SetBeamType(IMultiWebDistFactorEngineer::BeamType bt)
+{
+   m_BeamType = bt;
 }

@@ -588,13 +588,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       pmcd->ecl = ecl;
       pmcd->etl = etl;
 
+      pmcd->et = 0;
+
       if ( IsZero(pmcd->c) ) 
       {
          pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
       }
       else
       {
-
          pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
          if ( bPositiveMoment )
             pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);

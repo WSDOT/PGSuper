@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 107.29  12  9.33  1     1    FDiap  *    36  0.60  270 32.55 18.55   8 70.0  4.600  5.500    2.765   -3.294  10207  0.760  0.760  0.31 -0.10  0.00 -0.01 -0.10 148.11 300.41   3.00   6.17   6.17
+ 107.29  12  9.33  1     1    FDiap  *    38  0.60  270 32.50 19.24   8 70.0  4.900  5.900    3.550   -3.534  10819  0.760  0.760  0.32 -0.10  0.00 -0.01 -0.10 161.28 308.81   3.00   6.17   6.17
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 107.29  12  9.33  1     2    FDiap  *    39  0.60  270 32.48 21.09   7 70.0  5.100  6.300    2.926   -3.554  11073  0.944  0.944  0.33 -0.10  0.00 -0.01 -0.10 167.32 327.20   3.00   6.17   6.17
+ 107.29  12  9.33  1     2    FDiap  *    40  0.60  270 32.46 19.86   8 70.0  5.200  6.300    3.712   -3.785  11381  0.944  0.944  0.33 -0.10  0.00 -0.01 -0.10 174.75 327.32   3.00   6.17   6.17
 
 
 The Specification Check was Successful
@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 107.29  12  9.33  1     7    FDiap  *    37  0.60  270 32.52 20.52   7 70.0  4.900  5.900    2.849   -3.374  10510  0.944  0.944  0.31 -0.10  0.00  0.00 -0.10 152.55 314.89   3.00   6.17   6.17
+ 107.29  12  9.33  1     7    FDiap  *    39  0.60  270 32.48 21.09   7 70.0  5.100  6.300    3.663   -3.621  11050  0.944  0.944  0.33 -0.10  0.00  0.00 -0.10 167.12 328.49   3.00   6.17   6.17
 
 
 The Specification Check was Successful

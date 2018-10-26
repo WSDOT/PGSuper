@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 12.17   5  0.00  1     1    BI-36  *    19  0.60  270 11.21  5.88   6 21.0  4.400  5.000    3.173   -3.518   1856  0.217  0.505  0.28 -0.08  0.00 -0.04 -0.12  53.93 124.60   1.75   5.00   5.00
+ 12.17   5  0.00  1     1    BI-36  *    19  0.60  270 11.21  5.88   6 21.0  4.400  5.000    3.666   -3.717   1856  0.217  0.505  0.28 -0.08  0.00 -0.04 -0.12  53.93 120.56   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -13,7 +13,7 @@ Girder Dimension Detailing check failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 12.17   5  0.00  1     2    BI-36  *    19  0.60  270 11.14  5.83   6 21.0  4.400  5.000    3.136   -3.437   1790  0.200  0.424  0.29 -0.08  0.00 -0.04 -0.12  54.33 125.51   1.75   5.00   5.00
+ 12.17   5  0.00  1     2    BI-36  *    19  0.60  270 11.14  5.83   6 21.0  4.400  5.000    3.633   -3.635   1795  0.200  0.424  0.29 -0.08  0.00 -0.04 -0.12  54.33 121.47   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -24,7 +24,7 @@ Girder Dimension Detailing check failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 12.17   5  0.00  1     3    BI-36  *    19  0.60  270 11.14  5.83   6 21.0  4.400  5.000    3.160   -3.461   1799  0.200  0.424  0.29 -0.08  0.00 -0.04 -0.12  54.33 124.64   1.75   5.00   5.00
+ 12.17   5  0.00  1     3    BI-36  *    19  0.60  270 11.14  5.83   6 21.0  4.400  5.000    3.657   -3.658   1799  0.200  0.424  0.29 -0.08  0.00 -0.04 -0.12  54.33 120.60   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

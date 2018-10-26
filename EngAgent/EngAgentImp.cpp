@@ -2303,12 +2303,6 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
       Float64 skewFactor = GetSkewCorrectionFactorForShear(span,girder,ls);
       if ( !IsEqual(skewFactor,1.0) )
       {
-#if defined _DEBUG
-         // girder must be an exterior or first interior girder
-         GirderIndexType nGirders = pBridge->GetGirderCount(span);
-         ATLASSERT( girder <= 1 || nGirders-2 <= girder );
-#endif
-
          Float64 span_length = pBridge->GetSpanLength(span,girder);
          Float64 L = span_length/2;
 
@@ -2325,7 +2319,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
             {
                // ... and this poi is in the first half of the span so 
                // the skew factor needs to vary from its full value to 1.0 at mid-span
-               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               Float64 adjustedSkewFactor = (L - dist_from_start)*(skewFactor - 1.0)/L + 1.0;
                (*V) = gV*adjustedSkewFactor;
             }
             else
@@ -2359,7 +2353,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
             // obtuse on both ends
             if ( dist_from_start <= L )
             {
-               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               Float64 adjustedSkewFactor = (L - dist_from_start)*(skewFactor - 1.0)/L + 1.0;
                (*V) = gV*adjustedSkewFactor;
             }
             else
@@ -2384,7 +2378,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
                {
                   // ... and this poi is in the first half of the span so 
                   // the skew factor needs to vary from its full value to 1.0 at mid-span
-                  Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+                  Float64 adjustedSkewFactor = (L - dist_from_start)*(skewFactor - 1.0)/L + 1.0;
                   (*V) = gV*adjustedSkewFactor;
                }
                else
@@ -2468,11 +2462,17 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    else
    {
       if ( dist_from_start < dfPoints[0] )
+      {
          *nM = GetNegMomentDistFactorAtPier(prev_pier,girder,ls,pgsTypes::Ahead);
+      }
       else if ( dfPoints[0] <= dist_from_start && dist_from_start <= dfPoints[1] )
+      {
          *nM = GetNegMomentDistFactor(span,girder,ls);
+      }
       else
+      {
          *nM = GetNegMomentDistFactorAtPier(next_pier,girder,ls,pgsTypes::Back);
+      }
    }
 }
 

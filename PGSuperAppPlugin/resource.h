@@ -1006,6 +1006,7 @@
 #define IDC_VERT_CTRLKEY_STATIC         1643
 #define IDC_VERT_STATIC                 1643
 #define IDS_E_READ                      1644
+#define IDC_USER_LLDF_NOTE              1644
 #define IDC_SERVER_STATIC3              1645
 #define IDS_E_FORMAT                    1646
 #define IDC_NORTHING                    1647
@@ -1273,7 +1274,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        326
 #define _APS_NEXT_COMMAND_VALUE         36968
-#define _APS_NEXT_CONTROL_VALUE         1644
+#define _APS_NEXT_CONTROL_VALUE         1645
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

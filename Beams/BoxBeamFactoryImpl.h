@@ -52,9 +52,11 @@ public:
    virtual std::vector<Float64> GetDefaultDimensions();
    virtual bool IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual std::_tstring GetName();
    virtual CLSID GetFamilyCLSID();
    virtual std::_tstring GetGirderFamilyName();
    virtual std::_tstring GetPublisher();
+   virtual std::_tstring GetPublisherContactInformation();
    virtual HINSTANCE GetResourceInstance();
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings();

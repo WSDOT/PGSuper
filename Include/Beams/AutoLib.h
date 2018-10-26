@@ -27,8 +27,8 @@
 #define BEAMS_AUTOLIBNAME "PGSuperBeams.lib"
 
 #pragma comment(lib,BEAMS_AUTOLIBNAME)
-#if defined AUTOLIB
-#pragma message("PGSuperBeams.dll will automatically link with " (lib,BEAMS_AUTOLIBNAME))
-#endif // AUTOLIB
+//#if defined AUTOLIB
+//#pragma message("Automatically linking with " BEAMS_AUTOLIBNAME)
+//#endif // AUTOLIB
 
 #endif // (BUILDBEAMSLIB)

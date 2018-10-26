@@ -86,7 +86,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
    bool bFutureOverlay = pBridge->IsFutureOverlay();
-   pgsTypes::Stage overlay_stage = bFutureOverlay ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+   pgsTypes::Stage overlay_stage = pgsTypes::BridgeSite2;
 
    SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
    SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );

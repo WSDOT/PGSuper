@@ -632,6 +632,16 @@ public:
    void SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Float64 stress);
 
    //------------------------------------------------------------------------
+   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
+   // at the temporary strand removal
+   Float64 GetTempStrandRemovalMaxConcreteTensWithRebar() const;
+
+   //------------------------------------------------------------------------
+   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
+   // concrete at the temporary strand removal
+   void SetTempStrandRemovalMaxConcreteTensWithRebar(Float64 stress);
+
+   //------------------------------------------------------------------------
    // Set/Get flag that indicates if stresses during temporary loading conditions
    // are to be checked (basically, Bridge Site 1 stresses)
    void CheckTemporaryStresses(bool bCheck);
@@ -1238,6 +1248,7 @@ private:
    Float64 m_TempStrandRemovalTensStress;
    bool    m_TempStrandRemovalDoTensStressMax;
    Float64 m_TempStrandRemovalTensStressMax;
+   Float64 m_TempStrandRemovalTensStressWithRebar;
 
    // bridge site 1
    bool m_bCheckTemporaryStresses; // indicates if limit state stresses are checked for temporary loading conditions

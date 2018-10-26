@@ -85,6 +85,12 @@ CString IBeamFamilyImpl::GetName()
    return strName;
 }
 
+void IBeamFamilyImpl::RefreshFactoryList()
+{
+   m_Factories.clear();
+   Init();
+}
+
 std::vector<CString> IBeamFamilyImpl::GetFactoryNames()
 {
    FactoryContainer::iterator iter;

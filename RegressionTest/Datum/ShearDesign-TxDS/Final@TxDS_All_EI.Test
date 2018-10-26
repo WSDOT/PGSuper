@@ -1,29 +1,24 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.17   5  6.80  1     1     MOD        28   1/2  270 16.44  9.58   6 38.0  4.100  5.000    3.113   -3.537   3801  0.592  0.744  0.23 -0.07  0.00  0.00 -0.07  87.02 221.62   1.00   1.00   1.00
+ 32.17   5  6.80  1     1     MOD        34   1/2  270 15.82 10.65   8 30.0  5.300  5.900    3.189   -3.726   4148  0.693  0.744  0.25 -0.07  0.00  0.00 -0.07 112.27 296.31   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.17   5  6.80  1     2     MOD        28   1/2  270 16.44  9.58   6 38.0  4.100  5.000    3.143   -3.584   3845  0.592  0.744  0.23 -0.08  0.00  0.00 -0.08  87.02 220.71   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.17   5  6.80  1     3     MOD        28   1/2  270 16.44  9.58   6 38.0  4.100  5.000    3.143   -3.584   3845  0.592  0.744  0.23 -0.08  0.00  0.00 -0.08  87.02 220.71   1.00   1.00   1.00
+ 32.17   5  6.80  1     2     MOD        32   1/2  270 16.04  9.54   8 34.0  4.700  5.400    3.143   -3.584   3845  0.592  0.744  0.24 -0.08  0.00  0.00 -0.08 105.63 267.58   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 32.17   5  6.80  1     3     MOD        32   1/2  270 16.04  9.54   8 34.0  4.700  5.400    3.143   -3.584   3845  0.592  0.744  0.24 -0.08  0.00  0.00 -0.08 105.63 267.58   1.00   1.00   1.00
+
+
+The Specification Check was Successful
 
 

@@ -24,11 +24,6 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CLSIDs for helper objects
-
-// {DA437468-B32C-4012-8B8E-51BAE278C170}
-DEFINE_GUID(CLSID_VoidedSlab2DistFactorEngineer, 
-0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
-
 // {959A33E0-E1FA-4932-AD3F-5FE259DB3E9A}
 DEFINE_GUID(CLSID_PsBeamLossEngineer, 
 0x959a33e0, 0xe1fa, 0x4932, 0xad, 0x3f, 0x5f, 0xe2, 0x59, 0xdb, 0x3e, 0x9a);

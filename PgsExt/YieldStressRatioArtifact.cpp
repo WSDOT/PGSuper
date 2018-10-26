@@ -163,6 +163,18 @@ Float64 pgsYieldStressRatioArtifact::GetWearingSurfaceMoment() const
    return m_Mdw;
 }
 
+   
+void pgsYieldStressRatioArtifact::SetLiveLoadDistributionFactor(Float64 gM)
+{
+   // not used in computation of RF because it is included in LL moment
+   m_gM = gM;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetLiveLoadDistributionFactor() const
+{
+   return m_gM;
+}
+
 void pgsYieldStressRatioArtifact::SetLiveLoadFactor(Float64 gLL)
 {
    m_gLL = gLL;
@@ -271,6 +283,8 @@ Float64 pgsYieldStressRatioArtifact::GetEg() const
 Float64 pgsYieldStressRatioArtifact::GetExcessMoment() const
 {
    Float64 M = m_gDC*m_Mdc + m_gDW*m_Mdw + m_gLL*m_Mllim;
+   // NOTE: m_Mllim includes the LLDF... don't include m_gM here
+
    if ( m_Mcr < 0 )
    {
       // negative moment
@@ -345,6 +359,7 @@ void pgsYieldStressRatioArtifact::MakeCopy(const pgsYieldStressRatioArtifact& rO
    m_gDC          = rOther.m_gDC;
    m_gDW          = rOther.m_gDW;
    m_gLL          = rOther.m_gLL;
+   m_gM             = rOther.m_gM;
 }
 
 void pgsYieldStressRatioArtifact::MakeAssignment(const pgsYieldStressRatioArtifact& rOther)

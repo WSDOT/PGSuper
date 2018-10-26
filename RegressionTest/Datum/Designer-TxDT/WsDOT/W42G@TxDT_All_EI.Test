@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00  1     1     W42G  *    20  0.60  270 15.89  5.99   6 38.0  4.000 14.900    3.397   -3.698   2893  0.510  0.596  0.45 -0.05  0.00 -0.01 -0.05 120.99 274.02   1.75  13.00  13.00
+ 28.25   6  5.00  1     1     W42G  *    21  0.60  270 15.89  5.08   7 38.0  4.000 14.600    4.594   -4.133   2983  0.510  0.596  0.47 -0.05  0.00 -0.01 -0.06 132.92 293.80   1.75  13.00  13.00
 
 
 Girder design was Not Successful
@@ -13,26 +13,28 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00  1     2     W42G  *    18  0.60  270 16.00  5.00   6 38.0  4.000 14.600    3.259   -3.588   2737  0.510  0.596  0.39 -0.05  0.00 -0.01 -0.05  99.20 230.97   1.75  13.00  13.00
+ 28.25   6  5.00  1     2     W42G  *    19  0.60  270 15.89  7.10   5 38.0  4.000 14.600    4.470   -4.031   2829  0.510  0.596  0.43 -0.05  0.00 -0.01 -0.05 109.54 249.33   1.75  13.00  13.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Lifting checks failed
 Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00  1     4     W42G  *    19  0.60  270 15.89  7.10   5 38.0  4.000 14.900    3.281   -3.603   2820  0.510  0.596  0.43 -0.05  0.00 -0.01 -0.05 109.54 252.90   1.75  13.00  13.00
+ 28.25   6  5.00  1     4     W42G  *    19  0.60  270 15.89  7.10   5 38.0  4.000 14.600    4.470   -4.031   2829  0.510  0.596  0.43 -0.05  0.00 -0.01 -0.05 109.54 249.33   1.75  13.00  13.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Lifting checks failed
 Hauling checks failed
 

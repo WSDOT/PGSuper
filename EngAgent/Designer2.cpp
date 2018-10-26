@@ -1198,7 +1198,11 @@ void pgsDesigner2::DoDesign(SpanIndexType span,GirderIndexType gdr,const arDesig
 
       // Check tension in the casting yard
       pgsGirderArtifact cyGdrArtifact(span,gdr);
-      CheckCastingYardGirderStresses(span, gdr, &config, pgsTypes::Tension, &cyGdrArtifact);
+      ALLOWSTRESSCHECKTASK task;
+      task.ls = pgsTypes::ServiceI;
+      task.stage = pgsTypes::CastingYard;
+      task.type = pgsTypes::Tension;
+      CheckGirderStresses(span,gdr,task,&config,&cyGdrArtifact);
 
       bool cytPassed = cyGdrArtifact.DidFlexuralStressesPass();
       if (!cytPassed)
@@ -1349,10 +1353,10 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,co
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking Girder Stresses"));
 
-   if (task.stage==pgsTypes::CastingYard)
+   if (task.stage==pgsTypes::CastingYard || task.stage == pgsTypes::TemporaryStrandRemoval )
    {
-      // Casting yard is a different animal - check it separately
-      CheckCastingYardGirderStresses(span, gdr, NULL, task.type, pGdrArtifact);
+      // these are different animals because of the alternative tension stress limits
+      CheckGirderStresses(span,gdr,task,NULL,pGdrArtifact);
    }
    else
    {
@@ -1493,8 +1497,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,co
       }
    }
 }
-
-void pgsDesigner2::CheckCastingYardGirderStresses(SpanIndexType span, GirderIndexType gdr, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsGirderArtifact* pGdrArtifact)
+///////////////
+void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, const ALLOWSTRESSCHECKTASK& task,const GDRCONFIG* pConfig, pgsGirderArtifact* pGdrArtifact)
 {
    USES_CONVERSION;
 
@@ -1509,12 +1513,6 @@ void pgsDesigner2::CheckCastingYardGirderStresses(SpanIndexType span, GirderInde
    GET_IFACE(ISpecification,pSpec);
    GET_IFACE(ILongRebarGeometry, pRebarGeom);
 
-   // we only work in the casting yard
-   ALLOWSTRESSCHECKTASK task;
-   task.stage = pgsTypes::CastingYard;
-   task.ls = pgsTypes::ServiceI;
-   task.type = type;
-
    BridgeAnalysisType batTop, batBottom;
    GetBridgeAnalysisType(gdr,task,batTop,batBottom);
 
@@ -1522,14 +1520,14 @@ void pgsDesigner2::CheckCastingYardGirderStresses(SpanIndexType span, GirderInde
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   Float64 fci;
-   if (pConfig!=NULL)
+   Float64 fc;
+   if ( pConfig == NULL )
    {
-      fci = pConfig->Fci;
+      fc = (task.stage == pgsTypes::CastingYard ? pMaterial->GetFciGdr(span,gdr) : pMaterial->GetFcGdr(span,gdr));
    }
    else
    {
-      fci = pMaterial->GetFciGdr(span, gdr);
+      fc = (task.stage == pgsTypes::CastingYard ? pConfig->Fci : pConfig->Fc);
    }
 
    Float64 fLowAllowable(0.0), fHighAllowable(0.0);
@@ -1541,19 +1539,39 @@ void pgsDesigner2::CheckCastingYardGirderStresses(SpanIndexType span, GirderInde
    {
       c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
 
-      fLowAllowable = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Compression, fci);
+      if ( task.stage == pgsTypes::CastingYard )
+         fLowAllowable = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Compression, fc);
+      else
+         fLowAllowable = pAllowable->GetBridgeSiteAllowableStress(task.stage,task.ls,pgsTypes::Compression,fc);
+
       fHighAllowable = fLowAllowable;
    }
    else
    {
       pAllowable->GetAllowableTensionStressCoefficient(task.stage,task.ls,&t,&bCheckMax,&ftmax);
-      talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
 
-      fLowAllowable  = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Tension, fci);
-      fHighAllowable = talt*sqrt(fci);
+      if ( task.stage == pgsTypes::CastingYard )
+         talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
+      else if ( task.stage == pgsTypes::TemporaryStrandRemoval )
+         talt = pAllowable->GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar();
+
+      if ( task.stage == pgsTypes::CastingYard )
+      {
+         fLowAllowable  = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Tension, fc);
+      }
+      else
+      {
+         fLowAllowable  = pAllowable->GetBridgeSiteAllowableStress(task.stage,task.ls,task.type,fc);
+      }
+
+      fHighAllowable = talt*sqrt(fc);
    }
 
-   pGdrArtifact->SetCastingYardCapacityWithMildRebar( fHighAllowable );
+      if ( task.stage == pgsTypes::CastingYard )
+         pGdrArtifact->SetCastingYardCapacityWithMildRebar( fHighAllowable );
+      else if ( task.stage == pgsTypes::TemporaryStrandRemoval )
+         pGdrArtifact->SetTempStrandRemovalCapacityWithMildRebar( fHighAllowable );
+
 
    // Use calculator object to deal with casting yard higher allowable stress
    pgsAlternativeTensileStressCalculator altCalc(span,gdr, pGirder, pSectProp2, pRebarGeom, pMaterial, pMaterialEx, bUnitsSI);
@@ -1664,7 +1682,6 @@ void pgsDesigner2::CheckCastingYardGirderStresses(SpanIndexType span, GirderInde
       pGdrArtifact->AddFlexuralStressArtifact(key,artifact);
    }
 }
-
 
 pgsFlexuralCapacityArtifact pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,const GDRCONFIG& config,bool bPositiveMoment)
 {
@@ -4297,10 +4314,21 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),pgsTypes::BridgeSite3,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceIII,_T("Service III"),pgsTypes::BridgeSite3,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_MIDSPAN));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),pgsTypes::BridgeSite2,pgsTypes::Compression,pgsTypes::TopGirder,POI_HARPINGPOINT|POI_PSXFER));
-   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS1)"),pgsTypes::BridgeSite1,pgsTypes::Compression,pgsTypes::TopGirder,POI_MIDSPAN));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),pgsTypes::BridgeSite2,pgsTypes::Compression,pgsTypes::BottomGirder,POI_MIDSPAN));
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckTemporaryStresses() )
+   {
+      GET_IFACE(IStrandGeometry,pStrandGeom);
+      StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary);
+      if ( 0 <= NtMax || 0 <= m_StrandDesignTool.GetNt() )
+      {
+         vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (TSR)"),pgsTypes::TemporaryStrandRemoval,pgsTypes::Compression,pgsTypes::TopGirder,POI_MIDSPAN));
+      }
+
+      vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS1)"),pgsTypes::BridgeSite1,pgsTypes::Compression,pgsTypes::TopGirder,POI_MIDSPAN));
+   }
+
    if ( pAllowable->CheckFinalDeadLoadTensionStress() )
    {
       vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),pgsTypes::BridgeSite2,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_MIDSPAN));
@@ -4866,7 +4894,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("M sidewalk    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite2,pftSidewalk      ,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M user dc (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite2,pftUserDC,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M user dw (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite2,pftUserDW,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("M overlay     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite3,pftOverlay,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M overlay     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite2,pftOverlay,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
 
    Float64 Mllmax, Mllmin;
    pProductForces->GetLiveLoadMoment(pgsTypes::lltDesign, pgsTypes::BridgeSite3,poi,bat,true,false,&Mllmin,&Mllmax);

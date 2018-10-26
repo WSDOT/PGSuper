@@ -972,6 +972,14 @@ CLSID CVoidedSlab2Factory::GetCLSID()
    return CLSID_VoidedSlab2Factory;
 }
 
+std::_tstring CVoidedSlab2Factory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CVoidedSlab2Factory::GetFamilyCLSID()
 {
    return CLSID_SlabBeamFamily;
@@ -988,6 +996,11 @@ std::_tstring CVoidedSlab2Factory::GetGirderFamilyName()
 std::_tstring CVoidedSlab2Factory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CVoidedSlab2Factory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CVoidedSlab2Factory::GetResourceInstance()

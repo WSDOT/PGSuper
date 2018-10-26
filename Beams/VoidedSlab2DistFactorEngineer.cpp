@@ -22,6 +22,7 @@
 
 // VoidedSlab2DistFactorEngineer.cpp : Implementation of CVoidedSlab2DistFactorEngineer
 #include "stdafx.h"
+#include <Plugins\Beams.h>
 #include "VoidedSlab2DistFactorEngineer.h"
 #include "..\PGSuperException.h"
 #include <Units\SysUnits.h>
@@ -1273,7 +1274,7 @@ std::_tstring CVoidedSlab2DistFactorEngineer::GetComputationDescription(SpanInde
    std::_tstring descr;
    if ( lldfMethod == LLDF_TXDOT )
    {
-      descr += std::_tstring(_T("TxDOT Section 3.7 modifications (no skew correction for moment or shear). Regardless of input connectivity or deck type, use AASHTO Type (g) connected only enough to prevent relative vertical displacement."));
+      descr += std::_tstring(_T("TxDOT per TxDOT Bridge Design Manual - LRFD"));
    }
    else if ( lldfMethod == LLDF_LRFD || lldfMethod == LLDF_WSDOT  )
    {

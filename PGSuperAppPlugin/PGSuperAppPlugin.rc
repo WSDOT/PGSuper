@@ -907,17 +907,18 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,16,67,215,10
     CONTROL         "Directly Input Live Load Distribution Factors",IDC_LLDF_INPUT,
                     "Button",BS_AUTORADIOBUTTON,16,81,153,10
-    CONTROL         "Girder Factors",IDC_GIRDER_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,52,115,60,10
-    CONTROL         "Abutment/Pier Factors",IDC_PIER_RADIO,"Button",BS_AUTORADIOBUTTON,132,115,87,10
-    CONTROL         "Custom1",IDC_LLDF_PIERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,134,271,144
-    CONTROL         "Custom1",IDC_LLDF_GIRDERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,134,271,144
-    PUSHBUTTON      "Fill With Computed Values...",IDC_LLDF_FILL2,113,289,116,14
-    DEFPUSHBUTTON   "OK",IDOK,142,343,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,202,343,50,14
+    CONTROL         "Span Factors",IDC_GIRDER_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,36,115,58,10
+    CONTROL         "Abutment/Pier Factors",IDC_PIER_RADIO,"Button",BS_AUTORADIOBUTTON,99,115,87,10
+    CONTROL         "Custom1",IDC_LLDF_PIERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,153,271,144
+    CONTROL         "Custom1",IDC_LLDF_GIRDERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,153,271,144
+    PUSHBUTTON      "Fill With Computed Values...",IDC_LLDF_FILL2,113,306,116,14
+    DEFPUSHBUTTON   "OK",IDOK,178,343,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,231,343,50,14
     PUSHBUTTON      "Help",ID_HELP,284,343,50,14
     GROUPBOX        "Select How Live Load Distribution Factors are to be Determined for the Current Project",IDC_STATIC,6,7,328,324
     LTEXT           "When parameters are outside of the Range Of Applicablity (ROA) requirements: ",IDC_ROA_STATIC,30,37,274,8
-    GROUPBOX        "User Input Factors",IDC_STATIC,25,99,292,215
+    GROUPBOX        "User Input Factors",IDC_STATIC,25,99,292,227
+    LTEXT           "Distibution factors must be entered for both the main spans and at the piers.\nSelect both options above and enter your distribution factors",IDC_USER_LLDF_NOTE,37,130,260,19
 END
 
 IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG  0, 0, 249, 141
@@ -2202,10 +2203,10 @@ BEGIN
     GROUPBOX        "Vertical Adjustment of Harped Strands",IDC_HARP_GROUP,7,262,169,59
     LTEXT           "At Girder Ends:",IDC_HARP_END_STATIC1,12,275,50,8
     LTEXT           "At Harping Points:",IDC_HARP_HP_STATIC1,12,297,59,8
-    LTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_END_STATIC2,19,285,109,8
-    LTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_HP_STATIC2,18,307,109,8
-    COMBOBOX        IDC_HARP_END_CB,129,281,34,329,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_HARP_HP_CB,129,303,34,186,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_END_STATIC2,12,285,109,8
+    RTEXT           "Bottom-Most HS to Girder Bottom",IDC_HARP_HP_STATIC2,11,307,109,8
+    COMBOBOX        IDC_HARP_END_CB,122,281,41,329,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_HARP_HP_CB,122,303,41,186,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "in",IDC_HARP_END_UNIT,166,285,8,8
     LTEXT           "in",IDC_HARP_HP_UNIT,166,305,8,8
     PUSHBUTTON      "Help",ID_HELP,117,362,50,14
@@ -2224,8 +2225,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,8
- PRODUCTVERSION 2,9,0,8
+ FILEVERSION 2,9,0,9
+ PRODUCTVERSION 2,9,0,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2242,12 +2243,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.9.0.8"
+            VALUE "FileVersion", "2.9.0.9"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.0.8"
+            VALUE "ProductVersion", "2.9.0.9"
         END
     END
     BLOCK "VarFileInfo"

@@ -7,7 +7,7 @@ The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -33,7 +33,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -59,7 +59,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -85,7 +85,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -111,7 +111,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -137,7 +137,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -163,7 +163,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -189,7 +189,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -215,7 +215,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -241,7 +241,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -267,7 +267,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
@@ -293,7 +293,7 @@ Stirrup detailing checks failed for the Strength II Limit State.
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).

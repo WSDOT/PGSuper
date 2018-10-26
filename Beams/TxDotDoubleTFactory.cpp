@@ -740,6 +740,14 @@ CLSID CTxDotDoubleTFactory::GetCLSID()
    return CLSID_TxDotDoubleTFactory;
 }
 
+std::_tstring CTxDotDoubleTFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CTxDotDoubleTFactory::GetFamilyCLSID()
 {
    return CLSID_DoubleTeeBeamFamily;
@@ -756,6 +764,11 @@ std::_tstring CTxDotDoubleTFactory::GetGirderFamilyName()
 std::_tstring CTxDotDoubleTFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CTxDotDoubleTFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CTxDotDoubleTFactory::GetResourceInstance()

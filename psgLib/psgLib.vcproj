@@ -4596,15 +4596,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
-				>
-			</File>
-			<File
 				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="ico00003.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -4612,11 +4608,15 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00004.ico"
+				RelativePath="ico00003.ico"
 				>
 			</File>
 			<File
 				RelativePath="ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -4628,11 +4628,11 @@
 				>
 			</File>
 			<File
-				RelativePath="icon1.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\icon1.ico"
+				RelativePath="icon1.ico"
 				>
 			</File>
 			<File
@@ -4696,10 +4696,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ClassDiagram1.cd"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

@@ -80,9 +80,11 @@ public:
    virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
    virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType);
    virtual CLSID GetCLSID();
+   virtual std::_tstring GetName();
    virtual CLSID GetFamilyCLSID();
    virtual std::_tstring GetGirderFamilyName();
    virtual std::_tstring GetPublisher();
+   virtual std::_tstring GetPublisherContactInformation();
    virtual HINSTANCE GetResourceInstance();
    virtual LPCTSTR GetImageResourceName();
    virtual HICON GetIcon();

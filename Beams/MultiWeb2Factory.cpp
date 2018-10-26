@@ -765,6 +765,14 @@ CLSID CMultiWeb2Factory::GetCLSID()
    return CLSID_MultiWeb2Factory;
 }
 
+std::_tstring CMultiWeb2Factory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CMultiWeb2Factory::GetFamilyCLSID()
 {
    return CLSID_RibbedBeamFamily;
@@ -781,6 +789,11 @@ std::_tstring CMultiWeb2Factory::GetGirderFamilyName()
 std::_tstring CMultiWeb2Factory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CMultiWeb2Factory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CMultiWeb2Factory::GetResourceInstance()

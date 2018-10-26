@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     1   4XB28       12   1/2  270 10.64 10.64   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.892   -1.222    1329 0.731  0.858  0.05 -0.01  0.00 -0.00 -0.01  14.20  49.35   1.00   1.00   1.00
+ 32.00   4  8.67  1     1   4XB28       12   1/2  270 10.64 10.64   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.892   -1.222    1329 0.731  0.858  0.05 -0.01  0.00 -0.00 -0.01  14.20  48.96   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     2   4XB28       12   1/2  270 10.64 10.64   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.897   -1.227    1323 0.710  0.858  0.05 -0.01  0.00 -0.00 -0.01  14.20  49.22   1.00   1.00   1.00
+ 32.00   4  8.67  1     2   4XB28       12   1/2  270 10.64 10.64   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.897   -1.227    1323 0.710  0.858  0.05 -0.01  0.00 -0.00 -0.01  14.20  48.74   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -18,21 +18,19 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     1   4XB28       40   1/2  270  9.74  9.36  12  2.50  22  12  6  2  2  2  0  0  0  0  0  0  4.300  5.000    2.692   -3.345    3266 0.632  0.810  0.35 -0.09  0.00 -0.01 -0.10 110.40 292.45   1.00   1.00   1.00
+ 32.00   4  8.67  2     1   4XB28       42   1/2  270  9.69  9.31  12  2.50  22  12  8  0  2  2  0  0  0  0  0  0  4.600  5.000    2.692   -3.345    3266 0.632  0.810  0.36 -0.09  0.00 -0.01 -0.10 118.45 314.52   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     2   4XB28       40   1/2  270  9.74  9.36  12  2.50  22  12  6  2  2  2  0  0  0  0  0  0  4.300  5.000    2.720   -3.381    3274 0.614  0.810  0.35 -0.10  0.00 -0.01 -0.10 110.40 291.22   1.00   1.00   1.00
+ 32.00   4  8.67  2     2   4XB28       42   1/2  270  9.69  9.31  12  2.50  22  12  8  0  2  2  0  0  0  0  0  0  4.600  5.000    2.720   -3.381    3274 0.614  0.810  0.36 -0.10  0.00 -0.01 -0.10 118.45 312.19   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 

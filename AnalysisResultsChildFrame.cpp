@@ -905,13 +905,28 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Sidewalk"),pftSidewalk,false, false, false, false, true,  false, ACTIONS_ALL,PERU) );
 
    bool bFutureOverlay = pBridge->IsFutureOverlay();
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Overlay"),        pftOverlay,       false, false, false, false, !bFutureOverlay, bFutureOverlay, ACTIONS_ALL,VIOLET) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Overlay"),        pftOverlay,       false, false, false, false, true, false, ACTIONS_ALL,VIOLET) );
 
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Prestress"),                                 graphPrestress,DODGERBLUE) );
 
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   std::_tstring strSpecName = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
+   // Deck shrinkage stress
+   if (lrfdVersionMgr::ThirdEdition2004 < pSpecEntry->GetSpecificationType())
+   {
+      if(LOSSES_AASHTO_REFINED == pSpecEntry->GetLossMethod() ||
+         LOSSES_WSDOT_REFINED == pSpecEntry->GetLossMethod() )
+      {
+         m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Deck Shrinkage"), graphDeckShrinkage,CHOCOLATE1) );
+      }
+   }
+
    // User Defined Static Loads
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("User DC"),        pftUserDC,        false, false, false, true,  true,  true,  ACTIONS_ALL,CORAL) );
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("User DW"),        pftUserDW,        false, false, false, true,  true,  true,  ACTIONS_ALL,GOLD) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("User DC"),        pftUserDC,        false, false, false, true,  true,  false,  ACTIONS_ALL,CORAL) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("User DW"),        pftUserDW,        false, false, false, true,  true,  false,  ACTIONS_ALL,GOLD) );
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("User Live Load"), pftUserLLIM,      false, false, false, false, false, true,  ACTIONS_ALL,MAROON) );
 
    // Individual Truck Responses

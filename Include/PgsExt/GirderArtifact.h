@@ -194,6 +194,13 @@ public:
 
    void SetCastingYardCapacityWithMildRebar(Float64 fAllow);
    Float64 GetCastingYardCapacityWithMildRebar() const;
+
+   void SetTempStrandRemovalCapacityWithMildRebar(Float64 fAllow);
+   Float64 GetTempStrandRemovalCapacityWithMildRebar() const;
+
+   void SetDeckCastingCapacityWithMildRebar(Float64 fAllow);
+   Float64 GetDeckCastingCapacityWithMildRebar() const;
+
    pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
    const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
    
@@ -245,7 +252,10 @@ private:
    pgsDeflectionCheckArtifact m_DeflectionCheckArtifact;
 
    pgsDebondArtifact m_DebondArtifact[3];
+
    Float64 m_CastingYardAllowable; // allowable tensile stress for casting yard with required mild rebar
+   Float64 m_TempStrandRemovalAllowable; // allowable tensile stress for temp strand removal with required mild rebar
+   Float64 m_DeckCastingAllowable;// allowable tensile stress for deck casting with required mild rebar
 };
 
 #endif // INCLUDED_PGSEXT_GIRDERARTIFACT_H_

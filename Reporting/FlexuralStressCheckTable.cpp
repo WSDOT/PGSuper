@@ -247,6 +247,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    case pgsTypes::TemporaryStrandRemoval:
       c = pSpecEntry->GetTempStrandRemovalCompStress();
       t = pSpecEntry->GetTempStrandRemovalMaxConcreteTens();
+      t_with_rebar = pSpecEntry->GetTempStrandRemovalMaxConcreteTensWithRebar();
       pSpecEntry->GetTempStrandRemovalAbsMaxConcreteTens(&b_t_max,&t_max);
       break;
 
@@ -335,7 +336,11 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    {
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
       allowable_tension = pArtifact->GetCapacity();
-      allowable_tension_with_rebar = gdrArtifact->GetCastingYardCapacityWithMildRebar();
+      if ( stage == pgsTypes::CastingYard )
+         allowable_tension_with_rebar = gdrArtifact->GetCastingYardCapacityWithMildRebar();
+      else if ( stage == pgsTypes::TemporaryStrandRemoval )
+         allowable_tension_with_rebar = gdrArtifact->GetTempStrandRemovalCapacityWithMildRebar();
+
       *p << _T("Allowable tensile stress");
 
       if ( stage == pgsTypes::BridgeSite3 )
@@ -353,9 +358,14 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
 
       *p  << _T(" = ") << stress_u.SetValue(allowable_tension)<<rptNewLine;
 
-      if ( stage == pgsTypes::CastingYard )
+      if ( stage == pgsTypes::CastingYard || stage == pgsTypes::TemporaryStrandRemoval )
       {
-          *p << _T("Allowable tensile stress = ") << tension_coeff.SetValue(t_with_rebar) << symbol(ROOT) << RPT_FCI;
+          *p << _T("Allowable tensile stress = ") << tension_coeff.SetValue(t_with_rebar);
+          if ( stage == pgsTypes::CastingYard )
+             *p << symbol(ROOT) << RPT_FCI;
+          else
+             *p << symbol(ROOT) << RPT_FC;
+
           *p << _T(" = ") << stress_u.SetValue(allowable_tension_with_rebar);
           *p << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
       }
@@ -418,7 +428,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    else if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress() ) || stage == pgsTypes::BridgeSite3)
       p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
-   else if (stage == pgsTypes::CastingYard )
+   else if (stage == pgsTypes::CastingYard || stage == pgsTypes::TemporaryStrandRemoval )
       p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    else
       p_table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
@@ -487,7 +497,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   if ( stage == pgsTypes::CastingYard ) 
+   if ( stage == pgsTypes::CastingYard || stage == pgsTypes::TemporaryStrandRemoval ) 
    {
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << _T("Tensile Capacity");
@@ -538,7 +548,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
          (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
    }
-   else if ( stage == pgsTypes::CastingYard )
+   else if ( stage == pgsTypes::CastingYard || pgsTypes::TemporaryStrandRemoval )
    {
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
@@ -629,7 +639,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
       (*p_table)(row,++col) << stress.SetValue( fBot );
 
 
-      if ( stage == pgsTypes::CastingYard )
+      if ( stage == pgsTypes::CastingYard || stage == pgsTypes::TemporaryStrandRemoval )
       {
          // Casting yard tension varies along length of the girder
          allowable_tension = pArtifact->GetCapacity();

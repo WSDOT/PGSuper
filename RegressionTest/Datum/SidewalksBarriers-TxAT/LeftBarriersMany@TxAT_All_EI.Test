@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.29   7  4.50  1     1     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.517   -2.747   5519  0.682  0.682  0.28 -0.05  0.00 -0.02 -0.06 119.22 251.46   3.00   3.17   3.17
+ 26.29   7  4.50  1     1     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    3.180   -2.993   5533  0.682  0.682  0.28 -0.05  0.00 -0.02 -0.06 119.22 248.62   3.00   3.17   3.17
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Tensile stress check failed for Service I for the Casting Yard Stage (At Release
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.29   7  4.50  1     2     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.263   -2.358   5068  0.488  0.558  0.28 -0.03  0.00 -0.02 -0.05 119.22 261.51   1.75   5.00   5.00
+ 26.29   7  4.50  1     2     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.873   -2.584   5068  0.488  0.559  0.28 -0.03  0.00 -0.02 -0.05 119.22 258.58   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Tensile stress check failed for Service I for the Casting Yard Stage (At Release
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 26.29   7  4.50  1     4     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.068   -2.024   4387  0.488  0.558  0.28 -0.03  0.00  0.00 -0.03 119.22 281.29   1.75   5.00   5.00
+ 26.29   7  4.50  1     4     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.678   -2.250   4387  0.488  0.559  0.28 -0.03  0.00  0.00 -0.03 119.22 278.36   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

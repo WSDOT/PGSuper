@@ -481,7 +481,12 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX3, m_Entry.m_TempStrandRemovalDoTensStressMax);
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX3, IDC_NORMAL_MAX_MAX_UNITS3, m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
    if (m_Entry.m_TempStrandRemovalDoTensStressMax)
+   {
       DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX3,m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
+   }
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT4, IDC_NORMAL_MAX_SQRT_UNITS3, m_Entry.m_TempStrandRemovalTensStressWithRebar, pDisplayUnits->SqrtPressure );
+   DDX_Text(pDX,IDC_CYS_TENS_BYLINE3,tag);
+
 
 
 
@@ -494,7 +499,9 @@ void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_CHECK_NORMAL_MAX_MAX2, m_Entry.m_Bs1DoTensStressMax);
    DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_MAX2, IDC_NORMAL_MAX_MAX_UNITS2, m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
    if (m_Entry.m_Bs1DoTensStressMax)
+   {
       DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX2,m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
+   }
 
    DDX_Check_Bool(pDX,IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,m_Entry.m_bCheckBottomFlangeClearance);
    DDX_UnitValueAndTag(pDX,IDC_CLEARANCE,IDC_CLEARANCE_UNIT,m_Entry.m_Cmin,pDisplayUnits->SpanLength);

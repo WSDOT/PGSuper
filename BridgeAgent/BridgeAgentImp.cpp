@@ -5322,11 +5322,23 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
    GirderIndexType nGirders = pSpan->GetGirderCount();
-   if ( 2 <= gdrIdx && gdrIdx <= nGirders-3 )
+
+   // in general, only the exterior and first interior girders are correctable
+   bool bIsLeftSideCorrectableGirder = (gdrIdx < 2 ? true : false);
+   bool bIsRightSideCorrectableGirder = (nGirders-2 <= gdrIdx ? true : false);
+   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
    {
-      // obtuse corner is for computing the skew correction factor for shear
-      // it only applies to the exterior and first interior girder
-      // since this girder isn't one of those, we'll say it is not in an obtuse corner
+      // There is not a composite deck so we consider this a deck system bridge.
+      // Per LRFD 4.6.2.2.3c (2014) "In determining the end shear in deck system
+      // bridges, the skew correction at the obtuse corner shall be applied to
+      // all the beams". 
+      bIsLeftSideCorrectableGirder  = true;
+      bIsRightSideCorrectableGirder = true;
+   }
+
+   if ( !bIsLeftSideCorrectableGirder && !bIsRightSideCorrectableGirder )
+   {
+      // girder is not skew corrected so say we are not in an obtuse corner
       return false;
    }
    else
@@ -5367,8 +5379,8 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
             //
             // *** = Obtuse corner
             //
-            if ( (endType == pgsTypes::metStart && gdrIdx < 2) ||
-                 (endType == pgsTypes::metEnd   && nGirders-2 <= gdrIdx )
+            if ( (endType == pgsTypes::metStart && bIsLeftSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd   && bIsRightSideCorrectableGirder)
                )
             {
                return true;
@@ -5391,8 +5403,8 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
             //
             // *** = Obtuse corner
             //
-            if ( (endType == pgsTypes::metStart && nGirders-2 <= gdrIdx) ||
-                 (endType == pgsTypes::metEnd   && gdrIdx < 2)
+            if ( (endType == pgsTypes::metStart && bIsRightSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd   && bIsLeftSideCorrectableGirder)
                )
             {
                return true;
@@ -5425,8 +5437,8 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
             }
 
             ATLASSERT( !IsZero(endSkewAngle) );
-            if ( (0 < endSkewAngle && gdrIdx < 2) ||
-                 (endSkewAngle < 0 && nGirders-2 <= gdrIdx) )
+            if ( (0 < endSkewAngle && bIsLeftSideCorrectableGirder) ||
+                 (endSkewAngle < 0 && bIsRightSideCorrectableGirder) )
             {
                return true;
             }
@@ -5446,8 +5458,8 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
             }
 
             ATLASSERT( !IsZero(startSkewAngle) );
-            if ( (0 < startSkewAngle && nGirders-2 <= gdrIdx) ||
-                 (startSkewAngle < 0 && gdrIdx < 2) )
+            if ( (0 < startSkewAngle && bIsRightSideCorrectableGirder) ||
+                 (startSkewAngle < 0 && bIsLeftSideCorrectableGirder) )
             {
                return true;
             }
@@ -5474,7 +5486,7 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
             {
                // obtuse corners are on the left side
                ATLASSERT( 0 <= endSkewAngle );
-               if ( gdrIdx < 2 )
+               if ( bIsLeftSideCorrectableGirder )
                {
                   return true;
                }
@@ -5484,7 +5496,7 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
                // obtuse corners are on the right side
                ATLASSERT( 0 <= startSkewAngle);
                ATLASSERT( endSkewAngle < 0 );
-               if ( nGirders-2 <= gdrIdx )
+               if ( bIsRightSideCorrectableGirder )
                {
                   return true;
                }
@@ -5494,8 +5506,8 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
          {
             // shortest distance is from start,left to end,right so obtuse corners are
             // at the start,right and end,left
-            if ( (endType == pgsTypes::metStart && gdrIdx < 2) ||
-                 (endType == pgsTypes::metEnd && nGirders-2 <= gdrIdx) )
+            if ( (endType == pgsTypes::metStart && bIsLeftSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd   && bIsRightSideCorrectableGirder) )
             {
                return true;
             }
@@ -5505,8 +5517,8 @@ bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrId
             ATLASSERT(d2 < d1);
             // shortest distance is from the start,right to end,left so the obtuse corners are
             // at the start,left and end,right
-            if ( (endType == pgsTypes::metStart && nGirders-2 <= gdrIdx) ||
-                 (endType == pgsTypes::metEnd && gdrIdx < 2) )
+            if ( (endType == pgsTypes::metStart && bIsRightSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd   && bIsLeftSideCorrectableGirder) )
             {
                return true;
             }
@@ -15833,7 +15845,7 @@ Float64 CBridgeAgentImp::GetGrossSlabDepth()
    }
    else
    {
-      ATLASSERT(false); // bad deck type
+      // no deck
       deck_thickness = 0;
    }
 

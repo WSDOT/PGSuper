@@ -684,6 +684,14 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
       pStrLoad->EndUnit(); // End
 
       pStrLoad->EndUnit(); // ExtendedStrands
+
+      // Was a bug in the design algorithm pre-2.9 that allowed extended strand data to creep in if there were no 
+      // strands. Kill this data if it exists
+      if( Nstrands[pgsTypes::Straight] == 0)
+      {
+         NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].clear();
+         NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].clear();
+      }
    }
 
    if (13 <= version && NumPermStrandsType == NPS_DIRECT_SELECTION)

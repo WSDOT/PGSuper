@@ -2672,8 +2672,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       // See PCI BDM Example 9.1a that supports this approach
       if ( pBridge->HasOverlay() )
       {
-         pgsTypes::Stage overlayStage = (pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2);
-         *pMsidl += K_overlay*pProdForces->GetMoment( overlayStage, pftOverlay, poi, bat );
+         *pMsidl += K_overlay*pProdForces->GetMoment( pgsTypes::BridgeSite2, pftOverlay, poi, bat );
       }
 
       

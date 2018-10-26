@@ -6886,6 +6886,34 @@ void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,F
    *pfbot = P/A + M/Sb;
 }
 
+void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot)
+{
+   // this is sort of a dummy function until deck shrinkage stress issues are resolved
+   // if you count on deck shrinkage for elastic gain, then you have to account for the fact
+   // that the deck shrinkage changes the stresses in the girder as well. deck shrinkage is
+   // an external load to the girder
+
+   // Top and bottom girder stresses are computed using the composite section method described in
+   // Branson, D. E., "Time-Dependent Effects in Composite Concrete Beams", 
+   // American Concrete Institute J., Vol 61 (1964) pp. 213-230
+
+   pgsTypes::Stage compositeStage = pgsTypes::BridgeSite3;
+
+   GET_IFACE(ILosses,pLosses);
+   LOSSDETAILS details = pLosses->GetLossDetails(poi);
+
+   Float64 P, M;
+   details.pLosses->GetDeckShrinkageEffects(&P,&M);
+
+   GET_IFACE(ISectProp2,pProps);
+   Float64 A  = pProps->GetAg(compositeStage,poi,fcGdr);
+   Float64 St = pProps->GetStGirder(compositeStage,poi,fcGdr);
+   Float64 Sb = pProps->GetSb(compositeStage,poi,fcGdr);
+
+   *pftop = P/A + M/St;
+   *pfbot = P/A + M/Sb;
+}
+
 std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
 {
    USES_CONVERSION;
@@ -9679,8 +9707,8 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,
             fMax += k*ps;
          }
 
-         // if this is bridge site stage 2, add effect of deck shrinkage
-         if ( stage == pgsTypes::BridgeSite2 )
+         // if this is bridge site stage 2 or 3, add effect of deck shrinkage
+         if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
          {
             Float64 ft_ss, fb_ss;
             GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
@@ -9891,14 +9919,8 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    GetStress(pgsTypes::BridgeSite2,pftSidewalk,poi,bat,&ft,&fb);
    ftop2 += dc*k_top*ft;   fbot2 += dc*k_bot*fb;
 
-   GET_IFACE(IBridge,pBridge);
-   pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
-
-   if (overlay_stage==pgsTypes::BridgeSite2)
-   {
-      GetStress(pgsTypes::BridgeSite2,pftOverlay,poi,bat,&ft,&fb);
-      ftop2 += dw*k_top*ft;   fbot2 += dw*k_bot*fb;
-   }
+   GetStress(pgsTypes::BridgeSite2,pftOverlay,poi,bat,&ft,&fb);
+   ftop2 += dw*k_top*ft;   fbot2 += dw*k_bot*fb;
 
    GetStress(pgsTypes::BridgeSite2,pftUserDC,poi,bat,&ft,&fb);
    ftop2 += dc*k_top*ft;   fbot2 += dc*k_bot*fb;
@@ -9906,17 +9928,21 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    GetStress(pgsTypes::BridgeSite2,pftUserDW,poi,bat,&ft,&fb);
    ftop2 += dw*k_top*ft;   fbot2 += dw*k_bot*fb;
 
+   // slab shrinkage stresses
+   Float64 ft_ss, fb_ss;
+   GetDeckShrinkageStresses(poi,fcgdr,&ft_ss,&fb_ss);
+
    if ( stage == pgsTypes::BridgeSite2 )
    {
       if ( loc == pgsTypes::TopGirder )
       {
-         *pMin = ftop1 + ftop2;
-         *pMax = ftop1 + ftop2;
+         *pMin = ftop1 + ftop2 + ft_ss;
+         *pMax = ftop1 + ftop2 + ft_ss;
       }
       else
       {
-         *pMin = fbot1 + fbot2;
-         *pMax = fbot1 + fbot2;
+         *pMin = fbot1 + fbot2 + fb_ss;
+         *pMax = fbot1 + fbot2 + fb_ss;
       }
 
       if (*pMax < *pMin )
@@ -9928,17 +9954,8 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    }
 
    // Bridge Site Stage 3
-   if (overlay_stage==pgsTypes::BridgeSite3)
-   {
-      GetStress(pgsTypes::BridgeSite3,pftOverlay,poi,bat,&ft,&fb);
-      ftop3Min = ftop3Max = dw*k_top*ft;   
-      fbot3Min = fbot3Max = dw*k_bot*fb;   
-   }
-   else
-   {
-      ftop3Min = ftop3Max = 0.0;   
-      fbot3Min = fbot3Max = 0.0;   
-   }
+   ftop3Min = ftop3Max = 0.0;   
+   fbot3Min = fbot3Max = 0.0;   
 
    GET_IFACE(IGirderData,pGdrData);
    const CGirderMaterial* pGirderMaterial = pGdrData->GetGirderMaterial(poi.GetSpan(),poi.GetGirder());
@@ -9965,10 +9982,6 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    GetStress(pgsTypes::BridgeSite3,pftUserLLIM,poi,bat,&ft,&fb);
    ftop3Min += ll*k_top*ft;   fbot3Min += ll*k_bot*fb;
    ftop3Max += ll*k_top*ft;   fbot3Max += ll*k_bot*fb;
-
-   // slab shrinkage stresses
-   Float64 ft_ss, fb_ss;
-   GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
 
    if ( loc == pgsTypes::TopGirder )
    {

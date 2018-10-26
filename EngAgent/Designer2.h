@@ -424,7 +424,7 @@ private:
 
    void CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pgsStrandStressArtifact* pArtifact);
    void CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,const ALLOWSTRESSCHECKTASK& task,pgsGirderArtifact* pGdrArtifact);
-   void CheckCastingYardGirderStresses(SpanIndexType span,GirderIndexType gdr, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsGirderArtifact* pGdrArtifact);
+   void CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,const ALLOWSTRESSCHECKTASK& task,const GDRCONFIG* pConfig,pgsGirderArtifact* pGdrArtifact);
    void CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsGirderArtifact* pGdrArtifact);
    void CheckShear(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& rVPoi,pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
    void CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);

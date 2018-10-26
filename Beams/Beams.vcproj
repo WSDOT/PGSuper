@@ -847,11 +847,11 @@
 				>
 			</File>
 			<File
-				RelativePath="PsLossEngineer.h"
+				RelativePath="..\Include\Iface\PsLossEngineer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Iface\PsLossEngineer.h"
+				RelativePath="PsLossEngineer.h"
 				>
 			</File>
 			<File
@@ -992,6 +992,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BoxBeamDistFactorEngineer.rgs"
+				>
+			</File>
+			<File
 				RelativePath="BoxBeamFactory.rgs"
 				>
 			</File>
@@ -1009,6 +1013,10 @@
 			</File>
 			<File
 				RelativePath="Res\BulbTee.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\BulbTeeDistFactorEngineer.rgs"
 				>
 			</File>
 			<File
@@ -1052,6 +1060,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IBeamDistFactorEngineer.rgs"
+				>
+			</File>
+			<File
 				RelativePath="IBeamFactory.rgs"
 				>
 			</File>
@@ -1069,6 +1081,10 @@
 			</File>
 			<File
 				RelativePath="MultiWeb2Factory.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\MultiWebDistFactorEngineer.rgs"
 				>
 			</File>
 			<File
@@ -1132,6 +1148,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UBeamDistFactorEngineer.rgs"
+				>
+			</File>
+			<File
 				RelativePath="UBeamFactory.rgs"
 				>
 			</File>
@@ -1157,6 +1177,10 @@
 			</File>
 			<File
 				RelativePath=".\VoidedSlab2DistFactorEngineer.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\VoidedSlabDistFactorEngineer.rgs"
 				>
 			</File>
 			<File

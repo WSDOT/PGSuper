@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperDistFactorEngineer.IBeamDistFactorEngineer.1 = s 'IBeam Distribution Factor Engineer'
+	{
+		CLSID = s '{3AC40380-8764-4087-BD7C-47A50A369AE6}'
+	}
+	PGSuperDistFactorEngineer.IBeamDistFactorEngineer = s 'IBeam Distribution Factor Engineer'
+	{
+		CLSID = s '{3AC40380-8764-4087-BD7C-47A50A369AE6}'
+		CurVer = s 'PGSuperDistFactorEngineer.IBeamDistFactorEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {3AC40380-8764-4087-BD7C-47A50A369AE6} = s 'IBeam Distribution Factor Engineer'
+		{
+			ProgID = s 'PGSuperDistFactorEngineer.IBeamDistFactorEngineer.1'
+			VersionIndependentProgID = s 'PGSuperDistFactorEngineer.IBeamDistFactorEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

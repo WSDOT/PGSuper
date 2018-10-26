@@ -30,6 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
+#include <IFace\Allowables.h>
 
 
 #ifdef _DEBUG
@@ -57,7 +58,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 {
-   return TEXT("Casting Yard Tensile Reinforcement Requirements");
+   return TEXT("Reinforcement Requirements for Tension Limits");
 }
 
 rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -70,18 +71,35 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   Build(pChapter,pBroker,span,girder,pgsTypes::CastingYard,level);
+
+   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowStress);
+   if ( pAllowStress->CheckTemporaryStresses() )
+   {
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      if ( 0 < pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary) )
+      {
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << rptNewLine;
+         Build(pChapter,pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,level);
+      }
+   }
+
+   return pChapter;
+}
+
+void CCastingYardRebarRequirementChapterBuilder::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,Uint16 level) const
+{
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue, area,        pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,     pDisplayUnits->GetAreaUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   *pChapter << pTitle;
-   *pTitle << _T("Details for Tensile Reinforcement Requirement for Allowable Tension Stress in Casting Yard [5.9.4][C5.9.4.1.2]")<<rptNewLine;
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -89,10 +107,13 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURESTRESS | POI_TABULAR );
    CHECK(vPoi.size()>0);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2]"));
+   std::_tstring strStage = (stage == pgsTypes::CastingYard ? _T("Casting Yard") : _T("Temp. Strand Removal"));
+
+   strStage += _T(" Reinforcement Requirements for Tensile Stress Limit [C5.9.4.1.2]");
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(12,strStage.c_str());
    *p << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -140,10 +161,10 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)
    {
       const pgsPointOfInterest& poi = *i;
-      (*pTable)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
+      (*pTable)(row,0) << location.SetValue( stage, poi );
 
       const pgsFlexuralStressArtifact* pArtifact;
-      pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetDistFromStart()) );
+      pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetDistFromStart()) );
 
       ATLASSERT(pArtifact != NULL);
       if ( pArtifact == NULL )
@@ -207,8 +228,6 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    }
 
    *p << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.");
-
-   return pChapter;
 }
 
 

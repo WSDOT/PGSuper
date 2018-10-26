@@ -383,6 +383,12 @@ void CGirderSelectStrandsDlg::OnPaint()
    Float64 bottom_width;
    gdrSection->get_BottomWidth(&bottom_width);
 
+   Float64 top_width;
+   gdrSection->get_TopWidth(&top_width);
+
+   Float64 height;
+   gdrSection->get_GirderHeight(&height);
+
    CComPtr<IRect2d> shape_box;
    shape->get_BoundingBox(&shape_box);
 
@@ -422,9 +428,9 @@ void CGirderSelectStrandsDlg::OnPaint()
    gpRect2d strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
    gpSize2d world_size;
-   world_size.Dx() = max(bottom_width,strand_bounds.Width());
+   world_size.Dx() = Max3(top_width,bottom_width,strand_bounds.Width());
 
-   world_size.Dy() = strand_bounds.Height();
+   world_size.Dy() = max(height,strand_bounds.Height());
    if ( IsZero(world_size.Dy()) )
       world_size.Dy() = world_size.Dx()/2;
 
@@ -1006,7 +1012,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
             else if (m_HpOffsetAtEnd>high)
                m_HpOffsetAtEnd = high;
 
-            FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr,
+            FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr, true,
                                         pctrl, 2, measUnit.UnitOfMeasure);
          }
          else
@@ -1047,7 +1053,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
             else if (m_HpOffsetAtHp>high)
                m_HpOffsetAtHp = high;
 
-            FillComboWithUnitFloatRange(m_HpOffsetAtHp, low, high, hpt_incr,
+            FillComboWithUnitFloatRange(m_HpOffsetAtHp, low, high, hpt_incr, true,
                                         pctrl, 2, measUnit.UnitOfMeasure);
          }
          else

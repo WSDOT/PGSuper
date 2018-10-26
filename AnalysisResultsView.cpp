@@ -611,6 +611,11 @@ void CAnalysisResultsView::DoUpdateNow()
             LimitStateLoadGraph(graphIdx,stage,action,vPoi2,xVals2,true);
          break;
 
+      case graphDeckShrinkage:
+         DeckShrinkageLoadGraph(graphIdx,stage,action,vPoi,xVals);
+         break;
+
+
       default:
          ASSERT(false); // should never get here
       }
@@ -1320,6 +1325,49 @@ void CAnalysisResultsView::PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage
             Float64 fTop,fBot;
             fTop = pPrestress->GetStress(stage,poi,pgsTypes::TopGirder);
             fBot = pPrestress->GetStress(stage,poi,pgsTypes::BottomGirder);
+            AddGraphPoint(stress_top, loc, fTop);
+            AddGraphPoint(stress_bot, loc, fBot);
+         break;
+         }
+      }
+   }
+}
+
+void CAnalysisResultsView::DeckShrinkageLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,
+                                              const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
+{
+   // Prestress
+   GET_IFACE(IPointOfInterest,pIPOI);
+   GET_IFACE(IProductForces,pProductForces);
+
+   CString strDataLabel(m_pFrame->GetGraphDataLabel(graphIdx));
+
+   COLORREF c = m_pFrame->GetGraphColor(graphIdx);
+
+   IndexType deflection = m_Graph.CreateDataSeries(strDataLabel,   PS_SOLID,   1,c);
+   IndexType stress_top = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),   PS_STRESS_TOP,   1,c);
+   IndexType stress_bot = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
+
+   std::vector<Float64>::const_iterator iloc = xVals.begin(); // pois and locations are in lockstep
+   std::vector<pgsPointOfInterest>::const_iterator i;
+   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   {
+      const pgsPointOfInterest& poi = *i;
+      Float64 loc = *iloc;
+      iloc++;
+
+      switch(action)
+      {
+      case actionMoment:
+      case actionShear:
+      case actionDisplacement:
+         ATLASSERT(false); // should never get here
+         break;
+
+      case actionStress:
+         {
+            Float64 fTop,fBot;
+            pProductForces->GetDeckShrinkageStresses(poi,&fTop,&fBot);
             AddGraphPoint(stress_top, loc, fTop);
             AddGraphPoint(stress_bot, loc, fBot);
          break;

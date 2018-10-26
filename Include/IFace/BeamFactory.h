@@ -63,6 +63,7 @@ DESCRIPTION
 // {D3810B3E-91D6-4aed-A748-8ABEB87FCF44}
 DEFINE_GUID(IID_IBeamFactory, 
 0xd3810b3e, 0x91d6, 0x4aed, 0xa7, 0x48, 0x8a, 0xbe, 0xb8, 0x7f, 0xcf, 0x44);
+struct __declspec(uuid("{D3810B3E-91D6-4aed-A748-8ABEB87FCF44}")) IBeamFactory;
 interface IBeamFactory : IUnknown
 {
    typedef std::pair<std::_tstring,Float64> Dimension;
@@ -182,6 +183,11 @@ interface IBeamFactory : IUnknown
    virtual CLSID GetCLSID() = 0;
 
    //---------------------------------------------------------------------------------
+   // Returns a name string that identifies this beam factory
+   // this is not guarenteed to be unique
+   virtual std::_tstring GetName() = 0;
+
+   //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam family
    virtual CLSID GetFamilyCLSID() = 0;
 
@@ -194,6 +200,10 @@ interface IBeamFactory : IUnknown
    // Returns the name of the company, organization, and/or person that published the
    // beam factory
    virtual std::_tstring GetPublisher() = 0;
+
+   // Returns contact information for the beam factory publisher. This
+   // information is prented to the user if there is an error creating the factory
+   virtual std::_tstring GetPublisherContactInformation() = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the instance handle for resources

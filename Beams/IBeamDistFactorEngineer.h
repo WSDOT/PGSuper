@@ -27,6 +27,7 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
+#include <Plugins\Beams.h>
 
 struct IBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 {
@@ -39,10 +40,6 @@ struct IBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
    Float64 eg;
    Float64 Kg;
 };
-
-// {3AC40380-8764-4087-BD7C-47A50A369AE6}
-DEFINE_GUID(CLSID_IBeamDistFactorEngineer, 
-0x3ac40380, 0x8764, 0x4087, 0xbd, 0x7c, 0x47, 0xa5, 0xa, 0x36, 0x9a, 0xe6);
 
 /////////////////////////////////////////////////////////////////////////////
 // CIBeamFactory
@@ -58,6 +55,9 @@ public:
 	}
 
    HRESULT FinalConstruct();
+
+
+DECLARE_REGISTRY_RESOURCEID(IDR_IBEAMDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CIBeamDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)

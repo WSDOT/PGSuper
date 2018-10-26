@@ -27,6 +27,7 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
+#include <Plugins\Beams.h>
 
 struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 {
@@ -36,10 +37,6 @@ struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
    Float64 leftDe;
    Float64 rightDe;
 };
-
-// {41AB468B-C89F-4153-96FC-A37E18A33C68}
-DEFINE_GUID(CLSID_UBeamDistFactorEngineer, 
-0x41ab468b, 0xc89f, 0x4153, 0x96, 0xfc, 0xa3, 0x7e, 0x18, 0xa3, 0x3c, 0x68);
 
 /////////////////////////////////////////////////////////////////////////////
 // CUBeamDistFactorEngineer
@@ -56,6 +53,8 @@ public:
 	}
 
    HRESULT FinalConstruct();
+
+DECLARE_REGISTRY_RESOURCEID(IDR_UBEAMDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CUBeamDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)

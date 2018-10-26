@@ -787,6 +787,8 @@
          <ComponentRef Id="WBTGirders" />
          <ComponentRef Id="WFGirders" />
          <ComponentRef Id="WGirders" />
+
+        <ComponentRef Id="LLDFEngineers"/>
       </Feature>
    </Fragment>
 </Wix>

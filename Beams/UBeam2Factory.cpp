@@ -829,6 +829,14 @@ CLSID CUBeam2Factory::GetCLSID()
    return CLSID_UBeam2Factory;
 }
 
+std::_tstring CUBeam2Factory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CUBeam2Factory::GetFamilyCLSID()
 {
    return CLSID_UBeamFamily;
@@ -845,6 +853,11 @@ std::_tstring CUBeam2Factory::GetGirderFamilyName()
 std::_tstring CUBeam2Factory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CUBeam2Factory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CUBeam2Factory::GetResourceInstance()
