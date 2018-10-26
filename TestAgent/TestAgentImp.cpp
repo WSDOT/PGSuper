@@ -55,6 +55,8 @@
 
 #include <Units\Units.h>
 
+#include <IFace\TxDOTCadExport.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -276,6 +278,21 @@ bool CTestAgentImp::RunTest(long type,
             VERIFY( RunLoadRatingTest(resf, poif, 1) );
          }
 
+         std::_tstring testFileName(outputFileName);
+         testFileName.replace(testFileName.begin()+testFileName.find(_T(".")),testFileName.end(),_T(".Test"));
+      	FILE	*fp = NULL;
+         if (_tfopen_s(&fp,testFileName.c_str(), _T("w+")) != 0 || fp == NULL)
+         {
+			   AfxMessageBox (_T("Warning: File Cannot be Created."));
+			   return S_OK;
+		   }
+
+         GET_IFACE(ITxDOTCadExport,pTxDOTExport);
+         pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, span, 0, tcxTest, true);
+         pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, span, 1, tcxTest, true);
+		   fclose (fp);
+
+
          return true;
          break;
       }
@@ -374,6 +391,8 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
 
       case RUN_REGRESSION:
       case RUN_CADTEST:
+         if (!RunWsdotGirderScheduleTest(resf, poif, span, girder) )
+            return false;
          if ( !RunGeometryTest(resf, poif, span, girder) )
             return false;
          if (!RunDistFactorTest(resf, poif, span, girder) )
@@ -389,8 +408,6 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          if (!RunPrestressedISectionTest(resf, poif, span, girder) )
             return false;
          if (!RunHandlingTest(resf, poif, span))
-            return false;
-         if (!RunWsdotGirderScheduleTest(resf, poif, span, girder) )
             return false;
          if ( !RunHaunchTest(resf, poif, span, girder) )
             return false;
@@ -1705,7 +1722,50 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    Float64 days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day);
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 123021, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day)) <<   _T(", 101, ")<<gdr<<std::endl;
 
+   // Stirrup data
+   GET_IFACE(IStirrupGeometry,pStirrupGeometry);
 
+   // Primary zones
+   Int32 id = 123100;
+   ZoneIndexType nz = pStirrupGeometry->GetNumPrimaryZones(span,gdr);
+   for (ZoneIndexType iz=0; iz<nz; iz++)
+   {
+      Float64 zoneStart, zoneEnd;
+      pStirrupGeometry->GetPrimaryZoneBounds(span , gdr, iz, &zoneStart, &zoneEnd);
+
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,iz,&barSize,&nStirrups,&spacing);
+
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", Zone ")<< LABEL_STIRRUP_ZONE(iz) <<  _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneStart, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneEnd, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< nStirrups <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< GetBarSize(barSize) <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(spacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
+   }
+
+   // Additional horizontal shear interface zones
+   id = 123300;
+   nz = pStirrupGeometry->GetNumHorizInterfaceZones(span,gdr);
+   for (ZoneIndexType iz=0; iz<nz; iz++)
+   {
+      Float64 zoneStart, zoneEnd;
+      pStirrupGeometry->GetHorizInterfaceZoneBounds(span , gdr, iz, &zoneStart, &zoneEnd);
+
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeometry->GetHorizInterfaceBarInfo(span,gdr,iz,&barSize,&nStirrups,&spacing);
+
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", Zone ")<< LABEL_STIRRUP_ZONE(iz) <<  _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneStart, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zoneEnd, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< nStirrups <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< GetBarSize(barSize) <<   _T(", 102, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(spacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
+   }
 
    return true;
 }

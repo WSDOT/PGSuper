@@ -61,8 +61,11 @@
          <ComponentRef Id="EngineeringApplicationsShortcuts"/>
          <ComponentRef Id="BridgeLinkShortcuts"/>
          <ComponentRef Id="WBFLComponents"/>
+        <ComponentRef Id="Xalan"/>
+        <ComponentRef Id="XalanMessages"/>
+        <ComponentRef Id="Xerces"/>
 
-         <FeatureRef Id="PGSuper" />
+        <FeatureRef Id="PGSuper" />
          <FeatureRef Id="BEToolbox" />
          <FeatureRef Id="Redistributables" />
       </Feature>

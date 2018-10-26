@@ -45,6 +45,8 @@
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 
+#include <IFace\TxDOTCadExport.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

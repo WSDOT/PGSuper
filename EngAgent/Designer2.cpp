@@ -5135,7 +5135,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
             // probably should never get here. intial strand selection too high?
             LOG(_T("** Oddball case - compressioned controlled, but did not increase concrete strength. Initial Ns too high?"));
 
-            if (cIter==0)
+            if (cIter < 5 )
             {
                // In early stages - let's just pretend we are tension controlled and go forward
                LOG(_T("Don't die young - let's just pretend we are tension controlled and go forward"));
@@ -7386,7 +7386,7 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
    const Float64 one_inch = ::ConvertToSysUnits(1.0, unitMeasure::Inch); // Very US bias here
 
    // Initialize shear design tool using flexure design pois
-   m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(pgsTypes::BridgeSite3, POI_ALLACTIONS) );
+   m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(pgsTypes::BridgeSite3, POI_ALLACTIONS | POI_TABULAR) );
 
    // First step here is to perform a shear spec check. We will use the results later for
    // design if needed

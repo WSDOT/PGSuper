@@ -2780,7 +2780,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    Float64 curb_to_curb_width;
 
-   if ( width2 < width1 )
+   if ( ::IsLE(width2,width1) )
    {
       curb_to_curb_width = width1;
       *pDistToSection = loc1;

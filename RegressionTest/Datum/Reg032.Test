@@ -1,0 +1,48 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                   1      1      Slab         32   0.6  270   3.00   3.00   0   2.00   16     0    0   0   0   0   0   7.400  7.500   6.667    -5.824      939   0.395  0.395   4.267  0.000  0.000 -0.652 -0.652 124.80  273.64    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Bursting zone check failed.
+Lifting checks failed
+Hauling checks failed
+Live Load Deflection check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                   1      2      Slab         32   0.6  270   3.00   3.00   0   2.00   16     0    0   0   0   0   0   4.000  5.000   6.078    -5.353      848   0.340  0.340   6.703  0.000  0.000 -0.798 -0.798 171.39  413.87    1.00   14.00   14.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+Tensile stress check failed for Service I for the Temporary Strand Removal Stage.
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Bursting zone check failed.
+Lifting checks failed
+Hauling checks failed
+Live Load Deflection check failed
+
+

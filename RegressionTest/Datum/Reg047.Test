@@ -1,0 +1,18 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 43.15    6   7.83 TxDOT - Modified  1      1      A       *    12   1/2  270   8.61   7.28                                               8  10.0  8.0  4.500  5.000   1.631    -2.618     1135   0.683  0.803   1.719 -0.316 -0.017 -0.011 -0.344  31.92   87.59    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 43.15    6   7.83 TxDOT - Modified  1      2      A       *    12   1/2  270   8.61   7.28                                               8  10.0  8.0  4.500  5.000   1.724    -2.705     1155   0.683  0.803   1.719 -0.353 -0.016 -0.011 -0.380  31.92   86.74    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+
+

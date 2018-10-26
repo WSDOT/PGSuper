@@ -1,0 +1,20 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.20    9   5.22         @         1      1     W53DG         28   0.6  270  39.28  21.88   0   2.00    8     0    0   0   0   0   0   5.511  6.527   2.806    -4.384     7700   0.477  0.612   4.712 -1.138 -0.193 -0.153 -1.484 118.13  194.19    1.80    4.27    4.27 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.20    9   5.22         @         1      2     W53DG         28   0.6  270  39.28  21.88   0   2.00    8     0    0   0   0   0   0   5.511  6.527   2.806    -4.384     7700   0.477  0.612   4.712 -1.138 -0.193 -0.153 -1.484 118.13  194.19    1.80    4.27    4.27 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
+
+

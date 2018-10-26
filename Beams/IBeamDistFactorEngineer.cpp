@@ -513,7 +513,8 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    }
 
    lrfdLldfTypeAEKIJ* pLLDF;
-   if ( pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_LRFD )
+   int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
+   if ( lldf_method == LLDF_LRFD )
    {
       bool bRigidMethod = (0 < nDiaphragms ? true : false);
       if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
@@ -540,7 +541,18 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    }
    else
    {
-      // Note that WSDOT and TxDOT methods are identical
+      // Note that WSDOT and TxDOT methods are identical except for slab overhang threshold
+      Float64 slab_overhang_threshold;
+      if (lldf_method==LLDF_WSDOT)
+      {
+         slab_overhang_threshold = 0.4;
+      }
+      else 
+      {
+         ATLASSERT(lldf_method==LLDF_TXDOT);
+         slab_overhang_threshold = 0.5;
+      }
+
       pLLDF = new lrfdWsdotLldfTypeAEK(plldf->gdrNum,
                                        plldf->Savg,
                                        plldf->gdrSpacings,
@@ -559,7 +571,8 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
                                        false,
                                        plldf->skew1,
                                        plldf->skew2,
-                                       bSkewMoment,bSkewShear);
+                                       bSkewMoment,bSkewShear,
+                                       slab_overhang_threshold);
    }
 
    pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );

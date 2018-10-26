@@ -1,0 +1,37 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                   1      1     U48G4         48   0.6  270  15.34  11.09   0   2.00   19     0    0   0   0   0   0   5.000  6.000   5.626    -4.360     8560   0.935  1.385   5.024 -2.485  0.000 -0.112 -2.597 183.81  402.54    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                   1      2     U48G4         48   0.6  270  15.34  11.09   0   2.00   19     0    0   0   0   0   0   5.000  6.000   4.917    -3.528     7799   0.489  0.997   5.024 -2.107  0.000 -0.115 -2.221 183.81  402.54    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+

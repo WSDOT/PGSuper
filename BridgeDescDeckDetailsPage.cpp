@@ -284,6 +284,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
+      DDV_DeckPointGrid(pDX,IDC_GRID,&m_Grid);
       pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints = m_Grid.GetEdgePoints();
    }
    else

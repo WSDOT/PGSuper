@@ -6552,9 +6552,6 @@ Float64 CBridgeAgentImp::GetLeftSlabOverhang(PierIndexType pier)
 {
    VALIDATE( BRIDGE );
 
-   if ( GetDeckType() == pgsTypes::sdtNone )
-      return 0.0;
-
    Float64 pier_station = GetPierStation(pier);
    
    Float64 overhang;
@@ -6567,9 +6564,6 @@ Float64 CBridgeAgentImp::GetLeftSlabOverhang(PierIndexType pier)
 Float64 CBridgeAgentImp::GetRightSlabOverhang(PierIndexType pier)
 {
    VALIDATE( BRIDGE );
-
-   if ( GetDeckType() == pgsTypes::sdtNone )
-      return 0.0;
 
    Float64 pier_station = GetPierStation(pier);
    
@@ -17096,6 +17090,13 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
    const CDeckRebarData& rebarData = pDeck->DeckRebarData;
 
+   if ( pDeck->DeckType == pgsTypes::sdtNone || // no deck, no deck rebar
+        (pDeck->DeckType == pgsTypes::sdtCompositeSIP && !bTopMat && bBottomMat) // SIP Panels and only want bottom rebar... no bottom rebar
+       )
+   {
+      return 0.0;
+   }
+
    // The reinforcing in this section is the amount of reinforcing within
    // the rebar section width. The rebar section width is the lessor of
    // the effective flange width and the tributary width.
@@ -17105,7 +17106,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
    Float64 Weff = GetEffectiveFlangeWidth(poi);
    Float64 rebarSectionWidth = Weff;
 
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2008Interims )
+   if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
    {
       Float64 Wtrib = GetTributaryFlangeWidth(poi);
       rebarSectionWidth = min(Weff,Wtrib);
@@ -17133,7 +17134,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
       }
 
       // bottom mat
-      if ( bBottomMat )
+      if ( bBottomMat && pDeck->DeckType != pgsTypes::sdtCompositeSIP)
       {
          if ( rebarData.BottomRebarSize != matRebar::bsNone )
          {
@@ -17170,7 +17171,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          const CDeckRebarData::NegMomentRebarData& nmRebarData = *iter;
 
          if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
-              (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat)) )
+              (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat) && pDeck->DeckType != pgsTypes::sdtCompositeSIP) )
          {
             bool bAddRebarForPrevPier = ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) );
             bool bAddRebarForNextPier = ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff ) );
@@ -17220,14 +17221,14 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
 
                   if (nmRebarData.Mat == CDeckRebarData::TopMat)
                      As_Top += As;
-                  else
+                  else if ( nmRebarData.Mat == CDeckRebarData::BottomMat && pDeck->DeckType != pgsTypes::sdtCompositeSIP)
                      As_Bottom += As;
                }
 
                // Lump sum bars are not adjusted for development
                if (nmRebarData.Mat == CDeckRebarData::TopMat)
                   As_Top += nmRebarData.LumpSum;
-               else
+               else if ( nmRebarData.Mat == CDeckRebarData::BottomMat && pDeck->DeckType != pgsTypes::sdtCompositeSIP)
                   As_Bottom += nmRebarData.LumpSum;
             }
          }

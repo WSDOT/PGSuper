@@ -68,6 +68,8 @@ protected:
    void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+   BOOL OnValidateCell(ROWCOL nRow,ROWCOL nCol);
+
 
 public:
    // custom stuff for grid
@@ -78,6 +80,8 @@ public:
 
    void RemoveSelectedRows();
    void Enable(BOOL bEnable);
+
+   BOOL Validate();
 
 private:
    BOOL m_bEnabled;
@@ -98,6 +102,9 @@ private:
    // create this object once and use it over and over
    CComPtr<IStation> m_objStation;
 };
+
+
+void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGrid);
 
 /////////////////////////////////////////////////////////////////////////////
 

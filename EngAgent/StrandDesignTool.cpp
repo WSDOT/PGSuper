@@ -3334,11 +3334,15 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       // Need development length for design and this is a chicken and egg kinda thing
       // make some basic assumptions;
 
-      // According to Article 5.7.3.1.1, fpe must be at least 50% of fps  (where fps is fpu)
+      // According to Article 5.7.3.1.1, fpe must be at least 50% of fps  (where fps is fpu at the most)
       // Substitute into (5.11.4.2-1)
       // k = 2.0  (from 5.11.4.3)
       // We get:
       // ld = 2.0(fps - 2/3 * fps/2.0)db   = 4/3(fpu)db
+      // 
+      // This is highly conservative and has caused problems with short span designs, so reduce ld by
+      // 15% (rdp - 11/17/2015, after running regression tests)
+      // 
       const matPsStrand* pstrand = pGirderData->GetStrandMaterial(m_Span,m_Girder,pgsTypes::Permanent);
       CHECK(pstrand!=0);
 
@@ -3346,7 +3350,8 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       Float64 db = ::ConvertFromSysUnits(pstrand->GetNominalDiameter(),unitMeasure::Inch);
       Float64 fpu = ::ConvertFromSysUnits(pstrand->GetUltimateStrength(),unitMeasure::KSI);
 
-      Float64 dev_len = fpu*db*4.0/3.0;
+      Float64 dev_len = fpu*db*4.0/3.0 * 0.85; // 15% reduction is arbitrary, but fixes Mantis 485 and makes better designs.
+                                               // More testing may allow more reduction.
 
       dev_len = ::ConvertToSysUnits(dev_len,unitMeasure::Inch);
       LOG(_T("Approximate upper bound of development length = ")<< ::ConvertFromSysUnits(dev_len,unitMeasure::Inch)<<_T(" in"));
@@ -3494,7 +3499,7 @@ struct Row
 
    bool operator<(const Row& rOther) const 
    { 
-      return Elevation < rOther.Elevation; 
+      return ::IsLT(Elevation,rOther.Elevation); 
    }
 };
 typedef std::set<Row> RowSet;

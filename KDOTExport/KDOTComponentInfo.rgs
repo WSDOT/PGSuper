@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.KDOTComponentInfo.1 = s 'KDOT Component Information'
+	{
+		CLSID = s '{9C945C73-1FBB-4003-B31A-24BE9D850B99}'
+	}
+	PGSuper.KDOTComponentInfo = s 'KDOT Component Information'
+	{
+		CLSID = s '{9C945C73-1FBB-4003-B31A-24BE9D850B99}'
+		CurVer = s 'PGSuper.KDOTComponentInfo.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9C945C73-1FBB-4003-B31A-24BE9D850B99} = s 'KDOT Component Information'
+		{
+			ProgID = s 'PGSuper.KDOTComponentInfo.1'
+			VersionIndependentProgID = s 'PGSuper.KDOTComponentInfo'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{1C5B5FB1-1643-4b4f-983F-F7B680709018}'
+		}
+	}
+}

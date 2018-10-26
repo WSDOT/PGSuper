@@ -786,7 +786,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
                continue;
             }
 
-            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+            LOG(ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet)<<_T(", ")<<ConvertFromSysUnits(avs_val, unitMeasure::Inch2PerFoot)<<_T(", ")<<ConvertFromSysUnits(avs_II, unitMeasure::Inch2PerFoot));
 
             avs_val = max( avs_val, avs_II );
          }
@@ -950,6 +950,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          Float64 mry = mirror_avs.Evaluate(x);
 
          LOG( x << _T(", ") << mry <<_T(", ") << ry);
+
          idx++;
       }
 #endif
@@ -1374,15 +1375,10 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
                // Should we close existing zone and start new zone based on this spacing?
                if ( S_reqd > zone_data.BarSpacing )
                {
-                  zone_len = prev_location - curr_zone_start;
+                  zone_len = location - curr_zone_start;
 
                   // Make zone length a multiple of required spacing
                   zone_len = CeilOff(zone_len, zone_data.BarSpacing); 
-
-                  // FUDGE: Artificiallly increase zone length by two bar spacings. This is done
-                  //        because POI's for design are not exactly located at zone termination
-                  //        locations.
-                  zone_len += 2.0 * zone_data.BarSpacing;
 
                   // Is the zone long enough?
                   if (zone_len >= L_zone_min)

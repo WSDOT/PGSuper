@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K4 Template    1      1     Strai    *    21   1/2  270  16.39  16.39                                               0   0.0  0.0  4.000  5.000   1.334    -1.832     3295   0.683  0.683   0.10  -0.03   0.00  -0.00  -0.03   28.57  100.02    5.00    7.00    6.00 
+ 40.00    6   7.25    K4 Template    1      1     Strai    *    21   1/2  270  16.39  16.39                                               0   0.0  0.0  4.000  5.000   1.334    -1.832     3295   0.683  0.683   1.178 -0.302  0.000 -0.018 -0.320  28.57  100.02    5.00    7.00    6.00 
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K4 Template    1      2     Strai    *    19   1/2  270  21.29  21.29                                               0   0.0  0.0  4.000  5.000   1.338    -1.852     3311   0.675  0.761   0.13  -0.03   0.00  -0.00  -0.03   28.56   88.10    5.00    7.00    6.00 
+ 40.00    6   7.25    K4 Template    1      2     Strai    *    19   1/2  270  21.29  21.29                                               0   0.0  0.0  4.000  5.000   1.338    -1.852     3311   0.675  0.761   1.528 -0.335  0.000 -0.018 -0.353  28.56   88.10    5.00    7.00    6.00 
 
 
 The Specification Check was Not Successful
@@ -21,7 +21,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K4 Template    1      4      K4+3    *    16   1/2  270  26.12  19.62                                               4  30.0  4.0  4.000  5.000   1.338    -1.852     3311   0.675  0.761   0.12  -0.03   0.00  -0.00  -0.03   24.39   69.51    5.00    7.00    6.00 
+ 40.00    6   7.25    K4 Template    1      4      K4+3    *    16   1/2  270  26.12  19.62                                               4  30.0  4.0  4.000  5.000   1.338    -1.852     3311   0.675  0.761   1.477 -0.335  0.000 -0.018 -0.353  24.39   69.51    5.00    7.00    6.00 
 
 
 The Specification Check was Not Successful

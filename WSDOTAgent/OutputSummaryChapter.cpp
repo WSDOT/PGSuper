@@ -440,9 +440,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    (*pTable)(row,1) << disp.SetValue( delta_sidl );
    row++;
 
-   (*pTable)(row,0) << _T("Deflection (Overlay)");
-   (*pTable)(row,1) << disp.SetValue( delta_overlay );
-   row++;
+   if ( pBridge->HasOverlay() )
+   {
+      (*pTable)(row,0) << _T("Deflection (Overlay)");
+      (*pTable)(row,1) << disp.SetValue( delta_overlay );
+      row++;
+   }
 
    if ( deckType == pgsTypes::sdtNone )
    {

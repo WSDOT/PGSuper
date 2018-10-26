@@ -89,18 +89,29 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptS
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   // eject a page break before this chapter
+   pChapter->SetEjectPageBreakBefore(true);
+
    // let the paragraph builder to all the work here...
    std::vector<SpanGirderHashType> spanGirders;
    spanGirders.push_back( HashSpanGirder(span, girder) );
 
+   bool doEjectPage;
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker,spanGirders,pDisplayUnits,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,spanGirders,pDisplayUnits,level,doEjectPage);
 
    *pChapter << pcontent;
 
    // girder line geometry table
    girder_line_geometry( pChapter, pBroker, span, girder, pDisplayUnits );
 
+   // put a page break at bottom of table
+   if (doEjectPage)
+   {
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+      *p << rptNewPage;
+   }
 
    return pChapter;
 }
@@ -351,8 +362,16 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
    (*pTable)(row++,1) << component.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
 
-   (*pTable)(row,0) << _T("Overlay");
-   (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   if ( pDeck->WearingSurface == pgsTypes::wstOverlay )
+   {
+      (*pTable)(row,0) << _T("Overlay");
+      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   }
+   else if ( pDeck->WearingSurface == pgsTypes::wstFutureOverlay )
+   {
+      (*pTable)(row,0) << _T("Future Overlay");
+      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   }
 
 #pragma Reminder("#*#*#*#*#*# TXDOT girder summary - Diaphragms #*#*#*#*#*#")
 //   (*pTable)(row,0) << _T("Intermediate Diaphragm (H x W)");

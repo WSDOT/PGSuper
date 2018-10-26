@@ -437,29 +437,33 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    	/* 18. ESTIMATED CAMBER IMMEDIATELY BEFORE SLAB CASTING (MAX) */
       value = pCamber->GetDCamberForGirderSchedule( pmid[0],CREEP_MAXTIME);
+      value = IsZero(value) ? 0 : value;
 
-      Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab,      pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey,  pmid[0], SimpleSpan );
+      value = IsZero(value) ? 0 : value;
 
-      Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 20. DEFLECTION (OVERLAY)  */
-      pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+      pgsTypes::Stage overlay_stage = pgsTypes::BridgeSite2;
 
       value = pProductForces->GetDisplacement(overlay_stage, pftOverlay, pmid[0], bat );
+      value = IsZero(value) ? 0 : value;
 
-      Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 21. DEFLECTION (OTHER)  */
       value =  pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, pmid[0], bat );
       value += pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftSidewalk,       pmid[0], bat );
+      value = IsZero(value) ? 0 : value;
 
-      Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 22. DEFLECTION (TOTAL)  */
       Float64 totalDeflection = slabDiaphDeflection + overlayDeflection + otherDeflection;
@@ -488,15 +492,15 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
       /* WRITE TO FILE */
       //==================
 	   //----- COL 18 ---- 
-      workerB.WriteFloat64(initialCamber,_T("Dinit"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(initialCamber,_T("Dinit"),7,6,_T("%6.3f"));
 	   //----- COL 19 ---- 
-      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(slabDiaphDeflection,_T("Dslab"),7,6,_T("%6.3f"));
 	   //----- COL 20 ---- 
-      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(overlayDeflection,_T("Dolay"),7,6,_T("%6.3f"));
 	   //----- COL 21 ---- 
-      workerB.WriteFloat64(otherDeflection,_T("Dothr"),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(otherDeflection,_T("Dothr"),7,6,_T("%6.3f"));
 	   //----- COL 22 ---- 
-      workerB.WriteFloat64(totalDeflection,_T("Dtot "),7,5,_T("%5.2f"));
+      workerB.WriteFloat64(totalDeflection,_T("Dtot "),7,6,_T("%6.3f"));
 	   //----- COL 23 ---- 
       workerB.WriteFloat64(initialLoss,_T("LossIn"),8,6,_T("%6.2f"));
 	   //----- COL 24 ---- 

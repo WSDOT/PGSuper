@@ -61,7 +61,7 @@ public:
    //------------------------------------------------------------------------
    rptParagraph* Build(IBroker* pBroker,const std::vector<SpanGirderHashType>& spanGirders,
                        IEAFDisplayUnits* pDisplayUnits,
-                       Uint16 level) const;
+                       Uint16 level, bool& rbEjectPage) const;
 
    //------------------------------------------------------------------------
 

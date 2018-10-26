@@ -168,8 +168,26 @@ bool CDeckDescription::operator == (const CDeckDescription& rOther) const
    if ( SlabHasFct && !IsEqual(SlabFct,rOther.SlabFct) )
       return false;
 
-   if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
+   if (bInputAsDepthAndDensity != rOther.bInputAsDepthAndDensity)
+   {
       return false;
+   }
+
+   if (bInputAsDepthAndDensity)
+   {
+      if ( !IsEqual( OverlayDepth, rOther.OverlayDepth ) )
+         return false;
+
+      if ( !IsEqual( OverlayDensity, rOther.OverlayDensity ) )
+         return false;
+
+      ATLASSERT(IsEqual(OverlayWeight, rOther.OverlayWeight )); // Sanity check. This should have been computed and synched elsewhere
+   }
+   else
+   {
+      if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
+         return false;
+   }
 
 	if ( !IsEqual( SacrificialDepth, rOther.SacrificialDepth ) )
       return false;

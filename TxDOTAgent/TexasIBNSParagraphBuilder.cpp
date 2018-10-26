@@ -282,8 +282,11 @@ CTexasIBNSParagraphBuilder::CTexasIBNSParagraphBuilder()
 
 /*--------------------------------------------------------------------*/
 rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vector<SpanGirderHashType>& spanGirders,
-                                                IEAFDisplayUnits* pDisplayUnits, Uint16	level) const
+                                                IEAFDisplayUnits* pDisplayUnits, Uint16 level, bool& rbEjectPage) const
 {
+   rbEjectPage = true; // we can just fit this and the geometry table on a page if there is no additional data
+
+
    rptParagraph* p = new rptParagraph;
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
@@ -412,6 +415,8 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       // Write debond table(s)
       if (areAnyDebondingInTable)
       {
+         rbEjectPage = false;
+
          itsg = spanGirders.begin();
          while(itsg != itsg_end)
          {
@@ -441,6 +446,8 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
 
          if ( IsNonStandardStrands( ns+nh, isHarpedDesign, npsType) )
          {
+            rbEjectPage = false;
+
             // Nonstandard strands table
             std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
             ATLASSERT(pmid.size()==1);

@@ -11,7 +11,11 @@
 #define IDC_BEARING_HEIGHT_LABEL        206
 #define IDC_BEARING_HEIGHT              207
 #define IDC_BEARING_HEIGHT_UNIT         208
+#define IDR_KDOTCOMPONENTINFO           208
 #define IDC_EDIT1                       209
+#define IDR_REGISTRY1                   210
+#define IDI_ICON1                       211
+#define IDI_KDOT                        211
 #define IDC_HELP                        213
 #define IDC_SELECT_ALL                  255
 #define IDC_CLEAR_ALL                   256
@@ -23,7 +27,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        208
+#define _APS_NEXT_RESOURCE_VALUE        212
 #define _APS_NEXT_COMMAND_VALUE         32770
 #define _APS_NEXT_CONTROL_VALUE         214
 #define _APS_NEXT_SYMED_VALUE           107

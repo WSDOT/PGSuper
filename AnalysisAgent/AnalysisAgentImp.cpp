@@ -1948,6 +1948,7 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
    m_scidVSRatio            = pStatusCenter->RegisterCallback(new pgsVSRatioStatusCallback(m_pBroker));
    m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidZeroOverlayWarning = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusWarning));
 
    return S_OK;
 }
@@ -2372,8 +2373,17 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
    if ( !pBridge->HasOverlay() )
       return;
 
-   GET_IFACE( IGirder,        pGdr);
+   // If we have an overlay and the load is zero, post message to status center
+   Float64 OverlayWeight = pBridge->GetOverlayWeight();
+   if (IsZero(OverlayWeight))
+   {
+      CString strMsg(_T("An overlay is specified, but the overlay load is zero."));
+      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidZeroOverlayWarning,strMsg);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      pStatusCenter->Add(pStatusItem);
+   }
 
+   GET_IFACE( IGirder,        pGdr);
    GET_IFACE(IStageMap,pStageMap);
    pgsTypes::Stage stage = pgsTypes::BridgeSite2;
    CComBSTR bstrStage = pStageMap->GetStageName(stage);

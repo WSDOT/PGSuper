@@ -1598,7 +1598,7 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
             pOrigSpan->GetGirderTypes()->GetGirderGroup(iGroup, &norigGstart, &norigGend, origGirderName);
          }
 
-         if (thisGirderName != origGirderName)
+         if (copyGirderType || thisGirderName != origGirderName)
          {
             // Enough evidence here that the girder type was changed - refill with seed data
             const GirderLibraryEntry* pGird = pLib->GetGirderEntry( thisGirderName.c_str());

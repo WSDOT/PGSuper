@@ -78,6 +78,7 @@ void pgsReportStyleHolder::InitStyles()
    // Report Title
    rptRiStyle rpttitle;
    rpttitle.SetFontSize(16);
+   rpttitle.SetIsHeading(true);
    rpttitle.SetBold( true );
    rpttitle.SetFontType(rptRiStyle::SWISS);
    rpttitle.SetAlignment(rptRiStyle::CENTER);
@@ -87,6 +88,7 @@ void pgsReportStyleHolder::InitStyles()
    // Report Subtitle
    rptRiStyle rptsubtitle;
    rptsubtitle.SetFontSize(15);
+   rptsubtitle.SetIsHeading(true);
    rptsubtitle.SetItalic( true );
    rptsubtitle.SetFontType(rptRiStyle::SWISS);
    rptsubtitle.SetAlignment(rptRiStyle::CENTER);
@@ -97,6 +99,7 @@ void pgsReportStyleHolder::InitStyles()
    rptRiStyle  chaptertitle;
    chaptertitle.SetFontType(rptRiStyle::SWISS);
    chaptertitle.SetFontSize(13);
+   chaptertitle.SetIsHeading(true);
    chaptertitle.SetAlignment(rptRiStyle::LEFT);
    chaptertitle.SetBold( true );
    chaptertitle.SetColor( rptRiStyle::Blue );
@@ -107,6 +110,7 @@ void pgsReportStyleHolder::InitStyles()
    rptRiStyle headings;
    headings.SetFontType(rptRiStyle::SWISS);
    headings.SetFontSize(11);
+   headings.SetIsHeading(true);
    headings.SetBold( true );
    flag = psl->AddNamedStyle(ms_HeadingStyle, headings);
    //CHECK(flag);
@@ -115,6 +119,7 @@ void pgsReportStyleHolder::InitStyles()
    rptRiStyle subheadings;
    subheadings.SetFontType(rptRiStyle::SWISS);
    subheadings.SetFontSize(9);
+   subheadings.SetIsHeading(true);
    subheadings.SetItalic( true );
    subheadings.SetBold( true );
    flag = psl->AddNamedStyle(ms_SubheadingStyle, subheadings);
@@ -321,7 +326,7 @@ rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns,
 rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, LPCTSTR lpszLabel)
 {
    rptRcTable* pTable = new rptRcTable( numColumns, 0.0/*pgsReportStyleHolder::GetMaxTableWidth()*/ );
-   if (lpszLabel != NULL)
+   if (lstrlen(lpszLabel) > 0)
       pTable->TableLabel() << lpszLabel;
 
    pgsReportStyleHolder::ConfigureTable(pTable);
@@ -357,7 +362,7 @@ void pgsReportStyleHolder::ConfigureTable(rptRcTable* pTable)
    pTable->SetTableHeaderStyle( pgsReportStyleHolder::GetTableColumnHeadingStyle() );
    pTable->SetOutsideBorderStyle( rptRiStyle::HAIR_THICK );
    pTable->SetInsideBorderStyle( rptRiStyle::NOBORDER );
-   pTable->SetCellPad( 0.03125 );
+   pTable->SetCellPad( 0.015625 );
 
    pTable->EnableRowStriping(true);
 

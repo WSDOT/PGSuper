@@ -1,0 +1,28 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 29.83    8   0.00                   1      1     4SB15         40   1/2  270   4.10   3.93  10   2.50   22     8    0   4   0   4   0   4.500  5.000   3.224    -3.776     1191   0.325  0.325   3.105 -0.687 -0.101 -0.127 -0.915 102.19  300.35    0.00    0.00    0.00 
+                                                                                                  4.50   18     2    2   0   0   0   0 
+
+
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Debond arrangement checks failed.
+Bursting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 29.83    8   0.00                   1      2     4SB15         38   1/2  270   4.16   3.93   8   2.50   22     8    2   2   2   2   0   4.500  5.000   3.173    -3.694     1143   0.301  0.301   2.815 -0.687 -0.101 -0.127 -0.915  92.22  273.38    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Debond arrangement checks failed.
+Bursting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+

@@ -11,11 +11,13 @@
 #include "KDOTExport_i.h"
 #include "KDOTExport_i.c"
 #include "PGSuperCatCom.h"
+#include "BridgeLinkCatCom.h"
 #include <WBFLCore_i.c>
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
 
 #include "PGSuperDataExporter.h"
+#include "KDOTComponentInfo.h"
 
 #include "PGSuperInterfaces.h"
 #include "\BSDev\PGSuperExtensions\BridgeSightBearings.h"
@@ -24,6 +26,7 @@ CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_PGSuperDataExporter,    CPGSuperDataExporter)
+   OBJECT_ENTRY(CLSID_KDOTComponentInfo,    CKDOTComponentInfo)
 END_OBJECT_MAP()
 
 class CKDOTExportAppPlugin : public CWinApp
@@ -123,6 +126,10 @@ void RegisterPlugins(bool bRegister)
 
    // PGSuper
    sysComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSuperDataExporter,    bRegister);
+
+   // The KDOT component info objects provides information about this entire plug-in component
+   // This information is used in the "About" dialog
+   HRESULT hr = sysComCatMgr::RegWithCategory(CLSID_KDOTComponentInfo, CATID_BridgeLinkComponents, bRegister);
 }
 
 /////////////////////////////////////////////////////////////////////////////

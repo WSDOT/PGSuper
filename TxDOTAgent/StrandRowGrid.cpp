@@ -69,14 +69,14 @@ int CStrandRowGrid::GetColWidth(ROWCOL nCol)
    switch (nCol)
    {
    case 0:
-      return (int)(rect.Width( )*(Float64)1/7);
+      return (int)(rect.Width( )*(Float64)4/20);
    case 1:
-      return (int)(rect.Width( )*(Float64)3/7);
+      return (int)(rect.Width( )*(Float64)8/20);
    case 2:
-      return (int)(rect.Width( )*(Float64)3/7);
+      return (int)(rect.Width( )*(Float64)8/20);
    default:
       ASSERT(0);
-      return (int)(rect.Width( )/7);
+      return (int)(rect.Width( )/5);
    }
 }
 

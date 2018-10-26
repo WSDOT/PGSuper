@@ -1,0 +1,26 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 33.25    6   6.00                   1      1      W83G    *    43   0.6  270  36.81  21.70                                              11  66.6  3.0  5.400  7.200   3.876    -4.096    13473   0.577  0.655   3.937 -1.848  0.000 -0.268 -2.116 138.23  438.70    6.50   18.00   18.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 33.25    6   6.00                   1      2      W83G    *    43   0.6  270  36.81  21.70                                              11  66.6  3.0  5.400  7.200   3.948    -4.144    13262   0.509  0.731   3.714 -2.158  0.000 -0.262 -2.419 138.23  438.70    6.50   18.00   18.00 
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+

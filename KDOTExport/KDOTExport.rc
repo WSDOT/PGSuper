@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,1,0
- PRODUCTVERSION 2,9,1,0
+ FILEVERSION 2,9,1,1
+ PRODUCTVERSION 2,9,1,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -72,12 +72,12 @@ BEGIN
             VALUE "Comments", "PGSuperKDOTExport"
             VALUE "CompanyName", "Kansas Department of Transportation"
             VALUE "FileDescription", "PGSuperKDOTExport  Module"
-            VALUE "FileVersion", "2.9.1.0"
+            VALUE "FileVersion", "2.9.1.1"
             VALUE "InternalName", "PGSuperKDOTExport.dll"
             VALUE "LegalCopyright", "Copyright © 2009-2015, KDOT, All rights reserved"
             VALUE "OriginalFilename", "PGSuperKDOTExport.dll"
             VALUE "ProductName", "PGSuper KDOT Export"
-            VALUE "ProductVersion", "2.9.1.0"
+            VALUE "ProductVersion", "2.9.1.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -93,6 +93,7 @@ END
 //
 
 IDR_PGSUPERDATAEXPORTER REGISTRY                "PGSuperDataExporter.rgs"
+IDR_KDOTCOMPONENTINFO   REGISTRY                "KDOTComponentInfo.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -130,6 +131,15 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_KDOT                ICON                    "icon1.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

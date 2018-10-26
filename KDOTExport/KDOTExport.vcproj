@@ -414,9 +414,6 @@
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\KDOTExport.def"
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
-				MapFileName=""
-				MapExports="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -621,7 +618,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="xerces-c_3.lib"
+				AdditionalDependencies="xerces-c_3.lib htmlhelp.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -667,6 +664,10 @@
 			>
 			<File
 				RelativePath=".\ExportDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\KDOTComponentInfo.cpp"
 				>
 			</File>
 			<File
@@ -1101,6 +1102,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\KDOTComponentInfo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\KDOTExport.h"
 				>
 			</File>
@@ -1130,7 +1135,19 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\KDOTComponentInfo.rgs"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSuperDataExporter.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\registry.bin"
 				>
 			</File>
 		</Filter>

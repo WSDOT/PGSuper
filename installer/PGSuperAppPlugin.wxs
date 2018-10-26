@@ -749,6 +749,7 @@
       <!-- KDOT PGSuper Extensions -->
       <DirectoryRef Id="APPLICATIONFOLDER"
                     FileSource="$(var.PGSuperSourceRoot)\Extensions\KDOT\$(var.PlatformFolder)">
+        <Directory Id="KDOTSchemaFiles" Name="KDOTSchemaFiles"/>
          <Component Id="KDOTExport"
                     Guid="{D6744B7F-AD5B-489d-AF7F-D37ACE59E0D5}"
                     Win64="$(var.IsWin64)">
@@ -775,8 +776,7 @@
                            Type="string" />
 
             <!-- KDOT Component Information Object -->
-            <!-- 
-            <?define PGSuperKDOTInfoCLSID={}?>
+            <?define PGSuperKDOTInfoCLSID={9C945C73-1FBB-4003-B31A-24BE9D850B99}?>
             <RegistryKey ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes"
                          Root="HKCR"
                          Key ="CLSID\$(var.PGSuperKDOTInfoCLSID)"/>
@@ -792,7 +792,6 @@
                            Key="CLSID\$(var.PGSuperKDOTInfoCLSID)\Implemented Categories\$(var.BridgeLinkComponentInfoCATID)"
                            Value=""
                            Type="string" />
-            -->
 
          </Component>
       </DirectoryRef>
@@ -848,10 +847,10 @@
                Display="expand"
                Title="KDOT Extensions (Optional)"
                Level="1">
-         <ComponentRef Id="KDOTExporter"/>
+         <ComponentRef Id="KDOTExport"/>
          <ComponentRef Id="KDOTHelp"/>
          <ComponentRef Id="KDOTShortcut"/>
-         <ComponentRef Id="KDOTSchemaFiles"/>
+         <ComponentRef Id="KDOTSchema"/>
       </Feature>
 
       <Feature Id="PGSuper"
@@ -864,6 +863,7 @@
 
          <FeatureRef Id="WSDOTExtensions"/>
          <FeatureRef Id="TxDOTExtensions"/>
+        <FeatureRef Id="KDOTExtensions"/>
 
          <ComponentRef Id="PGSuperComponents" Primary="yes" />
          <ComponentRef Id="PGSuperComponents2" />

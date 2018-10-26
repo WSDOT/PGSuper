@@ -332,10 +332,10 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
       return false;
    }
 
-   if (false)/* pGdrEntry->GetNumHarpedStrandCoordinates() > 0 &&
-       pGdrEntry->GetAdjustableStrandType() != pgsTypes::asHarped) */
+   if ( pGdrEntry->GetNumHarpedStrandCoordinates() > 0 &&
+       pGdrEntry->GetAdjustableStrandType() == pgsTypes::asStraight)
    {
-      // Entry must have harped strands
+      // Entry must be able to have harped strands
       ASSERT(0);
       CString msg, stmp;
       stmp.LoadString(IDS_GDR_ERROR3);

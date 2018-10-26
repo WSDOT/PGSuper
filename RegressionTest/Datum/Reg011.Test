@@ -1,0 +1,24 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 43.34    7   6.07                   1      1     W83MG    *    68   0.6  270  35.13  15.30                                              22  76.8  8.9  7.832 10.008   5.918    -6.152    20059   0.759  0.759   2.840 -3.983  0.000 -0.300 -4.283 206.30  652.29    8.86   16.40   16.40 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 43.34    7   6.07                   1      2     W83MG    *    68   0.6  270  35.13  15.30                                              22  76.8  8.9  7.832 10.008   5.365    -5.405    16834   0.541  0.684   2.660 -3.413  0.000 -0.316 -3.729 206.30  652.29    8.86   16.40   16.40 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Hauling checks failed
+
+

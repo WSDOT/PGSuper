@@ -41,6 +41,18 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGrid)
+{
+   if (!pDX->m_bSaveAndValidate )
+      return;
+
+   pDX->PrepareCtrl(nIDC);
+   if ( !pGrid->Validate() )
+   {
+      pDX->Fail();
+   }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckPointGrid
 
@@ -132,6 +144,67 @@ void CBridgeDescDeckPointGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 
    CGXGridWnd::OnEndEditing(nRow,nCol);
 }
+
+BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
+{
+   CGXControl* pControl = GetControl(nRow,nCol);
+   CWnd* pWnd = (CWnd*)pControl;
+
+   CString strText;
+   if ( pControl->IsInit() )
+   {
+      pControl->GetCurrentText(strText);
+   }
+   else
+   {
+      strText = GetValueRowCol(nRow,nCol);
+   }
+
+   if ( nCol == 1 )
+   {
+      // Validation station... 
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+      UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
+      m_objStation->FromString(CComBSTR(strText),unitMode);
+
+      Float64 station;
+      m_objStation->get_Value(&station);
+      station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+
+      CDeckPoint prevPoint, nextPoint;
+      prevPoint.Station = station - 100;
+      nextPoint.Station = station + 100;
+
+      if ( nRow != 1 )
+      {
+         GetPointRowData(nRow-2,&prevPoint);
+      }
+
+      ROWCOL nRows = GetRowCount();
+      if ( nRow != nRows )
+      {
+         GetPointRowData(nRow+2,&nextPoint);
+      }
+
+      if ( station <= prevPoint.Station || nextPoint.Station <= station )
+      {
+         CString strPrevStation = FormatStation(pDisplayUnits->GetStationFormat(),prevPoint.Station);
+         CString strThisStation = FormatStation(pDisplayUnits->GetStationFormat(),station);
+         CString strNextStation = FormatStation(pDisplayUnits->GetStationFormat(),nextPoint.Station);
+         CString strMsg;
+         strMsg.Format(_T("Invalid Station. Station %s is not between %s and %s."),strThisStation,strPrevStation,strNextStation);
+
+         SetWarningText(strMsg);
+         return FALSE;
+      }
+   }
+
+	return CGXGridWnd::OnValidateCell(nRow, nCol);
+}
+
 
 ROWCOL CBridgeDescDeckPointGrid::AddRow()
 {
@@ -531,4 +604,34 @@ void CBridgeDescDeckPointGrid::Enable(BOOL bEnable)
 
    GetParam()->SetLockReadOnly(TRUE);
    GetParam()->EnableUndo(FALSE);
+}
+
+BOOL CBridgeDescDeckPointGrid::Validate()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
+
+   std::vector<CDeckPoint> vPoints = GetEdgePoints();
+   std::vector<CDeckPoint>::iterator iter(vPoints.begin()+1);
+   std::vector<CDeckPoint>::iterator end(vPoints.end());
+   for ( ; iter != end; iter++ )
+   {
+      CDeckPoint& prevPoint = *(iter-1);
+      CDeckPoint& thisPoint = *iter;
+
+      if ( thisPoint.Station < prevPoint.Station )
+      {
+         CString strPrevStation = FormatStation(pDisplayUnits->GetStationFormat(),prevPoint.Station);
+         CString strThisStation = FormatStation(pDisplayUnits->GetStationFormat(),thisPoint.Station);
+         CString strMsg;
+         strMsg.Format(_T("Stations must be in increasing order.\nStation %s is after %s in the grid."),strThisStation,strPrevStation);
+         AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+         return FALSE;
+      }
+   }
+
+   return TRUE;
 }

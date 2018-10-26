@@ -255,6 +255,12 @@ inline void list_vertical_shear_failures(IBroker* pBroker,FailureList& rFailures
    {
       const pgsPointOfInterest& poi = *poiIter;
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
+      if ( pPoiArtifacts == NULL )
+      {
+         ATLASSERT(false); // why isn't there an artifact at this shear POI?
+         continue;
+      }
+
       const pgsVerticalShearArtifact* pShear = pPoiArtifacts->GetVerticalShearArtifact();
       const pgsLongReinfShearArtifact* pLongReinf = pPoiArtifacts->GetLongReinfShearArtifact();
 
@@ -288,6 +294,12 @@ inline void list_horizontal_shear_failures(IBroker* pBroker,FailureList& rFailur
    {
       const pgsPointOfInterest& poi = *poiIter;
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
+      if ( pPoiArtifacts == NULL )
+      {
+         ATLASSERT(false); // why isn't there an artifact at this shear POI?
+         continue;
+      }
+
       const pgsHorizontalShearArtifact* pShear = pPoiArtifacts->GetHorizontalShearArtifact();
 
       if ( !pShear->Passed() )
@@ -311,6 +323,12 @@ inline void list_stirrup_detailing_failures(IBroker* pBroker,FailureList& rFailu
    {
       const pgsPointOfInterest& poi = *poiIter;
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
+      if ( pPoiArtifacts == NULL )
+      {
+         ATLASSERT(false); // why isn't there an artifact at this shear POI?
+         continue;
+      }
+
       const pgsStirrupDetailArtifact* pShear = pPoiArtifacts->GetStirrupDetailArtifact();
  
       if ( !pShear->Passed() )

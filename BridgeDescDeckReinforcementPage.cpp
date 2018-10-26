@@ -258,37 +258,64 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
       GetDlgItem(IDC_DECK)->SetWindowText(_T("Describe top and bottom mat of deck reinforcement."));
    }
 
-   GetDlgItem(IDC_TOP_COVER)->EnableWindow(bEnableTop);
-   GetDlgItem(IDC_TOP_COVER_UNIT)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_COVER_LABEL)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_COVER)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_COVER_UNIT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
 
-   GetDlgItem(IDC_TOP_MAT_BAR)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_MAT_BAR_LABEL)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_BAR)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_BAR_AT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_BAR_PLUS)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
 
-   GetDlgItem(IDC_TOP_MAT_BAR_SPACING)->EnableWindow(bEnableTop);
-   GetDlgItem(IDC_TOP_MAT_BAR_SPACING_UNIT)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_MAT_BAR_SPACING)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_BAR_SPACING_UNIT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
 
-   GetDlgItem(IDC_TOP_MAT_LUMP_SUM)->EnableWindow(bEnableTop);
-   GetDlgItem(IDC_TOP_MAT_LUMP_SUM_UNIT)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_MAT_LUMP_SUM)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_LUMP_SUM_UNIT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
 	
 
-   GetDlgItem(IDC_BOTTOM_COVER)->EnableWindow(bEnableBottom);
-   GetDlgItem(IDC_BOTTOM_COVER_UNIT)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_COVER_LABEL)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_COVER)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_COVER_UNIT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
 
-   GetDlgItem(IDC_BOTTOM_MAT_BAR)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_LABEL)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_AT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_PLUS)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
 
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING)->EnableWindow(bEnableBottom);
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING_UNIT)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING_UNIT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
 
-   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM)->EnableWindow(bEnableBottom);
-   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM_UNIT)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM_UNIT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
 
-   if ( !bEnableTop && !bEnableBottom )
-      m_Grid.EnableWindow(FALSE);
+   GetDlgItem(IDC_MILD_STEEL_SELECTOR)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_PRIMARY_REBAR_GROUP)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_PRIMARY_REBAR_GROUP_LABEL)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_SECONDARY_REBAR_GROUP)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_SECONDARY_REBAR_GROUP_LABEL)->ShowWindow(SW_SHOW);
+   m_Grid.ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_ADD)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_REMOVE)->ShowWindow(SW_SHOW);
 
    m_Grid.EnableMats(bEnableTop,bEnableBottom);
    GetDlgItem(IDC_ADD)->EnableWindow(bEnableTop || bEnableBottom);
    GetDlgItem(IDC_REMOVE)->EnableWindow(bEnableTop || bEnableBottom);
 
    m_Grid.UpdatePierList();
+
+   if ( !bEnableTop && !bEnableBottom )
+   {
+      m_Grid.ShowWindow(SW_HIDE);
+      //m_Grid.EnableWindow(FALSE);
+      GetDlgItem(IDC_MILD_STEEL_SELECTOR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_PRIMARY_REBAR_GROUP)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_PRIMARY_REBAR_GROUP_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SECONDARY_REBAR_GROUP)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SECONDARY_REBAR_GROUP_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ADD)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_REMOVE)->ShowWindow(SW_HIDE);
+   }
 	
    return CPropertyPage::OnSetActive();
 }

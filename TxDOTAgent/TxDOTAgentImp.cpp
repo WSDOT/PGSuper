@@ -39,6 +39,8 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 
+#include <MfcTools\XUnwind.h>
+
 #include <Reporting\PGSuperTitlePageBuilder.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
@@ -117,7 +119,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false,false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
@@ -128,7 +130,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(), false,false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
@@ -143,7 +145,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),true,false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
@@ -267,13 +269,13 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
       ::AfxMessageBox(_T("Invalid girder specified on command line for TxDOT CAD report"));
       return;
    }
-
-   if (rCmdInfo.m_TxSpan != ALL_SPANS /*&& rCmdInfo.m_TxSpan < 0*/)
+/*
+   if (rCmdInfo.m_TxSpan != ALL_SPANS || rCmdInfo.m_TxSpan < 0)
    {
       ::AfxMessageBox(_T("Invalid span specified on command line for TxDOT CAD report"));
       return;
    }
-
+*/
    CString errfile;
    if (CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile))
    {
@@ -535,10 +537,22 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::TxrDistributionFactors)
       {
          // Write distribution factor data to file
-         if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, span, girder))
+         try
          {
-            err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
-	         return false;
+            if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, span, girder))
+            {
+               err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
+	            return false;
+            }
+         }
+         catch(CXUnwind* pExc)
+         {
+            // Probable lldf out of range error
+            std::_tstring sCause;
+            pExc->GetErrorMessage(&sCause);
+            _ftprintf(fp, sCause.c_str());
+            _ftprintf(fp, _T("\n"));
+            pExc->Delete();
          }
       }
       else

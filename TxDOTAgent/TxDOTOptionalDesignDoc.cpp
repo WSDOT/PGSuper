@@ -1419,6 +1419,9 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       // We'll be adding strands later
       clone_entry.ClearAllStrands();
 
+      // We are pure harped strands, no either or.
+      clone_entry.SetAdjustableStrandType(pgsTypes::asHarped);
+
       // With depressed strands - the hard way
       CString error_msg;
       if (!pOdGirderData->CheckAndBuildStrandRows(pGdrEntry,

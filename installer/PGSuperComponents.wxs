@@ -11,7 +11,7 @@
                     Guid="{9F639678-37CE-48a2-8EDD-ED5F699EDC0D}"
                     Win64="$(var.IsWin64)">
             
-            <File Id="$(var.ProductName).exe"    Name="$(var.ProductName).exe" KeyPath ="yes"/>
+            <File Id="PGSuper.exe"    Name="PGSuper.exe" KeyPath ="yes"/>
             
             <!-- define component categories for the main executable
             Categories are: BridgeLink Application Plugins (such as PGSuper, Library Editor, TOGA, BEToolbox)

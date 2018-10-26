@@ -1177,37 +1177,37 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Deck Reinforcement"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Top Mat Cover",IDC_STATIC,7,35,48,8
+    LTEXT           "Top Mat Cover",IDC_TOP_COVER_LABEL,7,35,48,8
     EDITTEXT        IDC_TOP_COVER,59,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TOP_COVER_UNIT,103,35,19,8
-    LTEXT           "Bottom Mat Cover",IDC_STATIC,133,35,58,8
+    LTEXT           "Bottom Mat Cover",IDC_BOTTOM_COVER_LABEL,133,35,58,8
     EDITTEXT        IDC_BOTTOM_COVER,195,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BOTTOM_COVER_UNIT,242,36,19,8
-    GROUPBOX        "Primary Reinforcement",IDC_STATIC,7,52,290,59
-    LTEXT           "Top Mat",IDC_STATIC,22,79,28,8
+    GROUPBOX        "Primary Reinforcement",IDC_PRIMARY_REBAR_GROUP,7,52,290,59
+    LTEXT           "Top Mat",IDC_TOP_MAT_BAR_LABEL,22,79,28,8
     COMBOBOX        IDC_TOP_MAT_BAR,54,77,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "at",IDC_STATIC,99,79,8,8
+    LTEXT           "at",IDC_TOP_MAT_BAR_AT,99,79,8,8
     EDITTEXT        IDC_TOP_MAT_BAR_SPACING,111,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TOP_MAT_BAR_SPACING_UNIT,156,79,19,8
     EDITTEXT        IDC_TOP_MAT_LUMP_SUM,203,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_TOP_MAT_LUMP_SUM_UNIT,249,80,36,8
-    LTEXT           "Bottom Mat",IDC_STATIC,13,97,37,8
+    LTEXT           "Bottom Mat",IDC_BOTTOM_MAT_BAR_LABEL,13,97,37,8
     COMBOBOX        IDC_BOTTOM_MAT_BAR,54,95,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "at",IDC_STATIC,99,97,8,8
+    LTEXT           "at",IDC_BOTTOM_MAT_BAR_AT,99,97,8,8
     EDITTEXT        IDC_BOTTOM_MAT_BAR_SPACING,111,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BOTTOM_MAT_BAR_SPACING_UNIT,156,97,19,8
     EDITTEXT        IDC_BOTTOM_MAT_LUMP_SUM,203,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BOTTOM_MAT_LUMP_SUM_UNIT,249,98,36,8
-    GROUPBOX        "Supplemental Reinforcement",IDC_STATIC,7,113,293,119
+    GROUPBOX        "Supplemental Reinforcement",IDC_SECONDARY_REBAR_GROUP,7,113,293,119
     CONTROL         "Custom1",IDC_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,135,280,75
     PUSHBUTTON      "Add",IDC_ADD,102,214,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,156,214,50,14
     LTEXT           "Static",IDC_DECK,7,6,293,8
     COMBOBOX        IDC_MILD_STEEL_SELECTOR,7,17,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "PLUS",IDC_STATIC,180,79,20,8
-    LTEXT           "PLUS",IDC_STATIC,180,97,20,8
-    LTEXT           "Negative moment reinforcement at integral abutments and continuous piers",IDC_STATIC,16,124,236,8
-    LTEXT           "Longitudinal reinforcement running the full length of the bridge",IDC_STATIC,17,65,194,8
+    LTEXT           "PLUS",IDC_TOP_MAT_BAR_PLUS,180,79,20,8
+    LTEXT           "PLUS",IDC_BOTTOM_MAT_BAR_PLUS,180,97,20,8
+    LTEXT           "Negative moment reinforcement at integral abutments and continuous piers",IDC_SECONDARY_REBAR_GROUP_LABEL,16,124,236,8
+    LTEXT           "Longitudinal reinforcement running the full length of the bridge",IDC_PRIMARY_REBAR_GROUP_LABEL,17,65,194,8
 END
 
 IDD_GIRDERDESC_LONGITUDINAL_REBAR DIALOGEX 0, 0, 422, 237
@@ -2225,8 +2225,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,1,0
- PRODUCTVERSION 2,9,1,0
+ FILEVERSION 2,9,1,1
+ PRODUCTVERSION 2,9,1,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2243,12 +2243,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.9.1.0"
+            VALUE "FileVersion", "2.9.1.1"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.1.0"
+            VALUE "ProductVersion", "2.9.1.1"
         END
     END
     BLOCK "VarFileInfo"

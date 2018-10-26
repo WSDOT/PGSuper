@@ -806,7 +806,7 @@ void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,r
 
    if ( outcome == pgsDesignArtifact::Success)
    {
-      *pParagraph << color(Green)
+      *pParagraph << rptNewLine << color(Green)
                   << _T("The design for Span ") << LABEL_SPAN(pArtifact->GetSpan())
                   << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
                   << _T(" was successful.") 
@@ -817,7 +817,7 @@ void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,r
             outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionLifting ||
             outcome == pgsDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling)
    {
-      *pParagraph << color(OrangeRed)
+      *pParagraph << rptNewLine << color(OrangeRed)
                   << _T("The design for Span ") << LABEL_SPAN(pArtifact->GetSpan())
                   << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
                   << _T(" failed.")
@@ -857,7 +857,7 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
    pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pParagraph;
 
-   *pParagraph << color(Red)
+   *pParagraph << rptNewLine << color(Red)
                << _T("The design attempt for Span ") << LABEL_SPAN(pArtifact->GetSpan())
                << _T(" Girder ") << LABEL_GIRDER(pArtifact->GetGirder())
                << _T(" failed.") 

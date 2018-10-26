@@ -638,7 +638,6 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             if (pStrandGeom->IsStrandDebonded(is, ig, istrand, pgsTypes::Straight, &dstart, &dend))
             {
                dstart = ::ConvertFromSysUnits(dstart, unitMeasure::Inch);
-               dend = girderLength - dend;
                dend   = ::ConvertFromSysUnits(dend,   unitMeasure::Inch);
 
                ::KDOT::DebondDataType debond(istrand+1, dstart, dend);
@@ -888,7 +887,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 #pragma Reminder("In PGSuper 3.0 we can compute cambers at the correct locations. For now, we use the model between bearings only.")
 
          // Use collapsed model in PGSuper 2.x
-         Float64 BrgOffset = distFromPierToStartBrg - distFromPierToStartGdr;
+         Float64 BrgOffset = pBridge->GetGirderStartConnectionLength(is, ig);
+         Float64 GdrOffset = pBridge->GetGirderStartBearingOffset(is, ig);
 
          std::vector<PoiLocType> poiLocs; // possible POI locations
          poiLocs.reserve(11); // 11 possible pnts

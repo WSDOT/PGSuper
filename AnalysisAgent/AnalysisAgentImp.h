@@ -100,6 +100,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidInformationalError;
    StatusCallbackIDType m_scidVSRatio;
    StatusCallbackIDType m_scidBridgeDescriptionError;
+   StatusCallbackIDType m_scidZeroOverlayWarning;
 
 // IAgentEx
 public:

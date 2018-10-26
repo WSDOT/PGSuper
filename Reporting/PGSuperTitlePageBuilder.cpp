@@ -66,17 +66,19 @@ static bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndex
    return false;
 }
 
-CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
 CTitlePageBuilder(strTitle),
 m_pBroker(pBroker),
-m_bFullVersion(bFullVersion)
+m_bFullVersion(bFullVersion),
+m_bPageBreakAfter(bPageBreakAfter)
 {
 }
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other) :
 CTitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
-m_bFullVersion(other.m_bFullVersion)
+m_bFullVersion(other.m_bFullVersion),
+m_bPageBreakAfter(other.m_bPageBreakAfter)
 {
 }
 
@@ -126,17 +128,17 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       gdrIdx = pSpanGirderRptSpec->GetGirder();
       if ( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
       {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
+         *pPara << _T("For") << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
       }
       else if( spanIdx != ALL_SPANS )
       {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
+         *pPara << _T("For") << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
       }
       else if ( gdrIdx != NULL )
       {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
+         *pPara << _T("For") << rptNewLine;
          *pPara << _T("Girder Line ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
       }
    }
@@ -145,7 +147,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       spanIdx = pSpanRptSpec->GetSpan();
       if ( spanIdx != ALL_SPANS )
       {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
+         *pPara << _T("For") << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
       }
    }
@@ -154,11 +156,10 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       gdrIdx = pGirderRptSpec->GetGirder();
       if ( gdrIdx != ALL_GIRDERS )
       {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
+         *pPara << _T("For") << rptNewLine;
          *pPara << _T("Girder Line ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
       }
    }
-   *pPara << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(pgsReportStyleHolder::GetReportSubtitleStyle());
@@ -376,9 +377,12 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
 
    // Throw in a page break
-   p = new rptParagraph;
-   *pTitlePage << p;
-   *p << rptNewPage;
+   if (m_bPageBreakAfter)
+   {
+      p = new rptParagraph;
+      *pTitlePage << p;
+      *p << rptNewPage;
+   }
 
    return pTitlePage;
 }

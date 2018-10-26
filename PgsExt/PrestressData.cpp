@@ -609,37 +609,37 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
       pStrLoad->BeginUnit(_T("Start"));
 
       pStrLoad->BeginUnit(_T("Straight"));
-      var.vt = VT_UI8;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("Count"),&var);
-      StrandIndexType nStrands = var.ullVal;
+      StrandIndexType nStrands = VARIANT2INDEX(var);
       for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
       {
          pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = var.ullVal;
+         StrandIndexType strandIdx = VARIANT2INDEX(var);
          NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].push_back(strandIdx);
       }
       pStrLoad->EndUnit(); // Straight
 
       pStrLoad->BeginUnit(_T("Harped"));
-      var.vt = VT_UI8;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = var.ullVal;
+      nStrands = VARIANT2INDEX(var);
       for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
       {
          pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = var.ullVal;
+         StrandIndexType strandIdx = VARIANT2INDEX(var);
          NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].push_back(strandIdx);
       }
       pStrLoad->EndUnit(); // Harped
 
       pStrLoad->BeginUnit(_T("Temporary"));
-      var.vt = VT_UI8;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = var.ullVal;
+      nStrands = VARIANT2INDEX(var);
       for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
       {
          pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = var.ullVal;
+         StrandIndexType strandIdx = VARIANT2INDEX(var);
          NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].push_back(strandIdx);
       }
       pStrLoad->EndUnit(); // Temporary
@@ -647,37 +647,37 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
 
       pStrLoad->BeginUnit(_T("End"));
       pStrLoad->BeginUnit(_T("Straight"));
-      var.vt = VT_UI8;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = var.ullVal;
+      nStrands = VARIANT2INDEX(var);
       for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
       {
          pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = var.ullVal;
+         StrandIndexType strandIdx = VARIANT2INDEX(var);
          NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].push_back(strandIdx);
       }
       pStrLoad->EndUnit(); // Straight
 
       pStrLoad->BeginUnit(_T("Harped"));
-      var.vt = VT_UI8;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = var.ullVal;
+      nStrands = VARIANT2INDEX(var);
       for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
       {
          pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = var.ullVal;
+         StrandIndexType strandIdx = VARIANT2INDEX(var);
          NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].push_back(strandIdx);
       }
       pStrLoad->EndUnit(); // Harped
 
       pStrLoad->BeginUnit(_T("Temporary"));
-      var.vt = VT_UI8;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("Count"),&var);
-      nStrands = var.ullVal;
+      nStrands = VARIANT2INDEX(var);
       for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
       {
          pStrLoad->get_Property(_T("Strand"),&var);
-         StrandIndexType strandIdx = var.ullVal;
+         StrandIndexType strandIdx = VARIANT2INDEX(var);
          NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].push_back(strandIdx);
       }
       pStrLoad->EndUnit(); // Temporary
@@ -705,9 +705,9 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
 
       pStrLoad->BeginUnit(_T("StraightStrands"));
       var.Clear();
-      var.vt = VT_UI2;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("NumStraightFill"), &var );
-      StrandIndexType nums = var.uiVal;
+      StrandIndexType nums = VARIANT2INDEX(var);
       for (StrandIndexType is=0; is<nums; is++)
       {
          CDirectStrandFillInfo fi;
@@ -718,9 +718,9 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
 
       pStrLoad->BeginUnit(_T("HarpedStrands"));
       var.Clear();
-      var.vt = VT_UI2;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("NumHarpedFill"), &var );
-      nums = var.uiVal;
+      nums = VARIANT2INDEX(var);
       for (StrandIndexType is=0; is<nums; is++)
       {
          CDirectStrandFillInfo fi;
@@ -731,9 +731,9 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
 
       pStrLoad->BeginUnit(_T("TemporaryStrands"));
       var.Clear();
-      var.vt = VT_UI2;
+      var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("NumTemporaryFill"), &var );
-      nums = var.uiVal;
+      nums = VARIANT2INDEX(var);
       for (StrandIndexType is=0; is<nums; is++)
       {
          CDirectStrandFillInfo fi;
