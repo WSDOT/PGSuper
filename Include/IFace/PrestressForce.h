@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ interface IEAFDisplayUnits;
 
 /*****************************************************************************
 INTERFACE
-   IPrestressForce
+   IPretensionForce
 
    Interface to prestress force and stress information
 
@@ -65,14 +65,14 @@ DESCRIPTION
    information and not the raw input data.
 *****************************************************************************/
 // {381E19E0-6E82-11d2-8EEB-006097DF3C68}
-DEFINE_GUID(IID_IPrestressForce, 
+DEFINE_GUID(IID_IPretensionForce, 
 0x381e19e0, 0x6e82, 0x11d2, 0x8e, 0xeb, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface IPrestressForce : IUnknown
+interface IPretensionForce : IUnknown
 {
-   virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,StrandIndexType nStrands) = 0;
-   virtual Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands) = 0;
+   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) = 0;
+   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) = 0;
 
-   virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded) = 0;
@@ -81,28 +81,49 @@ interface IPrestressForce : IUnknown
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,const GDRCONFIG& config,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe) = 0;
 
-   virtual Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config) = 0;
+   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG& config) = 0;
 
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState) = 0;
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
+   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
 
-   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState) = 0;
-   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
+   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
 
-   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState) = 0;
-   virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetEffectivePrestress(const pgsPointOfInterest& poi,const GDRCONFIG& config,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
 
-   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState) = 0;
-   virtual Float64 GetVertHarpedStrandForce(const pgsPointOfInterest& poi,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
+   virtual Float64 GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
+};
 
-   virtual Float64 GetStrandForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState) = 0;
-   virtual Float64 GetStrandForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
 
-   virtual Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState) = 0;
-   virtual Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage lossStage,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
+/*****************************************************************************
+INTERFACE
+   IPosttensionForce
 
-   virtual void GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound) = 0;
+   Interface to post-tension force and stress information
+
+DESCRIPTION
+   Interface to post-tension force and stress information.  This is computed
+   information and not the raw input data.
+*****************************************************************************/
+// {4E2D92B7-73B1-4dcd-8450-A4D18ED9F2B4}
+DEFINE_GUID(IID_IPosttensionForce, 
+0x4e2d92b7, 0x73b1, 0x4dcd, 0x84, 0x50, 0xa4, 0xd1, 0x8e, 0xd9, 0xf2, 0xb4);
+interface IPosttensionForce : IUnknown
+{
+   // Returns the maximum jacking force for a given number of strands
+   virtual Float64 GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) = 0;
+   virtual Float64 GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) = 0;
+
+   // returns the force in a tendon in a particular interval. (use ALL_DUCTS for all tendons)
+   virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx) = 0;
 };
 
 /*****************************************************************************
@@ -113,9 +134,8 @@ INTERFACE
 
 DESCRIPTION
    Interface to get losses. The losses returned by this interface
-   are the effective prestress losses. That is, they are the actual losses
-   plus any elastic gain/losses that compensate for the fact that we
-   are using gross section analysis
+   are the effective prestress losses. When gross section properties are 
+   used, any elastic gain/losses are included.
 *****************************************************************************/
 // {03D91150-6DBB-11d2-8EE9-006097DF3C68}
 DEFINE_GUID(IID_ILosses, 
@@ -124,37 +144,24 @@ interface ILosses : IUnknown
 {
    // losses based on current input
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetBeforeXferLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetAfterXferLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetLiftingLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetShippingLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetAfterTemporaryStrandInstallationLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetBeforeTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetAfterTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState) = 0;
-   virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi) = 0;
+   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi) = 0;
 
    // losses based on a girder configuration and slab offset
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetBeforeXferLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetAfterXferLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetLiftingLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetShippingLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetAfterTemporaryStrandInstallationLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetBeforeTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetAfterTemporaryStrandRemovalLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
-   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config) = 0;
-   virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+   virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
    virtual void ClearDesignLosses() = 0;
 
-   virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
-   virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+
+   virtual Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+   virtual Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime) = 0;
+
+   virtual Float64 GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
+
+   virtual Float64 GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
+   virtual Float64 GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

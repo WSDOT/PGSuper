@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,9 @@
 #include "PGSuperUnits.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
+#include <IFace\BeamFactory.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData.h>
 
 #ifdef _DEBUG
@@ -79,7 +80,7 @@ BEGIN_MESSAGE_MAP(CGirderSpacingGrid, CGXGridWnd)
 END_MESSAGE_MAP()
 
 
-CGirderSpacingGridData CGirderSpacingGrid::GetGirderSpacingData()
+const CGirderSpacingGridData& CGirderSpacingGrid::GetGirderSpacingData() const
 {
    return m_GridData;
 }
@@ -123,7 +124,7 @@ bool CGirderSpacingGrid::InputSpacing() const
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderSpacingGrid message handlers
-void CGirderSpacingGrid::Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment)
+void CGirderSpacingGrid::Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing2* pGirderSpacing,const CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType)
 {
    m_GirderSpacingType = girderSpacingType;
 
@@ -132,19 +133,21 @@ void CGirderSpacingGrid::Init(pgsTypes::SupportedBeamSpacing girderSpacingType,b
    m_PierSkewAngle = skewAngle;
 
    m_GridData.m_GirderSpacing = *pGirderSpacing;
-   m_GridData.m_GirderTypes   = *pGirderTypes;
+   m_GridData.m_GirderGroup   = *pGirderGroup;
    m_GridData.m_PierFace      = pierFace;
 
    m_PierIdx = pierIdx;
    m_bAbutment = bAbutment;
+
+   m_DeckType = deckType;
 }
 
-void CGirderSpacingGrid::CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment)
+void CGirderSpacingGrid::CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing2* pGirderSpacing,const CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType)
 {
    // Initialize the grid. For CWnd based grids this call is
    // essential. For view based grids this initialization is done 
    // in OnInitialUpdate.
-   Init(girderSpacingType,bSharedGirderCount,pGirderSpacing,pGirderTypes,pierFace,pierIdx,skewAngle,bAbutment);
+   Init(girderSpacingType,bSharedGirderCount,pGirderSpacing,pGirderGroup,pierFace,pierIdx,skewAngle,bAbutment,deckType);
    CustomInit();
 }
 
@@ -174,7 +177,7 @@ void CGirderSpacingGrid::CustomInit()
       CGXStyle()
       .SetWrapText(TRUE)
       .SetAutoSize(TRUE)
-      .SetUserAttribute(GX_IDS_UA_TOOLTIPTEXT,"To regroup girder spacing, select column headings, right click over the grid, and select Expand or Join from the menu")
+      .SetUserAttribute(GX_IDS_UA_TOOLTIPTEXT,_T("To regroup girder spacing, select column headings, right click over the grid, and select Expand or Join from the menu"))
       );
 	
    GetParam()->EnableUndo(TRUE);
@@ -182,7 +185,7 @@ void CGirderSpacingGrid::CustomInit()
 	SetFocus();
 }
 
-void CGirderSpacingGrid::FillGrid(const CGirderSpacing* pGirderSpacing)
+void CGirderSpacingGrid::FillGrid(const CGirderSpacing2* pGirderSpacing)
 {
    m_GridData.m_GirderSpacing = *pGirderSpacing;
 
@@ -207,6 +210,7 @@ void CGirderSpacingGrid::FillGrid()
 
    GroupIndexType nSpacingGroups = m_GridData.m_GirderSpacing.GetSpacingGroupCount();
    GirderIndexType nGirders      = m_GridData.m_GirderSpacing.GetSpacingCount() + 1;
+   ATLASSERT(nGirders == m_GridData.m_GirderGroup.GetGirderCount());
 
    // get the pier direction so the allowable girder spacing can be skew corrected
    Float64 skewCorrection;
@@ -220,8 +224,8 @@ void CGirderSpacingGrid::FillGrid()
    }
 
 
-   const int num_rows = 2;
-   const int num_cols = (int)nSpacingGroups;
+   const ROWCOL num_rows = 2;
+   const ROWCOL num_cols = ROWCOL(nSpacingGroups);
 
    SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -231,10 +235,6 @@ void CGirderSpacingGrid::FillGrid()
 			.SetControl(GX_IDS_CTRL_HEADER)
 			.SetEnabled(FALSE)          // disables usage as current cell
 		);
-
-   const CSpanData* pSpan                = m_GridData.m_GirderTypes.GetSpan();
-   const CBridgeDescription* pBridgeDesc = pSpan->GetBridgeDescription();
-   pgsTypes::SupportedDeckType deckType  = pBridgeDesc->GetDeckDescription()->DeckType;
 
    m_MinGirderSpacing.clear();
    m_MaxGirderSpacing.clear();
@@ -276,14 +276,14 @@ void CGirderSpacingGrid::FillGrid()
       Float64 maxGirderSpacing =  MAX_GIRDER_SPACING;
       for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
       {
-         const GirderLibraryEntry* pGdrEntry = m_GridData.m_GirderTypes.GetGirderLibraryEntry(gdrIdx);
+         const GirderLibraryEntry* pGdrEntry = m_GridData.m_GirderGroup.GetGirderLibraryEntry(gdrIdx);
          const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
          CComPtr<IBeamFactory> factory;
          pGdrEntry->GetBeamFactory(&factory);
 
          // save spacing range to local class data
          Float64 minGS, maxGS;
-         factory->GetAllowableSpacingRange(dimensions,deckType,m_GirderSpacingType,&minGS, &maxGS);
+         factory->GetAllowableSpacingRange(dimensions,m_DeckType,m_GirderSpacingType,&minGS, &maxGS);
          minGS *= skewCorrection;
          maxGS *= skewCorrection;
 
@@ -299,7 +299,7 @@ void CGirderSpacingGrid::FillGrid()
             minGirderSpacing = 0;
             maxGirderSpacing = _cpp_min(maxGirderSpacing-minGirderSpacing,maxGS-minGS);
          }
-      }
+      } // girder loop
 
       m_MinGirderSpacing.push_back(minGirderSpacing);
       m_MaxGirderSpacing.push_back(maxGirderSpacing);
@@ -352,10 +352,10 @@ void CGirderSpacingGrid::FillGrid()
          .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
          .SetValue( strSpacing )
          );
-   }
+   } // group loop
 
    CString strPier;
-   strPier.Format(_T("%s %d"), m_bAbutment ? _T("Abut") : _T("Pier"), m_PierIdx+1);
+   strPier.Format(_T("Pier %d"), LABEL_PIER(m_PierIdx) );
 
    SetStyleRange(CGXRange(0,0), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -399,10 +399,10 @@ void CGirderSpacingGrid::SetGirderSpacingType(pgsTypes::SupportedBeamSpacing gir
    {
       m_GirderSpacingType = girderSpacingType;
 
-      // if we are moving to general spacing, then the girder spacing isn't associated with a span 
-      // (make the span null so the spacing object can't go to the parent bridge and get spacing)
+      // if we are moving to general spacing, then the girder spacing isn't associated with a pier 
+      // (make the pier NULL so the spacing object can't go to the parent bridge and get spacing)
       if ( IsSpanSpacing(girderSpacingType) )
-         m_GridData.m_GirderSpacing.SetSpan(NULL);
+         m_GridData.m_GirderSpacing.SetPier(NULL);
    }
 
    FillGrid();
@@ -415,7 +415,7 @@ void CGirderSpacingGrid::SharedGirderCount(bool bShare)
       m_bSharedGirderCount = bShare;
       
       if ( !m_bSharedGirderCount )
-         m_GridData.m_GirderSpacing.SetSpan(NULL);
+         m_GridData.m_GirderSpacing.SetPier(NULL);
    }
 
    FillGrid();
@@ -505,9 +505,9 @@ void CGirderSpacingGrid::AddGirders(GirderIndexType nGirders)
    if ( !m_bLinked )
    {
       m_GridData.m_GirderSpacing.AddGirders(nGirders);
-      m_GridData.m_GirderSpacing.SetSpan(NULL);
+      m_GridData.m_GirderSpacing.SetPier(NULL);
       
-      m_GridData.m_GirderTypes.AddGirders(nGirders);
+      m_GridData.m_GirderGroup.AddGirders(nGirders);
    }
 
    FillGrid();
@@ -518,9 +518,9 @@ void CGirderSpacingGrid::RemoveGirders(GirderIndexType nGirders)
    if ( !m_bLinked )
    {
       m_GridData.m_GirderSpacing.RemoveGirders(nGirders);
-      m_GridData.m_GirderSpacing.SetSpan(NULL);
+      m_GridData.m_GirderSpacing.SetPier(NULL);
 
-      m_GridData.m_GirderTypes.RemoveGirders(nGirders);
+      m_GridData.m_GirderGroup.RemoveGirders(nGirders);
    }
 
    FillGrid();
@@ -531,9 +531,9 @@ void CGirderSpacingGrid::SetGirderCount(GirderIndexType nGirders)
    if ( !m_bLinked )
    {
       m_GridData.m_GirderSpacing.SetGirderCount(nGirders);
-      m_GridData.m_GirderSpacing.SetSpan(NULL);
+      m_GridData.m_GirderSpacing.SetPier(NULL);
 
-      m_GridData.m_GirderTypes.SetGirderCount(nGirders);
+      m_GridData.m_GirderGroup.SetGirderCount(nGirders);
    }
 
    FillGrid();
@@ -709,7 +709,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
       Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
-      if ( spacing < 0 || IsGT(maxGirderSpacing-minGirderSpacing,spacing) )
+      if ( spacing < 0 || IsGT(spacing,maxGirderSpacing-minGirderSpacing) )
       {
          SetWarningText(_T("Joint spacing is out of range"));
          return FALSE;
@@ -744,7 +744,7 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
          spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       }
 
-      m_GridData.m_GirderSpacing.SetGirderSpacing(nCol-1,spacing);
+      m_GridData.m_GirderSpacing.SetGirderSpacing(GroupIndexType(nCol-1),spacing);
       FillGrid();
    }
 

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -16,7 +16,7 @@
 // You should have received a copy of the Alternate Route Open Source 
 // License along with this program; if not, write to the Washington 
 // State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
@@ -38,11 +38,9 @@ public:
    // built to take a unitmgtIndirectMeasureDataT
    PhysicalFormatTool(const T& umd) :
       // these formats are for reports, let's graphs a bit less precision
-      m_FormatTool(umd.Format, umd.Width-1, umd.Precision-1),
+      m_FormatTool(umd.Format, umd.Width, umd.Precision),
       m_rT(umd)
       {
-         CHECK(umd.Width>0);     // Make sure these are positive. Otherwise subtraction
-         CHECK(umd.Precision>0); // above will cause UINT's to roll over
       }
 
    std::_tstring AsString(Float64 val) const
@@ -75,11 +73,9 @@ public:
    // built to take a unitmgtIndirectMeasureDataT
    ScalarFormatTool(const T& umd) :
       // these formats are for reports, let's graphs a bit less precision
-      m_FormatTool(umd.Format, umd.Width-1, umd.Precision-1),
+      m_FormatTool(umd.Format, umd.Width, umd.Precision),
       m_rT(umd)
       {
-         CHECK(umd.Width>0);     // Make sure these are positive. Otherwise subtraction
-         CHECK(umd.Precision>0); // above will cause UINT's to roll over
       }
 
    std::_tstring AsString(Float64 val) const
@@ -107,6 +103,9 @@ typedef PhysicalFormatTool<unitmgtMomentData>  MomentTool;
 typedef PhysicalFormatTool<unitmgtLengthData>  DisplacementTool;
 typedef PhysicalFormatTool<unitmgtStressData>  StressTool;
 typedef PhysicalFormatTool<unitmgtForceData>   ShearTool;
+typedef PhysicalFormatTool<unitmgtTimeData>    TimeTool;
 typedef PhysicalFormatTool<unitmgtLength2Data> AreaTool;
+typedef PhysicalFormatTool<unitmgtLength3Data> SectionModulusTool;
+typedef PhysicalFormatTool<unitmgtLength4Data> MomentOfInertiaTool;
 
 #endif // INCLUDED_PHYSICALCONVERTER_H_

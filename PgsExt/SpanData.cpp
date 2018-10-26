@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\SpanData.h>
+#include <SpanData.h>
 #include <PgsExt\PierData.h>
 #include <PgsExt\BridgeDescription.h>
 
@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define PIER_FACE_TO_GIRDER_END(_face_) _face_ == pgsTypes::Ahead ? pgsTypes::metStart : pgsTypes::metEnd
+#define PIER_FACE_TO_SPAN_END(_face_) _face_ == pgsTypes::Ahead ? pgsTypes::metStart : pgsTypes::metEnd
 
 /****************************************************************************
 CLASS
@@ -59,6 +59,7 @@ CSpanData::~CSpanData()
 void CSpanData::Init(SpanIndexType spanIdx,CBridgeDescription* pBridge,CPierData* pPrevPier,CPierData* pNextPier)
 {
    m_nGirders = 0;
+   m_bUseSameSpacing = false;
 
    SetSpanIndex(spanIdx);
    SetBridgeDescription(pBridge);
@@ -142,12 +143,15 @@ bool CSpanData::operator==(const CSpanData& rOther) const
    if ( m_GirderTypes != rOther.m_GirderTypes )
       return false;
 
+   if ( m_bUseSameSpacing != rOther.m_bUseSameSpacing )
+      return false;
+
    if ( m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneral || m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacent )
    {
       if ( m_GirderSpacing[pgsTypes::metStart] != rOther.m_GirderSpacing[pgsTypes::metStart] )
          return false;
 
-      if ( m_GirderSpacing[pgsTypes::metEnd] != rOther.m_GirderSpacing[pgsTypes::metEnd] )
+      if ( !m_bUseSameSpacing && m_GirderSpacing[pgsTypes::metEnd] != rOther.m_GirderSpacing[pgsTypes::metEnd] )
          return false;
    }
 
@@ -185,9 +189,9 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if ( !m_pBridgeDesc->UseSameNumberOfGirdersInAllSpans() )
       {
-         var.vt = VT_I2;
+         var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("GirderCount"),&var);
-         m_nGirders = var.iVal;
+         m_nGirders = VARIANT2INDEX(var);
 
          m_GirderTypes.SetGirderCount(m_nGirders);
          m_GirderSpacing[0].SetGirderCount(m_nGirders);
@@ -206,7 +210,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( 2 <= version )
       {
          // added in version 2 of SpanDataDetails data block
-         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSpan )
+         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGroup )
          {
             var.vt = VT_R8;
             pStrLoad->get_Property(_T("SlabOffsetAtStart"),&var);
@@ -220,32 +224,24 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneral || m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacent )
       {
          hr = pStrLoad->BeginUnit(_T("GirderSpacing"));
-
-         Float64 girderSpacingVersion;
-         pStrLoad->get_Version(&girderSpacingVersion);
          
-         bool bUseSameSpacing = false;
-         if (girderSpacingVersion < 2.0 )
-         {
-            // removed in version 2 of GirderSpacing data block
-            var.vt = VT_BOOL;
-            hr = pStrLoad->get_Property(_T("UseSameSpacingAtBothEnds"),&var);
-            bUseSameSpacing = (var.boolVal == VARIANT_TRUE ? true : false);
-         }
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property(_T("UseSameSpacingAtBothEnds"),&var);
+         m_bUseSameSpacing = (var.boolVal == VARIANT_TRUE ? true : false);
 
          hr = pStrLoad->BeginUnit(_T("StartSpacing"));
          hr = m_GirderSpacing[pgsTypes::metStart].Load(pStrLoad,pProgress);
          hr = pStrLoad->EndUnit(); // start spacing
 
-         if ( bUseSameSpacing )
-         {
-            m_GirderSpacing[pgsTypes::metEnd] = m_GirderSpacing[pgsTypes::metStart];
-         }
-         else
+         if ( !m_bUseSameSpacing )
          {
             hr = pStrLoad->BeginUnit(_T("EndSpacing"));
             hr = m_GirderSpacing[pgsTypes::metEnd].Load(pStrLoad,pProgress);
             hr = pStrLoad->EndUnit(); // end spacing
+         }
+         else
+         {
+            m_GirderSpacing[pgsTypes::metEnd] = m_GirderSpacing[pgsTypes::metStart];
          }
 
          // NOTE: RAB 7/23/2009
@@ -273,17 +269,12 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                      break;
                   }
                }
-
-               // fix last girder index
-               iter->second = m_nGirders-1; 
-
-               // remove any extra groups
-               iter++;
                m_GirderSpacing[endType].m_SpacingGroups.erase(iter,end);
+               m_GirderSpacing[endType].m_SpacingGroups.back().second = m_nGirders-1;
 
                // remove extra girder spacing data
-               std::vector<Float64>::iterator spacing_begin = m_GirderSpacing[endType].m_GirderSpacing.begin() + m_nGirders;
-               std::vector<Float64>::iterator spacing_end   = m_GirderSpacing[endType].m_GirderSpacing.end();
+               std::vector<Float64>::iterator spacing_begin( m_GirderSpacing[endType].m_GirderSpacing.begin() + (m_nGirders-1) );
+               std::vector<Float64>::iterator spacing_end(   m_GirderSpacing[endType].m_GirderSpacing.end() );
                m_GirderSpacing[endType].m_GirderSpacing.erase( spacing_begin, spacing_end );
             }
          }
@@ -412,13 +403,13 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          else
          {
             // version 3
-            var.vt = VT_I4;
+            var.vt = VT_INDEX;
             hr = pStrLoad->get_Property(_T("nLLDFGirders"),&var);
-            int ng = var.lVal;
+            IndexType ng = VARIANT2INDEX(var);
 
             var.vt = VT_R8;
 
-            for (int ig=0; ig<ng; ig++)
+            for (IndexType ig=0; ig<ng; ig++)
             {
                LLDF lldf;
 
@@ -442,7 +433,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                hr = pStrLoad->get_Property(_T("gV_Fatigue"),&var);
                lldf.gV[1] = var.dblVal;
 
-               pStrLoad->EndUnit(); // LLDF
+               pStrLoad->EndUnit(); // LLDF_Girder
 
                m_LLDFs.push_back(lldf);
             }
@@ -463,6 +454,8 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
+   ATLASSERT(false); // should never get here
+
    HRESULT hr = S_OK;
 
    pStrSave->BeginUnit(_T("SpanDataDetails"),2.0);
@@ -478,7 +471,7 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 
    // added in version 2 of SpanDataDetails data block
-   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSpan )
+   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGroup )
    {
       pStrSave->put_Property(_T("SlabOffsetAtStart"),CComVariant(m_SlabOffset[pgsTypes::metStart]));
       pStrSave->put_Property(_T("SlabOffsetAtEnd"),  CComVariant(m_SlabOffset[pgsTypes::metEnd]));
@@ -486,15 +479,19 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    if ( m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneral || m_pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacent)
    {
-      pStrSave->BeginUnit(_T("GirderSpacing"),2.0);
+      pStrSave->BeginUnit(_T("GirderSpacing"),1.0);
+      pStrSave->put_Property(_T("UseSameSpacingAtBothEnds"),CComVariant(m_bUseSameSpacing));
 
       pStrSave->BeginUnit(_T("StartSpacing"),1.0);
       m_GirderSpacing[pgsTypes::metStart].Save(pStrSave,pProgress);
       pStrSave->EndUnit(); // start spacing
 
-      pStrSave->BeginUnit(_T("EndSpacing"),1.0);
-      m_GirderSpacing[pgsTypes::metEnd].Save(pStrSave,pProgress);
-      pStrSave->EndUnit(); // end spacing
+      if (!m_bUseSameSpacing)
+      {
+         pStrSave->BeginUnit(_T("EndSpacing"),1.0);
+         m_GirderSpacing[pgsTypes::metEnd].Save(pStrSave,pProgress);
+         pStrSave->EndUnit(); // end spacing
+      }
 
       pStrSave->EndUnit(); // girder spacing
    }
@@ -530,6 +527,7 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 void CSpanData::MakeCopy(const CSpanData& rOther)
 {
    m_SpanIdx                           = rOther.m_SpanIdx;
+   m_bUseSameSpacing                   = rOther.m_bUseSameSpacing;
    m_nGirders                          = rOther.m_nGirders;
    m_GirderTypes                       = rOther.m_GirderTypes;
    m_GirderSpacing[pgsTypes::metStart] = rOther.m_GirderSpacing[pgsTypes::metStart];
@@ -542,6 +540,8 @@ void CSpanData::MakeCopy(const CSpanData& rOther)
    m_GirderTypes.SetSpan(this);
    m_GirderSpacing[pgsTypes::metStart].SetSpan(this);
    m_GirderSpacing[pgsTypes::metEnd].SetSpan(this);
+
+   ASSERT_VALID;
 }
 
 void CSpanData::MakeAssignment(const CSpanData& rOther)
@@ -603,34 +603,61 @@ void CSpanData::SetGirderTypes(const CGirderTypes& girderTypes)
    m_GirderTypes.SetSpan(this);
 }
 
-const CGirderSpacing* CSpanData::GetGirderSpacing(pgsTypes::MemberEndType end) const
+void CSpanData::UseSameSpacingAtBothEndsOfSpan(bool bUseSame)
 {
-   return &m_GirderSpacing[end];
+   m_bUseSameSpacing = bUseSame;
 }
 
-CGirderSpacing* CSpanData::GetGirderSpacing(pgsTypes::MemberEndType end)
+bool CSpanData::UseSameSpacingAtBothEndsOfSpan() const
 {
-   return &m_GirderSpacing[end];
+   return m_bUseSameSpacing;
+}
+
+const CGirderSpacing* CSpanData::GetGirderSpacing(pgsTypes::MemberEndType end) const
+{
+   if ( m_bUseSameSpacing )
+      return &m_GirderSpacing[pgsTypes::metStart];
+   else
+      return &m_GirderSpacing[end];
+}
+
+CGirderSpacing* CSpanData::GirderSpacing(pgsTypes::MemberEndType end)
+{
+   if ( m_bUseSameSpacing )
+      return &m_GirderSpacing[pgsTypes::metStart];
+   else
+      return &m_GirderSpacing[end];
+}
+
+CGirderSpacing* CSpanData::GirderSpacing(pgsTypes::PierFaceType pierFace)
+{
+   return GirderSpacing(PIER_FACE_TO_SPAN_END(pierFace));
 }
 
 const CGirderSpacing* CSpanData::GetGirderSpacing(pgsTypes::PierFaceType pierFace) const
 {
-   return GetGirderSpacing(PIER_FACE_TO_GIRDER_END(pierFace));
+   return GetGirderSpacing(PIER_FACE_TO_SPAN_END(pierFace));
 }
 
-CGirderSpacing* CSpanData::GetGirderSpacing(pgsTypes::PierFaceType pierFace)
+void CSpanData::SetGirderSpacing(pgsTypes::MemberEndType end,const CGirderSpacing& spacing)
 {
-   return GetGirderSpacing(PIER_FACE_TO_GIRDER_END(pierFace));
+   *GirderSpacing(end) = spacing;
+   GirderSpacing(end)->SetSpan(this);
 }
 
-void CSpanData::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
+void CSpanData::SetGirderSpacing(pgsTypes::PierFaceType pierFace,const CGirderSpacing& spacing)
+{
+   SetGirderSpacing(PIER_FACE_TO_SPAN_END(pierFace),spacing);
+}
+
+void CSpanData::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gPM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
+void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -648,21 +675,21 @@ void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
 }
 
 
-Float64 CSpanData::GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+double CSpanData::GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gPM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CSpanData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
+void CSpanData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gNM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
+void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -679,21 +706,21 @@ void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
    }
 }
 
-Float64 CSpanData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+double CSpanData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gNM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CSpanData::SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gV)
+void CSpanData::SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gV)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gV[ls == pgsTypes::FatigueI ? 1 : 0] = gV;
 }
 
-void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
+void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -710,14 +737,14 @@ void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitSta
    }
 }
 
-Float64 CSpanData::GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+double CSpanData::GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gV[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-Float64 CSpanData::GetSpanLength() const
+double CSpanData::GetSpanLength() const
 {
    return m_pNextPier->GetStation() - m_pPrevPier->GetStation();
 }
@@ -740,7 +767,7 @@ void CSpanData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
    {
       m_pBridgeDesc->SetSlabOffset(offset);
    }
-   else if ( slabOffsetType == pgsTypes::sotSpan )
+   else if ( slabOffsetType == pgsTypes::sotGroup )
    {
       m_SlabOffset[end] = offset;
    }
@@ -755,36 +782,28 @@ Float64 CSpanData::GetSlabOffset(pgsTypes::MemberEndType end) const
    pgsTypes::SlabOffsetType slabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
 
    if ( slabOffsetType == pgsTypes::sotBridge )
-   {
       return m_pBridgeDesc->GetSlabOffset();
-   }
-   else if ( slabOffsetType == pgsTypes::sotSpan )
-   {
-      if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
-         return 0;
-
+   else if ( slabOffsetType == pgsTypes::sotGroup )
       return m_SlabOffset[end];
-   }
 
-   ATLASSERT(false); // slab offset type is by girder and you are asking for it at the span level
    return m_GirderTypes.GetSlabOffset(0,end); // a reasonable default
 }
 
 void CSpanData::SetSlabOffset(pgsTypes::PierFaceType face,Float64 offset)
 {
-   SetSlabOffset(PIER_FACE_TO_GIRDER_END(face), offset);
+   SetSlabOffset(PIER_FACE_TO_SPAN_END(face), offset);
 }
 
 Float64 CSpanData::GetSlabOffset(pgsTypes::PierFaceType face) const
 {
-   return GetSlabOffset(PIER_FACE_TO_GIRDER_END(face));
+   return GetSlabOffset(PIER_FACE_TO_SPAN_END(face));
 }
 
 CSpanData::LLDF& CSpanData::GetLLDF(GirderIndexType igs) const
 {
    // First: Compare size of our collection with current number of girders and resize if they don't match
    GirderIndexType ngdrs = GetGirderCount();
-   IndexType ndfs = m_LLDFs.size();
+   GirderIndexType ndfs = m_LLDFs.size();
 
    if (ndfs==0)
    {
@@ -837,3 +856,19 @@ CSpanData::LLDF& CSpanData::GetLLDF(GirderIndexType igs) const
       return m_LLDFs[igs];
    }
 }
+
+#if defined _DEBUG
+void CSpanData::AssertValid()
+{
+   if ( m_pBridgeDesc )
+   {
+      _ASSERT(m_pPrevPier != NULL);
+      _ASSERT(m_pNextPier != NULL);
+   }
+   else
+   {
+      _ASSERT(m_pPrevPier == NULL);
+      _ASSERT(m_pNextPier == NULL);
+   }
+}
+#endif

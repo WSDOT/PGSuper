@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,20 +51,18 @@ public:
    bool operator != (const CDistributedLoadData& rOther) const;
 
    // properties
-   UserLoads::Stage               m_Stage;
+   IDType                         m_ID;
+   EventIndexType                 m_EventIdx;
    UserLoads::LoadCase            m_LoadCase;
    UserLoads::DistributedLoadType m_Type;
 
-   SpanIndexType   m_Span;      // set to AllSpans if all
-   GirderIndexType m_Girder;    // set to AllGirders if all
+   CSpanGirderKey m_SpanGirderKey;
    Float64  m_StartLocation; 
    Float64  m_EndLocation;  
    Float64  m_WStart;    // if load type is uniform, then locations are ignored and this is only 
    Float64  m_WEnd;
    bool     m_Fractional;
    std::_tstring m_Description;
-
-
 };
 
 #endif // !defined(AFX_DISTRIBUTEDLOADDATA_H__83982300_F548_44FC_B84A_A7C9731FE381__INCLUDED_)

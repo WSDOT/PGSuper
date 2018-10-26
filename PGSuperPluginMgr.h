@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,10 +28,10 @@
 
 #include "Plugins\PGSuperIEPlugin.h"
 
-class CPGSuperPluginMgr
+class CPGSuperPluginMgrBase
 {
 public:
-   CPGSuperPluginMgr();
+   CPGSuperPluginMgrBase();
 
    bool LoadPlugins();
    void UnloadPlugins();
@@ -44,10 +44,14 @@ public:
    const CBitmap* GetPGSuperImporterBitmap(CollectionIndexType idx);
    const CBitmap* GetPGSuperExporterBitmap(CollectionIndexType idx);
 
+protected:
+   virtual CATID GetImporterCATID() = 0;
+   virtual CATID GetExporterCATID() = 0;
+
 private:
    template <class T> 
    struct Record
-   { Uint32 commandID; CBitmap Bitmap; CComPtr<T> Plugin; 
+   { UINT commandID; CBitmap Bitmap; CComPtr<T> Plugin; 
    Record() {}
    Record(const Record& other) 
    {
@@ -77,6 +81,20 @@ private:
 
    std::vector<ImporterRecord> m_ImporterPlugins;
    std::vector<ExporterRecord> m_ExporterPlugins;
+};
+
+class CPGSuperPluginMgr : public CPGSuperPluginMgrBase
+{
+protected:
+   virtual CATID GetImporterCATID() {return CATID_PGSuperDataImporter;}
+   virtual CATID GetExporterCATID() {return CATID_PGSuperDataExporter;}
+};
+
+class CPGSplicePluginMgr : public CPGSuperPluginMgrBase
+{
+protected:
+   virtual CATID GetImporterCATID() {return CATID_PGSpliceDataImporter;}
+   virtual CATID GetExporterCATID() {return CATID_PGSpliceDataExporter;}
 };
 
 #endif // !defined(INCLUDED_PGSUPERIEPLUGINMGR_H_)

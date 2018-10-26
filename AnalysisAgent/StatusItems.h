@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,14 +27,13 @@
 
 
 // status for Volume to Surface Ratio
-class pgsVSRatioStatusItem : public pgsSpanGirderRelatedStatusItem
+class pgsVSRatioStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
-   pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsVSRatioStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
 };
 
 class pgsVSRatioStatusCallback : public iStatusCallback

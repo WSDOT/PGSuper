@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,7 @@ CXSectionData::CXSectionData()
    PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
                          // for horizontal shear capacity)
 
-   OverhangTaper = pgsTypes::TopTopFlange;
+   OverhangTaper = pgsTypes::dotTopTopFlange;
    OverhangEdgeDepth = ::ConvertToSysUnits( 7.0, unitMeasure::Inch );
 
    pLeftTrafficBarrierEntry = 0;
@@ -229,7 +229,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
    try
    {
       hr = pStrLoad->BeginUnit(_T("XSectionData"));
-      Float64 version;
+      double version;
       hr = pStrLoad->get_Version(&version);
 
       CComVariant var;

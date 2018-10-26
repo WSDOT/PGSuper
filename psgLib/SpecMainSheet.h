@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,16 +107,14 @@ public:
 protected:
 	//{{AFX_MSG(CSpecMainSheet)
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+   DECLARE_MESSAGE_MAP()
 public:
 // implementation stuff
 
    void ExchangeDescrData(CDataExchange* pDX);
    void ExchangeCyData(CDataExchange* pDX);
    void ExchangeLiftingData(CDataExchange* pDX);
-   bool IsHaulingEnabled() const;
-   void ExchangeWsdotHaulingData(CDataExchange* pDX);
-   void ExchangeKdotHaulingData(CDataExchange* pDX);
+   void ExchangeHaulingData(CDataExchange* pDX);
    void ExchangeBs1Data(CDataExchange* pDX);
    void ExchangeBs2Data(CDataExchange* pDX);
    void ExchangeBsData(CDataExchange* pDX);

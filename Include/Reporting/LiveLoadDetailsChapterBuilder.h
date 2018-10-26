@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_LIVELOADDETAILSCHAPTERBUILDER_H_
-#define INCLUDED_LIVELOADDETAILSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -52,54 +51,19 @@ LOG
 class REPORTINGCLASS CLiveLoadDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-
-   //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
    bool m_bDesign, m_bRating;
-
-   // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
    CLiveLoadDetailsChapterBuilder(const CLiveLoadDetailsChapterBuilder&);
    CLiveLoadDetailsChapterBuilder& operator=(const CLiveLoadDetailsChapterBuilder&);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    static void ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_LOADINGDETAILSCHAPTERBUILDER_H_

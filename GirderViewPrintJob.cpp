@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 
 #include <IFace\VersionInfo.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\Bridge.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -86,8 +87,6 @@ void CGirderViewPrintJob::OnEndPrinting(CDC* pDC, CPrintInfo* pInfo)
 
 }
 
-
-
 void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 {
 	int obkm = pDC->SetBkMode(TRANSPARENT);
@@ -96,15 +95,29 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    PGSuperCalculationSheet border(m_pBroker);
    CString title;
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)(m_pSv->GetDocument());
-   
-   SpanIndexType spanIdx;
-   GirderIndexType gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ATLASSERT(  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS  );
+   CDocument* pDoc = (CDocument*)(m_pSv->GetDocument());
+   BOOL bPGSuper = m_pSv->GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
+#pragma Reminder("UPDATE: there is a more generic way to get the application name")
+   // figure it out and use the more generic approach...
 
    GET_IFACE(IVersionInfo,pVerInfo);
-   title.Format(_T("Span %d Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx), pVerInfo->GetVersion(), sysDate().Year());  
+
+   const CGirderKey& girderKey = m_pFrame->GetSelection();
+   if ( bPGSuper == TRUE )
+   {
+      if ( girderKey.groupIndex == ALL_GROUPS )
+         title.Format(_T("Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());  
+      else
+         title.Format(_T("Span %d Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+   }
+   else
+   {
+      if ( girderKey.groupIndex == ALL_GROUPS )
+         title.Format(_T("Girder %s - PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+      else
+         title.Format(_T("Group %d Girder %s - PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+   }
+
    border.SetTitle(title);
 
    CString path = pDoc->GetPathName();
@@ -153,7 +166,8 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    pvf.CreatePointFont(m_iFtPrint, m_csFtPrint, pDC);
    CFont* oldfont = pDC->SelectObject(&pvf);
    pDC->SetTextAlign(TA_LEFT|TA_TOP);
-   CString tstr = UserLoads::GetStageName(m_pFrame->GetLoadingStage()).c_str();
+   GET_IFACE(IEventMap,pEventMap);
+   CString tstr = pEventMap->GetEventName(m_pFrame->GetEvent());
    CString topcap = _T("Elevation View (Loading shown in ") + tstr + _T(")");
    CSize csiz = pDC->GetTextExtent( topcap );
    int x = (rcPrint.left+rcPrint.right)/2 - csiz.cx/2;

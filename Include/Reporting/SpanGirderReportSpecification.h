@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <ReportManager\ReportManager.h>
 #include <ReportManager\ReportHint.h>
 #include <WBFLCore.h>
+#include <PgsExt\SegmentKey.h>
 
 class REPORTINGCLASS CSpanReportHint : public CReportHint
 {
@@ -42,38 +43,41 @@ protected:
    SpanIndexType m_SpanIdx;
 };
 
+class REPORTINGCLASS CGirderLineReportHint : public CReportHint
+{
+public:
+   CGirderLineReportHint();
+   CGirderLineReportHint(GroupIndexType grpIdx,GirderIndexType gdrIdx);
+
+   void SetGroupIndex(GroupIndexType grpIdx);
+   GroupIndexType GetGroupIndex() const;
+
+   void SetGirderIndex(GirderIndexType gdrIdx);
+   GirderIndexType GetGirderIndex() const;
+
+   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+
+protected:
+   GroupIndexType m_GroupIdx;
+   GirderIndexType m_GirderIdx;
+};
+
 class REPORTINGCLASS CGirderReportHint : public CReportHint
 {
 public:
    CGirderReportHint();
-   CGirderReportHint(GirderIndexType gdrIdx);
-
-   void SetGirder(GirderIndexType gdrIdx);
-   GirderIndexType GetGirder();
-
-   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
-
-protected:
-   GirderIndexType m_GdrIdx;
-};
-
-class REPORTINGCLASS CSpanGirderReportHint : public CReportHint
-{
-public:
-   CSpanGirderReportHint();
-   CSpanGirderReportHint(SpanIndexType spanIdx,GirderIndexType gdrIdx,Uint32 lHint);
+   CGirderReportHint(const CGirderKey& girderKey,Uint32 lHint);
 
    void SetHint(Uint32 lHint);
    Uint32 GetHint();
 
-   void SetGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   void GetGirder(SpanIndexType& spanIdx,GirderIndexType& gdrIdx);
+   void SetGirderKey(const CGirderKey& girderKey);
+   const CGirderKey& GetGirderKey() const;
 
    static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
 
 protected:
-   SpanIndexType m_SpanIdx;
-   GirderIndexType m_GdrIdx;
+   CGirderKey m_GirderKey;
    Uint32 m_Hint; // one of GCH_xxx constants in IFace\Project.h
 };
 
@@ -102,62 +106,68 @@ class REPORTINGCLASS CGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const CGirderKey& girderKey);
    CGirderReportSpecification(const CGirderReportSpecification& other);
    ~CGirderReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
 
-   void SetGirder(GirderIndexType gdrIdx);
-   GirderIndexType GetGirder() const;
+   void SetGroupIndex(GroupIndexType grpIdx);
+   GroupIndexType GetGroupIndex() const;
+
+   void SetGirderIndex(GirderIndexType gdrIdx);
+   GirderIndexType GetGirderIndex() const;
+
+   void SetGirderKey(const CGirderKey& girderKey);
+   const CGirderKey& GetGirderKey() const;
 
    virtual HRESULT Validate() const;
 
 protected:
-   GirderIndexType m_Girder;
+   CGirderKey m_GirderKey;
 };
 
-class REPORTINGCLASS CSpanGirderReportSpecification :
-   public CSpanReportSpecification
+
+class REPORTINGCLASS CGirderLineReportSpecification :
+   public CBrokerReportSpecification
 {
 public:
-   CSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   CSpanGirderReportSpecification(const CSpanGirderReportSpecification& other);
-   CSpanGirderReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   ~CSpanGirderReportSpecification(void);
+   CGirderLineReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   CGirderLineReportSpecification(const CGirderLineReportSpecification& other);
+   ~CGirderLineReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
 
-   void SetGirder(GirderIndexType gdrIdx);
-   GirderIndexType GetGirder() const;
+   void SetGirderIndex(GirderIndexType gdrIdx);
+   GirderIndexType GetGirderIndex() const;
+
+   CGirderKey GetGirderKey() const;
 
    virtual HRESULT Validate() const;
 
 protected:
-   GirderIndexType m_Girder;
+   GirderIndexType m_GirderIdx;
 };
 
 class REPORTINGCLASS CMultiGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-
-   CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<SpanGirderHashType>& girderlist);
+   CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girdersKeys);
    CMultiGirderReportSpecification(const CMultiGirderReportSpecification& other);
-
    ~CMultiGirderReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
 
-   void SetGirderList(const std::vector<SpanGirderHashType>& girderlist);
-   std::vector<SpanGirderHashType> GetGirderList() const;
+   void SetGirderKeys(const std::vector<CGirderKey>& girdersKeys);
+   const std::vector<CGirderKey>& GetGirderKeys() const;
 
-   int IsMyGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
+   bool IsMyGirder(const CGirderKey& girderKey) const;
 
    virtual HRESULT Validate() const;
 
 protected:
-   std::vector<SpanGirderHashType> m_GirderList;
+   std::vector<CGirderKey> m_GirderKeys;
 };
 
 //////////////////////////////////////////////////////////
@@ -168,20 +178,20 @@ class REPORTINGCLASS CMultiViewSpanGirderReportSpecification :
 {
 public:
 
-   CMultiViewSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<SpanGirderHashType>& girderlist);
+   CMultiViewSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
    CMultiViewSpanGirderReportSpecification(const CMultiViewSpanGirderReportSpecification& other);
    ~CMultiViewSpanGirderReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
 
-   void SetGirderList(const std::vector<SpanGirderHashType>& girderlist);
-   std::vector<SpanGirderHashType> GetGirderList() const;
+   void SetGirderKeys(const std::vector<CGirderKey>& girderKeys);
+   const std::vector<CGirderKey>& GetGirderKeys() const;
 
-   int IsMyGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
+   int IsMyGirder(const CGirderKey& girderKey) const;
 
    virtual HRESULT Validate() const;
 
 protected:
-   std::vector<SpanGirderHashType> m_GirderList;
+   std::vector<CGirderKey> m_GirderKeys;
 };
 

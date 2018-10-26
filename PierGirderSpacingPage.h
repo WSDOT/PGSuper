@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,10 @@
 #include "SameNumberOfGirdersHyperLink.h"
 #include "SameGirderSpacingHyperLink.h"
 #include "SameSlabOffsetHyperLink.h"
+
+#include <PgsExt\PierData2.h>
+#include <PgsExt\SpanData2.h>
+#include <PgsExt\GirderGroupData.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -82,7 +86,7 @@ public:
    CString m_strSlabOffsetCache[2];
 
 
-   void Init(const CPierData* pPier);
+   void Init(const CPierData2* pPier);
    bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
 
 // Overrides
@@ -113,9 +117,13 @@ protected:
    afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-   const CPierData* m_pPier;
-   const CSpanData* m_pPrevSpan;
-   const CSpanData* m_pNextSpan;
+   const CPierData2* m_pPier;
+   const CSpanData2* m_pPrevSpan;
+   const CSpanData2* m_pNextSpan;
+   const CGirderGroupData* m_pPrevGroup;
+   const CGirderGroupData* m_pNextGroup;
+
+   CStatic m_NoSpacingNote;
 
    void ToggleGirderSpacingType();
 
@@ -125,7 +133,7 @@ protected:
    CGirderSpacingGridData m_GirderSpacingCache[2];
    long m_GirderSpacingMeasureCache[2];
 
-   int GetMinGirderCount(const CSpanData* pSpan);
+   int GetMinGirderCount(const CSpanData2* pSpan);
 
    void OnPierSpacingDatumChanged(UINT nIDC,pgsTypes::PierFaceType pierFace);
 
@@ -157,8 +165,10 @@ protected:
    void InitSpacingAhead(bool bUse);
 
    bool IsAbutment();
+   bool IsContinuousSegment();
 
-   enum SpacingType {Single, // a single spacing is used for both sides
+   enum SpacingType {None, // continuous spacing, no spacing input
+                     Single, // a single spacing is used for both sides
                      Back, // last pier, spacing on back side only
                      Ahead, // first pier, spacing on ahead side only
                      Both}; // spacing on both sides

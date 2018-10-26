@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,41 +28,35 @@
 #endif // _MSC_VER >= 1000
 // BridgeDescDlg.h : header file
 //
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include "BridgeDescGeneralPage.h"
 #include "BridgeDescFramingPage.h"
 #include "BridgeDescRailingSystemPage.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescEnvironmental.h"
-#include "BridgeDescRatingPage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg
 
-class CBridgeDescDlg : public CPropertySheet, public IEditBridgeData
+class CBridgeDescDlg : public CPropertySheet
 {
 	DECLARE_DYNAMIC(CBridgeDescDlg)
 
 // Construction
 public:
-	CBridgeDescDlg(CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-
-// IEditBridgeData
-public:
-   virtual void EBDummy() {};
+	CBridgeDescDlg(const CBridgeDescription2& bridgeDesc,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
 // Attributes
 public:
-   void SetBridgeDescription(const CBridgeDescription& bridgeDesc);
-   const CBridgeDescription& GetBridgeDescription();
+   void SetBridgeDescription(const CBridgeDescription2& bridgeDesc);
+   const CBridgeDescription2& GetBridgeDescription();
 
    CBridgeDescGeneralPage           m_GeneralPage;
-   CBridgeDescFramingPage           m_FramingPage;
+   CBridgeDescFramingPage          m_FramingPage;
    CBridgeDescRailingSystemPage     m_RailingSystemPage;
    CBridgeDescDeckDetailsPage       m_DeckDetailsPage;
    CBridgeDescDeckReinforcementPage m_DeckRebarPage;
-   CBridgeDescRatingPage            m_RatingPage;
    CBridgeDescEnvironmental         m_EnvironmentalPage;
 
 // Operations
@@ -72,29 +66,16 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBridgeDescDlg)
 	virtual BOOL OnInitDialog();
-   afx_msg BOOL OnOK();
    //}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CBridgeDescDlg();
 
-   virtual INT_PTR DoModal();
-
-   // Returns a macro transaction object that contains editing transactions
-   // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
-
-   const std::set<EditBridgeExtension>& GetExtensionPages() const;
-   std::set<EditBridgeExtension>& GetExtensionPages();
-
 	// Generated message map functions
 protected:
    void Init();
-   void CreateExtensionPages();
-   void DestroyExtensionPages();
-
-   CBridgeDescription m_BridgeDesc;
+   CBridgeDescription2 m_BridgeDesc;
 
    friend CBridgeDescGeneralPage;
    friend CBridgeDescFramingPage;
@@ -104,18 +85,10 @@ protected:
    friend CBridgeDescEnvironmental;
    friend CBridgeDescDeckRebarGrid;
    friend CBridgeDescFramingGrid;
-   friend CBridgeDescRatingPage;
-
-
-   txnMacroTxn m_Macro;
-   std::set<EditBridgeExtension> m_ExtensionPages;
-   void NotifyExtensionPages();
 
 	//{{AFX_MSG(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
-   virtual void DoDataExchange(CDataExchange* pDX);
 	//}}AFX_MSG
-	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 };
 

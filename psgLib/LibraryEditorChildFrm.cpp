@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,9 +38,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEditorChildFrame
 
-IMPLEMENT_DYNCREATE(CLibraryEditorChildFrame, CEAFChildFrame)
+IMPLEMENT_DYNCREATE(CLibraryEditorChildFrame, CMDIChildWnd)
 
-BEGIN_MESSAGE_MAP(CLibraryEditorChildFrame, CEAFChildFrame)
+BEGIN_MESSAGE_MAP(CLibraryEditorChildFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CLibraryEditorChildFrame)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -58,13 +58,10 @@ CLibraryEditorChildFrame::~CLibraryEditorChildFrame()
 
 BOOL CLibraryEditorChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
-   // the system menu or the minimize and maximize boxes
-   cs.style &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-#endif
+	// TODO: Modify the Window class or styles here by modifying
+	//  the CREATESTRUCT cs
 
-	return CEAFChildFrame::PreCreateWindow(cs);
+	return CMDIChildWnd::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -73,18 +70,19 @@ BOOL CLibraryEditorChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CLibraryEditorChildFrame::AssertValid() const
 {
-	CEAFChildFrame::AssertValid();
+	CMDIChildWnd::AssertValid();
 }
 
 void CLibraryEditorChildFrame::Dump(CDumpContext& dc) const
 {
-	CEAFChildFrame::Dump(dc);
+	CMDIChildWnd::Dump(dc);
 }
 
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEditorChildFrame message handlers
+
 BOOL CLibraryEditorChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
 {
 	// TODO: Add your specialized code here and/or call the base class
@@ -122,7 +120,7 @@ BOOL CLibraryEditorChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContex
    // I don't know why you don't call the parent but it makes the difference between
    // the splitter working and not.  See the ViewEx example. They don't call the
    // parent method either.
-	//return CEAFChildFrame::OnCreateClient(lpcs, pContext);
+	//return CMDIChildWnd::OnCreateClient(lpcs, pContext);
    return TRUE;
  }
 
@@ -177,7 +175,7 @@ void CLibraryEditorChildFrame::DoUpdateDuplicateEntry(CCmdUI* pCmdUI)
 {
    CLibEditorListView* pList= this->GetListView();
    ASSERT(pList);
-   pCmdUI->Enable(pList->CanDuplicateEntry());
+   pCmdUI->Enable(pList->IsItemSelected());
 }
 
 void CLibraryEditorChildFrame::DoUpdateDeleteEntry(CCmdUI* pCmdUI) 

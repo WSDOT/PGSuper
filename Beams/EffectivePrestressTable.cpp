@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,27 +56,23 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::_tstring strSpecName = pSpec->GetSpecification();
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
-   int loss_method = pSpecEntry->GetLossMethod();
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
 
    // Create and configure the table
    ColumnIndexType numColumns = 8;
-   if ( loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED )
-   {
-      numColumns++;
-   }
 
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    table->m_LossMethod = loss_method;
+   table->m_bUseGrossProperties = bUseGrossProperties;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
@@ -85,25 +81,23 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    *pParagraph << _T("Effective Prestress") << rptNewLine;
 
+
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   table->m_gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
 
    std::_tostringstream os;
-   os << table->m_gLL;
-
+   os << gLL;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   if (  loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED  )
+   if (  loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED  )
    {
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
+                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << rptNewLine;
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSS")) << _T(" + ")
                   << _T("(") << os.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine;
    }
    else
@@ -119,11 +113,6 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   if (  loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED  )
-   {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   }
-
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")) << rptNewLine << _T("with Live Load"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -131,29 +120,39 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    return table;
 }
 
-void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
-   Float64 fpj = details.pLosses->GetFpjPermanent();
-   Float64 fpT = details.pLosses->PermanentStrand_Final(); // includes elastic gains due to permanent loads
-   Float64 fpED = details.pLosses->ElasticGainDueToDeckPlacement();
-   Float64 fpSIDL = details.pLosses->ElasticGainDueToSIDL();
-   Float64 fpSS = details.pLosses->ElasticGainDueToDeckShrinkage();
-   Float64 fpLL = details.pLosses->ElasticGainDueToLiveLoad();
-   (*this)(row,col++) << stress.SetValue(fpj);
-   (*this)(row,col++) << stress.SetValue(fpT+fpED+fpSIDL+fpSS);
-   (*this)(row,col++) << stress.SetValue(fpED);
-   (*this)(row,col++) << stress.SetValue(fpSIDL);
-   if ( m_LossMethod == LOSSES_AASHTO_REFINED || m_LossMethod == LOSSES_WSDOT_REFINED )
+   Float64 fpj = pDetails->pLosses->GetFpjPermanent();
+
+   Float64 fpT  = pDetails->pLosses->PermanentStrand_Final(); // includes elastic gains due to permanent loads
+   Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+   if ( !m_bUseGrossProperties )
+      fpT += fpES;
+
+   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
+   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
+   Float64 fpLL   = pDetails->pLosses->ElasticGainDueToLiveLoad();
+
+   if (m_bUseGrossProperties)
    {
-      (*this)(row,col++) << stress.SetValue(fpSS);
+      // fpT includes elastic gains due to permanent loads
+      fpT += fpED+fpSIDL;
    }
 
+   (*this)(row,col++) << stress.SetValue(fpj);
+   (*this)(row,col++) << stress.SetValue(fpT);
+   (*this)(row,col++) << stress.SetValue(fpED);
+   (*this)(row,col++) << stress.SetValue(fpSIDL);
    (*this)(row,col++) << stress.SetValue(fpLL);
 
-   Float64 fpe = fpj - fpT;
+   Float64 fpe = fpj - fpT + fpED + fpSIDL;
+
    (*this)(row,col++) << stress.SetValue(fpe);
 
-   fpe += m_gLL*fpLL;
+   GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
+   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+
+   fpe += gLL*fpLL;
    (*this)(row,col++) << stress.SetValue(fpe);
 }

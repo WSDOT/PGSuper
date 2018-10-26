@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -16,7 +16,7 @@
 // You should have received a copy of the Alternate Route Open Source 
 // License along with this program; if not, write to the Washington 
 // State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
@@ -42,7 +42,7 @@ public:
    // capture event fired from grid that allows deletion of rows
    virtual void OnEnableDelete(bool canDelete)=0;
    virtual bool DoUseHarpedGrid()=0;
-   virtual pgsTypes::AdjustableStrandType GetAdjustableStrandType()=0;
+   virtual bool DoUseHarpedWebStrands()=0;
    virtual void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)=0; 
 };
 
@@ -166,7 +166,7 @@ private:
 
    bool EditEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool isNewEntry);
    // fill at the starting row - return num rows filled
-   ROWCOL FillRowsWithEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool useHarped, pgsTypes::AdjustableStrandType asType, COLORREF color);
+   ROWCOL FillRowsWithEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool useHarped, bool webStrandsHarped, COLORREF color);
 
 
    void AppendEntry(GlobalStrandGridEntry& entry);

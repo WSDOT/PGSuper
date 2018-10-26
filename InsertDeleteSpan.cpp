@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "InsertDeleteSpan.h"
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -30,10 +30,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace)
+txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType eventIdx)
 {
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
+   m_SpanLength = spanLength;
+   m_bCreateNewGroup = bCreateNewGroup;
+   m_EventIdx = eventIdx;
 }
 
 std::_tstring txnInsertSpan::Name() const
@@ -43,7 +46,7 @@ std::_tstring txnInsertSpan::Name() const
 
 txnTransaction* txnInsertSpan::CreateClone() const
 {
-   return new txnInsertSpan(m_RefPierIdx, m_PierFace);
+   return new txnInsertSpan(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_EventIdx);
 }
 
 bool txnInsertSpan::IsUndoable()
@@ -66,15 +69,12 @@ bool txnInsertSpan::Execute()
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   // Default length for new spans is the length of the
-   // previous span
-   const CSpanData* pSpan = pIBridgeDesc->GetSpan(m_RefPierIdx);
-   if ( pSpan == NULL ) // m_RefPierIdx must be for the last pier... 
-      pSpan = pIBridgeDesc->GetSpan(m_RefPierIdx-1); // ... get the previous span
+   // save the connection type, sometimes it doesn't get automatically reverted during an UNDO
+   const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
+   m_RefPierConnectionType = pPier->GetConnectionType();
 
-   Float64 span_length = pSpan->GetSpanLength();
-
-   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,span_length);
+   // Default length for new spans
+   pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_EventIdx);
 
    pEvents->FirePendingEvents();
 
@@ -94,6 +94,11 @@ void txnInsertSpan::Undo()
    PierIndexType newPierIdx = m_RefPierIdx + (m_PierFace == pgsTypes::Ahead ? 1 : 0);
    pgsTypes::PierFaceType newPierFace = (m_PierFace == pgsTypes::Ahead ? pgsTypes::Back : pgsTypes::Ahead);
    pIBridgeDesc->DeletePier(newPierIdx,newPierFace);
+
+   CPierData2 pier = *pIBridgeDesc->GetPier(m_RefPierIdx);
+   pier.SetConnectionType(m_RefPierConnectionType);
+   pIBridgeDesc->SetPierByIndex(m_RefPierIdx,pier);
+
 
    pEvents->FirePendingEvents();
 }
@@ -144,20 +149,58 @@ bool txnDeleteSpan::Execute()
    pEvents->HoldEvents();
 
    // save the span/pier that are going to be deleted for undo
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData* pPier = pBridgeDesc->GetPier(m_RefPierIdx);
-   const CSpanData* pSpan = (m_PierFace == pgsTypes::Back ? pPier->GetPrevSpan() : pPier->GetNextSpan());
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CPierData2* pRefPier = pBridgeDesc->GetPier(m_RefPierIdx);
+   const CSpanData2* pSpan = (m_PierFace == pgsTypes::Back ? pRefPier->GetPrevSpan() : pRefPier->GetNextSpan());
 
    ASSERT(pSpan != NULL); // I don't think this should happen
 
-   m_pDeletedPier = new CPierData(*pPier);
+   // save any temporary supports that are in the span being removed
+   std::vector<const CTemporarySupportData*> tempSupports(pSpan->GetTemporarySupports());
+   std::vector<const CTemporarySupportData*>::iterator tsIter(tempSupports.begin());
+   std::vector<const CTemporarySupportData*>::iterator tsIterEnd(tempSupports.end());
+   for ( ; tsIter != tsIterEnd; tsIter++ )
+   {
+      const CTemporarySupportData* pTS = *tsIter;
+      TSItem item;
+      item.TempSupport = *pTS;
+
+      SupportIDType tsID = pTS->GetID();
+
+      pBridgeDesc->GetTimelineManager()->GetTempSupportEvents(tsID,&item.ErectionEventIdx,&item.RemovalEventIdx);
+      
+      m_TempSupports.push_back(item);
+   }
+
+   m_pDeletedPier = new CPierData2(*pRefPier);
    if ( pSpan )
-      m_pDeletedSpan = new CSpanData(*pSpan);
+      m_pDeletedSpan = new CSpanData2(*pSpan);
+
+   m_nGirderGroups = pBridgeDesc->GetGirderGroupCount();
 
    // save span length for undo
    m_SpanLength = pSpan->GetSpanLength();
 
+   // save pier stage
+   m_EventIdx = pBridgeDesc->GetTimelineManager()->GetPierErectionEventIndex(pRefPier->GetID());
+
+   // save the connection type, sometimes it doesn't get automatically reverted during an UNDO
+   const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
+   m_RefPierConnectionType = pPier->GetConnectionType();
+
+   // Delete the pier, span is deleted along with it
    pIBridgeDesc->DeletePier(m_RefPierIdx,m_PierFace);
+   pRefPier = NULL;
+   pSpan = NULL;
+
+
+   GET_IFACE2(pBroker,ISelectionEx,pSelection);
+   CSelection selection = pSelection->GetSelection();
+   if ( selection.Type == CSelection::Span && selection.SpanIdx == m_pDeletedSpan->GetIndex() )
+      pSelection->ClearSelection();
+
+   if ( selection.Type == CSelection::Pier && selection.PierIdx == m_RefPierIdx )
+      pSelection->ClearSelection();
 
    pEvents->FirePendingEvents();
 
@@ -173,10 +216,35 @@ void txnDeleteSpan::Undo()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   if ( m_RefPierIdx == 0 && m_PierFace == pgsTypes::Ahead )
-      pIBridgeDesc->InsertSpan(m_RefPierIdx,pgsTypes::Back,m_SpanLength,m_pDeletedSpan,m_pDeletedPier);
-   else
-      pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,m_pDeletedSpan,m_pDeletedPier);
+
+   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx-1 : m_RefPierIdx);
+   pgsTypes::PierFaceType face = (m_PierFace == pgsTypes::Back ? pgsTypes::Ahead : pgsTypes::Back);
+
+   // create a new group if one was removed (the girder group count would have changed)
+   bool bCreateNewGroup = (m_nGirderGroups != pIBridgeDesc->GetBridgeDescription()->GetGirderGroupCount());
+   pIBridgeDesc->InsertSpan(pierIdx,face,m_SpanLength,m_pDeletedSpan,m_pDeletedPier,bCreateNewGroup,m_EventIdx);
+
+   std::vector<TSItem>::iterator iter(m_TempSupports.begin());
+   std::vector<TSItem>::iterator loop_end(m_TempSupports.end());
+   for ( ; iter != loop_end; iter++ )
+   {
+      TSItem& item = *iter;
+      CTemporarySupportData* pTS = new CTemporarySupportData(item.TempSupport);
+      pIBridgeDesc->InsertTemporarySupport(pTS,item.ErectionEventIdx,item.RemovalEventIdx);
+   }
+
+
+   CPierData2 pier = *pIBridgeDesc->GetPier(m_RefPierIdx);
+   pier.SetConnectionType(m_RefPierConnectionType);
+   pIBridgeDesc->SetPierByIndex(m_RefPierIdx,pier);
+
+   delete m_pDeletedSpan;
+   m_pDeletedSpan = NULL;
+   
+   delete m_pDeletedPier;
+   m_pDeletedPier = NULL;
+
+   m_TempSupports.clear();
 
    pEvents->FirePendingEvents();
 }

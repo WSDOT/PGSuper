@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
-#include <Plugins\Beams.h>
 
 
 struct BOXBEAM_J_VOID
@@ -53,6 +52,10 @@ struct BOXBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
    BOXBEAM_J_VOID  Jvoid;
 };
 
+// {DA437468-B32C-4012-8B8E-51BAE278C170}
+DEFINE_GUID(CLSID_BoxBeamDistFactorEngineer, 
+0xda437468, 0xb32c, 0x4012, 0x8b, 0x8e, 0x51, 0xba, 0xe2, 0x78, 0xc1, 0x70);
+
 /////////////////////////////////////////////////////////////////////////////
 // CBoxBeamDistFactorEngineer
 class ATL_NO_VTABLE CBoxBeamDistFactorEngineer : 
@@ -68,8 +71,6 @@ public:
 
    HRESULT FinalConstruct();
 
-DECLARE_REGISTRY_RESOURCEID(IDR_BOXBEAMDISTFACTORENGINEER)
-
 BEGIN_COM_MAP(CBoxBeamDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)
 END_COM_MAP()
@@ -81,14 +82,14 @@ public:
 //   virtual Float64 GetNegMomentDF(SpanIndexType pier,GirderIndexType gdr,IDistFactorEngineer::Side side);
 //   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual Float64 GetReactionDF(SpanIndexType pier,GirderIndexType gdr);
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
 
 private:
 //   IBroker* m_pBroker;
 //   long m_StatusGroupID;
 
-   lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf);
+   lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf);
 
    void ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
    void ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);

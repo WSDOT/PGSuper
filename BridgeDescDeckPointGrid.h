@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 // BridgeDescDeckPointGrid.h : header file
 //
 
-#include <PgsExt\DeckDescription.h>
+#include <PgsExt\DeckDescription2.h>
 #include <PgsExt\DeckPoint.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -68,20 +68,16 @@ protected:
    void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
-   BOOL OnValidateCell(ROWCOL nRow,ROWCOL nCol);
-
 
 public:
    // custom stuff for grid
    void CustomInit();
 
-   void FillGrid(const CDeckDescription* pDeck);
+   void FillGrid(const CDeckDescription2* pDeck);
    std::vector<CDeckPoint> GetEdgePoints();
 
    void RemoveSelectedRows();
    void Enable(BOOL bEnable);
-
-   BOOL Validate();
 
 private:
    BOOL m_bEnabled;
@@ -102,9 +98,6 @@ private:
    // create this object once and use it over and over
    CComPtr<IStation> m_objStation;
 };
-
-
-void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGrid);
 
 /////////////////////////////////////////////////////////////////////////////
 

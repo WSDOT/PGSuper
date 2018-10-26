@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,13 +24,12 @@
 #include <Reporting\CamberTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -127,12 +126,12 @@ bool CCamberTable::TestMe(dbgLog& rlog)
 #endif // _UNITTEST
 
 
-void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
                                          IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                          rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -141,22 +140,25 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProduct);
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
-   bool bShearKey = pProduct->HasShearKeyLoad(span,girder);
-   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+   bool bSidewalk = pProduct->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProduct->HasShearKeyLoad(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -166,10 +168,10 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -182,7 +184,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    }
 
    // Setup table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -207,7 +209,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( bOverlay )
+   if ( !pBridge->IsFutureOverlay() )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -227,14 +229,15 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("4")) << _T(" - ") << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
    RowIndexType row1 = table1->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
@@ -246,19 +249,24 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
-      Ddeck      = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
+      Dshearkey  = pProductForces->GetDisplacement(castDeckIntervalIdx,pftShearKey,poi,bat);
+      Ddeck      = pProductForces->GetDisplacement(castDeckIntervalIdx,pftSlab,poi,bat);
+      Ddeck     += pProductForces->GetDisplacement(castDeckIntervalIdx,pftSlabPad,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dbarrier   = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Dsidewalk  = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Doverlay   = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
+      Duser1     = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDW,poi,bat);
+      Duser2     = pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDW,poi,bat);
+      Dbarrier   = pProductForces->GetDisplacement(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat);
+      Dsidewalk  = pProductForces->GetDisplacement(railingSystemIntervalIdx,pftSidewalk,      poi,bat);
+      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProductForces->GetDisplacement(overlayIntervalIdx,pftOverlay,poi,bat));
+
+      // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
+      ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dtpsi );
@@ -270,7 +278,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
       if ( bShearKey )
          (*table2)(row2,col++) << displacement.SetValue( Dshearkey );
@@ -283,7 +291,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if ( bOverlay )
+      if ( !pBridge->IsFutureOverlay() )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -297,17 +305,9 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dbarrier + Duser2;
-      if ( bSidewalk )
-      {
-         D6 += Dsidewalk;
-      }
-      if ( bOverlay )
-      {
-         D6 += Doverlay;
-      }
+      Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );
@@ -344,12 +344,12 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 }
 
 
-void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
                              IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -358,22 +358,25 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
-   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
-   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -383,10 +386,10 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -399,7 +402,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    }
 
    // Setup table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -421,7 +424,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( bOverlay )
+   if ( !pBridge->IsFutureOverlay() )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    }
@@ -440,16 +443,21 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("2")) << _T(" - ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
    RowIndexType row1 = table1->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
+
+      // the camber models don't support these locations
+      if ( poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2) || poi.HasAttribute(POI_CLOSURE) || poi.HasAttribute(POI_PIER) )
+         continue;
 
       Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Ddeck, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
@@ -457,18 +465,20 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep     = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
-      Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
-      Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Dsidewalk  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Doverlay   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
+      Dshearkey  = pProduct->GetDisplacement(castDeckIntervalIdx,pftShearKey,poi,bat);
+      Ddeck      = pProduct->GetDisplacement(castDeckIntervalIdx,pftSlab,poi,bat);
+      Ddeck     += pProduct->GetDisplacement(castDeckIntervalIdx,pftSlabPad,poi,bat);
+      Duser1     = pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDW,poi,bat);
+      Duser2     = pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDW,poi,bat);
+      Dbarrier   = pProduct->GetDisplacement(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat);
+      Dsidewalk  = pProduct->GetDisplacement(railingSystemIntervalIdx,pftSidewalk,      poi,bat);
+      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDisplacement(overlayIntervalIdx,pftOverlay,poi,bat));
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dgirder );
@@ -477,7 +487,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -491,7 +501,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier);
 
-      if ( bOverlay )
+      if ( !pBridge->IsFutureOverlay() )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -503,18 +513,9 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Float64 D1 = Dgirder + Dps;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
-      Float64 D4 = D3 + Dbarrier + Duser2;
-      if ( bSidewalk )
-      {
-         D4 += Dsidewalk;
-      }
-      if ( bOverlay )
-      {
-         D4 += Doverlay;
-      }
+      Float64 D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
 
-
-      (*table3)(row3,col++) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size );
+      (*table3)(row3,col++) << location.SetValue(POI_ERECTED_SEGMENT, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -549,12 +550,12 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
                                          IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                          rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -563,24 +564,27 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
-   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
-   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
    rptRcTable* table1;
@@ -588,10 +592,10 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -604,7 +608,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    }
 
    // Setup table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -630,7 +634,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( bOverlay )
+   if ( !pBridge->IsFutureOverlay() )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -650,15 +654,16 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("4")) << _T(" - ") << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
    RowIndexType row1 = table1->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
@@ -670,20 +675,22 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
-      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
+      Ddeck      = pProduct->GetDisplacement(castDeckIntervalIdx,pftSlab,poi,bat);
+      Ddeck     += pProduct->GetDisplacement(castDeckIntervalIdx,pftSlabPad,poi,bat);
+      Dpanel     = pProduct->GetDisplacement(castDeckIntervalIdx,pftSlabPanel,poi,bat);
+      Dshearkey  = pProduct->GetDisplacement(castDeckIntervalIdx,pftShearKey,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Dsidewalk  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Doverlay   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
-      Dpanel     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPanel,poi,bat);
+      Duser1     = pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDW,poi,bat);
+      Duser2     = pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDW,poi,bat);
+      Dbarrier   = pProduct->GetDisplacement(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat);
+      Dsidewalk  = pProduct->GetDisplacement(railingSystemIntervalIdx,pftSidewalk,      poi,bat);
+      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDisplacement(overlayIntervalIdx,pftOverlay,poi,bat));
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dtpsi );
@@ -694,7 +701,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -710,7 +717,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
    
-      if ( bOverlay )
+      if (!pBridge->IsFutureOverlay() )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -724,18 +731,9 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Float64 D3 = D2 + Ddiaphragm + + Dshearkey + Dtpsr + Dpanel;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dbarrier + Duser2;
-      if ( bSidewalk )
-      {
-         D6 += Dsidewalk;
-      }
-      if ( bOverlay )
-      {
-         D6 += Doverlay;
-      }
+      Float64 D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
 
-
-      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );
@@ -772,12 +770,12 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 }
 
 
-void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
                              IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -786,24 +784,27 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
-   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
-   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
    rptRcTable* table1;
@@ -811,10 +812,10 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -827,7 +828,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    }
 
    // Setup table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -850,7 +851,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( bOverlay )
+   if ( !pBridge->IsFutureOverlay() )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -868,14 +869,15 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("2")) << _T(" - ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
    RowIndexType row1 = table1->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
@@ -885,19 +887,21 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep     = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
-      Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
-      Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Dsidewalk  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Doverlay   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
-      Dpanel     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPanel,poi,bat);
+      Dshearkey  = pProduct->GetDisplacement(castDeckIntervalIdx,pftShearKey,poi,bat);
+      Ddeck      = pProduct->GetDisplacement(castDeckIntervalIdx,pftSlab,poi,bat);
+      Ddeck     += pProduct->GetDisplacement(castDeckIntervalIdx,pftSlabPad,poi,bat);
+      Dpanel     = pProduct->GetDisplacement(castDeckIntervalIdx,pftSlabPanel,poi,bat);
+      Duser1     = pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDW,poi,bat);
+      Duser2     = pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDW,poi,bat);
+      Dbarrier   = pProduct->GetDisplacement(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat);
+      Dsidewalk  = pProduct->GetDisplacement(railingSystemIntervalIdx,pftSidewalk,      poi,bat);
+      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDisplacement(overlayIntervalIdx,pftOverlay,poi,bat));
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dgirder );
@@ -906,7 +910,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -921,7 +925,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if ( bOverlay )
+      if (!pBridge->IsFutureOverlay() )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -933,17 +937,9 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Float64 D1 = Dgirder + Dps;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
-      Float64 D4 = D3 + Ddeck + Duser1 + Dbarrier + Duser2;
-      if ( bSidewalk )
-      {
-         D4 += Dsidewalk;
-      }
-      if ( bOverlay )
-      {
-         D4 += Doverlay;
-      }
+      Float64 D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -977,12 +973,12 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
                                             IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -991,24 +987,27 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
-   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
-   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
    rptRcTable* table1;
@@ -1016,10 +1015,10 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -1032,7 +1031,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    }
 
    // Setup table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -1057,7 +1056,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( bOverlay )
+   if ( !pBridge->IsFutureOverlay() )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -1077,14 +1076,15 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("5")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
    RowIndexType row1 = table1->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
@@ -1096,20 +1096,22 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
-      Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
+      Dshearkey  = pProduct->GetDisplacement(castDeckIntervalIdx,pftShearKey,poi,bat);
+      Ddeck      = pProduct->GetDisplacement(castDeckIntervalIdx,pftSlab,poi,bat);
+      Ddeck     += pProduct->GetDisplacement(castDeckIntervalIdx,pftSlabPad,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dsidewalk  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Doverlay   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
+      Duser1     = pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDW,poi,bat);
+      Duser2     = pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDW,poi,bat);
+      Dsidewalk  = pProduct->GetDisplacement(railingSystemIntervalIdx,pftSidewalk,      poi,bat);
+      Dbarrier   = pProduct->GetDisplacement(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat);
+      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDisplacement(overlayIntervalIdx,pftOverlay,poi,bat));
       Dcreep3    = pCamber->GetCreepDeflection( poi, ICamber::cpDeckToFinal, constructionRate );
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dtpsi );
@@ -1120,7 +1122,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if (bShearKey)
@@ -1135,7 +1137,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if (bOverlay)
+      if (!pBridge->IsFutureOverlay())
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -1149,18 +1151,10 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
       Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dbarrier + Duser2;
-      if ( bSidewalk )
-      {
-         D5 += Dsidewalk;
-      }
-      if ( bOverlay )
-      {
-         D5 += Doverlay;
-      }
+      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       Float64 D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );
@@ -1195,12 +1189,12 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
                                 IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                 rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -1209,24 +1203,27 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
-   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
-   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
 
    // create the tables
    rptRcTable* table1;
@@ -1234,10 +1231,10 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,_T("Camber - Part 1 (upwards is positive)"));
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       table1->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table1->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -1250,7 +1247,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    }
 
    // Setup table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("g")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << _T(" ") << Sub2(_T("L"),_T("s")),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -1272,7 +1269,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   if ( bOverlay )
+   if ( !pBridge->IsFutureOverlay() )
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("User2")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine  << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -1292,14 +1289,15 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("5")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("6")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
    RowIndexType row1 = table1->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
    RowIndexType row3 = table3->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
@@ -1309,18 +1307,20 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftShearKey,      poi,bat);
+      Dshearkey  = pProduct->GetDisplacement(castDeckIntervalIdx,pftShearKey,      poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dsidewalk  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Doverlay   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
+      Duser1     = pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(castDeckIntervalIdx,pftUserDW,poi,bat);
+      Duser2     = pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDC,poi,bat) 
+                 + pProduct->GetDisplacement(compositeDeckIntervalIdx,pftUserDW,poi,bat);
+      Dsidewalk  = pProduct->GetDisplacement(railingSystemIntervalIdx,pftSidewalk,      poi,bat);
+      Dbarrier   = pProduct->GetDisplacement(railingSystemIntervalIdx,pftTrafficBarrier,poi,bat);
+      Doverlay   = (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDisplacement(overlayIntervalIdx,pftOverlay,poi,bat));
       Dcreep3    = pCamber->GetCreepDeflection( poi, ICamber::cpDeckToFinal, constructionRate );
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dgirder );
@@ -1330,7 +1330,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -1344,7 +1344,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
       (*table2)(row2,col++) << displacement.SetValue( Dbarrier );
 
-      if ( bOverlay )
+      if (!pBridge->IsFutureOverlay() )
          (*table2)(row2,col++) << displacement.SetValue(Doverlay);
 
       (*table2)(row2,col++) << displacement.SetValue( Duser2 );
@@ -1358,18 +1358,10 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
       Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dbarrier + Duser2;
-      if ( bSidewalk )
-      {
-         D5 += Dsidewalk;
-      }
-      if ( bOverlay )
-      {
-         D5 += Doverlay;
-      }
+      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       Float64 D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );

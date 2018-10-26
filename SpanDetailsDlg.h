@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,38 +29,30 @@
 // SpanDetailsDlg.h : header file
 //
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include "SpanLayoutPage.h"
 #include "GirderLayoutPage.h"
 #include "PierConnectionsPage.h"
 #include "EditSpan.h"
-#include <IFace\ExtendUI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
 
-class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent, public IEditSpanData
+class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent
 {
 	DECLARE_DYNAMIC(CSpanDetailsDlg)
 
 // Construction
 public:
-	CSpanDetailsDlg(const CSpanData* pSpan,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CSpanDetailsDlg(const CSpanData* pSpan,const std::set<EditBridgeExtension>& editBridgeExtensions,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-   void SetSpanData(const CSpanData* pSpan);
+	CSpanDetailsDlg(const CSpanData2* pSpanData = NULL,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+   void SetSpanData(const CSpanData2* pSpan);
 
    //interface IPierConnectionsParent
    virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx);
    virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
-   virtual const CSpanData* GetPrevSpan(PierIndexType pierIdx);
-   virtual const CSpanData* GetNextSpan(PierIndexType pierIdx);
-   virtual const CBridgeDescription* GetBridgeDescription();
-
-   // IEditSpanData
-   virtual SpanIndexType GetSpanCount() { return m_pBridgeDesc->GetSpanCount(); }
-   virtual SpanIndexType GetSpan() { return m_pSpanData->GetSpanIndex(); }
-   virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
-   virtual GirderIndexType GetGirderCount();
+   virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx);
+   virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx);
+   virtual const CBridgeDescription2* GetBridgeDescription();
 
 // Attributes
 public:
@@ -73,10 +65,11 @@ public:
    Float64 GetSpanLength();
 
    // Connections
-   Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
-   Float64 GetDiaphragmLoadLocation(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end);
+   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmLoadLocation(pgsTypes::MemberEndType end);
    ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    Float64 GetEndDistance(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
@@ -87,10 +80,9 @@ public:
    pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
    bool UseSameGirderType();
    bool UseSameNumGirders();
-   //bool UseSameGirderSpacingAtEachEnd();
-   CGirderSpacing GetGirderSpacing(pgsTypes::MemberEndType end);
-   CGirderTypes GetGirderTypes();
-   //GirderIndexType GetGirderCount();
+   CGirderSpacing2 GetGirderSpacing(pgsTypes::MemberEndType end);
+   const CGirderGroupData& GetGirderGroup() const;
+   GirderIndexType GetGirderCount() const;
    pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::MemberEndType end);
    pgsTypes::MeasurementType GetMeasurementType(pgsTypes::MemberEndType end);
 
@@ -112,11 +104,6 @@ public:
 public:
 	virtual ~CSpanDetailsDlg();
 
-   virtual INT_PTR DoModal();
-
-   // Returns a macro transaction object that contains editing transactions
-   // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
 
    // Generated message map functions
 protected:
@@ -125,31 +112,19 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
-
    void Init();
-   void Init(const std::set<EditBridgeExtension>& editBridgeExtensions);
-   void CommonInit();
-   void CreateExtensionPages();
-   void CreateExtensionPages(const std::set<EditBridgeExtension>& editBridgeExtensions);
-   void DestroyExtensionPages();
-
    bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
 
+   const CBridgeDescription2* m_pBridgeDesc;
+   const CPierData2* m_pPrevPier;
+   const CSpanData2* m_pSpanData;
+   const CPierData2* m_pNextPier;
+   const CGirderGroupData* m_pGirderGroup;
 
-   const CBridgeDescription* m_pBridgeDesc;
-   const CPierData* m_pPrevPier;
-   const CSpanData* m_pSpanData;
-   const CPierData* m_pNextPier;
-
-   void FillRefGirderOffsetTypeComboBox(pgsTypes::PierFaceType pierFace);
-   void FillRefGirderComboBox(pgsTypes::PierFaceType pierFace);
-
-   // connections
-   // index is pgsTypes::PierFaceType
-   // start of span is pgsTypes::Ahead, end of span is pgsTypes::Back
    pgsTypes::PierConnectionType m_ConnectionType[2];
 
+   void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);
+   void FillRefGirderComboBox(pgsTypes::MemberEndType end);
 
    friend CSpanLayoutPage;
    friend CSpanGirderLayoutPage;
@@ -158,12 +133,6 @@ protected:
    CPierConnectionsPage m_StartPierPage;
    CPierConnectionsPage m_EndPierPage;
    CSpanGirderLayoutPage m_GirderLayoutPage;
-
-   txnMacroTxn m_Macro;
-   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
-   std::set<EditBridgeExtension> m_BridgeExtensionPages;
-   void NotifyExtensionPages();
-   void NotifyBridgeExtensionPages();
 
    CString m_strStartPierTitle;
    CString m_strEndPierTitle;

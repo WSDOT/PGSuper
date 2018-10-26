@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@
 
 #include <IFace\EditByUI.h>
 
+#include "PGSpliceDoc.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -42,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGMDisplayMgrEventsImpl
-CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSuperDoc* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation)
+CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSuperDocBase* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation)
 {
    m_pDoc    = pDoc;
    m_pFrame  = pFrame;
@@ -65,15 +67,15 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMg
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
 
-   SpanIndexType spanIdx;
-   GirderIndexType gdrIdx;
-   pThis->m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
+   CGirderKey girderKey = pThis->m_pFrame->GetSelection();
 
-   // if a span and girder isn't selected, do nothing
-   if ( spanIdx == ALL_SPANS || gdrIdx == ALL_GIRDERS )
-      return true;
+   if ( girderKey.groupIndex == ALL_GROUPS )
+      girderKey.groupIndex = 0;
+   
+   if ( girderKey.girderIndex == ALL_GIRDERS )
+      girderKey.girderIndex = 0;
 
-   pThis->m_pDoc->EditGirderDescription(spanIdx,gdrIdx,EGD_GENERAL);
+   pThis->m_pDoc->EditGirderDescription(girderKey,EGD_GENERAL);
 
    return true;
 }
@@ -133,10 +135,16 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CDisplayView* pView = pDisplayMgr->GetView();
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_GIRDER_CTX,NULL);
+
+   // PGSplice does not use moment loads
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      pMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,NULL);
+   }
 
    pDoc->BuildReportMenu(pMenu,true);
 
@@ -153,24 +161,22 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    if ( pThis->m_bGirderElevation )
    {
-      const std::map<IDType,IGirderElevationViewEventCallback*>& callbacks = pDoc->GetGirderElevationViewCallbacks();
-      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IGirderElevationViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IGirderElevationViewEventCallback*> callbacks = pDoc->GetGirderElevationViewCallbacks();
+      std::map<IDType,IGirderElevationViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IGirderElevationViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnBackgroundContextMenu(pMenu);
+         IGirderElevationViewEventCallback* callback = iter->second;
+         callback->OnBackgroundContextMenu(pMenu);
       }
    }
    else
    {
-      const std::map<IDType,IGirderSectionViewEventCallback*>& callbacks = pDoc->GetGirderSectionViewCallbacks();
-      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IGirderSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IGirderSectionViewEventCallback*> callbacks = pDoc->GetGirderSectionViewCallbacks();
+      std::map<IDType,IGirderSectionViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IGirderSectionViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnBackgroundContextMenu(pMenu);
+         IGirderSectionViewEventCallback* callback = iter->second;
+         callback->OnBackgroundContextMenu(pMenu);
       }
    }
 

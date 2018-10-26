@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,17 +49,17 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    CPostTensionTimeDependentLossesAtShippingTable* table = NULL;
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting ||
-        pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting 
+   if ( pStrands->TempStrandUsage == pgsTypes::ttsPTBeforeLifting ||
+        pStrands->TempStrandUsage == pgsTypes::ttsPTAfterLifting 
       ) 
    {
       ColumnIndexType numColumns = 7;
@@ -73,9 +74,6 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       pParagraph = new rptParagraph;
       *pChapter << pParagraph;
 
-
-      *pParagraph << rptRcImage(strImagePath + _T("PTLossAtHauling.png")) << rptNewLine;
-
       *pParagraph << table << rptNewLine;
 
       (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
@@ -85,16 +83,18 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
       (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pt avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+      *pParagraph << rptRcImage(strImagePath + _T("PTLossAtHauling.png")) << rptNewLine;
    }
 
    return table;
 }
 
-void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,2) << stress.SetValue(details.pLosses->FrictionLoss());
-   (*this)(row,3) << stress.SetValue(details.pLosses->AnchorSetLoss());
-   (*this)(row,4) << stress.SetValue(details.pLosses->GetDeltaFptAvg());
-   (*this)(row,5) << stress.SetValue(details.pLosses->TemporaryStrand_TimeDependentLossesAtShipping() );
-   (*this)(row,6) << stress.SetValue(details.pLosses->TemporaryStrand_AtShipping());
+   (*this)(row,2) << stress.SetValue(pDetails->pLosses->FrictionLoss());
+   (*this)(row,3) << stress.SetValue(pDetails->pLosses->AnchorSetLoss());
+   (*this)(row,4) << stress.SetValue(pDetails->pLosses->GetDeltaFptAvg());
+   (*this)(row,5) << stress.SetValue(pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping() );
+   (*this)(row,6) << stress.SetValue(pDetails->pLosses->TemporaryStrand_AtShipping());
 }

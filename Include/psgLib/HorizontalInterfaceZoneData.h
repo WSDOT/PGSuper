@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,7 +68,7 @@ LOG
 class PSGLIBCLASS CHorizontalInterfaceZoneData
 {
 public:
-   Uint32  ZoneNum;
+   ZoneIndexType ZoneNum;
    Float64 ZoneLength;
    Float64 BarSpacing;
    matRebar::Size BarSize;
@@ -112,7 +112,7 @@ protected:
    void MakeCopy(const CHorizontalInterfaceZoneData& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CHorizontalInterfaceZoneData& rOther);
+   virtual void MakeAssignment(const CHorizontalInterfaceZoneData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,10 +39,10 @@
 
 #include "GirderDescDlg.h"
 #include "CopyConcreteEntry.h"
-#include <MfcTools\CustomDDX.h>
+
 #include "HtmlHelp\HelpTopics.hh"
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <Atlddx.h>
 #include <system\tokenizer.h>
@@ -100,9 +100,9 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    // concrete material
    ExchangeConcreteData(pDX);
 
-   DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_GirderData.Material.Fci, pDisplayUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, pParent->m_Segment.Material.Concrete.Fci, pDisplayUnits->GetStressUnit() );
    // Validation: 0 < f'ci <= f'c   
-   DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pParent->m_GirderData.Material.Fci,  pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pParent->m_Segment.Material.Concrete.Fci, pParent->m_Segment.Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
    // Slab Offset
    DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
@@ -117,9 +117,9 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       // validate slab offset... (must be greater or equal gross deck thickess)
       if ( pDX->m_bSaveAndValidate )
       {
-         Float64 Lg = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
-         pgsPointOfInterest poiStart(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,0.0);
-         pgsPointOfInterest poiEnd(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,Lg);
+         Float64 Lg = pBridge->GetSegmentLength(pParent->m_SegmentKey);
+         pgsPointOfInterest poiStart(pParent->m_SegmentKey,0.0);
+         pgsPointOfInterest poiEnd(pParent->m_SegmentKey,Lg);
          Float64 grossDeckThicknessStart = pBridge->GetGrossSlabDepth(poiStart) + pBridge->GetFillet();
          Float64 grossDeckThicknessEnd   = pBridge->GetGrossSlabDepth(poiEnd) + pBridge->GetFillet();
          
@@ -145,6 +145,9 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          }
       }
    }
+
+   DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, pParent->m_ConditionFactorType);
+   DDX_Text(pDX,   IDC_CONDITION_FACTOR,      pParent->m_ConditionFactor);
 }
 
 void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
@@ -153,18 +156,31 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_GirderData.Material.Fc , pDisplayUnits->GetStressUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, IDC_GIRDER_FC,pParent->m_GirderData.Material.Fc, pDisplayUnits->GetStressUnit() );
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      int value;
+      if ( !pDX->m_bSaveAndValidate )
+         value = pParent->m_Segment.Material.Concrete.bBasePropertiesOnInitialValues ? 0 : 1;
+      
+      DDX_Radio(pDX,IDC_FC1,value);
 
-   DDX_Check_Bool(pDX, IDC_MOD_ECI, pParent->m_GirderData.Material.bUserEci);
-   DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_GirderData.Material.Eci , pDisplayUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, IDC_ECI,pParent->m_GirderData.Material.Eci, pDisplayUnits->GetModEUnit() );
+      if ( pDX->m_bSaveAndValidate )
+         pParent->m_Segment.Material.Concrete.bBasePropertiesOnInitialValues = (value == 0 ? true : false);
+   }
 
-   DDX_Check_Bool(pDX, IDC_MOD_EC,  pParent->m_GirderData.Material.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_GirderData.Material.Ec , pDisplayUnits->GetModEUnit() );
-   DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_GirderData.Material.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_Segment.Material.Concrete.Fc , pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_GIRDER_FC,pParent->m_Segment.Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+
+   DDX_Check_Bool(pDX, IDC_MOD_ECI, pParent->m_Segment.Material.Concrete.bUserEci);
+   DDX_UnitValueAndTag( pDX, IDC_ECI,  IDC_ECI_UNIT,   pParent->m_Segment.Material.Concrete.Eci , pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_ECI,pParent->m_Segment.Material.Concrete.Eci, pDisplayUnits->GetModEUnit() );
+
+   DDX_Check_Bool(pDX, IDC_MOD_EC,  pParent->m_Segment.Material.Concrete.bUserEc);
+   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_Segment.Material.Concrete.Ec , pDisplayUnits->GetModEUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_Segment.Material.Concrete.Ec, pDisplayUnits->GetModEUnit() );
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
    {
@@ -178,11 +194,9 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 
    if ( !pDX->m_bSaveAndValidate )
    {
-      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str() );
+      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pParent->m_Segment.Material.Concrete.Type,true).c_str() );
    }
 }
-
-
 
 void CGirderDescGeneralPage::OnCopyMaterial() 
 {
@@ -202,23 +216,23 @@ void CGirderDescGeneralPage::OnCopyMaterial()
       if (entry!=NULL)
       {
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-         pParent->m_GirderData.Material.Type = entry->GetType();
-         pParent->m_GirderData.Material.Fc = entry->GetFc();
-         pParent->m_GirderData.Material.WeightDensity = entry->GetWeightDensity();
-         pParent->m_GirderData.Material.StrengthDensity = entry->GetStrengthDensity();
-         pParent->m_GirderData.Material.MaxAggregateSize = entry->GetAggregateSize();
-         pParent->m_GirderData.Material.EcK1 = entry->GetModEK1();
-         pParent->m_GirderData.Material.EcK2 = entry->GetModEK2();
-         pParent->m_GirderData.Material.CreepK1 = entry->GetCreepK1();
-         pParent->m_GirderData.Material.CreepK2 = entry->GetCreepK2();
-         pParent->m_GirderData.Material.ShrinkageK1 = entry->GetShrinkageK1();
-         pParent->m_GirderData.Material.ShrinkageK2 = entry->GetShrinkageK2();
+         pParent->m_Segment.Material.Concrete.Type = entry->GetType();
+         pParent->m_Segment.Material.Concrete.Fc = entry->GetFc();
+         pParent->m_Segment.Material.Concrete.WeightDensity = entry->GetWeightDensity();
+         pParent->m_Segment.Material.Concrete.StrengthDensity = entry->GetStrengthDensity();
+         pParent->m_Segment.Material.Concrete.MaxAggregateSize = entry->GetAggregateSize();
+         pParent->m_Segment.Material.Concrete.EcK1 = entry->GetModEK1();
+         pParent->m_Segment.Material.Concrete.EcK2 = entry->GetModEK2();
+         pParent->m_Segment.Material.Concrete.CreepK1 = entry->GetCreepK1();
+         pParent->m_Segment.Material.Concrete.CreepK2 = entry->GetCreepK2();
+         pParent->m_Segment.Material.Concrete.ShrinkageK1 = entry->GetShrinkageK1();
+         pParent->m_Segment.Material.Concrete.ShrinkageK2 = entry->GetShrinkageK2();
 
-         pParent->m_GirderData.Material.bUserEc = entry->UserEc();
-         pParent->m_GirderData.Material.Ec = entry->GetEc();
+         pParent->m_Segment.Material.Concrete.bUserEc = entry->UserEc();
+         pParent->m_Segment.Material.Concrete.Ec = entry->GetEc();
 
-         pParent->m_GirderData.Material.bHasFct = entry->HasAggSplittingStrength();
-         pParent->m_GirderData.Material.Fct     = entry->GetAggSplittingStrength();
+         pParent->m_Segment.Material.Concrete.bHasFct = entry->HasAggSplittingStrength();
+         pParent->m_Segment.Material.Concrete.Fct     = entry->GetAggSplittingStrength();
 
          CDataExchange dx(this,FALSE);
          ExchangeConcreteData(&dx);
@@ -237,6 +251,8 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
 	ON_EN_CHANGE(IDC_FCI, OnChangeFci)
 	ON_EN_CHANGE(IDC_GIRDER_FC, OnChangeGirderFc)
+	ON_EN_CHANGE(IDC_ECI, OnChangeEci)
+	ON_EN_CHANGE(IDC_EC, OnChangeEc)
 	ON_BN_CLICKED(IDC_MORE, OnMoreConcreteProperties)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	ON_WM_CTLCOLOR()
@@ -244,6 +260,9 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
    ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
+   ON_BN_CLICKED(IDC_FC1,OnConcreteStrength)
+   ON_BN_CLICKED(IDC_FC2,OnConcreteStrength)
+   ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, OnConditionFactorTypeChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -257,28 +276,53 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   std::_tstring strSpecName = pSpec->GetSpecification();
 
-   m_bUseSameGirderType = pBridgeDesc->UseSameGirderForEntireBridge();
-   m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotSpan )
-      m_SlabOffsetTypeCache = pgsTypes::sotGirder;
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
+   m_LossMethod = pSpecEntry->GetLossMethod();
+
+   if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotGroup )
+      m_SlabOffsetTypeCache = pgsTypes::sotSegment;
    else
       m_SlabOffsetTypeCache = pgsTypes::sotBridge;
-
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   const CGirderTypes* pGirderTypes = pBridgeDesc->GetSpan(pParent->m_CurrentSpanIdx)->GetGirderTypes();
-   pParent->m_strGirderName = pGirderTypes->GetGirderName(pParent->m_CurrentGirderIdx);
-
-   m_SlabOffset[pgsTypes::metStart] = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metStart);
-   m_SlabOffset[pgsTypes::metEnd]   = pGirderTypes->GetSlabOffset(pParent->m_CurrentGirderIdx,pgsTypes::metEnd);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
    m_strSlabOffsetCache[pgsTypes::metEnd].Format(  _T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit(),false));
 
+   // Initialize the condition factor combo box
+   CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
+   pcbConditionFactor->AddString(_T("Good or Satisfactory (Structure condition rating 6 or higher)"));
+   pcbConditionFactor->AddString(_T("Fair (Structure condition rating of 5)"));
+   pcbConditionFactor->AddString(_T("Poor (Structure condition rating 4 or lower)"));
+   pcbConditionFactor->AddString(_T("Other"));
+   pcbConditionFactor->SetCurSel(0);
+
    CPropertyPage::OnInitDialog();
+
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+      EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex();
+      m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+
+      // hide regular text label
+      GetDlgItem(IDC_FC_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_FCI_LABEL)->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      // hide radio buttons
+      GetDlgItem(IDC_FC1)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_FC2)->ShowWindow(SW_HIDE);
+   }
+
+   OnConditionFactorTypeChanged();
+
 
    UpdateGirderTypeHyperLink();
    UpdateGirderTypeControls();
@@ -294,10 +338,12 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    OnUserEci();
    OnUserEc();
+   OnConcreteStrength();
 
    EnableToolTips(TRUE);
 
-   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   if ( pIBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
    {
       // disable slab offset input if there isn't a deck
       m_SlabOffsetHyperLink.EnableWindow(FALSE);
@@ -361,17 +407,110 @@ void CGirderDescGeneralPage::OnHelp()
 void CGirderDescGeneralPage::OnChangeFci() 
 {
    UpdateEci();
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      UpdateFc();
+      UpdateEc();
+   }
 }
 
 void CGirderDescGeneralPage::OnChangeGirderFc() 
 {
    UpdateEc();
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      UpdateFci();
+      UpdateEci();
+   }
+}
+
+void CGirderDescGeneralPage::OnChangeEc() 
+{
+   if ( m_LossMethod == pgsTypes::TIME_STEP && m_ctrlEcCheck.GetCheck() == TRUE)
+   {
+      UpdateEci();
+   }
+}
+
+void CGirderDescGeneralPage::OnChangeEci() 
+{
+   if ( m_LossMethod == pgsTypes::TIME_STEP && m_ctrlEciCheck.GetCheck() == TRUE)
+   {
+      UpdateEc();
+   }
 }
 
 void CGirderDescGeneralPage::UpdateEci()
 {
-   // update modulus
-   if (m_ctrlEciCheck.GetCheck() == 0)
+   int method = 0;
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      if ( i == IDC_FC2 )
+      {
+         // concrete model is based on f'c
+         if ( m_ctrlEcCheck.GetCheck() == TRUE )
+         {
+            // Ec box is checked... user has input a value for Ec
+            // Eci is based on user value for Ec not f'ci
+            method = 0;
+         }
+         else
+         {
+            // Ec box is not checked... Ec is computed from f'c, compute Eci from f'ci
+            method = 1;
+         }
+      }
+      else
+      {
+         if ( m_ctrlEciCheck.GetCheck() == FALSE )// not checked
+         {
+            method = 1;
+         }
+         else
+         {
+            method = -1; // don't compute... it has user input
+         }
+      }
+   }
+   else
+   {
+      if ( m_ctrlEciCheck.GetCheck() == FALSE )
+         method = 1;
+      else
+         method = -1;
+   }
+
+   if ( method == 0 )
+   {
+      // Eci is based on the user input value of Ec and not f'ci
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+      CString strEc;
+      m_ctrlEc.GetWindowText(strEc);
+      Float64 Ec;
+      sysTokenizer::ParseDouble(strEc,&Ec);
+      Ec = ::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+
+      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+      matACI209Concrete concrete;
+      concrete.UserEc28(true);
+      concrete.SetEc28(Ec);
+      concrete.SetA(pParent->m_Segment.Material.Concrete.A);
+      concrete.SetBeta(pParent->m_Segment.Material.Concrete.B);
+      concrete.SetTimeAtCasting(0);
+      concrete.SetFc28(pParent->m_Segment.Material.Concrete.Fc);
+      concrete.SetStrengthDensity(pParent->m_Segment.Material.Concrete.StrengthDensity);
+      Float64 Eci = concrete.GetEc(m_AgeAtRelease);
+
+      CString strEci;
+      strEci.Format(_T("%s"),FormatDimension(Eci,pDisplayUnits->GetModEUnit(),false));
+      m_ctrlEci.SetWindowText(strEci);
+   }
+   else if ( method == 1)
    {
       // need to manually parse strength and density values
       CString strFci, strDensity, strK1, strK2;
@@ -383,9 +522,9 @@ void CGirderDescGeneralPage::UpdateEci()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format(_T("%s"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format(_T("%f"),pParent->m_GirderData.Material.EcK1);
-      strK2.Format(_T("%f"),pParent->m_GirderData.Material.EcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_Segment.Material.Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK1);
+      strK2.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK2);
 
       CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
@@ -394,8 +533,68 @@ void CGirderDescGeneralPage::UpdateEci()
 
 void CGirderDescGeneralPage::UpdateEc()
 {
-   // update modulus
-   if (m_ctrlEcCheck.GetCheck() == 0)
+   int method = 0;
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+
+      if ( i == IDC_FC1 )
+      {
+         // concrete model is based on f'ci
+         if ( m_ctrlEciCheck.GetCheck() == TRUE )
+         {
+            // Eci box is checked... user has input a value for Eci
+            // Ec is based on the user input value of Eci and not f'c
+            method = 0;
+         }
+         else
+         {
+            // Eci box is not checked... Eci is computed from f'ci, compute Ec from f'c
+            method = 1;
+         }
+      }
+      else
+      {
+         if (m_ctrlEcCheck.GetCheck() == FALSE) // not checked
+         {
+            method = 1;
+         }
+         else
+         {
+            method = -1; // don't compute.... it is user input
+         }
+      }
+   }
+   else
+   {
+      if ( m_ctrlEcCheck.GetCheck() == FALSE )
+         method = 1;
+      else
+         method = -1;
+   }
+
+   if ( method == 0 )
+   {
+      // Ec is based on the user input value of Eci and not f'c
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+      CString strEci;
+      m_ctrlEci.GetWindowText(strEci);
+      Float64 Eci;
+      sysTokenizer::ParseDouble(strEci,&Eci);
+      Eci = ::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+
+      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+      Float64 Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_Segment.Material.Concrete.A,pParent->m_Segment.Material.Concrete.B);
+
+      CString strEc;
+      strEc.Format(_T("%s"),FormatDimension(Ec,pDisplayUnits->GetModEUnit(),false));
+      m_ctrlEc.SetWindowText(strEc);
+   }
+   else if (method == 1)
    {
       // need to manually parse strength and density values
       CString strFc, strDensity, strK1, strK2;
@@ -407,15 +606,83 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      strDensity.Format(_T("%s"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format(_T("%f"),pParent->m_GirderData.Material.EcK1);
-      strK2.Format(_T("%f"),pParent->m_GirderData.Material.EcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_Segment.Material.Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK1);
+      strK2.Format(_T("%f"),pParent->m_Segment.Material.Concrete.EcK2);
 
       CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }
 
+void CGirderDescGeneralPage::UpdateFc()
+{
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      if ( i == IDC_FC1 )
+      {
+         // concrete model is based on f'ci... compute f'c
+   #pragma Reminder("UPDATE: assuming ACI209 concrete model")
+         // Get f'ci from edit control
+         CString strFci;
+         m_ctrlFci.GetWindowText(strFci);
+
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+         Float64 fci;
+         sysTokenizer::ParseDouble(strFci, &fci);
+         fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+
+         CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+         Float64 fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_Segment.Material.Concrete.A,pParent->m_Segment.Material.Concrete.B);
+
+         CString strFc;
+         strFc.Format(_T("%s"),FormatDimension(fc,pDisplayUnits->GetStressUnit(),false));
+         m_ctrlFc.SetWindowText(strFc);
+      }
+   }
+}
+
+void CGirderDescGeneralPage::UpdateFci()
+{
+   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   {
+      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      if ( i == IDC_FC2 )
+      {
+         // concrete model is based on f'ci... compute f'c
+   #pragma Reminder("UPDATE: assuming ACI209 concrete model")
+         // Get f'c from edit control
+         CString strFc;
+         m_ctrlFc.GetWindowText(strFc);
+
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+         Float64 fc;
+         sysTokenizer::ParseDouble(strFc, &fc);
+         fc = ::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+
+         CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+         matACI209Concrete concrete;
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(fc);
+         concrete.SetA(pParent->m_Segment.Material.Concrete.A);
+         concrete.SetBeta(pParent->m_Segment.Material.Concrete.B);
+         concrete.SetStrengthDensity(pParent->m_Segment.Material.Concrete.StrengthDensity);
+         Float64 fci = concrete.GetFc(m_AgeAtRelease);
+
+         CString strFci;
+         strFci.Format(_T("%s"),FormatDimension(fci,pDisplayUnits->GetStressUnit(),false));
+         m_ctrlFci.SetWindowText(strFci);
+      }
+   }
+}
 
 void CGirderDescGeneralPage::OnMoreConcreteProperties() 
 {
@@ -428,44 +695,67 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   dlg.m_Type    = pParent->m_GirderData.Material.Type;
-   dlg.m_Fc      = pParent->m_GirderData.Material.Fc;
-   dlg.m_AggSize = pParent->m_GirderData.Material.MaxAggregateSize;
-   dlg.m_bUserEc = pParent->m_GirderData.Material.bUserEc;
-   dlg.m_Ds      = pParent->m_GirderData.Material.StrengthDensity;
-   dlg.m_Dw      = pParent->m_GirderData.Material.WeightDensity;
-   dlg.m_Ec      = pParent->m_GirderData.Material.Ec;
-   dlg.m_EccK1       = pParent->m_GirderData.Material.EcK1;
-   dlg.m_EccK2       = pParent->m_GirderData.Material.EcK2;
-   dlg.m_CreepK1     = pParent->m_GirderData.Material.CreepK1;
-   dlg.m_CreepK2     = pParent->m_GirderData.Material.CreepK2;
-   dlg.m_ShrinkageK1 = pParent->m_GirderData.Material.ShrinkageK1;
-   dlg.m_ShrinkageK2 = pParent->m_GirderData.Material.ShrinkageK2;
-   dlg.m_bHasFct     = pParent->m_GirderData.Material.bHasFct;
-   dlg.m_Fct         = pParent->m_GirderData.Material.Fct;
+   dlg.m_General.m_Type        = pParent->m_Segment.Material.Concrete.Type;
+   dlg.m_General.m_Fc          = pParent->m_Segment.Material.Concrete.Fc;
+   dlg.m_General.m_AggSize     = pParent->m_Segment.Material.Concrete.MaxAggregateSize;
+   dlg.m_General.m_bUserEc     = pParent->m_Segment.Material.Concrete.bUserEc;
+   dlg.m_General.m_Ds          = pParent->m_Segment.Material.Concrete.StrengthDensity;
+   dlg.m_General.m_Dw          = pParent->m_Segment.Material.Concrete.WeightDensity;
+   dlg.m_General.m_Ec          = pParent->m_Segment.Material.Concrete.Ec;
 
-   dlg.m_strUserEc  = m_strUserEc;
+   dlg.m_AASHTO.m_EccK1       = pParent->m_Segment.Material.Concrete.EcK1;
+   dlg.m_AASHTO.m_EccK2       = pParent->m_Segment.Material.Concrete.EcK2;
+   dlg.m_AASHTO.m_CreepK1     = pParent->m_Segment.Material.Concrete.CreepK1;
+   dlg.m_AASHTO.m_CreepK2     = pParent->m_Segment.Material.Concrete.CreepK2;
+   dlg.m_AASHTO.m_ShrinkageK1 = pParent->m_Segment.Material.Concrete.ShrinkageK1;
+   dlg.m_AASHTO.m_ShrinkageK2 = pParent->m_Segment.Material.Concrete.ShrinkageK2;
+   dlg.m_AASHTO.m_bHasFct     = pParent->m_Segment.Material.Concrete.bHasFct;
+   dlg.m_AASHTO.m_Fct         = pParent->m_Segment.Material.Concrete.Fct;
+
+   dlg.m_ACI.m_bUserParameters = pParent->m_Segment.Material.Concrete.bACIUserParameters;
+   dlg.m_ACI.m_A               = pParent->m_Segment.Material.Concrete.A;
+   dlg.m_ACI.m_B               = pParent->m_Segment.Material.Concrete.B;
+   dlg.m_ACI.m_CureMethod      = pParent->m_Segment.Material.Concrete.CureMethod;
+   dlg.m_ACI.m_CementType      = pParent->m_Segment.Material.Concrete.CementType;
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+
+   dlg.m_General.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
    {
-      pParent->m_GirderData.Material.Type             = dlg.m_Type;
-      pParent->m_GirderData.Material.Fc               = dlg.m_Fc;
-      pParent->m_GirderData.Material.MaxAggregateSize = dlg.m_AggSize;
-      pParent->m_GirderData.Material.bUserEc          = dlg.m_bUserEc;
-      pParent->m_GirderData.Material.StrengthDensity  = dlg.m_Ds;
-      pParent->m_GirderData.Material.WeightDensity    = dlg.m_Dw;
-      pParent->m_GirderData.Material.Ec               = dlg.m_Ec;
-      pParent->m_GirderData.Material.EcK1             = dlg.m_EccK1;
-      pParent->m_GirderData.Material.EcK2             = dlg.m_EccK2;
-      pParent->m_GirderData.Material.CreepK1          = dlg.m_CreepK1;
-      pParent->m_GirderData.Material.CreepK2          = dlg.m_CreepK2;
-      pParent->m_GirderData.Material.ShrinkageK1      = dlg.m_ShrinkageK1;
-      pParent->m_GirderData.Material.ShrinkageK2      = dlg.m_ShrinkageK2;
-      pParent->m_GirderData.Material.bHasFct          = dlg.m_bHasFct;
-      pParent->m_GirderData.Material.Fct              = dlg.m_Fct;
+      pParent->m_Segment.Material.Concrete.Type             = dlg.m_General.m_Type;
+      pParent->m_Segment.Material.Concrete.Fc               = dlg.m_General.m_Fc;
+      pParent->m_Segment.Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
+      pParent->m_Segment.Material.Concrete.bUserEc          = dlg.m_General.m_bUserEc;
+      pParent->m_Segment.Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
+      pParent->m_Segment.Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
+      pParent->m_Segment.Material.Concrete.Ec               = dlg.m_General.m_Ec;
 
-      m_strUserEc  = dlg.m_strUserEc;
+      pParent->m_Segment.Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
+      pParent->m_Segment.Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
+      pParent->m_Segment.Material.Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
+      pParent->m_Segment.Material.Concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
+      pParent->m_Segment.Material.Concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
+      pParent->m_Segment.Material.Concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
+      pParent->m_Segment.Material.Concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
+      pParent->m_Segment.Material.Concrete.Fct              = dlg.m_AASHTO.m_Fct;
+
+      pParent->m_Segment.Material.Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
+      pParent->m_Segment.Material.Concrete.A                  = dlg.m_ACI.m_A;
+      pParent->m_Segment.Material.Concrete.B                  = dlg.m_ACI.m_B;
+      pParent->m_Segment.Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
+      pParent->m_Segment.Material.Concrete.CementType         = dlg.m_ACI.m_CementType;
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+
+      m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
+
+      UpdateFci();
+      UpdateFc();
+      UpdateEci();
+      UpdateEc();
 
       UpdateConcreteControls();
    }
@@ -474,16 +764,40 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
 void CGirderDescGeneralPage::UpdateConcreteControls()
 {
-   // the concrete details were updated in the details dialog
-   // update f'c and Ec in this dialog
-   CDataExchange dx(this,FALSE);
-   ExchangeConcreteData(&dx);
-   UpdateEc();
-   UpdateEci();
+   if ( m_LossMethod == LOSSES_TIME_STEP )
+   {
+      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      INT idFci[5] = {IDC_FCI,       IDC_FCI_UNIT,       IDC_MOD_ECI, IDC_ECI, IDC_ECI_UNIT};
+      INT idFc[5]  = {IDC_GIRDER_FC, IDC_GIRDER_FC_UNIT, IDC_MOD_EC,  IDC_EC,  IDC_EC_UNIT };
+
+      BOOL bEnableFci = (i == IDC_FC1);
+
+      for ( int j = 0; j < 5; j++ )
+      {
+         GetDlgItem(idFci[j])->EnableWindow(  bEnableFci );
+         GetDlgItem(idFc[j] )->EnableWindow( !bEnableFci );
+      }
+
+      if ( i == IDC_FC1 ) // input based on f'ci
+      {
+         m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
+         m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
+      }
+
+      if ( i == IDC_FC2 ) // input is based on f'ci
+      {
+         m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
+         m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+      }
+   }
 
    BOOL bEnable = m_ctrlEcCheck.GetCheck();
    GetDlgItem(IDC_EC)->EnableWindow(bEnable);
    GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
+
+   bEnable = m_ctrlEciCheck.GetCheck();
+   GetDlgItem(IDC_ECI)->EnableWindow(bEnable);
+   GetDlgItem(IDC_ECI_UNIT)->EnableWindow(bEnable);
 }
 
 
@@ -528,13 +842,14 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
    const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
 
+#pragma Reminder("UPDATE: add ACI and CEB-FIP parameters to the tooltip text")
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str(),
-      _T("Unit Weight"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,density),
-      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_GirderData.Material.WeightDensity,density),
-      _T("Max Aggregate Size"),  FormatDimension(pParent->m_GirderData.Material.MaxAggregateSize,aggsize)
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_Segment.Material.Concrete.Type,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pParent->m_Segment.Material.Concrete.StrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_Segment.Material.Concrete.WeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pParent->m_Segment.Material.Concrete.MaxAggregateSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -547,11 +862,11 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
    //   strTip += strK1;
    //}
 
-   if ( pParent->m_GirderData.Material.Type != pgsTypes::Normal && pParent->m_GirderData.Material.bHasFct )
+   if ( pParent->m_Segment.Material.Concrete.Type != pgsTypes::Normal && pParent->m_Segment.Material.Concrete.bHasFct )
    {
       CString strLWC;
       strLWC.Format(_T("\r\n%-20s %s"),
-         _T("fct"),FormatDimension(pParent->m_GirderData.Material.Fct,stress));
+         _T("fct"),FormatDimension(pParent->m_Segment.Material.Concrete.Fct,stress));
 
       strTip += strLWC;
    }
@@ -566,14 +881,12 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 void CGirderDescGeneralPage::FillGirderComboBox()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   SpanIndexType spanIdx = pParent->m_CurrentSpanIdx;
-   GirderIndexType gdrIdx  = pParent->m_CurrentGirderIdx;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    std::_tstring strGirderFamilyName = pBridgeDesc->GetGirderFamilyName();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
@@ -635,7 +948,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
 
    CWnd* pwndStart = GetDlgItem(IDC_ADIM_START);
    CWnd* pwndEnd   = GetDlgItem(IDC_ADIM_END);
-   if ( m_SlabOffsetType == pgsTypes::sotGirder )
+   if ( m_SlabOffsetType == pgsTypes::sotSegment )
    {
       // going into girder by girder slab offset mode
       CString strTempStart = m_strSlabOffsetCache[pgsTypes::metStart];
@@ -647,7 +960,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
       pwndStart->SetWindowText(strTempStart);
       pwndEnd->SetWindowText(strTempEnd);
    }
-   else if ( m_SlabOffsetType == pgsTypes::sotSpan )
+   else if ( m_SlabOffsetType == pgsTypes::sotGroup )
    {
       //pwndStart->SetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
       //pwndEnd->SetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
@@ -706,7 +1019,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
 void CGirderDescGeneralPage::UpdateSlabOffsetControls()
 {
    // Enable/Disable Slab Offset controls
-   BOOL bEnable = (m_SlabOffsetType == pgsTypes::sotGirder ? TRUE : FALSE);
+   BOOL bEnable = (m_SlabOffsetType == pgsTypes::sotSegment ? TRUE : FALSE);
 
    GetDlgItem(IDC_ADIM_START_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM_START)->EnableWindow(bEnable);
@@ -734,7 +1047,7 @@ void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
 
 void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
 {
-   if ( m_SlabOffsetType == pgsTypes::sotGirder )
+   if ( m_SlabOffsetType == pgsTypes::sotSegment )
    {
       // slab offset is by girder
       m_SlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));
@@ -777,25 +1090,8 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_strGirderName = newName;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
-
    // reset prestress data
-   pParent->m_GirderData.PrestressData.ResetPrestressData();
-
-   // Must change adjustable strand type if it is incompatible with library
-   pgsTypes::AdjustableStrandType libAdjType = pGdrEntry->GetAdjustableStrandType();
-   pgsTypes::AdjustableStrandType adjType = pParent->m_GirderData.PrestressData.GetAdjustableStrandType();
-   if (adjType == pgsTypes::asHarped && libAdjType == pgsTypes::asStraight)
-   {
-      pParent->m_GirderData.PrestressData.SetAdjustableStrandType(pgsTypes::asStraight);
-   }
-   else if (adjType == pgsTypes::asStraight && libAdjType == pgsTypes::asHarped)
-   {
-      pParent->m_GirderData.PrestressData.SetAdjustableStrandType(pgsTypes::asHarped);
-   }
+   pParent->m_Segment.Strands.ResetPrestressData();
 
    // reset stirrups to library
    pParent->m_Shear.m_CurGrdName = newName;
@@ -804,12 +1100,48 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    pParent->m_LongRebar.m_CurGrdName = newName;
    pParent->m_LongRebar.RestoreToLibraryDefaults();
 
+
    // add/remove property pages if needed
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    bool bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
    bool bCanDebond = pGdrEntry->CanDebondStraightStrands();
 
    pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
+}
+
+void CGirderDescGeneralPage::OnConcreteStrength()
+{
+   UpdateConcreteControls();
+}
+
+void CGirderDescGeneralPage::OnConditionFactorTypeChanged()
+{
+   CEdit* pEdit = (CEdit*)GetDlgItem(IDC_CONDITION_FACTOR);
+   CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
+
+   int idx = pcbConditionFactor->GetCurSel();
+   switch(idx)
+   {
+   case 0:
+      pEdit->EnableWindow(FALSE);
+      pEdit->SetWindowText(_T("1.00"));
+      break;
+   case 1:
+      pEdit->EnableWindow(FALSE);
+      pEdit->SetWindowText(_T("0.95"));
+      break;
+   case 2:
+      pEdit->EnableWindow(FALSE);
+      pEdit->SetWindowText(_T("0.85"));
+      break;
+   case 3:
+      pEdit->EnableWindow(TRUE);
+      break;
+   }
 }

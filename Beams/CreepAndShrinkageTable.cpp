@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
@@ -87,18 +87,10 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
    return table;
 }
 
-void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
-   }
-
-   (*this)(row,1) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row,2) << stress.SetValue( details.pLosses->ElasticShortening().PermanentStrand_Fcgp() );
-   (*this)(row,3) << stress.SetValue( -details.pLosses->GetDeltaFcd1() );
-   (*this)(row,4) << stress.SetValue( ptl->CreepLosses() );
+   (*this)(row,1) << stress.SetValue( pDetails->RefinedLosses.ShrinkageLosses() );
+   (*this)(row,2) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
+   (*this)(row,3) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row,4) << stress.SetValue( pDetails->RefinedLosses.CreepLosses() );
 }

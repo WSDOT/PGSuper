@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -115,9 +115,9 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
 
    var.Clear();
-   var.vt = VT_I4;
+   var.vt = VT_INDEX;
    pStrLoad->get_Property(_T("RebarRowCount"), &var );
-   IndexType count = var.lVal;
+   IndexType count = VARIANT2INDEX(var);
 
    RebarRows.clear();
    for ( IndexType row = 0; row < count; row++ )
@@ -129,7 +129,7 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
       RebarRow rebar_row;
 
-      if ( bar_version > 2 )
+      if ( 2 < bar_version )
       {
          var.vt = VT_I4;
          pStrLoad->get_Property(_T("BarLayout"),         &var);
@@ -252,7 +252,7 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
    //strRebarMaterial = rGird.GetLongSteelMaterial();
 }
 
-bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 girderLength, Float64* pBarStart, Float64* pBarEnd) const
+bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, Float64* pBarStart, Float64* pBarEnd) const
 {
 
    *pBarStart = 0.0;
@@ -264,20 +264,20 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 girderLength, Fl
       if(this->BarLayout == pgsTypes::blFullLength)
       {
          *pBarStart = 0.0;
-         *pBarEnd = girderLength;
+         *pBarEnd = segmentLength;
       }
       else if(this->BarLayout == pgsTypes::blFromLeft)
       {
-         if (this->DistFromEnd < girderLength)
+         if (this->DistFromEnd < segmentLength)
          {
             *pBarStart = this->DistFromEnd;
-            if (*pBarStart + this->BarLength < girderLength)
+            if (*pBarStart + this->BarLength < segmentLength)
             {
                *pBarEnd = *pBarStart + this->BarLength;
             }
             else
             {
-               *pBarEnd = girderLength;
+               *pBarEnd = segmentLength;
             }
          }
          else
@@ -287,9 +287,9 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 girderLength, Fl
       }
       else if(this->BarLayout == pgsTypes::blFromRight)
       {
-         if (this->DistFromEnd < girderLength)
+         if (this->DistFromEnd < segmentLength)
          {
-            *pBarEnd = girderLength - this->DistFromEnd;
+            *pBarEnd = segmentLength - this->DistFromEnd;
             if (*pBarEnd - this->BarLength > 0.0)
             {
                *pBarStart = *pBarEnd - this->BarLength;
@@ -306,12 +306,12 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 girderLength, Fl
       }
       else if(this->BarLayout == pgsTypes::blMidGirderEnds)
       {
-         Float64 gl2 = girderLength/2.0;
+         Float64 gl2 = segmentLength/2.0;
 
          if (this->DistFromEnd < gl2)
          {
             *pBarStart = this->DistFromEnd;
-            *pBarEnd   = girderLength - this->DistFromEnd;
+            *pBarEnd   = segmentLength - this->DistFromEnd;
          }
          else
          {
@@ -320,12 +320,12 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 girderLength, Fl
       }
       else if(this->BarLayout == pgsTypes::blMidGirderLength)
       {
-         Float64 gl2 = girderLength/2.0;
+         Float64 gl2 = segmentLength/2.0;
 
-         if (this->BarLength > girderLength)
+         if (this->BarLength > segmentLength)
          {
             *pBarStart = 0.0;
-            *pBarEnd   = girderLength;
+            *pBarEnd   = segmentLength;
          }
          else
          {

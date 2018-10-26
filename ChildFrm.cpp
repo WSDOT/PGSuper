@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,9 +37,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CChildFrame
 
-IMPLEMENT_DYNCREATE(CChildFrame, CEAFChildFrame)
+IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 
-BEGIN_MESSAGE_MAP(CChildFrame, CEAFChildFrame)
+BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CChildFrame)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
@@ -65,7 +65,7 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// STRINGTABLE resource instead of the document name.
 
 	cs.style &= ~(LONG)FWS_ADDTOTITLE;
-	return CEAFChildFrame::PreCreateWindow(cs);
+	return CMDIChildWnd::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -75,12 +75,12 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CChildFrame::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CEAFChildFrame::AssertValid();
+	CMDIChildWnd::AssertValid();
 }
 
 void CChildFrame::Dump(CDumpContext& dc) const
 {
-	CEAFChildFrame::Dump(dc);
+	CMDIChildWnd::Dump(dc);
 }
 
 #endif //_DEBUG
@@ -118,6 +118,6 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
    }
    else
    {
-      CEAFChildFrame::OnUpdateFrameTitle(bAddToTitle);
+      CMDIChildWnd::OnUpdateFrameTitle(bAddToTitle);
    }
 }

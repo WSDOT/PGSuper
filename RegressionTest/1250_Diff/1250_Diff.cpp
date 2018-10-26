@@ -76,7 +76,7 @@ private:
 
 };
 
-int _tmain(int argc, TCHAR* argv[])
+int main(int argc, TCHAR* argv[])
 {
    std::_tcout<< _T("NCRHP 12-50 File Diff Engine...")<<std::endl;
    if (argc<3)
@@ -102,7 +102,7 @@ int _tmain(int argc, TCHAR* argv[])
          return 1;
       }
 
-      if (pd_max<0.0 || pd_max>=1.0)
+      if (pd_max<0.0 || pd_max>=100)
       {
          std::_tcout<< _T("Error - percent difference out of range")<<std::endl;
       }

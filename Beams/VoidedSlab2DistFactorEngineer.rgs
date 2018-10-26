@@ -2,16 +2,16 @@ HKCR
 {
 	PGSuperBeamFactory.VoidedSlab2DistFactorEngineer.1 = s 'Voided Slab 2 Distribution Factor Engineer'
 	{
-		CLSID = s '{43BA23FE-C697-4277-A1C0-943E6E9DFBF9}'
+		CLSID = s '{DA437468-B32C-4012-8B8E-51BAE278C170}'
    }
 	PGSuperBeamFactory.VoidedSlab2DistFactorEngineer = s 'Voided Slab 2 Distribution Factor Engineer'
 	{
-		CLSID = s '{43BA23FE-C697-4277-A1C0-943E6E9DFBF9}'
+		CLSID = s '{DA437468-B32C-4012-8B8E-51BAE278C170}'
 		CurVer = s 'PGSuperBeamFactory.VoidedSlab2DistFactorEngineer.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {43BA23FE-C697-4277-A1C0-943E6E9DFBF9} = s 'Voided Slab 2 Distribution Factor Engineer'
+		ForceRemove {DA437468-B32C-4012-8B8E-51BAE278C170} = s 'Voided Slab 2 Distribution Factor Engineer'
 		{
 			ProgID = s 'PGSuperBeamFactory.VoidedSlab2DistFactorEngineer.1'
 			VersionIndependentProgID = s 'PGSuperBeamFactory.VoidedSlab2DistFactorEngineer'

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Family
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -59,12 +59,8 @@ interface IBeamFamily : IUnknown
    virtual CString GetName() = 0;
 
    //---------------------------------------------------------------------------------
-   // Causes the list of factory names to be read from the registry
-   virtual void RefreshFactoryList() = 0;
-
-   //---------------------------------------------------------------------------------
    // Returns a vector of beam factory names
-   virtual std::vector<CString> GetFactoryNames() = 0;
+   virtual const std::vector<CString>& GetFactoryNames() = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the factory CLSID

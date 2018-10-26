@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,6 @@
 
 // BulbTeeDistFactorEngineer.cpp : Implementation of CBulbTeeDistFactorEngineer
 #include "stdafx.h"
-#include <Plugins\Beams.h>
 #include "BulbTeeDistFactorEngineer.h"
 #include <IFace\Project.h>
 
@@ -71,78 +70,68 @@ void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType st
 }
 
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
 {
-   return m_pImpl->GetMomentDF(span,gdr,ls);
+   return m_pImpl->GetMomentDF(spanIdx,gdrIdx,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
 {
-   return m_pImpl->GetMomentDF(span, gdr, ls, fcgdr);
+   return m_pImpl->GetMomentDF(spanIdx, gdrIdx, ls, fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
+Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
 {
-   return m_pImpl->GetNegMomentDF(pier,gdr,ls,pierFace);
+   return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
 {
-   return m_pImpl->GetNegMomentDF(pier,gdr,ls,pierFace,fcgdr);
+   return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace,fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
 {
-   return m_pImpl->GetShearDF(span,gdr,ls);
+   return m_pImpl->GetShearDF(spanIdx,gdrIdx,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
 {
-   return m_pImpl->GetShearDF(span,gdr,ls,fcgdr);
+   return m_pImpl->GetShearDF(spanIdx,gdrIdx,ls,fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls)
+Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
 {
-   return m_pImpl->GetReactionDF(pier,gdr,ls);
+   return m_pImpl->GetReactionDF(pierIdx,gdrIdx,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
 {
-   return m_pImpl->GetReactionDF(pier,gdr,ls,fcgdr);
+   return m_pImpl->GetReactionDF(pierIdx,gdrIdx,ls,fcgdr);
 }
 
-void CBulbTeeDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   m_pImpl->BuildReport(span,gdr,pChapter,pDisplayUnits);
+   m_pImpl->BuildReport(girderKey,pChapter,pDisplayUnits);
 }
 
-bool CBulbTeeDistFactorEngineer::Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
+bool CBulbTeeDistFactorEngineer::Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
-   return m_pImpl->Run1250Tests(span,gdr,ls,pid,bridgeId,resultsFile,poiFile);
+   return m_pImpl->Run1250Tests(spanIdx,gdrIdx,ls,pid,bridgeId,resultsFile,poiFile);
 }
 
-bool CBulbTeeDistFactorEngineer::GetDFResultsEx(SpanIndexType span, GirderIndexType gdr,pgsTypes::LimitState ls,
+bool CBulbTeeDistFactorEngineer::GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
                                Float64* gV,  Float64* gV1,  Float64* gV2,
                                Float64* gR,  Float64* gR1,  Float64* gR2 ) 
 {
-   return m_pImpl->GetDFResultsEx(span, gdr, ls,
+   return m_pImpl->GetDFResultsEx(spanIdx,gdrIdx, ls,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
                                gV,  gV1, gV2, gR, gR1, gR2 ); 
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForMoment(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
-{
-   return m_pImpl->GetSkewCorrectionFactorForMoment(span,gdr,ls);
-}
-
-Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
-{
-   return m_pImpl->GetSkewCorrectionFactorForShear(span,gdr,ls);
-}
-
-std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE(ILiveLoads,pLiveLoads);
    GET_IFACE(ISpecification,    pSpec);
@@ -157,7 +146,7 @@ std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexTyp
    {
       if (decktype == pgsTypes::sdtCompositeOverlay && connect == pgsTypes::atcConnectedAsUnit)
       {
-         descr = _T("WSDOT Method per Bridge Design Manual Section 3.9.4. Using type (k) cross section.");
+         descr = _T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999 using type (k) cross section.");
       }
       else if (connect == pgsTypes::atcConnectedAsUnit)
       {
@@ -169,15 +158,15 @@ std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexTyp
       }
 
       // special string if roa is ignored
-      std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
-      if ( !straction.empty() )
+      std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
+      if ( !strAction.empty() )
       {
-         descr += straction;
+         descr += strAction;
       }
    }
    else
    {
-      return m_pImpl->GetComputationDescription(span,gdr,libraryEntryName,decktype,connect);
+      return m_pImpl->GetComputationDescription(girderKey,libraryEntryName,decktype,connect);
    }
 
    return descr;

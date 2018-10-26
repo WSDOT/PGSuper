@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,19 +26,18 @@
 #include <Reporting\StrandLocations.h>
 #include <Reporting\LongRebarLocations.h>
 
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\BeamFactory.h>
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PsgLib\ConcreteLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <Material\PsStrand.h>
 #include <Lrfd\RebarPool.h>
@@ -50,18 +49,52 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
-static void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-static void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
-static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr);
-void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, SpanIndexType span,GirderIndexType gdr);
+void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
+void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
+void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 
-std::_tstring get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+std::_tstring get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::AlongGirder:
+      return _T("Measured From Pier Centerline and Along Girder Centerline");
 
+   case ConnectionLibraryEntry::NormalToPier:
+      return _T("Measured From and Normal to Pier Centerline");
+
+   default:
+      ATLASSERT(0);
+      return _T("");
+   }
+}
+
+inline std::_tstring get_end_distance_measure_string(ConnectionLibraryEntry::EndDistanceMeasurementType type)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::FromBearingAlongGirder:
+      return _T("Measured From Bearing along Girder Centerline");
+
+   case ConnectionLibraryEntry::FromBearingNormalToPier:
+      return _T("Measured From Bearing and Normal to Pier Centerline");
+
+   case ConnectionLibraryEntry::FromPierAlongGirder:
+      return _T("Measured From Pier Centerline and Along Girder Centerline");
+
+   case ConnectionLibraryEntry::FromPierNormalToPier:
+      return _T("Measured From and Normal to Pier Centerline");
+
+   default:
+      ATLASSERT(0);
+      return _T("");
+   }
+}
 
 
 /****************************************************************************
@@ -88,96 +121,95 @@ LPCTSTR CBridgeDescDetailsChapterBuilder::GetName() const
 
 rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType gdr;
 
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
-      gdr = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      gdr = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      span = ALL_SPANS;
-      gdr  = ALL_GIRDERS;
-   }
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GET_IFACE2(pBroker,IStrandGeometry,pStrand);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
 
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
-         rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter<<pHead;
-         *pHead << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-
-         write_deck_width_details(pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
-         write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
-         write_girder_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
-
-         write_handling(pChapter,pBroker,pDisplayUnits,spanIdx, gdrIdx);
-
-         if ( !m_bOmitStrandLocations )
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            CStrandLocations strand_table;
-            strand_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
-         }
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-         write_debonding(pChapter, pBroker, pDisplayUnits, spanIdx, gdrIdx);
+            rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter<<pHead;
+            if ( nSegments == 1 )
+            {
+               *pHead << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+            }
+            else
+            {
+               *pHead << _T("Group ") << LABEL_GROUP(grpIdx) <<  _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            }
 
-         pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter<<pHead;
-         *pHead<<_T("Transverse Reinforcement Stirrup Zones")<<rptNewLine;
-         CStirrupTable stirrup_table;
-         stirrup_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+            write_deck_width_details(pBroker, pDisplayUnits, pChapter, segmentKey, level);
+            write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, segmentKey, level);
+            write_girder_details( pBroker, pDisplayUnits, pChapter, segmentKey, level);
 
-         CLongRebarLocations long_rebar_table;
-         long_rebar_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+            write_handling(pChapter,pBroker,pDisplayUnits,segmentKey);
 
-         pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter<<pHead;
-         *pHead<<_T("Materials")<<rptNewLine;
-         write_concrete_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
+            if ( !m_bOmitStrandLocations )
+            {
+               CStrandLocations strand_table;
+               strand_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+            }
 
-         write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx, pgsTypes::Permanent );
+            write_debonding(pChapter, pBroker, pDisplayUnits, segmentKey);
 
-         if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
-            write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx, pgsTypes::Temporary );
+            pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pHead;
+            *pHead << _T("Transverse Reinforcement Stirrup Zones") << rptNewLine;
 
-         write_rebar_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx);
-      } // gdrIdx
-   } // spanIdx
-   
+            CStirrupTable stirrup_table;
+            stirrup_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+
+            CLongRebarLocations long_rebar_table;
+            long_rebar_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+
+            pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pHead;
+            *pHead << _T("Materials") << rptNewLine;
+            write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey, pgsTypes::Permanent );
+
+            if ( 0 < pStrand->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
+            {
+               write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey, pgsTypes::Temporary );
+            }
+
+	        write_rebar_details( pBroker, pDisplayUnits, pChapter, segmentKey, level);
+         } // next segment
+      } // next girder
+   } // next group
+
+#pragma Reminder("UPDATE: write out tendon information : geometry and material")
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing() );
 
    if ( pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing() != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing() )
+   {
       write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing());
+   }
 
    const TrafficBarrierEntry* pLftInt = pBridgeDesc->GetLeftRailingSystem()->GetInteriorRailing();
    const TrafficBarrierEntry* pRgtInt = pBridgeDesc->GetRightRailingSystem()->GetInteriorRailing();
@@ -185,7 +217,9 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    {
       if ( pLftInt != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()  &&
            pLftInt != pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing()  )
+      {
          write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetLeftRailingSystem()->GetInteriorRailing());
+      }
    }
 
    if (NULL != pRgtInt)
@@ -193,7 +227,9 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
       if ( pRgtInt != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()  &&
            pRgtInt != pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing() &&
            pRgtInt != pLftInt  )
+      {
          write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetRightRailingSystem()->GetInteriorRailing());
+      }
    }
 
    return pChapter;
@@ -223,19 +259,20 @@ CChapterBuilder* CBridgeDescDetailsChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-
-void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
+#pragma Reminder("UPDATE: need to write out spliced girder taper information")
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-   const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
-   std::_tstring title = std::_tstring(pSpan->GetGirderTypes()->GetGirderName(gdr)) + std::_tstring(_T(" Dimensions"));
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(1,title);
+   std::_tstring title = std::_tstring(pGirder->GetGirderName()) + std::_tstring(_T(" Dimensions"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,title.c_str());
    pTable->EnableRowStriping(false);
    *pPara << pTable;
 
@@ -252,7 +289,6 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          dim_iter != dimensions.end() && unit_iter != units.end(); 
          dim_iter++, unit_iter++ )
    {
-
       const unitLength* pUnit = *unit_iter;
       if ( pUnit )
       {
@@ -262,11 +298,11 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          cmpdim.SetWidth(length_unit.Width);
          cmpdim.SetPrecision(length_unit.Precision);
 
-         (*pTable)(1,0) << (*dim_iter).first.c_str() << _T(" = ") << cmpdim.SetValue( (*dim_iter).second ) << rptNewLine;
+         (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << cmpdim.SetValue( (*dim_iter).second ) << rptNewLine;
       }
       else
       {
-         (*pTable)(1,0) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
+         (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
       }
    }
 
@@ -279,19 +315,20 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 #pragma Reminder("Implement")
 }
 
-void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType gdr)
+void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   if ( pStrandGeom->CanDebondStrands(span,gdr,pgsTypes::Straight) || 
-        pStrandGeom->CanDebondStrands(span,gdr,pgsTypes::Harped)   || 
-        pStrandGeom->CanDebondStrands(span,gdr,pgsTypes::Temporary) )
+   if ( pStrandGeom->CanDebondStrands(segmentKey,pgsTypes::Straight) || 
+        pStrandGeom->CanDebondStrands(segmentKey,pgsTypes::Harped)   || 
+        pStrandGeom->CanDebondStrands(segmentKey,pgsTypes::Temporary) )
    {
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetSpanLengthUnit(), true );
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-      const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+      const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
@@ -333,7 +370,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
    }
 }
 
-static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
@@ -358,7 +395,7 @@ static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplay
    rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Deck and Roadway Widths"));
    *pPara << pTable1;
 
-   ColumnIndexType col=0;
+   ColumnIndexType col = 0;
    (*pTable1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0,col++) << _T("Station");
    (*pTable1)(0,col++) << COLHDR(_T("Deck")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -369,9 +406,9 @@ static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplay
    if (has_overlay)
       (*pTable1)(0,col++) << COLHDR(_T("Overlay")<<rptNewLine<<_T("Toe-Toe")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_TENTH_POINTS,POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_TENTH_POINTS,POIFIND_OR) );
    std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
    std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
    RowIndexType row(1);
@@ -383,7 +420,7 @@ static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplay
       pBridge->GetStationAndOffset(poi,&station,&offset);
       Float64 dist_from_start = pBridge->GetDistanceFromStartOfBridge(station);
 
-      (*pTable1)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*pTable1)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
       (*pTable1)(row,col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat() );
 
        Float64 lft_off = pBridge->GetLeftSlabEdgeOffset(dist_from_start);
@@ -411,8 +448,7 @@ static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplay
    }
 }
 
-
-void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  locdim,  pDisplayUnits->GetSpanLengthUnit(), true );
@@ -422,9 +458,10 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
    *pParagraph << _T("Intermediate Diaphragms") << rptNewLine;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-   const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
    const GirderLibraryEntry::DiaphragmLayoutRules& rules = pGdrEntry->GetDiaphragmLayoutRules();
 
@@ -504,12 +541,15 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
 
    std::_tstring title(pBarrierEntry->GetName() + _T(" Dimensions"));
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,title);
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,title.c_str());
    pTable->EnableRowStriping(false);
    *pPara << pTable;
 
+   // schematic
+   (*pTable)(0,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + _T("ExteriorBarrier.jpg"));
+
    // Dump barrier points
-   (*pTable)(0,0) << _T("Barrier Points") << rptNewLine;
+   (*pTable)(0,1) << _T("Barrier Points") << rptNewLine;
    CComPtr<IPoint2dCollection> points;
    pBarrierEntry->GetBarrierPoints(&points);
 
@@ -523,210 +563,24 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       point->get_X(&x);
       point->get_Y(&y);
 
-      (*pTable)(0,0) << _T("Point ") << i++ << _T("= (") << xdim.SetValue(x) << _T(",") << ydim.SetValue(y) << _T(")") << rptNewLine;
+      (*pTable)(0,1) << _T("Point ") << i++ << _T("= (") << xdim.SetValue(x) << _T(",") << ydim.SetValue(y) << _T(")") << rptNewLine;
       point.Release();
    }
 
-   (*pTable)(0,0) << rptNewLine << rptNewLine;
-   (*pTable)(0,0) << _T("Curb Offset = ") << xdim.SetValue( pBarrierEntry->GetCurbOffset() ) << rptNewLine;
+   (*pTable)(0,1) << rptNewLine << rptNewLine;
+   (*pTable)(0,1) << _T("Curb Offset = ") << xdim.SetValue( pBarrierEntry->GetCurbOffset() ) << rptNewLine;
 
    if ( pBarrierEntry->GetWeightMethod() == TrafficBarrierEntry::Compute )
    {
-      (*pTable)(0,0) << _T("Weight computed from area of barrier") << rptNewLine;
+      (*pTable)(0,1) << _T("Weight computed from area of barrier") << rptNewLine;
    }
    else
    {
-      (*pTable)(0,0) << _T("Weight = ") << weight.SetValue( pBarrierEntry->GetWeight() ) << _T("/barrier") << rptNewLine;
-   }
-
-   (*pTable)(0,1) << rptRcImage( pgsReportStyleHolder::GetImagePath() + _T("ExteriorBarrier.jpg"));
-}
-
-
-void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
-{
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         true );
-
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool b2005Edition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2005Interims ? true : false );
-   bool b2015Edition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SeventhEditionWith2015Interims ? true : false );
-
-   bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   GET_IFACE2(pBroker, IGirderData,pGirderData);
-   const CGirderMaterial* pGirderMaterial = pGirderData->GetGirderMaterial(span,gdr);
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Girder Concrete"));
-   *pPara << pTable << rptNewLine;
-
-   Int16 row = 0;
-   (*pTable)(row,0) << _T("Type");
-   (*pTable)(row,1) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)pGirderMaterial->Type, true );
-   row++;
-
-   (*pTable)(row,0) << RPT_FC;
-   (*pTable)(row,1) << stress.SetValue( pGirderMaterial->Fc );
-   row++;
-
-   (*pTable)(row,0) << RPT_FCI;
-   (*pTable)(row,1) << stress.SetValue( pGirderMaterial->Fci );
-   row++;
-
-   (*pTable)(row,0) << _T("Unit Weight ") << Sub2(_T("w"),_T("c"));
-   (*pTable)(row,1) << density.SetValue( pGirderMaterial->StrengthDensity );
-   row++;
-
-   (*pTable)(row,0) << _T("Unit Weight with Reinforcement ") << Sub2(_T("w"),_T("c"));
-   (*pTable)(row,1) << density.SetValue( pGirderMaterial->WeightDensity );
-   row++;
-
-   (*pTable)(row,0) << _T("Max Aggregate Size");
-   (*pTable)(row,1) << cmpdim.SetValue( pGirderMaterial->MaxAggregateSize );
-   row++;
-
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-
-   if ( pGirderMaterial->bUserEc )
-   {
-      (*pTable)(row,0) << _T("User specified value");
-   }
-   else
-   {
-      if ( b2015Edition )
-      {
-         ATLASSERT(!bSIUnits);
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ModE_US_2015.png")) << rptNewLine;
-      }
-      else if ( b2005Edition )
-      {
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI_2005.png") : _T("ModE_US_2005.png"))) << rptNewLine;
-      }
-      else
-      {
-         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI.png") : _T("ModE_US.png"))) << rptNewLine;
-      }
-   }
-   (*pTable)(row,1) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE.SetValue(pMaterial->GetEcGdr(span,gdr)) << rptNewLine;
-   (*pTable)(row,1) << Sub2(_T("E"),_T("ci")) << _T(" = ") << modE.SetValue(pMaterial->GetEciGdr(span,gdr));
-   row++;
-
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("1"));
-      (*pTable)(row,1) << pGirderMaterial->EcK1;
-      row++;
-
-      (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("2"));
-      (*pTable)(row,1) << pGirderMaterial->EcK2;
-      row++;
-
-      (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("1"));
-      (*pTable)(row,1) << pGirderMaterial->CreepK1;
-      row++;
-
-      (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("2"));
-      (*pTable)(row,1) << pGirderMaterial->CreepK2;
-      row++;
-
-      (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("1"));
-      (*pTable)(row,1) << pGirderMaterial->ShrinkageK1;
-      row++;
-
-      (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("2"));
-      (*pTable)(row,1) << pGirderMaterial->ShrinkageK2;
-      row++;
-   }
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
-   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-   {
-      row = 0;
-      pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Deck Concrete"));
-      *pPara << pTable << rptNewLine;
-
-      (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)pDeck->SlabConcreteType, true );
-      row++;
-
-      (*pTable)(row,0) << RPT_FC;
-      (*pTable)(row,1) << stress.SetValue( pDeck->SlabFc );
-      row++;
-
-      (*pTable)(row,0) << _T("Unit Weight ") << Sub2(_T("w"),_T("c"));
-      (*pTable)(row,1) << density.SetValue( pDeck->SlabStrengthDensity );
-      row++;
-
-      (*pTable)(row,0) << _T("Unit Weight including Reinforcement ") << Sub2(_T("w"),_T("c"));
-      (*pTable)(row,1) << density.SetValue( pDeck->SlabWeightDensity );
-      row++;
-
-      (*pTable)(row,0) << _T("Max Aggregate Size");
-      (*pTable)(row,1) << cmpdim.SetValue( pDeck->SlabMaxAggregateSize );
-      row++;
-
-      if ( pDeck->SlabUserEc )
-      {
-         (*pTable)(row,0) << _T("User specified value");
-      }
-      else
-      {
-         if ( b2015Edition )
-         {
-            ATLASSERT(!bSIUnits);
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ModE_US_2015.png")) << rptNewLine;
-         }
-         else if ( b2005Edition )
-         {
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI_2005.png") : _T("ModE_US_2005.png"))) << rptNewLine;
-         }
-         else
-         {
-            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI.png") : _T("ModE_US.png"))) << rptNewLine;
-         }
-      }
-      (*pTable)(row,1) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE.SetValue(pMaterial->GetEcSlab());
-      row++;
-
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("1"));
-         (*pTable)(row,1) << pDeck->SlabEcK1;
-         row++;
-
-         (*pTable)(row,0) << Sub2(_T("E"),_T("c")) << _T(" ") << Sub2(_T("K"),_T("2"));
-         (*pTable)(row,1) << pDeck->SlabEcK2;
-         row++;
-
-         (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("1"));
-         (*pTable)(row,1) << pDeck->SlabCreepK1;
-         row++;
-
-         (*pTable)(row,0) << _T("Creep") << _T(" ") << Sub2(_T("K"),_T("2"));
-         (*pTable)(row,1) << pDeck->SlabCreepK2;
-         row++;
-
-         (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("1"));
-         (*pTable)(row,1) << pDeck->SlabShrinkageK1;
-         row++;
-
-         (*pTable)(row,0) << _T("Shrinkage") << _T(" ") << Sub2(_T("K"),_T("2"));
-         (*pTable)(row,1) << pDeck->SlabShrinkageK2;
-         row++;
-      }
+      (*pTable)(0,1) << _T("Weight = ") << weight.SetValue( pBarrierEntry->GetWeight() ) << _T("/barrier") << rptNewLine;
    }
 }
 
-void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
+void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -741,11 +595,11 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    else
       *pPara << _T("Permanent Strand") << rptNewLine;
 
-   GET_IFACE2(pBroker, IGirderData, pGirderData);
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,strandType);
+   GET_IFACE2(pBroker, ISegmentData,pSegmentData);
+   const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
    CHECK(pstrand!=0);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,pstrand->GetName());
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(2,pstrand->GetName().c_str());
    *pPara << pTable << rptNewLine;
 
    Int16 row = 0;
@@ -771,7 +625,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    row++;
 }
 
-void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -782,17 +636,19 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    lrfdRebarPool* pPool = lrfdRebarPool::GetInstance();
 
    const matRebar* pDeckRebar = NULL;
    if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-      pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,matRebar::bs3);
+      pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarSize);
 
-   const CGirderData& girderData = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderData(gdrIdx);
-   const matRebar* pShearRebar = pPool->GetRebar(girderData.ShearData.ShearBarType,girderData.ShearData.ShearBarGrade,matRebar::bs3);
-   const matRebar* pLongRebar  = pPool->GetRebar(girderData.LongitudinalRebarData.BarType,girderData.LongitudinalRebarData.BarGrade,matRebar::bs3);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+   const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
+   const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
 
    if ( pDeckRebar )
    {
@@ -852,13 +708,13 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    }
 }
 
-void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,SpanIndexType span,GirderIndexType girder)
+void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   bool dolift = pGirderLiftingSpecCriteria->IsLiftingCheckEnabled();
+   bool dolift = pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled();
 
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   bool dohaul = pGirderHaulingSpecCriteria->IsHaulingCheckEnabled();
+   bool dohaul = pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled();
 
    if (dolift || dohaul)
    {
@@ -874,65 +730,15 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
       if (dolift)
       {
          GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-         *pPara<<_T("Left Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(span,girder))<<rptNewLine;
-         *pPara<<_T("Right Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetRightLiftingLoopLocation(span,girder))<<rptNewLine;
+         *pPara<<_T("Left Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetLeftLiftingLoopLocation(segmentKey))<<rptNewLine;
+         *pPara<<_T("Right Lifting Loop  = ")<<loc.SetValue(pGirderLifting->GetRightLiftingLoopLocation(segmentKey))<<rptNewLine;
       }
 
       if (dohaul)
       {
          GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
-         *pPara<<_T("Leading Truck Support = ")<<loc.SetValue(pGirderHauling->GetLeadingOverhang(span,girder))<<rptNewLine;
-         *pPara<<_T("Trailing Truck Support = ")<<loc.SetValue(pGirderHauling->GetTrailingOverhang(span,girder))<<rptNewLine;
+         *pPara<<_T("Leading Truck Support = ")<<loc.SetValue(pGirderHauling->GetLeadingOverhang(segmentKey))<<rptNewLine;
+         *pPara<<_T("Trailing Truck Support = ")<<loc.SetValue(pGirderHauling->GetTrailingOverhang(segmentKey))<<rptNewLine;
       }
    }
-}
-
-
-std::_tstring get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
-{
-   std::_tstring strName;
-   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
-   {
-      switch( endType )
-      {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
-         strName = _T("Connection_BrgAlongGdr_EndAlongGdrFromBrg.gif");
-         break;
-
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
-         strName = _T("Connection_BrgAlongGdr_EndAlongNormalFromBrg.gif");
-         break;
-
-      case ConnectionLibraryEntry::FromPierAlongGirder:
-         strName = _T("Connection_BrgAlongGdr_EndAlongGdrFromPier.gif");
-         break;
-
-      case ConnectionLibraryEntry::FromPierNormalToPier:
-         strName = _T("Connection_BrgAlongGdr_EndAlongNormalFromPier.gif");
-         break;
-      }
-   }
-   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
-   {
-      switch( endType )
-      {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
-         strName = _T("Connection_BrgAlongNormal_EndAlongGdrFromBrg.gif");
-         break;
-
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
-         strName = _T("Connection_BrgAlongNormal_EndAlongNormalFromBrg.gif");
-         break;
-
-      case ConnectionLibraryEntry::FromPierAlongGirder:
-         strName = _T("Connection_BrgAlongNormal_EndAlongGdrFromPier.gif");
-         break;
-
-      case ConnectionLibraryEntry::FromPierNormalToPier:
-         strName = _T("Connection_BrgAlongNormal_EndAlongNormalFromPier.gif");
-         break;
-      }
-   }
-
-   return strName;
 }

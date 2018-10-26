@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@ CLASS
 #include "PGSuperCalculationSheet.h"
 #include <IFace\Project.h>
 #include <IFace\VersionInfo.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,9 +55,14 @@ WsdotCalculationSheet()
    SetCompany(pProj->GetCompany().c_str());
 
    GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE(IDocumentType,pDocType);
 
    CString strBottomTitle;
-   strBottomTitle.Format(_T("PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
+   if ( pDocType->IsPGSuperDocument() )
+      strBottomTitle.Format(_T("PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
+   else
+      strBottomTitle.Format(_T("PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pVerInfo->GetVersion(true),sysDate().Year());
+
    SetTitle(strBottomTitle);
 }
 

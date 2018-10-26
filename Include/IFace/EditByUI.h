@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,7 +70,8 @@ interface IEditByUI : IUnknown
 {
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;
-   virtual bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage) = 0;
+   virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) = 0;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) = 0;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) = 0;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) = 0;
    virtual void EditLiveLoads() = 0;
@@ -83,8 +84,8 @@ interface IEditByUI : IUnknown
    virtual UINT GetLibToolBarID() = 0;
    virtual UINT GetHelpToolBarID() = 0;
 
-   // NOTE: Strand fill type must be NPS_DIRECT_SELECTION before entering this dialog
-   virtual bool EditDirectInputPrestressing(SpanIndexType span,GirderIndexType girder) = 0;
+   // NOTE: Strand fill type must be CStrandData::npsDirectSelection before entering this dialog
+   virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey) = 0;
 };
 
 // Extends the load editing capabilities... presents user with load editing UI as needed

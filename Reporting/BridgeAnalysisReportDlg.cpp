@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,9 @@
 #include <Reporting\BridgeAnalysisReportSpecification.h>
 #include <MFCTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"
+
+#include <IFace\Project.h>
+#include <EAF\EAFUtilities.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -68,7 +71,6 @@ END_MESSAGE_MAP()
 
 void CBridgeAnalysisReportDlg::OnHelp() 
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_BRIDGEANALYSISREPORT );
 }
 
@@ -85,4 +87,52 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CBridgeAnalysisReportDlg::UpdateChapterList()
+{
+   // Don't call base class version... we want to redefine the behavior
+   //__super::UpdateChapterList();
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   // Clear out the list box
+   m_ChList.ResetContent();
+
+   // Get the chapters in the report
+   std::vector<CChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+
+   // Populate the list box with the names of the chapters
+   std::vector<CChapterInfo>::iterator iter;
+   for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
+   {
+      CChapterInfo chInfo = *iter;
+
+      bool bIncludeChapter = false;
+      if ( chInfo.Name == _T("Simple Span") && (analysisType == pgsTypes::Simple || analysisType == pgsTypes::Envelope) )
+         bIncludeChapter = true;
+      else if ( chInfo.Name == _T("Continuous Span") && (analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope) )
+         bIncludeChapter = true;
+      else if ( chInfo.Name == _T("Envelope of Simple/Continuous Spans") && (analysisType == pgsTypes::Envelope) )
+         bIncludeChapter = true;
+
+      if ( bIncludeChapter )
+      {
+         int idx = m_ChList.AddString( chInfo.Name.c_str() );
+         if ( idx != LB_ERR ) // no error
+         {
+            m_ChList.SetCheck( idx, chInfo.Select ? 1 : 0 ); // turn the check on
+            m_ChList.SetItemData( idx, chInfo.MaxLevel );
+         }
+      }
+   }
+
+   // don't select any items in the chapter list
+   m_ChList.SetCurSel(-1);
 }

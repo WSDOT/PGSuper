@@ -1,27 +1,27 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     1    WF74G    *     42  0.6  270  32.42  14.99  11.75  11.75                                              12  70.0  4.0  5.000  6.000   4.133    -3.962    11296   0.629  0.756   4.758 -1.717 -0.155 -0.164 -2.035 184.79  338.63    3.00    6.17    6.17 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   6  6.50  1     1    WF74G  *    41  0.60  270 32.44 15.95  11 70.0  4.900  6.100    4.099   -3.925  11218  0.629  0.756  0.35 -0.14 -0.01 -0.01 -0.16 176.94 311.67   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Confinement zone check failed.
+Confinement zone checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     2    WF74G    *     40  0.6  270  32.46  14.16  11.50  11.50                                              12  70.0  4.0  4.700  5.600   3.949    -3.797    10789   0.571  0.756   4.427 -1.688 -0.158 -0.168 -2.014 170.62  322.08    3.00    6.17    6.17 
-
-
-The Specification Check was Not Successful
-Confinement zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     4    WF74G    *     40  0.6  270  32.46  14.16  11.50  11.50                                              12  70.0  4.0  4.700  5.600   3.949    -3.797    10789   0.571  0.756   4.427 -1.688 -0.158 -0.168 -2.014 170.62  322.08    3.00    6.17    6.17 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   6  6.50  1     2    WF74G  *    40  0.60  270 32.46 16.96  10 70.0  4.800  6.000    3.961   -3.790  10983  0.573  0.756  0.34 -0.13 -0.01 -0.01 -0.16 169.20 303.41   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Confinement zone check failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   6  6.50  1     4    WF74G  *    40  0.60  270 32.46 16.96  10 70.0  4.800  6.000    3.961   -3.790  10983  0.573  0.756  0.34 -0.13 -0.01 -0.01 -0.16 169.20 303.41   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Confinement zone checks failed.
 
 

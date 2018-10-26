@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,15 @@
 // BridgePlanView.cpp : implementation file
 //
 
+#pragma Reminder("UPDATE")
+// Recently (2/2012) RAB added ID's to all girders, piers, segments, etc... these object ID's
+// could be the display object id. currently this view keeps a mapping of key values to
+// display object ids. this may not be necessary
+
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 #include "PGSuperUnits.h"
 #include <IFace\DrawBridgeSettings.h>
 #include "BridgePlanView.h"
@@ -34,8 +39,11 @@
 #include "AlignmentDisplayObjectEvents.h"
 #include "InplaceSpanLengthEditEvents.h"
 #include "InplacePierStationEditEvents.h"
+#include "PGSuperAppPlugin\InplaceTemporarySupportStationEditEvents.h"
 #include "GirderDisplayObjectEvents.h"
 #include "PierDisplayObjectEvents.h"
+#include "PGSuperAppPlugin\TemporarySupportDisplayObjectEvents.h"
+#include "PGSuperAppPlugin\ClosurePourDisplayObjectEvents.h"
 #include "ConnectionDisplayObjectEvents.h"
 #include "DisplayObjectFactory.h"
 #include "BridgeSectionCutDisplayImpl.h"
@@ -49,14 +57,15 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 
-#include <PgsExt\BridgeDescription.h>
-#include <MfcTools\Text.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
 
 #include <Material\Material.h>
 
 #include <EAF\EAFMenu.h>
+
+#include <PgsExt\ClosurePourData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,14 +76,17 @@ static char THIS_FILE[] = __FILE__;
 #define TITLE_DISPLAY_LIST       0
 #define ALIGNMENT_DISPLAY_LIST   1
 #define PIER_DISPLAY_LIST        2
-#define GIRDER_DISPLAY_LIST      3
-#define BEARING_DISPLAY_LIST     4
-#define SPAN_DISPLAY_LIST        5
-#define SLAB_DISPLAY_LIST        6
-#define LABEL_DISPLAY_LIST       7
-#define SECTION_CUT_DISPLAY_LIST 8
-#define NORTH_ARROW_DISPLAY_LIST 9
-#define DIAPHRAGM_DISPLAY_LIST   10
+#define SEGMENT_DISPLAY_LIST     3
+#define GIRDER_DISPLAY_LIST      4
+#define BEARING_DISPLAY_LIST     5
+#define SPAN_DISPLAY_LIST        6
+#define SLAB_DISPLAY_LIST        7
+#define LABEL_DISPLAY_LIST       8
+#define SECTION_CUT_DISPLAY_LIST 9
+#define NORTH_ARROW_DISPLAY_LIST 10
+#define DIAPHRAGM_DISPLAY_LIST   11
+#define TEMPORARY_SUPPORT_DISPLAY_LIST 12
+#define CLOSURE_POUR_DISPLAY_LIST 13
 
 #define SECTION_CUT_ID -200
 #define ALIGNMENT_ID   -300
@@ -116,31 +128,6 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanView drawing
-bool CBridgePlanView::GetSelectedGirder(SpanIndexType* pSpanIdx,GirderIndexType* pGirderIdx)
-{
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
-
-   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
-
-   if ( displayObjects.size() == 0 )
-      return false;
-
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
-
-   GirderDisplayObjectInfo* pInfo = NULL;
-   pDO->GetItemData((void**)&pInfo);
-
-   if ( pInfo == NULL || pInfo->DisplayListID != GIRDER_DISPLAY_LIST )
-      return false;
-
-   UnhashSpanGirder(pInfo->SpanGirderHash,pSpanIdx,pGirderIdx);
-   return true;
-}
-
 bool CBridgePlanView::IsDeckSelected()
 {
    CComPtr<iDisplayMgr> dispMgr;
@@ -279,23 +266,145 @@ void CBridgePlanView::SelectPier(PierIndexType pierIdx,bool bSelect)
       dispMgr->ClearSelectedObjects();
 }
 
-void CBridgePlanView::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bSelect)
+bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
 {
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-   std::map<SpanGirderHashType,long>::iterator found = m_GirderIDs.find(hash);
+   DisplayObjectContainer displayObjects;
+   dispMgr->GetSelectedObjects(&displayObjects);
+
+   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
+
+   if ( displayObjects.size() == 0 )
+      return false;
+
+   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+
+   GirderDisplayObjectInfo* pInfo = NULL;
+   pDO->GetItemData((void**)&pInfo);
+
+   if ( pInfo == NULL || pInfo->DisplayListID != GIRDER_DISPLAY_LIST )
+      return false;
+
+   *pGirderKey = pInfo->m_GirderKey;
+   return true;
+}
+
+void CBridgePlanView::SelectGirder(const CGirderKey& girderKey,bool bSelect)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   std::map<CGirderKey,IDType>::iterator found = m_GirderIDs.find(girderKey);
    if ( found == m_GirderIDs.end() )
    {
       dispMgr->ClearSelectedObjects();
       return;
    }
 
-   long ID = (*found).second;
+   IDType ID = (*found).second;
 
    CComPtr<iDisplayObject> pDO;
    dispMgr->FindDisplayObject(ID,GIRDER_DISPLAY_LIST,atByID,&pDO);
+
+   if ( pDO )
+      dispMgr->SelectObject(pDO,bSelect);
+   else
+      dispMgr->ClearSelectedObjects();
+}
+
+bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   DisplayObjectContainer displayObjects;
+   dispMgr->GetSelectedObjects(&displayObjects);
+
+   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
+
+   if ( displayObjects.size() == 0 )
+      return false;
+
+   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+
+   SegmentDisplayObjectInfo* pInfo = NULL;
+   pDO->GetItemData((void**)&pInfo);
+
+   if ( pInfo == NULL || pInfo->DisplayListID != SEGMENT_DISPLAY_LIST )
+      return false;
+
+   *pSegmentKey = pInfo->m_SegmentKey;
+
+   return true;
+}
+
+void CBridgePlanView::SelectSegment(const CSegmentKey& segmentKey,bool bSelect)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   std::map<CSegmentKey,IDType>::iterator found = m_SegmentIDs.find(segmentKey);
+   if ( found == m_SegmentIDs.end() )
+   {
+      dispMgr->ClearSelectedObjects();
+      return;
+   }
+
+   IDType ID = (*found).second;
+
+   CComPtr<iDisplayObject> pDO;
+   dispMgr->FindDisplayObject(ID,SEGMENT_DISPLAY_LIST,atByID,&pDO);
+
+   if ( pDO )
+      dispMgr->SelectObject(pDO,bSelect);
+   else
+      dispMgr->ClearSelectedObjects();
+}
+
+bool CBridgePlanView::GetSelectedClosurePour(CSegmentKey* pClosureKey)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   DisplayObjectContainer displayObjects;
+   dispMgr->GetSelectedObjects(&displayObjects);
+
+   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
+
+   if ( displayObjects.size() == 0 )
+      return false;
+
+   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+
+   SegmentDisplayObjectInfo* pInfo = NULL;
+   pDO->GetItemData((void**)&pInfo);
+
+   if ( pInfo == NULL || pInfo->DisplayListID != CLOSURE_POUR_DISPLAY_LIST )
+      return false;
+
+   *pClosureKey = pInfo->m_SegmentKey;
+
+   return true;
+}
+
+void CBridgePlanView::SelectClosurePour(const CSegmentKey& closureKey,bool bSelect)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   std::map<CSegmentKey,IDType>::iterator found = m_ClosurePourIDs.find(closureKey);
+   if ( found == m_ClosurePourIDs.end() )
+   {
+      dispMgr->ClearSelectedObjects();
+      return;
+   }
+
+   IDType ID = (*found).second;
+
+   CComPtr<iDisplayObject> pDO;
+   dispMgr->FindDisplayObject(ID,CLOSURE_POUR_DISPLAY_LIST,atByID,&pDO);
 
    if ( pDO )
       dispMgr->SelectObject(pDO,bSelect);
@@ -339,6 +448,20 @@ void CBridgePlanView::SelectAlignment(bool bSelect)
    }
 }
 
+void CBridgePlanView::SelectTemporarySupport(SupportIDType tsID,bool bSelect)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayObject> pDO;
+   dispMgr->FindDisplayObject(tsID,TEMPORARY_SUPPORT_DISPLAY_LIST,atByID,&pDO);
+
+   if ( pDO )
+      dispMgr->SelectObject(pDO,bSelect);
+   else
+      dispMgr->ClearSelectedObjects();
+}
+
 void CBridgePlanView::OnInitialUpdate() 
 {
    EnableToolTips();
@@ -346,13 +469,10 @@ void CBridgePlanView::OnInitialUpdate()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
    IUnknown* unk = factory->GetInterface(&IID_iDisplayObjectFactory);
    dispMgr->AddDisplayObjectFactory((iDisplayObjectFactory*)unk);
-   unk->Release();
-   unk = NULL;
-   factory = NULL;
 
    dispMgr->EnableLBtnSelect(TRUE);
    dispMgr->EnableRBtnSelect(TRUE);
@@ -384,6 +504,11 @@ void CBridgePlanView::OnInitialUpdate()
    alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
    dispMgr->AddDisplayList(alignment_list);
 
+   CComPtr<iDisplayList> segment_list;
+   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&segment_list);
+   segment_list->SetID(SEGMENT_DISPLAY_LIST);
+   dispMgr->AddDisplayList(segment_list);
+
    CComPtr<iDisplayList> girder_list;
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
    girder_list->SetID(GIRDER_DISPLAY_LIST);
@@ -398,6 +523,16 @@ void CBridgePlanView::OnInitialUpdate()
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&pier_list);
    pier_list->SetID(PIER_DISPLAY_LIST);
    dispMgr->AddDisplayList(pier_list);
+
+   CComPtr<iDisplayList> closure_pour_list;
+   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&closure_pour_list);
+   closure_pour_list->SetID(CLOSURE_POUR_DISPLAY_LIST);
+   dispMgr->AddDisplayList(closure_pour_list);
+
+   CComPtr<iDisplayList> temporary_support_list;
+   ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&temporary_support_list);
+   temporary_support_list->SetID(TEMPORARY_SUPPORT_DISPLAY_LIST);
+   dispMgr->AddDisplayList(temporary_support_list);
 
    CComPtr<iDisplayList> bearing_list;
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&bearing_list);
@@ -427,10 +562,8 @@ void CBridgePlanView::OnInitialUpdate()
 
    CDisplayView::OnInitialUpdate();
 
-   // OnInitialUpdate eventually calls OnUpdate... OnUpdate calls the
-   // following two methods so there isn't any need to call them here
-   //UpdateDisplayObjects();
-   //UpdateDrawingScale();
+   UpdateDisplayObjects();
+   UpdateDrawingScale();
 
    // Causes the child frame window to initalize the span range selection controls
    m_pFrame->InitSpanRange();
@@ -486,70 +619,30 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         (lHint == HINT_GIRDERLABELFORMATCHANGED)  
       )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridge,pBridge);
-
       if ( lHint == HINT_BRIDGECHANGED )
       {
-         if ( pHint )
-         {
-            // The span configuration of the bridge changed
-            CBridgeHint* pBridgeHint = (CBridgeHint*)pHint;
 
-            // We want to know if the span that was added or removed
-            // is within the range of spans being displayed. If it is,
-            // adjust the display range.
-            SpanIndexType nSpans = pBridge->GetSpanCount();
-            SpanIndexType nPrevSpans = nSpans + (pBridgeHint->bAdded ? -1 : 1);
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridge,pBridge);
+         SpanIndexType nSpans = pBridge->GetSpanCount();
+         m_EndSpanIdx = nSpans-1;
 
-
-            SpanIndexType spanIdx = pBridgeHint->PierIdx + (pBridgeHint->PierFace == pgsTypes::Back ? -1 : 0);
-            if ( (m_StartSpanIdx <= spanIdx && spanIdx <= m_EndSpanIdx) || // span in range
-                 (m_EndSpanIdx == nPrevSpans-1 && spanIdx == nSpans-1) || // at end
-                 (m_StartSpanIdx == 0 && spanIdx == INVALID_INDEX) // at start
-               )
-            {
-               // new span is in the display range
-               if ( pBridgeHint->bAdded )
-               {
-                  m_EndSpanIdx++;
-               }
-               else
-               {
-                  if ( spanIdx == m_StartSpanIdx && spanIdx != 0)
-                     m_StartSpanIdx++; // span at start of range was removed, so make the range smaller
-                  else
-                     m_EndSpanIdx--; // span at within or at the end of the range was removed...
-               }
-            }
-         }
-      }
-
-      // Make sure we aren't displaying spans past the end of the bridge
-      SpanIndexType nSpans = pBridge->GetSpanCount();
-      m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
-
-      if ( lHint != HINT_BRIDGEVIEWSETTINGSCHANGED )
-      {
          m_pFrame->InitSpanRange();
       }
 
       UpdateDisplayObjects();
       UpdateDrawingScale();
    }
-
-   if ( lHint == HINT_GIRDERCHANGED )
+   else if ( lHint == HINT_GIRDERCHANGED )
    {
-      UpdateGirderTooltips();
+      UpdateSegmentTooltips();
    }
-
-   if ( lHint == HINT_BRIDGEVIEWSECTIONCUTCHANGED )
+   else if ( lHint == HINT_BRIDGEVIEWSECTIONCUTCHANGED )
    {
       UpdateSectionCut();
    }
-   
-   if ( lHint == HINT_SELECTIONCHANGED )
+   else if ( lHint == HINT_SELECTIONCHANGED )
    {
       CSelection* pSelection = (CSelection*)pHint;
       switch( pSelection->Type )
@@ -563,7 +656,15 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          break;
 
       case CSelection::Girder:
-         this->SelectGirder( pSelection->SpanIdx,pSelection->GirderIdx,true);
+         this->SelectGirder( CSegmentKey(pSelection->GroupIdx,pSelection->GirderIdx,INVALID_INDEX),true);
+         break;
+
+      case CSelection::Segment:
+         this->SelectSegment( CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true );
+         break;
+
+      case CSelection::ClosurePour:
+         this->SelectClosurePour( CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true );
          break;
 
       case CSelection::Pier:
@@ -578,6 +679,10 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          this->SelectAlignment(true);
          break;
 
+      case CSelection::TemporarySupport:
+         this->SelectTemporarySupport(pSelection->tsID,true);
+         break;
+
       default:
          ATLASSERT(FALSE); // is there a new type of object to be selected?
          this->ClearSelection();
@@ -586,116 +691,205 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    }
 }
 
-void CBridgePlanView::UpdateGirderTooltips()
+void CBridgePlanView::UpdateSegmentTooltips()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pBridgeMaterial);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
    CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&display_list);
+   dispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST,&display_list);
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+
+      GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType girderIdx = 0; girderIdx < nGirders; girderIdx++ )
       {
-         SpanGirderHashType hash = HashSpanGirder(spanIdx,girderIdx);
-         std::map<SpanGirderHashType,long>::iterator found = m_GirderIDs.find(hash);
-         if ( found == m_GirderIDs.end() )
-            continue;
-
-         long ID = (*found).second;
-
-         CComPtr<iDisplayObject> pDO;
-         display_list->FindDisplayObject(ID,&pDO);
-
-         CComPtr<IDirection> direction;
-         pBridge->GetGirderBearing(spanIdx,girderIdx,&direction);
-
-         CString strMsg1;
-         strMsg1.Format(_T("Double click to edit Span %d Girder %s\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
-
-         Float64 gdr_length, span_length;
-         gdr_length  = pBridge->GetGirderLength(spanIdx,girderIdx);
-         span_length = pBridge->GetSpanLength(spanIdx,girderIdx);
-         CString strMsg2;
-         strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s"),
-                        pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(girderIdx),
-                        FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
-                        FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()),
-                        FormatDirection(direction)
-                        );
-
-         Float64 fc, fci;
-         fc = pBridgeMaterial->GetFcGdr(spanIdx,girderIdx);
-         fci = pBridgeMaterial->GetFciGdr(spanIdx,girderIdx);
-
-         CString strMsg3;
-         strMsg3.Format(_T("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,girderIdx),true).c_str(),
-                        FormatDimension(fci,pDisplayUnits->GetStressUnit()),
-                        FormatDimension(fc, pDisplayUnits->GetStressUnit())
-                        );
-
-         const matPsStrand* pStrand = pBridgeMaterial->GetStrand(spanIdx,girderIdx,pgsTypes::Permanent);
-         const matPsStrand* pTempStrand = pBridgeMaterial->GetStrand(spanIdx,girderIdx,pgsTypes::Temporary);
-
-         StrandIndexType Ns, Nh, Nt, Nsd;
-         Ns = pStrandGeom->GetNumStrands(spanIdx,girderIdx,pgsTypes::Straight);
-         Nh = pStrandGeom->GetNumStrands(spanIdx,girderIdx,pgsTypes::Harped);
-         Nt = pStrandGeom->GetNumStrands(spanIdx,girderIdx,pgsTypes::Temporary);
-         Nsd= pStrandGeom->GetNumDebondedStrands(spanIdx,girderIdx,pgsTypes::Straight);
-
-         std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(spanIdx,girderIdx)));
-
-         CString strMsg4;
-         if ( pStrandGeom->GetMaxStrands(spanIdx,girderIdx,pgsTypes::Temporary) != 0 )
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(girderIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            if ( Nsd == 0 )
-            {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
-            }
-            else
-            {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
-            }
-         }
-         else
+            CSegmentKey segmentKey(grpIdx,girderIdx,segIdx);
+
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            std::map<CSegmentKey,IDType>::iterator found = m_SegmentIDs.find(segmentKey);
+            if ( found == m_SegmentIDs.end() )
+               continue;
+
+            IDType ID = (*found).second;
+
+            CComPtr<iDisplayObject> pDO;
+            display_list->FindDisplayObject(ID,&pDO);
+            ATLASSERT(pDO != NULL);
+
+            CComPtr<IDirection> direction;
+            pBridge->GetSegmentBearing(segmentKey,&direction);
+
+#pragma Reminder("UPDATE: girder/segment label in tool tip") // using generic text for now
+            //CString strMsg1;
+            //strMsg1.Format(_T("Double click to edit Span %d Girder %s\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
+            CString strMsg1(_T("Double click to edit.\r\nRight click for more options."));
+
+            Float64 gdr_length, span_length;
+            gdr_length  = pBridge->GetSegmentLength(segmentKey);
+            span_length = pBridge->GetSegmentSpanLength(segmentKey);
+            CString strMsg2;
+            strMsg2.Format(_T("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s"),
+                           pGirder->GetGirderName(),
+                           FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
+                           FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()),
+                           FormatDirection(direction)
+                           );
+
+            Float64 fc  = pSegment->Material.Concrete.Fc;
+            Float64 fci = pSegment->Material.Concrete.Fci;
+
+            CString strMsg3;
+            strMsg3.Format(_T("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
+                           matConcrete::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
+                           FormatDimension(fci,pDisplayUnits->GetStressUnit()),
+                           FormatDimension(fc, pDisplayUnits->GetStressUnit())
+                           );
+
+            const matPsStrand* pStrand     = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+            const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+
+            StrandIndexType Ns, Nh, Nt, Nsd;
+            Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
+            Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+            Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+            Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+       
+            std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
+	
+	         CString strMsg4;
+	         if ( pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) != 0 )
+	         {
+	            if ( Nsd == 0 )
+	            {
+	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+	                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
+	            }
+	            else
+	            {
+	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+	                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
+	            }
+	         }
+	         else
+	         {
+	            if ( Nsd == 0 )
+	            {
+	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
+	                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
+	            }
+	            else
+	            {
+	               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
+	                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
+	            }
+	         }
+
+
+            CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
+
+#if defined _DEBUG
+            CString strSegID;
+            strSegID.Format(_T("\r\n\r\nSegment ID: %d"),ID);
+
+            strMsg += strSegID;
+#endif // _DEBUG
+
+            pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
+            pDO->SetTipDisplayTime(TOOLTIP_DURATION);
+            pDO->SetToolTipText(strMsg);
+         } // segment loop
+      } // girder loop
+   } // group loop
+}
+
+void CBridgePlanView::UpdateClosurePourTooltips()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayList> display_list;
+   dispMgr->FindDisplayList(CLOSURE_POUR_DISPLAY_LIST,&display_list);
+
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType girderIdx = 0; girderIdx < nGirders; girderIdx++ )
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(girderIdx);
+         IndexType nClosures = pGirder->GetClosurePourCount();
+         for ( IndexType cpIdx = 0; cpIdx < nClosures; cpIdx++ )
          {
-            if ( Nsd == 0 )
-            {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
-                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
-            }
-            else
-            {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
-                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
-            }
-         }
+            CSegmentKey closureKey(grpIdx,girderIdx,cpIdx);
 
-         CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
+            const CClosurePourData* pClosurePour = pGirder->GetClosurePour(cpIdx);
 
-         pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
-         pDO->SetTipDisplayTime(TOOLTIP_DURATION);
-         pDO->SetToolTipText(strMsg);
-      }
-   }
+            std::map<CSegmentKey,IDType>::iterator found = m_ClosurePourIDs.find(closureKey);
+            if ( found == m_ClosurePourIDs.end() )
+               continue;
+
+            IDType ID = (*found).second;
+
+            CComPtr<iDisplayObject> pDO;
+            display_list->FindDisplayObject(ID,&pDO);
+            ATLASSERT(pDO != NULL);
+
+#pragma Reminder("UPDATE: girder/segment label in tool tip") // using generic text for now
+            //CString strMsg1;
+            //strMsg1.Format(_T("Double click to edit Span %d Girder %s\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
+            CString strMsg1(_T("Double click to edit.\r\nRight click for more options."));
+
+            Float64 fc  = pClosurePour->GetConcrete().Fc;
+            Float64 fci = pClosurePour->GetConcrete().Fci;
+
+            CString strMsg2;
+            strMsg2.Format(_T("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
+                           matConcrete::GetTypeName((matConcrete::Type)pClosurePour->GetConcrete().Type,true).c_str(),
+                           FormatDimension(fci,pDisplayUnits->GetStressUnit()),
+                           FormatDimension(fc, pDisplayUnits->GetStressUnit())
+                           );
+
+            CString strMsg = strMsg1 + strMsg2;
+
+            pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
+            pDO->SetTipDisplayTime(TOOLTIP_DURATION);
+            pDO->SetToolTipText(strMsg);
+         } // segment loop
+      } // girder loop
+   } // group loop
 }
 
 void CBridgePlanView::UpdateSectionCut()
@@ -718,9 +912,8 @@ void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
 {
    Float64 station = m_pFrame->GetCurrentCutLocation();
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    CComPtr<IDirection> bearing;
@@ -759,14 +952,14 @@ void CBridgePlanView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
 
 void CBridgePlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeDescription(EBD_GENERAL);
+   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_BRIDGE_PLAN_CTX,NULL);
 
@@ -781,13 +974,12 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
-   std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-   std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
+   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
    {
-      IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-      pCallback->OnBackgroundContextMenu(pMenu);
+      IBridgePlanViewEventCallback* callback = iter->second;
+      callback->OnBackgroundContextMenu(pMenu);
    }
 
 
@@ -797,31 +989,30 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CBridgePlanView::OnEditRoadway() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditAlignmentDescription(EBD_ROADWAY);
+   ((CPGSuperDocBase*)GetDocument())->EditAlignmentDescription(EBD_ROADWAY);
 }
 
 void CBridgePlanView::OnEditBridge() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeDescription(EBD_GENERAL);
+   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgePlanView::OnEditDeck() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeDescription(EBD_DECK);
+   ((CPGSuperDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
 }
 
 void CBridgePlanView::OnViewSettings() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PLAN);
+   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_PLAN);
 }
 
 void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
    if ( nChar == VK_LEFT || nChar == VK_RIGHT )
    {
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
       CComPtr<IBroker> pBroker;
-      pDoc->GetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridge,pBridge);
 
       CComPtr<iDisplayMgr> dispMgr;
@@ -900,9 +1091,8 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    CComPtr<iDisplayMgr> dispMgr;
@@ -946,18 +1136,12 @@ void CBridgePlanView::UpdateDisplayObjects()
 {
    CWaitCursor wait;
 
+   // capture the current selection
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   CSelection selection = pDoc->GetSelection();
+
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
-
-   // capture current selection
-   SpanIndexType   span;
-   GirderIndexType gdr;
-   PierIndexType   pier;
-   bool bGirderSelected = GetSelectedGirder(&span,&gdr);
-   bool bDeckSelected   = IsDeckSelected();
-   bool bPierSelected   = GetSelectedPier(&pier);
-   bool bSpanSelected   = GetSelectedSpan(&span);
-   bool bAlignmentSelected = IsAlignmentSelected();
 
    CDManipClientDC dc(this);
 
@@ -966,30 +1150,27 @@ void CBridgePlanView::UpdateDisplayObjects()
    BuildTitleDisplayObjects();
    BuildAlignmentDisplayObjects();
 
+   BuildGirderSegmentDisplayObjects();
    BuildGirderDisplayObjects();
+
    BuildPierDisplayObjects();
+   BuildTemporarySupportDisplayObjects();
+   BuildClosurePourDisplayObjects();
+
    BuildSpanDisplayObjects();
+
    BuildSlabDisplayObjects();
    BuildSectionCutDisplayObjects();
    BuildNorthArrowDisplayObjects();
-   BuildDiaphragmDisplayObjects();
+
+#pragma Reminder("Fix problem drawing diaphragms for spliced girder bridges")
+   //BuildDiaphragmDisplayObjects();
    
-   UpdateGirderTooltips();
+   UpdateSegmentTooltips();
+   UpdateClosurePourTooltips();
 
    // restore the selection
-   if ( bGirderSelected )
-      SelectGirder(span,gdr,TRUE);
-   else if ( bDeckSelected )
-      SelectDeck(true);
-   else if ( bPierSelected )
-      SelectPier(pier,TRUE);
-   else if ( bSpanSelected )
-      SelectSpan(span,TRUE);
-   else if ( bAlignmentSelected )
-      SelectAlignment(true);
-   else
-      ClearSelection();
-
+   pDoc->SetSelection(selection);
 }
 
 void CBridgePlanView::BuildTitleDisplayObjects()
@@ -1032,9 +1213,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    display_list->Clear();
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRoadway,pRoadway);
@@ -1077,8 +1257,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<iPolyLineDisplayObject> doAlignment;
    doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
-   // on the alignment differently then a general Float64 click
+   // Register an event sink with the alignment object so that we can handle double clicks
+   // on the alignment differently then a general double click
    CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker,m_pFrame);
    IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
    CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
@@ -1143,13 +1323,13 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    dispObj->SetDropSite(drop_site);
 }
 
-void CBridgePlanView::BuildGirderDisplayObjects()
+void CBridgePlanView::BuildGirderSegmentDisplayObjects()
 {
    USES_CONVERSION;
 
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
@@ -1157,7 +1337,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    GetDisplayMgr(&dispMgr);
 
    CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&display_list);
+   dispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST,&display_list);
    display_list->Clear();
 
    CComPtr<iDisplayList> bearing_display_list;
@@ -1167,8 +1347,6 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    CComPtr<iDisplayList> label_display_list;
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
    label_display_list->Clear();
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    //
    // set up some drawing strategies
@@ -1185,8 +1363,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    }
 
    // restart the display object ids
-   m_GirderIDs.clear();
-   m_NextGirderID = 0;
+   m_SegmentIDs.clear();
+   m_NextSegmentID = 0;
 
 
 #if defined _SHOW_CL_GIRDER
@@ -1197,246 +1375,351 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    strategy_girder->SetLineStyle(lsCenterline);
 #endif // _SHOW_CL_GIRDER
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker,ITempSupport,pTempSupport);
 
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CComPtr<IDirection> objStartDirection,objEndDirection;
-      pBridge->GetPierDirection(spanIdx,  &objStartDirection);
-      pBridge->GetPierDirection(spanIdx+1,&objEndDirection);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      
+      if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
+         continue;
 
-      Float64 start_direction, end_direction;
-      objStartDirection->get_Value(&start_direction);
-      objEndDirection->get_Value(&end_direction);
-
-      // start and end pier connectables for the previous time through the loop
-      CComPtr<iConnectable> prev_connectable_brg1;
-      CComPtr<iConnectable> prev_connectable_brg2;
-
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      for ( GirderIndexType girderIdx = 0; girderIdx < nGirders; girderIdx++ )
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
-         // get the girder geometry points
-         CComPtr<IPoint2d> pntPier1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntPier2;
-         pGirder->GetGirderEndPoints(spanIdx,girderIdx,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-         // create display objects for all the points
-         // also add a socket for each point
-         CComPtr<iPointDisplayObject> doEnd1, doBrg1, doBrg2, doEnd2;
-         doEnd1.CoCreateInstance(CLSID_PointDisplayObject);
-         doEnd1->SetPosition(pntEnd1,FALSE,FALSE);
-         doEnd1->Visible(FALSE);
-         CComQIPtr<iConnectable> connectable_end1(doEnd1);
-         CComPtr<iSocket> socket_end1;
-         connectable_end1->AddSocket(0,pntEnd1,&socket_end1);
+#pragma Reminder("UPDATE: Assuming constant top width of girder")
+            // assumes top flange of girder is a rectangle (parallelogram) in plan view
+            // a future version may go back to the beam factory to get a shape
+            // that represents the top flange (curved girders???)
+            Float64 top_width = pGirderSegment->GetTopWidth(segmentKey);
 
-         doBrg1.CoCreateInstance(CLSID_PointDisplayObject);
-         doBrg1->SetPosition(pntBrg1,FALSE,FALSE);
-         doBrg1->Visible(FALSE);
-         CComQIPtr<iConnectable> connectable_brg1(doBrg1);
-         CComPtr<iSocket> socket_brg1;
-         connectable_brg1->AddSocket(0,pntBrg1,&socket_brg1);
+            // get the segment geometry points
+            CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
+            pIGirder->GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
-         doBrg2.CoCreateInstance(CLSID_PointDisplayObject);
-         doBrg2->SetPosition(pntBrg2,FALSE,FALSE);
-         doBrg2->Visible(FALSE);
-         CComQIPtr<iConnectable> connectable_brg2(doBrg2);
-         CComPtr<iSocket> socket_brg2;
-         connectable_brg2->AddSocket(0,pntBrg2,&socket_brg2);
+            const CPrecastSegmentData* pSegment   = pGirder->GetSegment(segIdx);
+            const CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();
+            const CClosurePourData* pRightClosure = pSegment->GetRightClosure();
 
-         doEnd2.CoCreateInstance(CLSID_PointDisplayObject);
-         doEnd2->SetPosition(pntEnd2,FALSE,FALSE);
-         doEnd2->Visible(FALSE);
-         CComQIPtr<iConnectable> connectable_end2(doEnd2);
-         CComPtr<iSocket> socket_end2;
-         connectable_end2->AddSocket(0,pntEnd2,&socket_end2);
+            CComPtr<IDirection> objStartDirection,objEndDirection;
+            if( pLeftClosure )
+            {
+               if ( pLeftClosure->GetTemporarySupport() )
+                  pTempSupport->GetDirection(pLeftClosure->GetTemporarySupport()->GetIndex(),&objStartDirection);
+               else
+                  pBridge->GetPierDirection(pLeftClosure->GetPier()->GetIndex(),&objStartDirection);
+            }
+            else
+            {
+               pBridge->GetPierDirection(pGirder->GetPier(pgsTypes::metStart)->GetIndex(),&objStartDirection);
+            }
 
-         // create a display object for the girder line
-         CComPtr<iLineDisplayObject> doGirderLine;
-         doGirderLine.CoCreateInstance(CLSID_LineDisplayObject);
+            if( pRightClosure )
+            {
+               if ( pRightClosure->GetTemporarySupport() )
+                  pTempSupport->GetDirection(pRightClosure->GetTemporarySupport()->GetIndex(),&objEndDirection);
+               else
+                  pBridge->GetPierDirection(pRightClosure->GetPier()->GetIndex(),&objEndDirection);
+            }
+            else
+            {
+               pBridge->GetPierDirection(pGirder->GetPier(pgsTypes::metEnd)->GetIndex(),&objEndDirection);
+            }
 
-         SpanGirderHashType hash = HashSpanGirder(spanIdx,girderIdx);
-         long ID = m_NextGirderID++;
-         m_GirderIDs.insert( std::make_pair(hash,ID) );
+            Float64 start_direction, end_direction;
+            objStartDirection->get_Value(&start_direction);
+            objEndDirection->get_Value(&end_direction);
+
+            // create display objects for all the points
+            // also add a socket for each point
+            CComPtr<iPointDisplayObject> doEnd1, doBrg1, doBrg2, doEnd2;
+            doEnd1.CoCreateInstance(CLSID_PointDisplayObject);
+            doEnd1->SetPosition(pntEnd1,FALSE,FALSE);
+            doEnd1->Visible(FALSE);
+            CComQIPtr<iConnectable> connectable_end1(doEnd1);
+            CComPtr<iSocket> socket_end1;
+            connectable_end1->AddSocket(0,pntEnd1,&socket_end1);
+
+            doBrg1.CoCreateInstance(CLSID_PointDisplayObject);
+            doBrg1->SetPosition(pntBrg1,FALSE,FALSE);
+            doBrg1->Visible(FALSE);
+            CComQIPtr<iConnectable> connectable_brg1(doBrg1);
+            CComPtr<iSocket> socket_brg1;
+            connectable_brg1->AddSocket(0,pntBrg1,&socket_brg1);
+
+            doBrg2.CoCreateInstance(CLSID_PointDisplayObject);
+            doBrg2->SetPosition(pntBrg2,FALSE,FALSE);
+            doBrg2->Visible(FALSE);
+            CComQIPtr<iConnectable> connectable_brg2(doBrg2);
+            CComPtr<iSocket> socket_brg2;
+            connectable_brg2->AddSocket(0,pntBrg2,&socket_brg2);
+
+            doEnd2.CoCreateInstance(CLSID_PointDisplayObject);
+            doEnd2->SetPosition(pntEnd2,FALSE,FALSE);
+            doEnd2->Visible(FALSE);
+            CComQIPtr<iConnectable> connectable_end2(doEnd2);
+            CComPtr<iSocket> socket_end2;
+            connectable_end2->AddSocket(0,pntEnd2,&socket_end2);
+
+            // create a display object for the segment
+            CComPtr<iLineDisplayObject> doSegment;
+            doSegment.CoCreateInstance(CLSID_LineDisplayObject);
+
+            IDType ID = m_NextSegmentID++;
+            m_SegmentIDs.insert( std::make_pair(segmentKey,ID) );
+            doSegment->SetID(ID);
+            SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(segmentKey,SEGMENT_DISPLAY_LIST);
+            doSegment->SetItemData((void*)pInfo,true);
+
+            // connect the segment display object to the display objects
+            // at the segment ends
+            CComQIPtr<iConnector> connector(doSegment);
+            CComQIPtr<iPlug> startPlug, endPlug;
+            connector->GetStartPlug(&startPlug);
+            connector->GetEndPlug(&endPlug);
+
+            DWORD dwCookie;
+            connectable_end1->Connect(0,atByID,startPlug,&dwCookie);
+            connectable_end2->Connect(0,atByID,endPlug,  &dwCookie);
+
+
+            display_list->AddDisplayObject(doEnd1);
+            display_list->AddDisplayObject(doEnd2);
+
+            display_list->AddDisplayObject(doBrg1);
+            display_list->AddDisplayObject(doBrg2);
+
+            display_list->AddDisplayObject(doSegment);
+
+            // drawing strategy
+            // use a compound strategy so we can draw both centerline and the top flange rectangle
+            CComPtr<iCompoundDrawLineStrategy> strategy;
+            strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
+
+            CComPtr<iExtRectangleDrawLineStrategy> strategy1;
+            strategy1.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+
+            strategy1->SetLeftOffset(top_width/2);
+            strategy1->SetRightOffset(top_width/2);
+
+            CComPtr<IDirection> objBearing;
+            pGirderSegment->GetSegmentDirection(segmentKey,&objBearing);
+
+            CComPtr<IDirection> objNormal;
+            objBearing->Increment(CComVariant(PI_OVER_2),&objNormal);
+            Float64 normal;
+            objNormal->get_Value(&normal);
+            Float64 start_skew = start_direction - normal;
+            Float64 end_skew   = end_direction   - normal;
+            strategy1->SetStartSkew(start_skew);
+            strategy1->SetEndSkew(end_skew);
+
+            strategy1->SetColor(SEGMENT_BORDER_COLOR);
+            strategy1->SetDoFill(TRUE);
+            strategy1->SetFillColor(SEGMENT_FILL_COLOR);
+
+            // this strategy doubles as a gravity well.. get its interface and give it to 
+            // the line display object. this will make the entire top flange the clickable part
+            // of the display object
+            strategy1->PerimeterGravityWell(TRUE);
+            CComQIPtr<iGravityWellStrategy> gravity_well(strategy1);
+            doSegment->SetGravityWellStrategy(gravity_well);
+            doSegment->SetSelectionType(stAll);
+
+            strategy->AddStrategy(strategy1);
+
+   #if defined _SHOW_CL_GIRDER
+            strategy->AddStrategy(strategy_girder);
+   #endif
+            doSegment->SetDrawLineStrategy(strategy);
+
+            // direction to output text
+            CComPtr<IDirection> direction;
+            pBridge->GetSegmentBearing(segmentKey,&direction);
+            Float64 dir;
+            direction->get_Value(&dir);
+            long angle = long(1800.*dir/M_PI);
+            angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
+
+            if ( settings & IDB_PV_LABEL_BEARINGS )
+            {
+               // Labels the girder bearings            
+               CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
+               direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
+               direction_formatter->put_BearingFormat(VARIANT_TRUE);
+               CComPtr<iTextBlock> doText2;
+               doText2.CoCreateInstance(CLSID_TextBlock);
+
+               Float64 x1,y1, x2,y2;
+               pntEnd1->get_X(&x1);
+               pntEnd1->get_Y(&y1);
+               pntEnd2->get_X(&x2);
+               pntEnd2->get_Y(&y2);
+
+               Float64 x = x1 + (x2-x1)/2;
+               Float64 y = y1 + (y2-y1)/2;
+               CComPtr<IPoint2d> pntText2;
+               pntText2.CoCreateInstance(CLSID_Point2d);
+               pntText2->Move(x,y);
+               doText2->SetPosition(pntText2);
+
+               CComBSTR bstrBearing;
+               direction_formatter->Format(dir,CComBSTR("°,\',\""),&bstrBearing);
+               doText2->SetText(OLE2T(bstrBearing));
+               doText2->SetAngle(angle);
+               doText2->SetTextAlign(TA_BOTTOM | TA_LEFT);
+               doText2->SetBkMode(TRANSPARENT);
+               label_display_list->AddDisplayObject(doText2);
+            }
+
+            // Register an event sink with the segment display object so that we can handle double clicks
+            // on the segment differently then a general double click
+            CBridgePlanViewSegmentDisplayObjectEvents* pEvents = new CBridgePlanViewSegmentDisplayObjectEvents(segmentKey,pFrame);
+            IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
+            CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
+            CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doSegment);
+            dispObj->RegisterEventSink(events);
+            unk->Release();
+            events.Release();
+         } // segment loop
+      } // girder loop
+   } // group loop
+}
+
+void CBridgePlanView::BuildGirderDisplayObjects()
+{
+   // this is a composite display object that is simply a container for all the individual girder
+   // segment display objects. it will treat all the segment display objects as a single object.
+   CBridgeModelViewChildFrame* pFrame = GetFrame();
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayList> girderline_display_list;
+   dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girderline_display_list);
+   girderline_display_list->Clear();
+
+   CComPtr<iDisplayList> segment_display_list;
+   dispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST,&segment_display_list);
+
+   CComPtr<iDisplayList> label_display_list;
+   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   //label_display_list->Clear(); // don't clear... BuildGirderSegments puts things in this list that we don't want to erase
+
+
+   m_NextGirderID = 0;
+   m_GirderIDs.clear();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   UINT settings = pDoc->GetBridgeEditorSettings();
+
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      
+      if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
+         continue;
+
+      GirderIndexType nGirdersThisGroup = pGroup->GetGirderCount();
+
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirdersThisGroup; gdrIdx++ )
+      {
+         CComPtr<iCompositeDisplayObject> doGirderLine;
+         doGirderLine.CoCreateInstance(CLSID_CompositeDisplayObject);
+         doGirderLine->SetSelectionType(stAll);
+
+         CGirderKey girderKey(grpIdx,gdrIdx);
+
+         IDType ID = m_NextGirderID++;
+         m_GirderIDs.insert( std::make_pair(girderKey,ID) );
 
          doGirderLine->SetID(ID);
 
-         GirderDisplayObjectInfo* pInfo = new GirderDisplayObjectInfo(hash,GIRDER_DISPLAY_LIST);
+         GirderDisplayObjectInfo* pInfo = new GirderDisplayObjectInfo(girderKey,GIRDER_DISPLAY_LIST);
          doGirderLine->SetItemData((void*)pInfo,true);
 
-         // connect the girder line display object to the display objects
-         // at the girder ends
-         CComQIPtr<iConnector> connector(doGirderLine);
-         CComQIPtr<iPlug> startPlug, endPlug;
-         connector->GetStartPlug(&startPlug);
-         connector->GetEndPlug(&endPlug);
-
-         DWORD dwCookie;
-         connectable_end1->Connect(0,atByID,startPlug,&dwCookie);
-         connectable_end2->Connect(0,atByID,endPlug,  &dwCookie);
-
-         // drawing strategy
-         // use a compound strategy so we can draw both centerline and the top flange rectangle
-         CComPtr<iCompoundDrawLineStrategy> strategy;
-         strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
-
-         CComPtr<iExtRectangleDrawLineStrategy> strategy1;
-         strategy1.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-
-#pragma Reminder("UPDATE: Assuming constant top width of girder")
-         // assumes top flange of girder is a rectangle (parallelogram) in plan view
-         // a future version may go back to the beam factory to get a shape
-         // that represents the top flange (curved girders???)
-         Float64 top_width = pGirder->GetTopWidth(pgsPointOfInterest(spanIdx,girderIdx,0.00));
-         strategy1->SetLeftOffset(top_width/2);
-         strategy1->SetRightOffset(top_width/2);
-
-         strategy1->SetColor(GIRDER_BORDER_COLOR);
-         strategy1->SetDoFill(TRUE);
-         strategy1->SetFillColor(GIRDER_FILL_COLOR);
-
-         // this strategy Float64s as a gravity well.. get its interface and give it to 
-         // the line display object. this will make the entire top flange the clickable part
-         // of the display object
-         strategy1->PerimeterGravityWell(TRUE);
-         CComQIPtr<iGravityWellStrategy> gravity_well(strategy1);
-         doGirderLine->SetGravityWellStrategy(gravity_well);
-         doGirderLine->SetSelectionType(stAll);
-
-         CComPtr<IDirection> objBearing;
-         pBridge->GetGirderBearing(spanIdx,girderIdx,&objBearing);
-         objBearing->IncrementBy(CComVariant(PI_OVER_2));
-         Float64 bearing;
-         objBearing->get_Value(&bearing);
-         Float64 start_skew = start_direction - bearing;
-         Float64 end_skew = end_direction - bearing;
-         strategy1->SetStartSkew(start_skew);
-         strategy1->SetEndSkew(end_skew);
-         strategy->AddStrategy(strategy1);
-
-#if defined _SHOW_CL_GIRDER
-         strategy->AddStrategy(strategy_girder);
-#endif
-         doGirderLine->SetDrawLineStrategy(strategy);
-
-         display_list->AddDisplayObject(doEnd1);
-         display_list->AddDisplayObject(doEnd2);
-         display_list->AddDisplayObject(doGirderLine);
-
-         display_list->AddDisplayObject(doBrg1);
-         display_list->AddDisplayObject(doBrg2);
-
-
-         // direction to output text
-         CComPtr<IDirection> direction;
-         pBridge->GetGirderBearing(spanIdx,girderIdx,&direction);
-         Float64 dir;
-         direction->get_Value(&dir);
-         long angle = long(1800.*dir/M_PI);
-         angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
-
-         if ( settings & IDB_PV_LABEL_GIRDERS )
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            // girder labels
-            Float64 x1,y1, x2,y2;
-            pntEnd1->get_X(&x1);
-            pntEnd1->get_Y(&y1);
-            pntEnd2->get_X(&x2);
-            pntEnd2->get_Y(&y2);
-            Float64 x = x1 + (x2-x1)/4;
-            Float64 y = y1 + (y2-y1)/4;
-            CComPtr<IPoint2d> pntText;
-            pntText.CoCreateInstance(CLSID_Point2d);
-            pntText->Move(x,y);
-            CComPtr<iTextBlock> doText;
-            doText.CoCreateInstance(CLSID_TextBlock);
-            doText->SetPosition(pntText);
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            std::map<CSegmentKey,IDType>::iterator found = m_SegmentIDs.find(segmentKey);
+            ASSERT(found != m_SegmentIDs.end() );
 
-            CString strText;
-            strText.Format(_T("%s"),LABEL_GIRDER(girderIdx));
-            doText->SetText(strText);
-            doText->SetTextAlign(TA_BOTTOM | TA_CENTER);
-            doText->SetBkMode(TRANSPARENT);
-            doText->SetAngle(angle);
+            IDType ID = (*found).second;
 
-            label_display_list->AddDisplayObject(doText);
+            CComPtr<iDisplayObject> doSegment;
+            segment_display_list->FindDisplayObject(ID,&doSegment);
+            ASSERT(doSegment);
+
+            if ( settings & IDB_PV_LABEL_GIRDERS && segIdx == 0 )
+            {
+               // Put girder label on first segment
+
+               // direction to output text
+               CComPtr<IDirection> direction;
+               pBridge->GetSegmentBearing(segmentKey,&direction);
+               Float64 dir;
+               direction->get_Value(&dir);
+               long angle = long(1800.*dir/M_PI);
+               angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
+
+               // segment end points
+               CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
+               pIGirder->GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+
+               // girder labels
+               Float64 x1,y1, x2,y2;
+               pntEnd1->get_X(&x1);
+               pntEnd1->get_Y(&y1);
+               pntEnd2->get_X(&x2);
+               pntEnd2->get_Y(&y2);
+               Float64 x = x1 + (x2-x1)/4;
+               Float64 y = y1 + (y2-y1)/4;
+               CComPtr<IPoint2d> pntText;
+               pntText.CoCreateInstance(CLSID_Point2d);
+               pntText->Move(x,y);
+               CComPtr<iTextBlock> doText;
+               doText.CoCreateInstance(CLSID_TextBlock);
+               doText->SetPosition(pntText);
+
+               CString strText;
+               strText.Format(_T("%s"),LABEL_GIRDER(gdrIdx));
+               doText->SetText(strText);
+               doText->SetTextAlign(TA_BOTTOM | TA_CENTER);
+               doText->SetBkMode(TRANSPARENT);
+               doText->SetAngle(angle);
+
+               label_display_list->AddDisplayObject(doText);
+            }
+
+            doGirderLine->AddDisplayObject(doSegment);
          }
 
-         if ( settings & IDB_PV_LABEL_BEARINGS )
-         {
-            // Labels the girder bearings            
-            CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
-            direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
-            direction_formatter->put_BearingFormat(VARIANT_TRUE);
-            CComPtr<iTextBlock> doText2;
-            doText2.CoCreateInstance(CLSID_TextBlock);
-
-            Float64 x1,y1, x2,y2;
-            pntEnd1->get_X(&x1);
-            pntEnd1->get_Y(&y1);
-            pntEnd2->get_X(&x2);
-            pntEnd2->get_Y(&y2);
-
-            Float64 x = x1 + (x2-x1)/2;
-            Float64 y = y1 + (y2-y1)/2;
-            CComPtr<IPoint2d> pntText2;
-            pntText2.CoCreateInstance(CLSID_Point2d);
-            pntText2->Move(x,y);
-            doText2->SetPosition(pntText2);
-
-            CComBSTR bstrBearing;
-            direction_formatter->Format(dir,CComBSTR("°,\',\""),&bstrBearing);
-            doText2->SetText(OLE2T(bstrBearing));
-            doText2->SetAngle(angle);
-            doText2->SetTextAlign(TA_BOTTOM | TA_LEFT);
-            doText2->SetBkMode(TRANSPARENT);
-            label_display_list->AddDisplayObject(doText2);
-         }
-
-#if defined _SHOW_CL_GIRDER
-         // layout centerline of bearing lines
-         if ( girderIdx != 0 )
-         {
-            CComPtr<iLineDisplayObject> doStartBearingLine;
-            doStartBearingLine.CoCreateInstance(CLSID_LineDisplayObject);
-            CComQIPtr<iConnector> start_connector(doStartBearingLine);
-
-            startPlug.Release();
-            endPlug.Release();
-            start_connector->GetStartPlug(&startPlug);
-            start_connector->GetEndPlug(&endPlug);
-
-            prev_connectable_brg1->Connect(0,atByID,startPlug,&dwCookie);
-            connectable_brg1->Connect(0,atByID,endPlug,  &dwCookie);
-
-            doStartBearingLine->SetDrawLineStrategy(strategy_brg);
-            display_list->AddDisplayObject(doStartBearingLine);
-
-
-            CComPtr<iLineDisplayObject> doEndBearingLine;
-            doEndBearingLine.CoCreateInstance(CLSID_LineDisplayObject);
-            CComQIPtr<iConnector> end_connector(doEndBearingLine);
-
-            startPlug.Release();
-            endPlug.Release();
-            end_connector->GetStartPlug(&startPlug);
-            end_connector->GetEndPlug(&endPlug);
-
-            prev_connectable_brg2->Connect(0,atByID,startPlug,&dwCookie);
-            connectable_brg2->Connect(0,atByID,endPlug,  &dwCookie);
-
-
-            doEndBearingLine->SetDrawLineStrategy(strategy_brg);
-            display_list->AddDisplayObject(doEndBearingLine);
-         }
-#endif // _SHOW_CL_GIRDER
-
-         // Register an event sink with the girder display object so that we can handle Float64 clicks
-         // on the girder differently then a general Float64 click
-         CBridgePlanViewGirderDisplayObjectEvents* pEvents = new CBridgePlanViewGirderDisplayObjectEvents(spanIdx,girderIdx,nSpans,nGirders,pFrame);
+         // Register an event sink with the girder display object so that we can handle double clicks
+         // on the girder differently then a general double click
+         CBridgePlanViewGirderDisplayObjectEvents* pEvents = new CBridgePlanViewGirderDisplayObjectEvents(girderKey,nGroups,nGirdersThisGroup,pFrame);
          IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
          CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
          CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doGirderLine);
@@ -1444,19 +1727,17 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          unk->Release();
          events.Release();
 
-         prev_connectable_brg1 = connectable_brg1;
-         prev_connectable_brg2 = connectable_brg2;
-      }
-   }
+         girderline_display_list->AddDisplayObject(doGirderLine);
+      } // girder loop
+   } // group loop
 }
 
 void CBridgePlanView::BuildPierDisplayObjects()
 {
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1469,17 +1750,21 @@ void CBridgePlanView::BuildPierDisplayObjects()
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
    //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
 
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
    Float64 last_station;
@@ -1487,10 +1772,10 @@ void CBridgePlanView::BuildPierDisplayObjects()
    PierIndexType lastPierIdx  = (m_EndSpanIdx  == ALL_SPANS ? nPiers-1 : m_EndSpanIdx+1);
    for ( PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
-      const CPierData* pPier = pIBridgeDesc->GetPier(pierIdx);
+      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
 
       // get station of the pier
-      Float64 station = pBridge->GetPierStation(pierIdx);
+      Float64 station = pPier->GetStation();
    
       CComPtr<IDirection> direction;
       pBridge->GetPierDirection(pierIdx,&direction);
@@ -1528,7 +1813,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
 
       CString strMsg1;
-      strMsg1.Format(_T("Double click to edit %s %d\r\nRight click for more options."),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier")),pierIdx+1);
+      strMsg1.Format(_T("Double click to edit Pier %d\r\nRight click for more options."),LABEL_PIER(pierIdx));
 
       CString strMsg2;
       strMsg2.Format(_T("Station: %s\r\nDirection: %s\r\nSkew: %s"),FormatStation(pDisplayUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
@@ -1536,18 +1821,34 @@ void CBridgePlanView::BuildPierDisplayObjects()
       CString strConnectionTip;
       if ( pierIdx == 0 ) // first pier
       {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetConnectionType()));
       }
       else if ( pierIdx == nPiers-1 ) // last pier
       {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetConnectionType()));
       }
       else // intermediate pier
       {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetConnectionType()));
       }
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n") + strConnectionTip;
+
+      EventIndexType eventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
+
+      CString strEvent;
+      if ( eventIdx != INVALID_INDEX )
+      {
+         const CTimelineEvent* pTimelineEventData = pTimelineMgr->GetEventByIndex(eventIdx);
+
+         strEvent.Format(_T("Erection Event: Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEventData->GetDescription());
+      }
+      else
+      {
+         strEvent.Format(_T("Erection Event: No defined"));
+      }
+
+      strMsg += _T("\r\n") + strEvent;
 
       doCenterLine->SetToolTipText(strMsg);
       doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -1568,11 +1869,10 @@ void CBridgePlanView::BuildPierDisplayObjects()
       connectable1->Connect(0,atByID,startPlug,&dwCookie);
       connectable2->Connect(0,atByID,endPlug,  &dwCookie);
 
-      // Register an event sink with the pier centerline display object so that we can handle Float64 clicks
-      // on the piers differently then a general Float64 click
+      // Register an event sink with the pier centerline display object so that we can handle double clicks
+      // on the piers differently then a general double click
       CPierDisplayObjectEvents* pEvents = new CPierDisplayObjectEvents(pierIdx,
-                                                                       nPiers,
-                                                                       pBridge->GetDeckType() != pgsTypes::sdtNone,
+                                                                       pBridgeDesc,
                                                                        pFrame);
       IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
       CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
@@ -1595,57 +1895,59 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       // make the pier outline just a bit wider
       SpanIndexType prev_span_idx = pierIdx - 1;
-      SpanIndexType next_span_idx = pierIdx == nSpans ? INVALID_INDEX : pierIdx;
+      SpanIndexType next_span_idx = pierIdx == nPiers-1 ? INVALID_INDEX : pierIdx;
 
-      Float64 left_offset  = 0;
+      Float64 left_offset = 0;
       Float64 right_offset = 0;
-      if ( pPier->GetPrevSpan() == NULL )
-      {
-         // start abutment
-         SpanIndexType spanIdx = pPier->GetNextSpan()->GetSpanIndex();
-         left_offset  = pBridge->GetGirderStartConnectionLength(spanIdx,0);
-         right_offset = pBridge->GetGirderStartBearingOffset(spanIdx,0) + pBridge->GetGirderStartConnectionLength(spanIdx,0);
-      }
-      else if ( pPier->GetNextSpan() == NULL )
-      {
-         // end abutment
-         SpanIndexType spanIdx = pPier->GetPrevSpan()->GetSpanIndex();
-         left_offset  = pBridge->GetGirderEndBearingOffset(spanIdx,0) + pBridge->GetGirderEndConnectionLength(spanIdx,0);
-         right_offset = pBridge->GetGirderEndConnectionLength(spanIdx,0);
-      }
-      else
-      {
-         // intermediate pier
-         SpanIndexType spanIdx = pPier->GetPrevSpan()->GetSpanIndex();
-         left_offset  = pBridge->GetGirderEndBearingOffset(spanIdx,0) + pBridge->GetGirderEndConnectionLength(spanIdx,0);
 
-         spanIdx = pPier->GetNextSpan()->GetSpanIndex();
-         right_offset = pBridge->GetGirderStartBearingOffset(spanIdx,0) + pBridge->GetGirderStartConnectionLength(spanIdx,0);
+      if ( pPier->GetPrevSpan() )
+      {
+         ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
+         pPier->GetBearingOffset(pgsTypes::Back,&left_offset,&left_brg_offset_measure_type);
+         if ( left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+            left_offset /= cos(skew);
       }
+
+      if ( pPier->GetNextSpan() )
+      {
+         ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
+         pPier->GetBearingOffset(pgsTypes::Ahead,&right_offset,&right_brg_offset_measure_type);
+         if ( right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
+            right_offset /= cos(skew);
+      }
+ 
+      left_offset  = ( IsZero(left_offset)  ? right_offset/2 : left_offset );
+      right_offset = ( IsZero(right_offset) ? left_offset/2  : right_offset );
+
+      left_offset *= 1.05;
+      right_offset *= 1.05;
 
       strategy_pier->SetLeftOffset(left_offset);
       strategy_pier->SetRightOffset(right_offset);
 
-      // make the pier overhang the exterior girders
-      Float64 prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
-      Float64 prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(prev_span_idx,0,prev_girder_length)));
-      Float64 prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(prev_span_idx,0,prev_girder_length)));
-      Float64 next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(next_span_idx,0,0)));
-      Float64 next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(next_span_idx,0,0)));
-      Float64 left_overhang = Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
-      left_overhang /= cos(fabs(skew));
-      left_overhang *= 1.10;
+#pragma Reminder("UPDATE: These are dummy vales...")
+      Float64 left_overhang = 0.5;
+      Float64 right_overhang = 0.5;
+      //// make the pier overhang the exterior girders
+      //Float64 prev_girder_length = (prev_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
+      //Float64 prev_top_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
+      //Float64 prev_bot_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
+      //Float64 next_top_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
+      //Float64 next_bot_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
+      //Float64 left_overhang = Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
+      //left_overhang /= cos(fabs(skew));
+      //left_overhang *= 1.10;
 
-      GirderIndexType nGirdersPrevSpan = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderCount(prev_span_idx));
-      GirderIndexType nGirdersNextSpan = (next_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderCount(next_span_idx));
-      prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,nGirdersPrevSpan-1));
-      prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(prev_span_idx,nGirdersPrevSpan-1,prev_girder_length)));
-      prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(prev_span_idx,nGirdersPrevSpan-1,prev_girder_length)));
-      next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(next_span_idx,nGirdersNextSpan-1,0)));
-      next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(next_span_idx,nGirdersNextSpan-1,0)));
-      Float64 right_overhang = 1.10*Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
-      right_overhang /= cos(fabs(skew));
-      right_overhang *= 1.10;
+      //GirderIndexType nGirdersPrevSpan = (prev_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderCount(prev_span_idx));
+      //GirderIndexType nGirdersNextSpan = (next_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderCount(next_span_idx));
+      //prev_girder_length = (prev_span_idx == INVALID_INDEX ? 0 : pBridge->GetGirderLength(prev_span_idx,nGirdersPrevSpan-1));
+      //prev_top_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
+      //prev_bot_width = (prev_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
+      //next_top_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
+      //next_bot_width = (next_span_idx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
+      //Float64 right_overhang = 1.10*Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
+      //right_overhang /= cos(fabs(skew));
+      //right_overhang *= 1.10;
 
       strategy_pier->SetStartExtension(left_overhang);
       strategy_pier->SetEndExtension(right_overhang);
@@ -1674,12 +1976,14 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       doCenterLine->SetDrawLineStrategy(strategy);
 
+      Float64 alignmentOffset = pBridge->GetAlignmentOffset();
+      alignmentOffset /= cos(skew);
 
       CComPtr<IPoint2d> ahead_point;
-      pAlignment->GetPoint(station,0.00,direction,&ahead_point);
+      pAlignment->GetPoint(station,-alignmentOffset,direction,&ahead_point);
 
       CComPtr<IPoint2d> back_point;
-      pAlignment->GetPoint(station,0.00,direction,&back_point);
+      pAlignment->GetPoint(station,-alignmentOffset,direction,&back_point);
 
       if ( settings & IDB_PV_LABEL_PIERS )
       {
@@ -1688,10 +1992,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doPierName.CoCreateInstance(CLSID_TextBlock);
 
          CString strText;
-         if ( pierIdx == 0 || pierIdx == nPiers-1 )
-            strText.Format(_T("Abutment %d"),LABEL_PIER(pierIdx));
-         else
-            strText.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
+         strText.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
 
          doPierName->SetPosition(ahead_point);
          doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
@@ -1750,7 +2051,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doConnection.CoCreateInstance(CLSID_TextBlock);
          doConnection->SetSelectionType(stNone);
          doConnection->SetPosition(connection_label_point);
-         doConnection->SetTextColor(DARKGREEN);
+         doConnection->SetTextColor(CONNECTION_LABEL_COLOR);
          doConnection->SetBkMode(TRANSPARENT);
          doConnection->SetAngle(angle);
 
@@ -1769,8 +2070,12 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          doConnection->SetText(GetConnectionString(pPier).c_str());
 
-         // Register an event sink with the connection text display object so that we can handle Float64 clicks
-         // differently then a general Float64 click
+         doConnection->SetToolTipText(GetFullConnectionString(pPier).c_str());
+         doConnection->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
+
+         // Register an event sink with the connection text display object so that we can handle double clicks
+         // differently then a general double click
          CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
 
          IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
@@ -1919,11 +2224,521 @@ void CBridgePlanView::BuildPierDisplayObjects()
    }
 }
 
+void CBridgePlanView::BuildTemporarySupportDisplayObjects()
+{
+   CBridgeModelViewChildFrame* pFrame = GetFrame();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayList> display_list;
+   dispMgr->FindDisplayList(TEMPORARY_SUPPORT_DISPLAY_LIST,&display_list);
+   display_list->Clear();
+
+   CComPtr<iDisplayList> label_display_list;
+   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
+
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
+   UINT settings = pDoc->GetBridgeEditorSettings();
+
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+
+   CComPtr<IDocUnitSystem> docUnitSystem;
+   pDoc->GetDocUnitSystem(&docUnitSystem);
+
+   GET_IFACE2(pBroker,ITempSupport,pTemporarySupport);
+
+   SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
+   for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
+   {
+      const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
+
+      SpanIndexType spanIdx = pTS->GetSpan()->GetIndex();
+      if ( spanIdx < m_StartSpanIdx || m_EndSpanIdx < spanIdx )
+         continue;
+
+      SupportIDType tsID = pTS->GetID();
+
+      Float64 station = pTS->GetStation();
+
+      pgsTypes::TemporarySupportType tsSupportType = pTS->GetSupportType();
+      pgsTypes::SegmentConnectionType segConnectionType = pTS->GetConnectionType();
+
+      EventIndexType erectionEventIdx, removalEventIdx;
+      pTimelineMgr->GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
+      const CTimelineEvent* pErectionEvent = NULL;
+      const CTimelineEvent* pRemovalEvent  = NULL;
+
+      if ( erectionEventIdx != INVALID_INDEX )
+         pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
+
+      if ( removalEventIdx != INVALID_INDEX )
+         pRemovalEvent  = pTimelineMgr->GetEventByIndex(removalEventIdx);
+
+      // get the control points
+      CComPtr<IPoint2d> left,alignment_pt,bridge_pt,right;
+      pTemporarySupport->GetControlPoints(tsIdx,&left,&alignment_pt,&bridge_pt,&right);
+
+      CComPtr<IDirection> direction;
+      pTemporarySupport->GetDirection(tsIdx,&direction);
+
+      CComPtr<IAngle> objSkew;
+      pTemporarySupport->GetSkew(tsIdx,&objSkew);
+      Float64 skew;
+      objSkew->get_Value(&skew);
+
+      // create a point display object for the left side of the support
+      // add a socket to it
+      CComPtr<iPointDisplayObject> doLeft;
+      doLeft.CoCreateInstance(CLSID_PointDisplayObject);
+      doLeft->SetPosition(left,FALSE,FALSE);
+      display_list->AddDisplayObject(doLeft);
+
+      CComQIPtr<iConnectable> connectable1(doLeft);
+      CComPtr<iSocket> socket1;
+      connectable1->AddSocket(0,left,&socket1);
+
+      // create a point display object for the right side of the support
+      // add a socket to it
+      CComPtr<iPointDisplayObject> doRight;
+      doRight.CoCreateInstance(CLSID_PointDisplayObject);
+      doRight->SetPosition(right,FALSE,FALSE);
+      display_list->AddDisplayObject(doRight);
+
+      CComQIPtr<iConnectable> connectable2(doRight);
+      CComPtr<iSocket> socket2;
+      connectable2->AddSocket(0,right,&socket2);
+
+      // create a line display object for the centerline
+      CComPtr<iLineDisplayObject> doCenterLine;
+      doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
+      doCenterLine->SetSelectionType(stAll);
+      doCenterLine->SetID(tsID);
+
+      // Register an event sink with the centerline display object so that we can handle double clicks
+      // on the temporary supports differently then a general double click
+      CTemporarySupportDisplayObjectEvents* pEvents = new CTemporarySupportDisplayObjectEvents(tsID,pFrame);
+      IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
+      CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
+      CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doCenterLine);
+      dispObj->RegisterEventSink(events);
+      unk->Release();
+      events.Release();
+
+      // get the connectors from the line
+      CComQIPtr<iConnector> connector(doCenterLine);
+      CComQIPtr<iPlug> startPlug, endPlug;
+      connector->GetStartPlug(&startPlug);
+      connector->GetEndPlug(&endPlug);
+
+      // connect the line to the points
+      DWORD dwCookie;
+      connectable1->Connect(0,atByID,startPlug,&dwCookie);
+      connectable2->Connect(0,atByID,endPlug,  &dwCookie);
+
+      CString strMsg1;
+      strMsg1.Format(_T("Double click to edit Temporary Support %d\r\nRight click for more options."),LABEL_TEMPORARY_SUPPORT(tsIdx));
+
+      CString strMsg2;
+      strMsg2.Format(_T("Type: %s\r\nStation: %s\r\nDirection: %s\r\nSkew: %s\r\nConnection Type: %s\r\nErection Event: Event: %d %s\r\nRemoval Event: Event: %d %s"),
+                     tsSupportType == pgsTypes::ErectionTower ? _T("Erection Tower") : _T("Strong Back"),
+                     FormatStation(pDisplayUnits->GetStationFormat(),station),
+                     FormatDirection(direction),
+                     FormatAngle(objSkew),
+                     segConnectionType == pgsTypes::sctClosurePour ? _T("Closure Pour") : _T("Continuous Segment"),
+                     LABEL_EVENT(erectionEventIdx),
+                     pErectionEvent == NULL ? _T("Erection stage not defined") : pErectionEvent->GetDescription(),
+                     LABEL_EVENT(removalEventIdx),
+                     pRemovalEvent ==  NULL ? _T("Removal stage not defined") : pRemovalEvent->GetDescription());
+
+      CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n");
+
+      doCenterLine->SetToolTipText(strMsg);
+      doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+      doCenterLine->SetTipDisplayTime(TOOLTIP_DURATION);
+      display_list->AddDisplayObject(doCenterLine);
+
+      // create line drawing strategies... use a compound strategy so
+      // we can draw both the centerline and the pseudo-outline of the pier
+      CComPtr<iCompoundDrawLineStrategy> strategy;
+      strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
+
+      // strategy for pseudo-outline of the pier
+      CComPtr<iExtRectangleDrawLineStrategy> strategy_pier;
+      strategy_pier.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+
+      if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
+      {
+         strategy_pier->SetColor(TS_BORDER_COLOR);
+         strategy_pier->SetFillColor(TS_FILL_COLOR);
+      }
+      else
+      {
+         strategy_pier->SetColor(SB_BORDER_COLOR);
+         strategy_pier->SetFillColor(SB_FILL_COLOR);
+      }
+      strategy_pier->SetDoFill(TRUE);
+
+#pragma Reminder("FIX: These are dummy vales...")
+      Float64 left_offset = 0;
+      Float64 right_offset = 0;
+      Float64 left_overhang = 0.5;
+      Float64 right_overhang = 0.5;
+
+      Float64 support_width = pTS->GetSupportWidth();
+      
+      Float64 brg_offset;
+      ConnectionLibraryEntry::BearingOffsetMeasurementType brg_offset_measurement_type;
+      pTS->GetBearingOffset(&brg_offset,&brg_offset_measurement_type);
+      if ( brg_offset_measurement_type == ConnectionLibraryEntry::NormalToPier )
+         brg_offset /= cos(skew);
+
+      left_offset  = 1.05*(brg_offset + support_width);
+      right_offset = 1.05*(brg_offset + support_width);
+
+      // this is how the offset and overhang values are computed for precast girder bridges
+      // when the values are fixed above, delete this code block
+   //   // make the pier overhang the exterior girders
+   //   Float64 prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
+   //   Float64 prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
+   //   Float64 prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,0),prev_girder_length)));
+   //   Float64 next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
+   //   Float64 next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,0),0)));
+   //   Float64 left_overhang = Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
+   //   left_overhang /= cos(fabs(skew));
+   //   left_overhang *= 1.10;
+
+   //   GirderIndexType nGirdersPrevSpan = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderCount(prev_span_idx));
+   //   GirderIndexType nGirdersNextSpan = (next_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderCount(next_span_idx));
+   //   prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,nGirdersPrevSpan-1));
+   //   prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
+   //   prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(prev_span_idx,nGirdersPrevSpan-1),prev_girder_length)));
+   //   next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
+   //   next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(::HashSpanGirder(next_span_idx,nGirdersNextSpan-1),0)));
+   //   Float64 right_overhang = 1.10*Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
+   //   right_overhang /= cos(fabs(skew));
+   //   right_overhang *= 1.10;
+
+      strategy_pier->SetLeftOffset(left_offset);
+      strategy_pier->SetRightOffset(right_offset);
+      strategy_pier->SetStartExtension(left_overhang);
+      strategy_pier->SetEndExtension(right_overhang);
+      strategy_pier->SetStartSkew(-skew);
+      strategy_pier->SetEndSkew(-skew);
+
+      // this strategy doubles as a gravity well.. get its interface and give it to 
+      // the line display object. this will make the entire pier the clickable part
+      // of the display object
+      strategy_pier->PerimeterGravityWell(TRUE);
+      CComQIPtr<iGravityWellStrategy> gravity_well(strategy_pier);
+      doCenterLine->SetGravityWellStrategy(gravity_well);
+      strategy->AddStrategy(strategy_pier);
+
+      // centerline
+      CComPtr<iExtRectangleDrawLineStrategy> strategy_centerline;
+      strategy_centerline.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+      strategy_centerline->SetColor(BLUE);
+      strategy_centerline->SetLineStyle(lsCenterline);
+      strategy_centerline->SetStartExtension(left_overhang);
+      strategy_centerline->SetEndExtension(right_overhang);
+      strategy->AddStrategy(strategy_centerline);
+
+      doCenterLine->SetDrawLineStrategy(strategy);
+
+      Float64 alignmentOffset = pBridgeDesc->GetAlignmentOffset();
+      alignmentOffset /= cos(skew);
+
+      CComPtr<IPoint2d> ahead_point;
+      pAlignment->GetPoint(station,-alignmentOffset,direction,&ahead_point);
+
+      CComPtr<IPoint2d> back_point;
+      pAlignment->GetPoint(station,-alignmentOffset,direction,&back_point);
+
+      if ( settings & IDB_PV_LABEL_PIERS )
+      {
+         // label
+         CComPtr<iTextBlock> doPierName;
+         doPierName.CoCreateInstance(CLSID_TextBlock);
+
+         CString strText;
+         strText.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(tsIdx));
+         doPierName->SetPosition(ahead_point);
+         doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
+         doPierName->SetText(strText);
+         doPierName->SetTextColor(BLACK);
+         doPierName->SetBkMode(OPAQUE);
+
+         Float64 dir;
+         direction->get_Value(&dir);
+         long angle = long(1800.*dir/M_PI);
+         angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
+         doPierName->SetAngle(angle);
+         label_display_list->AddDisplayObject(doPierName);
+
+         // label temporary support station
+         CComPtr<iEditableUnitValueTextBlock> doStation;
+         doStation.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
+         doStation->SetUnitSystem(docUnitSystem);
+         doStation->SetDisplayUnitGroupName(_T("Station"));
+         doStation->IsStation(true);
+         doStation->SetValue(station);
+         doStation->SetPosition(back_point);
+         doStation->SetTextAlign(TA_TOP | TA_CENTER);
+         doStation->SetTextColor(BLACK);
+         doStation->SetBkMode(OPAQUE);
+         doStation->SetAngle(angle);
+         doStation->SetSelectionType(stAll);
+         
+         doStation->SetToolTipText(_T("Click to edit"));
+         doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doStation->SetTipDisplayTime(TOOLTIP_DURATION);
+
+         CInplaceTemporarySupportStationEditEvents* pTempSupportStationEvents = new CInplaceTemporarySupportStationEditEvents(pBroker,tsIdx);
+         IUnknown* unkTempSupportStationEvents = pTempSupportStationEvents->GetInterface(&IID_iDisplayObjectEvents);
+         CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> tsStationEvents(unkTempSupportStationEvents);
+         doStation->RegisterEventSink(tsStationEvents);
+         unkTempSupportStationEvents->Release();
+         tsStationEvents.Release();
+
+         label_display_list->AddDisplayObject(doStation);
+
+         // connection
+         Float64 dist_from_start_of_bridge = station - pBridgeDesc->GetPier(0)->GetStation();
+         Float64 left_slab_edge_offset = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
+         CComPtr<IPoint2d> connection_label_point;
+         pAlignment->GetPoint(station,-left_slab_edge_offset/cos(skew),direction,&connection_label_point);
+
+         // make the baseline of the connection text parallel to the alignment
+         direction.Release();
+         pAlignment->GetBearing(station,&direction);
+         direction->get_Value(&dir);
+
+         angle = long(1800.*dir/M_PI);
+         angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
+
+         CComPtr<iTextBlock> doConnection;
+         doConnection.CoCreateInstance(CLSID_TextBlock);
+         doConnection->SetSelectionType(stNone);
+         doConnection->SetPosition(connection_label_point);
+         if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
+            doConnection->SetTextColor(TS_LABEL_COLOR);
+         else
+            doConnection->SetTextColor(SB_LABEL_COLOR);
+
+         doConnection->SetBkMode(TRANSPARENT);
+         doConnection->SetAngle(angle);
+         doConnection->SetTextAlign(TA_BOTTOM | TA_CENTER);
+
+         doConnection->SetText(GetConnectionString(pTS).c_str());
+
+         doConnection->SetToolTipText(GetFullConnectionString(pTS).c_str());
+         doConnection->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
+
+#pragma Reminder("TODO: Need connection display object for temporary supports")
+         //// Register an event sink with the connection text display object so that we can handle double clicks
+         //// differently then a general double click
+         //CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
+
+         //IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
+         //CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
+         //CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doConnection);
+         //dispObj->RegisterEventSink(events);
+
+         label_display_list->AddDisplayObject(doConnection);
+      }
+   }
+}
+
+void CBridgePlanView::BuildClosurePourDisplayObjects()
+{
+   CBridgeModelViewChildFrame* pFrame = GetFrame();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayList> display_list;
+   dispMgr->FindDisplayList(CLOSURE_POUR_DISPLAY_LIST,&display_list);
+   display_list->Clear();
+
+   // restart the display object ids
+   m_ClosurePourIDs.clear();
+   m_NextClosurePourID = 0;
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pIBridge);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker,IGirderSegment,pIGirderSegment);
+   GET_IFACE2(pBroker,ITempSupport,pITemporarySupport);
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         IndexType nClosures = pGirder->GetClosurePourCount();
+         for ( IndexType cpIdx = 0; cpIdx < nClosures; cpIdx++ )
+         {
+            const CClosurePourData* pClosure = pGirder->GetClosurePour(cpIdx);
+            CSegmentKey closureKey(pClosure->GetClosureKey());
+
+            const CPrecastSegmentData* pLeftSegment  = pClosure->GetLeftSegment();
+            const CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();
+
+            CSegmentKey leftSegmentKey(pLeftSegment->GetSegmentKey());
+            CSegmentKey rightSegmentKey(pRightSegment->GetSegmentKey());
+
+            Float64 top_width = pIGirderSegment->GetTopWidth(leftSegmentKey);
+
+            CComPtr<IDirection> objDirection;
+            if( pClosure )
+            {
+               if ( pClosure->GetTemporarySupport() )
+                  pITemporarySupport->GetDirection(pClosure->GetTemporarySupport()->GetIndex(),&objDirection);
+               else
+                  pIBridge->GetPierDirection(pClosure->GetPier()->GetIndex(),&objDirection);
+            }
+            else
+            {
+               pIBridge->GetPierDirection(pGirder->GetPier(pgsTypes::metStart)->GetIndex(),&objDirection);
+            }
+
+            Float64 direction;
+            objDirection->get_Value(&direction);
+
+
+            // get the segment geometry points
+            // array index is pgsTypes::Back = back side of closure, pgsTypes::Ahead = ahead side of closure
+            // we want left segment (back) end 2 and right segment (ahead) end 1 points to 
+            // build the display object
+            CComPtr<IPoint2d> pntSupport1[2],pntEnd1[2],pntBrg1[2],pntBrg2[2],pntEnd2[2],pntSupport2[2];
+            pIGirder->GetSegmentEndPoints(leftSegmentKey,  &pntSupport1[pgsTypes::Back], &pntEnd1[pgsTypes::Back], &pntBrg1[pgsTypes::Back], &pntBrg2[pgsTypes::Back], &pntEnd2[pgsTypes::Back], &pntSupport2[pgsTypes::Back]);
+            pIGirder->GetSegmentEndPoints(rightSegmentKey, &pntSupport1[pgsTypes::Ahead],&pntEnd1[pgsTypes::Ahead],&pntBrg1[pgsTypes::Ahead],&pntBrg2[pgsTypes::Ahead],&pntEnd2[pgsTypes::Ahead],&pntSupport2[pgsTypes::Ahead]);
+
+            // create display objects for points at ends of segments
+            // also add a socket for each point
+            CComPtr<iPointDisplayObject> doEnd1, doEnd2;
+            doEnd1.CoCreateInstance(CLSID_PointDisplayObject);
+            doEnd1->SetPosition(pntEnd2[pgsTypes::Back],FALSE,FALSE); // end of left segment
+            doEnd1->Visible(FALSE);
+            CComQIPtr<iConnectable> connectable_end1(doEnd1);
+            CComPtr<iSocket> socket_end1;
+            connectable_end1->AddSocket(0,pntEnd2[pgsTypes::Back],&socket_end1);
+
+            doEnd2.CoCreateInstance(CLSID_PointDisplayObject);
+            doEnd2->SetPosition(pntEnd1[pgsTypes::Ahead],FALSE,FALSE); // start of right segment
+            doEnd2->Visible(FALSE);
+            CComQIPtr<iConnectable> connectable_end2(doEnd2);
+            CComPtr<iSocket> socket_end2;
+            connectable_end2->AddSocket(0,pntEnd1[pgsTypes::Ahead],&socket_end2);
+
+            // create a display object for the closure
+            CComPtr<iLineDisplayObject> doClosure;
+            doClosure.CoCreateInstance(CLSID_LineDisplayObject);
+
+            IDType ID = m_NextClosurePourID++;
+            m_ClosurePourIDs.insert( std::make_pair(closureKey,ID) );
+            doClosure->SetID(ID);
+            SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(closureKey,CLOSURE_POUR_DISPLAY_LIST);
+            doClosure->SetItemData((void*)pInfo,true);
+
+            // Register an event sink with the display object so that we can handle double clicks
+            // differently then a general double click
+            CClosurePourDisplayObjectEvents* pEvents = new CClosurePourDisplayObjectEvents(closureKey,leftSegmentKey,rightSegmentKey,pFrame);
+            IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
+            CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
+            CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doClosure);
+            dispObj->RegisterEventSink(events);
+            unk->Release();
+            events.Release();
+
+            // connect the closure display object to the display objects
+            // at the segment ends
+            CComQIPtr<iConnector> connector(doClosure);
+            CComQIPtr<iPlug> startPlug, endPlug;
+            connector->GetStartPlug(&startPlug);
+            connector->GetEndPlug(&endPlug);
+
+            DWORD dwCookie;
+            connectable_end1->Connect(0,atByID,startPlug,&dwCookie);
+            connectable_end2->Connect(0,atByID,endPlug,  &dwCookie);
+
+
+            display_list->AddDisplayObject(doEnd1);
+            display_list->AddDisplayObject(doEnd2);
+
+            display_list->AddDisplayObject(doClosure);
+
+            // drawing strategy
+            // use a compound strategy so we can draw both centerline and the top flange rectangle
+            CComPtr<iCompoundDrawLineStrategy> strategy;
+            strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
+
+            CComPtr<iExtRectangleDrawLineStrategy> strategy1;
+            strategy1.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+
+            strategy1->SetLeftOffset(top_width/2);
+            strategy1->SetRightOffset(top_width/2);
+
+            CComPtr<IDirection> objLeftSegmentBearing, objRightSegmentBearing;
+            pIGirderSegment->GetSegmentDirection(leftSegmentKey, &objLeftSegmentBearing);
+            pIGirderSegment->GetSegmentDirection(rightSegmentKey,&objRightSegmentBearing);
+
+            CComPtr<IDirection> objLeftNormal, objRightNormal;
+            objLeftSegmentBearing->Increment(CComVariant(PI_OVER_2),&objLeftNormal);
+            objRightSegmentBearing->Increment(CComVariant(PI_OVER_2),&objRightNormal);
+            Float64 left_normal, right_normal;
+            objLeftNormal->get_Value(&left_normal);
+            objLeftNormal->get_Value(&right_normal);
+            Float64 start_skew = direction - left_normal;
+            Float64 end_skew   = direction   - right_normal;
+            strategy1->SetStartSkew(start_skew);
+            strategy1->SetEndSkew(end_skew);
+
+            strategy1->SetColor(CLOSURE_BORDER_COLOR);
+            strategy1->SetDoFill(TRUE);
+            strategy1->SetFillColor(CLOSURE_FILL_COLOR);
+
+            // this strategy doubles as a gravity well.. get its interface and give it to 
+            // the line display object. this will make the entire top flange the clickable part
+            // of the display object
+            strategy1->PerimeterGravityWell(TRUE);
+            CComQIPtr<iGravityWellStrategy> gravity_well(strategy1);
+            doClosure->SetGravityWellStrategy(gravity_well);
+            doClosure->SetSelectionType(stAll);
+
+            strategy->AddStrategy(strategy1);
+
+   #if defined _SHOW_CL_GIRDER
+            strategy->AddStrategy(strategy_girder);
+   #endif
+            doClosure->SetDrawLineStrategy(strategy);
+         }
+      }
+   }
+}
+
 void CBridgePlanView::BuildSpanDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
@@ -1997,20 +2812,19 @@ void CBridgePlanView::BuildSpanDisplayObjects()
 
 void CBridgePlanView::BuildSlabDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
       return;
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -2058,6 +2872,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    doPnt->SetGravityWellStrategy(gravity_well);
 
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CBridgePlanViewSlabDisplayObjectEvents* pEvents = new CBridgePlanViewSlabDisplayObjectEvents(pDoc, pBroker,m_pFrame,strategy->DoFill());
    IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
    CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
@@ -2071,11 +2886,10 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: ????\r\nf'c: %s"),
+      strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nf'c: %s"),
                      m_pFrame->GetDeckTypeName(pDeck->DeckType),
                      FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                     //FormatDimension(pDeck->SlabOffset,pDisplayUnits->GetComponentDimUnit()), // replace ???? with %s in the format string
-                     FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
+                     FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                      );
    }
 
@@ -2099,10 +2913,8 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
 void CBridgePlanView::BuildSectionCutDisplayObjects()
 {
-//   EAFGetBroker(&pBroker); // this call doesn't work during initial startup
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetDocument());
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -2153,9 +2965,8 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
 
 void CBridgePlanView::BuildNorthArrowDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -2182,9 +2993,8 @@ void CBridgePlanView::BuildNorthArrowDisplayObjects()
 
 void CBridgePlanView::BuildDiaphragmDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -2205,8 +3015,11 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders-1; gdrIdx++ )
       {
-         std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetIntermediateDiaphragms(pgsTypes::BridgeSite1,spanIdx,gdrIdx);
-         std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetIntermediateDiaphragms(pgsTypes::BridgeSite1,spanIdx,gdrIdx+1);
+         CSegmentKey segmentKey1(spanIdx,gdrIdx,  0);
+         CSegmentKey segmentKey2(spanIdx,gdrIdx+1,0);
+
+         std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetIntermediateDiaphragms(pgsTypes::dtCastInPlace,segmentKey1);
+         std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetIntermediateDiaphragms(pgsTypes::dtCastInPlace,segmentKey2);
 
          std::vector<IntermedateDiaphragm>::iterator left_iter, right_iter;
          for ( left_iter = left_diaphragms.begin(), right_iter = right_diaphragms.begin(); 
@@ -2215,82 +3028,86 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
          {
             IntermedateDiaphragm left_diaphragm  = *left_iter;
             IntermedateDiaphragm right_diaphragm = *right_iter;
-
+            
             // Only add the diaphragm if it has width
             if ( !IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W) )
             {
-               Float64 station, offset;
-               pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx,left_diaphragm.Location),&station,&offset);
-
-               CComPtr<IDirection> normal;
-               pAlignment->GetBearingNormal(station,&normal);
-               CComPtr<IPoint2d> pntLeft;
-               pAlignment->GetPoint(station,offset,normal,&pntLeft);
-
-               pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx+1,right_diaphragm.Location),&station,&offset);
-               normal.Release();
-               pAlignment->GetBearingNormal(station,&normal);
-               CComPtr<IPoint2d> pntRight;
-               pAlignment->GetPoint(station,offset,normal,&pntRight);
-
-               // create a point on the left side of the diaphragm
-               CComPtr<iPointDisplayObject> doLeft;
-               doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-               doLeft->SetPosition(pntLeft,FALSE,FALSE);
-               CComQIPtr<iConnectable> connectable1(doLeft);
-               CComPtr<iSocket> socket1;
-               connectable1->AddSocket(0,pntLeft,&socket1);
-
-               // create a point on the right side of the diaphragm
-               CComPtr<iPointDisplayObject> doRight;
-               doRight.CoCreateInstance(CLSID_PointDisplayObject);
-               doRight->SetPosition(pntRight,FALSE,FALSE);
-               CComQIPtr<iConnectable> connectable2(doRight);
-               CComPtr<iSocket> socket2;
-               connectable2->AddSocket(0,pntRight,&socket2);
-
-               // create a line for the diaphragm
-               CComPtr<iLineDisplayObject> doDiaphragmLine;
-               doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
-
-               CComQIPtr<iConnector> connector(doDiaphragmLine);
-               CComQIPtr<iPlug> startPlug, endPlug;
-               connector->GetStartPlug(&startPlug);
-               connector->GetEndPlug(&endPlug);
-
-               // connect the line to the points
-               DWORD dwCookie;
-               connectable1->Connect(0,atByID,startPlug,&dwCookie);
-               connectable2->Connect(0,atByID,endPlug,  &dwCookie);
-
-               CComPtr<iExtRectangleDrawLineStrategy> strategy;
-               strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-               strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
-               strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
-               strategy->SetDoFill(TRUE);
-
-               Float64 width = (left_diaphragm.T + right_diaphragm.T)/2;
-               strategy->SetLeftOffset(width/2);
-               strategy->SetRightOffset(width/2);
-
-               strategy->SetStartExtension(0);
-               strategy->SetEndExtension(0);
-
-               strategy->SetStartSkew(0);
-               strategy->SetEndSkew(0);
-
-               doDiaphragmLine->SetDrawLineStrategy(strategy);
-
-               CString strTip;
-               strTip.Format(_T("%s x %s intermediate diaphragm"),::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
-               doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
-               doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
-               doDiaphragmLine->SetToolTipText(strTip);
-
-
-               CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
-               display_list->AddDisplayObject(dispObj);
-            }
+	            Float64 station, offset;
+	            pBridge->GetStationAndOffset(pgsPointOfInterest(segmentKey1,left_diaphragm.Location),&station,&offset);
+	
+	            CComPtr<IDirection> normal;
+	            pAlignment->GetBearingNormal(station,&normal);
+	            CComPtr<IPoint2d> pntLeft;
+	            pAlignment->GetPoint(station,offset,normal,&pntLeft);
+	
+	            pBridge->GetStationAndOffset(pgsPointOfInterest(segmentKey2,right_diaphragm.Location),&station,&offset);
+	            normal.Release();
+	            pAlignment->GetBearingNormal(station,&normal);
+	            CComPtr<IPoint2d> pntRight;
+	            pAlignment->GetPoint(station,offset,normal,&pntRight);
+	
+	            // create a point on the left side of the diaphragm
+	            CComPtr<iPointDisplayObject> doLeft;
+	            doLeft.CoCreateInstance(CLSID_PointDisplayObject);
+	            doLeft->SetPosition(pntLeft,FALSE,FALSE);
+	            CComQIPtr<iConnectable> connectable1(doLeft);
+	            CComPtr<iSocket> socket1;
+	            connectable1->AddSocket(0,pntLeft,&socket1);
+	
+	            // create a point on the right side of the diaphragm
+	            CComPtr<iPointDisplayObject> doRight;
+	            doRight.CoCreateInstance(CLSID_PointDisplayObject);
+	            doRight->SetPosition(pntRight,FALSE,FALSE);
+	            CComQIPtr<iConnectable> connectable2(doRight);
+	            CComPtr<iSocket> socket2;
+	            connectable2->AddSocket(0,pntRight,&socket2);
+	
+	            // create a line for the diaphragm
+	            CComPtr<iLineDisplayObject> doDiaphragmLine;
+	            doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
+	
+	            CComQIPtr<iConnector> connector(doDiaphragmLine);
+	            CComQIPtr<iPlug> startPlug, endPlug;
+	            connector->GetStartPlug(&startPlug);
+	            connector->GetEndPlug(&endPlug);
+	
+	            // connect the line to the points
+	            DWORD dwCookie;
+	            connectable1->Connect(0,atByID,startPlug,&dwCookie);
+	            connectable2->Connect(0,atByID,endPlug,  &dwCookie);
+	
+	            CComPtr<iExtRectangleDrawLineStrategy> strategy;
+	            strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+	            strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
+	            strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
+	            strategy->SetDoFill(TRUE);
+	
+	            Float64 width = (left_diaphragm.T + right_diaphragm.T)/2;
+	            strategy->SetLeftOffset(width/2);
+	            strategy->SetRightOffset(width/2);
+	
+	            strategy->SetStartExtension(0);
+	            strategy->SetEndExtension(0);
+	
+	            strategy->SetStartSkew(0);
+	            strategy->SetEndSkew(0);
+	
+	            doDiaphragmLine->SetDrawLineStrategy(strategy);
+	
+	            CString strTip;
+	            strTip.Format(_T("%s x %s intermediate diaphragm"),::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
+	            doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+	            doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
+	            doDiaphragmLine->SetToolTipText(strTip);
+	
+	
+	
+	
+	
+	            CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
+	            display_list->AddDisplayObject(dispObj);
+	
+	         }
          }
       }
    }
@@ -2410,14 +3227,14 @@ void CBridgePlanView::DrawFocusRect()
    dc.DrawFocusRect(rClient);
 }
 
-std::_tstring CBridgePlanView::GetConnectionString(const CPierData* pPierData)
+std::_tstring CBridgePlanView::GetConnectionString(const CPierData2* pPierData)
 {
    pgsTypes::PierConnectionType connectionType = pPierData->GetConnectionType();
 
    std::_tstring strConnection;
    switch( connectionType )
    {
-   case pgsTypes::Hinged:
+   case pgsTypes::Hinge:
       strConnection = _T("H");
       break;
 
@@ -2455,6 +3272,112 @@ std::_tstring CBridgePlanView::GetConnectionString(const CPierData* pPierData)
 
    case pgsTypes::IntegralBeforeDeckHingeAhead:
       strConnection = _T("Ib H");
+      break;
+
+   case pgsTypes::ContinuousSegment:
+      strConnection = _T("C");
+      break;
+
+   default:
+      ATLASSERT(0); // who added a new connection type?
+   }
+
+   return strConnection;
+}
+
+std::_tstring CBridgePlanView::GetFullConnectionString(const CPierData2* pPierData)
+{
+   pgsTypes::PierConnectionType connectionType = pPierData->GetConnectionType();
+
+   std::_tstring strConnection;
+   switch( connectionType )
+   {
+   case pgsTypes::Hinge:
+      strConnection = _T("Hinge");
+      break;
+
+   case pgsTypes::Roller:
+      strConnection = _T("Roller");
+      break;
+
+   case pgsTypes::ContinuousAfterDeck:
+      strConnection = _T("Continuous after deck placement");
+      break;
+
+   case pgsTypes::ContinuousBeforeDeck:
+      strConnection = _T("Continuous before deck placement");
+      break;
+
+   case pgsTypes::IntegralAfterDeck:
+      strConnection = _T("Integral after deck placement");
+      break;
+
+   case pgsTypes::IntegralBeforeDeck:
+      strConnection = _T("Integral before deck placement");
+      break;
+
+   case pgsTypes::IntegralAfterDeckHingeBack:
+      strConnection = _T("Hinge | Integral after deck placement");
+      break;
+
+   case pgsTypes::IntegralBeforeDeckHingeBack:
+      strConnection = _T("Hinge | Integral before deck placement");
+      break;
+
+   case pgsTypes::IntegralAfterDeckHingeAhead:
+      strConnection = _T("Integral after deck placement | Hinge");
+      break;
+
+   case pgsTypes::IntegralBeforeDeckHingeAhead:
+      strConnection = _T("Integral before deck placement | Hinge");
+      break;
+
+   case pgsTypes::ContinuousSegment:
+      strConnection = _T("Continuous Segment");
+      break;
+
+   default:
+      ATLASSERT(0); // who added a new connection type?
+   }
+
+   return strConnection;
+}
+
+std::_tstring CBridgePlanView::GetConnectionString(const CTemporarySupportData* pTS)
+{
+   pgsTypes::TemporarySupportType connectionType = pTS->GetSupportType();
+
+   std::_tstring strConnection;
+   switch( connectionType )
+   {
+   case pgsTypes::ErectionTower:
+      strConnection = _T("ET");
+      break;
+
+   case pgsTypes::StrongBack:
+      strConnection = _T("SB");
+      break;
+
+   default:
+      ATLASSERT(0); // who added a new connection type?
+   }
+
+   return strConnection;
+}
+
+std::_tstring CBridgePlanView::GetFullConnectionString(const CTemporarySupportData* pTS)
+{
+   pgsTypes::TemporarySupportType connectionType = pTS->GetSupportType();
+
+   std::_tstring strConnection;
+   switch( connectionType )
+   {
+   case pgsTypes::ErectionTower:
+      strConnection = _T("Erection Tower");
+      break;
+
+   case pgsTypes::StrongBack:
+      strConnection = _T("Strong Back");
       break;
 
    default:

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ CLASS
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
 
@@ -71,10 +71,9 @@ LPCTSTR CTogaSpecCheckSummaryChapterBuilder::GetName() const
 
 rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
+   pBrokerRptSpec->GetBroker(&pBroker);
 
    // We need the artifact that we've doctored for txdot reasons
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
@@ -83,7 +82,7 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRp
    // Use original summary report chapter builder
    std::auto_ptr<CSpecCheckSummaryChapterBuilder> pchb( new CSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport) );
 
-   rptChapter* pChap = pchb->BuildEx(pSGRptSpec, level, TOGA_SPAN, TOGA_FABR_GDR, pArtifact);
+   rptChapter* pChap = pchb->BuildEx(pRptSpec, level, pArtifact);
 
    // Throw in a page break
    rptParagraph* p = new rptParagraph;

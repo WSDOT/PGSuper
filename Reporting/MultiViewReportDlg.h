@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,21 +29,20 @@ class CMultiViewReportDlg : public CDialog
 
 public:
 	CMultiViewReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec,
-                       SpanIndexType span, GirderIndexType girder,
+                       const CGirderKey& girderKey,
                        UINT nIDTemplate = IDD_MULTIVIEWREPORT,CWnd* pParent = NULL);
 	virtual ~CMultiViewReportDlg();
 
 // Dialog Data
 	enum { IDD = IDD_MULTIVIEWREPORT };
 
-   std::vector<SpanGirderHashType> GetGirderList() const;
+   std::vector<CGirderKey> GetGirderKeys() const;
 
    std::vector<std::_tstring> m_ChapterList;
 
 protected:
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-   std::vector<SpanGirderHashType> m_GirderList;
+   CGirderKey m_GirderKey;
+   std::vector<CGirderKey> m_GirderKeys;
 
 
    const CReportDescription& m_RptDesc;

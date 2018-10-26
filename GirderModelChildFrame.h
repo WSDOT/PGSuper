@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,10 +58,17 @@ public:
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
    // status of the current views
-   UserLoads::Stage  GetLoadingStage() const {return m_LoadingStage;}
+   EventIndexType GetEvent() const {return m_EventIdx;}
+
+   // iCutLocation
    Float64 GetCurrentCutLocation() {return m_CurrentCutLocation;}
-   void CutAt(Float64 cut);
+   void CutAt(Float64 Xg);
    void ShowCutDlg();
+   Float64 GetMinCutLocation();
+   Float64 GetMaxCutLocation();
+
+   pgsPointOfInterest GetCutLocation();
+
    void CutAtLocation();
    void CutAtLeftEnd();
    void CutAtLeftHp();
@@ -72,10 +79,11 @@ public:
    void CutAtNext();
    void CutAtPrev();
 
-   void GetSpanAndGirderSelection(SpanIndexType* pSpanIdx,GirderIndexType* pGdrIdx);
+
+   void SelectGirder(const CGirderKey& girderKey,bool bDoUpdate);
+   const CGirderKey& GetSelection() const;
 
 protected:
-   void SelectSpanAndGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx, bool doUpdateViews);
    bool DoSyncWithBridgeModelView();
 
    void RefreshGirderLabeling();
@@ -92,7 +100,6 @@ public:
 				const RECT& rect = rectDefault,
 				CMDIFrameWnd* pParentWnd = NULL,
 				CCreateContext* pContext = NULL);
-   virtual BOOL OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -104,15 +111,12 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnFilePrint();
 	afx_msg void OnFilePrintDirect();
-	afx_msg void OnSelectLoadingStage();
+	afx_msg void OnSelectEvent();
 	afx_msg void OnAddPointload();
 	afx_msg void OnAddDistributedLoad();
 	afx_msg void OnAddMoment();
    afx_msg void OnSync();
-   afx_msg void OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI);
-   afx_msg void OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
-   afx_msg void OnProjectDesignGirderDirect();
-   afx_msg void OnProjectDesignGirderDirectHoldSlabOffset();
+   afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
@@ -124,20 +128,20 @@ protected:
 
    virtual CRuntimeClass* GetLowerPaneClass() const;
    virtual Float64 GetTopFrameFraction() const;
-   void UpdateCutLocation(CutLocation cutLoc,Float64 cut = 0.0);
+   void UpdateCutLocation(CutLocation cutLoc,Float64 Xg = 0.0);
    void OnUpdateFrameTitle(BOOL bAddToTitle);
    
    virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
-
 
    CGirderModelElevationView* GetGirderModelElevationView() const;
    CGirderModelSectionView*   GetGirderModelSectionView() const;
 
 private:
    void OnGirderChanged();
-   void OnSpanChanged();
+   void OnGroupChanged();
    void OnSectionCut();
    void DoFilePrint(bool direct);
+   void FillEventComboBox();
 
    CToolPalette m_SettingsBar;
 
@@ -145,14 +149,11 @@ private:
    Float64 m_CurrentCutLocation;
    CutLocation m_CutLocation;
    Float64 m_MaxCutLocation;
-   UserLoads::Stage m_LoadingStage;
+   
+   EventIndexType m_EventIdx; 
 
+   CGirderKey m_GirderKey;
    bool m_bIsAfterFirstUpdate;
-
-   SpanIndexType m_CurrentSpanIdx;
-   GirderIndexType m_CurrentGirderIdx;
-public:
-   afx_msg void OnSetFocus(CWnd* pOldWnd);
 };
 
 /////////////////////////////////////////////////////////////////////////////

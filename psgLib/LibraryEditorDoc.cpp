@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,6 +44,8 @@
 
 #include "PGSuperLibraryMgrCATID.h"
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
+
 
 
 
@@ -132,7 +134,10 @@ BOOL CLibraryEditorDoc::Init()
    if ( !__super::Init() )
       return FALSE;
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_BeamFamily)) )
+   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
+      return FALSE;
+
+   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSpliceBeamFamily)) )
       return FALSE;
 
    return TRUE;
@@ -315,7 +320,7 @@ void CLibraryEditorDoc::OnImport()
             ASSERT(FALSE);
          }
 
-         Float64 ver;
+         double ver;
          pStrLoad->get_Version(&ver);
          if(ver < FILE_VERSION)
             return;
@@ -378,7 +383,6 @@ void CLibraryEditorDoc::OnImport()
 
 void CLibraryEditorDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString msg1;
    switch( hr )
    {

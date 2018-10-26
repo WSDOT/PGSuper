@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #pragma once
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 class txnEditBridgeDescription :
    public txnTransaction
 {
 public:
-   txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription& oldBridgeDesc,const CBridgeDescription& newBridgeDesc);
+   txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    ~txnEditBridgeDescription(void);
 
    virtual bool Execute();
@@ -40,5 +40,5 @@ private:
    void Execute(int i);
 
    IBroker* m_pBroker;
-	CBridgeDescription m_BridgeDesc[2];
+	CBridgeDescription2 m_BridgeDesc[2];
 };

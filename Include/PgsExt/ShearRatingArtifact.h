@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\StirrupCheckAtPoisArtifact.h>
 
 /*****************************************************************************
@@ -57,7 +57,7 @@ public:
    pgsShearRatingArtifact& operator = (const pgsShearRatingArtifact& rOther);
 
    void SetPointOfInterest(const pgsPointOfInterest& poi);
-   const pgsPointOfInterest& GetPointOfInterest() const;
+   const pgsPointOfInterest& GetGirderPointOfInterest() const;
 
    void SetRatingType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LoadRatingType GetLoadRatingType() const;
@@ -108,7 +108,7 @@ public:
 
 protected:
    void MakeCopy(const pgsShearRatingArtifact& rOther);
-   void MakeAssignment(const pgsShearRatingArtifact& rOther);
+   virtual void MakeAssignment(const pgsShearRatingArtifact& rOther);
 
    mutable bool m_bRFComputed;
    mutable Float64 m_RF;

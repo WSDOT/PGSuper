@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,10 +21,13 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\GirderSpacing.h>
+#include "GirderSpacing.h"
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\SpanData.h>
 #include <WbflAtlExt.h>
+#include <numeric>
+
+#include <PgsExt\GirderSpacing2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,7 +45,7 @@ CGirderSpacingData::CGirderSpacingData()
    m_MeasurementType     = pgsTypes::NormalToItem;
    m_MeasurementLocation = pgsTypes::AtPierLine;
    
-   m_RefGirderIdx = INVALID_INDEX; // reference girder is the center of the girder group
+   m_RefGirderIdx = ALL_GIRDERS; // reference girder is the center of the girder group
    m_RefGirderOffsetType = pgsTypes::omtBridge;
    m_RefGirderOffset = 0;
 
@@ -143,10 +146,11 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( 2 <= version )
       {
          // added in version 2
-         var.vt = VT_I2;
+         var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("RefGirder"),&var);
-         m_RefGirderIdx = (GirderIndexType)var.iVal;
+         m_RefGirderIdx = VARIANT2INDEX(var);
 
+         var.vt = VT_I2;
          hr = pStrLoad->get_Property(_T("RefGirderOffsetType"),&var);
          m_RefGirderOffsetType = (pgsTypes::OffsetMeasurementType)(var.iVal);
 
@@ -155,11 +159,11 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_RefGirderOffset = var.dblVal;
       }
 
-      var.vt = VT_I4;
+      var.vt = VT_INDEX;
       hr = pStrLoad->get_Property(_T("SpacingGroupCount"), &var );
 
-      long nGroups = var.lVal;
-      for ( long grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+      GroupIndexType nGroups = VARIANT2INDEX(var);
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
          hr = pStrLoad->BeginUnit(_T("SpacingGroup"));
 
@@ -171,13 +175,12 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          hr = pStrLoad->get_Property(_T("Spacing"),&var);
          Float64 spacing = var.dblVal;
 
-         var.vt = VT_I2;
+         var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("FirstGirderIndex"),&var);
-         GirderIndexType firstGdrIdx = var.iVal;
+         GirderIndexType firstGdrIdx = VARIANT2INDEX(var);
 
-         var.vt = VT_I2;
          hr = pStrLoad->get_Property(_T("LastGirderIndex"),&var);
-         GirderIndexType lastGdrIdx = var.iVal;
+         GirderIndexType lastGdrIdx = VARIANT2INDEX(var);
 
          for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx < lastGdrIdx; gdrIdx++ )
          {
@@ -569,23 +572,61 @@ void CGirderSpacingData::RemoveGirders(GirderIndexType nGirdersToRemove)
    }
 }
 
+Float64 CGirderSpacingData::GetSpacingWidth() const
+{
+   return std::accumulate(m_GirderSpacing.begin(),m_GirderSpacing.end(),0.0);
+}
+
+Float64 CGirderSpacingData::GetSpacingWidthToGirder(GirderIndexType gdrIdx) const
+{
+   return std::accumulate(m_GirderSpacing.begin(),m_GirderSpacing.begin()+gdrIdx,0.0);
+}
+
+void CGirderSpacingData::SetSpacingData(CGirderSpacing2* pGirderSpacing) const
+{
+   pGirderSpacing->SetMeasurementType(m_MeasurementType);
+   pGirderSpacing->SetMeasurementLocation(m_MeasurementLocation);
+
+   pGirderSpacing->SetRefGirder(m_RefGirderIdx);
+   pGirderSpacing->SetRefGirderOffsetType(m_RefGirderOffsetType);
+   pGirderSpacing->SetRefGirderOffset(m_RefGirderOffset);
+
+   pGirderSpacing->ExpandAll();
+   GroupIndexType grpIdx = 0;
+   std::vector<Float64>::const_iterator spaceIter(m_GirderSpacing.begin());
+   std::vector<Float64>::const_iterator spaceIterEnd(m_GirderSpacing.end());
+   for ( ; spaceIter != spaceIterEnd; spaceIter++ )
+   {
+      pGirderSpacing->SetGirderSpacing(grpIdx++,*spaceIter);
+   }
+
+   std::vector<SpacingGroup>::const_iterator iter(m_SpacingGroups.begin());
+   std::vector<SpacingGroup>::const_iterator iterEnd(m_SpacingGroups.end());
+   for ( ; iter != iterEnd; iter++, grpIdx++ )
+   {
+      SpacingGroup spacingGroup = *iter;
+      GirderIndexType firstGdrIdx = spacingGroup.first;
+      GirderIndexType lastGdrIdx  = spacingGroup.second;
+
+      pGirderSpacing->Join(firstGdrIdx,lastGdrIdx,firstGdrIdx);
+   }
+}
+
 void CGirderSpacingData::SetGirderCount(GirderIndexType nGirders)
 {
    if ( m_GirderSpacing.size() == 0 && nGirders == 1 )
       return;
 
+   GirderIndexType nDeltaGirders;
    if ( m_GirderSpacing.size() == 0 )
-   {
-      AddGirders(nGirders);
-   }
+      nDeltaGirders = nGirders;
    else
-   {
-      GirderIndexType nGirderCurrent = m_GirderSpacing.size()+1;
-      if ( nGirders < nGirderCurrent )
-         RemoveGirders(nGirderCurrent-nGirders);
-      else
-         AddGirders(nGirders-nGirderCurrent);
-   }
+      nDeltaGirders = nGirders - (m_GirderSpacing.size()+1);
+
+   if ( nDeltaGirders < 0 )
+      RemoveGirders(nDeltaGirders);
+   else
+      AddGirders(nDeltaGirders);
 }
 
 

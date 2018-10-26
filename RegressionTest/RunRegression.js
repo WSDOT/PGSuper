@@ -14,8 +14,6 @@ var PGSuperPlatform = "WIN32";
 var DoSendEmail=false;
 var EmailAddress = new String;
 var ExecuteCommands=true; // if false, only show commands
-var RunMultipleFiles=false;
-
 
 var startDate = new Date();
 var startTime = startDate.getTime();
@@ -30,10 +28,6 @@ if (machine=="RDPTHINKPAD")
    PGSuperDrive = "C:";
 else if (machine=="HQB0630025")
    PGSuperDrive = "F:";
-else if (machine=="HQA4434036")
-   PGSuperDrive = "F:";
-else if (machine=="HQC1431001")
-   PGSuperDrive = "F:";
 
 var wsShell = new ActiveXObject("WScript.Shell");
 var FSO = new ActiveXObject("Scripting.FileSystemObject");
@@ -46,15 +40,11 @@ timerFileDate = timerFileDate.replace(/:/gi, ";");
 var timerFileName = new String;
 timerFileName = "\\ARP\\PGSuper\\RegressionTest\\RegTimer_" + timerFileDate + ".log";
 
+var timerFile = FSO.OpenTextFile(timerFileName, 2, true); // 2 = write new file
+timerFile.WriteLine("********** Starting new regr test at: " + startDate.toString() + " elapsed times in minutes *************");
+
 // parse the command line and set options
 var st = ParseCommandLine();
-
-if ( ExecuteCommands )
-{
-   var timerFile = FSO.OpenTextFile(timerFileName, 2, true); // 2 = write new file
-   timerFile.WriteLine("********** Starting new regr test at: " + startDate.toString() + " elapsed times in minutes *************");
-}
-
 if (st!=0)
 {
    CleanUpTest();
@@ -76,9 +66,6 @@ var CurrFolderSpec  = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\
 var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Datum" );
 
 var ErrorsExist = "FALSE";
-
-var concurrencyCount = 1; // keeps track of number of concurrent processes
-var maxConcurrencyCount = 4; // maximum number of concurrent processes
 
 // make sure pgsuper.exe exists
 if (!FSO.FileExists(Application))
@@ -129,16 +116,12 @@ var endTime = endDate.getTime();
 var elapsed = (endTime-startTime)/60000.0;
 DisplayMessage("Elapsed Time was: "+elapsed+" Minutes");
 
-if ( ExecuteCommands )
-{
-   // only log times if the tess were actually run... (don't log times when /N option is used... it isn't meaninful data)
-   var myFile = FSO.OpenTextFile("\\ARP\\PGSuper\\RegressionTest\\RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
-   myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
-   myFile.close();
+var myFile = FSO.OpenTextFile("\\ARP\\PGSuper\\RegressionTest\\RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
+myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
+myFile.close();
 
-   timerFile.WriteLine(endDate.toString() + " : Total Elapsed Time was: " + elapsed + " Minutes");
-   timerFile.close();  
-}
+timerFile.WriteLine(endDate.toString() + " : Total Elapsed Time was: " + elapsed + " Minutes");
+timerFile.close();  
       
 WScript.Quit(st);
 
@@ -165,29 +148,15 @@ function RunTest (currFolder, currCommand)
       
       if (newCommand!="TxToga")
       {
-         // Not TOGA - get pgsuper files
-         var fc = new Enumerator(subFolder.Files);
-
-         // Get number of pgs files
-         var nPgsFiles = 0;
-          for (; !fc.atEnd(); fc.moveNext() )
+          // Not TOGA - get pgsuper files
+          var fc = new Enumerator(subFolder.Files);
+          for (; !fc.atEnd(); fc.moveNext())
           {
              s = new String(fc.item());
             
             idx = s.indexOf(".pgs");
             if (-1 != idx)
-               nPgsFiles++;
-          }
-          
-          var fileCount = 0;
-          for (fc.moveFirst(); !fc.atEnd(); fc.moveNext())
-          {
-             s = new String(fc.item());
-            
-            idx = s.indexOf(".pgs");
-            if (-1 != idx) {
-               fileCount++; // processing a pgs file.. increment count
-               
+            {
                // Get span and girder from file name
                var newSG = new SpanGirder();
                newSG = ParseGirderFromFileName(s, currSpan, currGirder);
@@ -204,29 +173,14 @@ function RunTest (currFolder, currCommand)
                   outFile = "";
                   cmd = Application + " /" + newCommand + " " + s; 
                }
-               
-               if (RunMultipleFiles && fileCount != nPgsFiles) {
-                  // if we are running multiple files and this is not the last PGS file, add the spawning code
-                  // don't ever want to do this for the last non-TOGA file. we must wait until the last non-TOGA
-                  // file is done so that we don't change the library too soon
-               
-	               if (concurrencyCount < maxConcurrencyCount) {
-        	          cmd = "cmd.exe /C START \"XYZ\" " + cmd
-                	  concurrencyCount++;
-	               }
-	               else {
-        	          concurrencyCount = 1;
-	               }
-               }
 
-               if (ExecuteCommands)
+               if(ExecuteCommands)
                {
                    var begDate = new Date();
                    var begrunTime = begDate.getTime();
                    
                    DisplayMessage("Running: " + cmd);
                    DisplayMessage("");
-
                    st = wsShell.Run(cmd, 1, "TRUE");
 
                    var endrunDate = new Date();
@@ -245,7 +199,7 @@ function RunTest (currFolder, currCommand)
      else
      {
          // testing TOGA - need to set library to txdot
-         SetPGSuperLibrary("TxDOTRegressionTest", "TxDOTRegressionTest");
+         SetPGSuperLibrary("TxDOT", "TxDOT");
           
          var fc = new Enumerator(subFolder.Files);
          for (; !fc.atEnd(); fc.moveNext())
@@ -300,7 +254,7 @@ function InitTest(currFolder)
 function SetPGSuperLibrary(server, publisher)
 {
    var cmd = new String;
-   cmd = Application + " /SetLib=\"" + server + "\":\"" + publisher + "\"";
+   cmd = Application + " /SetLib=" + server + ":" + publisher;
 
    if(ExecuteCommands)
    {
@@ -575,7 +529,6 @@ function ParseCommandLine()
          DisplayMessage("    /V<version>    - Version of PGSuper to test (either \"Debug\", \"Profile\", or \"Release\"");
          DisplayMessage("    /P<platform>   - Platform (Win32 or X64)");
          DisplayMessage("    /N             - No execute. Display but do not execute pgsuper commands.");
-         DisplayMessage("    /M             - Run multiple files.");
          DisplayMessage("");
          return 1;
        }
@@ -634,11 +587,6 @@ function ParseCommandLine()
        {
           // No execute. Display but do not execute commands.
           ExecuteCommands=false;
-       }
-       else if (s.charAt(1)=="M" || s.charAt(1)=="m")
-       {
-          // Run multiple files... though this messes up timing.
-          RunMultipleFiles=true;
        }
        else
        {

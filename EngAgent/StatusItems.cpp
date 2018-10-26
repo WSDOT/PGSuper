@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -59,8 +59,8 @@ void pgsLiveLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
+pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey)
 {
 }
 
@@ -70,7 +70,7 @@ bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_Span == m_Span && other->m_Girder == m_Girder);
+   return (m_SegmentKey == other->m_SegmentKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -91,7 +91,8 @@ void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusIte
    ATLASSERT(pItem!=NULL);
 
    GET_IFACE(IEditByUI,pEdit);
-   pEdit->EditGirderDescription(pItem->m_Span,pItem->m_Girder,EGD_TRANSPORTATION);
+
+   pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
 }
 
 ////////////////
@@ -135,8 +136,8 @@ void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
+pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey)
 {
 }
 
@@ -146,7 +147,7 @@ bool pgsBunkPointLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_Span == m_Span && other->m_Girder == m_Girder);
+   return (m_SegmentKey == other->m_SegmentKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -166,6 +167,6 @@ void pgsBunkPointLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    GET_IFACE(IEditByUI,pEdit);
-   pEdit->EditGirderDescription(pItem->m_Span,pItem->m_Girder,EGD_TRANSPORTATION);
+   pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
 }
 

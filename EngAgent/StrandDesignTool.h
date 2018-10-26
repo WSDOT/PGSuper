@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,10 +30,9 @@
 //
 
 #include <IFace\Artifact.h>
-#include <IFace\GirderHandlingPointOfInterest.h>
+#include <IFace\Bridge.h>
+#include <IFace\PointOfInterest.h>
 #include <PgsExt\PoiMgr.h>
-
-#include "RaisedStraightStrandDesignTool.h"
 
 #include <algorithm>
 #include<list>
@@ -42,32 +41,7 @@
 // LOCAL INCLUDES
 //
 
-struct InitialDesignParameters
-{
-   pgsTypes::Stage stage;
-   std::_tstring strLimitState;
-   std::_tstring strStressLocation;
-   pgsTypes::LimitState limit_state;
-   pgsTypes::StressLocation stress_location;
-   pgsTypes::StressType stress_type;
-   Float64 fmin;
-   Float64 fmax;
-   Float64 fAllow;
-   Float64 fpre;
-   Float64 Preqd;
-   StrandIndexType Np;
-   Float64 fN;
-
-   InitialDesignParameters(pgsTypes::Stage stage,
-                           pgsTypes::LimitState limitState,LPCTSTR lpszLimitState,
-                           pgsTypes::StressLocation stressLocation,LPCTSTR lpszStressLocation,
-                           pgsTypes::StressType stressType) :
-   stage(stage),limit_state(limitState),strLimitState(lpszLimitState),
-      stress_location(stressLocation),strStressLocation(lpszStressLocation),
-      stress_type(stressType) {}
-};
-
-typedef Int32 DebondLevelType; // want this to be a signed type!
+typedef IndexType DebondLevelType; 
 
 inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
@@ -78,7 +52,7 @@ inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rv
    }
 
    std::_tstring str(os.str());
-   DebondLevelType n = (DebondLevelType)str.size();
+   DebondLevelType n = str.size();
    if (0 < n)
       str.erase(n-2,2); // get rid of trailing ", "
 
@@ -88,7 +62,7 @@ inline static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rv
 // FORWARD DECLARATIONS
 //
 interface IBroker;
-interface IPrestressForce;
+interface IPretensionForce;
 
 // MISCELLANEOUS
 // Strand adjustment outcomes
@@ -145,14 +119,13 @@ public:
    void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci);
-   void InitFinalStrength(Float64 fc);
 
-   void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
+   void RestoreDefaults(bool retainProportioning);
 
    // GROUP: OPERATIONS
    void FillArtifactWithFlexureValues();
 
-   Float64 GetGirderLength() const; // a little utility function to return a commonly used value
+   Float64 GetSegmentLength() const; // a little utility function to return a commonly used value
 
    // adding and removing strands
    StrandIndexType GetNumPermanentStrands();
@@ -172,19 +145,12 @@ public:
    bool AddStrands();
    bool AddTempStrands();
 
-   // This really doesn't actually add strands, it resequences fill to add raised straight strands for all straight designs. 
-   // Will fail if IsDesignRaisedStraight is false
-   bool AddRaisedStraightStrands();
-
-   // If fill order can be simplified - do it at final end of flexural design
-   void SimplifyDesignFillOrder(pgsDesignArtifact* pArtifact);
-
    StrandIndexType GetNextNumPermanentStrands(StrandIndexType prevNum);
    StrandIndexType GetPreviousNumPermanentStrands(StrandIndexType nextNum); 
    bool IsValidNumPermanentStrands(StrandIndexType num);
 
    void SetMinimumPermanentStrands(StrandIndexType num);
-   StrandIndexType GetMinimumPermanentStrands();
+   StrandIndexType GetMinimumPermanentStrands() const;
 
    StrandIndexType GuessInitialStrands();
    arDesignStrandFillType GetOriginalStrandFillType() const;
@@ -197,12 +163,12 @@ public:
    // returns the prestress force at lifting
    Float64 GetPrestressForceAtLifting(const GDRCONFIG& guess,const pgsPointOfInterest& poi);
 
-   Float64 GetPrestressForceMz(pgsTypes::Stage stage,const pgsPointOfInterest& poi);
+   Float64 GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
 
-   // if Np is set to INVALID_INDEX, cannot handle force
-   void ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams);
+   // if INVALID_INDEX, cannot handle force
+   StrandIndexType ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 force);
 
-   Float64 ComputeEccentricity(const pgsPointOfInterest& poi, pgsTypes::Stage eccStage);
+   Float64 ComputeEccentricity(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx);
 
    Float64 GetTransferLength(pgsTypes::StrandType strandType) const;
 
@@ -222,18 +188,15 @@ public:
    void SetHarpStrandOffsetEnd(Float64 off);
    void SetHarpStrandOffsetHp(Float64 off);
 
-   void GetEndOffsetBounds(Float64* pLower, Float64* pUpper);
-   void GetHpOffsetBounds(Float64* pLower, Float64* pUpper);
-
-   Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom);
-   Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom);
+   void GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const;
+   void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
 
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc);
-   bool ComputeMinHarpedForEzEccentricity(const pgsPointOfInterest& poi, Float64 ecc, pgsTypes::Stage eccStage, StrandIndexType* pNs, StrandIndexType* pNh);
+   bool ComputeMinHarpedForEzEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh);
 
    bool ComputeAddHarpedForMzReleaseEccentricity(const pgsPointOfInterest& poi, Float64 ecc, Float64 minEcc, StrandIndexType* pNs, StrandIndexType* pNh);
 
-   Float64 ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,pgsTypes::Stage eccStage);
+   Float64 ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,IntervalIndexType intervalIdx);
 
    // Debonded Strand Design
    /////////////////////////
@@ -288,36 +251,31 @@ public:
 
    // ACCESS
    //////////
-   const GDRCONFIG& GetGirderConfiguration();
+   const GDRCONFIG& GetSegmentConfiguration();
 
-   bool IsDesignDebonding() const;
-   bool IsDesignHarping() const;
-   bool IsDesignRaisedStraight() const;
+   arFlexuralDesignType GetFlexuralDesignType() const;
 
-   SpanIndexType GetSpan() const
+   const CSegmentKey& GetSegmentKey() const
    {
-      return m_Span;
-   }
-
-   GirderIndexType GetGirder() const
-   {
-      return m_Girder;
+      return m_SegmentKey;
    }
 
    // left and right ends of mid-zone. Measured from girder start
    void GetMidZoneBoundaries(Float64* leftEnd, Float64* rightEnd); 
 
    // POI's for design
-   std::vector<pgsPointOfInterest> GetDesignPoi(pgsTypes::Stage stage,PoiAttributeType attrib);
-   std::vector<pgsPointOfInterest> GetDesignPoiEndZone(pgsTypes::Stage stage,PoiAttributeType attrib);
+   std::vector<pgsPointOfInterest> GetDesignPoi(IntervalIndexType intervalIdx);
+   std::vector<pgsPointOfInterest> GetDesignPoi(IntervalIndexType intervalIdx,PoiAttributeType attrib);
+   std::vector<pgsPointOfInterest> GetDesignPoiEndZone(IntervalIndexType intervalIdx);
+   std::vector<pgsPointOfInterest> GetDesignPoiEndZone(IntervalIndexType intervalIdx,PoiAttributeType attrib);
 
-   pgsPointOfInterest GetDebondSamplingPOI(pgsTypes::Stage stage) const;
+   pgsPointOfInterest GetDebondSamplingPOI(IntervalIndexType intervalIdx) const;
    // interface IGirderLiftingDesignPointsOfInterest
    // locations of points of interest
-   virtual std::vector<pgsPointOfInterest> GetLiftingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 overhang,PoiAttributeType attrib,Uint32 mode);
+   virtual std::vector<pgsPointOfInterest> GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType attrib,Uint32 mode);
 
    //IGirderLiftingDesignPointsOfInterest
-   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
 
    // Concrete
    ////////////
@@ -326,19 +284,17 @@ public:
    Float64 GetConcreteStrength() const;
    Float64 GetReleaseStrength() const;
    Float64 GetReleaseStrength(ConcStrengthResultType* pStrengthResult) const;
-   bool DoesReleaseRequireAdditionalRebar() const;
 
    Float64 GetMinimumReleaseStrength() const;
    Float64 GetMaximumReleaseStrength() const;
    Float64 GetMinimumConcreteStrength() const;
    Float64 GetMaximumConcreteStrength() const;
 
-   bool UpdateConcreteStrength(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
-   bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
-   bool Bump500(pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation);
-   bool UpdateConcreteStrengthForShear(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState);
+   bool UpdateConcreteStrength(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
+   bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
+   bool Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation);
 
-   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc);
+   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,double* pfc);
 
    // "A"
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
@@ -364,8 +320,6 @@ public:
 
    // GROUP: INQUIRY
    void DumpDesignParameters();
-
-   Float64 GetPoiTolerance() const;
 
 protected:
    // GROUP: DATA MEMBERS
@@ -405,13 +359,8 @@ private:
    Float64 m_ConcreteAccuracy; // 100 PSI
 
    pgsDesignArtifact* m_pArtifact;
-   GirderIndexType m_Girder;
-   SpanIndexType m_Span;
+   CSegmentKey m_SegmentKey;
    arDesignOptions m_DesignOptions;
-
-   const GirderLibraryEntry* m_pGirderEntry;
-   std::_tstring m_GirderEntryName;
-
 
    GDRCONFIG m_CachedConfig;
    bool m_bConfigDirty;
@@ -425,7 +374,7 @@ private:
 
    // values cached for performance
    Float64 m_Aps[3]; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
-   Float64 m_GirderLength;
+   Float64 m_SegmentLength;
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;
    Float64 m_XFerLength[3];
@@ -437,15 +386,12 @@ private:
    // Points of interest to be used for design
    pgsPoiMgr m_PoiMgr;
 
-   // Tool for dealing with raised straight strand design - only used if this is the design type
-   boost::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
-
-   // Classes to store information on what controlled concrete strength or number of strands
+   // Classes to store information on what controlled release strength
    // and to control when to set values. 
    struct DesignState
    {
-      Float64                  m_Strength;   // concrete strength (release or final), or number of strands
-      pgsTypes::Stage          m_Stage;      // controlling stage
+      Float64                  m_Strength;
+      IntervalIndexType        m_IntervalIdx;   // controlling interval
       pgsTypes::StressType     m_StressType; // stress type (tension or compression) 
       pgsTypes::LimitState     m_LimitState; // 
       pgsTypes::StressLocation m_StressLocation;
@@ -455,10 +401,10 @@ private:
       m_RepeatCount(0), m_Strength(0.0)
       {;}
 
-      DesignState(Float64 strength, pgsTypes::Stage stage, 
+      DesignState(Float64 strength, IntervalIndexType intervalIdx, 
                        pgsTypes::StressType stressType, pgsTypes::LimitState limitState,
                        pgsTypes::StressLocation stressLocation):
-      m_RepeatCount(0), m_Strength(strength), m_Stage(stage), m_StressType(stressType),
+      m_RepeatCount(0), m_Strength(strength), m_IntervalIdx(intervalIdx), m_StressType(stressType),
       m_LimitState(limitState), m_StressLocation(stressLocation)
       {;}
 
@@ -466,7 +412,7 @@ private:
       {
          // note that repeat count is not part of operator
          return m_Strength == rOther.m_Strength  &&
-                m_Stage == rOther.m_Stage  &&
+                m_IntervalIdx == rOther.m_IntervalIdx  &&
                 m_StressType == rOther.m_StressType  &&
                 m_LimitState == rOther.m_LimitState  &&
                 m_StressLocation == rOther.m_StressLocation;
@@ -483,13 +429,8 @@ private:
 
       bool WasSet() const {return m_Control!=fciInitial;} // if false, minimum strength controlled
 
-      pgsDesignArtifact::ConcreteStrengthDesignState::Action ControllingAction() const
-      {
-         return m_Control==fciSetShear ? pgsDesignArtifact::ConcreteStrengthDesignState::actShear : 
-                                      pgsDesignArtifact::ConcreteStrengthDesignState::actStress;
-      }
       Float64    Strength() const {return m_CurrentState.m_Strength;}
-      pgsTypes::Stage Stage() const {return m_CurrentState.m_Stage;}
+      IntervalIndexType Interval() const {return m_CurrentState.m_IntervalIdx;}
       pgsTypes::StressType StressType() const {return m_CurrentState.m_StressType;}
       pgsTypes::LimitState LimitState() const {return m_CurrentState.m_LimitState;}
       pgsTypes::StressLocation StressLocation() const {return m_CurrentState.m_StressLocation;}
@@ -501,7 +442,7 @@ private:
          m_Decreases.clear();
       }
 
-      bool DoUpdate(Float64 strength, pgsTypes::Stage stage, 
+      bool DoUpdate(Float64 strength, IntervalIndexType intervalIdx, 
                        pgsTypes::StressType stressType, pgsTypes::LimitState limitState,
                        pgsTypes::StressLocation stressLocation, Float64* pCurrStrength)
       {
@@ -512,7 +453,7 @@ private:
             m_Control = fciSetOnce;
 
             retval = !IsEqual(strength,m_CurrentState.m_Strength);
-            StoreCurrent(strength, stage, stressType, limitState, stressLocation);
+            StoreCurrent(strength, intervalIdx, stressType, limitState, stressLocation);
 
          }
          else if (m_Control==fciSetOnce || m_Control==fciSetDecrease)
@@ -526,18 +467,18 @@ private:
             else if (m_CurrentState.m_Strength < strength)
             {
                // strength is new high - set it
-               StoreCurrent(strength, stage, stressType, limitState, stressLocation);
+               StoreCurrent(strength, intervalIdx, stressType, limitState, stressLocation);
                retval = true;
             }
-            else if ( ConditionsMatchCurrent(stage, stressType, limitState, stressLocation) )
+            else if ( ConditionsMatchCurrent(intervalIdx, stressType, limitState, stressLocation) )
             {
                // Controlling state matches current state. We can potentially store a decrease.
                // Update only if new value is more than 150 psi less than current
-               if ( (m_CurrentState.m_Strength-::ConvertToSysUnits(0.15,unitMeasure::KSI)) > strength)
+               if ( strength < (m_CurrentState.m_Strength-::ConvertToSysUnits(0.15,unitMeasure::KSI)) )
                {
                   // We have a decrease, see if it's been stored before
                   Int16 incr; // note assignment below - a bit tricky
-                  if (m_Control==fciSetDecrease && 0 < (incr=ConditionsMatchDecrease(strength, stage, stressType, limitState, stressLocation)) )
+                  if (m_Control==fciSetDecrease && 0 < (incr=ConditionsMatchDecrease(strength, intervalIdx, stressType, limitState, stressLocation)) )
                   {
                      // This decrease has been tried before for this limit state, which means that it's probably part of a deadlock.
                      // Try a exponentially higher strength, but not more than current value
@@ -550,7 +491,7 @@ private:
                      test_strength = min(test_strength, m_CurrentState.m_Strength);
 
                      // allow 3 decreases only for each design state
-                     if (incr<4 && test_strength<m_CurrentState.m_Strength)
+                     if (incr < 4 && test_strength < m_CurrentState.m_Strength)
                      {
                         strength = test_strength;
                         retval = true;
@@ -563,7 +504,7 @@ private:
                   else
                   {
                      // the first decrease for this limit state. Store it and set state
-                     StoreDecrease(strength, stage, stressType, limitState, stressLocation);
+                     StoreDecrease(strength, intervalIdx, stressType, limitState, stressLocation);
 
                      m_Control = fciSetDecrease; // we have a decrease for comparisons
                      retval = true;
@@ -571,7 +512,7 @@ private:
 
                   if (retval)
                   {
-                     StoreCurrent(strength, stage, stressType, limitState, stressLocation);
+                     StoreCurrent(strength, intervalIdx, stressType, limitState, stressLocation);
                   }
                }
                else
@@ -585,10 +526,6 @@ private:
                retval = false;
             }
          }
-         else if (m_Control==fciSetShear)
-         {
-            retval = false; // never update if shear strength has previously controlled
-         }
          else
          {
             ATLASSERT(0); // bad condition??
@@ -598,28 +535,19 @@ private:
          return retval;
       }
 
-      void DoUpdateForShear(Float64 strength, pgsTypes::Stage stage,  pgsTypes::LimitState limitState)
-      {
-         ATLASSERT(m_Control!=fciSetShear); // this should only ever happen once
-         m_Control=fciSetShear;
-
-         m_CurrentState.m_Strength       = strength;
-         m_CurrentState.m_Stage          = stage;
-         m_CurrentState.m_LimitState     = limitState;
-      }
 
 private:
-      bool ConditionsMatchCurrent(pgsTypes::Stage stage, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      bool ConditionsMatchCurrent(IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
       {
-         return (m_CurrentState.m_Stage          == stage      &&
+         return (m_CurrentState.m_IntervalIdx          == intervalIdx      &&
                  m_CurrentState.m_LimitState     == limitState &&
                  m_CurrentState.m_StressType     == stressType &&
                  m_CurrentState.m_StressLocation == stressLocation);
       }
 
-      Int16 ConditionsMatchDecrease(Float64 strength, pgsTypes::Stage stage, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      Int16 ConditionsMatchDecrease(Float64 strength, IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
       {
-         DesignState local( strength, stage, stressType, limitState, stressLocation);
+         DesignState local( strength, intervalIdx, stressType, limitState, stressLocation);
          DIterator it = std::find(m_Decreases.begin(), m_Decreases.end(), local);
          if (it != m_Decreases.end())
          {
@@ -631,19 +559,19 @@ private:
          }
       }
 
-      void StoreCurrent(Float64 strength, pgsTypes::Stage stage, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      void StoreCurrent(Float64 strength, IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
       {
          m_CurrentState.m_Strength       = strength;
-         m_CurrentState.m_Stage          = stage;
+         m_CurrentState.m_IntervalIdx    = intervalIdx;
          m_CurrentState.m_LimitState     = limitState;
          m_CurrentState.m_StressType     = stressType;
          m_CurrentState.m_StressLocation = stressLocation;
       }
 
-      void StoreDecrease(Float64 strength, pgsTypes::Stage stage, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      void StoreDecrease(Float64 strength, IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
       {
          // assumption here is that ConditionsMatchDecrease() returned 0 before this call
-         DesignState local( strength, stage, stressType, limitState, stressLocation);
+         DesignState local( strength, intervalIdx, stressType, limitState, stressLocation);
          local.m_RepeatCount = 1;
          m_Decreases.push_front(local);
       }
@@ -652,8 +580,7 @@ private:
       {
          fciInitial,
          fciSetOnce,     // have a current value, but no decreases
-         fciSetDecrease, // have current and decreases
-         fciSetShear     // shear controlled - we cannot change strength anymore
+         fciSetDecrease  // have current and decreases
       };
 
       fciControl               m_Control; // state we are in
@@ -671,9 +598,6 @@ private:
 
    ConcreteStrengthController m_FciControl;
    ConcreteStrengthController m_FcControl;
-
-   Float64 m_MaxFci;
-   Float64 m_MaxFc;
 
    // store whether release strength required additional rebar
    ConcStrengthResultType m_ReleaseStrengthResult;
@@ -693,7 +617,7 @@ private:
 
    StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh);
 
-   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, const PRESTRESSCONFIG& rconfig, IStrandGeometry* pStrandGeom);
+   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, StrandIndexType nh, IStrandGeometry* pStrandGeom);
 
    // Private functions called from Initialize
    ///////////////////////////////////////////
@@ -712,7 +636,7 @@ private:
 
    // compute possible debond levels for the current span/girder
    void InitDebondData();
-   void ComputeDebondLevels(IPrestressForce* pPrestressForce);
+   void ComputeDebondLevels(IPretensionForce* pPrestressForce);
    void DumpDebondLevels();
    bool SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections);
    DebondLevelType GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection);
@@ -751,6 +675,8 @@ private:
    // maximum debond levels due to physical contrants at any section
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
+
+   std::vector<pgsPointOfInterest> GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute,Uint32 mode);
 
 
 private:

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadDistFactorsDlg.h"
-#include <MFCTools\CustomDDX.h>
+
 #include "LLDFFillDlg.h"
 
 #include <..\htmlhelp\helptopics.hh>
@@ -34,8 +34,6 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
-
-#include <MfcTools\XUnwind.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -293,7 +291,6 @@ void CLiveLoadDistFactorsDlg::DealWithGridStates()
    GetDlgItem(IDC_GIRDER_RADIO)->EnableWindow(bEnable);
    GetDlgItem(IDC_PIER_RADIO)->EnableWindow(bEnable);
    GetDlgItem(IDC_LLDF_FILL2)->EnableWindow(bEnable);
-   GetDlgItem(IDC_USER_LLDF_NOTE)->EnableWindow(bEnable);
 
    CButton* pBut = (CButton*)GetDlgItem(IDC_GIRDER_RADIO);
    if (pBut->GetCheck()==BST_CHECKED)
@@ -384,9 +381,10 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
             for (SpanGirderIterator sit=spans.begin(); sit!=spans.end(); sit++)
             {
                const SpanGirderType& sg = *sit;
-               const CSpanData* pSpan = m_BridgeDesc.GetSpan(sg.Span);
-               GirderIndexType ngdrs = pSpan->GetGirderCount();
-               if(sg.Girder<ngdrs)
+               const CSpanData2* pSpan = m_BridgeDesc.GetSpan(sg.Span);
+               const CGirderGroupData* pGroup = m_BridgeDesc.GetGirderGroup(pSpan);
+               GirderIndexType nGirders = pGroup->GetGirderCount();
+               if(sg.Girder < nGirders)
                {
                   SpanLLDF lldf;
                   lldf.sgNMService= pLLDF->GetNegMomentDistFactor(sg.Span, sg.Girder, pgsTypes::ServiceI );
@@ -408,16 +406,30 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
             for (PierGirderIterator sit=piers.begin(); sit!=piers.end(); sit++)
             {
                const PierGirderType& pg = *sit;
-               const CPierData* pPier = m_BridgeDesc.GetPier(pg.Pier);
+               const CPierData2* pPier = m_BridgeDesc.GetPier(pg.Pier);
 
                // User-defined pier lldf's have no concept of ahead and back spans, so
                // use max distribution factors from ahead and back spans
                PierLLDF lldf_Back, lldf_Ahead;
 
-               const CSpanData* pSpanBack  = pPier->GetSpan(pgsTypes::Back);
-               const CSpanData* pSpanAhead = pPier->GetSpan(pgsTypes::Ahead);
+               const CSpanData2* pSpanBack  = pPier->GetSpan(pgsTypes::Back);
+               GirderIndexType nGirdersBack = INVALID_INDEX;
+               if ( pSpanBack )
+               {
+                  const CGirderGroupData* pGroup = m_BridgeDesc.GetGirderGroup(pSpanBack);
+                  nGirdersBack = pGroup->GetGirderCount();
 
-               if(pSpanBack!=NULL && pg.Girder < pSpanBack->GetGirderCount())
+               }
+
+               const CSpanData2* pSpanAhead = pPier->GetSpan(pgsTypes::Ahead);
+               GirderIndexType nGirdersAhead = INVALID_INDEX;
+               if ( pSpanAhead )
+               {
+                  const CGirderGroupData* pGroup = m_BridgeDesc.GetGirderGroup(pSpanAhead);
+                  nGirdersAhead = pGroup->GetGirderCount();
+               }
+
+               if( pSpanBack != NULL && pg.Girder < nGirdersBack)
                {
                   lldf_Back.pgNMService= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::ServiceI,pgsTypes::Back);
                   lldf_Back.pgRService = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::ServiceI);
@@ -425,7 +437,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
                   lldf_Back.pgRFatigue = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::FatigueI);
                }
 
-               if(pSpanAhead!=NULL && pg.Girder < pSpanAhead->GetGirderCount())
+               if( pSpanAhead != NULL && pg.Girder < nGirdersAhead)
                {
                   lldf_Ahead.pgNMService= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::ServiceI,pgsTypes::Ahead);
                   lldf_Ahead.pgRService = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::ServiceI);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,11 +48,10 @@ private:
 class pgsLiftingSupportLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
 };
 
 ///////////////////////////
@@ -92,11 +91,10 @@ private:
 class pgsBunkPointLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsBunkPointLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
 };
 
 ///////////////////////////

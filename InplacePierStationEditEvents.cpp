@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
 
@@ -58,7 +58,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    const unitStationFormat& station_format = pDisplayUnits->GetStationFormat();
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
    Float64 prevPierStation = 0;
@@ -66,13 +66,13 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
 
    if ( m_PierIdx != 0 )
    {
-      const CPierData* pPrevPier = pBridgeDesc->GetPier(m_PierIdx - 1);
+      const CPierData2* pPrevPier = pBridgeDesc->GetPier(m_PierIdx - 1);
       prevPierStation = pPrevPier->GetStation();
    }
 
    if ( m_PierIdx != nSpans )
    {
-      const CPierData* pNextPier = pBridgeDesc->GetPier(m_PierIdx + 1);
+      const CPierData2* pNextPier = pBridgeDesc->GetPier(m_PierIdx + 1);
       nextPierStation = pNextPier->GetStation();
    }
 

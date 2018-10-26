@@ -232,7 +232,7 @@
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -324,7 +324,7 @@
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -759,6 +759,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IntervalChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LibraryUsageParagraph.cpp"
 				>
 			</File>
@@ -800,10 +804,6 @@
 			</File>
 			<File
 				RelativePath=".\LoadRatingDetailsChapterBuilder.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\LoadRatingReactionsChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -903,11 +903,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetGirderPropertiesTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OptimizedFabricationChapterBuilder.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\OptionalDeflectionCheck.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSpliceTitlePageBuilder.cpp"
 				>
 			</File>
 			<File
@@ -920,6 +928,10 @@
 			</File>
 			<File
 				RelativePath=".\PierGeometryChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PointOfInterestChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -936,6 +948,10 @@
 			</File>
 			<File
 				RelativePath=".\ProductDisplacementsTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ProductForcesChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -967,15 +983,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReactionInterfaceAdapters.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Reporting.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Reporting.def"
+				>
+			</File>
+			<File
+				RelativePath=".\ReportStyleHolder.cpp"
 				>
 			</File>
 			<File
@@ -992,6 +1008,10 @@
 			</File>
 			<File
 				RelativePath=".\SectPropTable2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentConstructionChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -1109,6 +1129,25 @@
 			<File
 				RelativePath=".\StressChapterBuilder.cpp"
 				>
+			</File>
+			<File
+				RelativePath=".\TendonGeometryChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeStepParametersChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TSRemovalMomentsTable.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\UserDefinedLoadsChapterBuilder.cpp"
@@ -1391,6 +1430,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\IntervalChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\LibraryUsageParagraph.h"
 				>
 			</File>
@@ -1432,10 +1475,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\LoadRatingReactionsChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1487,11 +1526,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\NetGirderPropertiesTable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\OptimizedFabricationChapterBuilder.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\OptionalDeflectionCheck.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\PGSpliceTitlePageBuilder.h"
 				>
 			</File>
 			<File
@@ -1504,6 +1551,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\PierGeometryChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\PointOfInterestChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1520,6 +1571,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ProductDisplacementsTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\ProductForcesChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1563,6 +1618,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\ReportStyleHolder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
 				>
 			</File>
@@ -1580,6 +1639,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\SectPropTable2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\SegmentConstructionChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -1648,6 +1711,18 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\StressChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TendonGeometryChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TimeStepParametersChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TSRemovalMomentsTable.h"
 				>
 			</File>
 			<File

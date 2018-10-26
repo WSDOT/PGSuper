@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,102 +20,109 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_ALLOWABLES_H_
-#define INCLUDED_IFACE_ALLOWABLES_H_
-
-/*****************************************************************************
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-*****************************************************************************/
-
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
+#pragma once
 
 #include <PGSuperTypes.h>
+#include <PgsExt\SegmentKey.h>
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class pgsPointOfInterest;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
    IAllowableStrandStress
 
-   Interface to allowable prestressing strand stresses.
+   Interface to get the allowable prestressing strand stresses.
 
 DESCRIPTION
-   Interface to allowable prestressing strand stresses.
+   Interface to get the allowable prestressing strand stresses.
+   Different versions of the LRFD have different requirements for when
+   strand stresses must be checked. Use the CheckStresXXX methods
+   to determine when the strand stresses must be checked.
+   Based on LRFD Table 5.9.3-1
 *****************************************************************************/
 // {82EA97B0-6EB2-11d2-8EEB-006097DF3C68}
 DEFINE_GUID(IID_IAllowableStrandStress, 
 0x82ea97b0, 0x6eb2, 0x11d2, 0x8e, 0xeb, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface IAllowableStrandStress : IUnknown
 {
+   // Returns true if strand stresses are to be checked at jacking
    virtual bool CheckStressAtJacking() = 0;
+
+   // Returns true if strand stresses are to be check immediately before prestress transfer (release)
    virtual bool CheckStressBeforeXfer() = 0;
+
+   // Returns true if strand stresses are to be check immediately after prestress transfer (release)
    virtual bool CheckStressAfterXfer() = 0;
+
+   // Returns true if strand stresses are to be check after all losses have occured
    virtual bool CheckStressAfterLosses() = 0;
 
-   virtual Float64 GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
+   // Returns the allowable strand stress at jacking
+   virtual Float64 GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+
+   // Returns the allowable strand stress immediately prior to prestress transfer (release)
+   virtual Float64 GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+
+   // Returns the allowable strand stress immediately after prestress transfer (release)
+   virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+
+   // Returns the allowable strand stress after all losses have occured
+   virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
 };
 
 
 /*****************************************************************************
 INTERFACE
-   IAllowableConcreteStress
+   IAllowableTendonStress
 
-   Interface to allowable concrete stresses.
+   Interface to get the allowable tendon stresses.
+
+DESCRIPTION
+   Interface to get the allowable tendon stresses. Based on LRFD Table 5.9.3-1
+*****************************************************************************/
+// {FC5C901A-C65B-4d10-98A8-3B01EEA86044}
+DEFINE_GUID(IID_IAllowableTendonStress, 
+0xfc5c901a, 0xc65b, 0x4d10, 0x98, 0xa8, 0x3b, 0x1, 0xee, 0xa8, 0x60, 0x44);
+interface IAllowableTendonStress : IUnknown
+{
+   virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey) = 0;
+};
+
+/*****************************************************************************
+INTERFACE
+   IAllowableConcreteStress
 
 DESCRIPTION
    Interface to allowable concrete stresses.
+
+   Allowable stresses are allowed to vary by position. Some agencies limit the
+   tension stress in the top of the girder near the supports. This will
+   be supported in the future. For now, allowable stresses are constant
+   over the length of a segment so dummy POI can be passed into this function
+   so long as the segment key is valid.
 *****************************************************************************/
 // {8D24A46E-7DAD-11d2-8857-006097C68A9C}
 DEFINE_GUID(IID_IAllowableConcreteStress, 
 0x8d24a46e, 0x7dad, 0x11d2, 0x88, 0x57, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IAllowableConcreteStress : IUnknown
-{   
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type) = 0;
-   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type) = 0;
-   virtual Float64 GetAllowableStress(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc) = 0;
-   virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual Float64 GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
+{
+   // Returns the allowable concrete stress at a point of interest or for a specified concrete strength. 
+   // if bWithBondedReinforcement is true, the allowable tensile stress for the "with bonded reinforcement" 
+   // case is returned. bWithBondedReinforcement is ignored if the stress type is pgsTypes::Compression 
+   // and intervals that occur after shipping.
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement=false) = 0;
+   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement=false) = 0;
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement=false) = 0;
 
-   virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls) = 0;
-   virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
+   // Returns the coefficient for allowable compressive stress (x*fc)
+   virtual Float64 GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
 
-   virtual Float64 GetCastingYardAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)=0;
-   virtual Float64 GetBridgeSiteAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)=0;
-   virtual Float64 GetInitialAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,Float64 fci)=0;
-   virtual Float64 GetInitialAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,Float64 fci, bool useMinRebar)=0;
-   virtual Float64 GetFinalAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc)=0;
-   virtual Float64 GetFinalAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage, Float64 fc)=0;
-
-   virtual Float64 GetCastingYardAllowableTensionStressCoefficientWithRebar() = 0;
-   virtual Float64 GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar() = 0;
-
-   // returns true if the girder stress checks are to include intermediate, temporary
-   // loading conditions
-   virtual bool CheckTemporaryStresses() = 0;
-
-   // returns true if tension stresses due to final dead load are to be evaluated
-   virtual bool CheckFinalDeadLoadTensionStress() = 0;
+   // Returns the coefficient for allowable tension stress (x*sqrt(fc)), a boolean value indicating if the allowable tension stress has a maximum value
+   // and the maxiumum value
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
 };
 
 
@@ -133,13 +140,11 @@ DEFINE_GUID(IID_IDebondLimits,
 0x34c607ab, 0x62d4, 0x43a6, 0xab, 0x8a, 0x6c, 0xc6, 0x6b, 0xc8, 0xc9, 0x32);
 interface IDebondLimits : IUnknown
 {
-   virtual Float64 GetMaxDebondedStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;  // % of total
-   virtual Float64 GetMaxDebondedStrandsPerRow(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0; // % of total in row
-   virtual Float64 GetMaxDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0; // % of total debonded
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0; 
-   virtual void    GetMaxDebondLength(SpanIndexType span,GirderIndexType gdr,Float64* pLen, pgsTypes::DebondLengthControl* pControl) = 0; 
-   virtual Float64 GetMinDebondSectionDistance(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0; 
+   virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) = 0;  // % of total
+   virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) = 0; // % of total in row
+   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) = 0; // % of total debonded
+   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) = 0; 
+   virtual void    GetMaxDebondLength(const CSegmentKey& segmentKey,Float64* pLen, pgsTypes::DebondLengthControl* pControl) = 0; 
+   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) = 0; 
 };
-
-#endif // INCLUDED_IFACE_ALLOWABLES_H_
 

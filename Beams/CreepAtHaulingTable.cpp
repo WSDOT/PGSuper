@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,10 +57,10 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -77,7 +77,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    pgsReportStyleHolder::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
-   table->m_pGirderData = pgirderData;
+   table->m_pStrands = pStrands;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
@@ -86,7 +86,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    
    *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << rptNewLine;
 
-   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH_PT.png")) << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH.png")) << rptNewLine;
@@ -94,21 +94,13 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return table;
-   }
-
    table->time.ShowUnitTag(true);
-   *pParagraph << Sub2(_T("k"),_T("td")) << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetKtd()) << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetAdjustedInitialAge())   << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
-   *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << ptl->GetGdrK1Creep() << rptNewLine;
-   *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << ptl->GetGdrK2Creep() << rptNewLine;
-   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
+   *pParagraph << Sub2(_T("k"),_T("td")) << _T(" = ") << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToShipping().GetKtd()) << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetAdjustedInitialAge())   << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
+   *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << pDetails->RefinedLosses2005.GetGdrK1Creep() << rptNewLine;
+   *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << pDetails->RefinedLosses2005.GetGdrK2Creep() << rptNewLine;
+   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
    table->time.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
@@ -137,7 +129,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
 
       col = 2;
-      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -155,7 +147,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    }
    else
    {
-      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -167,31 +159,23 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    return table;
 }
 
-void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
-   }
-
-   if ( m_pGirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());
+   if ( m_pStrands->TempStrandUsage == pgsTypes::ttsPretensioned )
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp() + details.pLosses->GetDeltaFpp());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + pDetails->pLosses->GetDeltaFpp());
 
-   (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetPermanentStrandKih());
-   (*this)(row+rowOffset,col++) << stress.SetValue(ptl->PermanentStrand_CreepLossAtShipping());
+   (*this)(row+rowOffset,col++) << scalar.SetValue(pDetails->RefinedLosses2005.GetPermanentStrandKih());
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->RefinedLosses2005.PermanentStrand_CreepLossAtShipping());
 
    if ( m_bTemporaryStrands )
    {
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().TemporaryStrand_Fcgp());
-      (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetTemporaryStrandKih());
-      (*this)(row+rowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_CreepLossAtShipping());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().TemporaryStrand_Fcgp());
+      (*this)(row+rowOffset,col++) << scalar.SetValue(pDetails->RefinedLosses2005.GetTemporaryStrandKih());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->RefinedLosses2005.TemporaryStrand_CreepLossAtShipping());
    }
 }

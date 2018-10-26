@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_LIVELOADDISTRIBUTIONFACTORTABLE_H_
-#define INCLUDED_LIVELOADDISTRIBUTIONFACTORTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 
@@ -50,8 +49,6 @@ LOG
 class REPORTINGCLASS CLiveLoadDistributionFactorTable
 {
 public:
-   // GROUP: LIFECYCLE
-
    //------------------------------------------------------------------------
    // Default constructor
    CLiveLoadDistributionFactorTable();
@@ -64,37 +61,20 @@ public:
    // Destructor
    virtual ~CLiveLoadDistributionFactorTable();
 
-   // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
    CLiveLoadDistributionFactorTable& operator = (const CLiveLoadDistributionFactorTable& rOther);
 
-   // GROUP: OPERATIONS
-
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                      IBroker* pBroker,const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    //------------------------------------------------------------------------
    void MakeCopy(const CLiveLoadDistributionFactorTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CLiveLoadDistributionFactorTable& rOther);
+   virtual void MakeAssignment(const CLiveLoadDistributionFactorTable& rOther);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_LIVELOADDISTRIBUTIONFACTORTABLE_H_

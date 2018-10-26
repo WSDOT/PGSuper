@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,17 +89,17 @@ public:
 
    // Shear capacity
    //------------------------------------------------------------------------
-   void ComputeShearCapacity(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+   void ComputeShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
                              const pgsPointOfInterest& poi,
                              SHEARCAPACITYDETAILS* pmcd);
 
-   void ComputeShearCapacity(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+   void ComputeShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
                              const pgsPointOfInterest& poi,const GDRCONFIG& config,
                              SHEARCAPACITYDETAILS* pmcd);
 
    // concrete stress at girder centroid used to calculate shear capacity
    //------------------------------------------------------------------------
-   void ComputeFpc(const pgsPointOfInterest& pPoi, const GDRCONFIG& config,
+   void ComputeFpc(const pgsPointOfInterest& pPoi, const GDRCONFIG* pConfig,
                    FPCDETAILS* mcd);
 
    //------------------------------------------------------------------------
@@ -124,7 +124,7 @@ protected:
    void MakeCopy(const pgsShearCapacityEngineer& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsShearCapacityEngineer& rOther);
+   virtual void MakeAssignment(const pgsShearCapacityEngineer& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -141,14 +141,14 @@ private:
    // GROUP: OPERATIONS
    
 
-   bool GetGeneralInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+   bool GetGeneralInformation(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
 				  		            const pgsPointOfInterest& poi,
                               const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd);
-   bool GetInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+   bool GetInformation(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
 				  		     const pgsPointOfInterest& poi, 
                        const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd);
 
-   void ComputeShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+   void ComputeShearCapacityDetails(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
                              const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
 
    bool ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd);

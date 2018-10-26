@@ -1,31 +1,10 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 #pragma once
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include "StrandFillGrid.h"
 #include <GraphicsLib\GraphicsLib.h>
 #include <IFace\Bridge.h>
+#include <IFace\BeamFactory.h>
 #include "afxwin.h"
 
 // CGirderSelectStrandsDlg dialog
@@ -60,12 +39,12 @@ public:
    void UpdatePicture();
 
    // intialize and retreive data before/after domodal
-   void InitializeData(SpanIndexType span, GirderIndexType girder, const CPrestressData& rPrestress, 
+   void InitializeData(const CSegmentKey& segmentKey, const CStrandData& rPrestress, 
                        const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, bool allowEndAdjustment, bool allowHpAdjustment,
                        HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType, Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, 
                        Float64 maxDebondLength);
 
-   bool GetData(CPrestressData& rPrestress); // return true if data changed
+   bool GetData(CStrandData& rPrestress); // return true if data changed
 
 
 private:
@@ -79,8 +58,6 @@ private:
    int m_Row1Offset;   // distance from bottom of picture to top of first row of strand data
    int m_Row2Offset;   // distance from bottom of picture to top of second row of strand data
 
-   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
-
    bool m_AllowHpAdjustment;
    bool m_AllowEndAdjustment;
    HarpedStrandOffsetType m_HsoEndMeasurement;
@@ -92,13 +69,13 @@ private:
    std::vector<StrandIndexType> m_ExtendedStrands[2]; // index is pgsTypes::MemberEndType
 
    bool m_CanDebondStrands; // are there any debondable strands in this girder?
-   std::vector<CDebondInfo> m_StraightDebond;
+   std::vector<CDebondData> m_StraightDebond;
    BOOL m_bSymmetricDebond;
    Float64 m_MaxDebondLength;
 
    const GirderLibraryEntry* m_pGdrEntry;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
+
 private:
    CStrandFillGrid m_Grid;
    int             m_IsMidSpan;

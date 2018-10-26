@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,16 +25,17 @@
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 #include "ReportNotes.h"
 
 interface IEAFDisplayUnits;
 interface IRatingSpecification;
 
 std::_tstring REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
-void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType girder,bool bDesign,bool bRating);
+void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
 
-ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
-                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,pgsTypes::Stage* pContinuityStage,SpanIndexType* pStartSpan,SpanIndexType* pNSpans);
+ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderkKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
+                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,IntervalIndexType* pContinuityInterval,GroupIndexType* pStartGroup,GroupIndexType* pNGroups);
 
 /*****************************************************************************
 CLASS 
@@ -82,7 +83,7 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
+   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                              bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
@@ -91,22 +92,24 @@ protected:
    void MakeCopy(const CProductMomentsTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CProductMomentsTable& rOther);
+   virtual void MakeAssignment(const CProductMomentsTable& rOther);
 
 };
 
 template <class M,class T>
-RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bIsFutureOverlay,
-                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
-                                     IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,
+                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,IntervalIndexType continuityInterval,                                     IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+
    p_table->SetNumberOfHeaderRows(2);
 
    //
    // Set up table headings
    //
-   int row1col = 0;
-   int row2col = 0;
+   ColumnIndexType row1col = 0;
+   ColumnIndexType row2col = 0;
 
    p_table->SetRowSpan(0,row1col,2);
    p_table->SetRowSpan(1,row2col++,SKIP_CELL);
@@ -125,7 +128,7 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
 
    if ( bShearKey )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+      if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << _T("Shear Key");
@@ -142,7 +145,7 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
 
    if ( bConstruction )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+      if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << _T("Construction");
@@ -157,7 +160,7 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
       }
    }
 
-   if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+   if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
    {
       p_table->SetColumnSpan(0,row1col,2);
       (*p_table)(0,row1col++) << _T("Slab");
@@ -189,7 +192,7 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
 
    if ( bDeckPanels )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+      if ( analysisType == pgsTypes::Envelope && continuityInterval == castDeckIntervalIdx )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << _T("Deck Panel");
@@ -220,14 +223,7 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
 
       p_table->SetColumnSpan(0,row1col,2);
-      if (bIsFutureOverlay)
-      {
-         (*p_table)(0,row1col++) << _T("Future") << rptNewLine << _T("Overlay");
-      }
-      else
-      {
-         (*p_table)(0,row1col++) << _T("Overlay");
-      }
+      (*p_table)(0,row1col++) << _T("Overlay");
       (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
       (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
    }
@@ -246,14 +242,7 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
 
       p_table->SetRowSpan(0,row1col,2);
       p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      if (bIsFutureOverlay)
-      {
-         (*p_table)(0,row1col++) << _T("Future") << rptNewLine << _T("Overlay");
-      }
-      else
-      {
-         (*p_table)(0,row1col++) << COLHDR(_T("Overlay"), M, unitT );
-      }
+      (*p_table)(0,row1col++) << COLHDR(_T("Overlay"), M, unitT );
    }
 
    if ( bPedLoading )
@@ -332,7 +321,8 @@ RowIndexType ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTabl
       }
    }
 
-   for ( ColumnIndexType i = row1col; i < p_table->GetNumberOfColumns(); i++ )
+   ColumnIndexType nColumns = p_table->GetNumberOfColumns();
+   for ( ColumnIndexType i = row1col; i < nColumns; i++ )
    {
       p_table->SetColumnSpan(0,i,SKIP_CELL);
    }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( wobble,      pDisplayUnits->GetPerLengthUnit(),       true  );
 }
 
-CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
@@ -68,20 +68,20 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    *pParagraph << rptRcImage(strImagePath + _T("Delta_FpF.png")) << rptNewLine << rptNewLine;
    *pParagraph << rptRcImage(strImagePath + _T("Delta_FpA.png")) << rptNewLine;
 
-   *pParagraph << _T("Wobble Friction: K = ") << table->wobble.SetValue(details.pLosses->GetWobbleFrictionCoefficient()) << rptNewLine;
+   *pParagraph << _T("Wobble Friction: K = ") << table->wobble.SetValue(pDetails->pLosses->GetWobbleFrictionCoefficient()) << rptNewLine;
 
    table->ecc.ShowUnitTag(true);
-   *pParagraph << _T("Anchor Set: ") << symbol(DELTA) << _T("L = ") << table->ecc.SetValue(details.pLosses->GetAnchorSet()) << rptNewLine;
+   *pParagraph << _T("Anchor Set: ") << symbol(DELTA) << _T("L = ") << table->ecc.SetValue(pDetails->pLosses->GetAnchorSet()) << rptNewLine;
    table->ecc.ShowUnitTag(false);
 
    table->offset.ShowUnitTag(true);
-   *pParagraph << Sub2(_T("L"),_T("set")) << _T(" = ") << table->offset.SetValue(details.pLosses->AnchorSetZone()) << rptNewLine;
-   *pParagraph << Sub2(_T("L"),_T("g")) << _T(" = ") << table->offset.SetValue(details.pLosses->GetGirderLength() ) << rptNewLine;
+   *pParagraph << Sub2(_T("L"),_T("set")) << _T(" = ") << table->offset.SetValue(pDetails->pLosses->AnchorSetZone()) << rptNewLine;
+   *pParagraph << Sub2(_T("L"),_T("g")) << _T(" = ") << table->offset.SetValue(pDetails->pLosses->GetGirderLength() ) << rptNewLine;
    table->offset.ShowUnitTag(false);
 
    table->stress.ShowUnitTag(true);
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pFT")) << _T(" = ") << table->stress.SetValue(details.pLosses->TotalFrictionLoss() ) << rptNewLine;
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAT")) << _T(" = ") << table->stress.SetValue(details.pLosses->TotalAnchorSetLoss() ) << rptNewLine;
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pFT")) << _T(" = ") << table->stress.SetValue(pDetails->pLosses->TotalFrictionLoss() ) << rptNewLine;
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAT")) << _T(" = ") << table->stress.SetValue(pDetails->pLosses->TotalAnchorSetLoss() ) << rptNewLine;
    table->stress.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
@@ -96,9 +96,9 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    return table;
 }
 
-void CFrictionLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CFrictionLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,2) << offset.SetValue(details.pLosses->GetLocation()   );
-   (*this)(row,3) << stress.SetValue(details.pLosses->FrictionLoss()  );
-   (*this)(row,4) << stress.SetValue(details.pLosses->AnchorSetLoss() );
+   (*this)(row,2) << offset.SetValue(pDetails->pLosses->GetLocation()   );
+   (*this)(row,3) << stress.SetValue(pDetails->pLosses->FrictionLoss()  );
+   (*this)(row,4) << stress.SetValue(pDetails->pLosses->AnchorSetLoss() );
 }

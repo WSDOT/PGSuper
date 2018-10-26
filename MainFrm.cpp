@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,20 +63,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
    if (CEAFMainFrame::OnCreate(lpCreateStruct) == -1)
       return -1;
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // we want to use a cool style
-   //CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_LunaBlue);
-   //CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
-
-   CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOfficeXP));
-#endif
-
-   // Need to set the icon here so that GetIcon wont fail
-   CWinApp* pApp = AfxGetApp();
-   HICON hIcon = pApp->LoadIcon(IDR_MAINFRAME);
-   SetIcon(hIcon,TRUE);
-   SetIcon(hIcon,FALSE);
 
    return 0;
 }

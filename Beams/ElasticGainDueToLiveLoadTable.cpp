@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "ElasticGainDueToLiveLoadTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -48,7 +49,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 8;
@@ -62,9 +63,15 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   Float64 Ec = pMaterial->GetEcGdr(span,gdr);
-   Float64 Ep = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   Float64 Ec = pMaterials->GetSegmentEc(segmentKey,liveLoadIntervalIdx);
+   Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -75,7 +82,11 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    *pParagraph << _T("Change in strand stress due to live load applied to the composite girder") << rptNewLine;
    *pParagraph << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + _T("DeltaFcdLL.png")) << rptNewLine;
+   if ( spMode == pgsTypes::spmGross )
+      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcdLL_Gross.png")) << rptNewLine;
+   else
+      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcdLL_Transformed.png")) << rptNewLine;
+
    *pParagraph << rptRcImage(strImagePath + _T("Delta_FpLL.png")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
@@ -89,8 +100,8 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   table->m_BAT = (analysisType == pgsTypes::Simple     ? SimpleSpan : 
-                   analysisType == pgsTypes::Continuous ? ContinuousSpan : MaxSimpleContinuousEnvelope);
+   table->m_BAT = (analysisType == pgsTypes::Simple     ? pgsTypes::SimpleSpan : 
+                   analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : pgsTypes::MaxSimpleContinuousEnvelope);
 
 
    *pParagraph << table << rptNewLine;
@@ -98,26 +109,36 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("llim")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   if ( spMode == pgsTypes::spmGross )
+   {
+      (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   }
+   else
+   {
+      (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("ct")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bct")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bgt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   }
    (*table)(0,col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'''"),_T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }
 
-void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
 
-   (*this)(row,col++) << moment.SetValue( details.pLosses->GetLiveLoadMoment() );
-   (*this)(row,col++) << ecc.SetValue( details.pLosses->GetEccPermanent() );
-   (*this)(row,col++) << mom_inertia.SetValue( details.pLosses->GetIc() );
-   (*this)(row,col++) << cg.SetValue( details.pLosses->GetYbc() );
-   (*this)(row,col++) << cg.SetValue( details.pLosses->GetYbg() );
-   (*this)(row,col++) << stress.SetValue( details.pLosses->GetDeltaFcdLL() );
-   (*this)(row,col++) << stress.SetValue( details.pLosses->ElasticGainDueToLiveLoad() );
+   (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetLiveLoadMoment() );
+   (*this)(row,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
+   (*this)(row,col++) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
+   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbc() );
+   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbg() );
+   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcdLL() );
+   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToLiveLoad() );
 }

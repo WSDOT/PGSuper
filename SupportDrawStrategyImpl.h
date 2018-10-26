@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 class CSupportDrawStrategyImpl : public CCmdTarget
 {
 public:
-   CSupportDrawStrategyImpl(CPGSuperDoc* pDoc);
+   CSupportDrawStrategyImpl();
 
 
    DECLARE_INTERFACE_MAP()
@@ -46,13 +46,12 @@ public:
    END_INTERFACE_PART(DrawPointStrategy)
 
 private:
-   CPGSuperDoc* m_pDoc;
 //   CComPtr<ISupport>     m_Support;
    long                  m_SupportID;
 
    CComPtr<IPoint2d> m_CachePoint;
 
-   virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
+   virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc);
    void GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64 *psy);
    void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
 };

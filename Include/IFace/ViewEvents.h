@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <PgsExt\SegmentKey.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // View event callback interfaces are defined in this header file. Extension agents
@@ -48,7 +49,7 @@ interface IBridgePlanViewEventCallback
    virtual void OnSpanContextMenu(SpanIndexType spanIdx,CEAFMenu* pMenu) = 0;
 
    // called when a context menu is created for a girder
-   virtual void OnGirderContextMenu(SpanIndexType spanIdx,GirderIndexType gdrIdx,CEAFMenu* pMenu) = 0;
+   virtual void OnGirderContextMenu(const CGirderKey& girderKey,CEAFMenu* pMenu) = 0;
 
    // called when a context menu is created for the deck
    virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
@@ -58,6 +59,15 @@ interface IBridgePlanViewEventCallback
 
    // called when a context menu is created for the section cut object
    virtual void OnSectionCutContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for a temporary support
+   virtual void OnTemporarySupportContextMenu(SupportIDType tsID,CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for a girder segment
+   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey,CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for a closure pour
+   virtual void OnClosurePourContextMenu(const CSegmentKey& closureKey,CEAFMenu* pMenu) = 0;
 };
 
 
@@ -65,8 +75,13 @@ interface IBridgePlanViewEventCallback
 // Callbacks for the Bridge Section View
 interface IBridgeSectionViewEventCallback
 {
+   // called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
-   virtual void OnGirderContextMenu(SpanIndexType spanIdx,GirderIndexType gdrIdx,CEAFMenu* pMenu) = 0;
+
+   // called when a conext menu is created for a girder
+   virtual void OnGirderContextMenu(const CGirderKey& girderKey,CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for the bridge deck
    virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
 };
 

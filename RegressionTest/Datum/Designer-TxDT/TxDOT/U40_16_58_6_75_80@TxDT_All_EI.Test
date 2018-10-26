@@ -1,36 +1,33 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 94.42    6  16.58 U40, 16.583, 6.7    1     1     U40           58  1/2  270  12.99  12.38   8.00   8.00  24   2.17   27    20    4   8   6   2   0   5.100  5.100   3.409    -3.368     6621   1.061  1.506   3.897 -1.398 -0.072 -0.029 -1.499 167.25  446.03    1.00    1.00    1.00 
-                                                                                                                4.14   27     4    4   0   0   0   0 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 94.42   6 16.58  1     1    U40        58   1/2  270 12.99 12.38  24  2.17  27  20  4  8  6  2  0  0  0  0  0  0  5.100  5.100    3.409   -3.368    6621 1.061  1.506  0.32 -0.12 -0.01 -0.00 -0.12 167.25 446.03   1.00   1.00   1.00
+                                                                       4.14  27   4  4  0  0  0  0  0  0  0  0  0 
 
 
 The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 94.42    6  16.58 U40, 16.583, 6.7    1     2     U40           60  1/2  270  12.90  12.27   8.00   8.00  26   2.17   27    20    4   8   6   0   2   5.200  5.400   3.557    -3.422     6529   0.992  1.391   3.979 -1.541 -0.071 -0.028 -1.641 176.88  468.07    1.00    1.00    1.00 
-                                                                                                                4.14   27     6    6   0   0   0   0 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 94.42   6 16.58  1     2    U40        60   1/2  270 12.90 12.27  26  2.17  27  20  4  8  6  0  2  0  0  0  0  0  5.200  5.400    3.557   -3.422    6529 0.992  1.391  0.33 -0.13 -0.01 -0.00 -0.14 176.88 468.07   1.00   1.00   1.00
+                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
 
 
 The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 94.42    6  16.58 U40, 16.583, 6.7    1     4     U40           60  1/2  270  12.90  12.27   8.00   8.00  26   2.17   27    20    4   8   6   0   2   5.200  5.400   3.557    -3.422     6529   0.992  1.391   3.979 -1.541 -0.071 -0.028 -1.641 176.88  468.07    1.00    1.00    1.00 
-                                                                                                                4.14   27     6    6   0   0   0   0 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 94.42   6 16.58  1     4    U40        60   1/2  270 12.90 12.27  26  2.17  27  20  4  8  6  0  2  0  0  0  0  0  5.200  5.400    3.557   -3.422    6529 0.992  1.391  0.33 -0.13 -0.01 -0.00 -0.14 176.88 468.07   1.00   1.00   1.00
+                                                                       4.14  27   6  6  0  0  0  0  0  0  0  0  0 
 
 
 The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
 
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,8 @@ DEFINE_GUID(IID_iPointLoadDrawStrategy,
 
 interface iPointLoadDrawStrategy : public IUnknown
 {
-  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CPointLoadData load, IndexType loadIndex, 
-                        Float64 girderDepth, Float64 spanLength, Float64 maxMagnitude, COLORREF color) PURE;
+  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, const CPointLoadData& load, CollectionIndexType loadIndex, 
+                        Float64 spanLength, Float64 maxMagnitude, COLORREF color) PURE;
 };
 
 #endif // INCLUDED_POINTLOADDRAWSTRATEGY_H_

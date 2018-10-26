@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include <Reporting\StrandSlopeCheck.h>
 
 #include <IFace\Artifact.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Bridge.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\StrandSlopeArtifact.h>
@@ -70,49 +70,64 @@ CStrandSlopeCheck& CStrandSlopeCheck::operator= (const CStrandSlopeCheck& rOther
 
 //======================== OPERATIONS =======================================
 void CStrandSlopeCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsStrandSlopeArtifact* pArtifact = pGdrArtifact->GetStrandSlopeArtifact();
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   // no report if not applicable
-   if ( pArtifact->IsApplicable() )
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   *pTitle << _T("Strand Slope");
+
+   rptRcScalar slope;
+   slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
+   slope.SetWidth(pDisplayUnits->GetScalarFormat().Width);
+   slope.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
+
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
+   *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Strand Slope.jpg") ) << rptNewLine;
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-      *pChapter << pTitle;
-      *pTitle << _T("Strand Slope");
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStrandSlopeArtifact* pArtifact = pSegmentArtifact->GetStrandSlopeArtifact();
+      // no report if not applicable
+      if ( pArtifact->IsApplicable() )
+      {
+         if ( 1 < nSegments )
+         {
+            pBody = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            *pChapter << pBody;
+            *pBody << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         }
+      
+         pBody = new rptParagraph;
+         *pChapter << pBody;
+      
+         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2);
+         *pBody << pTable;
 
-   
-      INIT_SCALAR_PROTOTYPE(rptRcScalar, slope, pDisplayUnits->GetScalarFormat());
+         pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+         pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-      rptParagraph* pBody = new rptParagraph;
-      *pChapter << pBody;
+         (*pTable)(0,0) << _T("");
+         (*pTable)(0,1) << _T("1 : n");
+         (*pTable)(1,0) << _T("Allowable Slope");
+         (*pTable)(2,0) << _T("Strand Slope");
+         (*pTable)(3,0) << _T("Status");
 
-      *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Strand Slope.jpg") ) << rptNewLine;
-   
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
-      *pBody << pTable;
+         (*pTable)(1,1) << slope.SetValue(pArtifact->GetCapacity());
+         (*pTable)(2,1) << slope.SetValue(pArtifact->GetDemand());
 
-      pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-      pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-      (*pTable)(0,0) << _T("");
-      (*pTable)(0,1) << _T("1 : n");
-
-      (*pTable)(1,0) << _T("Allowable Slope");
-      (*pTable)(2,0) << _T("Strand Slope");
-      (*pTable)(3,0) << _T("Status");
-
-      (*pTable)(1,1) << slope.SetValue(pArtifact->GetCapacity());
-      (*pTable)(2,1) << slope.SetValue(pArtifact->GetDemand());
-
-      if ( pArtifact->Passed() )
-         (*pTable)(3,1) << RPT_PASS;
-      else
-         (*pTable)(3,1) << RPT_FAIL;
-   }
+         if ( pArtifact->Passed() )
+            (*pTable)(3,1) << RPT_PASS;
+         else
+            (*pTable)(3,1) << RPT_FAIL;
+      } // is applicable
+   } // next segment
 }
 
 //======================== ACCESS     =======================================

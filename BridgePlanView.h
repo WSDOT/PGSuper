@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BRIDGEPLANVIEW_H__E2B376C9_2D38_11D2_8EB4_006097DF3C68__INCLUDED_)
-#define AFX_BRIDGEPLANVIEW_H__E2B376C9_2D38_11D2_8EB4_006097DF3C68__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+
 // BridgePlanView.h : header file
 //
 //
@@ -33,6 +29,7 @@
 #include <DManip\DManip.h>
 #include <DManipTools\DManipTools.h>
 #include <PgsExt\PierData.h>
+#include <PgsExt\TemporarySupportData.h>
 #include "BridgeModelViewChildFrame.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -47,35 +44,48 @@ protected:
 
    struct GirderDisplayObjectInfo
    {
-      GirderDisplayObjectInfo(SpanGirderHashType spanGirderHash,long listID): SpanGirderHash(spanGirderHash), DisplayListID(listID) {}
-      SpanGirderHashType SpanGirderHash;
-      long DisplayListID;
+      GirderDisplayObjectInfo(const CGirderKey& girderKey,IDType listID): m_GirderKey(girderKey), DisplayListID(listID) {}
+      CGirderKey m_GirderKey;
+      IDType DisplayListID;
+   };
+
+   struct SegmentDisplayObjectInfo
+   {
+      SegmentDisplayObjectInfo(const CSegmentKey& SegmentKey,IDType listID): m_SegmentKey(SegmentKey), DisplayListID(listID) {}
+      CSegmentKey m_SegmentKey;
+      IDType DisplayListID;
    };
 
    struct PierDisplayObjectInfo
    {
-      PierDisplayObjectInfo(PierIndexType pierIdx,long listID): PierIdx(pierIdx), DisplayListID(listID) {}
+      PierDisplayObjectInfo(PierIndexType pierIdx,IDType listID): PierIdx(pierIdx), DisplayListID(listID) {}
       PierIndexType PierIdx;
-      long DisplayListID;
+      IDType DisplayListID;
    };
 
    struct SpanDisplayObjectInfo
    {
-      SpanDisplayObjectInfo(SpanIndexType spanIdx,long listID): SpanIdx(spanIdx), DisplayListID(listID) {}
+      SpanDisplayObjectInfo(SpanIndexType spanIdx,IDType listID): SpanIdx(spanIdx), DisplayListID(listID) {}
       SpanIndexType SpanIdx;
-      long DisplayListID;
+      IDType DisplayListID;
    };
 
    struct DeckDisplayObjectInfo
    {
-      DeckDisplayObjectInfo(Int32 deckID,long listID): ID(deckID), DisplayListID(listID) {}
-      long ID;
-      long DisplayListID;
+      DeckDisplayObjectInfo(IDType deckID,IDType listID): ID(deckID), DisplayListID(listID) {}
+      IDType ID;
+      IDType DisplayListID;
    };
 
    // maps span girder hash values to a girder display object id
-   std::map<SpanGirderHashType,long> m_GirderIDs;
-   long m_NextGirderID;
+   std::map<CGirderKey,IDType> m_GirderIDs;
+   IDType m_NextGirderID;
+
+   std::map<CSegmentKey,IDType> m_SegmentIDs;
+   IDType m_NextSegmentID;
+
+   std::map<CSegmentKey,IDType> m_ClosurePourIDs;
+   IDType m_NextClosurePourID;
 
 // Attributes
 public:
@@ -88,10 +98,15 @@ public:
    void SelectSpan(SpanIndexType spanIdx,bool bSelect);
    bool GetSelectedPier(PierIndexType* pPierIdx);
    void SelectPier(PierIndexType pierIdx,bool bSelect);
-   bool GetSelectedGirder(SpanIndexType* pSpanIdx,GirderIndexType* pGirderIdx);
-   void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bSelect);
+   bool GetSelectedGirder(CGirderKey* pGirderKey);
+   void SelectGirder(const CGirderKey& girderKey,bool bSelect);
+   bool GetSelectedSegment(CSegmentKey* pSegmentKey);
+   void SelectSegment(const CSegmentKey& segmentKey,bool bSelect);
+   bool GetSelectedClosurePour(CSegmentKey* pClosureKey);
+   void SelectClosurePour(const CSegmentKey& closureKey,bool bSelect);
    void SelectDeck(bool bSelect);
    void SelectAlignment(bool bSelect);
+   void SelectTemporarySupport(SupportIDType tsID,bool bSelect);
    void ClearSelection();
    bool IsDeckSelected();
    bool IsAlignmentSelected();
@@ -148,6 +163,9 @@ protected:
    void BuildTitleDisplayObjects();
    void BuildAlignmentDisplayObjects();
    void BuildPierDisplayObjects();
+   void BuildTemporarySupportDisplayObjects();
+   void BuildClosurePourDisplayObjects();
+   void BuildGirderSegmentDisplayObjects();
    void BuildGirderDisplayObjects();
    void BuildSpanDisplayObjects();
    void BuildSlabDisplayObjects();
@@ -159,11 +177,15 @@ protected:
    void UpdateSectionCut();
    void UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw);
 
-   void UpdateGirderTooltips();
+   void UpdateSegmentTooltips();
+   void UpdateClosurePourTooltips();
 
    void DrawFocusRect();
 
-   std::_tstring GetConnectionString(const CPierData* pPier);
+   std::_tstring GetConnectionString(const CPierData2* pPier);
+   std::_tstring GetFullConnectionString(const CPierData2* pPier);
+   std::_tstring GetConnectionString(const CTemporarySupportData* pTS);
+   std::_tstring GetFullConnectionString(const CTemporarySupportData* pTS);
 
    CBridgeModelViewChildFrame* GetFrame();
 
@@ -171,10 +193,3 @@ protected:
    SpanIndexType m_StartSpanIdx;
    SpanIndexType m_EndSpanIdx;
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_BRIDGEPLANVIEW_H__E2B376C9_2D38_11D2_8EB4_006097DF3C68__INCLUDED_)

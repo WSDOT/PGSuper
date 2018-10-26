@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "StrandGenerationDlg.h"
 #include <EAF\EAFApp.h>
 #include "..\htmlhelp\HelpTopics.hh"
-#include "GirderHarpedStrandPage.h"
 
 static const int ENDBOX_CTRLS[] = {IDC_GROUP2, IDC_HEADING2, IDC_X_LABEL2, IDC_Y_LABEL2, IDC_START_LABEL2, IDC_START_X2, 
                                    IDC_START_X_UNIT2, IDC_START_Y2, IDC_START_Y_UNIT2, IDC_END_LABEL2, IDC_END_X2, IDC_END_X_UNIT2,
@@ -95,8 +94,14 @@ BOOL CStrandGenerationDlg::OnInitDialog()
 {
    CComboBox* pcbStrandType = (CComboBox*)GetDlgItem(IDC_STRAND_TYPE);
    int idx = pcbStrandType->AddString(_T("Straight"));
-
-   idx = pcbStrandType->AddString( LOCAL_LABEL_HARP_TYPE( m_AdjustableStrandType) );
+   if (m_DoUseHarpedWebStrands)
+   {
+      idx = pcbStrandType->AddString(_T("Harped"));
+   }
+   else
+   {
+      idx = pcbStrandType->AddString(_T("Straight-Web"));
+   }
 
    pcbStrandType->SetCurSel(0);
 
@@ -178,23 +183,17 @@ void CStrandGenerationDlg::OnStrandTypeChanged()
       // Harped
       bEnableHarped = TRUE;
 
-      if(m_AdjustableStrandType==pgsTypes::asHarped)
+      if(m_DoUseHarpedWebStrands)
       {
          GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Harped Strands at Harping Point"));
          GetDlgItem(IDC_GROUP2)->SetWindowText(_T("Harped Strands at End"));
          GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined harped strands"));
       }
-      else if(m_AdjustableStrandType==pgsTypes::asStraight)
+      else
       {
-         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Adj. Straight Strands"));
+         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Straight-Web Strands"));
          GetDlgItem(IDC_GROUP2)->SetWindowText(_T(""));
-         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Adjustable Straight strands"));
-      }
-      else if(m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
-      {
-         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Adjustable Strands"));
-         GetDlgItem(IDC_GROUP2)->SetWindowText(_T(""));
-         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Adjustable strands"));
+         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Straight-Web strands"));
       }
    }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,8 @@
 #include "HtmlHelp\HelpTopics.hh"
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
+
+#include <PsgLib\resource.h>
 
 // CBridgeDescRatingPage dialog
 
@@ -66,3 +68,51 @@ void CShearSteelPage2::DoRestoreDefaults()
    m_ShearData.CopyGirderEntryData(*pGird);
 }
 
+void CShearSteelPage2::EnableClosurePourMode()
+{
+   int nID[] = 
+   {
+      IDC_CHECK_SPLITTING,
+
+      IDC_SPLITTING_LABEL,
+      IDC_SPLITTING_ZL,
+      IDC_SPLITTING_ZL_UNIT,
+      IDC_SPLITTING_BAR_SIZE,
+      IDC_SPLITTING_SPACING,
+      IDC_SPLITTING_SPACING_UNIT,
+
+      IDC_CONFINE_LABEL,
+      IDC_CONFINE_ZL,
+      IDC_CONFINE_ZL_UNIT,
+      IDC_CONFINE_BAR_SIZE,
+      IDC_CONFINE_SPACING,
+      IDC_CONFINE_SPACING_UNIT,
+
+      IDC_SPLITTING_NLEGS,
+
+      IDC_END_GROUP,
+      IDC_ZL_LABEL,
+      IDC_SPACING_LABEL,
+      IDC_BAR_SIZE_LABEL,
+      IDC_NLEGS_LABEL,
+
+      IDC_RESTORE_DEFAULTS
+   };
+
+   int nIDs = sizeof(nID)/sizeof(int);
+   for ( int i = 0; i < nIDs; i++ )
+   {
+      CWnd* pWnd = GetDlgItem(nID[i]);
+      pWnd->ShowWindow(SW_HIDE);
+   }
+
+#pragma Reminder("UPDATE: this code isn't working")
+   // This code isn't working???
+   // The "Confinement Bar Size" column needs to be hidded because
+   // it doesn't apply to closure pours
+	m_pGrid->GetParam()->EnableUndo(FALSE);
+   m_pGrid->GetParam()->SetLockReadOnly(FALSE);
+   m_pGrid->SetColWidth(6,6,0);
+	m_pGrid->GetParam()->EnableUndo(TRUE);
+   m_pGrid->GetParam()->SetLockReadOnly(TRUE);
+}

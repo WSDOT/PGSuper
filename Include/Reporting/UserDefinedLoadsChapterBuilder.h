@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,17 +67,17 @@ public:
    virtual CChapterBuilder* Clone() const;
 
    static rptParagraph* CreatePointLoadTable(IBroker* pBroker,
-                           SpanIndexType span, GirderIndexType girder,
+                           const CSpanGirderKey& spanGirderKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
    static rptParagraph* CreateDistributedLoadTable(IBroker* pBroker,
-                           SpanIndexType span, GirderIndexType girder,
+                           const CSpanGirderKey& spanGirderKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
    static rptParagraph* CreateMomentLoadTable(IBroker* pBroker,
-                           SpanIndexType span, GirderIndexType girder,
+                           const CSpanGirderKey& spanGirderKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 

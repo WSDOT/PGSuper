@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #endif
 
 #include <PgsExt\LiftHaulConstants.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <map>
 
 // LOCAL INCLUDES
@@ -185,7 +185,7 @@ protected:
    void MakeCopy(const pgsLiftingStressAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsLiftingStressAnalysisArtifact& rOther);
+   virtual void MakeAssignment(const pgsLiftingStressAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -299,7 +299,7 @@ protected:
    void MakeCopy(const pgsLiftingCrackingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsLiftingCrackingAnalysisArtifact& rOther);
+   virtual void MakeAssignment(const pgsLiftingCrackingAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -504,7 +504,7 @@ public:
    std::vector<pgsPointOfInterest> GetLiftingPointsOfInterest() const;
 
    // returns the top and bottom girder stresses for the supplied vector of locations
-   void GetGirderStress(std::vector<Float64> locs,bool bMin,bool bIncludePrestress,std::vector<Float64>& fTop,std::vector<Float64>& fBot) const;
+   void GetGirderStress(std::vector<double> locs,bool bMin,bool bIncludePrestress,std::vector<double>& fTop,std::vector<double>& fBot) const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress,Float64* minDistFromStart,Float64* maxDistFromStart) const;
 
@@ -513,7 +513,7 @@ public:
 
    // returns the maximum girder dead load stress at the top and bottom of the girder at the controlling
    // location of point of prestress transfer and lift point.
-   void GetEndZoneMinMaxRawStresses(Float64 poiTolerance,Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const;
+   void GetEndZoneMinMaxRawStresses(Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const;
 
    // get max top (tension) and bottom (compression) stresses (minus prestress) at all analysis points along girder
    struct MaxdLiftingStresses
@@ -554,7 +554,7 @@ protected:
    void MakeCopy(const pgsLiftingAnalysisArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsLiftingAnalysisArtifact& rOther);
+   virtual void MakeAssignment(const pgsLiftingAnalysisArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

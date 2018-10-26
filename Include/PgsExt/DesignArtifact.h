@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,17 +32,10 @@
 
 // PROJECT INCLUDES
 //
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#if !defined INCLUDED_PGSLIB_SHEARZONEDATA_H_
 #include <PsgLib\ShearZoneData.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_GIRDERDATA_H_
+#include <PgsExt\SegmentKey.h>
 #include <PgsExt\GirderData.h>
-#endif
 
 #include <Material\ConcreteEx.h>
 #include <PGSuperTypes.h>
@@ -99,7 +92,6 @@ public:
       TooManyStirrupsReqdForHorizontalInterfaceShear,
       TooManyStirrupsReqdForSplitting,
       ConflictWithLongReinforcementShearSpec,
-      TooManyBarsForLongReinfShear,
       TooMuchStrandsForLongReinfShear,
       StrandsReqdForLongReinfShearAndFlexureTurnedOff,
       NoDevelopmentLengthForLongReinfShear,
@@ -132,24 +124,17 @@ public:
    class PGSEXTCLASS ConcreteStrengthDesignState
    {
    public:
-      enum Action {actStress, actShear}; // Concrete strength can be affected by flexural stress or shear stress
-
       ConcreteStrengthDesignState():
-      m_Action(actStress),
       m_MinimumControls(true),
-      m_RequiredAdditionalRebar(false)
+      m_RequiredAdditionalRebar(false),
+      m_IntervalIdx(INVALID_INDEX)
       {;}
 
-      // Conc strength controlled by flexural stress
-      void SetStressState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
+      void SetState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
                     pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation);
 
-      // Conc strength controlled by shear stress
-      void SetShearState(pgsTypes::Stage stage, pgsTypes::LimitState limitState);
-
-      Action GetAction() const;
       bool WasControlledByMinimum() const;
-      pgsTypes::Stage Stage() const;
+      IntervalIndexType Interval() const;
       pgsTypes::StressType StressType() const;
       pgsTypes::LimitState LimitState() const;
       pgsTypes::StressLocation StressLocation() const;
@@ -165,12 +150,12 @@ public:
       void Init() {m_MinimumControls=true;}
 
    private:
-      Action m_Action;
       bool m_MinimumControls;
       bool m_RequiredAdditionalRebar;
-      pgsTypes::Stage          m_Stage;
+      CSegmentKey              m_SegmentKey;
+      IntervalIndexType        m_IntervalIdx;
       pgsTypes::StressType     m_StressType;
-      pgsTypes::LimitState     m_LimitState; // 
+      pgsTypes::LimitState     m_LimitState; 
       pgsTypes::StressLocation m_StressLocation;
    };
 
@@ -180,7 +165,7 @@ public:
    //------------------------------------------------------------------------
    // Default constructor
    pgsDesignArtifact();
-   pgsDesignArtifact(SpanIndexType span,GirderIndexType gdr);
+   pgsDesignArtifact(const CSegmentKey& segmentKey);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -205,25 +190,14 @@ public:
    bool DoDesignNotesExist() const;
    std::vector<DesignNote> GetDesignNotes() const;
 
-   // Any failed design strategies
-   IndexType DoPreviouslyFailedDesignsExist() const;
-   std::vector<arFlexuralDesignType> GetPreviouslyFailedFlexuralDesigns() const;
-   void AddFailedDesign(const arDesignOptions& options);
+   const CSegmentKey& GetSegmentKey() const;
 
-   //------------------------------------------------------------------------
-   SpanIndexType GetSpan() const;
-
-   //------------------------------------------------------------------------
-   GirderIndexType GetGirder() const;
-
-   void InitializeDesign(const arDesignOptions& options);
-
-   void SetDesignOptions(const arDesignOptions& options);
+   void SetDesignOptions(arDesignOptions options);
    arDesignOptions GetDesignOptions() const;
 
    // ==== Flexure-Related Properties ======
    //------------------------------------------------------------------------
-   // DoDesignFlexure - If this is dtNoDesign, all flexure values are bogus.
+   // DoDesignFlexure - If this is false, all flexure values are bogus.
    arFlexuralDesignType GetDoDesignFlexure() const;
    
    void SetNumStraightStrands(StrandIndexType Ns);
@@ -232,19 +206,8 @@ public:
    void SetNumTempStrands(StrandIndexType Nt);
    StrandIndexType GetNumTempStrands() const;
 
-   // Return the type of adjustable strands for the design. Base on design options
-   pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
-
-   // Algorithm can design harped or raised straight for adjustable strands
-   // GetNumHarpedStrands will return the number of adjustable strands no matter what the design type
    void SetNumHarpedStrands(StrandIndexType Nh);
    StrandIndexType GetNumHarpedStrands() const;
-
-   // Functions below are only valid for dtDesignFullyBondedRaised and dtDesignForDebondingRaised
-   // and cannot be called for dtDesignForHarping, dtDesignForDebonding or dtDesignFullyBonded
-   // Pjack used for these strands is the harped strand pjack value
-   void SetRaisedAdjustableStrands(const ConfigStrandFillVector& strandFill);
-   ConfigStrandFillVector GetRaisedAdjustableStrands() const;
 
    void SetPjackStraightStrands(Float64 Pj);
    Float64 GetPjackStraightStrands() const;
@@ -300,10 +263,7 @@ public:
 
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
 
-   // Functions to create primary PGSuper girder data structures
-   GDRCONFIG GetGirderConfiguration() const;
-
-   CGirderData GetGirderData() const;
+   GDRCONFIG GetSegmentConfiguration() const;
 
    // design states for concrete strengths
    const ConcreteStrengthDesignState& GetReleaseDesignState() const;
@@ -319,8 +279,8 @@ public:
 
    ZoneIndexType GetNumberOfStirrupZonesDesigned() const;
    void SetNumberOfStirrupZonesDesigned(ZoneIndexType num);
-   const CShearData& GetShearData() const;
-   void SetShearData(const CShearData& rdata);
+   const CShearData2* GetShearData() const;
+   void SetShearData(const CShearData2& rdata);
 
    // Longitudinal rebar data is also used in shear design
    void SetWasLongitudinalRebarForShearDesigned(bool isTrue);
@@ -340,7 +300,7 @@ protected:
    void MakeCopy(const pgsDesignArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsDesignArtifact& rOther);
+   virtual void MakeAssignment(const pgsDesignArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -350,11 +310,8 @@ private:
    Outcome m_Outcome;
 
    std::vector<DesignNote> m_DesignNotes; // may want to consider making this a set if things get complicated
-
-   std::vector<arFlexuralDesignType> m_PreviouslyFailedDesigns;
-
-   SpanIndexType m_Span;
-   GirderIndexType m_Gdr;
+   
+   CSegmentKey m_SegmentKey;
 
    arDesignOptions m_DesignOptions;
 
@@ -369,8 +326,6 @@ private:
    bool    m_PjTUsedMax;
    Float64 m_HarpStrandOffsetEnd;
    Float64 m_HarpStrandOffsetHp;
-
-   ConfigStrandFillVector m_RaisedAdjustableStrandFill;
 
    DebondConfigCollection m_SsDebondInfo;
 
@@ -391,7 +346,7 @@ private:
    ConcreteStrengthDesignState m_ConcreteReleaseDesignState;
    ConcreteStrengthDesignState m_ConcreteFinalDesignState;
 
-   CShearData m_ShearData;
+   CShearData2 m_ShearData;
    ZoneIndexType  m_NumShearZones;
 
    bool m_bWasLongitudinalRebarForShearDesigned;
@@ -400,11 +355,7 @@ private:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void Init(bool fromBirth);
-
-   void ModGirderDataForFlexureDesign(IBroker* pBroker, CGirderData& rdata) const;
-   void ModGirderDataForShearDesign(IBroker* pBroker, CGirderData& rdata) const;
-
+   void Init();
    // GROUP: ACCESS
    // GROUP: INQUIRY
 };

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,14 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// *!*!*!*!*! STOP *!*!*!*!*!*!*!*!
-// That's it... we don't have any more room to add versions before
-// coliding with PGSuper V3.0
-//
-// WHATEVER FEATURE YOU ARE ADDING, STOP... IT MUST BE PART OF PGS VERSION 3
-#define CURRENT_VERSION 49.0
-// NOTE: CURRENT_VERSION CANNOT BE GREATER THAN 49.0
-// Version 3.0 branch starts at data block version 50.0
+#define CURRENT_VERSION 43.0
 
 
 /****************************************************************************
@@ -60,8 +53,9 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
-m_SpecificationType(lrfdVersionMgr::SeventhEditionWith2016Interims),
-m_SpecificationUnits(lrfdVersionMgr::US),
+m_SpecificationType(lrfdVersionMgr::FirstEditionWith1997Interims),
+m_SpecificationUnits(lrfdVersionMgr::SI),
+m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),
 m_DoDesignStrandSlope(true),
 m_MaxSlope05(6),
@@ -74,6 +68,7 @@ m_DoCheckSplitting(true),
 m_DoCheckConfinement(true),
 m_DoDesignSplitting(true),
 m_DoDesignConfinement(true),
+m_MaxStirrupSpacing(ConvertToSysUnits(18,unitMeasure::Inch)),
 m_CyLiftingCrackFs(1.0),
 m_CyLiftingFailFs(1.5),
 m_CyCompStressServ(0.45),
@@ -99,7 +94,6 @@ m_PickPointHeight(0),
 m_MaxGirderSweepLifting(0),
 m_EnableHaulingCheck(true),
 m_EnableHaulingDesign(true),
-m_HaulingAnalysisMethod(pgsTypes::hmWSDOT),
 m_MaxGirderSweepHauling(0),
 m_HaulingSupportDistance(ConvertToSysUnits(200.0,unitMeasure::Feet)),
 m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
@@ -125,20 +119,14 @@ m_HeErectionCrackFs(1.0),
 m_HeErectionFailFs(1.5),
 m_RoadwaySuperelevation(0.06),
 m_TempStrandRemovalCompStress(0.45),
-m_TempStrandRemovalTensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
-m_TempStrandRemovalTensStressWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
+m_TempStrandRemovalTensStress(0.0),
 m_TempStrandRemovalDoTensStressMax(false),
-m_TempStrandRemovalTensStressMax(::ConvertToSysUnits(0.2,unitMeasure::KSI)),
-m_bCheckTemporaryStresses(true), // true is consistant with the original default value
+m_TempStrandRemovalTensStressMax(0.0),
 m_Bs1CompStress(0.6),
-m_Bs1TensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_Bs1TensStress(0.0),
 m_Bs1DoTensStressMax(false),
-m_Bs1TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs1TensStressMax(0.0),
 m_Bs2CompStress(0.6),
-m_bCheckBs2Tension(false), // false is consistent with the original features of the program (it didn't do this)
-m_Bs2TensStress(0.0),
-m_Bs2DoTensStressMax(false),
-m_Bs2TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_TrafficBarrierDistributionType(pgsTypes::tbdGirder),
 m_Bs2MaxGirdersTrafficBarrier(4),
 m_Bs2MaxGirdersUtility(4),
@@ -147,10 +135,10 @@ m_Bs3CompStressServ(0.6),
 m_Bs3CompStressService1A(0.4),
 m_Bs3TensStressServNc(0),
 m_Bs3DoTensStressServNcMax(false),
-m_Bs3TensStressServNcMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs3TensStressServNcMax(0),
 m_Bs3TensStressServSc(0),   
 m_Bs3DoTensStressServScMax(false),
-m_Bs3TensStressServScMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs3TensStressServScMax(0),
 m_Bs3IgnoreRangeOfApplicability(false),
 m_Bs3LRFDOverReinforcedMomentCapacity(0),
 m_CreepMethod(CREEP_LRFD),
@@ -161,22 +149,11 @@ m_CreepDuration2Min(::ConvertToSysUnits(40,unitMeasure::Day)),
 m_CreepDuration1Max(::ConvertToSysUnits(90,unitMeasure::Day)),
 m_CreepDuration2Max(::ConvertToSysUnits(120,unitMeasure::Day)),
 m_TotalCreepDuration(::ConvertToSysUnits(2000,unitMeasure::Day)),
-m_CamberVariability(0.50),
 m_LossMethod(LOSSES_AASHTO_REFINED),
-m_BeforeXferLosses(0),
-m_AfterXferLosses(0),
-m_LiftingLosses(0),
+m_TimeDependentModel(TDM_ACI209),
 m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
-m_FinalLosses(0),
 m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
 m_LldfMethod(LLDF_LRFD),
-m_BeforeTempStrandRemovalLosses(0),
-m_AfterTempStrandRemovalLosses(0),
-m_AfterDeckPlacementLosses(0),
-m_AfterSIDLLosses(0),
-m_Dset(::ConvertToSysUnits(0.375,unitMeasure::Inch)),
-m_WobbleFriction(::ConvertToSysUnits(0.0002,unitMeasure::PerFeet)),
-m_FrictionCoefficient(0.25),
 m_SlabElasticGain(1.0),
 m_SlabPadElasticGain(1.0),
 m_DiaphragmElasticGain(1.0),
@@ -199,17 +176,12 @@ m_EnableSlabOffsetDesign(true),
 m_DesignStrandFillType(ftMinimizeHarping),
 m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
 m_ShearFlowMethod(sfmClassical),
-m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
 m_ShearCapacityMethod(scmBTTables),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
 m_LiftPointAccuracy(::ConvertToSysUnits(0.25,unitMeasure::Feet)),
 m_MinHaulPoint(-1), // H
 m_HaulPointAccuracy(::ConvertToSysUnits(0.5,unitMeasure::Feet)),
-m_UseMinTruckSupportLocationFactor(true),
-m_MinTruckSupportLocationFactor(0.1),
-m_OverhangGFactor(3.0),
-m_InteriorGFactor(1.0),
 m_PedestrianLoad(::ConvertToSysUnits(0.075,unitMeasure::KSF)),
 m_MinSidewalkWidth(::ConvertToSysUnits(2.0,unitMeasure::Feet)),
 m_MaxAngularDeviationBetweenGirders(::ConvertToSysUnits(5.0,unitMeasure::Degree)),
@@ -219,10 +191,7 @@ m_LimitDistributionFactorsToLanesBeams(false),
 m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
 m_bAllowStraightStrandExtensions(false),
-m_RelaxationLossMethod(RLM_REFINED),
-m_FcgpComputationMethod(FCGP_07FPU),
-m_bCheckBottomFlangeClearance(false),
-m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet))
+m_RelaxationLossMethod(RLM_REFINED)
 {
    m_bCheckStrandStress[AT_JACKING]       = false;
    m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
@@ -272,31 +241,22 @@ m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet))
    m_PhiShear[pgsTypes::AllLightweight] = 0.7;
 
    m_MaxSlabFc[pgsTypes::Normal]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxGirderFci[pgsTypes::Normal]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxGirderFc[pgsTypes::Normal]           = ::ConvertToSysUnits(10.0,unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::Normal]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::Normal]           = ::ConvertToSysUnits(10.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::Normal] = ::ConvertToSysUnits(165.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::Normal]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 
    m_MaxSlabFc[pgsTypes::AllLightweight]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxGirderFci[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxGirderFc[pgsTypes::AllLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::AllLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::AllLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::AllLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
 
    m_MaxSlabFc[pgsTypes::SandLightweight]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxGirderFci[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxGirderFc[pgsTypes::SandLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::SandLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
-
-   m_DoCheckStirrupSpacingCompatibility = true;
-   m_bCheckSag = true;
-   m_SagCamberType = pgsTypes::LowerBoundCamber;
-
-   m_StirrupSpacingCoefficient[0] = 0.8;
-   m_StirrupSpacingCoefficient[1] = 0.4;
-   m_MaxStirrupSpacing[0] = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
-   m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -387,14 +347,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2010"));
    else if (m_SpecificationType==lrfdVersionMgr::SixthEdition2012)
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2012"));
-   else if (m_SpecificationType==lrfdVersionMgr::SixthEditionWith2013Interims)
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2013"));
-   else if (m_SpecificationType==lrfdVersionMgr::SeventhEdition2014)
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2014"));
-   else if (m_SpecificationType==lrfdVersionMgr::SeventhEditionWith2015Interims)
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2015"));
-   else if (m_SpecificationType==lrfdVersionMgr::SeventhEditionWith2016Interims)
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2016"));
    else
       ASSERT(false); // is there a new version?
 
@@ -404,6 +356,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("SpecificationUnits"), _T("UsUnitsSpec"));
    else
       ASSERT(0);
+
+   pSave->Property(_T("SectionPropertyType"),m_SectionPropertyMode); // added version 43
 
    pSave->Property(_T("DoCheckStrandSlope"), m_DoCheckStrandSlope);
    pSave->Property(_T("DoDesignStrandSlope"), m_DoDesignStrandSlope);
@@ -417,11 +371,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
    pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
    pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
-   //pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing); // removed in version 46
-   pSave->Property(_T("StirrupSpacingCoefficient1"),m_StirrupSpacingCoefficient[0]); // added in version 46
-   pSave->Property(_T("MaxStirrupSpacing1"),m_MaxStirrupSpacing[0]); // added in version 46
-   pSave->Property(_T("StirrupSpacingCoefficient2"),m_StirrupSpacingCoefficient[1]); // added in version 46
-   pSave->Property(_T("MaxStirrupSpacing2"),m_MaxStirrupSpacing[1]); // added in version 46
+   pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing);
    pSave->Property(_T("CyLiftingCrackFs"), m_CyLiftingCrackFs);
    pSave->Property(_T("CyLiftingFailFs"), m_CyLiftingFailFs);
    pSave->Property(_T("CyCompStressServ"), m_CyCompStressServ);
@@ -446,7 +396,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxGirderSweepLifting"), m_MaxGirderSweepLifting);
    pSave->Property(_T("EnableHaulingCheck"), m_EnableHaulingCheck);
    pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
-   pSave->Property(_T("HaulingAnalysisMethod"), (Int32)m_HaulingAnalysisMethod);
    pSave->Property(_T("MaxGirderSweepHauling"), m_MaxGirderSweepHauling);
    pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance);
    pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang);
@@ -482,12 +431,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MinHaulingSupportLocation"),     m_MinHaulPoint        );
    pSave->Property(_T("HaulingSupportLocationAccuracy"),m_HaulPointAccuracy   );
 
-   // KDOT values added at version 43
-   pSave->Property(_T("UseMinTruckSupportLocationFactor"), m_UseMinTruckSupportLocationFactor);
-   pSave->Property(_T("MinTruckSupportLocationFactor"), m_MinTruckSupportLocationFactor);
-   pSave->Property(_T("OverhangGFactor"), m_OverhangGFactor);
-   pSave->Property(_T("InteriorGFactor"), m_InteriorGFactor);
-
    // Added at version 4.0
    pSave->Property(_T("CastingYardTensileStressLimitWithMildRebar"),m_CyTensStressServWithRebar);
    pSave->Property(_T("LiftingTensileStressLimitWithMildRebar"),m_TensStressLiftingWithRebar);
@@ -498,20 +441,12 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TempStrandRemovalTensStress") ,     m_TempStrandRemovalTensStress);
    pSave->Property(_T("TempStrandRemovalDoTensStressMax") ,m_TempStrandRemovalDoTensStressMax);
    pSave->Property(_T("TempStrandRemovalTensStressMax") ,  m_TempStrandRemovalTensStressMax);
-   pSave->Property(_T("TempStrandRemovalTensStressWithRebar"), m_TempStrandRemovalTensStressWithRebar); // added version 49
 
-   pSave->Property(_T("CheckTemporaryStresses"),m_bCheckTemporaryStresses); // added in version 47
    pSave->Property(_T("Bs1CompStress") ,     m_Bs1CompStress); // removed m_ in version 30
    pSave->Property(_T("Bs1TensStress") ,     m_Bs1TensStress); // removed m_ in version 30
    pSave->Property(_T("Bs1DoTensStressMax") ,m_Bs1DoTensStressMax); // removed m_ in version 30
    pSave->Property(_T("Bs1TensStressMax") ,  m_Bs1TensStressMax); // removed m_ in version 30
    pSave->Property(_T("Bs2CompStress") ,     m_Bs2CompStress); // removed m_ in version 30
-
-   pSave->Property(_T("CheckBs2Tension"),    m_bCheckBs2Tension); // added in version 47
-   pSave->Property(_T("Bs2TensStress") ,     m_Bs2TensStress); // added in version 47
-   pSave->Property(_T("Bs2DoTensStressMax") ,m_Bs2DoTensStressMax); // added in version 47
-   pSave->Property(_T("Bs2TensStressMax") ,  m_Bs2TensStressMax); // added in version 47
-
    pSave->Property(_T("Bs2TrafficBarrierDistributionType"),(Int16)m_TrafficBarrierDistributionType); // added in version 36
    pSave->Property(_T("Bs2MaxGirdersTrafficBarrier"), m_Bs2MaxGirdersTrafficBarrier);
    pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility);
@@ -602,21 +537,21 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CreepDuration2Max"),m_CreepDuration2Max);
    pSave->Property(_T("XferTime"),m_XferTime);
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
-   pSave->Property(_T("CamberVariability"),m_CamberVariability); // added in version 44
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
-   pSave->Property(_T("FinalLosses"),m_FinalLosses);
+   pSave->Property(_T("TimeDependentModel"),(Int16)m_TimeDependentModel); // added in version 42
+   //pSave->Property(_T("FinalLosses"),m_FinalLosses); // removed version 44
    pSave->Property(_T("ShippingLosses"),m_ShippingLosses);
-   pSave->Property(_T("BeforeXferLosses"),m_BeforeXferLosses);
-   pSave->Property(_T("AfterXferLosses"),m_AfterXferLosses);
+   //pSave->Property(_T("BeforeXferLosses"),m_BeforeXferLosses);// removed version 44
+   //pSave->Property(_T("AfterXferLosses"),m_AfterXferLosses);// removed version 44
    pSave->Property(_T("ShippingTime"),m_ShippingTime);
 
    // added in version 22
-   pSave->Property(_T("LiftingLosses"),m_LiftingLosses);
-   pSave->Property(_T("BeforeTempStrandRemovalLosses"),m_BeforeTempStrandRemovalLosses);
-   pSave->Property(_T("AfterTempStrandRemovalLosses"),m_AfterTempStrandRemovalLosses);
-   pSave->Property(_T("AfterDeckPlacementLosses"),m_AfterDeckPlacementLosses);
-   pSave->Property(_T("AfterSIDLLosses"),m_AfterSIDLLosses); // added in version 38
+   //pSave->Property(_T("LiftingLosses"),m_LiftingLosses);// removed version 44
+   //pSave->Property(_T("BeforeTempStrandRemovalLosses"),m_BeforeTempStrandRemovalLosses);// removed version 44
+   //pSave->Property(_T("AfterTempStrandRemovalLosses"),m_AfterTempStrandRemovalLosses);// removed version 44
+   //pSave->Property(_T("AfterDeckPlacementLosses"),m_AfterDeckPlacementLosses);// removed version 44
+   //pSave->Property(_T("AfterSIDLLosses"),m_AfterSIDLLosses); // added in version 38// removed version 44
 
 
    pSave->Property(_T("CuringMethodFactor"),m_CuringMethodTimeAdjustmentFactor);
@@ -638,10 +573,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
    pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
 
-   // added in version 23
-   pSave->Property(_T("AnchorSet"),m_Dset);
-   pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
-   pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
+   // added in version 23, removed version 43
+   //pSave->Property(_T("AnchorSet"),m_Dset);
+   //pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
+   //pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
 
    // added in version 40
    pSave->Property(_T("RelaxationLossMethod"),m_RelaxationLossMethod);
@@ -657,12 +592,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
    pSave->Property(_T("LiveLoadElasticGain"),m_LiveLoadElasticGain); // added in version 42
 
-   // added in version 45
-   if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
-   {
-      pSave->Property(_T("FcgpComputationMethod"),m_FcgpComputationMethod);
-   }
-
    // Added in 1.7
    pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
    pSave->Property(_T("LiveLoadDeflectionLimit"),m_DeflectionLimit);
@@ -674,34 +603,27 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->BeginUnit(_T("Limits"),1.0);
       pSave->BeginUnit(_T("Normal"),1.0);
          pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::Normal]);
-         pSave->Property(_T("MaxGirderFci"),          m_MaxGirderFci[pgsTypes::Normal]);
-         pSave->Property(_T("MaxGirderFc"),           m_MaxGirderFc[pgsTypes::Normal]);
+         pSave->Property(_T("MaxGirderFci"),          m_MaxSegmentFci[pgsTypes::Normal]);
+         pSave->Property(_T("MaxGirderFc"),           m_MaxSegmentFc[pgsTypes::Normal]);
          pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::Normal]);
          pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::Normal]);
       pSave->EndUnit(); // Normal;
       pSave->BeginUnit(_T("AllLightweight"),1.0);
          pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::AllLightweight]);
-         pSave->Property(_T("MaxGirderFci"),          m_MaxGirderFci[pgsTypes::AllLightweight]);
-         pSave->Property(_T("MaxGirderFc"),           m_MaxGirderFc[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxGirderFci"),          m_MaxSegmentFci[pgsTypes::AllLightweight]);
+         pSave->Property(_T("MaxGirderFc"),           m_MaxSegmentFc[pgsTypes::AllLightweight]);
          pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]);
          pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::AllLightweight]);
       pSave->EndUnit(); // AllLightweight;
       pSave->BeginUnit(_T("SandLightweight"),1.0);
          pSave->Property(_T("MaxSlabFc"),             m_MaxSlabFc[pgsTypes::SandLightweight]);
-         pSave->Property(_T("MaxGirderFci"),          m_MaxGirderFci[pgsTypes::SandLightweight]);
-         pSave->Property(_T("MaxGirderFc"),           m_MaxGirderFc[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxGirderFci"),          m_MaxSegmentFci[pgsTypes::SandLightweight]);
+         pSave->Property(_T("MaxGirderFc"),           m_MaxSegmentFc[pgsTypes::SandLightweight]);
          pSave->Property(_T("MaxConcreteUnitWeight"), m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]);
          pSave->Property(_T("MaxConcreteAggSize"),    m_MaxConcreteAggSize[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // SandLightweight;
    pSave->EndUnit(); // Limits
 
-
-   // Added in version 44
-   pSave->BeginUnit(_T("Warnings"),2.0);
-         pSave->Property(_T("DoCheckStirrupSpacingCompatibility"), m_DoCheckStirrupSpacingCompatibility);
-         pSave->Property(_T("CheckGirderSag"),m_bCheckSag); // added in version 2
-         pSave->Property(_T("SagCamberType"),m_SagCamberType); // added in version 2
-   pSave->EndUnit(); // Warnings
 
    // Added in 14.0 removed in version 41
    //std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
@@ -736,7 +658,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 //   pSave->Property(_T("SlabOffsetMethod"),(long)m_SlabOffsetMethod);
 
    // reconfigured in version 37 and added Phi
-   pSave->BeginUnit(_T("Shear"),2.0);
+   pSave->BeginUnit(_T("Shear"),1.0);
       // moved here in version 37
       pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
 
@@ -745,7 +667,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
       // added in version 18 (moved into datablock in version 37)
       pSave->Property(_T("ShearFlowMethod"),(long)m_ShearFlowMethod);
-      pSave->Property(_T("MaxInterfaceShearConnectorSpacing"),m_MaxInterfaceShearConnectorSpacing);
       pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
 
       // added inv ersion 37
@@ -766,10 +687,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->BeginUnit(_T("StrandExtensions"),1.0);
    pSave->Property(_T("AllowStraightStrandExtensions"),m_bAllowStraightStrandExtensions);
    pSave->EndUnit();
-
-   // added in version 48
-   pSave->Property(_T("CheckBottomFlangeClearance"),m_bCheckBottomFlangeClearance);
-   pSave->Property(_T("MinBottomFlangeClearance"),m_Cmin);
 
    pSave->EndUnit();
 
@@ -801,15 +718,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp==_T("AashtoLrfd2016"))
-            m_SpecificationType = lrfdVersionMgr::SeventhEditionWith2016Interims;
-         else if(tmp==_T("AashtoLrfd2015"))
-            m_SpecificationType = lrfdVersionMgr::SeventhEditionWith2015Interims;
-         else if(tmp==_T("AashtoLrfd2014"))
-            m_SpecificationType = lrfdVersionMgr::SeventhEdition2014;
-         else if(tmp==_T("AashtoLrfd2013"))
-            m_SpecificationType = lrfdVersionMgr::SixthEditionWith2013Interims;
-         else if(tmp==_T("AashtoLrfd2012"))
+         if(tmp==_T("AashtoLrfd2012"))
             m_SpecificationType = lrfdVersionMgr::SixthEdition2012;
          else if(tmp==_T("AashtoLrfd2010"))
             m_SpecificationType = lrfdVersionMgr::FifthEdition2010;
@@ -860,7 +769,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if ( 42 < version )
+      {
+         int value;
+         if (!pLoad->Property(_T("SectionPropertyType"),&value))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         m_SectionPropertyMode = (pgsTypes::SectionPropertyMode)value;
+      }
 
       if(!pLoad->Property(_T("DoCheckStrandSlope"), &m_DoCheckStrandSlope))
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -929,39 +850,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( version < 46 )
-      {
-         // removed in version 46
-         Float64 maxStirrupSpacing;
-         if(!pLoad->Property(_T("MaxStirrupSpacing"), &maxStirrupSpacing))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         m_MaxStirrupSpacing[0] = maxStirrupSpacing;
-
-         if ( m_SpecificationUnits == lrfdVersionMgr::SI )
-         {
-            // default value in SI units is 300mm
-            // default value is US units is 12"
-            // 12" = 305mm
-            m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(300.0,unitMeasure::Millimeter);
-         }
-
-      }
-      else
-      {
-         // added in version 46
-         if ( !pLoad->Property(_T("StirrupSpacingCoefficient1"),&m_StirrupSpacingCoefficient[0]) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("MaxStirrupSpacing1"),&m_MaxStirrupSpacing[0]) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("StirrupSpacingCoefficient2"),&m_StirrupSpacingCoefficient[1]) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("MaxStirrupSpacing2"),&m_MaxStirrupSpacing[1]) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
+      if(!pLoad->Property(_T("MaxStirrupSpacing"), &m_MaxStirrupSpacing))
+         THROW_LOAD(InvalidFileFormat,pLoad);
 
       if(!pLoad->Property(_T("CyLiftingCrackFs"), &m_CyLiftingCrackFs))
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1089,19 +979,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if (version < 43)
-      {
-         m_HaulingAnalysisMethod = pgsTypes::hmWSDOT;
-      }
-      else
-      {
-         Int32 tmp;
-         if(!pLoad->Property(_T("HaulingAnalysisMethod"), &tmp))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         m_HaulingAnalysisMethod = (pgsTypes::HaulingAnalysisMethod)tmp;
-      }
-
       if(!pLoad->Property(_T("MaxGirderSweepHauling"), &m_MaxGirderSweepHauling))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1154,7 +1031,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         int method;
+         long method;
          if(!pLoad->Property(_T("TruckRollStiffnessMethod"), &method))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1223,22 +1100,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->Property(_T("HaulingSupportLocationAccuracy"),&m_HaulPointAccuracy) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
-
-      if ( 43 <= version )
-      {
-         // KDOT values
-         if ( !pLoad->Property(_T("UseMinTruckSupportLocationFactor"),&m_UseMinTruckSupportLocationFactor) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("MinTruckSupportLocationFactor"),&m_MinTruckSupportLocationFactor) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("OverhangGFactor"),&m_OverhangGFactor) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("InteriorGFactor"),&m_InteriorGFactor) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1311,7 +1172,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          m_TempStrandRemovalCompStress      = m_Bs1CompStress;
          m_TempStrandRemovalTensStress      = m_Bs1TensStress;
-         m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar;
          m_TempStrandRemovalDoTensStressMax = m_Bs1DoTensStressMax;
          m_TempStrandRemovalTensStressMax   = m_Bs1TensStressMax;
       }
@@ -1332,22 +1192,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("TempStrandRemovalTensStressMax") ,  &m_TempStrandRemovalTensStressMax))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if ( 48 < version )
-            {
-               // added version 49
-               if(!pLoad->Property(_T("TempStrandRemovalTensStressWithRebar") ,     &m_TempStrandRemovalTensStressWithRebar))
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-            }
-
-            if ( 46 < version )
-            {
-               // added in version 47
-               if ( !pLoad->Property(_T("CheckTemporaryStresses"),&m_bCheckTemporaryStresses) )
-               {
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-               }
-            }
-
             // for the following 5 items, the m_ was removed from the keyword in version 30
             if(!pLoad->Property(_T("Bs1CompStress") ,     &m_Bs1CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1363,22 +1207,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if(!pLoad->Property(_T("Bs2CompStress") ,     &m_Bs2CompStress))
                THROW_LOAD(InvalidFileFormat,pLoad);
-
-            if ( 46 < version )
-            {
-               // added in version 47
-               if ( !pLoad->Property(_T("CheckBs2Tension"),&m_bCheckBs2Tension) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-
-               if ( !pLoad->Property(_T("Bs2TensStress") , &m_Bs2TensStress) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-
-               if ( !pLoad->Property(_T("Bs2DoTensStressMax"), &m_Bs2DoTensStressMax) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-
-               if ( !pLoad->Property(_T("Bs2TensStressMax") ,  &m_Bs2TensStressMax) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-            }
          }
          else
          {
@@ -1401,7 +1229,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_TempStrandRemovalTensStress      = m_Bs1TensStress;
             m_TempStrandRemovalDoTensStressMax = m_Bs1DoTensStressMax;
             m_TempStrandRemovalTensStressMax   = m_Bs1TensStressMax;
-            m_TempStrandRemovalTensStressWithRebar = m_CyTensStressServWithRebar;
          }
 
          if ( version < 5.0 )
@@ -1434,9 +1261,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("Bs2MaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( version > 33.0 )
+         if ( 33.0 < version )
          {
-            int oldt;
+            long oldt;
             if(!pLoad->Property(_T("OverlayLoadDistribution"), &oldt))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -1469,7 +1296,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( version >= 1.4 )
+      if ( 1.4 <= version )
       {
          if ( version < 29 )
          {
@@ -1510,14 +1337,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( version < 37 )
       {
-         if ( version >= 1.8 )
+         if ( 1.8 <= version )
          {
             if (!pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
             m_Bs3LRFDOverReinforcedMomentCapacity = temp;
          }
       
-         if ( version >= 7.0 )
+         if ( 7.0 <= version )
          {
             if (!pLoad->Property(_T("IncludeRebar_MomentCapacity"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1537,8 +1364,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             m_Bs3LRFDOverReinforcedMomentCapacity = temp;
 
-               if ( !pLoad->Property(_T("IncludeRebarForCapacity"),&temp) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+            if ( !pLoad->Property(_T("IncludeRebarForCapacity"),&temp) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
 
             m_bIncludeRebar_Moment = (temp == 0 ? false : true);
 
@@ -1609,13 +1436,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( version < 37 )
       {
-         if ( version >= 9.0 )
+         if ( 9.0 <= version )
          {
             if (!pLoad->Property(_T("ModulusOfRuptureCoefficient"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]))
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if ( 18 <= version && version )
+         if ( 18 <= version )
          {
             // added in version 18
             if ( !pLoad->Property(_T("ShearModulusOfRuptureCoefficient"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal])) 
@@ -1720,7 +1547,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // moved below in version 37
 
          // added longitudinal reinforcement for shear method to version 1.2 (this was the only change)
-         if (version >= 1.2)
+         if ( 1.2 <= version )
          {
             if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1735,7 +1562,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
  
    
-         if ( version >= 7.0 )
+         if ( 7.0 <= version )
          {
             if (!pLoad->Property(_T("IncludeRebar_Shear"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1822,66 +1649,110 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_CreepDuration1Max = m_CreepDuration1Min;
          }
       }
-
-      if ( 44 <= version )
-      {
-         if ( !pLoad->Property(_T("CamberVariability"),&m_CamberVariability))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
  
       if ( !pLoad->Property(_T("LossMethod"),&temp) )
          THROW_LOAD(InvalidFileFormat,pLoad );
       m_LossMethod = temp;
 
-      if ( !pLoad->Property(_T("FinalLosses"),&m_FinalLosses) )
-         THROW_LOAD(InvalidFileFormat,pLoad );
-
-      if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
-         THROW_LOAD(InvalidFileFormat,pLoad );
-
-      if ( !pLoad->Property(_T("BeforeXferLosses"),&m_BeforeXferLosses) )
-         THROW_LOAD(InvalidFileFormat,pLoad );
-
-      if ( !pLoad->Property(_T("AfterXferLosses"),&m_AfterXferLosses) )
-         THROW_LOAD(InvalidFileFormat,pLoad );
-
-      if ( 13.0 <= version )
+      if ( 42 < version )
       {
+         // added in version 43
+         if ( !pLoad->Property(_T("TimeDependentModel"),&temp) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_TimeDependentModel = temp;
+      }
+
+      if ( 42 < version )
+      {
+         if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
+            THROW_LOAD(InvalidFileFormat,pLoad );
+
          if ( !pLoad->Property(_T("ShippingTime"),&m_ShippingTime) )
             THROW_LOAD(InvalidFileFormat,pLoad );
       }
-
-      if ( 22 <= version )
+      else
       {
-         if ( !pLoad->Property(_T("LiftingLosses"),&m_LiftingLosses) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         Float64 FinalLosses;
+         if ( !pLoad->Property(_T("FinalLosses"),&FinalLosses) )
+            THROW_LOAD(InvalidFileFormat,pLoad );
 
-         if ( !pLoad->Property(_T("BeforeTempStrandRemovalLosses"),&m_BeforeTempStrandRemovalLosses) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         Float64 ShippingLosses;
+         if ( !pLoad->Property(_T("ShippingLosses"),&ShippingLosses) )
+            THROW_LOAD(InvalidFileFormat,pLoad );
 
-         if ( !pLoad->Property(_T("AfterTempStrandRemovalLosses"),&m_AfterTempStrandRemovalLosses) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         m_ShippingLosses = ShippingLosses;
 
-         if ( !pLoad->Property(_T("AfterDeckPlacementLosses"),&m_AfterDeckPlacementLosses) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         Float64 BeforeXferLosses;
+         if ( !pLoad->Property(_T("BeforeXferLosses"),&BeforeXferLosses) )
+            THROW_LOAD(InvalidFileFormat,pLoad );
 
-         if ( 38 <= version )
+         Float64 AfterXferLosses;
+         if ( !pLoad->Property(_T("AfterXferLosses"),&AfterXferLosses) )
+            THROW_LOAD(InvalidFileFormat,pLoad );
+
+         Float64 ShippingTime = m_ShippingTime;
+         if ( 13.0 <= version )
          {
-            if ( !pLoad->Property(_T("AfterSIDLLosses"),&m_AfterSIDLLosses) )
+            if ( !pLoad->Property(_T("ShippingTime"),&ShippingTime) )
+               THROW_LOAD(InvalidFileFormat,pLoad );
+         }
+
+         Float64 LiftingLosses;
+         Float64 BeforeTempStrandRemovalLosses;
+         Float64 AfterTempStrandRemovalLosses;
+         Float64 AfterDeckPlacementLosses;
+         Float64 AfterSIDLLosses;
+         if ( 22 <= version )
+         {
+            if ( !pLoad->Property(_T("LiftingLosses"),&LiftingLosses) )
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( !pLoad->Property(_T("BeforeTempStrandRemovalLosses"),&BeforeTempStrandRemovalLosses) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( !pLoad->Property(_T("AfterTempStrandRemovalLosses"),&AfterTempStrandRemovalLosses) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( !pLoad->Property(_T("AfterDeckPlacementLosses"),&AfterDeckPlacementLosses) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( 38 <= version )
+            {
+               if ( !pLoad->Property(_T("AfterSIDLLosses"),&AfterSIDLLosses) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+            else
+            {
+               AfterSIDLLosses = AfterDeckPlacementLosses;
+            }
          }
          else
          {
-            m_AfterSIDLLosses = m_AfterDeckPlacementLosses;
+            LiftingLosses                 = AfterXferLosses;
+            BeforeTempStrandRemovalLosses = ShippingLosses < 0 ? LiftingLosses : ShippingLosses;
+            AfterTempStrandRemovalLosses  = BeforeTempStrandRemovalLosses;
+            AfterDeckPlacementLosses      = FinalLosses;
+            AfterSIDLLosses               = FinalLosses;
          }
-      }
-      else
-      {
-         m_LiftingLosses                 = m_AfterXferLosses;
-         m_BeforeTempStrandRemovalLosses = m_ShippingLosses < 0 ? m_LiftingLosses : m_ShippingLosses;
-         m_AfterTempStrandRemovalLosses  = m_BeforeTempStrandRemovalLosses;
-         m_AfterDeckPlacementLosses      = m_FinalLosses;
-         m_AfterSIDLLosses               = m_FinalLosses;
+
+
+         const libILibrary* pLib = GetLibrary();
+         psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
+         if ( pLibMgr )
+         {
+            // the cast above is successful if we are loading the library entry that is in use.... capture
+            // the data so that we don't change the user's actual data.
+            pLibMgr->m_FinalLosses                   = FinalLosses;
+            pLibMgr->m_LiftingLosses                 = LiftingLosses;
+            pLibMgr->m_ShippingLosses                = ShippingLosses;
+            pLibMgr->m_BeforeXferLosses              = BeforeXferLosses;
+            pLibMgr->m_AfterXferLosses               = AfterXferLosses;
+            pLibMgr->m_BeforeTempStrandRemovalLosses = BeforeTempStrandRemovalLosses;
+            pLibMgr->m_AfterTempStrandRemovalLosses  = AfterTempStrandRemovalLosses;
+            pLibMgr->m_AfterDeckPlacementLosses      = AfterDeckPlacementLosses;
+            pLibMgr->m_AfterSIDLLosses               = AfterSIDLLosses;
+         }
       }
 
       if ( 19 <= version )
@@ -1891,7 +1762,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       // added in version 1.6
-      if ( version >= 1.5 )
+      if ( 1.5 <= version )
       {
          if (!pLoad->Property(_T("CheckStrandStressAtJacking"),&m_bCheckStrandStress[AT_JACKING]))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1958,17 +1829,30 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if ( 22 < version )
+      if ( 22 < version && version < 43)
       {
-         // added in version 23
-         if ( !pLoad->Property(_T("AnchorSet"),&m_Dset) )
+         // added in version 23 and removed in version 43
+         Float64 Dset, WobbleFriction, FrictionCoefficient;
+         if ( !pLoad->Property(_T("AnchorSet"),&Dset) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("WobbleFriction"),&m_WobbleFriction) )
+         if ( !pLoad->Property(_T("WobbleFriction"),&WobbleFriction) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("CoefficientOfFriction"),&m_FrictionCoefficient) )
+         if ( !pLoad->Property(_T("CoefficientOfFriction"),&FrictionCoefficient) )
             THROW_LOAD(InvalidFileFormat,pLoad);
+
+
+         const libILibrary* pLib = GetLibrary();
+         psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
+         if ( pLibMgr )
+         {
+            // the cast above is successful if we are loading the library entry that is in use.... capture
+            // the data so that we don't change the user's actual data.
+            pLibMgr->m_DSet                = Dset;
+            pLibMgr->m_WobbleFriction      = WobbleFriction;
+            pLibMgr->m_FrictionCoefficient = FrictionCoefficient;
+         }
       }
 
       if ( 39 < version )
@@ -2013,15 +1897,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->Property(_T("LiveLoadElasticGain"),&m_LiveLoadElasticGain) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
-
-         if ( 44 < version )
-         {
-            if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
-            {
-               if ( !pLoad->Property(_T("FcgpComputationMethod"),&m_FcgpComputationMethod) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-            }
-         }
       }
 
       // added in version 1.7
@@ -2043,7 +1918,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // added in version 8.0 and removed in version 28
       if ( 8.0 <= version && version < 28 )
       {
-         int value;
+         long value;
          if ( !pLoad->Property(_T("AnalysisType"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2055,10 +1930,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::Normal]) )
+         if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::Normal]) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
@@ -2078,10 +1953,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::Normal]) )
+               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::Normal]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
@@ -2100,10 +1975,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::AllLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::AllLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]) )
@@ -2121,10 +1996,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxGirderFci[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxGirderFc[pgsTypes::SandLightweight]) )
+               if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::SandLightweight]) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]) )
@@ -2137,33 +2012,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Limits
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
-
-      if ( 44 <= version )
-      {
-         if ( !pLoad->BeginUnit(_T("Warnings")) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         Float64 warningsVersion = pLoad->GetVersion();
-
-         if ( !pLoad->Property(_T("DoCheckStirrupSpacingCompatibility"),&m_DoCheckStirrupSpacingCompatibility) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-
-         if ( 2 <= warningsVersion )
-         {
-            if ( !pLoad->Property(_T("CheckGirderSag"),&m_bCheckSag) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
-
-            int value;
-            if ( !pLoad->Property(_T("SagCamberType"),&value) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
-
-            m_SagCamberType = (pgsTypes::SagCamberType)value;
-         }
-
-         if ( !pLoad->EndUnit() ) // Warnings
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2233,7 +2081,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         int ftype;
+         long ftype;
          if(!pLoad->Property(_T("DesignStrandFillType"), &ftype))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2242,7 +2090,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 16 <= version )
       {
-         int value;
+         long value;
          if ( !pLoad->Property(_T("EffectiveFlangeWidthMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2252,32 +2100,18 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // only a valid input between data block version 17 and 23
       if ( 17 <= version && version <= 23)
       {
-         int value;
+         long value;
          if ( !pLoad->Property(_T("SlabOffsetMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 18 <= version && version < 37 )
       {
-         int value;
+         long value;
          if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
-
-         // MaxInterfaceShearConnectorSpacing wasn't available in this version of the input
-         // the default value is 48". Set the value to match the spec
-         if ( m_SpecificationType < lrfdVersionMgr::SeventhEdition2014 )
-         {
-            if ( m_SpecificationUnits == lrfdVersionMgr::US )
-            {
-               m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
-            }
-            else
-            {
-               m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(0.6, unitMeasure::Meter);
-            }
-         }
 
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2323,8 +2157,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->BeginUnit(_T("Shear")) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         Float64 shear_version = pLoad->GetVersion();
-
          if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
             THROW_LOAD(InvalidFileFormat,pLoad);
          m_LongReinfShearMethod = temp;
@@ -2332,40 +2164,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // WSDOT method has been recinded
          m_LongReinfShearMethod = LRFD_METHOD;
 
-            if (!pLoad->Property(_T("IncludeRebarForCapacity"),&temp))
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if (!pLoad->Property(_T("IncludeRebarForCapacity"),&temp))
+            THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_bIncludeRebar_Shear = (temp == 0 ? false : true);
 
-         int value;
+         long value;
          if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
-
-         if ( 1 < shear_version )
-         {
-            // added in version 2 of shear block
-            if ( !pLoad->Property(_T("MaxInterfaceShearConnectorSpacing"),&m_MaxInterfaceShearConnectorSpacing) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad);
-            }
-         }
-         else
-         {
-            // prior to 7th Edition 2014 max spacing was 24 inches... 
-            if ( m_SpecificationType < lrfdVersionMgr::SeventhEdition2014 )
-            {
-               if ( m_SpecificationUnits == lrfdVersionMgr::US )
-               {
-                  m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
-               }
-               else
-               {
-                  m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(0.6, unitMeasure::Meter);
-               }
-            }
-         }
 
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2444,7 +2252,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if (32 <= version)
       {
-         if ( !pLoad->Property(_T("PrestressTransferComputationType"),(int*)&m_PrestressTransferComputationType) )
+         if ( !pLoad->Property(_T("PrestressTransferComputationType"),(long*)&m_PrestressTransferComputationType) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2462,16 +2270,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      // added in version 48
-      if ( 47 < version )
-      {
-         if ( !pLoad->Property(_T("CheckBottomFlangeClearance"),&m_bCheckBottomFlangeClearance) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         if ( !pLoad->Property(_T("MinBottomFlangeClearance"),&m_Cmin) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
-
       if(!pLoad->EndUnit())
          THROW_LOAD(InvalidFileFormat,pLoad);
    }
@@ -2484,14 +2282,12 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 #define TEST(a,b) if ( a != b ) return false
 #define TESTD(a,b) if ( !::IsEqual(a,b) ) return false
 
-//#define TEST(a,b) if ( a != b ) { CString strMsg; strMsg.Format(_T("%s != %s"),_T(#a),_T(#b)); AfxMessageBox(strMsg); return false; }
-//#define TESTD(a,b) if ( !::IsEqual(a,b) ) { CString strMsg; strMsg.Format(_T("!::IsEqual(%s,%s)"),_T(#a),_T(#b)); AfxMessageBox(strMsg); return false; }
-
 bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName) const
 {
    TEST (m_SpecificationType          , rOther.m_SpecificationType          );
    TEST (m_SpecificationUnits         , rOther.m_SpecificationUnits         );
    TEST (m_Description                , rOther.m_Description                );
+   TEST (m_SectionPropertyMode        , rOther.m_SectionPropertyMode      );
    TEST (m_DoCheckStrandSlope         , rOther.m_DoCheckStrandSlope         );
    TEST (m_DoDesignStrandSlope        , rOther.m_DoDesignStrandSlope        );
    TESTD(m_MaxSlope05                 , rOther.m_MaxSlope05                 );
@@ -2504,10 +2300,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_DoDesignSplitting           , rOther.m_DoDesignSplitting         );
    TEST (m_DoCheckConfinement           , rOther.m_DoCheckConfinement       );
    TEST (m_DoDesignConfinement           , rOther.m_DoDesignConfinement     );
-   TESTD(m_StirrupSpacingCoefficient[0], rOther.m_StirrupSpacingCoefficient[0]);
-   TESTD(m_StirrupSpacingCoefficient[1], rOther.m_StirrupSpacingCoefficient[1]);
-   TESTD(m_MaxStirrupSpacing[0]          , rOther.m_MaxStirrupSpacing[0]          );
-   TESTD(m_MaxStirrupSpacing[1]          , rOther.m_MaxStirrupSpacing[1]          );
+   TESTD(m_MaxStirrupSpacing          , rOther.m_MaxStirrupSpacing          );
    TESTD(m_CyLiftingCrackFs          , rOther.m_CyLiftingCrackFs          );
    TESTD(m_CyLiftingFailFs           , rOther.m_CyLiftingFailFs           );
    TESTD(m_CyCompStressServ           , rOther.m_CyCompStressServ           );
@@ -2534,7 +2327,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_MaxGirderSweepHauling      , rOther.m_MaxGirderSweepHauling      );
    TEST (m_EnableHaulingCheck         , rOther.m_EnableHaulingCheck            );
    TEST (m_EnableHaulingDesign        , rOther.m_EnableHaulingDesign           );
-   TEST (m_HaulingAnalysisMethod      , rOther.m_HaulingAnalysisMethod       );
    TESTD(m_HaulingSupportDistance          , rOther.m_HaulingSupportDistance );
    TESTD(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance );
    TESTD(m_HaulingCamberPercentEstimate    , rOther.m_HaulingCamberPercentEstimate );
@@ -2572,18 +2364,12 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_TempStrandRemovalTensStress     , rOther.m_TempStrandRemovalTensStress              );
    TEST (m_TempStrandRemovalDoTensStressMax, rOther.m_TempStrandRemovalDoTensStressMax         );
    TESTD(m_TempStrandRemovalTensStressMax  , rOther.m_TempStrandRemovalTensStressMax           );
-   TESTD(m_TempStrandRemovalTensStressWithRebar, rOther.m_TempStrandRemovalTensStressWithRebar );
 
-   TEST(m_bCheckTemporaryStresses, rOther.m_bCheckTemporaryStresses);
    TESTD(m_Bs1CompStress              , rOther.m_Bs1CompStress              );
    TESTD(m_Bs1TensStress              , rOther.m_Bs1TensStress              );
    TEST (m_Bs1DoTensStressMax         , rOther.m_Bs1DoTensStressMax         );
    TESTD(m_Bs1TensStressMax           , rOther.m_Bs1TensStressMax           );
    TESTD(m_Bs2CompStress              , rOther.m_Bs2CompStress              );
-   TEST( m_bCheckBs2Tension           , rOther.m_bCheckBs2Tension           );
-   TESTD(m_Bs2TensStress              , rOther.m_Bs2TensStress              );
-   TEST( m_Bs2DoTensStressMax         , rOther.m_Bs2DoTensStressMax         );
-   TESTD(m_Bs2TensStressMax           , rOther.m_Bs2TensStressMax           );
    TEST (m_TrafficBarrierDistributionType, rOther.m_TrafficBarrierDistributionType);
    TEST (m_Bs2MaxGirdersTrafficBarrier, rOther.m_Bs2MaxGirdersTrafficBarrier );
    TEST (m_Bs2MaxGirdersUtility       , rOther.m_Bs2MaxGirdersUtility        );
@@ -2613,22 +2399,10 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_CreepDuration1Max          , rOther.m_CreepDuration1Max          );
    TESTD(m_CreepDuration2Max          , rOther.m_CreepDuration2Max          );
    TESTD(m_TotalCreepDuration  , rOther.m_TotalCreepDuration  );
-   TESTD(m_CamberVariability   , rOther.m_CamberVariability  );
    TEST (m_LossMethod                 , rOther.m_LossMethod                 );
-   TESTD(m_FinalLosses                , rOther.m_FinalLosses                );
+   TEST (m_TimeDependentModel         , rOther.m_TimeDependentModel         );
    TESTD(m_ShippingLosses             , rOther.m_ShippingLosses             );
-   TESTD(m_BeforeXferLosses           , rOther.m_BeforeXferLosses           );
-   TESTD(m_AfterXferLosses            , rOther.m_AfterXferLosses            );
    TESTD(m_ShippingTime               , rOther.m_ShippingTime               );
-   TESTD(m_LiftingLosses              , rOther.m_LiftingLosses              );
-   TESTD(m_BeforeTempStrandRemovalLosses , rOther.m_BeforeTempStrandRemovalLosses );
-   TESTD(m_AfterTempStrandRemovalLosses  , rOther.m_AfterTempStrandRemovalLosses );
-   TESTD(m_AfterDeckPlacementLosses      , rOther.m_AfterDeckPlacementLosses );
-   TESTD(m_AfterSIDLLosses               , rOther.m_AfterSIDLLosses );
-
-   TESTD(m_Dset,rOther.m_Dset);
-   TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
-   TESTD(m_FrictionCoefficient,rOther.m_FrictionCoefficient);
 
    TESTD(m_SlabElasticGain          , rOther.m_SlabElasticGain);
    TESTD(m_SlabPadElasticGain       , rOther.m_SlabPadElasticGain);
@@ -2664,25 +2438,15 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    TEST (m_bIncludeRebar_Moment , rOther.m_bIncludeRebar_Moment );
    TEST (m_bIncludeRebar_Shear , rOther.m_bIncludeRebar_Shear );
-   
-//   TEST (m_AnalysisType , rOther.m_AnalysisType );
 
    for ( int i = 0; i < 3; i++ )
    {
       TESTD(m_MaxSlabFc[i]             , rOther.m_MaxSlabFc[i] );
-      TESTD(m_MaxGirderFci[i]          , rOther.m_MaxGirderFci[i] );
-      TESTD(m_MaxGirderFc[i]           , rOther.m_MaxGirderFc[i] );
+      TESTD(m_MaxSegmentFci[i]          , rOther.m_MaxSegmentFci[i] );
+      TESTD(m_MaxSegmentFc[i]           , rOther.m_MaxSegmentFc[i] );
       TESTD(m_MaxConcreteUnitWeight[i] , rOther.m_MaxConcreteUnitWeight[i] );
       TESTD(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] );
    }
-
-   TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
-   TEST (m_bCheckSag, rOther.m_bCheckSag);
-   if ( m_bCheckSag )
-   {
-      TEST(m_SagCamberType,rOther.m_SagCamberType);
-   }
-
 
    TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
    TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
@@ -2690,8 +2454,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_DesignStrandFillType            , rOther.m_DesignStrandFillType );
    TEST (m_EffFlangeWidthMethod            , rOther.m_EffFlangeWidthMethod );
    TEST (m_ShearFlowMethod                 , rOther.m_ShearFlowMethod );
-   TESTD(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing);
-
    TEST (m_ShearCapacityMethod             , rOther.m_ShearCapacityMethod );
    TESTD(m_CuringMethodTimeAdjustmentFactor , rOther.m_CuringMethodTimeAdjustmentFactor );
 
@@ -2699,11 +2461,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_LiftPointAccuracy , rOther.m_LiftPointAccuracy );
    TESTD(m_MinHaulPoint      , rOther.m_MinHaulPoint );
    TESTD(m_HaulPointAccuracy , rOther.m_HaulPointAccuracy);
-
-   TEST(m_UseMinTruckSupportLocationFactor , rOther.m_UseMinTruckSupportLocationFactor);
-   TESTD(m_MinTruckSupportLocationFactor , rOther.m_MinTruckSupportLocationFactor);
-   TESTD(m_OverhangGFactor , rOther.m_OverhangGFactor);
-   TESTD(m_InteriorGFactor , rOther.m_InteriorGFactor);
 
    TESTD(m_PedestrianLoad,   rOther.m_PedestrianLoad);
    TESTD(m_MinSidewalkWidth, rOther.m_MinSidewalkWidth);
@@ -2716,7 +2473,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_PrestressTransferComputationType, rOther.m_PrestressTransferComputationType);
 
    TEST(m_RelaxationLossMethod,rOther.m_RelaxationLossMethod);
-   TEST(m_FcgpComputationMethod,rOther.m_FcgpComputationMethod);
 
    for ( int i = 0; i < 3; i++ )
    {
@@ -2728,9 +2484,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    TEST( m_bIncludeForNegMoment, rOther.m_bIncludeForNegMoment);
    TEST( m_bAllowStraightStrandExtensions, rOther.m_bAllowStraightStrandExtensions);
-
-   TEST(m_bCheckBottomFlangeClearance,rOther.m_bCheckBottomFlangeClearance);
-   TESTD(m_Cmin,rOther.m_Cmin);
 
    if (considerName)
    {
@@ -2772,6 +2525,16 @@ void SpecLibraryEntry::SetDescription(LPCTSTR name)
 std::_tstring SpecLibraryEntry::GetDescription() const
 {
    return m_Description;
+}
+
+void SpecLibraryEntry::SetSectionPropertyMode(pgsTypes::SectionPropertyMode spMode)
+{
+   m_SectionPropertyMode = spMode;
+}
+
+pgsTypes::SectionPropertyMode SpecLibraryEntry::GetSectionPropertyMode() const
+{
+   return m_SectionPropertyMode;
 }
 
 void SpecLibraryEntry::GetMaxStrandSlope(bool* doCheck, bool* doDesign, Float64* slope05, Float64* slope06,Float64* slope07) const
@@ -2853,20 +2616,15 @@ bool SpecLibraryEntry::IsConfinementDesignEnabled() const
    return m_DoDesignConfinement;
 }
 
-void SpecLibraryEntry::GetMaxStirrupSpacing(Float64* pK1,Float64* pS1,Float64* pK2,Float64* pS2) const
+
+Float64 SpecLibraryEntry::GetMaxStirrupSpacing() const
 {
-   *pK1 = m_StirrupSpacingCoefficient[0];
-   *pS1 = m_MaxStirrupSpacing[0];
-   *pK2 = m_StirrupSpacingCoefficient[1];
-   *pS2 = m_MaxStirrupSpacing[1];
+   return m_MaxStirrupSpacing;
 }
 
-void SpecLibraryEntry::SetMaxStirrupSpacing(Float64 K1,Float64 S1,Float64 K2,Float64 S2)
+void SpecLibraryEntry::SetMaxStirrupSpacing(Float64 space)
 {
-   m_StirrupSpacingCoefficient[0] = K1;
-   m_MaxStirrupSpacing[0]         = S1;
-   m_StirrupSpacingCoefficient[1] = K2;
-   m_MaxStirrupSpacing[1]         = S2;
+   m_MaxStirrupSpacing = space;
 }
 
 void SpecLibraryEntry::EnableLiftingCheck(bool enable)
@@ -2874,7 +2632,7 @@ void SpecLibraryEntry::EnableLiftingCheck(bool enable)
    m_EnableLiftingCheck = enable;
 }
 
-bool SpecLibraryEntry::IsLiftingCheckEnabled() const
+bool SpecLibraryEntry::IsLiftingAnalysisEnabled() const
 {
    return m_EnableLiftingCheck;
 }
@@ -2953,7 +2711,7 @@ void SpecLibraryEntry::EnableHaulingCheck(bool enable)
    m_EnableHaulingCheck = enable;
 }
 
-bool SpecLibraryEntry::IsHaulingCheckEnabled() const
+bool SpecLibraryEntry::IsHaulingAnalysisEnabled() const
 {
    return m_EnableHaulingCheck;
 }
@@ -2974,16 +2732,6 @@ bool SpecLibraryEntry::IsHaulingDesignEnabled() const
       ATLASSERT(!m_EnableHaulingDesign); // design should not be enabled if check is not
       return false;
    }
-}
-
-void SpecLibraryEntry::SetHaulingAnalysisMethod(pgsTypes::HaulingAnalysisMethod method)
-{
-   m_HaulingAnalysisMethod = method;
-}
-
-pgsTypes::HaulingAnalysisMethod SpecLibraryEntry::GetHaulingAnalysisMethod() const
-{
-   return m_HaulingAnalysisMethod;
 }
 
 Float64 SpecLibraryEntry::GetHaulingUpwardImpact() const
@@ -3425,25 +3173,8 @@ void SpecLibraryEntry::SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Floa
    m_TempStrandRemovalTensStressMax   = stress;
 }
 
-void SpecLibraryEntry::SetTempStrandRemovalMaxConcreteTensWithRebar(Float64 stress)
-{
-   m_TempStrandRemovalTensStressWithRebar = stress;
-}
 
-Float64 SpecLibraryEntry::GetTempStrandRemovalMaxConcreteTensWithRebar() const
-{
-   return m_TempStrandRemovalTensStressWithRebar;
-}
 
-void SpecLibraryEntry::CheckTemporaryStresses(bool bCheck)
-{
-   m_bCheckTemporaryStresses = bCheck;
-}
-
-bool SpecLibraryEntry::CheckTemporaryStresses() const
-{
-   return m_bCheckTemporaryStresses;
-}
 
 Float64 SpecLibraryEntry::GetBs1CompStress() const
 {
@@ -3485,38 +3216,6 @@ Float64 SpecLibraryEntry::GetBs2CompStress() const
 void SpecLibraryEntry::SetBs2CompStress(Float64 stress)
 {
    m_Bs2CompStress = stress;
-}
-
-void SpecLibraryEntry::CheckBs2Tension(bool bCheck)
-{
-   m_bCheckBs2Tension = bCheck;
-}
-
-bool SpecLibraryEntry::CheckBs2Tension() const
-{
-   return m_bCheckBs2Tension;
-}
-
-Float64 SpecLibraryEntry::GetBs2MaxConcreteTens() const
-{
-   return m_Bs2TensStress;
-}
-
-void SpecLibraryEntry::SetBs2MaxConcreteTens(Float64 stress)
-{
-   m_Bs2TensStress = stress;
-}
-
-void SpecLibraryEntry::GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const
-{
-   *doCheck = m_Bs2DoTensStressMax;
-   *stress = m_Bs2TensStressMax;
-}
-
-void SpecLibraryEntry::SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress)
-{
-   m_Bs2DoTensStressMax = doCheck;
-   m_Bs2TensStressMax = stress;
 }
 
 Float64 SpecLibraryEntry::GetBs3CompStressService() const
@@ -3721,36 +3420,6 @@ Float64 SpecLibraryEntry::GetTotalCreepDuration() const
    return m_TotalCreepDuration;
 }
 
-void SpecLibraryEntry::SetCamberVariability(Float64 var)
-{
-   m_CamberVariability = var;
-}
-
-Float64 SpecLibraryEntry::GetCamberVariability() const
-{
-   return m_CamberVariability;
-}
-
-void SpecLibraryEntry::CheckGirderSag(bool bCheck)
-{
-   m_bCheckSag = bCheck;
-}
-
-bool SpecLibraryEntry::CheckGirderSag() const
-{
-   return m_bCheckSag;
-}
-
-pgsTypes::SagCamberType SpecLibraryEntry::GetSagCamberType() const
-{
-   return m_SagCamberType;
-}
-
-void SpecLibraryEntry::SetSagCamberType(pgsTypes::SagCamberType type)
-{
-   m_SagCamberType = type;
-}
-
 int SpecLibraryEntry::GetLossMethod() const
 {
    return m_LossMethod;
@@ -3762,14 +3431,14 @@ void SpecLibraryEntry::SetLossMethod(int method)
    m_LossMethod = method;
 }
 
-Float64 SpecLibraryEntry::GetFinalLosses() const
+int SpecLibraryEntry::GetTimeDependentModel() const
 {
-   return m_FinalLosses;
+   return m_TimeDependentModel;
 }
 
-void SpecLibraryEntry::SetFinalLosses(Float64 loss)
+void SpecLibraryEntry::SetTimeDependentModel(int model)
 {
-   m_FinalLosses = loss;
+   m_TimeDependentModel = model;
 }
 
 Float64 SpecLibraryEntry::GetShippingLosses() const
@@ -3782,36 +3451,6 @@ void SpecLibraryEntry::SetShippingLosses(Float64 loss)
    m_ShippingLosses = loss;
 }
 
-Float64 SpecLibraryEntry::GetLiftingLosses() const
-{
-   return m_LiftingLosses;
-}
-
-void SpecLibraryEntry::SetLiftingLosses(Float64 loss)
-{
-   m_LiftingLosses = loss;
-}
-
-Float64 SpecLibraryEntry::GetBeforeXferLosses() const
-{
-   return m_BeforeXferLosses;
-}
-
-void SpecLibraryEntry::SetBeforeXferLosses(Float64 loss)
-{
-   m_BeforeXferLosses = loss;
-}
-
-Float64 SpecLibraryEntry::GetAfterXferLosses() const
-{
-   return m_AfterXferLosses;
-}
-
-void SpecLibraryEntry::SetAfterXferLosses(Float64 loss)
-{
-   m_AfterXferLosses = loss;
-}
-
 void SpecLibraryEntry::SetShippingTime(Float64 time)
 {
    m_ShippingTime = time;
@@ -3820,76 +3459,6 @@ void SpecLibraryEntry::SetShippingTime(Float64 time)
 Float64 SpecLibraryEntry::GetShippingTime() const
 {
    return m_ShippingTime;
-}
-
-Float64 SpecLibraryEntry::GetBeforeTempStrandRemovalLosses() const
-{
-   return m_BeforeTempStrandRemovalLosses;
-}
-
-void SpecLibraryEntry::SetBeforeTempStrandRemovalLosses(Float64 loss)
-{
-   m_BeforeTempStrandRemovalLosses = loss;
-}
-
-Float64 SpecLibraryEntry::GetAfterTempStrandRemovalLosses() const
-{
-   return m_AfterTempStrandRemovalLosses;
-}
-
-void SpecLibraryEntry::SetAfterTempStrandRemovalLosses(Float64 loss)
-{
-   m_AfterTempStrandRemovalLosses = loss;
-}
-
-Float64 SpecLibraryEntry::GetAfterDeckPlacementLosses() const
-{
-   return m_AfterDeckPlacementLosses;
-}
-
-void SpecLibraryEntry::SetAfterDeckPlacementLosses(Float64 loss)
-{
-   m_AfterDeckPlacementLosses = loss;
-}
-
-Float64 SpecLibraryEntry::GetAfterSIDLLosses() const
-{
-   return m_AfterSIDLLosses;
-}
-
-void SpecLibraryEntry::SetAfterSIDLLosses(Float64 loss)
-{
-   m_AfterSIDLLosses = loss;
-}
-
-Float64 SpecLibraryEntry::GetAnchorSet() const
-{
-   return m_Dset;
-}
-
-void SpecLibraryEntry::SetAnchorSet(Float64 dset)
-{
-   m_Dset = dset;
-}
-
-Float64 SpecLibraryEntry::GetWobbleFrictionCoefficient() const
-{
-   return m_WobbleFriction;
-}
-
-void SpecLibraryEntry::SetWobbleFrictionCoefficient(Float64 K)
-{
-   m_WobbleFriction = K;
-}
-
-Float64 SpecLibraryEntry::GetFrictionCoefficient() const
-{
-   return m_FrictionCoefficient;
-}
-
-void SpecLibraryEntry::SetFrictionCoefficient(Float64 u)
-{
-   m_FrictionCoefficient = u;
 }
 
 Float64 SpecLibraryEntry::GetSlabElasticGain() const
@@ -3922,40 +3491,44 @@ void SpecLibraryEntry::SetDiaphragmElasticGain(Float64 f)
    m_DiaphragmElasticGain = f;
 }
 
-Float64 SpecLibraryEntry::GetUserDCElasticGain(pgsTypes::Stage stage) const
+Float64 SpecLibraryEntry::GetUserLoadBeforeDeckDCElasticGain() const
 {
-   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
-   if ( stage == pgsTypes::BridgeSite1 )
-      return m_UserDCElasticGainBS1;
-   else
-      return m_UserDCElasticGainBS2;
+   return m_UserDCElasticGainBS1;
 }
 
-void SpecLibraryEntry::SetUserDCElasticGain(pgsTypes::Stage stage,Float64 f)
+Float64 SpecLibraryEntry::GetUserLoadAfterDeckDCElasticGain() const
 {
-   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
-   if ( stage == pgsTypes::BridgeSite1 )
-      m_UserDCElasticGainBS1 = f;
-   else
-      m_UserDCElasticGainBS2 = f;
+   return m_UserDCElasticGainBS2;
 }
 
-Float64 SpecLibraryEntry::GetUserDWElasticGain(pgsTypes::Stage stage) const
+void SpecLibraryEntry::SetUserLoadBeforeDeckDCElasticGain(Float64 f)
 {
-   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
-   if ( stage == pgsTypes::BridgeSite1 )
-      return m_UserDWElasticGainBS1;
-   else
-      return m_UserDWElasticGainBS2;
+   m_UserDCElasticGainBS1 = f;
 }
 
-void SpecLibraryEntry::SetUserDWElasticGain(pgsTypes::Stage stage,Float64 f)
+void SpecLibraryEntry::SetUserLoadAfterDeckDCElasticGain(Float64 f)
 {
-   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
-   if ( stage == pgsTypes::BridgeSite1 )
-      m_UserDWElasticGainBS1 = f;
-   else
-      m_UserDWElasticGainBS2 = f;
+   m_UserDCElasticGainBS2 = f;
+}
+
+Float64 SpecLibraryEntry::GetUserLoadBeforeDeckDWElasticGain() const
+{
+   return m_UserDWElasticGainBS1;
+}
+
+Float64 SpecLibraryEntry::GetUserLoadAfterDeckDWElasticGain() const
+{
+   return m_UserDWElasticGainBS2;
+}
+
+void SpecLibraryEntry::SetUserLoadBeforeDeckDWElasticGain(Float64 f)
+{
+   m_UserDWElasticGainBS1 = f;
+}
+
+void SpecLibraryEntry::SetUserLoadAfterDeckDWElasticGain(Float64 f)
+{
+   m_UserDWElasticGainBS2 = f;
 }
 
 Float64 SpecLibraryEntry::GetRailingSystemElasticGain() const
@@ -4006,16 +3579,6 @@ void SpecLibraryEntry::SetRelaxationLossMethod(Int16 method)
 Int16 SpecLibraryEntry::GetRelaxationLossMethod() const
 {
    return m_RelaxationLossMethod;
-}
-
-void SpecLibraryEntry::SetFcgpComputationMethod(Int16 method)
-{
-   m_FcgpComputationMethod = method;
-}
-
-Int16 SpecLibraryEntry::GetFcgpComputationMethod() const
-{
-   return m_FcgpComputationMethod;
 }
 
 Int16 SpecLibraryEntry::GetLiveLoadDistributionMethod() const
@@ -4121,24 +3684,24 @@ Float64 SpecLibraryEntry::GetMaxSlabFc(pgsTypes::ConcreteType type) const
    return m_MaxSlabFc[type];
 }
 
-void SpecLibraryEntry::SetMaxGirderFc(pgsTypes::ConcreteType type,Float64 fc)
+void SpecLibraryEntry::SetMaxSegmentFc(pgsTypes::ConcreteType type,Float64 fc)
 {
-   m_MaxGirderFc[type] = fc;
+   m_MaxSegmentFc[type] = fc;
 }
 
-Float64 SpecLibraryEntry::GetMaxGirderFc(pgsTypes::ConcreteType type) const
+Float64 SpecLibraryEntry::GetMaxSegmentFc(pgsTypes::ConcreteType type) const
 {
-   return m_MaxGirderFc[type];
+   return m_MaxSegmentFc[type];
 }
 
-void SpecLibraryEntry::SetMaxGirderFci(pgsTypes::ConcreteType type,Float64 fci)
+void SpecLibraryEntry::SetMaxSegmentFci(pgsTypes::ConcreteType type,Float64 fci)
 {
-   m_MaxGirderFci[type] = fci;
+   m_MaxSegmentFci[type] = fci;
 }
 
-Float64 SpecLibraryEntry::GetMaxGirderFci(pgsTypes::ConcreteType type) const
+Float64 SpecLibraryEntry::GetMaxSegmentFci(pgsTypes::ConcreteType type) const
 {
-   return m_MaxGirderFci[type];
+   return m_MaxSegmentFci[type];
 }
 
 void SpecLibraryEntry::SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc)
@@ -4159,16 +3722,6 @@ void SpecLibraryEntry::SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64
 Float64 SpecLibraryEntry::GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const
 {
    return m_MaxConcreteAggSize[type];
-}
-
-void SpecLibraryEntry::SetDoCheckStirrupSpacingCompatibility(bool doCheck)
-{
-   m_DoCheckStirrupSpacingCompatibility = doCheck;
-}
-
-bool SpecLibraryEntry::GetDoCheckStirrupSpacingCompatibility() const
-{
-   return m_DoCheckStirrupSpacingCompatibility;
 }
 
 void SpecLibraryEntry::EnableSlabOffsetCheck(bool enable)
@@ -4229,16 +3782,6 @@ ShearFlowMethod SpecLibraryEntry::GetShearFlowMethod() const
    return m_ShearFlowMethod;
 }
 
-Float64 SpecLibraryEntry::GetMaxInterfaceShearConnectorSpacing() const
-{
-   return m_MaxInterfaceShearConnectorSpacing;
-}
-
-void SpecLibraryEntry::SetMaxInterfaceShearConnectionSpacing(Float64 sMax)
-{
-   m_MaxInterfaceShearConnectorSpacing = sMax;
-}
-
 void SpecLibraryEntry::SetShearCapacityMethod(ShearCapacityMethod method)
 {
    m_ShearCapacityMethod = method;
@@ -4277,46 +3820,6 @@ void SpecLibraryEntry::SetTruckSupportLocationAccuracy(Float64 x)
 Float64 SpecLibraryEntry::GetTruckSupportLocationAccuracy() const
 {
    return m_HaulPointAccuracy;
-}
-
-void SpecLibraryEntry::SetUseMinTruckSupportLocationFactor(bool factor)
-{
-   m_UseMinTruckSupportLocationFactor = factor;
-}
-
-bool SpecLibraryEntry::GetUseMinTruckSupportLocationFactor() const
-{
-   return m_UseMinTruckSupportLocationFactor;
-}
-
-void SpecLibraryEntry::SetMinTruckSupportLocationFactor(Float64 factor)
-{
-   m_MinTruckSupportLocationFactor = factor;
-}
-
-Float64 SpecLibraryEntry::GetMinTruckSupportLocationFactor() const
-{
-   return m_MinTruckSupportLocationFactor;
-}
-
-void SpecLibraryEntry::SetOverhangGFactor(Float64 factor)
-{
-   m_OverhangGFactor = factor;
-}
-
-Float64 SpecLibraryEntry::GetOverhangGFactor() const
-{
-   return m_OverhangGFactor;
-}
-
-void SpecLibraryEntry::SetInteriorGFactor(Float64 factor)
-{
-   m_InteriorGFactor = factor;
-}
-
-Float64 SpecLibraryEntry::GetInteriorGFactor() const
-{
-   return m_InteriorGFactor;
 }
 
 void SpecLibraryEntry::SetMininumLiftingPointLocation(Float64 x)
@@ -4453,26 +3956,6 @@ bool SpecLibraryEntry::AllowStraightStrandExtensions() const
    return m_bAllowStraightStrandExtensions;
 }
 
-void SpecLibraryEntry::CheckBottomFlangeClearance(bool bCheck)
-{
-   m_bCheckBottomFlangeClearance = bCheck;
-}
-
-bool SpecLibraryEntry::CheckBottomFlangeClearance() const
-{
-   return m_bCheckBottomFlangeClearance;
-}
-
-void SpecLibraryEntry::SetMinBottomFlangeClearance(Float64 Cmin)
-{
-   m_Cmin = Cmin;
-}
-
-Float64 SpecLibraryEntry::GetMinBottomFlangeClearance() const
-{
-   return m_Cmin;
-}
-
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -4486,6 +3969,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_SpecificationUnits         = rOther.m_SpecificationUnits;
    m_Description.erase();
    m_Description                = rOther.m_Description;
+   m_SectionPropertyMode        = rOther.m_SectionPropertyMode;
    m_DoCheckStrandSlope         = rOther.m_DoCheckStrandSlope;
    m_DoDesignStrandSlope        = rOther.m_DoDesignStrandSlope;
    m_MaxSlope05                 = rOther.m_MaxSlope05;
@@ -4494,10 +3978,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_DoCheckHoldDown            = rOther.m_DoCheckHoldDown;
    m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
    m_HoldDownForce              = rOther.m_HoldDownForce;
-   m_StirrupSpacingCoefficient[0] = rOther.m_StirrupSpacingCoefficient[0];
-   m_MaxStirrupSpacing[0]         = rOther.m_MaxStirrupSpacing[0];
-   m_StirrupSpacingCoefficient[1] = rOther.m_StirrupSpacingCoefficient[1];
-   m_MaxStirrupSpacing[1]         = rOther.m_MaxStirrupSpacing[1];
+   m_MaxStirrupSpacing          = rOther.m_MaxStirrupSpacing;
    m_DoCheckConfinement         = rOther.m_DoCheckConfinement;
    m_DoDesignConfinement        = rOther.m_DoDesignConfinement;
    m_DoCheckSplitting           = rOther.m_DoCheckSplitting;
@@ -4526,7 +4007,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_MaxGirderSweepLifting      = rOther.m_MaxGirderSweepLifting;
    m_EnableHaulingCheck         = rOther.m_EnableHaulingCheck;
    m_EnableHaulingDesign        = rOther.m_EnableHaulingDesign;
-   m_HaulingAnalysisMethod      = rOther.m_HaulingAnalysisMethod;
    m_MaxGirderSweepHauling      = rOther.m_MaxGirderSweepHauling;
    m_MaxHaulingOverhang         = rOther.m_MaxHaulingOverhang;
    m_HaulingSupportDistance          = rOther.m_HaulingSupportDistance;
@@ -4569,18 +4049,12 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TempStrandRemovalTensStress              = rOther.m_TempStrandRemovalTensStress;
    m_TempStrandRemovalDoTensStressMax         = rOther.m_TempStrandRemovalDoTensStressMax;
    m_TempStrandRemovalTensStressMax           = rOther.m_TempStrandRemovalTensStressMax;
-   m_TempStrandRemovalTensStressWithRebar     = rOther.m_TempStrandRemovalTensStressWithRebar;
 
-   m_bCheckTemporaryStresses    = rOther.m_bCheckTemporaryStresses;
    m_Bs1CompStress              = rOther.m_Bs1CompStress;
    m_Bs1TensStress              = rOther.m_Bs1TensStress;
    m_Bs1DoTensStressMax         = rOther.m_Bs1DoTensStressMax;
    m_Bs1TensStressMax           = rOther.m_Bs1TensStressMax;
    m_Bs2CompStress              = rOther.m_Bs2CompStress;
-   m_bCheckBs2Tension           = rOther.m_bCheckBs2Tension;
-   m_Bs2TensStress              = rOther.m_Bs2TensStress;
-   m_Bs2DoTensStressMax         = rOther.m_Bs2DoTensStressMax;
-   m_Bs2TensStressMax           = rOther.m_Bs2TensStressMax;
    m_TrafficBarrierDistributionType = rOther.m_TrafficBarrierDistributionType;
    m_Bs2MaxGirdersTrafficBarrier= rOther.m_Bs2MaxGirdersTrafficBarrier;
    m_Bs2MaxGirdersUtility       = rOther.m_Bs2MaxGirdersUtility;
@@ -4610,23 +4084,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_CreepDuration2Min          = rOther.m_CreepDuration2Min;
    m_CreepDuration2Max          = rOther.m_CreepDuration2Max;
    m_TotalCreepDuration  = rOther.m_TotalCreepDuration;
-   m_CamberVariability   = rOther.m_CamberVariability;
 
    m_LossMethod                 = rOther.m_LossMethod;
-   m_FinalLosses                = rOther.m_FinalLosses;
+   m_TimeDependentModel         = rOther.m_TimeDependentModel;
    m_ShippingLosses             = rOther.m_ShippingLosses;
-   m_BeforeXferLosses           = rOther.m_BeforeXferLosses;
-   m_AfterXferLosses            = rOther.m_AfterXferLosses;
-   m_LiftingLosses              = rOther.m_LiftingLosses;
    m_ShippingTime               = rOther.m_ShippingTime;
-   m_BeforeTempStrandRemovalLosses = rOther.m_BeforeTempStrandRemovalLosses;
-   m_AfterTempStrandRemovalLosses  = rOther.m_AfterTempStrandRemovalLosses;
-   m_AfterDeckPlacementLosses      = rOther.m_AfterDeckPlacementLosses;
-   m_AfterSIDLLosses               = rOther.m_AfterSIDLLosses;
-
-   m_Dset = rOther.m_Dset;
-   m_WobbleFriction = rOther.m_WobbleFriction;
-   m_FrictionCoefficient = rOther.m_FrictionCoefficient;
 
    m_SlabElasticGain          = rOther.m_SlabElasticGain;
    m_SlabPadElasticGain       = rOther.m_SlabPadElasticGain;
@@ -4663,20 +4125,14 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_bIncludeRebar_Moment = rOther.m_bIncludeRebar_Moment;
    m_bIncludeRebar_Shear = rOther.m_bIncludeRebar_Shear;
 
-//   m_AnalysisType = rOther.m_AnalysisType;
-
    for ( int i = 0; i < 3; i++ )
    {
       m_MaxSlabFc[i]             = rOther.m_MaxSlabFc[i];
-      m_MaxGirderFci[i]          = rOther.m_MaxGirderFci[i];
-      m_MaxGirderFc[i]           = rOther.m_MaxGirderFc[i];
+      m_MaxSegmentFci[i]          = rOther.m_MaxSegmentFci[i];
+      m_MaxSegmentFc[i]           = rOther.m_MaxSegmentFc[i];
       m_MaxConcreteUnitWeight[i] = rOther.m_MaxConcreteUnitWeight[i];
       m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
    }
-
-   m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
-   m_bCheckSag = rOther.m_bCheckSag;
-   m_SagCamberType = rOther.m_SagCamberType;
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;
@@ -4685,7 +4141,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_EffFlangeWidthMethod = rOther.m_EffFlangeWidthMethod;
 
    m_ShearFlowMethod = rOther.m_ShearFlowMethod;
-   m_MaxInterfaceShearConnectorSpacing = rOther.m_MaxInterfaceShearConnectorSpacing;
 
    m_ShearCapacityMethod = rOther.m_ShearCapacityMethod;
 
@@ -4695,11 +4150,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LiftPointAccuracy = rOther.m_LiftPointAccuracy;
    m_MinHaulPoint      = rOther.m_MinHaulPoint;
    m_HaulPointAccuracy = rOther.m_HaulPointAccuracy;
-
-   m_UseMinTruckSupportLocationFactor = rOther.m_UseMinTruckSupportLocationFactor;
-   m_MinTruckSupportLocationFactor = rOther.m_MinTruckSupportLocationFactor;
-   m_OverhangGFactor = rOther.m_OverhangGFactor;
-   m_InteriorGFactor = rOther.m_InteriorGFactor;
 
    m_PedestrianLoad   = rOther.m_PedestrianLoad;
    m_MinSidewalkWidth = rOther.m_MinSidewalkWidth;
@@ -4714,8 +4164,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_RelaxationLossMethod = rOther.m_RelaxationLossMethod;
 
-   m_FcgpComputationMethod = rOther.m_FcgpComputationMethod;
-
    for ( int i = 0; i < 3; i++ )
    {
       m_PhiFlexureTensionPS[i]   = rOther.m_PhiFlexureTensionPS[i];
@@ -4726,9 +4174,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_bIncludeForNegMoment = rOther.m_bIncludeForNegMoment;
    m_bAllowStraightStrandExtensions = rOther.m_bAllowStraightStrandExtensions;
-
-   m_bCheckBottomFlangeClearance = rOther.m_bCheckBottomFlangeClearance;
-   m_Cmin = rOther.m_Cmin;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

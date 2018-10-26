@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_INTERFACESHEARDETAILS_H_
-#define INCLUDED_INTERFACESHEARDETAILS_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 
@@ -50,8 +49,6 @@ LOG
 class REPORTINGCLASS CInterfaceShearDetails
 {
 public:
-   // GROUP: LIFECYCLE
-
    //------------------------------------------------------------------------
    // Default constructor
    CInterfaceShearDetails();
@@ -60,63 +57,18 @@ public:
    // Destructor
    virtual ~CInterfaceShearDetails();
 
-   // GROUP: OPERATORS
-
-   // GROUP: OPERATIONS
-
    //------------------------------------------------------------------------
    // Builds the table.
    static void Build(IBroker* pBroker, rptChapter* pChapter,
-                     SpanIndexType span,GirderIndexType girder,
+                     const CGirderKey& girderKey,
                      IEAFDisplayUnits* pDisplayUnits,
-                     pgsTypes::Stage stage,
+                     IntervalIndexType intervalIdx,
                      pgsTypes::LimitState ls);
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Copy constructor
    CInterfaceShearDetails(const CInterfaceShearDetails& rOther);
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_InterfaceShearDetails_H_

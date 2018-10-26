@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,9 +85,9 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   Float64 Station;   // station where this edge point is measured
-   Float64 LeftEdge;  // + = right of measurement datum
-   Float64 RightEdge; // + = right of measurement datum
+   double Station;   // station where this edge point is measured
+   double LeftEdge;  // + = right of measurement datum
+   double RightEdge; // + = right of measurement datum
    pgsTypes::OffsetMeasurementType MeasurementType; // datum of measurement
    pgsTypes::DeckPointTransitionType LeftTransitionType; // how the deck edge transitions to the next point
    pgsTypes::DeckPointTransitionType RightTransitionType; // how the deck edge transitions to the next point
@@ -95,7 +95,7 @@ public:
 
 protected:
    void MakeCopy(const CDeckPoint& rOther);
-   void MakeAssignment(const CDeckPoint& rOther);
+   virtual void MakeAssignment(const CDeckPoint& rOther);
 };
 
 

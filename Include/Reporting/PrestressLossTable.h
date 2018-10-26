@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -73,7 +73,7 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,
                              IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -87,7 +87,7 @@ protected:
    void MakeCopy(const CPrestressLossTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CPrestressLossTable& rOther);
+   virtual void MakeAssignment(const CPrestressLossTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

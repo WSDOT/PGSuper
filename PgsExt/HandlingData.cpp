@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,8 @@ CLASS
 
 CHandlingData::CHandlingData()
 {
+   LeftStoragePoint     = 0;
+   RightStoragePoint    = 0;
    LeftLiftPoint        = 0;
    RightLiftPoint       = 0;
    LeadingSupportPoint  = 0;
@@ -65,6 +67,12 @@ CHandlingData& CHandlingData::operator= (const CHandlingData& rOther)
 
 bool CHandlingData::operator==(const CHandlingData& rOther) const
 {
+   if ( !IsEqual(LeftStoragePoint,rOther.LeftStoragePoint) )
+      return false;
+
+   if ( !IsEqual(RightStoragePoint,rOther.RightStoragePoint) )
+      return false;
+
    if ( !IsEqual(LeftLiftPoint,rOther.LeftLiftPoint) )
       return false;
 
@@ -98,6 +106,17 @@ HRESULT CHandlingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->BeginUnit(_T("HandlingData"));
 
+      Float64 version;
+      pStrLoad->get_Version(&version);
+      if ( 1.0 < version )
+      {
+         hr = pStrLoad->get_Property(_T("LeftStoragePoint"),&var);
+         LeftStoragePoint = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("RightStoragePoint"),&var);
+         RightStoragePoint = var.dblVal;
+      }
+
       hr = pStrLoad->get_Property(_T("LeftLiftPoint"),&var);
       LeftLiftPoint = var.dblVal;
 
@@ -124,7 +143,9 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("HandlingData"),1.0);
+   pStrSave->BeginUnit(_T("HandlingData"),2.0);
+   pStrSave->put_Property(_T("LeftStoragePoint"),CComVariant(LeftStoragePoint));
+   pStrSave->put_Property(_T("RightStoragePoint"),CComVariant(RightStoragePoint));
    pStrSave->put_Property(_T("LeftLiftPoint"),CComVariant(LeftLiftPoint));
    pStrSave->put_Property(_T("RightLiftPoint"),CComVariant(RightLiftPoint));
    pStrSave->put_Property(_T("LeadingSupportPoint"),CComVariant(LeadingSupportPoint));
@@ -136,6 +157,8 @@ HRESULT CHandlingData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CHandlingData::MakeCopy(const CHandlingData& rOther)
 {
+   LeftStoragePoint     = rOther.LeftStoragePoint;
+   RightStoragePoint    = rOther.RightStoragePoint;
    LeftLiftPoint        = rOther.LeftLiftPoint;
    RightLiftPoint       = rOther.RightLiftPoint;
    LeadingSupportPoint  = rOther.LeadingSupportPoint;

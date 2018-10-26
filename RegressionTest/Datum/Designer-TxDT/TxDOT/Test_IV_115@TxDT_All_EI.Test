@@ -1,30 +1,30 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00   Beam IV, 115      1     1     IV            58  1/2  270  18.68  10.41   8.00   8.00                                              12  52.0 12.0  6.200  6.300   3.956    -4.355     7428   0.632  0.814   4.786 -2.013 -0.189 -0.122 -2.325 186.92  517.96    0.00    0.00    0.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     1     IV         60   1/2  270 18.48 10.48  12 52.0  6.400  6.500    3.956   -4.355   7428  0.632  0.814  0.41 -0.17 -0.02 -0.01 -0.19 196.41 559.78   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting zone checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00   Beam IV, 115      1     2     IV            62  1/2  270  18.24   9.65   8.00   8.00                                              14  52.0 14.0  6.400  6.500   4.097    -4.514     7629   0.632  0.814   4.955 -2.301 -0.181 -0.117 -2.599 207.97  574.34    0.00    0.00    0.00 
-
-
-The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00   Beam IV, 115      1     4     IV            62  1/2  270  18.24   9.65   8.00   8.00                                              14  52.0 14.0  6.400  6.500   4.097    -4.514     7629   0.632  0.814   4.955 -2.301 -0.181 -0.117 -2.599 207.97  574.34    0.00    0.00    0.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     2     IV         64   1/2  270 18.00  9.69  14 52.0  6.600  6.700    4.097   -4.514   7630  0.632  0.814  0.42 -0.19 -0.02 -0.01 -0.22 217.14 616.52   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     4     IV         64   1/2  270 18.00  9.69  14 52.0  6.600  6.700    4.097   -4.514   7630  0.632  0.814  0.42 -0.19 -0.02 -0.01 -0.22 217.14 616.52   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone checks failed.
 
 

@@ -1,0 +1,309 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include <PGSuperVersion.h>
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include <PGSuperVersion.h>\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\Graphing.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "Comments", "A member of the Alternate Route Project"
+            VALUE "CompanyName", "Washington State Department of Transportation"
+            VALUE "FileDescription", "PGSuper Graphing"
+            VALUE "FileVersion", "3.0.0.0"
+            VALUE "InternalName", "Graphing"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "OriginalFilename", "PGSuperGraphing.dll"
+            VALUE "ProductName", "PGSuper"
+            VALUE "ProductVersion", "3.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ANALYSISRESULTS_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 367
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_GROUP,6,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,81,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_INTERVAL,6,25,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ACTION,6,43,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LOAD_CASE,6,60,142,195,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Hold CTRL key to select multiple loads\nHold SHIFT key to select range of loads",IDC_STATIC,6,260,136,21
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,284,48,10
+    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,284,55,10
+    GROUPBOX        "Analysis Type",IDC_ANALYSISTYPE,6,299,142,60,WS_GROUP
+    CONTROL         "Simple Span",IDC_SIMPLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,317,97,10
+    CONTROL         "Simple Spans made Continuous",IDC_SIMPLE2,"Button",BS_AUTORADIOBUTTON,13,328,119,10
+    CONTROL         "Simple/Continuous Envelope",IDC_SIMPLE3,"Button",BS_AUTORADIOBUTTON,13,339,107,10
+END
+
+IDD_PGSUPER_STABILITY_BAR DIALOGEX 0, 0, 262, 19
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_GROUP,7,3,52,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,66,3,52,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_EVENT,125,3,74,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,206,4,49,10
+END
+
+IDD_PGSPLICE_STABILITY_BAR DIALOGEX 0, 0, 325, 19
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_GROUP,7,3,52,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,66,3,52,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_EVENT,186,3,74,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,269,4,49,10
+    COMBOBOX        IDC_SEGMENT,125,3,52,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_TENDONSTRESS_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 79
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_GROUP,6,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,81,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_DUCT,6,24,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_INTERVAL,6,41,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,62,48,10
+    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,62,55,10
+END
+
+IDD_STRESSHISTORY_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 369
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_POI,6,7,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Top of Slab",IDC_TOPSLAB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,28,52,10
+    CONTROL         "Top of Girder",IDC_TOPGIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,41,58,10
+    CONTROL         "Bottom of Girder",IDC_BOTTOMGIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,54,69,10
+    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,70,142,59
+    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,83,76,10
+    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON,11,97,93,10
+    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,11,110,41,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,143,48,10
+    EDITTEXT        IDC_INTERVAL_LIST,6,181,142,181,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL | WS_HSCROLL
+END
+
+IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 150
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_GROUP,6,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,81,7,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_PROPERTY,6,24,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_INTERVAL,6,41,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,133,48,10
+    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,133,55,10
+    GROUPBOX        "Property Type",IDC_STATIC,6,61,142,52
+    CONTROL         "Transformed",IDC_TRANSFORMED,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,77,57,10
+    CONTROL         "Gross",IDC_GROSS,"Button",BS_AUTORADIOBUTTON,16,92,34,10
+END
+
+IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 369
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Element",IDC_STATIC,6,7,142,113
+    CONTROL         "Precast Segment",IDC_PRECAST_SEGMENT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,22,70,10
+    CONTROL         "Closure Pour",IDC_CLOSURE_POUR,"Button",BS_AUTORADIOBUTTON,14,79,57,10
+    CONTROL         "Bridge Deck",IDC_DECK,"Button",BS_AUTORADIOBUTTON,14,106,53,10
+    COMBOBOX        IDC_GROUP,13,33,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,13,48,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SEGMENT,13,63,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CLOSURE,13,90,135,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Property",IDC_STATIC,6,127,142,60
+    CONTROL         "f'c",IDC_FC,"Button",BS_AUTORADIOBUTTON | WS_GROUP,15,143,23,10
+    CONTROL         "Ec",IDC_EC,"Button",BS_AUTORADIOBUTTON,15,156,23,10
+    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,190,142,78
+    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP,13,203,76,10
+    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON,13,215,93,10
+    CONTROL         "Age (Linear Scale)",IDC_AGE_LINEAR,"Button",BS_AUTORADIOBUTTON,13,227,74,10
+    CONTROL         "Age (Logarithmic Scale)",IDC_AGE_LOG,"Button",BS_AUTORADIOBUTTON,13,239,91,10
+    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,13,251,41,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,276,48,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ANALYSISRESULTS_GRAPH_CONTROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 148
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 360
+    END
+
+    IDD_PGSUPER_STABILITY_BAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 255
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 15
+    END
+
+    IDD_PGSPLICE_STABILITY_BAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 318
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 15
+    END
+
+    IDD_TENDONSTRESS_GRAPH_CONTROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 148
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+
+    IDD_STRESSHISTORY_GRAPH_CONTROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 148
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 362
+    END
+
+    IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 148
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 143
+    END
+
+    IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 148
+        VERTGUIDE, 13
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 362
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\Graphing.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

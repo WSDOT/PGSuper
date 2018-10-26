@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,20 +29,22 @@
 #include "PGSuperUnits.h"
 #include "PierLayoutPage.h"
 #include "PierDetailsDlg.h"
-#include <MfcTools\MfcTools.h>
+#include "PGSuperAppPlugin\TimelineEventDlg.h"
 
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\TimelineManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage property page
@@ -54,11 +56,8 @@ CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 	//{{AFX_DATA_INIT(CPierLayoutPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-
    m_MovePierOption = pgsTypes::MoveBridge;
-
-   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
-   ASSERT(SUCCEEDED(hr));
+   m_ErectionEventIndex = 0;
 }
 
 CPierLayoutPage::~CPierLayoutPage()
@@ -76,13 +75,13 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-
    DDX_Station(pDX,IDC_STATION,m_Station,pDisplayUnits->GetStationFormat());
 
    DDX_CBItemData(pDX,IDC_MOVE_PIER,m_MovePierOption);
 
    DDX_String(pDX,IDC_ORIENTATION,m_strOrientation);
+
+   DDX_CBItemData(pDX,IDC_ERECTION_EVENT,m_ErectionEventIndex);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -110,7 +109,8 @@ BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
 	ON_EN_KILLFOCUS(IDC_STATION, OnKillfocusStation)
 	ON_CBN_SETFOCUS(IDC_MOVE_PIER, OnSetfocusMovePier)
 	ON_COMMAND(ID_HELP, OnHelp)
-   ON_WM_CTLCOLOR()
+   ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionStageChanged)
+   ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionStageChanging)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -119,10 +119,9 @@ END_MESSAGE_MAP()
 
 BOOL CPierLayoutPage::OnInitDialog() 
 {
-   // move options are not available until the station changes
-   CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
-   pOptions->EnableWindow(FALSE);
+   FillEventList();
 
+   // move options are not available until the station changes
 	CPropertyPage::OnInitDialog();
 
    UpdateMoveOptionList();
@@ -159,11 +158,11 @@ BOOL CPierLayoutPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CPierLayoutPage::Init(const CPierData* pPier)
+void CPierLayoutPage::Init(const CPierData2* pPier)
 {
-   m_PierIdx = pPier->GetPierIndex();
+   m_PierIdx = pPier->GetIndex();
 
-   const CBridgeDescription* pBridgeDesc = pPier->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pPier->GetBridgeDescription();
    m_nSpans = pBridgeDesc->GetSpanCount();
 
    m_Station = pPier->GetStation();
@@ -180,53 +179,32 @@ void CPierLayoutPage::Init(const CPierData* pPier)
       m_NextPierStation = -DBL_MAX;
 
    m_strOrientation = pPier->GetOrientation();
+
+   m_ErectionEventIndex = pBridgeDesc->GetTimelineManager()->GetPierErectionEventIndex(m_PierIdx);
 }
 
 void CPierLayoutPage::OnChangeStation() 
 {
-   GetDlgItem(IDC_MOVE_PIER)->EnableWindow(TRUE);
-
    UpdateMoveOptionList();
-}
-
-BOOL CPierLayoutPage::IsValidStation(Float64* pStation)
-{
-   BOOL bResult = TRUE;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   UnitModeType unitMode = pDisplayUnits->GetStationFormat().GetUnitOfMeasure() == unitStationFormat::Feet ? umUS : umSI;
-   const unitLength& displayUnit = (unitMode == umUS ? unitMeasure::Feet : unitMeasure::Meter);
-
-   CWnd* pWnd = GetDlgItem(IDC_STATION);
-   
-   int cLength = pWnd->GetWindowTextLength() + 1;
-   cLength = (cLength == 1 ? 32 : cLength );
-   LPTSTR lpszBuffer = new TCHAR[cLength];
-
-   pWnd->GetWindowText(lpszBuffer,cLength);
-   HRESULT hr = m_objStation->FromString(CComBSTR(lpszBuffer),unitMode);
-   if ( SUCCEEDED(hr) )
-   {
-      m_objStation->get_Value(pStation);
-      *pStation = ::ConvertToSysUnits( *pStation, displayUnit );
-      bResult = TRUE;
-   }
-   else
-   {
-      bResult = FALSE;
-   }
-
-   delete[] lpszBuffer;
-   return bResult;
 }
 
 void CPierLayoutPage::UpdateMoveOptionList()
 {
+
+   // Get the current value for station
+   CDataExchange dx(this,TRUE);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   // read the current value of the station edit
    Float64 toStation;
-   BOOL bIsValid = IsValidStation(&toStation);
-   if ( bIsValid == FALSE )
+   try
+   {
+      DDX_Station(&dx,IDC_STATION,toStation,pDisplayUnits->GetStationFormat());
+   }
+   catch(...)
    {
       CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
       pOptions->EnableWindow(FALSE);
@@ -236,23 +214,15 @@ void CPierLayoutPage::UpdateMoveOptionList()
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    // get the current selection
    CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
    int curSel = _cpp_max(pOptions->GetCurSel(),0);
 
    pOptions->ResetContent();
 
-   CString strName = (m_PierIdx == 0 || m_PierIdx == m_nSpans ? _T("Abutment") : _T("Pier"));
-
-
    CWnd* pMove = GetDlgItem(IDC_MOVE_LABEL);
    CString strMove;
-   strMove.Format(_T("Move %s %d from %s to %s"),
-                  strName,
+   strMove.Format(_T("Move Pier %d from %s to %s"),
                   LABEL_PIER(m_PierIdx),
                   FormatStation(pDisplayUnits->GetStationFormat(),m_FromStation),
                   FormatStation(pDisplayUnits->GetStationFormat(),toStation)
@@ -281,8 +251,8 @@ void CPierLayoutPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustNextSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
-                                       LABEL_SPAN(m_PierIdx),strName,LABEL_SPAN(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving Pier %d"),
+                                       LABEL_SPAN(m_PierIdx),LABEL_PIER(m_PierIdx));
       }
       else
       {
@@ -296,8 +266,8 @@ void CPierLayoutPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustPrevSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
-                                       LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving Pier %d"),
+                                       LABEL_SPAN(m_PierIdx-1),LABEL_PIER(m_PierIdx));
       }
       else
       {
@@ -330,6 +300,11 @@ void CPierLayoutPage::UpdateMoveOptionList()
       pOptions->SetItemData(idx,(DWORD)options[i]);
    }
    pOptions->SetCurSel(curSel);
+
+   int nShow = IsEqual(m_FromStation,toStation) ? SW_HIDE : SW_SHOW;
+   GetDlgItem(IDC_MOVE_PIER)->EnableWindow(TRUE);
+   GetDlgItem(IDC_MOVE_PIER)->ShowWindow(nShow);
+   GetDlgItem(IDC_MOVE_LABEL)->ShowWindow(nShow);
 }
 
 void CPierLayoutPage::OnKillfocusStation() 
@@ -347,21 +322,91 @@ void CPierLayoutPage::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_GENERAL );
 }
 
-HBRUSH CPierLayoutPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
+void CPierLayoutPage::FillEventList()
 {
-   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC,pWnd,nCtlColor);
-   if ( pWnd->GetDlgCtrlID() == IDC_STATION )
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      Float64 toStation;
-      if ( IsValidStation(&toStation) )
+      GetDlgItem(IDC_ERECTION_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ERECTION_EVENT)->ShowWindow(SW_HIDE);
+
+      return;
+   }
+
+   CComboBox* pcbErect = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
+
+   int erectIdx = pcbErect->GetCurSel();
+
+   pcbErect->ResetContent();
+
+   const CTimelineManager* pTimelineMgr = pParent->m_pBridge->GetTimelineManager();
+
+   EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   {
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+
+      CString label;
+      label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+
+      pcbErect->SetItemData(pcbErect->AddString(label),eventIdx);
+   }
+
+   CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+   pcbErect->SetItemData(pcbErect->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+
+   if ( erectIdx != CB_ERR )
+      pcbErect->SetCurSel(erectIdx);
+}
+
+void CPierLayoutPage::OnErectionStageChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
+   m_PrevEventIdx = pCB->GetCurSel();
+}
+
+void CPierLayoutPage::OnErectionStageChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_ERECTION_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
+   if ( idx == CREATE_TIMELINE_EVENT )
+   {
+      EventIndexType eventIdx = CreateEvent();
+      if (eventIdx != INVALID_INDEX)
       {
-         pDC->SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+         CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         pIBridgeDesc->SetPierErectionEventByIndex(pParent->m_pPierData->GetIndex(),eventIdx);
+
+         FillEventList();
+
+         pCB->SetCurSel((int)idx);
+         m_ErectionEventIndex = idx;
       }
       else
       {
-         pDC->SetTextColor(RED);
+         pCB->SetCurSel(m_PrevEventIdx);
       }
    }
+}
 
-   return hbr;
+EventIndexType CPierLayoutPage::CreateEvent()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+  }
+
+   return INVALID_INDEX;
 }

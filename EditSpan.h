@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,28 +24,21 @@
 #define INCLUDED_EDITSPAN_H_
 
 #include <System\Transaction.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\GirderSpacing.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\GirderSpacing2.h>
 #include <IFace\Project.h>
 
 struct txnEditSpanData
 {
    txnEditSpanData();
-   txnEditSpanData(const CSpanData* pSpan);
+   txnEditSpanData(const txnEditSpanData& other);
+   txnEditSpanData(const CSpanData2* pSpan);
 
-   // whole bridge data
-   bool bSameNumberOfGirdersInAllSpans;
-   bool bSameGirderType;
-   pgsTypes::SupportedBeamSpacing GirderSpacingType;
-   pgsTypes::MeasurementLocation GirderMeasurementLocation;
+   // General
+   Float64 m_SpanLength;
 
-   Float64 SpanLength;
-
-   GirderIndexType nGirders;
-   CGirderTypes GirderTypes;
-
-   CGirderSpacing GirderSpacing[2];
+   // All the data after this point only applies to PGSuper
 
    // Connections
    pgsTypes::PierConnectionType m_ConnectionType[2];
@@ -59,13 +52,22 @@ struct txnEditSpanData
    Float64 m_BearingOffset[2][2]; 
    Float64 m_SupportWidth[2][2];
 
-   Float64 m_DiaphragmHeight[2][2];
-   Float64 m_DiaphragmWidth[2][2];
-   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2][2];
-   Float64 m_DiaphragmLoadLocation[2][2];
+   Float64 m_DiaphragmHeight[2];
+   Float64 m_DiaphragmWidth[2];
+   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
+   Float64 m_DiaphragmLoadLocation[2];
 
-   pgsTypes::SlabOffsetType SlabOffsetType;
-   Float64 SlabOffset[2];
+   // Spacing
+   GirderIndexType m_nGirders;
+   bool m_bUseSameNumGirders;
+   bool m_bUseSameGirderType;
+   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
+   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
+   CGirderGroupData m_GirderGroup;
+   CGirderSpacing2 m_GirderSpacing[2];
+
+   pgsTypes::SlabOffsetType m_SlabOffsetType;
+   Float64 m_SlabOffset[2];
 };
 
 class txnEditSpan : public txnTransaction

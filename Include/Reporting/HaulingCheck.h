@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
+class pgsGirderArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -73,10 +74,18 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   void Build(rptChapter* pChapter,
-              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-              IEAFDisplayUnits* pDisplayUnits) const;
-
+   virtual void Build(rptChapter* pChapter,
+                      IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                      IEAFDisplayUnits* pDisplayUnits) const;
+   virtual bool BuildImpactedStressTable(rptChapter* pChapter,
+                      IBroker* pBroker,const CSegmentKey& segmentKey,
+                      IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void BuildInclinedStressTable(rptChapter* pChapter,
+                      IBroker* pBroker,const CSegmentKey& segmentKey,
+                      IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void BuildOtherTables(rptChapter* pChapter,
+                      IBroker* pBroker,const CSegmentKey& segmentKey,
+                      IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -89,7 +98,7 @@ protected:
    void MakeCopy(const CHaulingCheck& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CHaulingCheck& rOther);
+   virtual void MakeAssignment(const CHaulingCheck& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -1,20 +1,20 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.98    4   0.02    4-6HT36, 65      1     1    6HT36          24  1/2  270  18.25  14.25   0.00   0.00                                              4.000  5.000   1.903    -2.768     2326   0.527  0.527   1.930  0.000 -0.069 -0.104 -0.173  45.60  139.64    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02  1     1    6HT36       24   1/2  270 18.25 14.25  12 14.0  4.000  5.000    1.903   -2.768   2326  0.527  0.527  0.16 -0.00 -0.01 -0.01 -0.01  45.60 139.64   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Confinement zone check failed.
+Confinement zone checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.98    4   0.02    4-6HT36, 65      1     2    6HT36          24  1/2  270  18.21  14.21   0.00   0.00                                              4.000  5.000   1.913    -2.770     2323   0.527  0.527   1.934  0.000 -0.070 -0.104 -0.174  45.68  139.81    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02  1     2    6HT36       24   1/2  270 18.21 14.21  12 14.0  4.000  5.000    1.913   -2.770   2323  0.527  0.527  0.16 -0.00 -0.01 -0.01 -0.01  45.68 139.81   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Confinement zone check failed.
+Confinement zone checks failed.
 
 

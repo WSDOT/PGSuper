@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,6 +44,8 @@
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
 
+#include <Reporting\TSRemovalMomentsTable.h>
+
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -83,33 +85,15 @@ LPCTSTR CMVRChapterBuilder::GetName() const
 
 rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType girder;
-
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
-      girder = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      girder = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      span = ALL_SPANS;
-      girder  = ALL_GIRDERS;
-   }
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
 
    rptParagraph* p = 0;
 
@@ -146,7 +130,18 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
    bool bIndicateControllingLoad = true;
 
-   // Product Moments
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+
+   // Casting Yard Results
    if ( bDesign )
    {
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -154,261 +149,225 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       p->SetName(_T("Casting Yard Results"));
       *pChapter << p;
 
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CCastingYardMomentsTable().Build(pBroker,span,girder,pDisplayUnits) << rptNewLine;
-   }
-
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *p << _T("Load Responses - Bridge Site")<<rptNewLine;
-   p->SetName(_T("Bridge Site Results"));
-   *pChapter << p;
-   p = new rptParagraph;
-   *pChapter << p;
-   *p << CProductMomentsTable().Build(pBroker,span,girder,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-   if ( bPedestrian )
-      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-
-   *p << LIVELOAD_PER_LANE << rptNewLine;
-   LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
-
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-   bool are_user_loads = pUDL->DoUserLoadsExist(span,girder);
-   if (are_user_loads)
-   {
-      *p << CUserMomentsTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
-   }
-
-   // Product Shears
-   p = new rptParagraph;
-   *pChapter << p;
-   *p << CProductShearTable().Build(pBroker,span,girder,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-   if ( bPedestrian )
-      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-
-   *p << LIVELOAD_PER_LANE << rptNewLine;
-   *p << rptNewLine;
-   LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
-
-   if (are_user_loads)
-   {
-      *p << CUserShearTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
-   }
-
-   // Product Reactions
-   // For piers
-   p = new rptParagraph;
-   *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,analysisType,PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-   if ( bPedestrian )
-      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-
-   *p << LIVELOAD_PER_LANE << rptNewLine;
-   *p << rptNewLine;
-   LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
-
-   // For girder bearing reactions
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   bool bDoBearingReaction, bDummy;
-   bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(pgsTypes::BridgeSite3, span,girder,&bDummy,&bDummy);
-
-   if(bDoBearingReaction)
-   {
-      *p << CProductReactionTable().Build(pBroker,span,girder,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-      if ( bPedestrian )
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-
-      *p << LIVELOAD_PER_LANE << rptNewLine;
-      *p << rptNewLine;
-      LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
-   }
-
-   if (are_user_loads)
-   {
-      *p << CUserReactionTable().Build(pBroker,span,girder,analysisType,PierReactionsTable,pDisplayUnits) << rptNewLine;
-      *p << CUserReactionTable().Build(pBroker,span,girder,analysisType,BearingReactionsTable,pDisplayUnits) << rptNewLine;
-   }
-
-   // Product Displacements
-   if ( bDesign )
-   {
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CProductDisplacementsTable().Build(pBroker,span,girder,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-      if ( bPedestrian )
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-
-      *p << LIVELOAD_PER_LANE << rptNewLine;
-      *p << rptNewLine;
-      LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
-
-      if (are_user_loads)
+      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
       {
-         *p << CUserDisplacementsTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
-      }
+         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+         GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      // Product Rotations
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CProductRotationTable().Build(pBroker,span,girder,analysisType,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-      if ( bPedestrian )
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-
-      *p << LIVELOAD_PER_LANE << rptNewLine;
-      *p << rptNewLine;
-      LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
-
-      if (are_user_loads)
-      {
-         *p << CUserRotationTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
-      }
-   }
-
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   std::_tstring spec_name = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
-   if (bDesign && pSpecEntry->GetDoEvaluateLLDeflection())
-   {
-      // Optional Live Load Displacements
-      p = new rptParagraph;
-      p->SetName(_T("Live Load Displacements"));
-      *pChapter << p;
-      *p << CProductDisplacementsTable().BuildLiveLoadTable(pBroker,span,girder,pDisplayUnits) << rptNewLine;
-      *p << _T("D1 = LRFD Design truck without lane load and including impact")<< rptNewLine;
-      *p << _T("D2 = 0.25*(Design truck) + lane load, including impact")<< rptNewLine;
-      *p << _T("D(Controlling) = Max(D1, D2)")<< rptNewLine;
-      *p << _T("EI = Bridge EI / Number of Girders") << rptNewLine;
-      *p << _T("Live Load Distribution Factor = (Multiple Presence Factor)(Number of Lanes)/(Number of Girders)") << rptNewLine;
-      *p << rptNewLine;
-   }
-
-   // Load Combinations (DC, DW, etc) & Limit States
-   if ( bDesign )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
-      *p << _T("Responses - Casting Yard Stage") << rptNewLine;
-      p->SetName(_T("Combined Results - Casting Yard"));
-      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, analysisType, bDesign, bRating);
-   //   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard);
-   //   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard);
-
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
-      *p << _T("Responses - Girder Placement") << rptNewLine;
-      p->SetName(_T("Combined Results - Girder Placement"));
-      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType, bDesign, bRating);
-      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,   analysisType, bDesign, bRating);
-      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,analysisType,PierReactionsTable, bDesign, bRating);
-      if(bDoBearingReaction)
-      {
-         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,analysisType,BearingReactionsTable, bDesign, bRating);
-      }
-
-
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      SpanIndexType nSpans = pBridge->GetSpanCount();
-      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      bool bTempStrands = false;
-      SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-      SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-      for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
-      {
-         GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-         GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
-         if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            bTempStrands = true;
-            break;
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+
+            p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            *pChapter << p;
+            *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+            p = new rptParagraph;
+            *pChapter << p;
+            *p << CCastingYardMomentsTable().Build(pBroker,segmentKey,pDisplayUnits) << rptNewLine;
          }
       }
-      if ( bTempStrands )
+   }
+
+   // Bridge Site Results
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *p << _T("Load Responses - Bridge Site")<<rptNewLine;
+      p->SetName(_T("Bridge Site Results"));
+      *pChapter << p;
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << CProductMomentsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+      if ( bPedestrian )
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+      LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+
+      bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
+      if (bAreThereUserLoads)
       {
-         // if there can be temporary strands, report the loads at the temporary strand removal stage
-         // because this is when the girder load is applied
-         p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter << p;
-         *p << _T("Responses - Temporary Strand Removal Stage") << rptNewLine;
-         p->SetName(_T("Combined Results - Temporary Strand Removal"));
-         CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType,bDesign,bRating);
-         CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType, bDesign, bRating);
-         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType,PierReactionsTable, bDesign, bRating);
+         *p << CUserMomentsTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+      }
+
+      CTSRemovalMomentsTable().Build(pChapter,pBroker,thisGirderKey,analysisType,pDisplayUnits);
+
+      // Product Shears
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << CProductShearTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+      if ( bPedestrian )
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+      *p << rptNewLine;
+      LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+      *p << rptNewLine;
+
+      if (bAreThereUserLoads)
+      {
+         *p << CUserShearTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+      }
+
+      // Product Reactions
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,CProductReactionTable::PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+      if ( bPedestrian )
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+      *p << rptNewLine;
+      LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+      *p << rptNewLine;
+
+      // For girder bearing reactions
+      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      bool bDoBearingReaction, bDummy;
+      bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(thisGirderKey,&bDummy,&bDummy);
+      if(bDoBearingReaction && girderKey.groupIndex != ALL_GROUPS)
+      {
+         *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,CProductReactionTable::BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+         if ( bPedestrian )
+            *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+         *p << LIVELOAD_PER_LANE << rptNewLine;
+         *p << rptNewLine;
+         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+      }
+
+      if (bAreThereUserLoads)
+      {
+         *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,CUserReactionTable::PierReactionsTable,pDisplayUnits) << rptNewLine;
          if(bDoBearingReaction)
          {
-            CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType,BearingReactionsTable, bDesign, bRating);
+            *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
          }
       }
 
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
-      *p << _T("Responses - Deck and Diaphragm Placement (Bridge Site 1)") << rptNewLine;
-      p->SetName(_T("Combined Results - Deck and Diaphragm Placement (Bridge Site 1)"));
-      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType, bDesign, bRating);
-      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType, bDesign, bRating);
-      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType,PierReactionsTable, bDesign, bRating);
-      if(bDoBearingReaction)
+      // Product Displacements
+      if ( bDesign )
       {
-         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType,BearingReactionsTable, bDesign, bRating);
-      }
+         p = new rptParagraph;
+         *pChapter << p;
+         *p << CProductDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
-      *p << _T("Responses - Final without Live Load (Bridge Site 2)") << rptNewLine;
-      p->SetName(_T("Combined Results - Final without Live Load (Bridge Site 2)"));
-      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType,bDesign,bRating);
-      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType, bDesign, bRating);
-      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType,PierReactionsTable, bDesign, bRating);
-      if(bDoBearingReaction)
-      {
-         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType,BearingReactionsTable, bDesign, bRating);
-      }
-   }
+         if ( bPedestrian )
+            *p << _T("$ Pedestrian values are per girder") << rptNewLine;
 
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << p;
-   *p << _T("Responses - Final with Live Load (Bridge Site 3)") << rptNewLine;
-   p->SetName(_T("Combined Results - Final with Live Load (Bridge Site 3)"));
-   CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,span,girder,pDisplayUnits);
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType,bDesign,bRating);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType,bDesign,bRating);
-   if ( bDesign )
+         *p << LIVELOAD_PER_LANE << rptNewLine;
+         *p << rptNewLine;
+         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+
+         if (bAreThereUserLoads)
+         {
+            *p << CUserDisplacementsTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+         }
+
+         // Product Rotations
+         p = new rptParagraph;
+         *pChapter << p;
+         *p << CProductRotationTable().Build(pBroker,thisGirderKey,analysisType,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+         if ( bPedestrian )
+            *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+         *p << LIVELOAD_PER_LANE << rptNewLine;
+         *p << rptNewLine;
+         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+
+         if (bAreThereUserLoads)
+         {
+            *p << CUserRotationTable().Build(pBroker,thisGirderKey,analysisType,pDisplayUnits) << rptNewLine;
+         }
+
+
+         if (pSpecEntry->GetDoEvaluateLLDeflection())
+         {
+            // Optional Live Load Displacements
+            p = new rptParagraph;
+            p->SetName(_T("Live Load Displacements"));
+            *pChapter << p;
+            *p << CProductDisplacementsTable().BuildLiveLoadTable(pBroker,thisGirderKey,pDisplayUnits) << rptNewLine;
+            *p << _T("D1 = LRFD Design truck without lane load and including impact")<< rptNewLine;
+            *p << _T("D2 = 0.25*(Design truck) + lane load, including impact")<< rptNewLine;
+            *p << _T("D(Controlling) = Max(D1, D2)")<< rptNewLine;
+            *p << _T("EI = Bridge EI / Number of Girders") << rptNewLine;
+            *p << _T("Live Load Distribution Factor = (Multiple Presence Factor)(Number of Lanes)/(Number of Girders)") << rptNewLine;
+            *p << rptNewLine;
+         }
+      } // if design
+   } // next group
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0)); // release interval is the same for all segments
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   bool bDoBearingReaction, bDummy;
+   bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(girderKey,&bDummy,&bDummy);
+
+   // Load Combinations (DC, DW, etc) & Limit States
+   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
-      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType,PierReactionsTable,bDesign,bRating);
-      if(bDoBearingReaction)
-      {
-         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType,BearingReactionsTable,bDesign,bRating);
-      }
-   }
-
-   if ( bDesign )
-   {
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      *p << _T("Live Load Reactions Without Impact") << rptNewLine;
-      p->SetName(_T("Live Load Reactions Without Impact"));
-      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, analysisType,PierReactionsTable, false, true, false );
+      CString strName;
+      strName.Format(_T("Combined Results - %s"),pIntervals->GetDescription(intervalIdx));
+      p->SetName(strName);
+      *p << p->GetName();
 
-      if(bDoBearingReaction)
+      if ( liveLoadIntervalIdx <= intervalIdx )
       {
-         CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, analysisType,BearingReactionsTable, false, true, false );
+         CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
       }
-   }
 
-   if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pChapter << p;
-      *p << _T("Concurrent Shears") << rptNewLine;
-      p->SetName(_T("Concurrent Shears"));
-      CConcurrentShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType);
-   }
+      CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
+      if ( castDeckIntervalIdx <= intervalIdx )
+      {
+         CCombinedShearTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+         CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::PierReactionsTable, bDesign, bRating);
+         if( bDoBearingReaction )
+         {
+            CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::BearingReactionsTable, bDesign, bRating);
+         }
+
+         if ( liveLoadIntervalIdx <= intervalIdx )
+         {
+            p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << p;
+            *p << _T("Live Load Reactions Without Impact") << rptNewLine;
+            p->SetName(_T("Live Load Reactions Without Impact"));
+            CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,CCombinedReactionTable::PierReactionsTable, false, true, false);
+            if(bDoBearingReaction)
+            {
+               CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,CCombinedReactionTable::BearingReactionsTable, false, true, false);
+            }
+
+            if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
+            {
+               p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               *pChapter << p;
+               *p << _T("Concurrent Shears") << rptNewLine;
+               p->SetName(_T("Concurrent Shears"));
+               CConcurrentShearTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,liveLoadIntervalIdx, analysisType);
+            }
+         }
+      }
+   } // next interval
 
    return pChapter;
 }

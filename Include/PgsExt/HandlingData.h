@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -62,12 +62,13 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   Float64 LeftLiftPoint, RightLiftPoint;
+   Float64 LeftStoragePoint, RightStoragePoint; // distance from left/right end of segment to storage support point
+   Float64 LeftLiftPoint, RightLiftPoint; // distance from left/right end of segment to lift point
    Float64 LeadingSupportPoint, TrailingSupportPoint;
 
 protected:
    void MakeCopy(const CHandlingData& rOther);
-   void MakeAssignment(const CHandlingData& rOther);
+   virtual void MakeAssignment(const CHandlingData& rOther);
 };
 
 #endif // INCLUDED_PGSEXT_HANDLINGDATA_H_

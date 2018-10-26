@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,13 @@
 #include <Reporting\CastingYardStressTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\TimelineEvent.h>
 
+#include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,18 +72,21 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
                                             IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Casting Yard Stresses"));
 
-   if ( span == ALL_SPANS )
+   if (segmentKey.groupIndex == ALL_GROUPS)
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -94,21 +99,26 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey) );
+   pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+   pIPoi->RemovePointsOfInterest(vPoi,POI_PIER);
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
-   GET_IFACE2(pBroker,IPrestressStresses,pPrestress);
+   GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
+
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      (*p_table)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
+      (*p_table)(row,0) << location.SetValue( POI_RELEASED_SEGMENT, poi );
 
       Float64 fTop, fBot;
-      pProductForces->GetStress(pgsTypes::CastingYard,pftGirder, poi, SimpleSpan, &fTop, &fBot);
+      pProductForces->GetStress(releaseIntervalIdx, pftGirder, poi, bat, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );
 

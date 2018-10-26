@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,56 +32,13 @@
 #include "PGSuperCatCom.h"
 #include "SectionViewDialog.h"
 #include <PsgLib\BeamFamilyManager.h>
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-
-void CGirderComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
-{
-   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
-
-   CDC dc;
-   dc.Attach(lpDrawItemStruct->hDC);
-
-   COLORREF oldTextColor = dc.GetTextColor();
-   COLORREF oldBkColor   = dc.GetBkColor();
-   
-   CString lpszText;
-   GetLBText(lpDrawItemStruct->itemID,lpszText);
-
-   if ( (lpDrawItemStruct->itemAction | ODA_SELECT) &&
-        (lpDrawItemStruct->itemState & ODS_SELECTED) )
-   {
-      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
-      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
-      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
-
-      // Tell the parent page to update the girder image
-      CLSID* pCLSID = (CLSID*)GetItemDataPtr(lpDrawItemStruct->itemID);
-      CGirderDimensionsPage* pParent = (CGirderDimensionsPage*)GetParent();
-      pParent->UpdateGirderImage(*pCLSID);
-   }
-   else
-   {
-      dc.FillSolidRect(&lpDrawItemStruct->rcItem,oldBkColor);
-   }
-
-   dc.DrawText(lpszText,&lpDrawItemStruct->rcItem,DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-
-   if ( lpDrawItemStruct->itemState & ODS_FOCUS )
-   {
-      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
-   }
-   
-   dc.SetTextColor(oldTextColor);
-   dc.SetBkColor(oldBkColor);
-
-   dc.Detach();
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDimensionsPage property page
@@ -104,8 +61,6 @@ void CGirderDimensionsPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGirderDimensionsPage)
 	//}}AFX_DATA_MAP
-
-   DDX_Control(pDX,IDC_BEAMTYPES,m_cbGirder);
 
    DDV_GXGridWnd(pDX, &m_Grid);
 
@@ -154,9 +109,11 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    CComPtr<IBeamFactory> pFactory;
    pDad->m_Entry.GetBeamFactory(&pFactory);
 
+   // Fill the beam family combo box
    std::vector<CString> familyNames = CBeamFamilyManager::GetBeamFamilyNames();
-   std::vector<CString>::iterator familyIter;
-   for ( familyIter = familyNames.begin(); familyIter != familyNames.end(); familyIter++ )
+   std::vector<CString>::iterator familyIter(familyNames.begin());
+   std::vector<CString>::iterator familyIterEnd(familyNames.end());
+   for ( ; familyIter != familyIterEnd; familyIter++ )
    {
       CString familyName = *familyIter;
       CComPtr<IBeamFamily> beamFamily;
@@ -165,30 +122,20 @@ BOOL CGirderDimensionsPage::OnInitDialog()
       if ( FAILED(hr) )
          continue;
 
-      std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
-      std::vector<CString>::iterator factoryIter;
-      for ( factoryIter = factoryNames.begin(); factoryIter != factoryNames.end(); factoryIter++ )
+      const std::vector<CString>& factoryNames( beamFamily->GetFactoryNames() );
+      std::vector<CString>::const_iterator factoryIter(factoryNames.begin());
+      std::vector<CString>::const_iterator factoryIterEnd(factoryNames.end());
+      for ( ; factoryIter != factoryIterEnd; factoryIter++ )
       {
-         CString factoryName = *factoryIter;   
-         
-         CLSID* pCLSID = new CLSID;
-         *pCLSID = beamFamily->GetFactoryCLSID(factoryName);
-
-         CComPtr<IBeamFactory> pFactory;
-         HRESULT hr = ::CoCreateInstance(*pCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
-         if ( SUCCEEDED(hr) )
-         {
-            int idx = pComboBox->AddString(factoryName);
-            pComboBox->SetItemDataPtr(idx,(void*)pCLSID);
-         }
-         else
-         {
-            delete pCLSID;
-         }
+         const CString& factoryName = *factoryIter;   
+         int idx = pComboBox->AddString(factoryName);
+         CLSID* clsid = new CLSID;
+         *clsid = beamFamily->GetFactoryCLSID(factoryName);
+         pComboBox->SetItemDataPtr(idx,(void*)clsid);
       }
    }
 
-   // Select the property shape type
+   // Set the beam family combo box to the correct value
    for ( int i = 0; i < pComboBox->GetCount(); i++ )
    {
       CLSID* cid = (CLSID*)pComboBox->GetItemData(i);
@@ -199,16 +146,8 @@ BOOL CGirderDimensionsPage::OnInitDialog()
       }
    }
 
-   if ( pComboBox->GetCurSel() == CB_ERR )
-   {
-      // the girder type isn't in the list (probably because it isn't registered with the component category)
-      // set the name string in the combobox and disable the box
-      int idx = pComboBox->AddString(pFactory->GetName().c_str());
-      pComboBox->SetCurSel(idx);
-      pComboBox->EnableWindow(FALSE); // disable it the combo box
-   }
-
-   // Need to initialize to actual shape
+   // Disable the beam family combo box if the
+   // dialog is opened as read only
    if ( !pDad->m_AllowEditing )
    {
       pComboBox->EnableWindow(FALSE);
@@ -293,16 +232,4 @@ void CGirderDimensionsPage::OnDestroy()
    }
 
    CPropertyPage::OnDestroy();
-}
-
-void CGirderDimensionsPage::UpdateGirderImage(const CLSID& factoryCLSID)
-{
-   CComPtr<IBeamFactory> pFactory;
-   HRESULT hr = ::CoCreateInstance(factoryCLSID,NULL,CLSCTX_ALL,IID_IBeamFactory,(void**)&pFactory);
-   if ( FAILED(hr) )
-   {
-      return;
-   }
-   CDataExchange dx(this,FALSE);
-	DDX_MetaFileStatic(&dx, IDC_GIRDER_MF, m_GirderPicture, pFactory->GetResourceInstance(), pFactory->GetImageResourceName(), _T("Metafile") );
 }

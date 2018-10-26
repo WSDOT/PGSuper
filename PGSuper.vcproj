@@ -91,7 +91,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/PGSuper.pdb"
+				ProgramDatabaseFile=".\$(PlatformName)\$(ConfigurationName)/PGSuper.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -164,14 +164,13 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF"
+				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -196,7 +195,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/PGSuper.pdb"
+				ProgramDatabaseFile=".\$(PlatformName)\$(ConfigurationName)/PGSuper.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -280,7 +279,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
@@ -305,7 +303,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="false"
-				ProgramDatabaseFile=".\Release/PGSuper.pdb"
+				ProgramDatabaseFile=".\$(PlatformName)\$(ConfigurationName)/PGSuper.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -386,13 +384,12 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
@@ -417,7 +414,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="false"
-				ProgramDatabaseFile=".\Release/PGSuper.pdb"
+				ProgramDatabaseFile=".\$(PlatformName)\$(ConfigurationName)/PGSuper.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -504,7 +501,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -530,7 +526,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release/PGSuper.pdb"
+				ProgramDatabaseFile=".\$(PlatformName)\$(ConfigurationName)/PGSuper.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -617,7 +613,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -643,7 +638,7 @@
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release/PGSuper.pdb"
+				ProgramDatabaseFile=".\$(PlatformName)\$(ConfigurationName)/PGSuper.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -1058,11 +1053,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\PGSpliceCatCom.h"
+				>
+			</File>
+			<File
 				RelativePath="PGSuper.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperCommandIDs.h"
+				RelativePath=".\Include\PGSuperCatCom.h"
 				>
 			</File>
 			<File
@@ -1231,10 +1230,6 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00001.ico"
-				>
-			</File>
-			<File
 				RelativePath="LibraryEditor\res\ico00001.ico"
 				>
 			</File>
@@ -1243,7 +1238,7 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00001.ico"
 				>
 			</File>
 			<File
@@ -1255,15 +1250,15 @@
 				>
 			</File>
 			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00003.ico"
 				>
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\ico00003.ico"
-				>
-			</File>
-			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1275,7 +1270,7 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00005.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1284,6 +1279,10 @@
 			</File>
 			<File
 				RelativePath="res\ico00005.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -1351,15 +1350,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\icon1.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1372,14 +1371,6 @@
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\idr_gird.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\KDOT.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\KDOTLogo.bmp"
 				>
 			</File>
 			<File
@@ -1471,11 +1462,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\specific.ico"
+				RelativePath="psgLib\LibraryEditor\res\specific.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\specific.ico"
+				RelativePath="LibraryEditor\res\specific.ico"
 				>
 			</File>
 			<File
@@ -1628,6 +1619,14 @@
 			</File>
 			<File
 				RelativePath="hlp\Scmin.bmp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="My Amplifier Results"
+			>
+			<File
+				RelativePath=".\My Amplifier Results\r028hs\r028hs.ampl"
 				>
 			</File>
 		</Filter>

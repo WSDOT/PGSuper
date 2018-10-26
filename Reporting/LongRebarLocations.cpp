@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -72,16 +72,14 @@ CLongRebarLocations& CLongRebarLocations::operator= (const CLongRebarLocations& 
 }
 
 //======================== OPERATIONS =======================================
-void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
                                 IEAFDisplayUnits* pDisplayUnits) const
 {
    USES_CONVERSION;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nspans = pBridge->GetSpanCount();
-   CHECK(span<nspans);
 
-   Float64 gdr_length = pBridge->GetGirderLength(span,gdr);
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -94,9 +92,9 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
-   CLongitudinalRebarData lrd = pLongRebar->GetLongitudinalRebarData(span,gdr);
+   const CLongitudinalRebarData* pRebarData = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
 
-   const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = lrd.RebarRows;
+   const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = pRebarData->RebarRows;
 
    CollectionIndexType count = rebar_rows.size();
    if ( count == 0 )
@@ -112,23 +110,25 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
 
    (*p_table)(0,0) << _T("Row");
    (*p_table)(0,1) << COLHDR(_T("Bar Start"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,2) << COLHDR(_T("Bar End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,2) << COLHDR(_T("Bar End"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(0,3) << _T("Girder") << rptNewLine << _T("Face");
    (*p_table)(0,4) << COLHDR(_T("Cover"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(0,5) << _T("Bar") << rptNewLine << _T("Size");
    (*p_table)(0,6) << _T("# of") << rptNewLine << _T("Bars");
    (*p_table)(0,7) << COLHDR(_T("Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
-   int row=1;
+   RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   for(std::vector<CLongitudinalRebarData::RebarRow>::const_iterator rit=rebar_rows.begin(); rit!=rebar_rows.end(); rit++)
+   std::vector<CLongitudinalRebarData::RebarRow>::const_iterator iter(rebar_rows.begin());
+   std::vector<CLongitudinalRebarData::RebarRow>::const_iterator end(rebar_rows.end());
+   for ( ; iter != end; iter++ )
    {
-      const CLongitudinalRebarData::RebarRow& rowData = *rit;
+      const CLongitudinalRebarData::RebarRow& rowData = *iter;
 
       Float64 startLoc, endLoc;
-      bool onGirder = rowData.GetRebarStartEnd(gdr_length, &startLoc, &endLoc);
+      bool onGirder = rowData.GetRebarStartEnd(segment_length, &startLoc, &endLoc);
 
-      const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(lrd.BarType, lrd.BarGrade, rowData.BarSize);
+      const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
       if (pRebar)
       {
          (*p_table)(row,0) << row;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,11 +30,11 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 pgsSpanGirderRelatedStatusItem::pgsSpanGirderRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                                               SpanIndexType span,GirderIndexType gdr):
+                                                               const CSpanGirderKey& spanGirderKey):
 CEAFStatusItem(statusGroupID,callbackID,strDescription),
 m_EntireBridge(false)
 {
-   AddRelationshipTo(span,gdr);
+   AddRelationshipTo(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
 }
 
 bool pgsSpanGirderRelatedStatusItem::IsRelatedTo(SpanIndexType span,GirderIndexType gdr)
@@ -63,8 +63,8 @@ bool pgsSpanGirderRelatedStatusItem::IsRelatedTo(SpanIndexType span,GirderIndexT
    }
 
    // Individual girders
-   SpanGirderHashType hash = HashSpanGirder(span,gdr);
-   std::set<SpanGirderHashType>::iterator it = m_SpanGirders.find(hash);
+   CSpanGirderKey key(span,gdr);
+   std::set<CSpanGirderKey>::iterator it = m_SpanGirders.find(key);
    return it != m_SpanGirders.end();
 }
 
@@ -84,8 +84,7 @@ void pgsSpanGirderRelatedStatusItem::AddRelationshipTo(SpanIndexType span,Girder
    }
    else
    {
-      SpanGirderHashType hash = HashSpanGirder(span,gdr);
-      m_SpanGirders.insert(hash);
+      m_SpanGirders.insert(CSpanGirderKey(span,gdr));
    }
 }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,15 +24,15 @@
 #define INCLUDED_INSERTDELETESPAN_H_
 
 #include <System\Transaction.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\GirderSpacing.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\GirderSpacing2.h>
 #include <IFace\Project.h>
 
 class txnInsertSpan : public txnTransaction
 {
 public:
-   txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
+   txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,Float64 spanLength,bool bCreateNewGroup,EventIndexType eventIdx);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -43,6 +43,10 @@ public:
 private:
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
+   Float64 m_SpanLength;
+   bool m_bCreateNewGroup;
+   EventIndexType m_EventIdx;
+   pgsTypes::PierConnectionType m_RefPierConnectionType;
 };
 
 class txnDeleteSpan : public txnTransaction
@@ -60,9 +64,21 @@ public:
 private:
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
-   CSpanData* m_pDeletedSpan;
-   CPierData* m_pDeletedPier;
+   EventIndexType m_EventIdx;
+   GroupIndexType m_nGirderGroups;
    Float64  m_SpanLength; // length of deleted span
+   pgsTypes::PierConnectionType m_RefPierConnectionType;
+
+   CSpanData2* m_pDeletedSpan;
+   CPierData2* m_pDeletedPier;
+
+   struct TSItem
+   {
+      CTemporarySupportData TempSupport;
+      EventIndexType ErectionEventIdx;
+      EventIndexType RemovalEventIdx;
+   };
+   std::vector<TSItem> m_TempSupports; // temporary supports that were in the span that got deleted
 };
 
 #endif // INCLUDED_INSERTDELETESPAN_H_

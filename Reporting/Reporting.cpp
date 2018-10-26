@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Artifact.h>
@@ -48,7 +48,7 @@
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <IFace\VersionInfo.h>
-#include <IFace\GirderHandlingPointOfInterest.h>
+#include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Allowables.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
@@ -57,6 +57,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\CrackedSection.h>
 #include <EAF\EAFUIIntegration.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
@@ -64,7 +65,7 @@
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>
 
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 
 //
 //TODO: If this DLL is dynamically linked against the MFC DLLs,

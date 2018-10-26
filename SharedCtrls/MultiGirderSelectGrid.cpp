@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,15 @@
 
 #include "SharedCTrls\MultiGirderSelectGrid.h" 
 #include <PgsExt\GirderLabel.h>
+
+#include <EAF\EAFUtilities.h>
+#include <IFace\Tools.h>
+#include <IFace\DocumentType.h>
+
+#if defined _DEBUG
+#include <IFace\Bridge.h>
+#endif
+
 
 
 GRID_IMPLEMENT_REGISTER(CMultiGirderSelectGrid, CS_DBLCLKS, 0, 0, 0);
@@ -140,7 +149,7 @@ int CMultiGirderSelectGrid::GetColWidth(ROWCOL nCol)
 }
 */
 
-void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirderCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType))
+void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGirderCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType))
 {
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -151,17 +160,25 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
 
 	GetParam( )->EnableUndo(FALSE);
 
-   SpanIndexType num_spans = spanGirderCollection.size();
+   GroupIndexType nGroups = groupGirderCollection.size();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+#if defined _DEBUG
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   ATLASSERT(pBridge->GetGirderGroupCount() == nGroups);
+#endif
 
    // Determine max number of girders
    GirderIndexType max_gdrs = 0;
-   for (SpanIndexType is=0; is<num_spans; is++)
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      max_gdrs = max( max_gdrs, (GirderIndexType)spanGirderCollection[is].size());
+      max_gdrs = max( max_gdrs, (GirderIndexType)groupGirderCollection[grpIdx].size());
    }
 
    const ROWCOL num_rows = (ROWCOL)max_gdrs;
-   const ROWCOL num_cols = (ROWCOL)num_spans;
+   const ROWCOL num_cols = (ROWCOL)nGroups;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -189,12 +206,16 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
 		);
 
    // top row labels
-   for (SpanIndexType is=0; is<num_spans; is++)
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
+
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
       CString lbl;
-      lbl.Format(_T("Span %d"), LABEL_SPAN(is));
+      lbl.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
 
-	   SetStyleRange(CGXRange(0,ROWCOL(is+1)), CGXStyle()
+	   SetStyleRange(CGXRange(0,ROWCOL(grpIdx+1)), CGXStyle()
             .SetWrapText(TRUE)
 			   .SetEnabled(FALSE)          // disables usage as current cell
             .SetHorizontalAlignment(DT_CENTER)
@@ -219,19 +240,19 @@ void CMultiGirderSelectGrid::CustomInit(const SpanGirderOnCollection& spanGirder
    }
 
    // fill controls for girders
-   for (SpanIndexType is=0; is<num_spans; is++)
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      GirderIndexType ng =  spanGirderCollection[is].size();
+      GirderIndexType nGirders = groupGirderCollection[grpIdx].size();
 
-      for (GirderIndexType ig=0; ig<max_gdrs; ig++)
+      for (GirderIndexType gdrIdx = 0; gdrIdx < max_gdrs; gdrIdx++)
       {
-         ROWCOL nCol = ROWCOL(is+1);
-         ROWCOL nRow = ROWCOL(ig+1);
+         ROWCOL nCol = ROWCOL(grpIdx+1);
+         ROWCOL nRow = ROWCOL(gdrIdx+1);
 
-         if (ig<ng)
+         if (gdrIdx < nGirders)
          {
 
-            UINT enabled = spanGirderCollection[is][ig] ? 1 : 0;
+            UINT enabled = groupGirderCollection[grpIdx][gdrIdx] ? 1 : 0;
             // unchecked check box for girder
             SetStyleRange(CGXRange(nRow,nCol), CGXStyle()
 			         .SetControl(GX_IDS_CTRL_CHECKBOX3D)  //
@@ -288,9 +309,9 @@ bool CMultiGirderSelectGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
     }
 }
 
-std::vector<SpanGirderHashType> CMultiGirderSelectGrid::GetData()
+std::vector<CGirderKey> CMultiGirderSelectGrid::GetData()
 {
-   std::vector<SpanGirderHashType> data;
+   std::vector<CGirderKey> data;
 
    ROWCOL nRows = GetRowCount();
    ROWCOL nCols = GetColCount();
@@ -303,8 +324,8 @@ std::vector<SpanGirderHashType> CMultiGirderSelectGrid::GetData()
 
          if (bDat)
          {
-            SpanGirderHashType hash = HashSpanGirder(col, row);
-            data.push_back(hash);
+            CGirderKey girderKey(col, row);
+            data.push_back(girderKey);
          }
       }
    }

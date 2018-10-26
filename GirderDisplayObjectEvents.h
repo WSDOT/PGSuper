@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_GIRDERDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)
-#define AFX_GIRDERDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // GirderDisplayObjectEvents.h : header file
 //
 
@@ -39,13 +35,12 @@
 class CBridgePlanViewGirderDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CBridgePlanViewGirderDisplayObjectEvents(SpanIndexType spanIdx,GirderIndexType gdrIdx,SpanIndexType nSpans,GirderIndexType nGirderThisSpan,CBridgeModelViewChildFrame* pFrame);
+	CBridgePlanViewGirderDisplayObjectEvents(const CGirderKey& girderKey,GroupIndexType nGroups,GirderIndexType nGirderThisGroup,CBridgeModelViewChildFrame* pFrame);
 
 protected:
-   SpanIndexType m_SpanIdx;
-   GirderIndexType m_GirderIdx;
-   SpanIndexType m_nSpans;
-   GirderIndexType m_nGirdersThisSpan;
+   CGirderKey m_GirderKey;
+   GroupIndexType m_nGroups;
+   GirderIndexType m_nGirdersThisGroup;
 
    CBridgeModelViewChildFrame* m_pFrame;
 
@@ -77,19 +72,68 @@ protected:
    void SelectSpan();
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+// CBridgePlanViewSegmentDisplayObjectEvents command target
+
+class CBridgePlanViewSegmentDisplayObjectEvents : public CCmdTarget
+{
+public:
+	CBridgePlanViewSegmentDisplayObjectEvents(const CSegmentKey& segmentKey,CBridgeModelViewChildFrame* pFrame);
+
+protected:
+   CSegmentKey m_SegmentKey;
+
+   GirderIndexType m_nGirders; // number of girders in the associated group
+   SegmentIndexType m_nSegments; // number of segments in the associated girder 
+
+   CBridgeModelViewChildFrame* m_pFrame;
+
+	DECLARE_INTERFACE_MAP()
+
+   BEGIN_INTERFACE_PART(Events,iDisplayObjectEvents)
+      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnLButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnLButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnRButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnRButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnMouseMove)(iDisplayObject* pDO,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnMouseWheel)(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point);
+      STDMETHOD_(bool,OnKeyDown)(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags);
+      STDMETHOD_(bool,OnContextMenu)(iDisplayObject* pDO,CWnd* pWnd,CPoint point);
+      STDMETHOD_(void,OnChanged)(iDisplayObject* pDO);
+      STDMETHOD_(void,OnDragMoved)(iDisplayObject* pDO,ISize2d* offset);
+      STDMETHOD_(void,OnMoved)(iDisplayObject* pDO);
+      STDMETHOD_(void,OnCopied)(iDisplayObject* pDO);
+      STDMETHOD_(void,OnSelect)(iDisplayObject* pDO);
+      STDMETHOD_(void,OnUnselect)(iDisplayObject* pDO);
+   END_INTERFACE_PART(Events)
+
+   void EditSegment(iDisplayObject* pDO);
+   void SelectSegment(iDisplayObject* pDO);
+
+   // select prev/next segment in this girderline (longitudinal selection)
+   void SelectPrevSegment();
+   void SelectNextSegment();
+
+   // select corresponding segment in prev/next adjacent girderline (transverse selection)
+   void SelectAdjacentPrevSegment();
+   void SelectAdjacentNextSegment();
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewGirderDisplayObjectEvents command target
 
 class CBridgeSectionViewGirderDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CBridgeSectionViewGirderDisplayObjectEvents(SpanIndexType spanIdx,GirderIndexType gdrIdx,SpanIndexType nSpans,GirderIndexType nGirderThisSpan,CBridgeModelViewChildFrame* pFrame);
+	CBridgeSectionViewGirderDisplayObjectEvents(const CGirderKey& girderKey,GroupIndexType nGroups,GirderIndexType nGirdersThisGroup,CBridgeModelViewChildFrame* pFrame);
 
 protected:
-   SpanIndexType m_SpanIdx;
-   GirderIndexType m_GirderIdx;
-   SpanIndexType m_nSpans;
-   GirderIndexType m_nGirdersThisSpan;
+   CGirderKey m_GirderKey;
+   GroupIndexType m_nGroups;
+   GirderIndexType m_nGirdersThisGroup;
 
    CBridgeModelViewChildFrame* m_pFrame;
    CBridgeSectionView* m_pView;
@@ -121,10 +165,3 @@ protected:
    void SelectNextGirder();
    void SelectSpan();
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_GIRDERDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)

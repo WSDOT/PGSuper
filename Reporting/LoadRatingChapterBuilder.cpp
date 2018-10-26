@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <Reporting\RatingSummaryTable.h>
 
 #include <IFace\Artifact.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
 
@@ -61,7 +61,9 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
-   GirderIndexType gdrLineIdx = pGdrRptSpec->GetGirder();
+
+   CGirderKey girderKey(pGdrRptSpec->GetGroupIndex(),pGdrRptSpec->GetGirderIndex());
+
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -78,7 +80,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,gdrLineIdx, CRatingSummaryTable::Design ) << rptNewLine;
+      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,girderKey,CRatingSummaryTable::Design ) << rptNewLine;
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
@@ -92,22 +94,22 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrLegal_Routine);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
 
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Routine);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrLegal_Special);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
 
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Special);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }
@@ -125,14 +127,14 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrPermit_Routine);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrPermit_Special);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }

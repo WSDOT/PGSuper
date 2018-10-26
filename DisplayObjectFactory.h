@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 
 #include <DManip\DManip.h>
 
-class CPGSuperDoc;
+class CPGSuperDocBase;
 
 /////////////////////////////////////////////////////////////////////////////
 // CDisplayObjectFactory command target
@@ -39,7 +39,7 @@ class CPGSuperDoc;
 class CDisplayObjectFactory : public CCmdTarget
 {
 public:
-	CDisplayObjectFactory(CPGSuperDoc* pDoc);
+	CDisplayObjectFactory(CPGSuperDocBase* pDoc);
 
 // Attributes
 public:
@@ -63,7 +63,7 @@ protected:
 
 private:
    CComPtr<iDisplayObjectFactory> m_Factory;
-   CPGSuperDoc* m_pDoc;
+   CPGSuperDocBase* m_pDoc;
 };
 
 /////////////////////////////////////////////////////////////////////////////

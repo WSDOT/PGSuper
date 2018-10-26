@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 // SYSTEM INCLUDES
 //
+#include <PgsExt\PgsExtExp.h>
 
 // PROJECT INCLUDES
 //
@@ -40,25 +41,7 @@
 // MISCELLANEOUS
 //
 
-/*****************************************************************************
-CLASS 
-   CDeckDescription
-
-   Utility class for describing the deck.
-
-DESCRIPTION
-   Utility class for describing the deck.
-
-COPYRIGHT
-   Copyright © 1997-2008
-   Washington State Department Of Transportation
-   All Rights Reserved
-
-LOG
-   rdp : 06.20.2008 : Created file
-*****************************************************************************/
-
-// free function for checking if a set of numbers is evenly divisible by a number
+// free function for checking if a set of numbers is divisible by a number
 typedef std::set<Float64> FloatSet;
 typedef FloatSet::iterator FloatSetIterator;
 
@@ -77,29 +60,23 @@ static bool IsDivisible(FloatSetIterator start, FloatSetIterator end, Float64 di
    return true;
 }
 
-
 // local utility class for sorting and writing txdot debond data
 /////////////////////////////////////////////////////////////////
-class TxDOTDebondTool
+class PGSEXTCLASS TxDOTDebondTool
 {
 public:
-   TxDOTDebondTool(SpanIndexType span, GirderIndexType gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
-   m_Span(span ), m_Girder(gdr ), m_pStrandGeometry(pStrandGeometry ), m_GirderLength(girderLength),
-   m_OutCome(AllStandard), m_SectionSpacing(0.0)
-   {;}
+   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry);
 
 protected:
-
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
    Float64 m_GirderLength;
    IStrandGeometry* m_pStrandGeometry;
 
    enum OutComeType {AllStandard, NonStandardSection, SectionMismatch, SectionsNotSymmetrical, TooManySections};
    OutComeType m_OutCome;
 
-   Float64           m_SectionSpacing;
-   StrandIndexType   m_NumDebonded;
+   Float64   m_SectionSpacing;
+   AxleIndexType   m_NumDebonded;
 
    // need strands in rows with sections in row
    struct SectionData
@@ -158,14 +135,14 @@ protected:
 
 inline void TxDOTDebondTool::Compute()
 {
-   m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_Span,m_Girder,pgsTypes::Straight);
+   m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_SegmentKey,pgsTypes::Straight);
 
    // standard debond increment
    Float64 three_feet = ::ConvertToSysUnits( 3.0,unitMeasure::Feet);
 
-   StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_Span,m_Girder,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_SegmentKey,pgsTypes::Straight);
 
-   pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
+   pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
    CComPtr<IPoint2dCollection> coords;
    m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
@@ -203,7 +180,7 @@ inline void TxDOTDebondTool::Compute()
       curr_row_it->m_NumTotalStrands++; // add our strand to row
 
       Float64 startLoc, endLoc;
-      if( m_pStrandGeometry->IsStrandDebonded(m_Span,m_Girder,idx, pgsTypes::Straight, &startLoc, &endLoc) )
+      if( m_pStrandGeometry->IsStrandDebonded(m_SegmentKey,idx, pgsTypes::Straight, &startLoc, &endLoc) )
       {
          if (!IsEqual(startLoc,m_GirderLength-endLoc))
          {
@@ -235,27 +212,6 @@ inline void TxDOTDebondTool::Compute()
                rsect.m_NumDebonds++;
             }
          }
-      }
-   }
-
-   // Next add any adjustable strands at same row elevations to running total
-   CComPtr<IPoint2dCollection> hcoords;
-   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
-   hcoords->get_Count(&size);
-   for (CollectionIndexType idx = 0; idx < size; idx++)
-   {
-      CComPtr<IPoint2d> point;
-      hcoords->get_Item(idx,&point);
-      Float64 curr_y;
-      point->get_Y(&curr_y);
-   
-      // Find any rows with current strand elevation and add to total
-      RowData bogus_row;
-      bogus_row.m_Elevation = curr_y;
-      RowListIter curr_row_it = m_Rows.find( bogus_row );
-      if (curr_row_it != m_Rows.end())
-      {
-         curr_row_it->m_NumTotalStrands++; // add our strand to row
       }
    }
 
@@ -346,22 +302,22 @@ inline Int16 TxDOTDebondTool::CountDebondsInRow(const RowData& row) const
 
 // local utility class for sorting and collection debond sections
 /////////////////////////////////////////////////////////////////
-class DebondSectionComputer
+class PGSEXTCLASS DebondSectionComputer
 {
 public:
    DebondSectionComputer(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength);
 
-   CollectionIndexType GetNumLeftSections();
-   void GetLeftSectionInfo(CollectionIndexType idx, Float64* location, StrandIndexType* numStrandsDebonded);
+   SectionIndexType GetNumLeftSections();
+   void GetLeftSectionInfo(SectionIndexType idx, Float64* location, IndexType* numStrandsDebonded);
 
-   CollectionIndexType GetNumRightSections();
-   void GetRightSectionInfo(CollectionIndexType idx, Float64* location, StrandIndexType* numStrandsDebonded);
+   SectionIndexType GetNumRightSections();
+   void GetRightSectionInfo(SectionIndexType idx, Float64* location, IndexType* numStrandsDebonded);
 
 private:
    struct DbSection
    {
       Float64 m_Location;
-      StrandIndexType   m_NumDebonds;
+      IndexType m_NumDebonds;
 
       bool operator==(const DbSection& rOther) const
       { 
@@ -378,99 +334,7 @@ private:
    std::set<DbSection> m_RightSections;
 };
 
-inline DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength)
-{
-   // set up section locations
-   for (DebondConfigConstIterator it=rDebondInfo.begin(); it!=rDebondInfo.end(); it++)
-   {
-      const DEBONDCONFIG& rinfo = *it;
-
-      // Left side
-      if(rinfo.LeftDebondLength > 0.0)
-      {
-         DbSection bogus_sec;
-         bogus_sec.m_Location = rinfo.LeftDebondLength;
-
-         std::set<DbSection>::iterator sec_it = m_LeftSections.find( bogus_sec );
-         if (sec_it == m_LeftSections.end())
-         {
-            // not found, make a new section
-            DbSection section;
-            ATLASSERT(girderLength/2.0 > rinfo.LeftDebondLength);
-            section.m_Location = rinfo.LeftDebondLength;
-            section.m_NumDebonds = 1;
-
-            m_LeftSections.insert(section);
-         }
-         else
-         {
-            // found, add debond
-            DbSection& sec = *sec_it;
-            sec.m_NumDebonds++;
-         }
-      }
-
-      // Right side
-      if(rinfo.RightDebondLength > 0.0)
-      {
-         DbSection bogus_sec;
-         ATLASSERT(girderLength/2.0 > rinfo.RightDebondLength);
-         Float64 loc = girderLength - rinfo.RightDebondLength;
-         bogus_sec.m_Location = loc;
-
-         std::set<DbSection>::iterator sec_it = m_RightSections.find( bogus_sec );
-         if (sec_it == m_RightSections.end())
-         {
-            // not found, make a new section
-            DbSection section;
-            section.m_Location = loc;
-            section.m_NumDebonds = 1;
-
-            m_RightSections.insert(section);
-         }
-         else
-         {
-            // found, add debond
-            DbSection& sec = *sec_it;
-            sec.m_NumDebonds++;
-         }
-      }
-   }
-}
-
-inline CollectionIndexType DebondSectionComputer::GetNumLeftSections()
-{
-   return m_LeftSections.size();
-}
-
-inline void DebondSectionComputer::GetLeftSectionInfo(CollectionIndexType idx, Float64* pLocation, StrandIndexType* numStrandsDebonded)
-{
-   std::set<DbSection>::iterator sec_it = m_LeftSections.begin();
-   for(CollectionIndexType is=0; is<idx; is++)
-      sec_it++;
-
-   DbSection& sec = *sec_it;
-   *numStrandsDebonded = sec.m_NumDebonds;
-   *pLocation = sec.m_Location;
-}
-
-inline CollectionIndexType DebondSectionComputer::GetNumRightSections()
-{
-   return m_RightSections.size();
-}
-
-inline void DebondSectionComputer::GetRightSectionInfo(CollectionIndexType idx, Float64* pLocation, StrandIndexType* numStrandsDebonded)
-{
-   std::set<DbSection>::iterator sec_it = m_RightSections.begin();
-   for(CollectionIndexType is=0; is<idx; is++)
-      sec_it++;
-
-   DbSection& sec = *sec_it;
-   *numStrandsDebonded = sec.m_NumDebonds;
-   *pLocation = sec.m_Location;
-}
-
-class StrandRowUtil
+class PGSEXTCLASS StrandRowUtil
 {
 public:
 
@@ -505,73 +369,5 @@ public:
 
    static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 };
-
-inline StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
-{
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-
-   // Want number of strands in each row location. Count number of straight and harped per row
-   StrandRowSet strandrows;
-
-   // Straight
-   CComPtr<IPoint2dCollection> ss_points;
-   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Straight, &ss_points);
-
-   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Straight);
-   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
-   {
-      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Straight);
-      for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
-      {
-         StrandIndexType idx = *sit;
-         CComPtr<IPoint2d> point;
-         ss_points->get_Item(idx,&point);
-         Float64 Y;
-         point->get_Y(&Y);
-
-         StrandRow srow(Y);
-         StrandRowIter srit = strandrows.find(srow);
-         if (srit != strandrows.end())
-         {
-            srit->Count++;
-         }
-         else
-         {
-            strandrows.insert(srow);
-         }
-      }
-   }
-
-   // Harped
-   CComPtr<IPoint2dCollection> hs_points;
-   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
-
-   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Harped);
-   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
-   {
-      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Harped);
-      for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
-      {
-         StrandIndexType idx = *sit;
-         CComPtr<IPoint2d> point;
-         hs_points->get_Item(idx,&point);
-         Float64 Y;
-         point->get_Y(&Y);
-
-         StrandRow srow(Y);
-         StrandRowIter srit = strandrows.find(srow);
-         if (srit != strandrows.end())
-         {
-            srit->Count++;
-         }
-         else
-         {
-            strandrows.insert(srow);
-         }
-      }
-   }
-   
-   return strandrows;
-}
 
 #endif // INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_

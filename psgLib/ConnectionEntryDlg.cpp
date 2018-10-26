@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,55 +35,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-inline CString GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
-{
-   CString strName;
-   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
-   {
-      switch( endType )
-      {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
-         strName = "CONNECTION_BRGALONGGDR_ENDALONGGDRFROMBRG";
-         break;
-
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
-         strName = "CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMBRG";
-         break;
-
-      case ConnectionLibraryEntry::FromPierAlongGirder:
-         strName = "CONNECTION_BRGALONGGDR_ENDALONGGDRFROMPIER";
-         break;
-
-      case ConnectionLibraryEntry::FromPierNormalToPier:
-         strName = "CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMPIER";
-         break;
-      }
-   }
-   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
-   {
-      switch( endType )
-      {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
-         strName = "CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMBRG";
-         break;
-
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
-         strName = "CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMBRG";
-         break;
-
-      case ConnectionLibraryEntry::FromPierAlongGirder:
-         strName = "CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMPIER";
-         break;
-
-      case ConnectionLibraryEntry::FromPierNormalToPier:
-         strName = "CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMPIER";
-         break;
-      }
-   }
-
-   return strName;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CConnectionEntryDlg dialog
@@ -145,6 +96,23 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
       Float64 end_distance, bearing_end_offset;
       DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, end_distance, pDisplayUnits->ComponentDim );
       DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, bearing_end_offset, pDisplayUnits->ComponentDim );
+
+      // RAB 8/16/2007
+      // NOTE: At one time this code block was commented out with the following comment
+      //
+      // "why??? this isn't needed.... who cares if the girder hangs past the bearing"
+      //
+      // Consider an interior pier... If the distance from the point of bearing to the end
+      // of the girder exceeds the distance from the CL pier to the point of bearing the
+      // girders on either side of the pier will interfere with one another.
+      //
+      // ... AND PGSuper will crash if this criteria is not enforced!
+
+      if ( bearing_end_offset < end_distance )
+      {
+         AfxMessageBox(_T("End Distance cannot be greater than Bearing Offset"));
+         pDX->Fail();
+      }
    }
 }
 
@@ -327,4 +295,53 @@ HBRUSH CConnectionEntryDlg::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
    }
 
    return hBrush;
+}
+
+CString CConnectionEntryDlg::GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+{
+   CString strName;
+   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+   {
+      switch( endType )
+      {
+      case ConnectionLibraryEntry::FromBearingAlongGirder:
+         strName = _T("CONNECTION_BRGALONGGDR_ENDALONGGDRFROMBRG");
+         break;
+
+      case ConnectionLibraryEntry::FromBearingNormalToPier:
+         strName = _T("CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+         break;
+
+      case ConnectionLibraryEntry::FromPierAlongGirder:
+         strName = _T("CONNECTION_BRGALONGGDR_ENDALONGGDRFROMPIER");
+         break;
+
+      case ConnectionLibraryEntry::FromPierNormalToPier:
+         strName = _T("CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+         break;
+      }
+   }
+   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
+   {
+      switch( endType )
+      {
+      case ConnectionLibraryEntry::FromBearingAlongGirder:
+         strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+         break;
+
+      case ConnectionLibraryEntry::FromBearingNormalToPier:
+         strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+         break;
+
+      case ConnectionLibraryEntry::FromPierAlongGirder:
+         strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+         break;
+
+      case ConnectionLibraryEntry::FromPierNormalToPier:
+         strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+         break;
+      }
+   }
+
+   return strName;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
+#include <PgsExt\SegmentKey.h>
 #include <EAF\EAFStatusItem.h>
 
 // Special CEAFStatusItem that is directly related to a given span(s)/girders(s)
@@ -35,7 +36,7 @@ class PGSEXTCLASS pgsSpanGirderRelatedStatusItem : public CEAFStatusItem
 {
 public:
    pgsSpanGirderRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                  SpanIndexType span,GirderIndexType gdr);
+                                  const CSpanGirderKey& spanGirderKey);
 
    bool IsRelatedTo(SpanIndexType span,GirderIndexType gdr);
 
@@ -46,7 +47,7 @@ private:
    bool m_EntireBridge;
    std::vector<SpanIndexType> m_EntireSpans;
    std::vector<GirderIndexType> m_EntireGirderLines;
-   std::set<SpanGirderHashType> m_SpanGirders;
+   std::set<CSpanGirderKey> m_SpanGirders;
 };
 
 

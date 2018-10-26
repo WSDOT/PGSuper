@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,9 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
+#include <PgsExt\SegmentKey.h>
 #include <PgsExt\SpanGirderRelatedStatusItem.h>
+#include <PgsExt\SegmentRelatedStatusItem.h>
 
 
 // status for refined analysis
@@ -108,14 +110,13 @@ private:
 };
 
 // status for girder input
-class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsSpanGirderRelatedStatusItem
+class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
-   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
    Uint16 m_Page; // page of girder input wizard
 };
 
@@ -153,10 +154,12 @@ public:
 class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription);
+   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions };
+
+   pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
-   long m_DlgPage;
+   IssueType m_IssueType;
 };
 
 ///////////////////////////
@@ -191,7 +194,6 @@ public:
 private:
    IBroker* m_pBroker;
 };
-
 
 // status for effective flange width warnings
 class PGSEXTCLASS pgsEffectiveFlangeWidthStatusItem : public CEAFStatusItem

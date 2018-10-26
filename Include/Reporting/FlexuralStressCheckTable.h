@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 
 interface IEAFDisplayUnits;
 class pgsGirderArtifact;
+class pgsSegmentArtifact;
+class pgsClosurePourArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -71,35 +73,92 @@ public:
    CFlexuralStressCheckTable& operator = (const CFlexuralStressCheckTable& rOther);
 
    // GROUP: OPERATIONS
+   virtual void Build(rptChapter* pChapter,
+                      IBroker* pBroker,
+                      const pgsGirderArtifact* pGirderArtifact,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      IntervalIndexType intervalIdx,
+                      pgsTypes::LimitState ls,
+                      pgsTypes::StressType stress=pgsTypes::Tension
+                      ) const;
 
    //------------------------------------------------------------------------
    // Builds the stress table and notes
    // NOTE: stress type is ignored for stages other than BSS3
    virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                      IBroker* pBroker,
+                      const pgsGirderArtifact* pGirderArtifact,
+                      SegmentIndexType segIdx,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,
+                      IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls,
-                      pgsTypes::StressType stress=pgsTypes::Tension) const;
+                      pgsTypes::StressType stress=pgsTypes::Tension
+                      ) const;
+
+   virtual void Build(rptChapter* pChapter,
+                      IBroker* pBroker,
+                      const pgsSegmentArtifact* pSegmentArtifact,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      IntervalIndexType intervalIdx,
+                      pgsTypes::LimitState ls,
+                      pgsTypes::StressType stress=pgsTypes::Tension
+                      ) const;
 
    //------------------------------------------------------------------------
    // Builds the notes above stress table
-   void BuildNotes(rptChapter* pChapter, const pgsGirderArtifact* gdrArtifact,
-                   IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void BuildNotes(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsSegmentArtifact* pSegmentArtifact,
                    IEAFDisplayUnits* pDisplayUnits,
-                   pgsTypes::Stage stage,
+                   IntervalIndexType intervalIdx,
+                   pgsTypes::LimitState ls,
+                   pgsTypes::StressType stress=pgsTypes::Tension) const;
+
+   void BuildNotes(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsGirderArtifact* pGirderArtifact,
+                   SegmentIndexType segIdx,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   IntervalIndexType intervalIdx,
                    pgsTypes::LimitState ls,
                    pgsTypes::StressType stress=pgsTypes::Tension) const;
 
    //------------------------------------------------------------------------
    // Builds the table only
-   void BuildTable(rptChapter* pChapter, const pgsGirderArtifact* gdrArtifact,
-                   IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void BuildTable(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsGirderArtifact* pGirderArtifact,
+                   SegmentIndexType segIdx,
                    IEAFDisplayUnits* pDisplayUnits,
-                   pgsTypes::Stage stage,
+                   IntervalIndexType intervalIdx,
                    pgsTypes::LimitState ls,
                    pgsTypes::StressType stress=pgsTypes::Tension) const;
 
+
+
+
+   virtual void Build(rptChapter* pChapter,
+                      IBroker* pBroker,
+                      const pgsClosurePourArtifact* pClosureArtifact,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      IntervalIndexType intervalIdx,
+                      pgsTypes::LimitState ls
+                      ) const;
+
+   void BuildNotes(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsClosurePourArtifact* pClosureArtifact,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   IntervalIndexType intervalIdx,
+                   pgsTypes::LimitState ls,
+                   pgsTypes::StressType stress=pgsTypes::Tension) const;
+
+   void BuildTable(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsClosurePourArtifact* pClosureArtifact,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   IntervalIndexType intervalIdx,
+                   pgsTypes::LimitState ls) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -113,7 +172,27 @@ protected:
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CFlexuralStressCheckTable& rOther);
+   virtual void MakeAssignment(const CFlexuralStressCheckTable& rOther);
+
+
+   void BuildSectionHeading(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsGirderArtifact* pGirderArtifact,
+                   SegmentIndexType segIdx,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   IntervalIndexType intervalIdx,
+                   pgsTypes::LimitState ls,
+                   pgsTypes::StressType stress) const;
+
+   void BuildAllowStressInformation(rptChapter* pChapter, 
+                   IBroker* pBroker,
+                   const pgsGirderArtifact* pGirderArtifact,
+                   SegmentIndexType segIdx,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   IntervalIndexType intervalIdx,
+                   pgsTypes::LimitState ls,
+                   pgsTypes::StressType stress) const;
+
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

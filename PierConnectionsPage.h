@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,9 @@
 // PierConnectionsPage.h : header file
 //
 
-#include <PgsExt\PierData.h>
+#include "PGSuperAppPlugin\resource.h"
+#include <PgsExt\PierData2.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
-#include <MFCTools\MFCTools.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierConnectionsPage dialog
@@ -39,11 +39,10 @@ interface IPierConnectionsParent
 {
    virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx) = 0;
    virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type) = 0;
-   virtual const CSpanData* GetPrevSpan(PierIndexType pierIdx) = 0;
-   virtual const CSpanData* GetNextSpan(PierIndexType pierIdx) = 0;
-   virtual const CBridgeDescription* GetBridgeDescription() = 0;
+   virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx) = 0;
+   virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx) = 0;
+   virtual const CBridgeDescription2* GetBridgeDescription() = 0;
 };
-
 
 class CPierConnectionsPage : public CPropertyPage
 {
@@ -61,7 +60,7 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   void Init(const CPierData* pPier);
+   void Init(const CPierData2* pPier);
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPierConnectionsPage)

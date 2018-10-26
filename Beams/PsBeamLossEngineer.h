@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,28 @@
 #include "Beams\Interfaces.h"
 #include "PsLossEngineer.h"
 #include <Plugins\CLSID.h>
+
+#include <PgsExt\PoiKey.h>
+
+// Class for storing Design Losses
+// Design losses are losses computed during design iterations and need not
+// be recomputed if the design is accepted
+class CDesignLosses
+{
+   struct Losses
+   {
+      GDRCONFIG m_Config;
+      LOSSDETAILS m_Details;
+   };
+
+   std::map<pgsPointOfInterest,Losses> m_Losses;
+   
+public:
+   CDesignLosses();
+   void Invalidate();
+   const LOSSDETAILS* GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config);
+   void SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses);
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsBeamLossEngineer
@@ -64,16 +86,27 @@ public:
 
 // IPsLossEngineer
 public:
-   virtual LOSSDETAILS ComputeLosses(const pgsPointOfInterest& poi);
-   virtual LOSSDETAILS ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config);
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual void ClearDesignLosses();
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
 private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    BeamTypes m_BeamType;
    CPsLossEngineer m_Engineer;
+
+
+   // Losses are cached for two different cases:
+   // 1) This data structure caches losses for the current project data
+   std::map<PoiIDKey,LOSSDETAILS> m_PsLosses;
+
+   // 2) This data structure is for design cases. It caches the most recently
+   //    computed losses
+   CDesignLosses m_DesignLosses;
 };
 
 #endif //__PSBEAMLOSSENGINEER_H_

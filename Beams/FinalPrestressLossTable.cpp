@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -62,13 +62,13 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    ColumnIndexType numColumns = 9;
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary);
+   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    if ( 0 < NtMax )
    {
-      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
+      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned ) 
       {
          numColumns++;
       }
@@ -92,7 +92,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    std::_tstring strYear = (bIgnoreElasticGain ? _T("") : _T("_2005"));
    if ( 0 < NtMax )
    {
-      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
+      if ( pStrands->TempStrandUsage == pgsTypes::ttsPretensioned ) 
       {
          *pParagraph << _T("Total Prestress Loss ") << rptNewLine << rptRcImage(strImagePath + _T("DeltaFpt_PS_TTS") + strYear + _T(".png")) << rptNewLine;
       }
@@ -114,7 +114,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
-   if ( 0 < NtMax && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < NtMax && pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -137,48 +137,39 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   table->m_pGirderData = pgirderData;
+   table->m_pStrands = pStrands;
    table->m_NtMax = NtMax;
    table->m_bIgnoreElasticGain = bIgnoreElasticGain;
    
    return table;
 }
 
-void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
-
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
-   }
-
-   (*this)(row,col++) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
-   (*this)(row,col++) << stress.SetValue( details.pLosses->PermanentStrand_ElasticShorteningLosses() );
+   (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses.PermanentStrand_RelaxationLossesAtXfer() );
+   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
    
-   if ( 0 < m_NtMax && m_pGirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < m_NtMax && m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      (*this)(row,col++) << stress.SetValue(details.pLosses->GetDeltaFpp());
+      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }
 
-   (*this)(row,col++) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row,col++) << stress.SetValue( ptl->CreepLosses() );
-   (*this)(row,col++) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
+   (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses.ShrinkageLosses() );
+   (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses.CreepLosses() );
+   (*this)(row,col++) << stress.SetValue( pDetails->RefinedLosses.RelaxationLossesAfterXfer() );
 
    if ( 0 < m_NtMax ) 
    {
-      (*this)(row,col++) << stress.SetValue( details.pLosses->GetDeltaFptr() );
+      (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFptr() );
    }
 
    if ( !m_bIgnoreElasticGain )
    {
-      (*this)(row,col++) << stress.SetValue( details.pLosses->ElasticGainDueToDeckPlacement() );
-      (*this)(row,col++) << stress.SetValue( details.pLosses->ElasticGainDueToSIDL() );
+      (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
+      (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
    }
 
 
-   (*this)(row,col++) << stress.SetValue( details.pLosses->PermanentStrand_Final() );
+   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->PermanentStrand_Final() );
 }

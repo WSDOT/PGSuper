@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,8 +26,12 @@
 #include <Reporting\ReportNotes.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Project.h>
+
+#include <PgsExt\PierData2.h>
+#include <PgsExt\GirderGroupData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,15 +73,12 @@ CVehicularLoadReactionTable& CVehicularLoadReactionTable::operator= (const CVehi
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
-                                               SpanIndexType span,
-                                               GirderIndexType girder,
+rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
                                                pgsTypes::LiveLoadType llType,
                                                const std::_tstring& strLLName,
                                                VehicleIndexType vehicleIndex, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
-                                               bool bIncludeRotations,
                                                IEAFDisplayUnits* pDisplayUnits) const
 
 {
@@ -87,47 +88,26 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    bool bPermit = false;
 
    PierIndexType nPiers = pBridge->GetPierCount();
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
+   PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
+   PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(  endGroupIdx);
 
-   PierIndexType startPier = (span == ALL_SPANS ? 0 : span);
-   PierIndexType endPier   = (span == ALL_SPANS ? nPiers-1 : startPier+1 );
-
-   pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
-   PierIndexType pier;
-   for ( pier = startPier; pier <= endPier; pier++ )
-   {
-      pgsTypes::Stage left_stage, right_stage;
-      pBridge->GetContinuityStage(pier,&left_stage,&right_stage);
-      continuity_stage = _cpp_min(continuity_stage,left_stage);
-      continuity_stage = _cpp_min(continuity_stage,right_stage);
-   }
-
-   ColumnIndexType nCols = 3;
+   ColumnIndexType nCols = 5;
 
    if ( bReportTruckConfig )
-   {
       nCols += 4;
-   }
 
-   if ( bIncludeRotations )
-   {
-      nCols += 2;
-   }
-
-   std::_tstring strTitle;
-   if ( bIncludeRotations )
-   {
-      strTitle = _T("Live Load Reactions and Rotations for ") + strLLName;
-   }
-   else
-   {
-      strTitle = _T("Live Load Reactions for ") + strLLName;
-   }
-
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
+   std::_tstring title(_T("Live Load Reactions and Rotations for ") + strLLName);
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,title.c_str());
 
    // Set up table headings
    ColumnIndexType col = 0;
@@ -146,58 +126,65 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
       (*p_table)(0,col++) << _T("Reaction") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
    }
 
-   if ( bIncludeRotations )
+   (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Max"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+
+   if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Max"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+      (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Max") << rptNewLine << _T("Config");
+   }
 
-      if ( bReportTruckConfig )
-      {
-         (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Max") << rptNewLine << _T("Config");
-      }
-
-      (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Min"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+   (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Min"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
 
 
-      if ( bReportTruckConfig )
-      {
-         (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
-      }
+   if ( bReportTruckConfig )
+   {
+      (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
    }
 
    // Get POI at start and end of the span
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPoi;
-
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType endSpan   = (span == ALL_SPANS ? nSpans : startSpan+1);
-   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = min(girder,nGirders-1);
-      std::vector<pgsPointOfInterest> vTenthPoints = pPOI->GetTenthPointPOIs(pgsTypes::BridgeSite3,spanIdx,gdrIdx);
-      vPoi.push_back(vTenthPoints.front());
-      vPoi.push_back(vTenthPoints.back());
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         std::vector<pgsPointOfInterest> segPoi1(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
+         std::vector<pgsPointOfInterest> segPoi2(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
+         ATLASSERT(segPoi1.size() == 1);
+         ATLASSERT(segPoi2.size() == 1);
+         vPoi.push_back(segPoi1.front());
+         vPoi.push_back(segPoi2.front());
+      }
    }
 
    GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( pier = startPier; pier <= endPier; pier++ )
+   for ( PierIndexType pier = startPierIdx; pier <= endPierIdx; pier++ )
    {
-      col = 0;
-      pgsPointOfInterest& poi = vPoi[pier-startPier];
+      CGirderKey thisGirderKey(girderKey);
+      if ( girderKey.groupIndex == ALL_GROUPS )
+      {
+         const CPierData2* pPier = pIBridgeDesc->GetPier(pier);
+         if ( pier < endPierIdx )
+            thisGirderKey.groupIndex = pPier->GetNextGirderGroup()->GetIndex();
+         else
+            thisGirderKey.groupIndex = pPier->GetPrevGirderGroup()->GetIndex();
+      }
 
-      if (pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
-      else
-         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+      col = 0;
+      pgsPointOfInterest& poi = vPoi[pier-startPierIdx];
+
+      (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
       if ( analysisType == pgsTypes::Envelope )
       {
          Float64 Rmin, Rmax;
          AxleConfiguration maxConfig, minConfig;
-         pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, pgsTypes::BridgeSite3, pier, girder, MaxSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, liveLoadIntervalIdx, pier, thisGirderKey, pgsTypes::MaxSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmax );
 
          if ( bReportTruckConfig )
@@ -205,7 +192,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
             CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, pgsTypes::BridgeSite3, pier, girder, MinSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, liveLoadIntervalIdx, pier, thisGirderKey, pgsTypes::MinSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmin );
 
          if ( bReportTruckConfig )
@@ -213,30 +200,27 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
             CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         if ( bIncludeRotations )
+         pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, liveLoadIntervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         (*p_table)(row,col++) << rotation.SetValue( Rmax );
+
+         if ( bReportTruckConfig )
          {
-            pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
-            (*p_table)(row,col++) << rotation.SetValue( Rmax );
+            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
+         }
 
-            if ( bReportTruckConfig )
-            {
-               CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
-            }
+         pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, liveLoadIntervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         (*p_table)(row,col++) << rotation.SetValue( Rmin );
 
-            pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, pgsTypes::BridgeSite3, poi, MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
-            (*p_table)(row,col++) << rotation.SetValue( Rmin );
-
-            if ( bReportTruckConfig )
-            {
-               CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
-            }
+         if ( bReportTruckConfig )
+         {
+            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
       }
       else
       {
          Float64 Rmin, Rmax;
          AxleConfiguration maxConfig, minConfig;
-         pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, pgsTypes::BridgeSite3, pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, liveLoadIntervalIdx, pier, thisGirderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmax );
 
          if ( bReportTruckConfig )
@@ -251,22 +235,19 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
             CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         if ( bIncludeRotations )
+         pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, liveLoadIntervalIdx, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         (*p_table)(row,col++) << rotation.SetValue( Rmax );
+
+         if ( bReportTruckConfig )
          {
-            pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, pgsTypes::BridgeSite3, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
-            (*p_table)(row,col++) << rotation.SetValue( Rmax );
+            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
+         }
 
-            if ( bReportTruckConfig )
-            {
-               CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
-            }
+         (*p_table)(row,col++) << rotation.SetValue( Rmin );
 
-            (*p_table)(row,col++) << rotation.SetValue( Rmin );
-
-            if ( bReportTruckConfig )
-            {
-               CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
-            }
+         if ( bReportTruckConfig )
+         {
+            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
       }
 

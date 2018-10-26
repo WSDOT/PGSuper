@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -181,8 +181,9 @@ void CGirderDescLongRebarGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 
 void CGirderDescLongRebarGrid::CustomInit()
 {
-   CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -224,7 +225,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 		);
 
    CString cv;
-   cv.Format(_T("Distance\nFrom End\n(%s)"),pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Distance\nFrom End\n(%s)"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -233,7 +234,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Bar\nLength\n(%s)"),pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Bar\nLength\n(%s)"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,3), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -250,7 +251,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(_T("Girder\nFace"))
 		);
 
-   cv.Format(_T("Cover\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Cover\n(%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -275,7 +276,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(_T("# of\nBars"))
 		);
 
-   cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,8), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -323,6 +324,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
+#pragma Reminder("UPDATE: need to get bar sizes from rebar pool")
 	this->SetStyleRange(CGXRange(nRow,5), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
@@ -332,7 +334,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
 
 	this->SetStyleRange(CGXRange(nRow,6), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\n#11\n#14\n#18"))
+			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#8\n#9\n#10\n#11\n#14\n#18"))
 			.SetValue(_T("#4"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
@@ -406,7 +408,7 @@ matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
 
 bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi)
 {
-   Float64 d;
+   double d;
    int i;
 
    plsi->BarLayout = GetLayout(nRow); // bar layout type
@@ -608,7 +610,7 @@ BOOL CGirderDescLongRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,11 @@
 #include "StdAfx.h"
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 
-#include <PgsExt\GirderData.h>
-
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+
+#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,40 +58,48 @@ LPCTSTR CCreepCoefficientChapterBuilder::GetName() const
 
 rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType gdr = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
-   bool bTempStrands = (0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+   rptParagraph* pPara;
 
-   rptChapter* pChapter;
-   switch( deckType )
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeOverlay:
-      pChapter = (bTempStrands ? Build_CIP_TempStrands(pRptSpec, pBroker,span,gdr,pDisplayUnits,level) : Build_CIP(pRptSpec, pBroker,span,gdr,pDisplayUnits,level));
-      break;
+      CSegmentKey segmentKey(girderKey,segIdx);
 
-   case pgsTypes::sdtCompositeSIP:
-      pChapter = (bTempStrands ? Build_SIP_TempStrands(pRptSpec, pBroker,span,gdr,pDisplayUnits,level) : Build_SIP(pRptSpec, pBroker,span,gdr,pDisplayUnits,level));
-      break;
+      GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+      const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+      bool bTempStrands = (0 < pStrands->Nstrands[pgsTypes::Temporary] && pStrands->TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
 
-   case pgsTypes::sdtNone:
-      pChapter = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec, pBroker,span,gdr,pDisplayUnits,level) : Build_NoDeck(pRptSpec, pBroker,span,gdr,pDisplayUnits,level));
-      break;
+      switch( deckType )
+      {
+      case pgsTypes::sdtCompositeCIP:
+      case pgsTypes::sdtCompositeOverlay:
+         pPara = (bTempStrands ? Build_CIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits,level) : Build_CIP(pRptSpec, pBroker, segmentKey, pDisplayUnits,level));
+         break;
 
-   default:
-      ATLASSERT(false);
+      case pgsTypes::sdtCompositeSIP:
+         pPara = (bTempStrands ? Build_SIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits,level) : Build_SIP(pRptSpec, pBroker, segmentKey, pDisplayUnits,level));
+         break;
+
+      case pgsTypes::sdtNone:
+         pPara = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits,level) : Build_NoDeck(pRptSpec, pBroker, segmentKey, pDisplayUnits,level));
+         break;
+
+      default:
+         ATLASSERT(false);
+      }
    }
 
+   *pChapter << pPara;
    return pChapter;
 }
 
@@ -120,16 +127,14 @@ CChapterBuilder* CCreepCoefficientChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+rptParagraph* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                    IEAFDisplayUnits* pDisplayUnits,
                                                    Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -152,7 +157,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
       if ( i == CREEP_MINTIME )
       {
          // firs time through loop, report the common information
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
 
          if ( details.Spec == CREEP_SPEC_PRE_2005 )
          {
@@ -165,47 +170,27 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
             *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                   << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                   << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          }
          else
          {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
-            }
             else
-            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
-            }
 
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-            {
+            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            }
-            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-            }
             else
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
-            }
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
 
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
-            }
-            else
-            {
-               ATLASSERT(!bSI);
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
-            }
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
             *pPara << Bold(_T("where:")) << rptNewLine;
             *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
@@ -215,7 +200,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
             {
                *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                      << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
             }
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
@@ -224,7 +209,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
       *pPara << Bold((i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
 
-      details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
+      details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
 
       if ( details.Spec == CREEP_SPEC_PRE_2005 )
       {
@@ -240,7 +225,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until deck casting")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
@@ -252,7 +237,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to deck casting and application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
@@ -272,13 +257,9 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -288,20 +269,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until deck casting")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -311,20 +288,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to deck casting and application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -337,19 +310,17 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
    }// loop on i
 
 
-   return pChapter;
+   return pPara;
 }
 
-rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+rptParagraph* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                        IEAFDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -369,7 +340,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
-      details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
+      details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
       if ( i == CREEP_MINTIME )
       {
          // first time through loop, report the common information
@@ -385,46 +356,26 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
             *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                   << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                   << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          }
          else
          {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
-            }
             else
-            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
-            }
             *pPara << Bold(_T("for which:")) << rptNewLine;
-
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-            {
+            
+            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            }
-            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-            }
             else
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
-            }
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
 
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
-            }
-            else
-            {
-               ATLASSERT(!bSI);
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
-            }
+            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
             *pPara << Bold(_T("where:")) << rptNewLine;
             *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
@@ -434,9 +385,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
 
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
             {
-              *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                     << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
+                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
             }
+
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          } // spec
@@ -466,13 +418,9 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -485,33 +433,31 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
    }// loop on i
 
 
-   return pChapter;
+   return pPara;
 }
 
-rptChapter* CCreepCoefficientChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+rptParagraph* CCreepCoefficientChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                                    IEAFDisplayUnits* pDisplayUnits,
                                                                    Uint16 level) const
 {
-   return Build_CIP_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
+   return Build_CIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptChapter* CCreepCoefficientChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+rptParagraph* CCreepCoefficientChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                        IEAFDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
-   return Build_SIP_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
+   return Build_SIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+rptParagraph* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                                       IEAFDisplayUnits* pDisplayUnits,
                                                                       Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -531,7 +477,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
-     details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
+     details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
      if ( i == CREEP_MINTIME )
      {
         // first time through loop, report the common information
@@ -547,46 +493,26 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
            *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                  << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                  << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
            *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;
         }
         else
         {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
-            }
             else
-            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
-            }
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-            {
+            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims || lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType())
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
-            }
-            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
-            }
             else
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
-            }
+               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
 
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
-            {
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
-            }
-            else
-            {
-               ATLASSERT(!bSI);
-               *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
-            }
+           *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
            *pPara << Bold(_T("where:")) << rptNewLine;
            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
@@ -597,7 +523,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                     << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                     << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
            }
            *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;
@@ -621,7 +547,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
@@ -633,7 +559,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,i);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
@@ -645,7 +571,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
@@ -657,7 +583,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDeckToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,i);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
@@ -677,13 +603,9 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -693,20 +615,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -716,20 +634,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,i);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -739,20 +653,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -762,20 +672,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -785,20 +691,16 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDeckToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,i);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-         {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
-         }
          else
-         {
             *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
-         }
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -811,12 +713,12 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
    }// loop on i
 
 
-   return pChapter;
+   return pPara;
 }
 
-rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
+rptParagraph* CCreepCoefficientChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                           IEAFDisplayUnits* pDisplayUnits,
                                                           Uint16 level) const
 {
-   return Build_NoDeck_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
+   return Build_NoDeck_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }

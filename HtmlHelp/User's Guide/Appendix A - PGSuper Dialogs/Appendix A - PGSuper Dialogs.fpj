@@ -12,15 +12,5 @@
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
-		<topic>
-			<name>FavoriteReports.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Custom_Reports.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
 	</topics>
 </rhpml>

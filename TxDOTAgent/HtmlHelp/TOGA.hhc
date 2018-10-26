@@ -57,10 +57,6 @@
         <param name="Name" value="Analysis Report Tab">
         <param name="Local" value="Analysis_Report_Tab.htm">
       </object>
-      <li><object type="text/sitemap">
-        <param name="Name" value="Select Strands Dialog">
-        <param name="Local" value="Select_Strands_Dialog.htm">
-      </object>
       </ul>
     </ul>
   <li><object type="text/sitemap">
@@ -83,10 +79,6 @@
     <li><object type="text/sitemap">
       <param name="Name" value="Generation of the PGSuper Model">
       <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
-    </object>
-    <li><object type="text/sitemap">
-      <param name="Name" value="Conversion of Depressed Strands for Direct Fill">
-      <param name="Local" value="Conversion_of_Depressed_Strands_for_Direct_Fill.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Row-Based Strand Fill">

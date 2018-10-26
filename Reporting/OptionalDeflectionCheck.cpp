@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,8 @@
 #include <Reporting\StirrupDetailingCheckTable.h>
 
 #include <IFace\Artifact.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Bridge.h>
+
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
@@ -70,36 +71,53 @@ COptionalDeflectionCheck& COptionalDeflectionCheck::operator= (const COptionalDe
 }
 
 //======================== OPERATIONS =======================================
-void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifact* pArtifact,
-                              SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
+void COptionalDeflectionCheck::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              IEAFDisplayUnits* pDisplayUnits) const
 {
-   const pgsDeflectionCheckArtifact* pDef = pArtifact->GetDeflectionCheckArtifact();
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   if (pDef->IsApplicable())
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDisplayUnits->GetComponentDimUnit(), true );
+
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   pPara->SetName(_T("Optional Live Load Deflection Check"));
+   *pChapter << pPara;
+   (*pPara) << _T("Optional Live Load Deflection Check (LRFD 2.5.2.6.2)") << rptNewLine;
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter<<p;
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType grpStartSpanIdx, grpEndSpanIdx;
+   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&grpStartSpanIdx,&grpEndSpanIdx);
+   for ( SpanIndexType spanIdx = grpStartSpanIdx; spanIdx <= grpEndSpanIdx; spanIdx++ )
    {
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, defu,    pDisplayUnits->GetComponentDimUnit(), true );
+      IndexType idx = spanIdx - grpStartSpanIdx;
+      const pgsDeflectionCheckArtifact* pArtifact = pGirderArtifact->GetDeflectionCheckArtifact(idx);
 
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      pPara->SetName(_T("Optional Live Load Deflection Check"));
-      *pChapter << pPara;
-      (*pPara) << _T("Optional Live Load Deflection Check (LRFD 2.5.2.6.2)") << rptNewLine;
+      if ( grpStartSpanIdx != grpEndSpanIdx )
+      {
+         p = new rptParagraph;
+         *pChapter << p;
+         *p << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
+   
+      
+      if (pArtifact->IsApplicable())
+      {
+         Float64 min, max;
+         pArtifact->GetDemand(&min,&max);
 
-      rptParagraph* p = new rptParagraph;
-      *pChapter<<p;
-
-      Float64 min, max;
-      pDef->GetDemand(&min,&max);
-
-      *p<< _T("Allowable deflection span ratio = L/")<<pDef->GetAllowableSpanRatio()<<rptNewLine;
-      *p<< _T("Allowable maximum deflection  = ")<< symbol(PLUS_MINUS) << defu.SetValue(pDef->GetCapacity())<<rptNewLine;
-      *p<< _T("Minimum live load deflection along girder  = ")<<defu.SetValue(min)<<rptNewLine;
-      *p<< _T("Maximum live load deflection along girder  = ")<<defu.SetValue(max)<<rptNewLine;
-      *p<< _T("Status = ");
-      if (pDef->Passed())
-         *p<< RPT_PASS<<rptNewLine;
-      else
-         *p<<RPT_FAIL<<rptNewLine;
-   }
+         *p<< _T("Allowable deflection span ratio = L/")<<pArtifact->GetAllowableSpanRatio()<<rptNewLine;
+         *p<< _T("Allowable maximum deflection  = ")<< symbol(PLUS_MINUS) << defu.SetValue(pArtifact->GetCapacity())<<rptNewLine;
+         *p<< _T("Minimum live load deflection along girder  = ")<<defu.SetValue(min)<<rptNewLine;
+         *p<< _T("Maximum live load deflection along girder  = ")<<defu.SetValue(max)<<rptNewLine;
+         *p<< _T("Status = ");
+         if (pArtifact->Passed())
+            *p<< RPT_PASS<<rptNewLine;
+         else
+            *p<<RPT_FAIL<<rptNewLine;
+      }
+   } // next span
 }
 
 //======================== ACCESS     =======================================

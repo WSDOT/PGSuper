@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include "EditLiveLoad.h"
 #include "PGSuperDoc.h"
 
+#include <IFace\Project.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -32,14 +34,17 @@ static char THIS_FILE[] = __FILE__;
 
 txnEditLiveLoad::txnEditLiveLoad(const txnEditLiveLoadData& oldDesign,const txnEditLiveLoadData& newDesign,
                                  const txnEditLiveLoadData& oldFatigue,const txnEditLiveLoadData& newFatigue,
-                                 const txnEditLiveLoadData& oldPermit,const txnEditLiveLoadData& newPermit)
+                                 const txnEditLiveLoadData& oldPermit,const txnEditLiveLoadData& newPermit,
+                                 EventIndexType oldEventIdx,EventIndexType newEventIdx)
 {
-   m_Design[0] = oldDesign;
-   m_Design[1] = newDesign;
-   m_Fatigue[0] = oldFatigue;
-   m_Fatigue[1] = newFatigue;
-   m_Permit[0] = oldPermit;
-   m_Permit[1] = newPermit;
+   m_Design[0]   = oldDesign;
+   m_Design[1]   = newDesign;
+   m_Fatigue[0]  = oldFatigue;
+   m_Fatigue[1]  = newFatigue;
+   m_Permit[0]   = oldPermit;
+   m_Permit[1]   = newPermit;
+   m_EventIdx[0] = oldEventIdx;
+   m_EventIdx[1] = newEventIdx;
 }
 
 txnEditLiveLoad::~txnEditLiveLoad()
@@ -59,7 +64,7 @@ void txnEditLiveLoad::Undo()
 
 txnTransaction* txnEditLiveLoad::CreateClone() const
 {
-   return new txnEditLiveLoad(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1]);
+   return new txnEditLiveLoad(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIdx[0],m_EventIdx[1]);
 }
 
 std::_tstring txnEditLiveLoad::Name() const
@@ -101,6 +106,9 @@ void txnEditLiveLoad::DoExecute(int i)
    pLiveLoad->SetTruckImpact(              pgsTypes::lltPermit,m_Permit[i].m_TruckImpact);
    pLiveLoad->SetLaneImpact(               pgsTypes::lltPermit,m_Permit[i].m_LaneImpact);
    pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltPermit,m_Permit[i].m_PedestrianLoadApplicationType);
+
+   GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
+   pIBridgeDesc->SetLiveLoadEventByIndex(m_EventIdx[i]);
 
    pEvents->FirePendingEvents();
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -249,13 +249,13 @@ STDMETHODIMP CStrandMoverImpl::AddRegion(IShape* shape, Float64 arcSlope)
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_NumRegions(IndexType* pNum)
+STDMETHODIMP CStrandMoverImpl::get_NumRegions(ZoneIndexType* pNum)
 {
    *pNum = m_Regions.size();
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::GetRegion(IndexType index, IShape** shape, Float64* arcSlope)
+STDMETHODIMP CStrandMoverImpl::GetRegion(ZoneIndexType index, IShape** shape, Float64* arcSlope)
 {
    HarpRegion& region = m_Regions[index];
    

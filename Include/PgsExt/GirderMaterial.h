@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,32 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_GIRDERMATERIAL_H_
-#define INCLUDED_PGSEXT_GIRDERMATERIAL_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#include <WBFLCore.h>
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#if !defined INCLUDED_STRDATA_H_
+#include <PgsExt\ConcreteMaterial.h>
+#include <WBFLCore.h>
 #include <StrData.h>
-#endif
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class matPsStrand;
-
-// MISCELLANEOUS
-//
 
 
 /*****************************************************************************
@@ -70,87 +52,24 @@ LOG
 class PGSEXTCLASS CGirderMaterial
 {
 public:
-   // girder concrete material properties
-   pgsTypes::ConcreteType Type;
-   Float64 Fci;             // f'c at release
-   Float64 Fc;
-   Float64 WeightDensity;
-   Float64 StrengthDensity;
-   Float64 MaxAggregateSize;
-   Float64 EcK1;
-   Float64 EcK2;
-   Float64 CreepK1;
-   Float64 CreepK2;
-   Float64 ShrinkageK1;
-   Float64 ShrinkageK2;
-   Float64 Eci;
-   bool    bUserEci;
-   Float64 Ec;
-   bool    bUserEc;
-   bool    bHasFct;
-   Float64 Fct;
+   CConcreteMaterial Concrete;
 
-   // strand
-   const matPsStrand* pStrandMaterial[3]; // (straight, harped, temporary)
-
-
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CGirderMaterial();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
    CGirderMaterial(const CGirderMaterial& rOther);
 
-   //------------------------------------------------------------------------
-   // Destructor
    ~CGirderMaterial();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    CGirderMaterial& operator = (const CGirderMaterial& rOther);
 
-   //------------------------------------------------------------------------
    bool operator==(const CGirderMaterial& rOther) const;
 
-   //------------------------------------------------------------------------
    bool operator!=(const CGirderMaterial& rOther) const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const CGirderMaterial& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CGirderMaterial& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual void MakeAssignment(const CGirderMaterial& rOther);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-
-#endif // INCLUDED_PGSEXT_GIRDERMATERIAL_H_
-

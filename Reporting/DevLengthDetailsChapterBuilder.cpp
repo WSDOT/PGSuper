@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #include <IFace\Bridge.h>
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,60 +38,31 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // Some utility functions
-inline rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 {
-   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion();
-   bool is_2016 = lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion();
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
 
-   ColumnIndexType nColumns = 7;
-   if ( is_2015 || is_2016 )
-   {
-      nColumns += 2; // lamda rl and lamda lw
-   }
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable( nColumns , _T(""));
-
-   ColumnIndexType col=0;
-   (*pTable)(0,col++) << _T("Bar Size");
-   (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("b")),  rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(0,col++) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,col++) << COLHDR(RPT_FY,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if (is_2015)
-   {
-      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
-      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("lw"));
-   }
-   else if ( is_2016 )
-   {
-      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
-      (*pTable)(0,col++) << symbol(lambda);
-   }
-   (*pTable)(0,col++) << _T("Modification")<<rptNewLine<<_T("Factor");
-   (*pTable)(0,col++) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,0) << _T("Bar Size");
+   (*pTable)(0,1) << COLHDR(Sub2(_T("A"),_T("b")),  rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0,2) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,3) << COLHDR(RPT_FY,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,4) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,5) << _T("Modification")<<rptNewLine<<_T("Factor");
+   (*pTable)(0,6) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    return pTable;
 }
 
-inline void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const REBARDEVLENGTHDETAILS& devDetails,
+void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const REBARDEVLENGTHDETAILS& devDetails,
                                        rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar)
 {
-   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion();
-   bool is_2016 = lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion();
-
-   ColumnIndexType col=0;
-   (*pTable)(row,col++) << barname;
-   (*pTable)(row,col++) << area.SetValue(devDetails.Ab);
-   (*pTable)(row,col++) << length.SetValue(devDetails.db);
-   (*pTable)(row,col++) << stress.SetValue(devDetails.fy);
-   (*pTable)(row,col++) << stress.SetValue(devDetails.fc);
-   if (is_2015 || is_2016 )
-   {
-      (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaRl);
-      (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaLw);
-   }
-   (*pTable)(row,col++) << scalar.SetValue(devDetails.factor);
-   (*pTable)(row,col++) << length.SetValue(devDetails.ldb);
+   (*pTable)(row,0) << barname;
+   (*pTable)(row,1) << area.SetValue(devDetails.Ab);
+   (*pTable)(row,2) << length.SetValue(devDetails.db);
+   (*pTable)(row,3) << stress.SetValue(devDetails.fy);
+   (*pTable)(row,4) << stress.SetValue(devDetails.fc);
+   (*pTable)(row,5) << scalar.SetValue(devDetails.factor);
+   (*pTable)(row,6) << length.SetValue(devDetails.ldb);
 }
 
 
@@ -118,38 +89,20 @@ LPCTSTR CDevLengthDetailsChapterBuilder::GetName() const
 
 rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec      = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType gdr;
 
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
-      gdr = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      gdr = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      span = ALL_SPANS;
-      gdr  = ALL_GIRDERS;
-   }
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLength2UnitValue, area,   pDisplayUnits->GetAreaUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,  pDisplayUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,    pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -157,25 +110,27 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 
-   GET_IFACE2(pBroker,IPrestressForce,pPSForce);
+   GET_IFACE2(pBroker,IPretensionForce,pPSForce);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pBridgeMaterialEx);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
+      GirderIndexType lastGirderIdx  = girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx;
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
-         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_ALL,POIFIND_OR);
+         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
          ATLASSERT( vPOI.size() != 0 );
-         pgsPointOfInterest dummy_poi = vPOI[0];
+         pgsPointOfInterest dummy_poi( vPOI[0] );
 
          STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(dummy_poi,false); // not debonded
          STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true);  // debonded
@@ -193,14 +148,14 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          if (pSpecEntry->GetPrestressTransferComputationType()!=pgsTypes::ptMinuteValue)
          {
-            *pParagraph_h << _T("Transfer Length of Prestressing Strands [5.11.4.1]") << rptNewLine;
+            *pParagraph_h << _T("Transfer Length [5.11.4.1]") << rptNewLine;
             *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TransferLength.png")) << rptNewLine;
             *pParagraph << Sub2(_T("d"),_T("b")) << _T(" = ") << length.SetValue(bonded_details.db) << rptNewLine;
             *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.lt) << rptNewLine;
          }
          else
          {
-            *pParagraph_h << _T("Zero Transfer Length for Prestressing Strands Selected in Project Criteria") << rptNewLine;
+            *pParagraph_h << _T("Zero Transfer Length Selected in Project Criteria") << rptNewLine;
             *pParagraph << _T("Actual length used ")<< Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.lt) << rptNewLine;
          }
 
@@ -208,11 +163,11 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,_T("Development Length of Prestressing Strands [5.11.4.2]"));
+         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,_T("Development Length [5.11.4.2]"));
          (*pParagraph) << pTable << rptNewLine;
 
 
-         if ( span == ALL_SPANS )
+         if ( girderKey.groupIndex == ALL_GROUPS )
          {
             pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
             pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -262,25 +217,30 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          (*pTable)(1,12)<< RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
 
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
-         Float64 girder_length = pBridge->GetGirderLength(spanIdx,gdrIdx);
-         Float64 half_girder_length = girder_length/2;
+         Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(thisGirderKey,0));
 
          stress.ShowUnitTag(false);
          length.ShowUnitTag(false);
 
          RowIndexType row = pTable->GetNumberOfHeaderRows();
-         for ( std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin(); iter != vPOI.end(); iter++ )
+         std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
+         std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
+         for ( ; iter != end; iter++ )
          {
-            pgsPointOfInterest poi = *iter;
+            pgsPointOfInterest poi( *iter );
+
+            Float64 segment_length = pBridge->GetSegmentLength(poi.GetSegmentKey());
+            Float64 half_segment_length = segment_length/2;
+
             STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(poi,false); // not debonded
             STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(poi,true); // debonded
+#pragma Reminder("UPDATE: bond factor should not be computed in the report") // use the code in the engineer agent
 
             Float64 lpx;
-            if ( poi.GetDistFromStart() < half_girder_length )
+            if ( poi.GetDistFromStart() < half_segment_length )
                lpx = poi.GetDistFromStart();
             else
-               lpx = girder_length - poi.GetDistFromStart();
+               lpx = segment_length - poi.GetDistFromStart();
 
             Float64 bond_factor;
             if ( lpx < bonded_details.lt )
@@ -292,7 +252,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
             bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
-            (*pTable)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+            (*pTable)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
             (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
             (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
             (*pTable)(row,3) << length.SetValue(bonded_details.db);
@@ -317,38 +277,35 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             (*pTable)(row,12) << scalar.SetValue(bond_factor);
 
             row++;
-         }
+         } // next poi
 
          pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
          (*pChapter) << pParagraph;
          (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. 5.11.4.2-2 and -3)") << rptNewLine;
 
          ////////////////////////////////////////////////////////////
-         // Development of longitudinal rebar in girder
-         pParagraph_h = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter << pParagraph_h;
-         *pParagraph_h << _T("Development Length of Longitudinal Rebar [5.11.2.1] - Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-
-         pParagraph = new rptParagraph;
-         *pChapter << pParagraph;
-
-         CComPtr<IRebarLayout> rebarLayout;
-         pLongRebarGeometry->GetRebarLayout(spanIdx, gdrIdx, &rebarLayout);
-         CollectionIndexType rbCnt;
-         rebarLayout->get_Count(&rbCnt);
-         if (rbCnt==0)
+         // Development of longitudinal rebar in segments
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            *pParagraph << _T("No longitudinal rebar exists in girder") << rptNewLine;
-         }
-         else
-         {
-            if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+            CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
+            pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pParagraph;
+
+#pragma Reminder("UPDATE: update heading so that it works for both PGSuper and PGSplice")
+            *pParagraph << _T("Development Length of Longitudinal Rebar [5.11.2.1]") << rptNewLine;
+            *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+            pParagraph = new rptParagraph;
+            *pChapter << pParagraph;
+
+            CComPtr<IRebarLayout> rebarLayout;
+            pLongRebarGeometry->GetRebarLayout(thisSegmentKey, &rebarLayout);
+            CollectionIndexType nRebars;
+            rebarLayout->get_Count(&nRebars);
+            if (nRebars == 0)
             {
-               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
-            }
-            else if ( lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion() )
-            {
-               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
+               *pParagraph << _T("No longitudinal rebar exists in girder") << rptNewLine;
             }
             else
             {
@@ -356,64 +313,64 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
                else
                   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
-            }
 
-            rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
-            (*pParagraph) << pTable << rptNewLine;
+               rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
+               (*pParagraph) << pTable << rptNewLine;
+   
+               Float64 fc = pMaterials->GetSegmentFc28(thisSegmentKey);
+               pgsTypes::ConcreteType concType = pMaterials->GetSegmentConcreteType(thisSegmentKey);
+               bool hasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(thisSegmentKey);
+               Float64 Fct = hasFct ? pMaterials->GetSegmentConcreteAggSplittingStrength(thisSegmentKey) : 0.0;
 
-            Float64 fc = pBridgeMaterialEx->GetFcGdr(spanIdx, gdrIdx);
-            pgsTypes::ConcreteType concType = pBridgeMaterialEx->GetGdrConcreteType(spanIdx, gdrIdx);
-            bool hasFct = pBridgeMaterialEx->DoesGdrConcreteHaveAggSplittingStrength(spanIdx, gdrIdx);
-            Float64 Fct = hasFct ? pBridgeMaterialEx->GetGdrConcreteAggSplittingStrength(spanIdx, gdrIdx) : 0.0;
+              // Cycle over all rebar in section and output development details for each unique size
+              RowIndexType row(1);
+              std::set<Float64> diamSet;
+              for (CollectionIndexType rebarIdx = 0; rebarIdx < nRebars; rebarIdx++)
+              {
+                 CComPtr<IRebarLayoutItem> layoutItem;
+                 rebarLayout->get_Item(rebarIdx, &layoutItem);
+                 CollectionIndexType nPatterns;
+                 layoutItem->get_Count(&nPatterns);
+                 for ( CollectionIndexType patternIdx = 0; patternIdx < nPatterns; patternIdx++ )
+                 {
+                    CComPtr<IRebarPattern> rebarPattern;
+                    layoutItem->get_Item(patternIdx, &rebarPattern);
+                    CComPtr<IRebar> rebar;
+                    rebarPattern->get_Rebar(&rebar);
+                    Float64 diam;
+                    rebar->get_NominalDiameter(&diam);
+                    if (diamSet.end()==diamSet.find(diam))
+                    {
+                        // We have a unique bar
+                        diamSet.insert(diam);
+                        REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
 
-            // Cycle over all rebar in section and output development details for each unique size
-            RowIndexType row(1);
-            std::set<Float64> diamSet;
-            for (CollectionIndexType irb=0; irb<rbCnt; irb++)
-            {
-               CComPtr<IRebarLayoutItem> layoutItem;
-               rebarLayout->get_Item(irb, &layoutItem);
-               CollectionIndexType patCnt;
-               layoutItem->get_Count(&patCnt);
-               for (CollectionIndexType ipat=0; ipat<patCnt; ipat++)
-               {
-                  CComPtr<IRebarPattern> rebarPattern;
-                  layoutItem->get_Item(ipat, &rebarPattern);
-                  CComPtr<IRebar> rebar;
-                  rebarPattern->get_Rebar(&rebar);
-                  Float64 diam;
-                  rebar->get_NominalDiameter(&diam);
-                  if (diamSet.end()==diamSet.find(diam))
-                  {
-                     // We have a unique bar
-                     diamSet.insert(diam);
-                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(spanIdx, gdrIdx, rebar, concType, fc, hasFct, Fct);
+                        CComBSTR barname;
+                        rebar->get_Name(&barname);
 
-                     CComBSTR barname;
-                     rebar->get_Name(&barname);
+                        WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
 
-                     WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
-
-                     row++;
-                  }
-               }
-            }
-         }
-      }
-   }
+                        row++;
+                     } // end if
+                  } // next patternIdx
+               } // next rebarIdx
+            }// end if
+         } // next segment
+      } // next girder
+   } // next group
 
    ////////////////////////////////////////////////////////////
    // Development of deck longitudinal rebar
    // Only report if explicit bars are defined (not if just As)
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   rptParagraph* pParagraph_h = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pParagraph_h;
-   *pParagraph_h << _T("Development Length of Longitudinal Rebar [5.11.2.1] in Deck Slab") << rptNewLine;
+   rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pParagraph;
+   *pParagraph << _T("Development Length of Longitudinal Rebar [5.11.2.1] in Deck Slab") << rptNewLine;
 
-   rptParagraph* pParagraph = new rptParagraph;
+   pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << _T("Full-length deck bars are considered to be developed along entire length of girder.") << rptNewLine;
 
@@ -430,10 +387,10 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       (*pParagraph) << pTable << rptNewLine;
 
       // Need deck concrete properties for all
-      Float64 fc = pBridgeMaterialEx->GetFcSlab();
-      pgsTypes::ConcreteType concType = pBridgeMaterialEx->GetSlabConcreteType();
-      bool hasFct = pBridgeMaterialEx->DoesSlabConcreteHaveAggSplittingStrength();
-      Float64 Fct = hasFct ? pBridgeMaterialEx->GetSlabConcreteAggSplittingStrength() : 0.0;
+      Float64 fc = pMaterials->GetDeckFc28();
+      pgsTypes::ConcreteType concType = pMaterials->GetDeckConcreteType();
+      bool hasFct = pMaterials->DoesDeckConcreteHaveAggSplittingStrength();
+      Float64 Fct = hasFct ? pMaterials->GetDeckConcreteAggSplittingStrength() : 0.0;
 
       CComPtr<IRebar> rebar; // need one of these to feed our dev length function
       rebar.CoCreateInstance(CLSID_Rebar);
@@ -441,12 +398,14 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       std::set<Float64> diamSet; // only report unique bars
 
       RowIndexType row(1);
-      for(std::vector<CDeckRebarData::NegMomentRebarData>::const_iterator it = negMomRebarColl.begin(); it!=negMomRebarColl.end(); it++)
+      std::vector<CDeckRebarData::NegMomentRebarData>::const_iterator iter(negMomRebarColl.begin());
+      std::vector<CDeckRebarData::NegMomentRebarData>::const_iterator end(negMomRebarColl.end());
+      for ( ; iter != end; iter++ )
       {
-         const CDeckRebarData::NegMomentRebarData& rdata = *it;
+         const CDeckRebarData::NegMomentRebarData& rdata = *iter;
 
          matRebar::Size size = rdata.RebarSize;
-         if (size!=matRebar::bsNone)
+         if (size != matRebar::bsNone)
          {
             const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(rdata.RebarType, rdata.RebarGrade, size);
 
@@ -469,10 +428,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                Float64 fpy = pRebar->GetYieldStrength();
                Float64 Ab  = pRebar->GetNominalArea();
 
-               rebar->Init(barname, Es, density, fpu, fpy, db, Ab);
+               rebar->Init(barname, Es, density, fpu, fpy, db, Ab, INVALID_INDEX);
+               // NOTE: using INVALID_INDEX above because it doesn't matter what Generic Bridge Model
+               // stage this rebar is introduced for purposes of computing development length. The
+               // next line of code computes the development length on the lfy
 
-               // Use INVALID_INDEX for span/gdr to get deck rebar development
-               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(INVALID_INDEX,INVALID_INDEX, rebar, concType, fc, hasFct, Fct);
+               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
 
                WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                row++;
@@ -490,21 +451,3 @@ CChapterBuilder* CDevLengthDetailsChapterBuilder::Clone() const
    return new CDevLengthDetailsChapterBuilder;
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

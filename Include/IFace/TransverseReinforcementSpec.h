@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -94,13 +94,8 @@ interface ITransverseReinforcementSpec : IUnknown
    virtual Float64 GetMinConfinmentAvS()=0;
 
    //------------------------------------------------------------------------
-   // Returns the minimum av/s for detailing per 5.8.2.5
-   // Obsolete.. only works for normal weight concrete
-   virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy)=0;
-
-   //------------------------------------------------------------------------
-   // Returns max bar spacing for vu over and under limits per 5.8.2.7
-   virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit)=0;
+   // Returns max barspacing for Vu over and under limits per 5.8.2.7
+   virtual void GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit)=0;
 
    //------------------------------------------------------------------------
    // Returns min barspacing for stirrups

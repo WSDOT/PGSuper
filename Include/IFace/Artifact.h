@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,6 +45,8 @@ COPYRIGHT
 // FORWARD DECLARATIONS
 //
 class pgsGirderArtifact;
+class pgsSegmentArtifact;
+class pgsClosurePourArtifact;
 class pgsDesignArtifact;
 class pgsLiftingAnalysisArtifact;
 class pgsHaulingAnalysisArtifact;
@@ -68,13 +70,15 @@ DEFINE_GUID(IID_IArtifact,
 0x752da970, 0x6ea0, 0x11d2, 0x8e, 0xeb, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface IArtifact : IUnknown
 {
-   virtual const pgsGirderArtifact* GetArtifact(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual const pgsDesignArtifact* CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,const std::vector<arDesignOptions>& options) = 0;
-   virtual const pgsDesignArtifact* GetDesignArtifact(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual void CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact) = 0;
-   virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc) = 0;
+   virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) = 0;
+   virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) = 0;
+   virtual const pgsClosurePourArtifact* GetClosurePourArtifact(const CSegmentKey& segmentKey) = 0;
+   virtual const pgsDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions options) = 0;
+   virtual const pgsDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) = 0;
+   virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact) = 0;
+   virtual void CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,pgsHaulingAnalysisArtifact* pArtifact) = 0;
 
-   virtual const pgsRatingArtifact* GetRatingArtifact(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex) = 0;
+   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex) = 0;
 };
 
 #endif // INCLUDED_IFACE_ARTIFACT_H_

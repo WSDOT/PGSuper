@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include <PgsExt\DesignArtifact.h>
 #include <DesignConfigUtil.h>
 #include <EAF\EAFUtilities.h>
-#include <PgsExt\BridgeDescription.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,15 +47,14 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsDesignArtifact::pgsDesignArtifact()
 {
-   Init(true);
+   Init();
 }
 
-pgsDesignArtifact::pgsDesignArtifact(SpanIndexType span,GirderIndexType gdr)
+#pragma Reminder("UPDATE: design artifact should be girder based, not segment based")
+pgsDesignArtifact::pgsDesignArtifact(const CSegmentKey& segmentKey) :
+m_SegmentKey(segmentKey)
 {
-   Init(true);
-
-   m_Span = span;
-   m_Gdr  = gdr;
+   Init();
 }
 
 pgsDesignArtifact::pgsDesignArtifact(const pgsDesignArtifact& rOther)
@@ -105,40 +104,12 @@ std::vector<pgsDesignArtifact::DesignNote> pgsDesignArtifact::GetDesignNotes() c
    return m_DesignNotes;
 }
 
-IndexType pgsDesignArtifact::DoPreviouslyFailedDesignsExist() const
+const CSegmentKey& pgsDesignArtifact::GetSegmentKey() const
 {
-   return !m_PreviouslyFailedDesigns.empty();
+   return m_SegmentKey;
 }
 
-void pgsDesignArtifact::AddFailedDesign(const arDesignOptions& options)
-{
-   m_PreviouslyFailedDesigns.push_back(options.doDesignForFlexure);
-}
-
-std::vector<arFlexuralDesignType> pgsDesignArtifact::GetPreviouslyFailedFlexuralDesigns() const
-{
-   return m_PreviouslyFailedDesigns;
-}
-
-SpanIndexType pgsDesignArtifact::GetSpan() const
-{
-   return m_Span;
-}
-
-GirderIndexType pgsDesignArtifact::GetGirder() const
-{
-   return m_Gdr;
-}
-
-void pgsDesignArtifact::InitializeDesign(const arDesignOptions& options)
-{
-   // Reset the artifact data
-   Init(false);
-
-   SetDesignOptions(options);
-}
-
-void pgsDesignArtifact::SetDesignOptions(const arDesignOptions& options)
+void pgsDesignArtifact::SetDesignOptions(arDesignOptions options)
 {
    m_DesignOptions = options;
 }
@@ -185,52 +156,7 @@ void pgsDesignArtifact::SetNumHarpedStrands(StrandIndexType Nh)
 
 StrandIndexType pgsDesignArtifact::GetNumHarpedStrands() const
 {
-   if(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
-      dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure)
-   {
-      return PRESTRESSCONFIG::CountStrandsInFill(m_RaisedAdjustableStrandFill);
-   }
-   else
-   {
-      return m_Nh;
-   }
-}
-
-pgsTypes::AdjustableStrandType pgsDesignArtifact::GetAdjustableStrandType() const
-{
-   // Strand type is based on design type
-   if (m_DesignOptions.doDesignForFlexure==dtDesignForHarping)
-   {
-      return pgsTypes::asHarped;
-   }
-   else if (m_DesignOptions.doDesignForFlexure==dtDesignForDebonding || 
-            m_DesignOptions.doDesignForFlexure==dtDesignFullyBonded  ||
-            m_DesignOptions.doDesignForFlexure==dtDesignFullyBondedRaised ||
-            m_DesignOptions.doDesignForFlexure==dtDesignForDebondingRaised)
-   {
-      return pgsTypes::asStraight;
-   }
-   else
-   {
-      ATLASSERT(0);
-      return pgsTypes::asStraight;
-   }
-}
-
-void pgsDesignArtifact::SetRaisedAdjustableStrands(const ConfigStrandFillVector& strandFill)
-{
-   ATLASSERT(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
-             dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure);
-
-   m_RaisedAdjustableStrandFill = strandFill;
-}
-
-ConfigStrandFillVector pgsDesignArtifact::GetRaisedAdjustableStrands() const
-{
-   ATLASSERT(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure ||
-             dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure);
-
-   return m_RaisedAdjustableStrandFill;
+   return m_Nh;
 }
 
 void pgsDesignArtifact::SetPjackStraightStrands(Float64 Pj)
@@ -413,40 +339,25 @@ pgsTypes::TTSUsage pgsDesignArtifact::GetTemporaryStrandUsage() const
    return pgsTypes::ttsPretensioned;
 }
 
-GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
+GDRCONFIG pgsDesignArtifact::GetSegmentConfiguration() const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    GDRCONFIG config;
-   PRESTRESSCONFIG& rpsconfig(config.PrestressConfig); // use reference as a shortcut
+   config.PrestressConfig.SetStrandFill(pgsTypes::Straight,  pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Straight,  GetNumStraightStrands()));
+   config.PrestressConfig.SetStrandFill(pgsTypes::Harped,    pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped,    GetNumHarpedStrands()));
+   config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Temporary, GetNumTempStrands()));
 
-   rpsconfig.SetStrandFill(pgsTypes::Straight,  pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Straight,  GetNumStraightStrands()));
+   config.PrestressConfig.Pjack[pgsTypes::Straight]  = GetPjackStraightStrands();
+   config.PrestressConfig.Pjack[pgsTypes::Harped]    = GetPjackHarpedStrands();
+   config.PrestressConfig.Pjack[pgsTypes::Temporary] = GetPjackTempStrands();
 
-   // Raised designs store strand fill directly
-   if(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
-      dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure)
-   {
-      rpsconfig.SetStrandFill(pgsTypes::Harped, m_RaisedAdjustableStrandFill );
-   }
-   else
-   {
-      rpsconfig.SetStrandFill(pgsTypes::Harped, pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(), pgsTypes::Harped, GetNumHarpedStrands()));
-   }
-
-   rpsconfig.SetStrandFill(pgsTypes::Temporary, pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Temporary, GetNumTempStrands()));
-
-   rpsconfig.Pjack[pgsTypes::Straight]  = GetPjackStraightStrands();
-   rpsconfig.Pjack[pgsTypes::Harped]    = GetPjackHarpedStrands();
-   rpsconfig.Pjack[pgsTypes::Temporary] = GetPjackTempStrands();
-
-   rpsconfig.EndOffset = GetHarpStrandOffsetEnd();
-   rpsconfig.HpOffset  = GetHarpStrandOffsetHp();
-
-   rpsconfig.AdjustableStrandType = GetAdjustableStrandType();
+   config.PrestressConfig.EndOffset = GetHarpStrandOffsetEnd();
+   config.PrestressConfig.HpOffset  = GetHarpStrandOffsetHp();
    
-   rpsconfig.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
+   config.PrestressConfig.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
 
    config.Fci       = GetReleaseStrength();
    config.Fc        = GetConcreteStrength();
@@ -454,7 +365,7 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
    config.bHasFct   = m_Concrete.HasAggSplittingStrength();
    config.Fct       = m_Concrete.GetAggSplittingStrength();
 
-   rpsconfig.TempStrandUsage = GetTemporaryStrandUsage();
+   config.PrestressConfig.TempStrandUsage = GetTemporaryStrandUsage();
 
    // allow moduli to be computed
    config.bUserEci = m_IsUserEci;
@@ -480,291 +391,9 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);
 
-   WriteShearDataToStirrupConfig(m_ShearData, config.StirrupConfig);
-
-//   WriteLongitudinalRebarDataToConfig(m_LongitudinalRebarData, config.LongitudinalRebarConfig);
+   WriteShearDataToStirrupConfig(&m_ShearData, config.StirrupConfig);
 
    return config;
-}
-
-CGirderData pgsDesignArtifact::GetGirderData() const
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-
-   // Start with girder data in current project and tweak for design
-   CGirderData data = *(pGirderData->GetGirderData(m_Span, m_Gdr));
-
-   if (this->GetDesignOptions().doDesignForFlexure != dtNoDesign)
-   {
-      ModGirderDataForFlexureDesign(pBroker,data);
-   }
-
-   if (this->GetDesignOptions().doDesignForShear)
-   {
-      ModGirderDataForShearDesign(pBroker,data);
-   }
-
-   return data;
-}
-
-void pgsDesignArtifact::ModGirderDataForFlexureDesign(IBroker* pBroker, CGirderData& rdata) const
-{
-
-   SpanIndexType   span  = this->GetSpan();
-   GirderIndexType gdr   = this->GetGirder();
-
-   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderTypes* pGirderTypes = pBridgeDesc->GetSpan(span)->GetGirderTypes();
-
-   std::_tstring gdrName = pGirderTypes->GetGirderName(gdr);
-
-   arDesignOptions design_options = this->GetDesignOptions();
-
-   if (dtDesignFullyBondedRaised  != design_options.doDesignForFlexure &&
-       dtDesignForDebondingRaised != design_options.doDesignForFlexure)
-   {
-      // Strand Designs using continuous fill for all stands
-      pgsTypes::AdjustableStrandType adjType;
-      if(dtDesignForHarping == design_options.doDesignForFlexure)
-      {
-         adjType = pgsTypes::asHarped;
-      }
-      else
-      {
-         adjType = pgsTypes::asStraight;
-      }
-
-      rdata.PrestressData.SetAdjustableStrandType(adjType);
-
-      ConfigStrandFillVector harpfillvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, this->GetNumHarpedStrands());
-
-      // Convert Adjustable strand offset data
-      // offsets are absolute measure in the design artifact
-      // Convert them to the measurement basis that the CGirderData object is using, unless it's the default,
-      // then let's use a favorite
-      if (hsoLEGACY == rdata.PrestressData.HsoEndMeasurement)
-      {
-         rdata.PrestressData.HsoEndMeasurement = hsoBOTTOM2BOTTOM;
-      }
-
-      rdata.PrestressData.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), adjType,
-                                                                                          harpfillvec, 
-                                                                                          rdata.PrestressData.HsoEndMeasurement, 
-                                                                                          this->GetHarpStrandOffsetEnd());
-
-      if (hsoLEGACY == rdata.PrestressData.HsoHpMeasurement)
-      {
-         rdata.PrestressData.HsoHpMeasurement = hsoBOTTOM2BOTTOM;
-      }
-
-      rdata.PrestressData.HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), adjType,
-                                                                                        harpfillvec, 
-                                                                                        rdata.PrestressData.HsoHpMeasurement, 
-                                                                                        this->GetHarpStrandOffsetHp());
-
-      // See if strand design data fits in grid
-      bool fills_grid=false;
-      StrandIndexType num_permanent = this->GetNumHarpedStrands() + this->GetNumStraightStrands();
-      StrandIndexType ns(0), nh(0);
-      if (design_options.doStrandFillType == ftGridOrder)
-      {
-         // we asked design to fill using grid, but this may be a non-standard design - let's check
-         if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, span, gdr, &ns, &nh))
-         {
-            if (ns == this->GetNumStraightStrands() && nh ==  this->GetNumHarpedStrands() )
-            {
-               fills_grid = true;
-            }
-         }
-      }
-
-      if ( fills_grid )
-      {
-         ATLASSERT(num_permanent==ns+nh);
-         rdata.PrestressData.SetTotalPermanentNstrands(num_permanent, ns, nh);
-         rdata.PrestressData.Pjack[pgsTypes::Permanent]               = this->GetPjackStraightStrands() + this->GetPjackHarpedStrands();
-         rdata.PrestressData.bPjackCalculated[pgsTypes::Permanent]    = this->GetUsedMaxPjackStraightStrands();
-      }
-      else
-      {
-         rdata.PrestressData.SetHarpedStraightNstrands(this->GetNumStraightStrands(), this->GetNumHarpedStrands());
-      }
-
-      rdata.PrestressData.SetTemporaryNstrands(this->GetNumTempStrands());
-
-   }
-   else
-   {
-      // Raised straight design
-      rdata.PrestressData.SetAdjustableStrandType(pgsTypes::asStraight);
-
-      // Raised straight adjustable strands are filled directly, but others use fill order.
-      // must convert all to DirectStrandFillCollection
-      ConfigStrandFillVector strvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Straight, this->GetNumStraightStrands());
-      DirectStrandFillCollection strfill =  ConvertConfigToDirectStrandFill(strvec);
-      rdata.PrestressData.SetDirectStrandFillStraight(strfill);
-
-      DirectStrandFillCollection harpfill =  ConvertConfigToDirectStrandFill(this->GetRaisedAdjustableStrands());
-      rdata.PrestressData.SetDirectStrandFillHarped(harpfill);
-
-      ConfigStrandFillVector tempvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Temporary, this->GetNumTempStrands());
-      DirectStrandFillCollection tempfill =  ConvertConfigToDirectStrandFill(tempvec);
-      rdata.PrestressData.SetDirectStrandFillTemporary(tempfill);
-
-      // Convert Adjustable strand offset data. This is typically zero from library, but must be converted to input datum
-      // offsets are absolute measure in the design artifact
-      // convert them to the measurement basis that the CGirderData object is using
-      ConfigStrandFillVector harpfillvec = this->GetRaisedAdjustableStrands();
-         
-      rdata.PrestressData.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asStraight,
-                                                                                          harpfillvec, 
-                                                                                          rdata.PrestressData.HsoEndMeasurement, 
-                                                                                          this->GetHarpStrandOffsetEnd());
-
-      rdata.PrestressData.HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asStraight,
-                                                                                        harpfillvec, 
-                                                                                        rdata.PrestressData.HsoHpMeasurement, 
-                                                                                        this->GetHarpStrandOffsetHp());
-   }
-
-   rdata.PrestressData.Pjack[pgsTypes::Harped]               = this->GetPjackHarpedStrands();
-   rdata.PrestressData.Pjack[pgsTypes::Straight]             = this->GetPjackStraightStrands();
-   rdata.PrestressData.Pjack[pgsTypes::Temporary]            = this->GetPjackTempStrands();
-   rdata.PrestressData.bPjackCalculated[pgsTypes::Harped]    = this->GetUsedMaxPjackHarpedStrands();
-   rdata.PrestressData.bPjackCalculated[pgsTypes::Straight]  = this->GetUsedMaxPjackStraightStrands();
-   rdata.PrestressData.bPjackCalculated[pgsTypes::Temporary] = this->GetUsedMaxPjackTempStrands();
-   rdata.PrestressData.LastUserPjack[pgsTypes::Harped]       = this->GetPjackHarpedStrands();
-   rdata.PrestressData.LastUserPjack[pgsTypes::Straight]     = this->GetPjackStraightStrands();
-   rdata.PrestressData.LastUserPjack[pgsTypes::Temporary]    = this->GetPjackTempStrands();
-
-   rdata.PrestressData.TempStrandUsage = this->GetTemporaryStrandUsage();
-
-   // Designer doesn't do extended strands
-   rdata.PrestressData.ClearExtendedStrands(pgsTypes::Straight, pgsTypes::metStart);
-   rdata.PrestressData.ClearExtendedStrands(pgsTypes::Straight, pgsTypes::metEnd);
-
-   // Get debond information from design artifact
-   rdata.PrestressData.ClearDebondData();
-   rdata.PrestressData.bSymmetricDebond = true;  // design is always symmetric
-
-   // TRICKY: Mapping from DEBONDCONFIG to CDebondInfo is tricky because
-   //         former designates individual strands and latter stores strands
-   //         in grid order.
-   // Use utility tool to make the strand indexing conversion
-   ConfigStrandFillVector strtfillvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Straight, this->GetNumStraightStrands());
-   ConfigStrandFillTool fillTool( strtfillvec );
-
-   DebondConfigCollection dbcoll = this->GetStraightStrandDebondInfo();
-   // sort this collection by strand idices to ensure we get it right
-   std::sort( dbcoll.begin(), dbcoll.end() ); // default < operator is by index
-
-   for (DebondConfigConstIterator dbit = dbcoll.begin(); dbit!=dbcoll.end(); dbit++)
-   {
-      const DEBONDCONFIG& rdbrinfo = *dbit;
-
-      CDebondInfo cdbi;
-
-      StrandIndexType gridIndex, otherPos;
-      fillTool.StrandPositionIndexToGridIndex(rdbrinfo.strandIdx, &gridIndex, &otherPos);
-
-      cdbi.strandTypeGridIdx = gridIndex;
-
-      // If there is another position, this is a pair. Increment to next position
-      if (otherPos != INVALID_INDEX)
-      {
-         dbit++;
-
-#ifdef _DEBUG
-         const DEBONDCONFIG& ainfo = *dbit;
-         StrandIndexType agrid;
-         fillTool.StrandPositionIndexToGridIndex(ainfo.strandIdx, &agrid, &otherPos);
-         ATLASSERT(agrid==gridIndex); // must have the same grid index
-#endif
-      }
-
-      cdbi.Length1    = rdbrinfo.LeftDebondLength;
-      cdbi.Length2    = rdbrinfo.RightDebondLength;
-
-      rdata.PrestressData.Debond[pgsTypes::Straight].push_back(cdbi);
-   }
-   
-   // concrete
-   rdata.Material.Fci = this->GetReleaseStrength();
-   if (!rdata.Material.bUserEci)
-   {
-      rdata.Material.Eci = lrfdConcreteUtil::ModE( rdata.Material.Fci, 
-                                                             rdata.Material.StrengthDensity, 
-                                                             false  ); // ignore LRFD range checks 
-      rdata.Material.Eci *= (rdata.Material.EcK1*rdata.Material.EcK2);
-   }
-
-   rdata.Material.Fc  = this->GetConcreteStrength();
-   if (!rdata.Material.bUserEc)
-   {
-      rdata.Material.Ec = lrfdConcreteUtil::ModE( rdata.Material.Fc, 
-                                                            rdata.Material.StrengthDensity, 
-                                                            false );// ignore LRFD range checks 
-      rdata.Material.Ec *= (rdata.Material.EcK1*rdata.Material.EcK2);
-   }
-
-   // lifting
-   if ( design_options.doDesignLifting )
-   {
-      rdata.HandlingData.LeftLiftPoint  = this->GetLeftLiftingLocation();
-      rdata.HandlingData.RightLiftPoint = this->GetRightLiftingLocation();
-   }
-
-   // shipping
-   if ( design_options.doDesignHauling )
-   {
-      rdata.HandlingData.LeadingSupportPoint  = this->GetLeadingOverhang();
-      rdata.HandlingData.TrailingSupportPoint = this->GetTrailingOverhang();
-   }
-}
-
-void pgsDesignArtifact::ModGirderDataForShearDesign(IBroker* pBroker, CGirderData& rdata) const
-{
-   GET_IFACE2(pBroker,IShear,pShear);
-
-   // get the design data
-   rdata.ShearData.ShearZones.clear();
-
-   ZoneIndexType nShearZones = this->GetNumberOfStirrupZonesDesigned();
-   if (0 < nShearZones)
-   {
-      rdata.ShearData =  this->GetShearData();
-   }
-   else
-   {
-      // if no shear zones were designed, we had a design failure.
-      // create a single zone with no stirrups in it.
-      CShearZoneData dat;
-      rdata.ShearData.ShearZones.push_back(dat);
-   }
-
-   if(this->GetWasLongitudinalRebarForShearDesigned())
-   {
-      // Rebar data was changed during shear design
-      rdata.LongitudinalRebarData  = this->GetLongitudinalRebarData();
-   }
-
-   // It is possible for shear stress to control final concrete strength
-   // Make sure it is updated if no flexural design was requested
-   if (this->GetDesignOptions().doDesignForFlexure == dtNoDesign)
-   {
-      rdata.Material.Fc  = this->GetConcreteStrength();
-      if (!rdata.Material.bUserEc)
-      {
-         rdata.Material.Ec = lrfdConcreteUtil::ModE( rdata.Material.Fc, 
-                                                               rdata.Material.StrengthDensity, 
-                                                               false );// ignore LRFD range checks 
-         rdata.Material.Ec *= (rdata.Material.EcK1*rdata.Material.EcK2);
-      }
-   }
 }
 
 ZoneIndexType pgsDesignArtifact::GetNumberOfStirrupZonesDesigned() const
@@ -772,9 +401,9 @@ ZoneIndexType pgsDesignArtifact::GetNumberOfStirrupZonesDesigned() const
    return m_NumShearZones;
 }
 
-const CShearData& pgsDesignArtifact::GetShearData() const
+const CShearData2* pgsDesignArtifact::GetShearData() const
 {
-   return m_ShearData;
+   return &m_ShearData;
 }
 
 void pgsDesignArtifact::SetNumberOfStirrupZonesDesigned(ZoneIndexType num)
@@ -782,7 +411,7 @@ void pgsDesignArtifact::SetNumberOfStirrupZonesDesigned(ZoneIndexType num)
    m_NumShearZones = num;
 }
 
-void pgsDesignArtifact::SetShearData(const CShearData& rdata)
+void pgsDesignArtifact::SetShearData(const CShearData2& rdata)
 {
    m_ShearData = rdata;
 }
@@ -849,23 +478,15 @@ void pgsDesignArtifact::SetFinalDesignState(const ConcreteStrengthDesignState& s
 }
 
 
-void pgsDesignArtifact::ConcreteStrengthDesignState::SetStressState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
+void pgsDesignArtifact::ConcreteStrengthDesignState::SetState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
               pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
 {
-   m_Action = actStress;
    m_MinimumControls = controlledByMin;
-   m_Stage = stage;
-   m_StressType = stressType;
-   m_LimitState = limitState;
-   m_StressLocation = stressLocation;
-}
-
-void pgsDesignArtifact::ConcreteStrengthDesignState::SetShearState(pgsTypes::Stage stage, pgsTypes::LimitState limitState)
-{
-   m_Action = actShear;
-   m_MinimumControls = false;
-   m_Stage = stage;
-   m_LimitState = limitState;
+   m_SegmentKey      = segmentKey;
+   m_IntervalIdx     = intervalIdx;
+   m_StressType      = stressType;
+   m_LimitState      = limitState;
+   m_StressLocation  = stressLocation;
 }
 
 bool pgsDesignArtifact::ConcreteStrengthDesignState::WasControlledByMinimum() const
@@ -873,20 +494,15 @@ bool pgsDesignArtifact::ConcreteStrengthDesignState::WasControlledByMinimum() co
    return m_MinimumControls;
 }
 
-pgsDesignArtifact::ConcreteStrengthDesignState::Action pgsDesignArtifact::ConcreteStrengthDesignState::GetAction() const
-{
-   return m_Action;
-}
-
-pgsTypes::Stage pgsDesignArtifact::ConcreteStrengthDesignState::Stage() const
+IntervalIndexType pgsDesignArtifact::ConcreteStrengthDesignState::Interval() const
 {
    PRECONDITION(m_MinimumControls==false);
-   return m_Stage;
+   return m_IntervalIdx;
 }
 
 pgsTypes::StressType pgsDesignArtifact::ConcreteStrengthDesignState::StressType() const
 {
-   PRECONDITION(m_MinimumControls==false && m_Action==actStress);
+   PRECONDITION(m_MinimumControls==false);
    return m_StressType;
 }
 
@@ -898,7 +514,7 @@ pgsTypes::LimitState pgsDesignArtifact::ConcreteStrengthDesignState::LimitState(
 
 pgsTypes::StressLocation pgsDesignArtifact::ConcreteStrengthDesignState::StressLocation() const
 {
-   PRECONDITION(m_MinimumControls==false && m_Action==actStress);
+   PRECONDITION(m_MinimumControls==false);
    return m_StressLocation;
 }
 
@@ -909,42 +525,23 @@ void pgsDesignArtifact::ConcreteStrengthDesignState::SetRequiredAdditionalRebar(
 
 bool pgsDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditionalRebar() const
 {
-   ATLASSERT(m_Stage==pgsTypes::CastingYard || m_Stage==pgsTypes::Lifting || m_Stage==pgsTypes::Hauling);
+#if defined _DEBUG
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   ATLASSERT(m_IntervalIdx <= pIntervals->GetHaulSegmentInterval(m_SegmentKey));
+#endif
    return m_RequiredAdditionalRebar;
 }
 
-inline LPCTSTR StageString(pgsTypes::Stage stage)
+LPCTSTR IntervalString(IntervalIndexType intervalIdx)
 {
-   switch(stage)
-   {
-   case pgsTypes::CastingYard:
-      return _T("Casting Yard");
-      break;
-   case pgsTypes::Lifting:
-      return _T("Lifting");
-      break;
-   case pgsTypes::Hauling:
-      return _T("Hauling");
-      break;
-   case pgsTypes::GirderPlacement:
-      return _T("Girder Placement");
-      break;
-   case pgsTypes::TemporaryStrandRemoval:
-      return _T("Temporary Strand Removal");
-      break;
-   case pgsTypes::BridgeSite1:
-      return _T("Bridge Site 1");
-      break;
-   case pgsTypes::BridgeSite2:
-      return _T("Bridge Site 2");
-      break;
-   case pgsTypes::BridgeSite3:
-      return _T("Bridge Site 3");
-      break;
-   default:
-      ATLASSERT(0);
-      return _T("Error in stage name");
-   }
+   USES_CONVERSION;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   CComBSTR bstrDescription(pIntervals->GetDescription(intervalIdx));
+   return OLE2T(bstrDescription);
 }
 
 inline LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
@@ -1014,22 +611,11 @@ std::_tstring pgsDesignArtifact::ConcreteStrengthDesignState::AsString() const
    {
       return std::_tstring(_T("Minimum"));
    }
-   else if (m_Action==actStress)
-   {
-      std::_tostringstream sstr;
-      sstr<< _T("flexural stress in ") << StageString(m_Stage)<<_T(", ")<<LimitStateString(m_LimitState)<<_T(", ")<<StressTypeString(m_StressType)<<_T(", at ")<<StressLocationString(m_StressLocation);
-      return sstr.str();
-   }
-   else if (m_Action==actShear)
-   {
-      std::_tostringstream sstr;
-      sstr<< _T("ultimate shear stress in ") << StageString(m_Stage)<<_T(", ")<<LimitStateString(m_LimitState);
-      return sstr.str();
-   }
    else
    {
-      ATLASSERT(0);
-      return std::_tstring(_T("unknown design state. "));
+      std::_tostringstream sstr;
+      sstr<< IntervalString(m_IntervalIdx)<<_T(", ")<<LimitStateString(m_LimitState)<<_T(", ")<<StressTypeString(m_StressType)<<_T(", at ")<<StressLocationString(m_StressLocation);
+      return sstr.str();
    }
 }
 
@@ -1044,23 +630,13 @@ bool pgsDesignArtifact::ConcreteStrengthDesignState::operator==(const ConcreteSt
       // both are true
       return true;
    }
-   else if (m_Action != rOther.m_Action)
-   {
-      return false;
-   }
    else
    {
-      if (m_Action==actStress)
-      {
-         return m_Stage==rOther.m_Stage && m_StressType==rOther.m_StressType &&
-                m_LimitState==rOther.m_LimitState && m_StressLocation==rOther.m_StressLocation &&
-                m_RequiredAdditionalRebar==rOther.m_RequiredAdditionalRebar;
-      }
-      else
-      {
-         ATLASSERT(rOther.m_Action==actShear);
-         return m_Stage==rOther.m_Stage && m_LimitState==rOther.m_LimitState;
-      }
+      return m_IntervalIdx == rOther.m_IntervalIdx && 
+             m_StressType  == rOther.m_StressType &&
+             m_LimitState  == rOther.m_LimitState && 
+             m_StressLocation == rOther.m_StressLocation &&
+             m_RequiredAdditionalRebar == rOther.m_RequiredAdditionalRebar;
    }
 }
 
@@ -1077,14 +653,12 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
 
    m_DesignNotes = rOther.m_DesignNotes;
 
-   m_Span = rOther.m_Span;
-   m_Gdr = rOther.m_Gdr;
+   m_SegmentKey = rOther.m_SegmentKey;
 
    m_DesignOptions  = rOther.m_DesignOptions;
 
    m_Ns                  = rOther.m_Ns;
    m_Nh                  = rOther.m_Nh;
-   m_RaisedAdjustableStrandFill = rOther.m_RaisedAdjustableStrandFill;
    m_Nt                  = rOther.m_Nt;
    m_PjS                 = rOther.m_PjS;
    m_PjH                 = rOther.m_PjH;
@@ -1119,8 +693,6 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
 
    m_ConcreteReleaseDesignState = rOther.m_ConcreteReleaseDesignState;
    m_ConcreteFinalDesignState = rOther.m_ConcreteFinalDesignState;
-
-   m_PreviouslyFailedDesigns = rOther.m_PreviouslyFailedDesigns;
 }
 
 void pgsDesignArtifact::MakeAssignment(const pgsDesignArtifact& rOther)
@@ -1136,17 +708,8 @@ void pgsDesignArtifact::MakeAssignment(const pgsDesignArtifact& rOther)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void pgsDesignArtifact::Init(bool fromBirth)
+void pgsDesignArtifact::Init()
 {
-   if (fromBirth)
-   {
-      m_Span = 0;
-      m_Gdr  = 0;
-
-      // want to keep track of previous design options
-      m_PreviouslyFailedDesigns.clear();
-   }
-
    m_Outcome = Success;
 
    m_DesignNotes.clear();
@@ -1155,7 +718,6 @@ void pgsDesignArtifact::Init(bool fromBirth)
 
    m_Ns                  = 0;
    m_Nh                  = 0;
-   m_RaisedAdjustableStrandFill.clear();
    m_Nt                  = 0;
    m_PjS                 = 0;
    m_PjH                 = 0;

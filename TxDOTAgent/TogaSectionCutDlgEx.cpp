@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -62,7 +62,7 @@ m_nHarpPoints(0),
 m_CutLocation(CTxDOTOptionalDesignGirderViewPage::Center)
 {
 	//{{AFX_DATA_INIT(CTogaSectionCutDlgEx)
-	m_CutIndex = INVALID_INDEX;
+	m_CutIndex = -1;
 	//}}AFX_DATA_INIT
 }
 
@@ -88,7 +88,7 @@ void CTogaSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CTogaSectionCutDlgEx) 
 	//}}AFX_DATA_MAP
-	DDX_Radio(pDX, IDC_LEFT_END, (int&)m_CutIndex);
+	DDX_Radio(pDX, IDC_LEFT_END, m_CutIndex);
 	DDX_Text(pDX, IDC_VALUE, m_Value);
    DDX_UnitValueAndTag( pDX, IDC_VALUE, IDC_VALUE_UNITS, m_Value, pDisplayUnits->GetSpanLengthUnit() );
 

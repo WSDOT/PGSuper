@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,10 @@
 
 #include <System\Transaction.h>
 #include <PgsExt\DesignArtifact.h>
+#include <PgsExt\StrandData.h>
+#include <PgsExt\GirderMaterial.h>
+#include <PsgLib\ShearData.h>
+#include <PgsExt\HandlingData.h>
 
 class txnDesignGirder : public txnTransaction
 {
@@ -47,6 +51,9 @@ private:
 
    struct DesignData;
 
+   void CacheFlexureDesignResults(DesignData& rdata);
+   void CacheShearDesignResults(DesignData& rdata);
+
    void DoExecute(int i);
 
    // Store all design data for a girder
@@ -55,7 +62,10 @@ private:
       pgsDesignArtifact m_DesignArtifact;
 
       // index 0 = old data (before design), 1 = new data (design outcome)
-      CGirderData m_GirderData[2];
+      CGirderMaterial m_Material[2];
+      CStrandData m_Strands[2];
+      CShearData2 m_ShearData[2];
+      CHandlingData m_HandlingData[2];
       Float64 m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
       pgsTypes::SlabOffsetType m_SlabOffsetType[2];
    };

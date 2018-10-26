@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -196,7 +196,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 	if (nCol==1)
 	{
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
@@ -220,7 +220,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       sysTokenizer::size_type npd = tokizerd.size();
       if (npd==1 || npd==2)
       {
-         Float64 d;
+         double d;
          if (!sysTokenizer::ParseDouble(tokizerd[0].c_str(), &d))
 		   {
 			   SetWarningText (_T("Axle spacing value(s) must be a single number or two numbers separated by a dash"));
@@ -235,7 +235,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
          if (npd==2)
          {
-            Float64 dmax;
+            double dmax;
             if (!sysTokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
 		      {
 			      SetWarningText (_T("Axle spacing value(s) must be a single number or two numbers separated by a dash"));
@@ -399,7 +399,7 @@ void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
    bool is_var_axl=false;
    for (ROWCOL iaxl=0; iaxl<naxles; iaxl++)
    {
-      Float64 weight(0), min_spacing(0), max_spacing(0);
+      double weight(0), min_spacing(0), max_spacing(0);
       SpacingType stype = ParseAxleRow(nRow, pDX, &weight, &min_spacing, &max_spacing);
 
       weight = ::ConvertToSysUnits(weight, pDisplayUnits->GeneralForce.UnitOfMeasure);
@@ -442,8 +442,8 @@ void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 }
 
 
-CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, Float64* pWeight, 
-                                                               Float64* pSpacingMin, Float64* pSpacingMax)
+CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, double* pWeight, 
+                                                               double* pSpacingMin, double* pSpacingMax)
 {
    Uint32 axlno = nRow;
 
@@ -452,7 +452,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    // weight
 	CString s = GetCellValue(nRow, 1);
 
-   Float64 d;
+   double d;
    if (!sysTokenizer::ParseDouble(s, &d))
 	{
       CString msg; 
@@ -484,7 +484,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
       sysTokenizer::size_type npd = tokizerd.size();
       if (npd==1 || npd==2)
       {
-         Float64 d;
+         double d;
          if (!sysTokenizer::ParseDouble(tokizerd[0].c_str(), &d))
 		   {
             CString msg; 
@@ -506,7 +506,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
 
          if (npd==2)
          {
-            Float64 dmax;
+            double dmax;
             if (!sysTokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
 		      {
                CString msg; 

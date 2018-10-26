@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,8 +39,9 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\StatusCenter.h>
+#include <IFace\Intervals.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 
 #ifdef _DEBUG
@@ -87,7 +88,7 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    return S_OK;
 }
 
-void CVoidedSlabFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CVoidedSlabFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
    CComPtr<IVoidedSlabSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_VoidedSlabSection);
@@ -95,7 +96,7 @@ void CVoidedSlabFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType 
    gdrsection->get_Beam(&beam);
 
    Float64 H,W,D,S,J;
-   IndexType N;
+   WebIndexType N;
    GetDimensions(dimensions,H,W,D,S,N,J);
 
    beam->put_Height(H);
@@ -107,13 +108,13 @@ void CVoidedSlabFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType 
    gdrsection.QueryInterface(ppSection);
 }
 
-void CVoidedSlabFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CVoidedSlabFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   Float64 length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 H,W,D,S,J;
-   IndexType N;
+   WebIndexType N;
    GetDimensions(dimensions,H,W,D,S,N,J);
 
    Float64 height = H;
@@ -132,81 +133,65 @@ void CVoidedSlabFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType 
    rect->QueryInterface(ppShape);
 }
 
-void CVoidedSlabFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CVoidedSlabFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
 
-   // Length of the segments will be measured fractionally
-   ssmbr->put_AreSegmentLengthsFractional(VARIANT_TRUE);
-   segment->put_Length(-1.0);
-
    // Build up the beam shape
    GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,IGirderData, pGirderData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
-   CComQIPtr<IShape> shape(gdrsection);
-   segment->putref_Shape(shape);
+   CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrsection);
 
    // Beam materials
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
-   material->put_E(pMaterial->GetEcGdr(spanIdx,gdrIdx));
-   material->put_Density(pMaterial->GetStrDensityGdr(spanIdx,gdrIdx));
-   segment->putref_Material(material);
+
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      Float64 E = pMaterial->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
+      Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
+
+      material->put_E(intervalIdx,E);
+      material->put_Density(intervalIdx,D);
+   }
+
+   CComQIPtr<IShape> shape(gdrsection);
+   ATLASSERT(shape);
+   segment->AddShape(shape,material,NULL);
 
    ssmbr->AddSegment(segment);
 }
 
-void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsPoiMgr* pPoiMgr)
+void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr)
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
+   Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
-   pgsPointOfInterest poiStart(span,gdr,0.00);
-   poiStart.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiStart.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiStart.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-
-   pgsPointOfInterest poiEnd(span,gdr,gdrLength);
-   poiEnd.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiEnd.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiEnd.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
+   pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
+   pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
    // move bridge site poi to the start/end bearing
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::GirderPlacement);
-   stages.push_back(pgsTypes::TemporaryStrandRemoval);
-   stages.push_back(pgsTypes::BridgeSite1);
-   stages.push_back(pgsTypes::BridgeSite2);
-   stages.push_back(pgsTypes::BridgeSite3);
-   
-   Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
-   Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
+  
+   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
    poiStart.SetDistFromStart(start_length);
    poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiStart.RemoveStage(pgsTypes::Lifting);
-   poiStart.RemoveStage(pgsTypes::Hauling);
-   poiStart.AddStages(stages,POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-
-   poiEnd.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.RemoveStage(pgsTypes::Lifting);
-   poiEnd.RemoveStage(pgsTypes::Hauling);
-   poiEnd.AddStages(stages,POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
@@ -241,18 +226,18 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
    }
 }
 
-void CVoidedSlabFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CVoidedSlabFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     
    // depends on # of voids
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
-   const GirderLibraryEntry* pGirderLib = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
-   IndexType nVoids = (IndexType)pGirderLib->GetDimension(_T("Number_of_Voids"));
+   Float64 nVoids = pGdrEntry->GetDimension(_T("Number_of_Voids"));
 
    if ( nVoids == 0 )
       pEngineer->Init(SolidSlab);
@@ -301,7 +286,7 @@ void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimen
    // Set the shapes for harped strand bounds 
    // Voided slabs don't normally support harped strands, so the question
    Float64 H,W,D,S,J;
-   IndexType N;
+   WebIndexType N;
    GetDimensions(dimensions,H,W,D,S,N,J);
 
    Float64 width = W;
@@ -382,7 +367,7 @@ std::vector<const unitLength*> CVoidedSlabFactory::GetDimensionUnits(bool bSIUni
 bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
 {
    Float64 H,W,D,S,J;
-   IndexType N;
+   WebIndexType N;
    GetDimensions(dimensions,H,W,D,S,N,J);
 
    if ( H <= 0.0 )
@@ -401,7 +386,7 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
       return false;
    }
 
-   if ( N == INVALID_INDEX )
+   if ( N < 0.0 )
    {
       std::_tostringstream os;
       os << _T("Invalid Number of Voids") << std::ends;
@@ -551,28 +536,43 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructure
    return dimensions;
 }
 
-bool CVoidedSlabFactory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+bool CVoidedSlabFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    return true;
 }
 
-Float64 CVoidedSlabFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+Float64 CVoidedSlabFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
-   std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
+   std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
    pgsPointOfInterest prev_poi = *iter;
-   Float64 prev_area = pSectProp2->GetAg(pgsTypes::CastingYard,prev_poi);
+   Float64 prev_area;
+   if ( spMode == pgsTypes::spmGross )
+      prev_area = pSectProp->GetAg(releaseIntervalIdx,prev_poi);
+   else
+      prev_area = pSectProp->GetNetAg(releaseIntervalIdx,prev_poi);
+
    iter++;
 
-   for ( ; iter != vPOI.end(); iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
+   for ( ; iter != end; iter++ )
    {
       pgsPointOfInterest poi = *iter;
-      Float64 area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+      Float64 area;
+      if ( spMode == pgsTypes::spmGross )
+         area = pSectProp->GetAg(releaseIntervalIdx,poi);
+      else
+         area = pSectProp->GetNetAg(releaseIntervalIdx,poi);
 
       Float64 avg_area = (prev_area + area)/2;
       V += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
@@ -584,21 +584,22 @@ Float64 CVoidedSlabFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,Gir
    return V;
 }
 
-Float64 CVoidedSlabFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
+Float64 CVoidedSlabFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids)
 {
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   pgsPointOfInterest poi(spanIdx,gdrIdx,0.0);
-   Float64 perimeter = pSectProp2->GetPerimeter(poi);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   Float64 perimeter = pSectProp->GetPerimeter(pgsPointOfInterest(segmentKey,0.00));
    
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
    Float64 solid_slab_surface_area = perimeter*Lg;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
    Float64 D = GetDimension(dimensions,_T("Void_Diameter"));
    long    N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
    Float64 void_surface_area = Lg*N*M_PI*D;
@@ -607,11 +608,6 @@ Float64 CVoidedSlabFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanId
       void_surface_area *= 0.50;
 
    Float64 surface_area = solid_slab_surface_area + void_surface_area;
-
-   // add area of both ends of the girder
-   Float64 start_area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-   Float64 end_area   = start_area;
-   surface_area += (start_area + end_area);
 
    return surface_area;
 }
@@ -815,14 +811,6 @@ CLSID CVoidedSlabFactory::GetCLSID()
    return CLSID_VoidedSlabFactory;
 }
 
-std::_tstring CVoidedSlabFactory::GetName()
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID CVoidedSlabFactory::GetFamilyCLSID()
 {
    return CLSID_SlabBeamFamily;
@@ -839,11 +827,6 @@ std::_tstring CVoidedSlabFactory::GetGirderFamilyName()
 std::_tstring CVoidedSlabFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
-}
-
-std::_tstring CVoidedSlabFactory::GetPublisherContactInformation()
-{
-   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CVoidedSlabFactory::GetResourceInstance()
@@ -868,14 +851,14 @@ void CVoidedSlabFactory::GetDimensions(const IBeamFactory::Dimensions& dimension
                                        Float64& W,
                                        Float64& D,
                                        Float64& S,
-                                       IndexType& N,
+                                       WebIndexType& N,
                                        Float64& J)
 {
    H = GetDimension(dimensions,_T("H"));
    W = GetDimension(dimensions,_T("W"));
    D = GetDimension(dimensions,_T("Void_Diameter"));
    S = GetDimension(dimensions,_T("Void_Spacing"));
-   N = (IndexType)GetDimension(dimensions,_T("Number_of_Voids"));
+   N = (WebIndexType)GetDimension(dimensions,_T("Number_of_Voids"));
    J = GetDimension(dimensions,_T("Jmax"));
 }
 
@@ -970,9 +953,9 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
    }
 }
 
-WebIndexType CVoidedSlabFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CVoidedSlabFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions)
 {
-   WebIndexType nv = (WebIndexType)GetDimension(dimensions,_T("Number_of_Voids"));
+   long nv = (long)GetDimension(dimensions,_T("Number_of_Voids"));
    return nv+1;
 }
 
@@ -995,9 +978,4 @@ void CVoidedSlabFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimens
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
-}
-
-GirderIndexType CVoidedSlabFactory::GetMinimumBeamCount()
-{
-   return 1;
 }

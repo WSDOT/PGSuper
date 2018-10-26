@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
 
@@ -52,8 +51,9 @@ LOG
 class REPORTINGCLASS CUserReactionTable
 {
 public:
-   // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
+   // This class serves double duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
+   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    // GROUP: LIFECYCLE
 
@@ -78,8 +78,8 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             ReactionTableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
+   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                             TableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -92,7 +92,7 @@ protected:
    void MakeCopy(const CUserReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CUserReactionTable& rOther);
+   virtual void MakeAssignment(const CUserReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 9;
@@ -85,14 +85,14 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    return table;
 }
 
-void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << moment.SetValue( details.pLosses->GetAddlGdrMoment() );
-   (*this)(row,2) << moment.SetValue( details.pLosses->GetSidlMoment() );
-   (*this)(row,3) << dim.SetValue( details.pLosses->GetEccPermanent() );
-   (*this)(row,4) << dim.SetValue( details.pLosses->GetYbg() );
-   (*this)(row,5) << dim.SetValue( details.pLosses->GetYbc() );
-   (*this)(row,6) << mom_inertia.SetValue( details.pLosses->GetIg() );
-   (*this)(row,7) << mom_inertia.SetValue( details.pLosses->GetIc() );
-   (*this)(row,8) << stress.SetValue( -details.pLosses->GetDeltaFcd1() );
+   (*this)(row,1) << moment.SetValue( pDetails->pLosses->GetAddlGdrMoment() );
+   (*this)(row,2) << moment.SetValue( pDetails->pLosses->GetSidlMoment() );
+   (*this)(row,3) << dim.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
+   (*this)(row,4) << dim.SetValue( pDetails->pLosses->GetYbg() );
+   (*this)(row,5) << dim.SetValue( pDetails->pLosses->GetYbc() );
+   (*this)(row,6) << mom_inertia.SetValue( pDetails->pLosses->GetIg() );
+   (*this)(row,7) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
+   (*this)(row,8) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
 }

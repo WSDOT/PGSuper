@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,24 +21,25 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\InterfaceShearTable.h>
+#include <Reporting\ConfinementCheckTable.h>
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\LongReinfShearCheck.h>
 #include <Reporting\GirderDetailingCheck.h>
-#include <Reporting\DebondCheckTable.h>
 #include "TexasShearChapterBuilder.h"
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -74,66 +75,60 @@ LPCTSTR CTexasShearChapterBuilder::GetName() const
 
 rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSpec->GetSpan();
-   GirderIndexType girder = pSpec->GetGirder();
+   const CGirderKey& girderKey(pSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
+   const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    // Vertical Shear check
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
    bool bStrutAndTieRequired;
-   *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
-
-    CShearCheckTable().BuildNotes(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,bStrutAndTieRequired);
+   *p << CShearCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthI,bStrutAndTieRequired) << rptNewLine;
+   CShearCheckTable().BuildNotes(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthI,bStrutAndTieRequired);
 
    if ( bPermit )
    {
       p = new rptParagraph;
       *pChapter << p;
-      *p << CShearCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
-
-      CShearCheckTable().BuildNotes(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII,bStrutAndTieRequired);
+      *p << CShearCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthII,bStrutAndTieRequired) << rptNewLine;
+      CShearCheckTable().BuildNotes(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthII,bStrutAndTieRequired);
    }
 
    // Interface Shear check
    if ( pBridge->IsCompositeDeck() )
    {
-      CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI);
+      CInterfaceShearTable().Build(pBroker,pChapter,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthI);
 
       if ( bPermit )
-         CInterfaceShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthII);
+         CInterfaceShearTable().Build(pBroker,pChapter,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthII);
    }
 
    // Longitudinal reinforcement for shear
-   CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthI,pDisplayUnits);
+   CLongReinfShearCheck().Build(pChapter,pBroker,pGirderArtifact,liveLoadIntervalIdx,pgsTypes::StrengthI,pDisplayUnits);
 
    if ( bPermit )
    {
-      CLongReinfShearCheck().Build(pChapter,pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::StrengthII,pDisplayUnits);
+      CLongReinfShearCheck().Build(pChapter,pBroker,pGirderArtifact,liveLoadIntervalIdx,pgsTypes::StrengthII,pDisplayUnits);
    }
 
    // Girder Detailing
-   CGirderDetailingCheck(true).Build(pChapter,pBroker,span,girder,pDisplayUnits);
-
-   // Debonding check if applicable
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   if ( pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight) )
-   {
-      CDebondCheckTable().Build(pChapter, pBroker,span,girder,pgsTypes::Straight, pDisplayUnits);
-   }
+   CGirderDetailingCheck(true).Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    return pChapter;
 }

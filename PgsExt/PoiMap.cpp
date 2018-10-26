@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,8 +60,7 @@ void pgsPoiMap::Clear()
 
 PoiIDType pgsPoiMap::GetModelPoi(const pgsPointOfInterest& productPoi) const
 {
-   std::map<pgsPointOfInterest,PoiIDType>::const_iterator found;
-   found = m_Map.find( productPoi );
+   std::map<pgsPointOfInterest,PoiIDType>::const_iterator found( m_Map.find( productPoi ) );
    if ( found == m_Map.end() )
       return INVALID_ID;
 
@@ -72,8 +71,9 @@ std::vector<PoiIDType> pgsPoiMap::GetModelPois() const
 {
    std::vector<PoiIDType> poi;
 
-   std::map<pgsPointOfInterest,PoiIDType>::const_iterator i;
-   for ( i = m_Map.begin(); i != m_Map.end(); i++ )
+   std::map<pgsPointOfInterest,PoiIDType>::const_iterator i(m_Map.begin());
+   std::map<pgsPointOfInterest,PoiIDType>::const_iterator end(m_Map.begin());
+   for ( ; i != end; i++ )
    {
       poi.push_back( (*i).second );
    }

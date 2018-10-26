@@ -1,0 +1,441 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2013  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "resource.h"
+#include <Graphing\StabilityGraphBuilder.h>
+#include "StabilityGraphController.h"
+
+#include <PGSuperColors.h>
+#include <PgsExt\PhysicalConverter.h>
+#include <PgsExt\LiftingAnalysisArtifact.h>
+#include <PgsExt\HaulingAnalysisArtifact.h>
+
+#include <EAF\EAFUtilities.h>
+#include <EAF\EAFGraphView.h>
+#include <EAF\EAFAutoProgress.h>
+
+#include <IFace\Artifact.h>
+#include <IFace\Bridge.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\DocumentType.h>
+
+#include <MFCTools\Text.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+static const COLORREF CURVE1_COLOR      = RGB(0,0,200);
+static const COLORREF CURVE2_COLOR      = RGB(200,0,0);
+static const int      CURVE_WIDTH      = 1;
+static const int      CURVE_STYLE      = PS_SOLID;
+static const int      LIMIT_STYLE      = PS_DASH;
+
+// create a dummy unit conversion tool to pacify the graph constructor
+static unitmgtLengthData DUMMY(unitMeasure::Meter);
+static LengthTool    DUMMY_TOOL(DUMMY);
+
+BEGIN_MESSAGE_MAP(CStabilityGraphBuilder, CEAFGraphBuilderBase)
+   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
+END_MESSAGE_MAP()
+
+
+CStabilityGraphBuilder::CStabilityGraphBuilder() :
+CEAFAutoCalcGraphBuilder(),
+m_Graph(DUMMY_TOOL,DUMMY_TOOL),
+m_pXFormat(0),
+m_pYFormat(0)
+{
+   m_pGraphController = new CStabilityGraphController;
+   SetName(_T("Girder Stability"));
+}
+
+CStabilityGraphBuilder::CStabilityGraphBuilder(const CStabilityGraphBuilder& other) :
+CEAFAutoCalcGraphBuilder(other),
+m_Graph(DUMMY_TOOL,DUMMY_TOOL),
+m_pXFormat(0),
+m_pYFormat(0)
+{
+   m_pGraphController = new CStabilityGraphController;
+}
+
+CStabilityGraphBuilder::~CStabilityGraphBuilder()
+{
+   if ( m_pGraphController != NULL )
+   {
+      delete m_pGraphController;
+      m_pGraphController = NULL;
+   }
+
+   if ( m_pXFormat != NULL )
+   {
+      delete m_pXFormat;
+      m_pXFormat = NULL;
+   }
+
+   if ( m_pYFormat != NULL )
+   {
+      delete m_pYFormat;
+      m_pYFormat = NULL;
+   }
+}
+
+CEAFGraphControlWindow* CStabilityGraphBuilder::GetGraphControlWindow()
+{
+   return m_pGraphController;
+}
+
+CGraphBuilder* CStabilityGraphBuilder::Clone()
+{
+   // set the module state or the commands wont route to the
+   // the graph control window
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return new CStabilityGraphBuilder(*this);
+}
+
+int CStabilityGraphBuilder::CreateControls(CWnd* pParent,UINT nID)
+{
+   EAFGetBroker(&m_pBroker);
+
+   // let the base class do its thing
+   CEAFAutoCalcGraphBuilder::CreateControls(pParent,nID);
+
+   // create our controls
+   if ( !m_pGraphController->CreateControls(pParent,nID) )
+   {
+      TRACE0("Failed to create control bar\n");
+      return -1; // failed to create
+   }
+
+   // setup the graph
+   m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
+   m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
+   m_Graph.SetYAxisTitle(_T("Factor of Safety"));
+
+   // x axis
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
+   m_pXFormat = new LengthTool(lengthUnit);
+   m_Graph.SetXAxisValueFormat(*m_pXFormat);
+   m_Graph.SetXAxisNumberOfMinorTics(0);
+   m_Graph.SetXAxisNiceRange(false);
+   m_Graph.SetXAxisNumberOfMajorTics(11);
+
+   // y axis
+   const unitmgtScalar& scalarUnit = pDisplayUnits->GetScalarFormat();
+   m_pYFormat = new ScalarTool(scalarUnit);
+   m_Graph.SetYAxisValueFormat(*m_pYFormat);
+   m_Graph.SetYAxisNiceRange(true);
+   m_Graph.SetYAxisNumberOfMinorTics(5);
+   m_Graph.SetYAxisNumberOfMajorTics(21);
+
+   // Show the grid by default... set the control to checked
+   m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
+   m_Graph.SetDoDrawGrid(); // show grid by default
+   m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
+
+   return 0;
+}
+
+void CStabilityGraphBuilder::OnShowGrid()
+{
+   m_Graph.SetDoDrawGrid( !m_Graph.GetDoDrawGrid() );
+   GetView()->Invalidate();
+}
+
+bool CStabilityGraphBuilder::UpdateNow()
+{
+   GET_IFACE(IProgress,pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   pProgress->UpdateMessage(_T("Building Graph"));
+
+   CWaitCursor wait;
+
+   int graphType = m_pGraphController->GetGraphType();
+   const CSegmentKey& segmentKey(m_pGraphController->GetSegmentKey());
+
+   m_Graph.ClearData();
+
+   IndexType seriesFS1 = m_Graph.CreateDataSeries();
+   m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_WIDTH, CURVE1_COLOR);
+   IndexType seriesFS2 = m_Graph.CreateDataSeries();
+   m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_WIDTH, CURVE2_COLOR);
+
+   IndexType limitFS1 = m_Graph.CreateDataSeries();
+   m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_WIDTH, CURVE1_COLOR);
+   IndexType limitFS2 = m_Graph.CreateDataSeries();
+   m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_WIDTH, CURVE2_COLOR);
+
+   GET_IFACE(IArtifact,pArtifact);
+   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE(IDocumentType,pDocType);
+
+   CString subtitle;
+   if ( pDocType->IsPGSuperDocument() )
+      subtitle.Format(_T("Span %d Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+   else
+      subtitle.Format(_T("Group %d Girder %s Segment %d"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex));
+
+   m_PrintSubtitle = std::_tstring(subtitle);
+
+   Float64 hp1,hp2;
+   Float64 stepSize = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+   pStrandGeom->GetHarpingPointLocations(segmentKey,&hp1,&hp2);
+
+   if ( graphType == GT_LIFTING )
+   {
+      GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+      if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+      {
+         CString strTitle;
+         strTitle.Format(_T("Effect of support location - Lifting Stage - %s"),m_PrintSubtitle.c_str());
+         m_Graph.SetTitle(std::_tstring(strTitle));
+         m_Graph.SetXAxisTitle(_T("Lift Point Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
+
+         Float64 FS1 = pGirderLiftingSpecCriteria->GetLiftingCrackingFs();
+         Float64 FS2 = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
+
+         Float64 loc = 0.0;
+         while ( loc <= hp1 )
+         {
+            pProgress->UpdateMessage(_T("Working..."));
+            pgsLiftingAnalysisArtifact artifact;
+
+            pArtifact->CreateLiftingAnalysisArtifact(segmentKey,loc,&artifact);
+
+            AddGraphPoint(seriesFS1,loc,artifact.GetMinFsForCracking());
+            AddGraphPoint(seriesFS2,loc,artifact.GetFsFailure());
+            AddGraphPoint(limitFS1,loc,FS1);
+            AddGraphPoint(limitFS2,loc,FS2);
+
+            loc += stepSize;
+         }
+      }
+   }
+   else
+   {
+      GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+      if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+      {
+         CString strTitle;
+         strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
+         m_Graph.SetTitle(std::_tstring(strTitle));
+         m_Graph.SetXAxisTitle(_T("Truck Support Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
+
+         GET_IFACE(IGirderHaulingPointsOfInterest,pHaulingPoi);
+
+         Float64 FS1 = pGirderHaulingSpecCriteria->GetHaulingCrackingFs();
+         Float64 FS2 = pGirderHaulingSpecCriteria->GetHaulingRolloverFs();
+
+         Float64 loc = pHaulingPoi->GetMinimumOverhang(segmentKey);
+         while ( loc <= hp1 )
+         {
+            pProgress->UpdateMessage(_T("Working..."));
+            pgsHaulingAnalysisArtifact artifact;
+   #pragma Reminder("REVIEW: Equal overhangs")
+            // this is probably the best thing to do with this view... but... give it some thought
+            // could do the interaction surface that Dave Chapman showed me
+            pArtifact->CreateHaulingAnalysisArtifact(segmentKey,loc,loc,&artifact);
+
+            AddGraphPoint(seriesFS1,loc,artifact.GetMinFsForCracking());
+            AddGraphPoint(seriesFS2,loc,artifact.GetFsRollover());
+
+            AddGraphPoint(limitFS1,loc,FS1);
+            AddGraphPoint(limitFS2,loc,FS2);
+
+            loc += stepSize;
+         }
+
+      }
+   }
+
+   return true;
+}
+
+void CStabilityGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
+{
+   // deal with unit conversion
+   arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
+   ASSERT(pcx);
+   arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
+   ASSERT(pcy);
+   m_Graph.AddPoint(series, gpPoint2d(pcx->Convert(xval),pcy->Convert(yval)));
+}
+
+void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   int graphType = m_pGraphController->GetGraphType();
+
+   if ( graphType == GT_LIFTING )
+   {
+      GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+      if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+      {
+         DrawTheGraph(pGraphWnd,pDC);
+      }
+      else
+      {
+         CFont font;
+         CFont* pOldFont = NULL;
+         if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+            pOldFont = pDC->SelectObject(&font);
+
+         MultiLineTextOut(pDC,0,0,_T("Lifting Analysis Disabled (See Project Criteria Library)\nUnable to create lifting stability graph."));
+
+         if ( pOldFont )
+            pDC->SelectObject(pOldFont);
+      }
+   }
+   else
+   {
+      GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+      if (pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+      {
+         DrawTheGraph(pGraphWnd,pDC);
+      }
+      else
+      {
+         CFont font;
+         CFont* pOldFont = NULL;
+         if ( font.CreatePointFont(100,_T("Arial"),pDC) )
+            pOldFont = pDC->SelectObject(&font);
+
+         MultiLineTextOut(pDC,0,0,_T("Hauling Analysis Disabled (See Project Criteria Library)\nUnable to create hauling stability graph."));
+
+         if ( pOldFont )
+            pDC->SelectObject(pOldFont);
+      }
+   }
+}
+
+void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
+{
+   int save = pDC->SaveDC();
+
+   // The graph is valided and there was not an error
+   // updating data.... draw the graph
+   CRect rect = GetView()->GetDrawingRect();
+
+   m_Graph.SetOutputRect(rect);
+   m_Graph.UpdateGraphMetrics(pDC->GetSafeHdc());
+
+   TCHAR buffer[45];
+   if (  m_pGraphController->GetGraphType() == GT_LIFTING )
+   {
+      GET_IFACE(IGirderLiftingSpecCriteria,pCriteria);
+      _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf = %3.1f"),
+         pCriteria->GetLiftingCrackingFs(),
+         pCriteria->GetLiftingFailureFs() );
+   }
+   else
+   {
+      GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
+      _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSr = %3.1f"),
+         pCriteria->GetHaulingCrackingFs(),
+         pCriteria->GetHaulingRolloverFs() );
+   }
+   m_Graph.SetSubtitle(std::_tstring(buffer));
+
+   m_Graph.Draw(pDC->GetSafeHdc());
+   DrawLegend(pDC);
+
+   pDC->RestoreDC(save);
+}
+
+void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
+{
+   // Graph doesn't support legends... Draw a legend in the top
+   // left corner of the graph's client area
+
+   CPen pen1(CURVE_STYLE,CURVE_WIDTH,CURVE1_COLOR);
+   CPen pen2(CURVE_STYLE,CURVE_WIDTH,CURVE2_COLOR);
+
+   CFont font;
+   font.CreatePointFont(80,_T("Arial"),pDC);
+   CFont* oldFont = pDC->SelectObject(&font);
+
+   CBrush brush;
+   brush.CreateSolidBrush(GRAPH_BACKGROUND);
+   CBrush* oldBrush = pDC->SelectObject(&brush );
+
+   COLORREF oldBkColor = pDC->SetBkColor(GRAPH_BACKGROUND);
+
+   const grlibPointMapper& mapper = m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc());
+   gpPoint2d org = mapper.GetWorldOrg();
+   gpSize2d  ext = mapper.GetWorldExt();
+
+   CPoint topLeft;
+   mapper.WPtoDP(org.X()-ext.Dx()/2.,org.Y()+ext.Dy()/2.,&topLeft.x,&topLeft.y);
+   topLeft.x += 5;
+   topLeft.y += 5;
+
+   UINT oldAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+
+   CString legend1, legend2;
+   CSize size1, size2;
+
+   if (  m_pGraphController->GetGraphType() == GT_LIFTING )
+   {
+      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend2 = _T("F.S. Against Failure (FSf)");
+   }
+   else
+   {
+      legend1 = _T("Min. F.S. Against Cracking (FScr)");
+      legend2 = _T("F.S. Against Rollover (FSr)");
+   }
+   
+   size1 = pDC->GetTextExtent(legend1);
+   size2 = pDC->GetTextExtent(legend2);
+
+   int logPixelsX = pDC->GetDeviceCaps(LOGPIXELSX); // Pixels per inch in the x direction
+   // we want a 1/2" line for the legend
+   int legendLength = logPixelsX/2;
+
+   CPoint bottomRight;
+   bottomRight.x = 5 + topLeft.x + max(size1.cx,size2.cx) + 5 + legendLength + 5;
+   bottomRight.y = 5 + topLeft.y + size1.cy + 5 + size2.cy + 5;
+
+   pDC->Rectangle(CRect(topLeft,bottomRight));
+   pDC->TextOut(5 + topLeft.x,5 + topLeft.y,legend1);
+   CPen* oldPen = pDC->SelectObject(&pen1);
+   pDC->MoveTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy/2);
+   pDC->LineTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy/2);
+
+   pDC->SelectObject(&pen2);
+   pDC->TextOut(5 + topLeft.x,5 + topLeft.y + size1.cy + 5, legend2);
+   pDC->MoveTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
+   pDC->LineTo(5 + topLeft.x + max(size1.cx,size1.cx) + 5 + legendLength,5 + topLeft.y + size1.cy + 5 + size2.cy/2);
+
+
+   pDC->SelectObject(oldPen);
+   pDC->SelectObject(oldFont);
+   pDC->SelectObject(oldBrush);
+   pDC->SetTextAlign(oldAlign);
+   pDC->SetBkColor(oldBkColor);
+}

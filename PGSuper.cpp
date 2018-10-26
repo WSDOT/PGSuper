@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,9 +60,6 @@ static char THIS_FILE[] = __FILE__;
 
 
 class CAboutDlg; // defined at bottom of file
-
-// block multithreaded passes through exception handler
-static bool sis_handling_neg_span = false;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperApp
@@ -188,7 +185,7 @@ BOOL CPGSuperApp::InitInstance()
 //   CREATE_LOGFILE("PGSuperApp"); 
 
    // Tip of the Day
-   CString strTipFile = GetAppLocation() + CString("PGSuper.tip");
+   CString strTipFile = GetAppLocation() + CString(_T("PGSuper.tip"));
 #if defined _DEBUG
    strTipFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
 #else
@@ -210,7 +207,7 @@ BOOL CPGSuperApp::InitInstance()
    // to the main application
    GetPluginCommandManager()->ReserveCommandIDRange(BRIDGELINK_PLUGIN_COMMAND_COUNT);
 
-   // user can Float64 click on a file to open
+   // user can double click on a file to open
    EnableShellOpen();
 
    // Help file defaults to the location of the application
@@ -219,25 +216,16 @@ BOOL CPGSuperApp::InitInstance()
    // Change help file name
    CString strHelpFile(m_pszHelpFilePath);
 #if defined _DEBUG
-#if defined _WIN64
-   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
-#else
-   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
-#endif
+   strHelpFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
-#if defined _WIN64
-   strHelpFile.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
-#else
-   strHelpFile.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
-#endif
+   strHelpFile.Replace(_T("RegFreeCOM\\Release\\"),_T(""));
 #endif
    free((void*)m_pszHelpFilePath);
    m_pszHelpFilePath = _tcsdup(strHelpFile);
 
-
-  if ( !CEAFApp::InitInstance() )
+   if ( !CEAFApp::InitInstance() )
       return FALSE;
 
 	return TRUE;
@@ -295,8 +283,13 @@ CString CPGSuperApp::GetVersionString(bool bIncludeBuildNumber) const
 
 void CPGSuperApp::RegistryInit()
 {
-   CEAFApp::RegistryInit();
+   // Application wide settings go under BridgeLink
+   // Each application plug in will create it's own hive in the registry
+   // We need to tweek the name here because this is actually the PGSuper.exe
+   free((void*)m_pszProfileName);
+   m_pszProfileName = _tcsdup(_T("BridgeLink"));
 
+   CEAFApp::RegistryInit();
 }
 
 void CPGSuperApp::RegistryExit()
@@ -467,10 +460,10 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CMFCLinkCtrl m_WSDOT;
-   CMFCLinkCtrl m_TxDOT;
-   CMFCLinkCtrl m_KDOT;
-   CMFCLinkCtrl m_BridgeSight;
+   CHyperLink m_WSDOT;
+   CHyperLink m_TxDOT;
+   CHyperLink m_KDOT;
+   CHyperLink m_BridgeSight;
 };
 
 CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIcon(IDR_MAINFRAME),IDD_ABOUTBOX)
@@ -501,23 +494,13 @@ BOOL CAboutDlg::OnInitDialog()
 	CEAFAboutDlg::OnInitDialog();
 	
 
-   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov"));
-   m_WSDOT.SetTooltip(_T("http://www.wsdot.wa.gov"));
-   m_WSDOT.SizeToContent();
-
-   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us"));
-   m_TxDOT.SetTooltip(_T("http://www.dot.state.tx.us"));
-   m_TxDOT.SizeToContent();
-
+   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov/"));
+   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us/"));
    m_KDOT.SetURL(_T("http://www.ksdot.org"));
-   m_KDOT.SetTooltip(_T("http://www.ksdot.org"));
-   m_KDOT.SizeToContent();
+   m_BridgeSight.SetURL(_T("http://www.bridgesight.com/"));
 
-   m_BridgeSight.SetURL(_T("http://www.bridgesight.com"));
-   m_BridgeSight.SetTooltip(_T("http://www.bridgesight.com"));
-   m_BridgeSight.SizeToContent();
-
-   return TRUE;  // return TRUE unless you set the focus to a control
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,10 +34,6 @@ CLASS
    pgsStirrupCheckArtifact
 ****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 pgsStirrupCheckArtifact::pgsStirrupCheckArtifact()
 {
 }
@@ -51,7 +47,6 @@ pgsStirrupCheckArtifact::~pgsStirrupCheckArtifact()
 {
 }
 
-//======================== OPERATORS  =======================================
 pgsStirrupCheckArtifact& pgsStirrupCheckArtifact::operator= (const pgsStirrupCheckArtifact& rOther)
 {
    if( this != &rOther )
@@ -62,22 +57,38 @@ pgsStirrupCheckArtifact& pgsStirrupCheckArtifact::operator= (const pgsStirrupChe
    return *this;
 }
 
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-void pgsStirrupCheckArtifact::AddStirrupCheckAtPoisArtifact(const pgsStirrupCheckAtPoisArtifactKey& key,
-                                                  const pgsStirrupCheckAtPoisArtifact& artifact)
+void pgsStirrupCheckArtifact::AddStirrupCheckAtPoisArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsStirrupCheckAtPoisArtifact& artifact)
 {
-   m_StirrupCheckAtPoisArtifacts.insert(std::make_pair(key,artifact));
+   std::vector<pgsStirrupCheckAtPoisArtifact>& vArtifacts(GetStirrupCheckArtifacts(intervalIdx,ls));
+   vArtifacts.push_back(artifact);
+   std::sort(vArtifacts.begin(),vArtifacts.end());
 }
 
-const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifact(const pgsStirrupCheckAtPoisArtifactKey& key) const
+CollectionIndexType pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
-   std::map<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact>::const_iterator found;
-   found = m_StirrupCheckAtPoisArtifacts.find( key );
-   if ( found == m_StirrupCheckAtPoisArtifacts.end() )
-      return 0;
+   const std::vector<pgsStirrupCheckAtPoisArtifact>& vArtifacts(GetStirrupCheckArtifacts(intervalIdx,ls));
+   return vArtifacts.size();
+}
 
-   return &(*found).second;
+const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType index) const
+{
+   const std::vector<pgsStirrupCheckAtPoisArtifact>& vArtifacts(GetStirrupCheckArtifacts(intervalIdx,ls));
+   return &vArtifacts[index];
+}
+
+const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifactAtPOI(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,PoiIDType poiID) const
+{
+   const std::vector<pgsStirrupCheckAtPoisArtifact>& vArtifacts(GetStirrupCheckArtifacts(intervalIdx,ls));
+   std::vector<pgsStirrupCheckAtPoisArtifact>::const_iterator iter(vArtifacts.begin());
+   std::vector<pgsStirrupCheckAtPoisArtifact>::const_iterator end(vArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsStirrupCheckAtPoisArtifact& artifact = *iter;
+      if ( artifact.GetPointOfInterest().GetID() == poiID )
+         return &artifact;
+   }
+
+   return NULL;
 }
 
 void pgsStirrupCheckArtifact::SetConfinementArtifact(const pgsConfinementArtifact& artifact)
@@ -107,35 +118,32 @@ void pgsStirrupCheckArtifact::Clear()
 
 bool pgsStirrupCheckArtifact::Passed() const
 {
-   std::map<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact>::const_iterator i3;
-   for ( i3 = m_StirrupCheckAtPoisArtifacts.begin(); i3 != m_StirrupCheckAtPoisArtifacts.end(); i3++ )
+   std::map<Key,std::vector<pgsStirrupCheckAtPoisArtifact>>::const_iterator item_iter(m_StirrupCheckAtPoisArtifacts.begin());
+   std::map<Key,std::vector<pgsStirrupCheckAtPoisArtifact>>::const_iterator item_end(m_StirrupCheckAtPoisArtifacts.end());
+   for ( ; item_iter != item_end; item_iter++ )
    {
-      const std::pair<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact>& artifact = *i3;
-      if (!artifact.second.Passed())
-         return false;
+      const std::pair<Key,std::vector<pgsStirrupCheckAtPoisArtifact>>& item(*item_iter);
+      std::vector<pgsStirrupCheckAtPoisArtifact>::const_iterator iter(item.second.begin());
+      std::vector<pgsStirrupCheckAtPoisArtifact>::const_iterator end(item.second.end());
+      for ( ; iter != end; iter++ )
+      {
+         const pgsStirrupCheckAtPoisArtifact& artifact(*iter);
+         if ( !artifact.Passed() )
+            return false;
+      }
    }
 
    bool bPassed = true;
 
    bPassed &= m_SplittingZoneArtifact.Passed();
-
    bPassed &= m_ConfinementArtifact.Passed();
 
    return bPassed;
 }
 
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void pgsStirrupCheckArtifact::MakeCopy(const pgsStirrupCheckArtifact& rOther)
 {
    m_StirrupCheckAtPoisArtifacts   = rOther.m_StirrupCheckAtPoisArtifacts;
-   m_Fy                            = rOther.m_Fy;
-   m_Fc                            = rOther.m_Fc;
    m_ConfinementArtifact           = rOther.m_ConfinementArtifact;
    m_SplittingZoneArtifact         = rOther.m_SplittingZoneArtifact;
 }
@@ -145,37 +153,18 @@ void pgsStirrupCheckArtifact::MakeAssignment(const pgsStirrupCheckArtifact& rOth
    MakeCopy( rOther );
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsStirrupCheckArtifact::AssertValid() const
+std::vector<pgsStirrupCheckAtPoisArtifact>& pgsStirrupCheckArtifact::GetStirrupCheckArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
-   return true;
+   Key key;
+   key.intervalIdx = intervalIdx;
+   key.ls = ls;
+   std::map<Key,std::vector<pgsStirrupCheckAtPoisArtifact>>::iterator found( m_StirrupCheckAtPoisArtifacts.find(key) );
+   if ( found == m_StirrupCheckAtPoisArtifacts.end() )
+   {
+      std::vector<pgsStirrupCheckAtPoisArtifact> vArtifacts;
+      std::pair<std::map<Key,std::vector<pgsStirrupCheckAtPoisArtifact>>::iterator,bool> results(m_StirrupCheckAtPoisArtifacts.insert(std::make_pair(key,vArtifacts)));
+      found = results.first;
+   }
+
+   return found->second;
 }
-
-void pgsStirrupCheckArtifact::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsStirrupCheckArtifact" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsStirrupCheckArtifact::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsStirrupCheckArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsStirrupCheckArtifact");
-
-   TESTME_EPILOG("StirrupCheckArtifact");
-}
-#endif // _UNITTEST

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,14 +23,14 @@
 #ifndef INCLUDED_POIKEY_H_
 #define INCLUDED_POIKEY_H_
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 template <class T>
 class TPoiKey
 {
 public:
-   TPoiKey(T subkey,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) :
-      m_Subkey(subkey), m_Poi(span,gdr,distFromStart) 
+   TPoiKey(T subkey,GroupIndexType grpIdx,GirderIndexType gdrIdx,Float64 distFromStart) :
+      m_Subkey(subkey), m_Poi(grpIdx,gdrIdx,distFromStart) 
       {}
 
    TPoiKey(T subkey,const pgsPointOfInterest& poi) : 
@@ -62,50 +62,68 @@ public:
 
       return false;
    }
+
+   const pgsPointOfInterest& GetPoi() const {return m_Poi;}
 private:
    T                  m_Subkey;
    pgsPointOfInterest m_Poi;
 };
 
-class PrestressSubKey
+typedef TPoiKey<IntervalIndexType> PoiIntervalKey;
+typedef TPoiKey<PoiIDType> PoiIDKey;
+
+
+
+template <class T>
+class TSSMbrKey
 {
 public:
-   PrestressSubKey()
+   TSSMbrKey(T subkey,GirderIDType gdrID,SegmentIndexType segIdx,Float64 distFromStartOfSegment) :
+      m_Subkey(subkey), m_SSMbrID(gdrID), m_SegmentIdx(segIdx), m_DistFromStartOfSegment(distFromStartOfSegment) 
+      {}
+
+   TSSMbrKey(const TSSMbrKey& rOther)
    {
-      m_Stage = pgsTypes::AfterLosses;
-      m_Strand = pgsTypes::Straight;
+      m_Subkey        = rOther.m_Subkey;
+      m_SSMbrID       = rOther.m_SSMbrID;
+      m_SegmentIdx    = rOther.m_SegmentIdx;
+      m_DistFromStartOfSegment = rOther.m_DistFromStartOfSegment;
    }
 
-   PrestressSubKey(pgsTypes::LossStage stage,pgsTypes::StrandType strand) :
-      m_Stage(stage), m_Strand(strand)
-      {
-      }
-
-   PrestressSubKey(const PrestressSubKey& rOther)
+   TSSMbrKey& operator=(const TSSMbrKey& rOther)
    {
-      m_Stage = rOther.m_Stage;
-      m_Strand = rOther.m_Strand;
+      m_Subkey        = rOther.m_Subkey;
+      m_SSMbrID       = rOther.m_SSMbrID;
+      m_SegmentIdx    = rOther.m_SegmentIdx;
+      m_DistFromStartOfSegment = rOther.m_DistFromStartOfSegment;
+      return *this;
    }
 
-   bool operator<(const PrestressSubKey& rOther) const
+   bool operator<(const TSSMbrKey& rOther) const
    {
-      if ( m_Stage < rOther.m_Stage ) return true;
-      if ( rOther.m_Stage < m_Stage ) return false;
+      // this operator is just for container sorting. It has nothing to do with
+      // temporal order or geometric order of POIs
+      if (m_Subkey         < rOther.m_Subkey         ) return true;
+      if (rOther.m_Subkey  < m_Subkey                ) return false;
 
-      if ( m_Strand < rOther.m_Strand ) return true;
-      if ( rOther.m_Strand < m_Strand ) return false;
+      if ( m_SSMbrID < rOther.m_SSMbrID ) return true;
+      if ( rOther.m_SSMbrID < m_SSMbrID ) return false;
+
+      if ( m_SegmentIdx < rOther.m_SegmentIdx ) return true;
+      if ( rOther.m_SegmentIdx < m_SegmentIdx ) return false;
+
+      if ( m_DistFromStartOfSegment < rOther.m_DistFromStartOfSegment ) return true;
+      if ( rOther.m_DistFromStartOfSegment < m_DistFromStartOfSegment ) return false;
 
       return false;
    }
-
 private:
-   pgsTypes::LossStage m_Stage;
-   pgsTypes::StrandType m_Strand;
+   T                  m_Subkey;
+   GirderIDType m_SSMbrID;
+   SegmentIndexType m_SegmentIdx;
+   Float64 m_DistFromStartOfSegment;
 };
 
-typedef TPoiKey<pgsTypes::Stage> PoiStageKey;
-typedef TPoiKey<pgsTypes::LossStage> PoiLossStageKey;
-typedef TPoiKey<PrestressSubKey> PrestressPoiKey;
-typedef TPoiKey<PoiIDType> PoiKey;
+typedef TSSMbrKey<IntervalIndexType> SSMbrIntervalKey;
 
 #endif // INCLUDED_POIKEY_H_

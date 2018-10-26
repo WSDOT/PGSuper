@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
@@ -71,21 +70,6 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-
-   SpanIndexType InSpan;
-   GirderIndexType InGdr;
-   if ( pSGRptSpec )
-   {
-      InSpan = pSGRptSpec->GetSpan();
-      InGdr = pSGRptSpec->GetGirder();
-   }
-   else
-   {
-      InSpan = ALL_SPANS;
-      InGdr  = ALL_GIRDERS;
-   }
-
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << _T("Deck Elevations over Girder Webs") << rptNewLine;
    (*pChapter) << pPara;
@@ -110,23 +94,11 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    GET_IFACE2(pBroker, IGirder, pGirder );
 
    RowIndexType row_step = 4; // number of rows reported for each web
-
-   SpanIndexType startSpan, endSpan;
-   if(InSpan == ALL_SPANS)
-   {
-      startSpan = 0;
-      endSpan   = pBridge->GetSpanCount()-1;
-   }
-   else
-   {
-      startSpan = InSpan;
-      endSpan   = InSpan;
-   }
-
-   for ( SpanIndexType span = startSpan; span <= endSpan; span++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       std::_tostringstream os;
-      os << _T("Span ") << LABEL_SPAN(span) << std::endl;
+      os << _T("Group ") << LABEL_GROUP(grpIdx) << std::endl;
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(14,os.str().c_str());
       (*pPara) << pTable << rptNewLine;
 
@@ -159,26 +131,20 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       col = 0;
 
-      GirderIndexType startGdr, endGdr;
-      if(InGdr == ALL_GIRDERS)
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
-         startGdr = 0;
-         endGdr   = pBridge->GetGirderCount(span)-1;
-      }
-      else
-      {
-         startGdr = InGdr;
-         endGdr   = InGdr;
-      }
+#pragma Reminder("UPDATE: assuming precast girder bridge")
+         // either report elevations at 10th points for all segments or need to get
+         // span 10th points
+         CSegmentKey segmentKey(grpIdx,gdrIdx,0);
 
-      for ( GirderIndexType gdr = startGdr; gdr <= endGdr; gdr++ )
-      {
-         Float64 length = pBridge->GetSpanLength(span,gdr);
+         Float64 length = pBridge->GetSegmentSpanLength(segmentKey);
 
-         std::vector<pgsPointOfInterest> vPoi = pPOI->GetTenthPointPOIs( pgsTypes::BridgeSite3, span, gdr );
+         std::vector<pgsPointOfInterest> vPoi( pPOI->GetSegmentTenthPointPOIs( POI_ERECTED_SEGMENT, segmentKey) );
 
-         MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(span,gdr);
-         pTable->SetRowSpan(row,0,RowIndexType(row_step*nWebs));
+         MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+         pTable->SetRowSpan(row,0,Int16(row_step*nWebs));
 
          RowIndexType r;
          for ( r = row+1; r < row+row_step*nWebs; r++ )
@@ -187,7 +153,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
             pTable->SetRowSpan(r,1,SKIP_CELL);
          }
 
-         (*pTable)(row,0) << LABEL_GIRDER(gdr);
+         (*pTable)(row,0) << LABEL_GIRDER(gdrIdx);
 
          for ( MatingSurfaceIndexType web = 0; web < nWebs; web++ )
          {
@@ -199,7 +165,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
                pTable->SetRowSpan(r,col,SKIP_CELL);
             }
 
-            (*pTable)(row,col++) << (web+1) << rptNewLine;
+            (*pTable)(row,col++) << MatingSurfaceIndexType(web+1) << rptNewLine;
 
             (*pTable)(row,col)   << Bold(_T("Web Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
             (*pTable)(row+1,col) << Bold(_T("Station"));
@@ -208,7 +174,9 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
             
             col++;
 
-            for ( std::vector<pgsPointOfInterest>::iterator iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+            std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+            std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+            for ( ; iter != end; iter++ )
             {
                pgsPointOfInterest& poi = *iter;
 

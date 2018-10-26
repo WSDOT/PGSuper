@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,27 +38,19 @@ class CEditMomentLoadDlg : public CDialog
 {
 // Construction
 public:
-	CEditMomentLoadDlg(CMomentLoadData load, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CEditMomentLoadDlg(const CMomentLoadData& load,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEditMomentLoadDlg)
 	enum { IDD = IDD_EDIT_MOMENTLOAD };
 	CStatic	m_SpanLengthCtrl;
-	CEdit	m_LocationCtrl;
-	CStatic	m_LocationUnitCtrl;
-	CButton	m_FractionalCtrl;
 	CComboBox	m_GirderCB;
-	CComboBox	m_StageCB;
 	CComboBox	m_SpanCB;
-	CComboBox	m_LoadCaseCB;
 	//}}AFX_DATA
    int m_LocationIdx;
 
    CMomentLoadData m_Load;
-   IBroker*       m_pBroker;
-
-   bool                 m_bUnitsSI;
-   const unitLength*    m_pLengthUnit;
+   CComPtr<IBroker> m_pBroker;
 
    bool                 m_WasLiveLoad;
 
@@ -75,19 +67,24 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CEditMomentLoadDlg)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnFractional();
 	afx_msg void OnEditchangeLoadcase();
 	afx_msg void OnEditchangeSpans();
 	afx_msg void OnEditchangeGirders();
 	afx_msg void OnHelp();
+   afx_msg void OnEventChanging();
+   afx_msg void OnEventChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
-   void UpdateLocationUnit();
-   void UpdateStageLoadCase(bool isInitial=false);
+   void UpdateEventLoadCase(bool isInitial=false);
    void UpdateSpanLength();
    void UpdateGirderList();
+
+   void FillEventList();
+   EventIndexType CreateEvent();
+
+   int m_PrevEventIdx;
 };
 
 //{{AFX_INSERT_LOCATION}}

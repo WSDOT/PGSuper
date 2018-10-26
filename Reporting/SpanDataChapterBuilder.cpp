@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,8 @@
 #include <Reporting\StrandEccTable.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Intervals.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,85 +52,89 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CSpanDataChapterBuilder::GetName() const
 {
+#pragma Reminder("UPDATE: this chapter doesn't make sense")
+   // The name of this chapter doesn't make sense... neither does the data
+   // though it is important (eccentricities and component dimensions)
+   // Find a better way to report this
    return TEXT("Span Data");
 }
 
 rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType gdr;
-
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
-      gdr = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      gdr = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      span = ALL_SPANS;
-      gdr  = ALL_GIRDERS;
-   }
-
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+
    // Strand Eccentricity Table
-   rptParagraph* p = new rptParagraph;
+   rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    *pChapter << p;
 
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
       
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
-         CStrandEccTable ecc_table;
-         *p << ecc_table.Build(pBroker,spanIdx,gdrIdx,pDisplayUnits) << rptNewLine;
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-         p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-         *pChapter << p;
-         *p << _T("Eccentricities measured from neutral axis of non-composite section") << rptNewLine;
-         *p << _T("Positive values indicate strands are below the neutral axis") << rptNewLine;
-         *p << rptNewLine;
-      }
-   }
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
 
+            if ( spMode == pgsTypes::spmGross )
+            {
+               CStrandEccTable ecc_table;
+               *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
+            }
+            else
+            {
+               for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+               {
+                  *p << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+                  CStrandEccTable ecc_table;
+                  *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
+               }
+            }
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
-      
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
-      {
-         p = new rptParagraph;
-         *pChapter << p;
+            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            *pChapter << p;
+            *p << _T("Eccentricities measured from neutral axis of non-composite section") << rptNewLine;
+            *p << _T("Positive values indicate strands are below the centroid") << rptNewLine;
+            *p << rptNewLine;
 
-         *p << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-         *p << _T("Girder Length = ") << length.SetValue( pBridge->GetGirderLength(spanIdx,gdrIdx) ) << rptNewLine;
-         *p << _T("Span Length = ") << length.SetValue( pBridge->GetSpanLength(spanIdx,gdrIdx) )<<_T(" (CL Bearing to CL Bearing)") << rptNewLine;
-         *p << _T("Left End Distance = ") << length.SetValue( pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
-         *p << _T("Right End Distance = ") << length.SetValue( pBridge->GetGirderEndConnectionLength(spanIdx,gdrIdx) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
+            p = new rptParagraph;
+            *pChapter << p;
+
+            *p << _T("Overall Length = ") << length.SetValue( pBridge->GetSegmentLength(thisSegmentKey) ) << rptNewLine;
+            *p << _T("Span Length = ") << length.SetValue( pBridge->GetSegmentSpanLength(thisSegmentKey) )<<_T(" (CL Bearing to CL Bearing)") << rptNewLine;
+            *p << _T("Left End Distance = ") << length.SetValue( pBridge->GetSegmentStartEndDistance(thisSegmentKey) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
+            *p << _T("Right End Distance = ") << length.SetValue( pBridge->GetSegmentEndEndDistance(thisSegmentKey) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
+            *p << rptNewLine;
+         }
       }
    }
 

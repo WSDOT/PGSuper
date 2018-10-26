@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,8 +26,7 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
-#include "PGSuperDoc.h"
-#include <IFace\DrawBridgeSettings.h>
+#include "PGSuperDocBase.h"
 #include "BridgeSectionView.h"
 #include "SlabDisplayObjectEvents.h"
 #include "BridgePlanView.h"
@@ -36,19 +35,20 @@
 #include "PGSuperColors.h"
 
 #include <PgsExt\PierData.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
+#include <IFace\DrawBridgeSettings.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace\Intervals.h>
 
 #include <GraphicsLib\GraphTool.h>
 
 #include "GirderDisplayObjectEvents.h"
 
-#include <MfcTools\Text.h>
 #include <WBFLDManip.h>
 
 #include <Material\Material.h>
@@ -80,7 +80,6 @@ static char THIS_FILE[] = __FILE__;
 #define RIGHT_INT_SW_SOCKET      703
 #define LEFT_INT_OVERLAY_SOCKET     710
 #define RIGHT_INT_OVERLAY_SOCKET    711
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView
@@ -118,43 +117,6 @@ void CBridgeSectionView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
    OnDraw(pDC);
    OnEndPrinting(pDC, pInfo);
 }
-
-bool CBridgeSectionView::GetSelectedGirder(SpanIndexType* pSpanIdx,GirderIndexType* pGirderIdx)
-{
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
-
-   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
-
-   if ( displayObjects.size() == 0 )
-      return false;
-
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
-
-   // girder IDs are positive values
-   IDType ID = pDO->GetID();
-   if ( ID == INVALID_ID )
-      return false;
-
-   // do a reverse search in the map (look for values to get the key)
-   std::map<SpanGirderHashType,IDType>::iterator iter;
-   for ( iter = m_GirderIDs.begin(); iter != m_GirderIDs.end(); iter++ )
-   {
-      std::pair<SpanGirderHashType,IDType> map = *iter;
-      if ( map.second == ID )
-      {
-         // ID found,  get the key, unhash it
-         UnhashSpanGirder(map.first,pSpanIdx,pGirderIdx);
-         return true;
-      }
-   }
-
-   return false;
-}
-
 bool CBridgeSectionView::IsDeckSelected()
 {
    CComPtr<iDisplayMgr> dispMgr;
@@ -195,13 +157,48 @@ void CBridgeSectionView::SelectSpan(SpanIndexType spanIdx,bool bSelect)
    dispMgr->ClearSelectedObjects();
 }
 
-void CBridgeSectionView::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bSelect)
+bool CBridgeSectionView::GetSelectedGirder(CGirderKey* pGirderKey)
 {
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-   std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(hash);
+   DisplayObjectContainer displayObjects;
+   dispMgr->GetSelectedObjects(&displayObjects);
+
+   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
+
+   if ( displayObjects.size() == 0 )
+      return false;
+
+   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+
+   // girder IDs are positive values
+   IDType ID = pDO->GetID();
+   if ( ID == INVALID_ID )
+      return false;
+
+   // do a reverse search in the map (look for values to get the key)
+   GirderIDCollection::iterator iter;
+   for ( iter = m_GirderIDs.begin(); iter != m_GirderIDs.end(); iter++ )
+   {
+      GirderIDCollection::value_type map = *iter;
+      if ( map.second == ID )
+      {
+         // ID found
+         *pGirderKey = map.first;
+         return true;
+      }
+   }
+
+   return false;
+}
+
+void CBridgeSectionView::SelectGirder(const CGirderKey& girderKey,bool bSelect)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   GirderIDCollection::iterator found = m_GirderIDs.find(girderKey);
    if ( found == m_GirderIDs.end() )
    {
       dispMgr->ClearSelectedObjects();
@@ -240,7 +237,16 @@ void CBridgeSectionView::SelectDeck(bool bSelect)
 void CBridgeSectionView::SelectAlignment(bool bSelect)
 {
    // sort of a dummy function to clear the selection in this view
-   // when a span is selected in another view
+   // when the alignment is selected in another view
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+   dispMgr->ClearSelectedObjects();
+}
+
+void CBridgeSectionView::SelectTemporarySupport(bool bSelect)
+{
+   // sort of a dummy function to clear the selection in this view
+   // when a temporary support is selected in another view
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
    dispMgr->ClearSelectedObjects();
@@ -395,7 +401,9 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          break;
 
       case CSelection::Girder:
-         this->SelectGirder( pSelection->SpanIdx,pSelection->GirderIdx,true);
+      case CSelection::Segment:
+      case CSelection::ClosurePour:
+         this->SelectGirder( CSegmentKey(pSelection->GroupIdx,pSelection->GirderIdx,INVALID_INDEX),true);
          break;
 
       case CSelection::Pier:
@@ -410,6 +418,10 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          this->SelectAlignment(true);
          break;
 
+      case CSelection::TemporarySupport:
+         this->SelectTemporarySupport(true);
+         break;
+
       default:
          ATLASSERT(FALSE); // is there a new type of object to be selected?
          this->ClearSelection();
@@ -420,7 +432,7 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CBridgeSectionView::HandleLButtonDblClk(UINT nFlags, CPoint point) 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeDescription(EBD_GENERAL);
+   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgeSectionView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
@@ -434,7 +446,7 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_BRIDGE_XSECTION_CTX,NULL);
 
@@ -449,13 +461,12 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();
-   std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-   std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
+   std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
+   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
    {
-      IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
-      pCallback->OnBackgroundContextMenu(pMenu);
+      IBridgeSectionViewEventCallback* callback = iter->second;
+      callback->OnBackgroundContextMenu(pMenu);
    }
 
 
@@ -465,17 +476,17 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CBridgeSectionView::OnEditBridge() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeDescription(EBD_GENERAL);
+   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgeSectionView::OnEditDeck() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeDescription(EBD_DECK);
+   ((CPGSuperDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
 }
 
 void CBridgeSectionView::OnViewSettings() 
 {
-   ((CPGSuperDoc*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_SECTION);
+   ((CPGSuperDocBase*)GetDocument())->EditBridgeViewSettings(VS_BRIDGE_SECTION);
 }
 
 void CBridgeSectionView::OnSize(UINT nType, int cx, int cy) 
@@ -502,30 +513,30 @@ void CBridgeSectionView::OnSize(UINT nType, int cx, int cy)
 
 void CBridgeSectionView::UpdateGirderTooltips()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pBridgeMaterial);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
    CComPtr<iDisplayList> girder_list;
    dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girder_list);
-   SpanIndexType spanIdx = GetSpanIndex();
+   GroupIndexType grpIdx = GetGroupIndex();
 
-   GirderIndexType nGirders = pBridgeDesc->GetSpan(spanIdx)->GetGirderCount();
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(hash);
+      CGirderKey girderKey(grpIdx,gdrIdx);
+      GirderIDCollection::iterator found = m_GirderIDs.find(girderKey);
       if ( found == m_GirderIDs.end() )
          continue;
 
@@ -537,34 +548,38 @@ void CBridgeSectionView::UpdateGirderTooltips()
       if ( !pDO )
          continue;
 
-      CString strMsg1;
-      strMsg1.Format(_T("Double click to edit Span %d Girder %s.\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
+#pragma Reminder("UPDATE: assuming precast girder bridge")
+      // need to get segment where section cut is
+      CSegmentKey segmentKey(girderKey,0);
 
-      Float64 fc, fci;
-      fc = pBridgeMaterial->GetFcGdr(spanIdx,gdrIdx);
-      fci = pBridgeMaterial->GetFciGdr(spanIdx,gdrIdx);
+      const CPrecastSegmentData* pSegment = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex);
+
+      CString strMsg1(_T("Double click to edit.\r\nRight click for more options."));
+
+      Float64 fc  = pSegment->Material.Concrete.Fc;
+      Float64 fci = pSegment->Material.Concrete.Fci;
 
       CString strMsg2;
       strMsg2.Format(_T("\r\n\r\nGirder: %s\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
-                     pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx),
-                     lrfdConcreteUtil::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,gdrIdx),true).c_str(),
+                     pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx)->GetGirderName(),
+                     matConcrete::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
 
-      const matPsStrand* pStrand = pBridgeMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Permanent);
-      const matPsStrand* pTempStrand = pBridgeMaterial->GetStrand(spanIdx,gdrIdx,pgsTypes::Temporary);
+      const matPsStrand* pStrand     = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+      const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
       StrandIndexType Ns, Nh, Nt, Nsd;
-      Ns = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight);
-      Nh = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped);
-      Nt = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Temporary);
-      Nsd= pStrandGeom->GetNumDebondedStrands(spanIdx,gdrIdx,pgsTypes::Straight);
+      Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
+      Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+      Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
 
-      std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(spanIdx,gdrIdx)));
+      std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
       CString strMsg3;
-      if ( pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) != 0 )
+      if ( pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) != 0 )
       {
          if ( Nsd == 0 )
          {
@@ -593,14 +608,24 @@ void CBridgeSectionView::UpdateGirderTooltips()
 
       // Slab Offset
       Float64 startOffset, endOffset;
-      startOffset = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metStart);
-      endOffset   = pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metEnd);
+      startOffset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+      endOffset   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
       CString strMsg4;
       strMsg4.Format(_T("\r\n\r\nSlab Offset\r\nStart: %s\r\nEnd: %s"),
          FormatDimension(startOffset,pDisplayUnits->GetComponentDimUnit()),
          FormatDimension(endOffset,pDisplayUnits->GetComponentDimUnit()));
 
       CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
+
+#if defined _DEBUG
+            CString strSegID;
+            strSegID.Format(_T("\r\n\r\nGroup %d Girder %s Segment %d"),
+               LABEL_GROUP(segmentKey.groupIndex),
+               LABEL_GIRDER(segmentKey.girderIndex),
+               LABEL_SEGMENT(segmentKey.segmentIndex));
+
+            strMsg += strSegID;
+#endif // _DEBUG
 
       pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
       pDO->SetTipDisplayTime(TOOLTIP_DURATION);
@@ -612,9 +637,8 @@ void CBridgeSectionView::UpdateDisplayObjects()
 {
    CWaitCursor wait;
 
-   SpanIndexType spanIdx;
-   GirderIndexType gdrIdx;
-   bool bSelectedGirder = GetSelectedGirder(&spanIdx,&gdrIdx);
+   CGirderKey girderKey;
+   bool bSelectedGirder = GetSelectedGirder(&girderKey);
    bool bDeckSelected = IsDeckSelected();
 
    SetMappingMode(DManip::Isotropic);
@@ -627,7 +651,6 @@ void CBridgeSectionView::UpdateDisplayObjects()
    CDManipClientDC dc(this);
 
    BuildTitleDisplayObjects();
-
    BuildGirderDisplayObjects();
    BuildDeckDisplayObjects();
    BuildOverlayDisplayObjects();
@@ -637,7 +660,7 @@ void CBridgeSectionView::UpdateDisplayObjects()
    UpdateGirderTooltips();
 
    if ( bSelectedGirder )
-      SelectGirder(spanIdx,gdrIdx,TRUE);
+      SelectGirder(girderKey,TRUE);
    else if ( bDeckSelected )
       SelectDeck(true);
 }
@@ -653,9 +676,8 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    CComPtr<iViewTitle> title;
    title.CoCreateInstance(CLSID_ViewTitle);
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
    const unitStationFormat& station_format = pdisp_units->GetStationFormat();
@@ -669,22 +691,22 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
 
 void CBridgeSectionView::BuildGirderDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
-
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();;
 
-   SpanIndexType spanIdx = GetSpanIndex();
+   GroupIndexType grpIdx = GetGroupIndex();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   Float64 firstPierStation = pBridgeDesc->GetPier(0)->GetStation();
 
-   SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -699,63 +721,83 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
-   Float64 distFromStartOfBridge = cut_station - firstPierStation;
-
    m_GirderIDs.clear();
    m_NextGirderID = 0;
 
-   GirderIndexType nGirders = pBridgeDesc->GetSpan(spanIdx)->GetGirderCount();
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      Float64 offset = pBridge->GetGirderOffset(spanIdx,gdrIdx,cut_station);
+      CGirderKey girderKey(grpIdx,gdrIdx);
 
-      SpanIndexType spanIndex;
-      Float64 distFromStartOfSpan;
-      pBridge->GetDistFromStartOfSpan(gdrIdx,distFromStartOfBridge,&spanIndex,&distFromStartOfSpan);
+      Float64 start_pier_station = pBridgeDesc->GetGirderGroup(grpIdx)->GetPier(pgsTypes::metStart)->GetStation();
+      Float64 distFromStartOfGroup = cut_station - start_pier_station;
+#pragma Reminder("BUG: Section cut")
+      // new code is needed to deal with section cuts near piers for skewed bridges
+      // with a different number of girders in each span. See bug tracker issue 121
 
-      if ( spanIndex == INVALID_INDEX )
-         continue; // girder is off bridge at this cut location
+      GroupIndexType grpIndex  = girderKey.groupIndex;
+      GirderIndexType gdrIndex = girderKey.girderIndex;
 
-      GirderIndexType nGirdersThisSpan = pBridgeDesc->GetSpan(spanIndex)->GetGirderCount();
-      GirderIndexType gdrIndex = (nGirdersThisSpan <= gdrIdx ? nGirdersThisSpan-1 : gdrIdx);
+      // find which segment the cut passes through
+      const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      CSegmentKey thisSegmentKey(grpIndex,gdrIndex,0);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         Float64 startStation, endStation;
+         pSegment->GetStations(startStation,endStation);
+         if ( ::InRange(startStation,cut_station,endStation) )
+         {
+            // found the segment
+            thisSegmentKey.segmentIndex = segIdx;
+            break;
+         }
+      }
 
-      Float64 start_connection_length = pBridge->GetGirderStartConnectionLength(spanIndex,gdrIndex);
-      Float64 start_bearing_offset    = pBridge->GetGirderStartBearingOffset(spanIndex,gdrIndex);
+      Float64 offset = pBridge->GetSegmentOffset(thisSegmentKey,cut_station);
+
+      Float64 start_connection_length = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+      Float64 start_bearing_offset    = pBridge->GetSegmentStartBearingOffset(thisSegmentKey);
       Float64 end_offset = start_bearing_offset - start_connection_length;
-      Float64 girder_length = pBridge->GetGirderLength(spanIndex,gdrIndex);
+#pragma Reminder("BUG: ?? should be using girder length, not segment length")
+      Float64 segment_length = pBridge->GetSegmentLength(thisSegmentKey);
 
-      Float64 distFromStartOfGirder = distFromStartOfSpan - end_offset;
-      distFromStartOfGirder = ::ForceIntoRange(0.,distFromStartOfGirder,girder_length);
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(thisSegmentKey.segmentIndex);
+      Float64 startStation, endStation;
+      pSegment->GetStations(startStation,endStation);
+
+      Float64 distFromStartOfSegment = segment_length*(cut_station - startStation)/(endStation - startStation);
+      distFromStartOfSegment = ::ForceIntoRange(0.,distFromStartOfSegment,segment_length);
 
       pgsPointOfInterest poi;
-      COLORREF girder_fill_color;
-      COLORREF girder_border_color;
-      if (spanIndex == spanIdx )
-      {
-         poi.SetSpan(spanIdx);
-         poi.SetGirder(gdrIdx);
-         poi.SetDistFromStart(distFromStartOfGirder);
+      poi.SetSegmentKey( thisSegmentKey );
+      poi.SetDistFromStart(distFromStartOfSegment);
 
-         girder_fill_color = GIRDER_FILL_COLOR;
-         girder_border_color = GIRDER_BORDER_COLOR;
+      COLORREF segment_fill_color;
+      COLORREF segment_border_color;
+      if (grpIndex == grpIdx )
+      {
+         // girder cut is on bridge, and in the same span
+         segment_fill_color   = SEGMENT_FILL_COLOR;
+         segment_border_color = SEGMENT_BORDER_COLOR;
       }
       else
       {
          // girder cut is on bridge, but not in the same span
-         poi.SetSpan(spanIndex);
-         poi.SetGirder(gdrIndex);
-         poi.SetDistFromStart(distFromStartOfGirder);
-
-         girder_fill_color = GIRDER_FILL_COLOR_ADJACENT;
-         girder_border_color = GIRDER_BORDER_COLOR_ADJACENT;
+         segment_fill_color   = SEGMENT_FILL_COLOR_ADJACENT;
+         segment_border_color = SEGMENT_BORDER_COLOR_ADJACENT;
       }
 
       // Display object for the girder cross section
       CComPtr<iPointDisplayObject> dispObj;
       dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
+      // get the girder shape before it is made composite (we don't want the deck with the shape)
+      IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(thisSegmentKey);
+
       CComPtr<IShape> shape;
-      pSectProp->GetGirderShape(poi,pgsTypes::CastingYard,true,&shape);
+      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
 
       CComQIPtr<IXYPosition> position(shape);
       CComPtr<IPoint2d> topCenter;
@@ -765,8 +807,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       CComPtr<iShapeDrawStrategy> strategy;
       strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
       strategy->SetShape(shape);
-      strategy->SetSolidLineColor(girder_border_color);
-      strategy->SetSolidFillColor(girder_fill_color);
+      strategy->SetSolidLineColor(segment_border_color);
+      strategy->SetSolidFillColor(segment_fill_color);
       strategy->SetVoidLineColor(VOID_BORDER_COLOR);
       strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
       strategy->DoFill(true);
@@ -775,9 +817,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
       dispObj->SetSelectionType(stAll);
 
-      SpanGirderHashType hash = HashSpanGirder(spanIndex,gdrIndex);
       IDType ID = m_NextGirderID++;
-      m_GirderIDs.insert( std::make_pair(hash,ID) );
+      m_GirderIDs.insert( std::make_pair(girderKey,ID) );
 
       dispObj->SetID(ID);
 
@@ -819,9 +860,9 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
    
 
-      // Register an event sink with the girder display object so that we can handle Float64 clicks
-      // on the girder differently then a general Float64 click
-      CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(spanIndex,gdrIndex,nSpans,nGirdersThisSpan,m_pFrame); // ref count = 1
+      // Register an event sink with the girder display object so that we can handle double clicks
+      // on the girder differently then a general double click
+      CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(girderKey,nGroups,nGirders,m_pFrame); // ref count = 1
       IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents); // ref count = 1
       CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk); // ref count = 2
       dispObj->RegisterEventSink(events); // ref count = 3
@@ -832,20 +873,18 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
 void CBridgeSectionView::BuildDeckDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
-   GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
-
-   SpanIndexType spanIdx = GetSpanIndex();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
    if ( deckType == pgsTypes::sdtNone )
@@ -861,7 +900,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> shape;
-   pSectProp->GetSlabShape(m_pFrame->GetCurrentCutLocation(),&shape);
+   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(),&shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
@@ -882,8 +921,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj->SetGravityWellStrategy(gravity_well);
 
    CBridgeSectionViewSlabDisplayObjectEvents* pEvents = new CBridgeSectionViewSlabDisplayObjectEvents(pDoc,pBroker,m_pFrame,true);
-   CComPtr<IUnknown> unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
-   pEvents->InternalRelease(); // remove the ref count created by "new" above
+   IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
    CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
 
    dispObj->RegisterEventSink(events);
@@ -901,8 +939,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
-                        FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
+                        matConcrete::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+                        FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }
       else
@@ -910,8 +948,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
          strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s"),
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
-                        FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
+                        matConcrete::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+                        FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }
    }
@@ -939,9 +977,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
 
 void CBridgeSectionView::BuildOverlayDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -1047,13 +1084,12 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
 void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
+   GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
 
    CComPtr<iDisplayMgr> dispMgr;
@@ -1078,7 +1114,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    pAlignment->GetBearingNormal(cut_station,&normal);
 
    CComPtr<IShape> left_shape;
-   pSectProp->GetLeftTrafficBarrierShape(cut_station,&left_shape);
+   pShapes->GetLeftTrafficBarrierShape(cut_station,&left_shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    if ( left_shape )
@@ -1119,7 +1155,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    right_dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> right_shape;
-   pSectProp->GetRightTrafficBarrierShape(cut_station,&right_shape);
+   pShapes->GetRightTrafficBarrierShape(cut_station,&right_shape);
 
    if ( right_shape )
    {
@@ -1231,7 +1267,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
       socket1.Release();
       socket2.Release();
 
-      Float64 left_icb_offset, right_icb_offset;
+      double left_icb_offset, right_icb_offset;
       left_icb_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
       right_icb_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
 
@@ -1246,7 +1282,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
 void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)GetDocument();
 
    UINT settings = pDoc->GetBridgeEditorSettings();
 
@@ -1257,10 +1293,13 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   SpanIndexType spanIdx = GetSpanIndex();
+   GroupIndexType grpIdx = GetGroupIndex();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
 
    // Get display lists
    CComPtr<iDisplayMgr> dispMgr;
@@ -1274,7 +1313,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    Float64 cut_location = m_pFrame->GetCurrentCutLocation();
    Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(cut_location);
-   Float64 distFromStartOfSpan   = cut_location - pBridge->GetPierStation(spanIdx);
+   Float64 distFromStartOfSpan   = cut_location - pGroup->GetPier(pgsTypes::metStart)->GetStation();
 
    // get length unit so section can be labelled
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
@@ -1293,8 +1332,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    {
       CComPtr<iDisplayObject> doGirder;
 
-      SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(hash);
+      CGirderKey girderKey(grpIdx,gdrIdx);
+      GirderIDCollection::iterator found = m_GirderIDs.find(girderKey);
 
       if ( found == m_GirderIDs.end() )
          continue;
@@ -1359,18 +1398,19 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    }
    else
    {
-      std::vector<SpaceBetweenGirder> vSpacing = pBridge->GetGirderSpacing(spanIdx, distFromStartOfSpan);
-      std::vector<SpaceBetweenGirder>::iterator iter;
-      for ( iter = vSpacing.begin(); iter != vSpacing.end(); iter++ )
+      std::vector<SpaceBetweenGirder> vSpacing( pBridge->GetGirderSpacing(grpIdx, distFromStartOfSpan) );
+      std::vector<SpaceBetweenGirder>::iterator iter(vSpacing.begin());
+      std::vector<SpaceBetweenGirder>::iterator iterEnd(vSpacing.end());
+      for ( ; iter != iterEnd; iter++ )
       {
-         SpaceBetweenGirder spacingData = *iter;
+         SpaceBetweenGirder& spacingData = *iter;
 
          // get the girder spacing for this group
          Float64 spacing = spacingData.spacing;
          GirderIndexType firstGdrIdx = spacingData.firstGdrIdx;
          GirderIndexType lastGdrIdx  = spacingData.lastGdrIdx;
       
-         IndexType nSpacesInGroup = lastGdrIdx - firstGdrIdx;
+         SpacingIndexType nSpacesInGroup = lastGdrIdx - firstGdrIdx;
 
          Float64 total = spacing*nSpacesInGroup;
 
@@ -1381,16 +1421,16 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
          // Going to attach dimension line to girder display objects, so get them now
          CComPtr<iDisplayObject> do1, do2;
-         SpanGirderHashType firstHash = HashSpanGirder(spanIdx,firstGdrIdx);
-         SpanGirderHashType lastHash  = HashSpanGirder(spanIdx,lastGdrIdx);
+         CSegmentKey firstGirderKey(grpIdx,firstGdrIdx,INVALID_INDEX);
+         CSegmentKey lastGirderKey(grpIdx,lastGdrIdx,INVALID_INDEX);
    
-         std::map<SpanGirderHashType,IDType>::iterator found = m_GirderIDs.find(firstHash);
+         GirderIDCollection::iterator found( m_GirderIDs.find(firstGirderKey) );
          if ( found == m_GirderIDs.end() )
             continue;
 
          IDType firstID = (*found).second;
 
-         found = m_GirderIDs.find(lastHash);
+         found = m_GirderIDs.find(lastGirderKey);
          if ( found == m_GirderIDs.end() )
             continue;
 
@@ -1849,7 +1889,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    // Interior overlay width
    if (doLeftTB && pBridge->HasOverlay())
    {
-      Float64 left_icb_offset, right_icb_offset;
+      double left_icb_offset, right_icb_offset;
       left_icb_offset  = pBridge->GetLeftOverlayToeOffset(distFromStartOfBridge);
       right_icb_offset = pBridge->GetRightOverlayToeOffset(distFromStartOfBridge);
 
@@ -1928,29 +1968,33 @@ void CBridgeSectionView::UpdateDrawingScale()
    display_list->HideDisplayObjects(false);
 }
 
-SpanIndexType CBridgeSectionView::GetSpanIndex()
+GroupIndexType CBridgeSectionView::GetGroupIndex()
 {
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(0);
-   while ( pSpan )
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      Float64 prev_pier_station = pSpan->GetPrevPier()->GetStation();
-      Float64 next_pier_station = pSpan->GetNextPier()->GetStation();
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      const CPierData2* pStartPier = pGroup->GetPier(pgsTypes::metStart);
+      const CPierData2* pEndPier   = pGroup->GetPier(pgsTypes::metEnd);
+
+      Float64 prev_pier_station = pStartPier->GetStation();
+      Float64 next_pier_station = pEndPier->GetStation();
 
       if ( prev_pier_station <= cut_station && cut_station <= next_pier_station )
-         return pSpan->GetSpanIndex();
-
-      pSpan = pSpan->GetNextPier()->GetNextSpan();
+      {
+         return pGroup->GetIndex();
+      }
    }
 
+   // if a group isn't found, return 0 so that there is a chance of drawing a cross section
    return 0;
 }
 
@@ -2008,7 +2052,7 @@ void CBridgeSectionView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       m_pFrame->GetBridgePlanView()->SetFocus();
       return;
    }
-   else if ( nChar == VK_LEFT || nChar == VK_RIGHT )
+   else if ( nChar == VK_RIGHT )
    {
       CComPtr<iDisplayMgr> dispMgr;
       GetDisplayMgr(&dispMgr);
@@ -2017,12 +2061,31 @@ void CBridgeSectionView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
       if ( selObjs.size() == 0 )
       {
-         SpanIndexType spanIdx = GetSpanIndex();
-
-         m_pFrame->SelectGirder(spanIdx,0);
+         GroupIndexType grpIdx = GetGroupIndex();
+         m_pFrame->SelectGirder(CSegmentKey(grpIdx,0,INVALID_INDEX));
          return;
       }
    }
+   else if ( nChar == VK_LEFT )
+   {
+      CComPtr<iDisplayMgr> dispMgr;
+      GetDisplayMgr(&dispMgr);
+      DisplayObjectContainer selObjs;
+      dispMgr->GetSelectedObjects(&selObjs);
+
+      if ( selObjs.size() == 0 )
+      {
+         GroupIndexType grpIdx = GetGroupIndex();
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+         m_pFrame->SelectGirder(CSegmentKey(grpIdx,pGroup->GetGirderCount()-1,INVALID_INDEX));
+         return;
+      }
+   }
+
 
 	CDisplayView::OnKeyDown(nChar, nRepCnt, nFlags);
 }

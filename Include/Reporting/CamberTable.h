@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -73,27 +73,27 @@ public:
 
    //------------------------------------------------------------------------
    // Build the strand eccentricity tables
-   void Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
                               IEAFDisplayUnits* pDisplayUnits,Int16 time,
                               rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   void Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
                   IEAFDisplayUnits* pDisplayUnits,Int16 time,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   void Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
                               IEAFDisplayUnits* pDisplayUnits,Int16 time,
                               rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   void Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
                   IEAFDisplayUnits* pDisplayUnits,Int16 time,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   void Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& segmentKey,
                                  IEAFDisplayUnits* pDisplayUnits,Int16 time,
                                  rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   void Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   void Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
                      IEAFDisplayUnits* pDisplayUnits,Int16 time,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
    // GROUP: ACCESS
@@ -108,7 +108,7 @@ protected:
    void MakeCopy(const CCamberTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CCamberTable& rOther);
+   virtual void MakeAssignment(const CCamberTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

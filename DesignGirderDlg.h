@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -41,13 +41,13 @@ class CDesignGirderDlg : public CDialog
 {
 // Construction
 public:
-	CDesignGirderDlg(SpanIndexType span,GirderIndexType girder, bool enableA, bool designA, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, bool designA, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)
 	enum { IDD = IDD_DESIGN_GIRDER };
-	GirderIndexType		m_Girder;
-	SpanIndexType   		m_Span;
+   GroupIndexType m_Group;
+	GirderIndexType m_Girder;
 	BOOL	m_DesignForFlexure;
 	BOOL	m_DesignForShear;
 	//}}AFX_DATA
@@ -63,7 +63,7 @@ public:
 // return design options
 public:
    bool m_DesignA;
-   std::vector<SpanGirderHashType> m_GirderList;
+   std::vector<CGirderKey> m_GirderKeys;
 
 // Implementation
 private:

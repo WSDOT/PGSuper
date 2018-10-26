@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,28 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_PSLOSSENGINEER_H_
-#define INCLUDED_IFACE_PSLOSSENGINEER_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
 #include <Reporter\Reporter.h>
 #include <Details.h>
 
-// FORWARD DECLARATIONS
-//
-struct IBroker;
 struct IEAFDisplayUnits;
-
-// MISCELLANEOUS
-//
-
 
 /*****************************************************************************
 INTERFACE
@@ -58,18 +42,27 @@ DEFINE_GUID(IID_IPsLossEngineer,
 interface IPsLossEngineer : IUnknown
 {
    //---------------------------------------------------------------------
-   // Computes the prestress losses
-   virtual LOSSDETAILS ComputeLosses(const pgsPointOfInterest& poi) = 0;
+   // Returns the prestress losses at a point of interest
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi) = 0;
    
-   // computes prestress losses but uses the input slab offset (the current design value)
-   virtual LOSSDETAILS ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
+   //---------------------------------------------------------------------
+   // Returns prestress losses at a point of interest, but uses the input slab offset (the current design value)
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
 
    //---------------------------------------------------------------------
-   // Creates a detailed report of the effective flange width computation
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   // Clears all losses that were computed as a result of calling GetLosses(poi,config)
+   virtual void ClearDesignLosses() = 0;
 
-   virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   //---------------------------------------------------------------------
+   // Reports loss calculations details
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+
+   //---------------------------------------------------------------------
+   // Reports summary of final losses
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+
+   //---------------------------------------------------------------------
+   // Returns the anchor set details for a particular tendon (this is basically the seating wedge parameters)
+   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 };
-
-#endif // INCLUDED_IFACE_PSLOSSENGINEER_H_
 

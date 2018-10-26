@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,8 @@
 
 #include <EAF\EAFApp.h>
 
+#include <IFace\BeamFactory.h>
+
 #ifdef _DEBUG
 #include <Plugins\Beams.h> // including here is a bit of a hack, but drawing the strand mover is debug only
 #endif
@@ -82,7 +84,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    GirderLibraryEntry::Dimensions dimensions = m_pGirderEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrSection;
-   pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
+   pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,dimensions,-1.0,-1.0,&gdrSection);
 
    gdrSection.QueryInterface(&m_pShape);
    ATLASSERT(m_pShape != NULL);
@@ -102,7 +104,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    for (IndexType is=0; is<num_shapes; is++)
    {
       CComPtr<IShape> rshape;
-      Float64 slope;
+      double slope;
       config->GetRegion(is, &rshape, &slope);
       m_RegionShapes.push_back(rshape);
    }
@@ -166,7 +168,7 @@ void CSectionViewDialog::OnPaint()
 
    CComPtr<IRect2d> bbox;
    m_pShape->get_BoundingBox(&bbox);
-   Float64 left,right,top,bottom;
+   double left,right,top,bottom;
    bbox->get_Left(&left);
    bbox->get_Right(&right);
    bbox->get_Top(&top);
@@ -333,7 +335,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
 
          total_strand_cnt = DrawStrand(pDC, Mapper, xStart, yStart, total_strand_cnt);
       }
-      else if (strand_type==GirderLibraryEntry::stAdjustable)
+      else if (strand_type==GirderLibraryEntry::stHarped)
       {
          Float64 start_x, start_y, hp_x, hp_y, end_x, end_y;
          m_pGirderEntry->GetHarpedStrandCoordinates(strand_idx, &start_x, &start_y, &hp_x, &hp_y, &end_x, &end_y);
@@ -487,9 +489,7 @@ void CSectionViewDialog::OnSize(UINT nType, int cx, int cy)
 HBRUSH CSectionViewDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
 	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
-	
-    
-   COLORREF col(0);
+
    if (pWnd->GetDlgCtrlID() == IDC_SS)
    {
        pDC->SetTextColor(STRAIGHT_FILL_COLOR);
@@ -520,11 +520,11 @@ BOOL CSectionViewDialog::OnInitDialog()
    CButton* pBtn = (CButton*)GetDlgItem(IDC_SHOWS);
    pBtn->SetCheck(TRUE);
 
-   // label for harped or adj straight
+   // label for harped or straight-web
    CString hlbl;
-   hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->GetAdjustableStrandType()!=pgsTypes::asHarped));
+   hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->IsForceHarpedStrandsStraight()));
    CWnd* pWnd = GetDlgItem(IDC_HS);
-   pWnd->SetWindowText(hlbl);
+   pWnd->SetWindowTextW(hlbl);
 
    CStatic* pShapeProps = (CStatic*)GetDlgItem(IDC_SECTION_PROPERTIES);
    CString strProps;
@@ -559,7 +559,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    Kb = ::ConvertFromSysUnits(Kb,pDisplayUnits->ComponentDim.UnitOfMeasure);
    strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
 
-   strProps.Format(_T("Area = %.0f %s\t\t\tYt = %0.f %s\t\t\tYb = %0.f %s\nIx = %0.f %s\t\t\tSt = %0.f %s\t\t\tSb = %0.f %s\nH = %0.f %s\t\t\tKt = %0.f %s\t\t\tKb = %0.f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
+   strProps.Format(_T("Area = %.3f %s\t\t\tYt = %.3f %s\t\t\tYb = %.3f %s\nIx = %.1f %s\t\t\tSt = %.3f %s\t\t\tSb = %.3f %s\nH = %.3f %s\t\t\tKt = %.3f %s\t\t\tKb = %.3f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
    pShapeProps->SetWindowText(strProps);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

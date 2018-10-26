@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@
 
 #include "GirderNameGrid.h"
 #include "GirderSpacingGrid.h"
-#include <PgsExt\GirderTypes.h>
 #include "SameNumberOfGirdersHyperLink.h"
 #include "SameGirderSpacingHyperLink.h"
 #include "SameGirderTypeHyperLink.h"
@@ -97,7 +96,7 @@ public:
    Float64 m_SlabOffset[2];
    CString m_strSlabOffsetCache[2];
 
-   void Init(const CSpanData* pSpan);
+   void Init(const CSpanData2* pSpan);
 
    bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
 // Implementation
@@ -142,7 +141,7 @@ protected:
    Float64 m_CacheRefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_CacheRefGirderOffsetType[2];
 
-   CGirderTypes m_GirderTypesCache;
+   CGirderGroupData m_GirderGroupCache;
 
    void UpdateGirderCountHyperLinkText();
    void UpdateGirderTypeHyperLinkText();

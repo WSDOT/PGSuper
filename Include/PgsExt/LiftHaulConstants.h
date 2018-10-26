@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,7 @@ public:
 };
 
 // Function for comparing two required concrete strengths. -1 means infinite
+#pragma Reminder("UPDATE: remove inline and implement function in a CPP file")
 inline Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc)
 {
    // -1 is magic number meaning no possible value

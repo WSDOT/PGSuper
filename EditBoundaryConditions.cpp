@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,10 +31,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,CPGSuperDoc* pDoc,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC)
+txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC)
 {
    m_PierIdx = pierIdx;
-   m_pPGSuperDoc = pDoc;
    m_ConnectionType[0] = oldBC;
    m_ConnectionType[1] = newBC;
 }
@@ -46,7 +45,7 @@ std::_tstring txnEditBoundaryConditions::Name() const
 
 txnTransaction* txnEditBoundaryConditions::CreateClone() const
 {
-   return new txnEditBoundaryConditions(m_PierIdx,m_pPGSuperDoc,m_ConnectionType[0],m_ConnectionType[1]);
+   return new txnEditBoundaryConditions(m_PierIdx,m_ConnectionType[0],m_ConnectionType[1]);
 }
 
 bool txnEditBoundaryConditions::IsUndoable()

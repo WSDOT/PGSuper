@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,8 +38,7 @@ CLASS
 
 DESCRIPTION
    Bridge Description Chapter Builder.  Generates a chapter that echos the bridge
-   description input.  Level 1 echos the basic input.  Level 2 provides the details
-   of library items referenced in the basic input.
+   description input.
 
 COPYRIGHT
    Copyright © 1997-1998
@@ -99,10 +98,19 @@ private:
    // GROUP: INQUIRY
 };
 
-// INLINE METHODS
-//
 
-// EXTERNAL REFERENCES
-//
+class REPORTINGCLASS CSplicedGirderBridgeDescChapterBuilder : public CPGSuperChapterBuilder
+{
+public:
+   CSplicedGirderBridgeDescChapterBuilder(bool bSelect = true);
+   virtual LPCTSTR GetName() const;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual CChapterBuilder* Clone() const;
+
+private:
+   // Prevent accidental copying and assignment
+   CSplicedGirderBridgeDescChapterBuilder(const CSplicedGirderBridgeDescChapterBuilder&);
+   CSplicedGirderBridgeDescChapterBuilder& operator=(const CSplicedGirderBridgeDescChapterBuilder&);
+};
 
 #endif // INCLUDED_BRIDGEDESCCHAPTERBUILDER_H_

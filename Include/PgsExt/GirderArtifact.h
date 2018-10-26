@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,242 +20,96 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_GIRDERARTIFACT_H_
-#define INCLUDED_PGSEXT_GIRDERARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_MAP_
-#include <map>
-#define INCLUDED_MAP_
-#endif
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
+#include <PgsExt\SegmentArtifact.h>
+#include <PgsExt\ClosurePourArtifact.h>
+#include <PgsExt\TendonStressArtifact.h>
+#include <set>
 
-#if !defined INCLUDED_PGSEXT_STRANDSTRESSARTIFACT_H_
-#include <PgsExt\StrandStressArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_
-#include <PgsExt\FlexuralStressArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_FLEXURALCAPACITYARTIFACT_H_
-#include <PgsExt\FlexuralCapacityArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_STIRRUPCHECKARTIFACT_H_
-#include <PGSExt\StirrupCheckArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_POIARTIFACTKEY_H_
-#include <PgsExt\PoiArtifactKey.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_STRANDSLOPEARTIFACT_H_
-#include <PgsExt\StrandSlopeArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_HOLDDOWNFORCEARTIFACT_H_
-#include <PgsExt\HoldDownForceArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_CONSTRUCTABILITYARTIFACT_H_
-#include <PgsExt\ConstructabilityArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_PRECASTIGIRDERDETAILINGARTIFACT_H_
-#include <PgsExt\PrecastIGirderDetailingArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_
-#include <PgsExt\HaulingAnalysisArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_LIFTINGANALYSISARTIFACT_H_
-#include <PgsExt\LiftingAnalysisArtifact.h>
-#endif
-
-#include <PgsExt\DebondArtifact.h>
-
-#include <PgsExt\StirrupCheckAtZonesArtifact.h>
-
-#include <PgsExt\DeflectionCheckArtifact.h>
-
-// LOCAL INCLUDES
+//////////////////////////////////////////////
+// pgsGirderArtifact
 //
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
-
-/*****************************************************************************
-CLASS 
-   pgsGirderArtifact
-
-   Code check artifact for a prestressed girder.
-
-
-DESCRIPTION
-   Code check artifact for a prestressed girder.  
-
-
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-
-LOG
-   rab : 10.28.1998 : Created file
-*****************************************************************************/
+// Code check artifact for a girder.
+// Includes segment check artifacts for each segment in the girder
 
 class PGSEXTCLASS pgsGirderArtifact
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
-   pgsGirderArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsGirderArtifact(const pgsGirderArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsGirderArtifact();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
+   pgsGirderArtifact(const CGirderKey& girderKey);
+   pgsGirderArtifact(const pgsGirderArtifact& other);
    pgsGirderArtifact& operator = (const pgsGirderArtifact& rOther);
 
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-
-   //------------------------------------------------------------------------
-   // Sets the strand stress artifact for this artifact
-   void SetStrandStressArtifact(const pgsStrandStressArtifact& artifact);
-
-   //------------------------------------------------------------------------
-   // Returns a pointer to the strand stress artifact.
-   const pgsStrandStressArtifact* GetStrandStressArtifact() const;
-   pgsStrandStressArtifact* GetStrandStressArtifact();
-
-   void SetStrandSlopeArtifact(const pgsStrandSlopeArtifact& artifact);
-   const pgsStrandSlopeArtifact* GetStrandSlopeArtifact() const;
-   pgsStrandSlopeArtifact* GetStrandSlopeArtifact();
-
-   void SetHoldDownForceArtifact(const pgsHoldDownForceArtifact& artifact);
-   const pgsHoldDownForceArtifact* GetHoldDownForceArtifact() const;
-   pgsHoldDownForceArtifact* GetHoldDownForceArtifact();
-
-   void AddFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key,
-                                  const pgsFlexuralStressArtifact& artifact);
-
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key) const;
-   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key);
-   std::vector<pgsFlexuralStressArtifactKey> GetFlexuralStressArtifactKeys() const;
-
-   void AddFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key,
-                                    const pgsFlexuralCapacityArtifact& pmartifact,
-                                    const pgsFlexuralCapacityArtifact& nmartifact);
-
-   std::vector<pgsFlexuralCapacityArtifactKey> GetFlexuralCapacityArtifactKeys() const;
-   const pgsFlexuralCapacityArtifact* GetPositiveMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const;
-   const pgsFlexuralCapacityArtifact* GetNegativeMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const;
-
-   pgsStirrupCheckArtifact* GetStirrupCheckArtifact();
-   const pgsStirrupCheckArtifact* GetStirrupCheckArtifact() const;
-
-   pgsPrecastIGirderDetailingArtifact* GetPrecastIGirderDetailingArtifact();
-   const pgsPrecastIGirderDetailingArtifact* GetPrecastIGirderDetailingArtifact() const;
-
-   void SetConstructabilityArtifact(const pgsConstructabilityArtifact& artifact);
-   const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
-   pgsConstructabilityArtifact* GetConstructabilityArtifact();
-
-   void SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact);
-   const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact() const;
-   
-   void SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact*  artifact);
-   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
-
-   pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact();
-   const pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact() const;
+   const CGirderKey& GetGirderKey() const;
 
 
-   void SetCastingYardCapacityWithMildRebar(Float64 fAllow);
-   Float64 GetCastingYardCapacityWithMildRebar() const;
+   ////////////////////////
+   // Flexural Capacity (Mu) artifacts
+   ////////////////////////
 
-   void SetTempStrandRemovalCapacityWithMildRebar(Float64 fAllow);
-   Float64 GetTempStrandRemovalCapacityWithMildRebar() const;
+   // add positive and negative moment capacity artifacts
+   void AddFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
+                                    const pgsFlexuralCapacityArtifact& pmArtifact,
+                                    const pgsFlexuralCapacityArtifact& nmArtifact);
 
-   void SetDeckCastingCapacityWithMildRebar(Float64 fAllow);
-   Float64 GetDeckCastingCapacityWithMildRebar() const;
+   // get the number of artifacts
+   CollectionIndexType GetFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
 
-   pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
-   const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
-   
-   bool Passed() const;
+   // get an artifact
+   const pgsFlexuralCapacityArtifact* GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const;
+   const pgsFlexuralCapacityArtifact* GetNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const;
 
-   bool DidFlexuralStressesPass() const;
+   // find an artifact for the specified POI
+   const pgsFlexuralCapacityArtifact* FindPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi) const;
+   const pgsFlexuralCapacityArtifact* FindNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi) const;
 
-   Float64 GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const;
+   //////////////////
+   // Segment artifacts
+   //////////////////
+
+   // adds a segment artifact to this girder artifact
+   void AddSegmentArtifact(const pgsSegmentArtifact& artifact);
+
+   // returns a previously stored segment artifact. returns NULL if
+   // a previously stored one does not exist
+   const pgsSegmentArtifact* GetSegmentArtifact(SegmentIndexType segIdx) const;
+
+   // returns a previously stored segment artifact. creates a new segment artifact
+   // if a previously stored one does not exist
+   pgsSegmentArtifact* GetSegmentArtifact(SegmentIndexType segIdx);
+
+   void AddClosurePourArtifact(const pgsClosurePourArtifact& artifact);
+   const pgsClosurePourArtifact* GetClosurePourArtifact(SegmentIndexType segIdx) const;
+   pgsClosurePourArtifact* GetClosurePourArtifact(SegmentIndexType segIdx);
+
+   void SetTendonStressArtifact(const pgsTendonStressArtifact& artifact);
+   const pgsTendonStressArtifact* GetTendonStressArtifact() const;
+   pgsTendonStressArtifact* GetTendonStressArtifact();
+
+   void AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact);
+   IndexType GetDeflectionCheckArtifactCount();
+   pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx);
+   const pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx) const;
+
    Float64 GetRequiredConcreteStrength() const;
    Float64 GetRequiredReleaseStrength() const;
 
-   // GROUP: INQUIRY
+   bool Passed() const;
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const pgsGirderArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsGirderArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual void MakeAssignment(const pgsGirderArtifact& rOther);
 
 private:
-   // GROUP: DATA MEMBERS
-   SpanIndexType m_SpanIdx;
-   GirderIndexType m_GirderIdx;
+   CGirderKey m_GirderKey;
+   pgsTendonStressArtifact m_TendonStressArtifact;
 
-   pgsStrandStressArtifact m_StrandStressArtifact;
-   pgsStrandSlopeArtifact m_StrandSlopeArtifact;
-   pgsHoldDownForceArtifact m_HoldDownForceArtifact;
-   pgsConstructabilityArtifact m_ConstructabilityArtifact;
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
 
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact> m_FlexuralStressArtifacts;
-   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact> m_PositiveMomentFlexuralCapacityArtifacts;
-   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact> m_NegativeMomentFlexuralCapacityArtifacts;
+   std::set<pgsSegmentArtifact> m_SegmentArtifacts;
+   std::set<pgsClosurePourArtifact> m_ClosurePourArtifacts;
 
-   pgsStirrupCheckArtifact m_StirrupCheckArtifact;
 
-   pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
-
-   std::auto_ptr<pgsLiftingAnalysisArtifact> m_pLiftingAnalysisArtifact;
-   std::auto_ptr<pgsHaulingAnalysisArtifact> m_pHaulingAnalysisArtifact;
-
-   pgsDeflectionCheckArtifact m_DeflectionCheckArtifact;
-
-   pgsDebondArtifact m_DebondArtifact[3];
-
-   Float64 m_CastingYardAllowable; // allowable tensile stress for casting yard with required mild rebar
-   Float64 m_TempStrandRemovalAllowable; // allowable tensile stress for temp strand removal with required mild rebar
-   Float64 m_DeckCastingAllowable;// allowable tensile stress for deck casting with required mild rebar
+   std::vector<pgsDeflectionCheckArtifact> m_DeflectionCheckArtifact;
 };
-
-#endif // INCLUDED_PGSEXT_GIRDERARTIFACT_H_

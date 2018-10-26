@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,20 +22,20 @@
 
 // BoxBeamDistFactorEngineer.cpp : Implementation of CBoxBeamDistFactorEngineer
 #include "stdafx.h"
-#include <Plugins\Beams.h>
 #include "BoxBeamDistFactorEngineer.h"
 #include <WBFLCore.h>
 #include <Units\SysUnits.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\ReportStyleHolder.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\StatusCenter.h>
+#include <IFace\Intervals.h>
 #include <WBFLCogo.h>
 #include <LRFD\LldfTypeG.h>
 #include <Beams\Helper.h>
@@ -53,357 +53,378 @@ HRESULT CBoxBeamDistFactorEngineer::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   SPANDETAILS span_lldf;
-   GetSpanDF(span,gdr,pgsTypes::StrengthI,-1,&span_lldf);
-
-   PierIndexType pier1 = span;
-   PierIndexType pier2 = span+1;
-
-   PIERDETAILS pier1_lldf, pier2_lldf;
-   GetPierDF(pier1, gdr, pgsTypes::StrengthI, pgsTypes::Ahead, -1, &pier1_lldf);
-   GetPierDF(pier2, gdr, pgsTypes::StrengthI, pgsTypes::Back,  -1, &pier2_lldf);
-
-   REACTIONDETAILS reaction1_lldf, reaction2_lldf;
-   GetPierReactionDF(pier1, gdr, pgsTypes::StrengthI, -1, &reaction1_lldf);
-   GetPierReactionDF(pier2, gdr, pgsTypes::StrengthI, -1, &reaction2_lldf);
-
-   // do a sanity check to make sure the fundimental values are correct
-   ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
-   ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
-   ATLASSERT(pier1_lldf.Method == pier2_lldf.Method);
-
-   ATLASSERT(span_lldf.bExteriorGirder  == pier1_lldf.bExteriorGirder);
-   ATLASSERT(span_lldf.bExteriorGirder  == pier2_lldf.bExteriorGirder);
-   ATLASSERT(pier1_lldf.bExteriorGirder == pier2_lldf.bExteriorGirder);
+#pragma Reminder("UPDATE: this can be simplified")
+   // Loop over span has code that can be pulled out of the loop because it only needs to be
+   // initialized once... looks like we are reporting intermediate piers twice
 
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILiveLoads,pLiveLoads);
 
-   // determine continuity
-   bool bContinuous, bContinuousAtStart, bContinuousAtEnd;
-   pBridge->IsContinuousAtPier(pier1,&bContinuous,&bContinuousAtStart);
-   pBridge->IsContinuousAtPier(pier2,&bContinuousAtEnd,&bContinuous);
+   SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
+   SpanIndexType endSpanIdx   = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
 
-   bool bIntegral, bIntegralAtStart, bIntegralAtEnd;
-   pBridge->IsIntegralAtPier(pier1,&bIntegral,&bIntegralAtStart);
-   pBridge->IsIntegralAtPier(pier2,&bIntegralAtEnd,&bIntegral);
+   GirderIndexType gdrIdx = girderKey.girderIndex;
 
-   rptParagraph* pPara;
-
-   bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
-   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    offsetFormatter, pDisplayUnits->GetSpanLengthUnit(),      false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pPara) << _T("Method of Computation:")<<rptNewLine;
-   (*pChapter) << pPara;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-   std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
-   (*pPara) << GetComputationDescription(span,gdr, 
-                                         strGirderName, 
-                                         pDeck->DeckType,
-                                         pDeck->TransverseConnectivity);
-
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor Parameters") << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
-   Float64 station,offset;
-   pBridge->GetStationAndOffset(pgsPointOfInterest(span,gdr,span_lldf.ControllingLocation),&station, &offset);
-   Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetGirderStartConnectionLength(span,gdr);
-   (*pPara) << _T("Deck Width, Girder Spacing and Slab Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
-   (*pPara) << _T("The measurement line passes through Station ") << rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << _T(" (") << RPT_OFFSET(offset,offsetFormatter) << _T(")") << rptNewLine;
-   (*pPara) << _T("Bridge Width: W = ") << xdim.SetValue(span_lldf.W) << rptNewLine;
-   (*pPara) << _T("Roadway Width: w = ") << xdim.SetValue(span_lldf.wCurbToCurb) << rptNewLine;
-   (*pPara) << _T("Number of Design Lanes: N") << Sub(_T("L")) << _T(" = ") << span_lldf.Nl << rptNewLine;
-   (*pPara) << _T("Lane Width: wLane = ") << xdim.SetValue(span_lldf.wLane) << rptNewLine;
-   (*pPara) << _T("Number of Girders: N") << Sub(_T("b")) << _T(" = ") << span_lldf.Nb << rptNewLine;
-   (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
-   Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
-   (*pPara) << _T("Distance from exterior web of exterior girder to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
-   (*pPara) << _T("Moment of Inertia: I = ") << inertia.SetValue(span_lldf.I) << rptNewLine;
-   (*pPara) << _T("Beam Width: b = ") << xdim2.SetValue(span_lldf.b) << rptNewLine;
-   (*pPara) << _T("Beam Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
-   (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine;
-   (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
-   (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
-
-   if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      SPANDETAILS span_lldf;
+      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,-1,&span_lldf);
+
+      PierIndexType pier1 = spanIdx;
+      PierIndexType pier2 = spanIdx+1;
+
+      PIERDETAILS pier1_lldf, pier2_lldf;
+      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, -1, &pier1_lldf);
+      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  -1, &pier2_lldf);
+
+      REACTIONDETAILS reaction1_lldf, reaction2_lldf;
+      GetPierReactionDF(pier1, gdrIdx, pgsTypes::StrengthI, -1, &reaction1_lldf);
+      GetPierReactionDF(pier2, gdrIdx, pgsTypes::StrengthI, -1, &reaction2_lldf);
+
+      // do a sanity check to make sure the fundimental values are correct
+      ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
+      ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
+      ATLASSERT(pier1_lldf.Method == pier2_lldf.Method);
+
+      ATLASSERT(span_lldf.bExteriorGirder  == pier1_lldf.bExteriorGirder);
+      ATLASSERT(span_lldf.bExteriorGirder  == pier2_lldf.bExteriorGirder);
+      ATLASSERT(pier1_lldf.bExteriorGirder == pier2_lldf.bExteriorGirder);
+
+      // Grab the interfaces that are needed
+      GET_IFACE(IBridge,pBridge);
+      GET_IFACE(ILiveLoads,pLiveLoads);
+
+      // determine continuity
+      bool bContinuous, bContinuousAtStart, bContinuousAtEnd;
+      pBridge->IsContinuousAtPier(pier1,&bContinuous,&bContinuousAtStart);
+      pBridge->IsContinuousAtPier(pier2,&bContinuousAtEnd,&bContinuous);
+
+      bool bIntegral, bIntegralAtStart, bIntegralAtEnd;
+      pBridge->IsIntegralAtPier(pier1,&bIntegral,&bIntegralAtStart);
+      pBridge->IsIntegralAtPier(pier2,&bIntegralAtEnd,&bIntegral);
+
+      rptParagraph* pPara;
+
+      bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
+      std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,    offsetFormatter, pDisplayUnits->GetSpanLengthUnit(),      false );
+      INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
+      INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
+      INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
+
+      rptRcScalar scalar;
+      scalar.SetFormat( sysNumericFormatTool::Fixed );
+      scalar.SetWidth(6);
+      scalar.SetPrecision(3);
+      scalar.SetTolerance(1.0e-6);
+
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pPara) << _T("St. Venant torsional inertia constant");
+      (*pPara) << _T("Method of Computation:")<<rptNewLine;
       (*pChapter) << pPara;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
+      std::_tstring strGirderName = pGroup->GetGirder(gdrIdx)->GetGirderName();
+      (*pPara) << GetComputationDescription(girderKey,strGirderName,pDeck->DeckType,pDeck->TransverseConnectivity);
 
-      (*pPara) << _T("St. Venant torsional inertia constant: J = ") << inertia.SetValue(span_lldf.J) << rptNewLine;
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pChapter) << pPara;
+      (*pPara) << _T("Distribution Factor Parameters") << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
 
-      (*pPara) << rptRcImage(strImagePath + _T("J_closed_thin_wall.png")) << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + _T("BoxBeam_TorsionalConstant.gif")) << rptNewLine;
-      (*pPara) << _T("Area enclosed by centerlines of elements: ") << Sub2(_T("A"),_T("o")) << _T(" = ") << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
+      Float64 station,offset;
+      ATLASSERT(pGroup->GetGirder(gdrIdx)->GetSegmentCount() == 1); 
+      CSegmentKey segmentKey(girderKey,0);
+      pBridge->GetStationAndOffset(segmentKey,span_lldf.ControllingLocation,&station, &offset);
+      Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pPara) << _T("Deck Width, Girder Spacing and Slab Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
+      (*pPara) << _T("The measurement line passes through Station ") << rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << _T(" (") << RPT_OFFSET(offset,offsetFormatter) << _T(")") << rptNewLine;
+      (*pPara) << _T("Bridge Width: W = ") << xdim.SetValue(span_lldf.W) << rptNewLine;
+      (*pPara) << _T("Roadway Width: w = ") << xdim.SetValue(span_lldf.wCurbToCurb) << rptNewLine;
+      (*pPara) << _T("Number of Design Lanes: N") << Sub(_T("L")) << _T(" = ") << span_lldf.Nl << rptNewLine;
+      (*pPara) << _T("Lane Width: wLane = ") << xdim.SetValue(span_lldf.wLane) << rptNewLine;
+      (*pPara) << _T("Number of Girders: N") << Sub(_T("b")) << _T(" = ") << span_lldf.Nb << rptNewLine;
+      (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
+      Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
+      (*pPara) << _T("Distance from exterior web of exterior girder to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
+      (*pPara) << _T("Moment of Inertia: I = ") << inertia.SetValue(span_lldf.I) << rptNewLine;
+      (*pPara) << _T("Beam Width: b = ") << xdim2.SetValue(span_lldf.b) << rptNewLine;
+      (*pPara) << _T("Beam Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
+      (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine;
+      (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
+      (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-      (*pPara) << p_table;
-
-      (*p_table)(0,0) << _T("Element");
-      (*p_table)(0,1) << _T("s");
-      (*p_table)(0,2) << _T("t");
-
-      RowIndexType row = p_table->GetNumberOfHeaderRows();
-      std::vector<BOXBEAM_J_VOID::Element>::iterator iter;
-      for ( iter = span_lldf.Jvoid.Elements.begin(); iter != span_lldf.Jvoid.Elements.end(); iter++ )
+      if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
       {
-         BOXBEAM_J_VOID::Element& element = *iter;
-         (*p_table)(row,0) << row;
-         (*p_table)(row,1) << xdim2.SetValue(element.first);
-         (*p_table)(row,2) << xdim2.SetValue(element.second);
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         (*pPara) << _T("St. Venant torsional inertia constant");
+         (*pChapter) << pPara;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
 
-         row++;
+         (*pPara) << _T("St. Venant torsional inertia constant: J = ") << inertia.SetValue(span_lldf.J) << rptNewLine;
+
+         (*pPara) << rptRcImage(strImagePath + _T("J_closed_thin_wall.png")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + _T("BoxBeam_TorsionalConstant.gif")) << rptNewLine;
+         (*pPara) << _T("Area enclosed by centerlines of elements: ") << Sub2(_T("A"),_T("o")) << _T(" = ") << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
+
+         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+         (*pPara) << p_table;
+
+         (*p_table)(0,0) << _T("Element");
+         (*p_table)(0,1) << _T("s");
+         (*p_table)(0,2) << _T("t");
+
+         RowIndexType row = p_table->GetNumberOfHeaderRows();
+         std::vector<BOXBEAM_J_VOID::Element>::iterator iter;
+         for ( iter = span_lldf.Jvoid.Elements.begin(); iter != span_lldf.Jvoid.Elements.end(); iter++ )
+         {
+            BOXBEAM_J_VOID::Element& element = *iter;
+            (*p_table)(row,0) << row;
+            (*p_table)(row,1) << xdim2.SetValue(element.first);
+            (*p_table)(row,2) << xdim2.SetValue(element.second);
+
+            row++;
+         }
+         (*pPara) << symbol(SUM) << _T("s/t = ") << span_lldf.Jvoid.S_over_T << rptNewLine;
+         (*pPara) << _T("Torsional Constant: J = ") << inertia.SetValue(span_lldf.J) << rptNewLine;
       }
-      (*pPara) << symbol(SUM) << _T("s/t = ") << span_lldf.Jvoid.S_over_T << rptNewLine;
-      (*pPara) << _T("Torsional Constant: J = ") << inertia.SetValue(span_lldf.J) << rptNewLine;
-   }
 
 
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-   {
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         (*pPara) << _T("Strength and Service Limit States");
+         (*pChapter) << pPara;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
+      }
+
+      //////////////////////////////////////////////////////
+      // Moments
+      //////////////////////////////////////////////////////
+
+      // Distribution factor for exterior girder
+      if ( bContinuousAtStart || bIntegralAtStart )
+      {
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier1+1) << rptNewLine;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
+
+         (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier1_lldf.skew1 + pier1_lldf.skew2)/2)) << rptNewLine;
+         (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier1_lldf.L) << rptNewLine << rptNewLine;
+
+         // Negative moment DF from pier1_lldf
+         ReportMoment(pPara,
+                      pier1_lldf,
+                      pier1_lldf.gM1,
+                      pier1_lldf.gM2,
+                      pier1_lldf.gM,
+                      bSIUnits,pDisplayUnits);
+      }
+
+      // Positive moment DF
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pPara) << _T("Strength and Service Limit States");
       (*pChapter) << pPara;
+      if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
+         (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      else
+         (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-   }
 
-   //////////////////////////////////////////////////////
-   // Moments
-   //////////////////////////////////////////////////////
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
 
-   // Distribution factor for exterior girder
-   if ( bContinuousAtStart || bIntegralAtStart )
-   {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier1+1) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier1_lldf.skew1 + pier1_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier1_lldf.L) << rptNewLine << rptNewLine;
-
-      // Negative moment DF from pier1_lldf
       ReportMoment(pPara,
-                   pier1_lldf,
-                   pier1_lldf.gM1,
-                   pier1_lldf.gM2,
-                   pier1_lldf.gM,
+                   span_lldf,
+                   span_lldf.gM1,
+                   span_lldf.gM2,
+                   span_lldf.gM,
                    bSIUnits,pDisplayUnits);
-   }
 
-   // Positive moment DF
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
-      (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
-   else
-      (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+      if ( bContinuousAtEnd || bIntegralAtEnd )
+      {
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier2+1) << rptNewLine;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
 
-   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
+         (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier2_lldf.skew1 + pier2_lldf.skew2)/2)) << rptNewLine;
+         (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier2_lldf.L) << rptNewLine << rptNewLine;
 
-   ReportMoment(pPara,
-                span_lldf,
-                span_lldf.gM1,
-                span_lldf.gM2,
-                span_lldf.gM,
-                bSIUnits,pDisplayUnits);
-
-   if ( bContinuousAtEnd || bIntegralAtEnd )
-   {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier2+1) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((pier2_lldf.skew1 + pier2_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(pier2_lldf.L) << rptNewLine << rptNewLine;
-
-      // Negative moment DF from pier2_lldf
-      ReportMoment(pPara,
-                   pier2_lldf,
-                   pier2_lldf.gM1,
-                   pier2_lldf.gM2,
-                   pier2_lldf.gM,
-                   bSIUnits,pDisplayUnits);
-   }
-   
-
-   //////////////////////////////////////////////////////////////
-   // Shears
-   //////////////////////////////////////////////////////////////
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(span) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+         // Negative moment DF from pier2_lldf
+         ReportMoment(pPara,
+                      pier2_lldf,
+                      pier2_lldf.gM1,
+                      pier2_lldf.gM2,
+                      pier2_lldf.gM,
+                      bSIUnits,pDisplayUnits);
+      }
       
-   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
 
-   ReportShear(pPara,
-               span_lldf,
-               span_lldf.gV1,
-               span_lldf.gV2,
-               span_lldf.gV,
-               bSIUnits,pDisplayUnits);
-
-   //////////////////////////////////////////////////////////////
-   // Reactions
-   //////////////////////////////////////////////////////////////
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier1+1) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
-   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
-
-   ReportShear(pPara,
-               reaction1_lldf,
-               reaction1_lldf.gR1,
-               reaction1_lldf.gR2,
-               reaction1_lldf.gR,
-               bSIUnits,pDisplayUnits);
-
-     ///////
-
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier2+1) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
-   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
-   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
-
-   ReportShear(pPara,
-               reaction2_lldf,
-               reaction2_lldf.gR1,
-               reaction2_lldf.gR2,
-               reaction2_lldf.gR,
-               bSIUnits,pDisplayUnits);
-
-   ////////////////////////////////////////////////////////////////////////////
-   // Fatigue limit states
-   ////////////////////////////////////////////////////////////////////////////
-
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pPara) << _T("Fatigue Limit States");
-   (*pChapter) << pPara;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
-   std::_tstring superscript;
-
-   rptRcScalar scalar2 = scalar;
-
-   //////////////////////////////////////////////////////////////
-   // Moments
-   //////////////////////////////////////////////////////////////
-   if ( bContinuousAtEnd || bIntegralAtEnd )
-   {
+      //////////////////////////////////////////////////////////////
+      // Shears
+      //////////////////////////////////////////////////////////////
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier1) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+         
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine << rptNewLine;
+
+      ReportShear(pPara,
+                  span_lldf,
+                  span_lldf.gV1,
+                  span_lldf.gV2,
+                  span_lldf.gV,
+                  bSIUnits,pDisplayUnits);
+
+      //////////////////////////////////////////////////////////////
+      // Reactions
+      //////////////////////////////////////////////////////////////
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pChapter) << pPara;
+      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier1+1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
-   }
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
 
-   // Positive moment DF
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
-      (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
-   else
-      (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(span) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+      ReportShear(pPara,
+                  reaction1_lldf,
+                  reaction1_lldf.gR1,
+                  reaction1_lldf.gR2,
+                  reaction1_lldf.gR,
+                  bSIUnits,pDisplayUnits);
 
-   superscript = (span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gM1.mg/1.2);
+        ///////
 
-   if ( bContinuousAtEnd || bIntegralAtEnd )
-   {
       pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier2) << rptNewLine;
+      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier2+1) << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
-      superscript = (pier2_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier2_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier2_lldf.gM1.mg/1.2);
-   }
+      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
 
-   //////////////////////////////////////////////////////////////
-   // Shears
-   //////////////////////////////////////////////////////////////
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(span) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+      ReportShear(pPara,
+                  reaction2_lldf,
+                  reaction2_lldf.gR1,
+                  reaction2_lldf.gR2,
+                  reaction2_lldf.gR,
+                  bSIUnits,pDisplayUnits);
 
-   superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gV1.mg/1.2);
+      ////////////////////////////////////////////////////////////////////////////
+      // Fatigue limit states
+      ////////////////////////////////////////////////////////////////////////////
 
-   //////////////////////////////////////////////////////////////
-   // Reactions
-   //////////////////////////////////////////////////////////////
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pPara) << _T("Fatigue Limit States");
+      (*pChapter) << pPara;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
 
-   superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
+      std::_tstring superscript;
 
-     ///////
+      rptRcScalar scalar2 = scalar;
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+      //////////////////////////////////////////////////////////////
+      // Moments
+      //////////////////////////////////////////////////////////////
+      if ( bContinuousAtEnd || bIntegralAtEnd )
+      {
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier1) << rptNewLine;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
 
-   superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-   (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
+         superscript = (pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier1_lldf.gM1.mg/1.2);
+      }
+
+      // Positive moment DF
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pChapter) << pPara;
+      if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
+         (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      else
+         (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+
+      superscript = (span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gM1.mg/1.2);
+
+      if ( bContinuousAtEnd || bIntegralAtEnd )
+      {
+         pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << LABEL_PIER(pier2) << rptNewLine;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
+
+         superscript = (pier2_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier2_lldf.gM1.mg) << _T("/1.2 = ") << scalar2.SetValue(pier2_lldf.gM1.mg/1.2);
+      }
+
+      //////////////////////////////////////////////////////////////
+      // Shears
+      //////////////////////////////////////////////////////////////
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pChapter) << pPara;
+      (*pPara) << _T("Distribution Factor for Shear in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+
+      superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/1.2 = ") << scalar2.SetValue(span_lldf.gV1.mg/1.2);
+
+      //////////////////////////////////////////////////////////////
+      // Reactions
+      //////////////////////////////////////////////////////////////
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pChapter) << pPara;
+      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+
+      superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/1.2);
+
+        ///////
+
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      (*pChapter) << pPara;
+      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
+      pPara = new rptParagraph;
+      (*pChapter) << pPara;
+
+      superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/1.2 = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/1.2);
+   } // next span
 }
 
 void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
@@ -412,7 +433,12 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
 
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -521,28 +547,25 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
       (*pPara) << rptNewLine;
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+      if (lldf.Method==LLDF_TXDOT)
       {
-         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         if (lldf.Method==LLDF_TXDOT)
-         {
-            (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
-         }
-         else
-         {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-               (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
-         }
-         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
-         (*pPara) << rptNewLine;
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
-         {
-            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         }
+         (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
+      }
+      else
+      {
+         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+      }
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+      if ( lldf.Nl >= 2 )
+      {
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+         (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
    else
@@ -622,28 +645,25 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
       (*pPara) << rptNewLine;
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+      if (lldf.Method==LLDF_TXDOT)
       {
-         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         if (lldf.Method==LLDF_TXDOT)
-         {
-            (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
-         }
-         else
-         {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-               (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
-         }
-         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
-         (*pPara) << rptNewLine;
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
-         {
-            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         }
+         (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
+      }
+      else
+      {
+         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+      }
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+      if ( lldf.Nl >= 2 )
+      {
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+         (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
 }
@@ -653,7 +673,11 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
    GET_IFACE(IBridge,pBridge);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
 
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -753,20 +777,17 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
       (*pPara) << rptNewLine;
 
-      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
-      {
-         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
 
-         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
-         (*pPara) << rptNewLine;
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
-         {
-            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         }
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+      if ( lldf.Nl >= 2 )
+      {
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+         (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
    else
@@ -832,27 +853,24 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
       (*pPara) << rptNewLine;
 
-      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
-      {
-         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
+      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
 
-         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
-         (*pPara) << rptNewLine;
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
-         {
-            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         }
+      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+      (*pPara) << rptNewLine;
+      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+      if ( lldf.Nl >= 2 )
+      {
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+         (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
       }
    }
 }
 
-lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf)
+lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf)
 {
-   GET_IFACE(ISectProp2, pSectProp2);
+   GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(IBridge,pBridge);
@@ -863,8 +881,8 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    GET_IFACE(ILiveLoads,pLiveLoads);
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    ATLASSERT(pDeck->DeckType==pgsTypes::sdtCompositeOverlay ||pDeck->DeckType==pgsTypes::sdtNone);
    ATLASSERT(pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput);
@@ -877,24 +895,26 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    SpanIndexType next_span = INVALID_INDEX;
    PierIndexType prev_pier = INVALID_INDEX;
    PierIndexType next_pier = INVALID_INDEX;
-   GetIndicies(spanOrPier,dfType,span,pier,prev_span,next_span,prev_pier,next_pier);
+   GetIndicies(spanOrPierIdx,dfType,span,pier,prev_span,next_span,prev_pier,next_pier);
    
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(span);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
 
-   GirderIndexType nGirders = pSpan->GetGirderCount();
-
-   if ( nGirders <= gdr )
+   if ( nGirders <= gdrIdx )
    {
       ATLASSERT(0);
-      gdr = nGirders-1;
+      gdrIdx = nGirders-1;
    }
 
    ///////////////////////////////////////////////////////////////////////////
    // Determine overhang and spacing information
-   GetGirderSpacingAndOverhang(span,gdr,dfType, plldf);
+   GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
 
    // put a poi at controlling location from spacing comp
-   pgsPointOfInterest poi(span,gdr,plldf->ControllingLocation);
+#pragma Reminder("UPDATE: need to figure out the actual group, girder, and segment")
+   CSegmentKey segmentKey(span,gdrIdx,0);
+   pgsPointOfInterest poi(segmentKey,plldf->ControllingLocation);
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
@@ -928,7 +948,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    plldf->b            = width;
    plldf->PossionRatio = 0.2;
 
-   plldf->L = GetEffectiveSpanLength(spanOrPier,gdr,dfType);
+   plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
 
    // compute de (inside edge of barrier to CL of exterior web)
    Float64 wd = pGirder->GetCL2ExteriorWebDistance(poi); // cl beam to cl web
@@ -947,17 +967,20 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    // thickness of exterior vertical elements
    Float64 t_ext = web_thk;
 
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
    if (is_composite)
    {
       // We have a composite section. 
-      Float64 eff_wid = pSectProp2->GetEffectiveFlangeWidth(poi);
+      Float64 eff_wid = pSectProp->GetEffectiveFlangeWidth(poi);
       if ( fcgdr < 0 )
       {
-         plldf->I  = pSectProp2->GetIx(pgsTypes::BridgeSite3,poi);
+         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
       }
       else
       {
-         plldf->I  = pSectProp2->GetIx(pgsTypes::BridgeSite3,poi,fcgdr);
+         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
       }
 
       Float64 t_top = top_flg_thk;
@@ -998,7 +1021,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    else
    {
       // No deck: base I and J on bare beam properties
-      plldf->I  = pSectProp2->GetIx(pgsTypes::BridgeSite3,poi);
+      plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
 
       Float64 t_top = top_flg_thk;
       Float64 t_bot = bot_flg_thk;
@@ -1061,92 +1084,55 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
 
       pLLDF = pTypeF;
    }
+   else if ( plldf->connectedAsUnit)
+   {
+      lrfdLldfTypeF* pTypeF = new lrfdLldfTypeF(
+                            plldf->gdrNum, // to fix this warning, clean up the LLDF data types
+                            plldf->Savg,
+                            plldf->gdrSpacings,
+                            plldf->leftCurbOverhang,
+                            plldf->rightCurbOverhang,
+                            plldf->Nl, 
+                            plldf->wLane,
+                            plldf->L,
+                            plldf->W,
+                            plldf->I,
+                            plldf->J,
+                            plldf->b,
+                            plldf->d,
+                            plldf->leftDe,
+                            plldf->rightDe,
+                            plldf->PossionRatio,
+                            false,
+                            plldf->skew1, 
+                            plldf->skew2);
+
+      pLLDF = pTypeF;
+   }
    else
    {
-      bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
-      bool bSkewMoment = bSkew;
-      bool bSkewShear  = bSkew;
+      lrfdLldfTypeG* pTypeG = new lrfdLldfTypeG(
+                            plldf->gdrNum,  // to fix this warning, clean up the LLDF data types
+                            plldf->Savg,
+                            plldf->gdrSpacings,
+                            plldf->leftCurbOverhang,
+                            plldf->rightCurbOverhang,
+                            plldf->Nl, 
+                            plldf->wLane,
+                            plldf->L,
+                            plldf->W,
+                            plldf->I,
+                            plldf->J,
+                            plldf->b,
+                            plldf->d,
+                            plldf->leftDe,
+                            plldf->rightDe,
+                            plldf->PossionRatio,
+                            false,
+                            plldf->skew1, 
+                            plldf->skew2);
 
-      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
-      {
-         // Starting with LRFD 7th Edition, 2014, skew correction is only applied from
-         // the obtuse corner to mid-span of exterior and first interior girders.
-         // Use the IsObtuseCorner method to determine if there is an obtuse corner for
-         // this girder. If so, apply the skew correction
-         if ( dfType == dfReaction )
-         {
-            bool bObtuseLeft = false;
-            if ( prev_span != INVALID_INDEX )
-            {
-               bObtuseLeft = pBridge->IsObtuseCorner(prev_span,gdr,pgsTypes::metEnd);
-            }
-
-            bool bObtuseRight = false;
-            if ( next_span != INVALID_INDEX )
-            {
-               bObtuseRight = pBridge->IsObtuseCorner(next_span,gdr,pgsTypes::metStart);
-            }
-
-            bSkewShear = (bObtuseLeft || bObtuseRight ? true : false);
-         }
-         else
-         {
-            bool bObtuseStart = pBridge->IsObtuseCorner(span,gdr,pgsTypes::metStart);
-            bool bObtuseEnd   = pBridge->IsObtuseCorner(span,gdr,pgsTypes::metEnd);
-            bSkewShear = (bObtuseStart || bObtuseEnd ? true : false);
-         }
-      }
-
-      if ( plldf->connectedAsUnit )
-      {
-         lrfdLldfTypeF* pTypeF = new lrfdLldfTypeF(
-                               plldf->gdrNum, // to fix this warning, clean up the LLDF data types
-                               plldf->Savg,
-                               plldf->gdrSpacings,
-                               plldf->leftCurbOverhang,
-                               plldf->rightCurbOverhang,
-                               plldf->Nl, 
-                               plldf->wLane,
-                               plldf->L,
-                               plldf->W,
-                               plldf->I,
-                               plldf->J,
-                               plldf->b,
-                               plldf->d,
-                               plldf->leftDe,
-                               plldf->rightDe,
-                               plldf->PossionRatio,
-                               plldf->skew1, 
-                               plldf->skew2,
-                               bSkewMoment, bSkewShear);
-
-         pLLDF = pTypeF;
-      }
-      else
-      {
-         lrfdLldfTypeG* pTypeG = new lrfdLldfTypeG(
-                               plldf->gdrNum,  // to fix this warning, clean up the LLDF data types
-                               plldf->Savg,
-                               plldf->gdrSpacings,
-                               plldf->leftCurbOverhang,
-                               plldf->rightCurbOverhang,
-                               plldf->Nl, 
-                               plldf->wLane,
-                               plldf->L,
-                               plldf->W,
-                               plldf->I,
-                               plldf->J,
-                               plldf->b,
-                               plldf->d,
-                               plldf->leftDe,
-                               plldf->rightDe,
-                               plldf->PossionRatio,
-                               plldf->skew1, 
-                               plldf->skew2,
-                               bSkewMoment, bSkewShear);
-
-         pLLDF = pTypeG;
-      }
+      pLLDF = pTypeG;
    }
 
    pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );
@@ -1154,7 +1140,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    return pLLDF;
 }
 
-std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);

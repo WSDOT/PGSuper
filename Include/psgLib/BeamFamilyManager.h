@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,6 @@ public:
    static HRESULT GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily);
    static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
    static void Reset();
-   static void UpdateFactories();
 
 private:
    typedef std::map<CString,CLSID> FamilyContainer;

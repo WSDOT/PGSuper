@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include "TexasIBNSChapterBuilder.h"
@@ -35,7 +35,7 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <psgLib\SpecLibraryEntry.h>
@@ -71,11 +71,13 @@ LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 /*--------------------------------------------------------------------*/
 rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pReportSpec->GetBroker(&pBroker);
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   std::vector<SpanGirderHashType> list = pReportSpec->GetGirderList();
+   // This is a single segment report
+   CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -83,39 +85,42 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
+	/* For broker passed in, get interface information */
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
 
-   // Loop over all requested girders and report spec check results
-   for (std::vector<SpanGirderHashType>::iterator it=list.begin(); it!=list.end(); it++)
+   if( pSegmentArtifact->Passed() )
    {
-      SpanIndexType span;
-      GirderIndexType gdr;
-      UnhashSpanGirder(*it,&span,&gdr);
-
-      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,gdr);
-
-      if( pGdrArtifact->Passed() )
-      {
-         rptParagraph* pPara = new rptParagraph;
-         *pChapter << pPara;
-         *pPara << color(Green) << _T("The Specification Check for Span ")
-                << LABEL_SPAN(span)<<_T(", Girder ")<<LABEL_GIRDER(gdr) 
-                << _T(" was Successful") << color(Black) << rptNewLine;
-      }
-      else
-      {
-         rptParagraph* pPara = new rptParagraph;
-         *pChapter << pPara;
-         *pPara << color(Red) << _T("The Specification Check for Span ")
-                << LABEL_SPAN(span)<<_T(", Girder ")<<LABEL_GIRDER(gdr) 
-                << _T(" was Not Successful") << color(Black);
-      }
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Green) << _T("The Specification Check was Successful") << color(Black) << rptNewLine;
+   }
+   else
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black);
    }
 
+#if defined IGNORE_2007_CHANGES
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   {
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
+   }
+#endif
+
    // let the paragraph builder to all the work here...
-   bool doEjectPage;
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker, list, pDisplayUnits, level, doEjectPage);
+   std::vector<CSegmentKey> segmentKeys;
+   segmentKeys.push_back(segmentKey);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level);
 
    *pChapter << pcontent;
 

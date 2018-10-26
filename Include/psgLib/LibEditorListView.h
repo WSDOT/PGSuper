@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -84,7 +84,7 @@ protected:
       // class extensions
 public:
    // a new library was selected, need to redraw
-   void OnLibrarySelected(IndexType libnun, const CString& name);
+   void OnLibrarySelected(int libnun, const CString& name);
    // redraw
    void RedrawAllEntries();
    // add a new entry to the library
@@ -95,8 +95,6 @@ public:
    bool IsEditableItemSelected()const;
    // delete selected entry - must be an item selected
    void DeleteSelectedEntry();
-   // indicates if an entry can be duplicated
-   bool CanDuplicateEntry();
    // duplicate selected entry
    void DuplicateSelectedEntry();
    // edit selected entry
@@ -108,8 +106,8 @@ public:
 
 private:
    CString             m_LibName;
-   IndexType     m_LibIndex; // currently select library, INVALID_INDEX if none
-   mutable IndexType   m_ItemSelected;// current item selected. INVALID_INDEX if none
+   int           m_LibIndex; // currently select library, -1 if none
+   mutable int   m_ItemSelected;// current item selected. -1 if none
 
 	CImageList          m_NormalEntryImages;    // images for entries
 	CImageList          m_SmallEntryImages; 
@@ -122,7 +120,7 @@ private:
    void DuplicateEntry(libILibrary* plib, LPCTSTR entryName);
    bool DoesEntryExist(const CString& entryName);
    bool GetSelectedEntry(CString* entryName, libILibrary** pplib)const;
-   CollectionIndexType InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
+   int InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
 
 };
 

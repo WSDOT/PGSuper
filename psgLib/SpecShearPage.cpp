@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -90,24 +90,7 @@ BOOL CSpecShearPage::OnInitDialog()
 BOOL CSpecShearPage::OnSetActive() 
 {
    FillShearMethodList();
-
-   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
-   {
-      GetDlgItem(IDC_SLWC_FR_LABEL)->SetWindowText(_T("Lightweight concrete"));
-      GetDlgItem(IDC_ALWC_FR_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_HIDE);
-   }
-   else
-   {
-      GetDlgItem(IDC_SLWC_FR_LABEL)->SetWindowText(_T("Sand lightweight concrete"));
-      GetDlgItem(IDC_ALWC_FR_LABEL)->ShowWindow(SW_SHOW);
-      GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_SHOW);
-      GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_SHOW);
-   }
-
-   return CPropertyPage::OnSetActive();
+	return CPropertyPage::OnSetActive();
 }
 
 void CSpecShearPage::FillShearMethodList()
@@ -204,27 +187,5 @@ void CSpecShearPage::FillShearMethodList()
          pCB->SetCurSel(idxGeneral); // before 2nd+2000, use general method
       }
       break;
-   }
-
-   if ( lrfdVersionMgr::SecondEditionWith2000Interims <= pDad->GetSpecVersion() )
-   {
-      GetDlgItem(IDC_SPACING_LABEL_1)->SetWindowText(_T("If vu <  0.125f'c, then: Smax ="));
-      GetDlgItem(IDC_SPACING_LABEL_2)->SetWindowText(_T("If vu >= 0.125f'c, then: Smax ="));
-   }
-   else
-   {
-      GetDlgItem(IDC_SPACING_LABEL_1)->SetWindowText(_T("Vu < 0.1*f'c*bv*dv Smax = "));
-      GetDlgItem(IDC_SPACING_LABEL_2)->SetWindowText(_T("Vu >= 0.1*f'c*bv*dv Smax = "));
-   }
-
-
-   // this text only applies for 7th Edition, 2014 and later
-   if ( lrfdVersionMgr::SeventhEdition2014 <= pDad->GetSpecVersion() )
-   {
-      GetDlgItem(IDC_DEPTH_OF_UNIT)->ShowWindow(SW_SHOW);
-   }
-   else
-   {
-      GetDlgItem(IDC_DEPTH_OF_UNIT)->ShowWindow(SW_HIDE);
    }
 }

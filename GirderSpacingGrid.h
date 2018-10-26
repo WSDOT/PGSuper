@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,16 +29,17 @@
 // GirderSpacingGrid.h : header file
 //
 
-#include <PgsExt\GirderSpacing.h>
-#include <PgsExt\SpanData.h>
+#include <PgsExt\GirderSpacing2.h>
+#include <PgsExt\SpanData2.h>
+#include <PgsExt\GirderGroupData.h>
 
 class CGirderSpacingGrid;
 
 struct CGirderSpacingGridData
 {
    pgsTypes::PierFaceType m_PierFace;
-   CGirderTypes   m_GirderTypes;
-   CGirderSpacing m_GirderSpacing;
+   CGirderGroupData m_GirderGroup;
+   CGirderSpacing2 m_GirderSpacing;
 };
 
 void DDV_SpacingGrid(CDataExchange* pDX,int nIDC,CGirderSpacingGrid* pGrid);
@@ -66,7 +67,7 @@ public:
    void SetLinkedGrid(CGirderSpacingGrid* pLinkedGrid);
    bool IsLinked(bool bLinked);
 
-   CGirderSpacingGridData GetGirderSpacingData();
+   const CGirderSpacingGridData& GetGirderSpacingData() const;
    void SetGirderSpacingData(const CGirderSpacingGridData& gridData);
 
    void SetPierSkewAngle(Float64 skewAngle);
@@ -96,10 +97,10 @@ protected:
 
 public:
    // custom stuff for grid
-   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment);
-   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment);
+   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing2* pGirderSpacing,const CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType);
+   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing2* pGirderSpacing,const CGirderGroupData* pGirderGroup,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment,pgsTypes::SupportedDeckType deckType);
    void CustomInit();
-   void FillGrid(const CGirderSpacing* pGirderSpacing);
+   void FillGrid(const CGirderSpacing2* pGirderSpacing);
    void FillGrid();
 
    void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing girderSpacingType);
@@ -112,6 +113,7 @@ private:
    PierIndexType m_PierIdx;
    bool m_bAbutment;
    Float64 m_PierSkewAngle;
+   pgsTypes::SupportedDeckType m_DeckType;
    
    CGirderSpacingGridData m_GridData;
 

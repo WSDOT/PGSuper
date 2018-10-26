@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -19,16 +19,13 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-#if !defined(AFX_EDITPOINTLOADDLG_H__82043FFC_1EBA_44DE_9D6A_10BB289BAA99__INCLUDED_)
-#define AFX_EDITPOINTLOADDLG_H__82043FFC_1EBA_44DE_9D6A_10BB289BAA99__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // EditPointLoadDlg.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
-#include <pgsExt\PointLoadData.h>
+#include <PgsExt\PointLoadData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditPointLoadDlg dialog
@@ -37,7 +34,7 @@ class CEditPointLoadDlg : public CDialog
 {
 // Construction
 public:
-	CEditPointLoadDlg(CPointLoadData load, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CEditPointLoadDlg(const CPointLoadData& load,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CEditPointLoadDlg)
@@ -46,17 +43,12 @@ public:
 	CEdit	m_LocationCtrl;
 	CStatic	m_LocationUnitCtrl;
 	CButton	m_FractionalCtrl;
-	CComboBox	m_GirderCB;
-	CComboBox	m_StageCB;
 	CComboBox	m_SpanCB;
-	CComboBox	m_LoadCaseCB;
+	CComboBox	m_GirderCB;
 	//}}AFX_DATA
 
    CPointLoadData m_Load;
-   IBroker*       m_pBroker;
-
-   bool                 m_bUnitsSI;
-   const unitLength*    m_pLengthUnit;
+   CComPtr<IBroker> m_pBroker;
 
    bool                 m_WasLiveLoad;
 
@@ -78,17 +70,19 @@ protected:
 	afx_msg void OnEditchangeSpans();
 	afx_msg void OnEditchangeGirders();
 	afx_msg void OnHelp();
+   afx_msg void OnEventChanged();
+   afx_msg void OnEventChanging();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
    void UpdateLocationUnit();
-   void UpdateStageLoadCase(bool isInitial=false);
+   void UpdateEventLoadCase(bool isInitial=false);
    void UpdateSpanLength();
    void UpdateGirderList();
+
+   void FillEventList();
+   EventIndexType CreateEvent();
+
+   int m_PrevEventIdx;
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_EDITPOINTLOADDLG_H__82043FFC_1EBA_44DE_9D6A_10BB289BAA99__INCLUDED_)

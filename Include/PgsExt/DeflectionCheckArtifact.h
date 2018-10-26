@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,7 +68,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsDeflectionCheckArtifact();
+   pgsDeflectionCheckArtifact(SpanIndexType spanIdx = INVALID_INDEX);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -86,6 +86,9 @@ public:
    // GROUP: OPERATIONS
 
    // GROUP: ACCESS
+
+   void SetSpan(SpanIndexType spanIdx);
+   SpanIndexType GetSpan() const;
 
    //------------------------------------------------------------------------
    void SetAllowableSpanRatio(Float64 AllowableSpanRatio);
@@ -113,7 +116,7 @@ protected:
    void MakeCopy(const pgsDeflectionCheckArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsDeflectionCheckArtifact& rOther);
+   virtual void MakeAssignment(const pgsDeflectionCheckArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -125,6 +128,8 @@ private:
    Float64 m_MaxDemand;// The max deflection along the girder (most positive)
    Float64 m_Capacity; // The allowable absolute deflection
    Float64 m_AllowableSpanRatio; // allowable as give by L/this
+
+   SpanIndexType m_SpanIdx;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

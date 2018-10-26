@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,11 +29,12 @@
 #include <PgsExt\FlexuralStressArtifact.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\PierData.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\SpanData2.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PoiArtifactKey.h>
 #include <PgsExt\PoiMgr.h>
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\HandlingData.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>

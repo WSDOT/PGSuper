@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,12 @@
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
 
-#pragma once
+#if !defined(AFX_STDAFX_H__31062336_3B70_11D2_8EC5_006097DF3C68__INCLUDED_)
+#define AFX_STDAFX_H__31062336_3B70_11D2_8EC5_006097DF3C68__INCLUDED_
 
+#if _MSC_VER >= 1000
+#pragma once
+#endif // _MSC_VER >= 1000
 
 #include <PGSuperAll.h>
 
@@ -46,4 +50,11 @@ extern CComModule _Module;
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 
+#include <WBFLBridgeGeometry.h>
+
 #include <Material\Material.h>
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
+
+#endif // !defined(AFX_STDAFX_H__31062336_3B70_11D2_8EC5_006097DF3C68__INCLUDED)

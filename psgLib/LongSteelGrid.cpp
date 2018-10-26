@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -333,7 +333,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
 
 	this->SetStyleRange(CGXRange(nRow,6), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\n#11\n#14\n#18"))
+			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#8\n#9\n#10\n#11\n#14\n#18"))
 			.SetValue(_T("#4"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
@@ -370,7 +370,7 @@ CString CLongSteelGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* plsi)
 {
-   Float64 d;
+   double d;
    int i;
 
    plsi->BarLayout = GetLayout(nRow); // bar layout type
@@ -567,7 +567,7 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

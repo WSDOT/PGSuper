@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 //
 // You should have received a copy of the Alternate Route Open Source 
 // License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
+// State Department of Transportation, Bridge and Structures Office,  
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
@@ -23,25 +23,21 @@
 #ifndef INCLUDED_PGSEXT_GIRDERDATA_H_
 #define INCLUDED_PGSEXT_GIRDERDATA_H_
 
-// SYSTEM INCLUDES
-//
+#include <PgsExt\PgsExtExp.h>
 #include <WBFLCore.h>
 
 // PROJECT INCLUDES
 //
-#if !defined INCLUDED_PGSEXTEXP_H_
-#include <PgsExt\PgsExtExp.h>
-#endif
 
-#if !defined INCLUDED_STRDATA_H_
 #include <StrData.h>
-#endif
 
 #include <PgsExt\GirderMaterial.h>
-#include <PsgLib\ShearData.h>
+#include <PgsExt\StrandData.h>
+#include <PgsExt\ShearData.h> // CShearData
+#include <PsgLib\ShearData.h> // CShearData2
+#include <PgsExt\DebondData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
-#include <pgsExt\PrestressData.h>
 
 // LOCAL INCLUDES
 //
@@ -54,8 +50,6 @@ class ConcreteLibraryEntry;
 // MISCELLANEOUS
 //
 
-
-
 /*****************************************************************************
 CLASS 
    CGirderData
@@ -67,6 +61,7 @@ DESCRIPTION
    the input data the Prestress page of the Bridge Description Dialog, and 
    implements the IStructuredLoad and IStructuredSave persistence interfaces.
 
+   NOTE: This class is obsolete. It is only used for loading data out of old files
 
 COPYRIGHT
    Copyright © 1997-1998
@@ -76,20 +71,23 @@ COPYRIGHT
 LOG
    rab : 09.30.1998 : Created file
 *****************************************************************************/
-
 class PGSEXTCLASS CGirderData
 {
 public:
-   CPrestressData PrestressData;
-
+   CStrandData Strands;
    CGirderMaterial Material; // concrete and strand data
-   CShearData ShearData;
+   CShearData ShearData; 
+   CShearData2 ShearData2; 
+   bool m_bUsedShearData2; // if true, the shear data is contained in ShearData2, otherwise ShearData
    CLongitudinalRebarData LongitudinalRebarData;
    CHandlingData HandlingData;
 
    // Rating and Condition
    pgsTypes::ConditionFactorType Condition;
    Float64 ConditionFactor;
+
+   std::_tstring m_GirderName;
+   const GirderLibraryEntry* m_pLibraryEntry;
 
    // GROUP: LIFECYCLE
 
@@ -110,6 +108,12 @@ public:
    // Assignment operator
    CGirderData& operator = (const CGirderData& rOther);
 
+   void SetGirderName(LPCTSTR strName);
+   LPCTSTR GetGirderName() const;
+
+   void SetGirderLibraryEntry(const GirderLibraryEntry* pEntry);
+   const GirderLibraryEntry* GetGirderLibraryEntry() const;
+
 
    //------------------------------------------------------------------------
    // An == operator is not enough. We must know the type of change that was
@@ -121,29 +125,20 @@ public:
                     ctStrand       = 0x0004,
                     ctLifting      = 0x0008,
                     ctShipping     = 0x0010,
-                    ctCondition    = 0x0020,
-                    ctLongRebar    = 0x0040,
-                    ctShearData    = 0x0080
+                    ctCondition    = 0x0020
    };
 
    // return or'ed enums above 
    int GetChangeType(const CGirderData& rOther) const;
 
    //------------------------------------------------------------------------
-   // specialized function to copy only material data or only prestressing data
-   // from another
-   void CopyMaterialFrom(const CGirderData& rOther);
-   void CopyPrestressingFrom(const CGirderData& rOther);
-   void CopyShearDataFrom(const CGirderData& rOther);
-   void CopyLongitudinalRebarFrom(const CGirderData& rOther);
-   void CopyHandlingDataFrom(const CGirderData& rOther);
-
-
-   //------------------------------------------------------------------------
    bool operator==(const CGirderData& rOther) const;
 
    //------------------------------------------------------------------------
    bool operator!=(const CGirderData& rOther) const;
+
+   void CopyPrestressingFrom(const CGirderData& rOther);
+   void CopyMaterialFrom(const CGirderData& rOther);
 
    // GROUP: OPERATIONS
 
@@ -164,7 +159,7 @@ protected:
    void MakeCopy(const CGirderData& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CGirderData& rOther);
+   virtual void MakeAssignment(const CGirderData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

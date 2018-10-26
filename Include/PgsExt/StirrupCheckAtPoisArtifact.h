@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -41,6 +41,8 @@
 #endif
 
 #include <Material\Rebar.h>
+
+#include <PgsExt\PointOfInterest.h>
 
 // LOCAL INCLUDES
 //
@@ -180,7 +182,7 @@ protected:
    void MakeCopy(const pgsLongReinfShearArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsLongReinfShearArtifact& rOther);
+   virtual void MakeAssignment(const pgsLongReinfShearArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -220,13 +222,6 @@ private:
 // EXTERNAL REFERENCES
 //
 
-
-
-
-
-
-
-
 /*****************************************************************************
 CLASS 
    pgsVerticalShearArtifact
@@ -259,8 +254,8 @@ public:
    void IsApplicable(bool bApplicable);
 
    // for sections where strength is not applicable, strut and tie analysis may be
-   bool IsStrutAndTieRequired(pgsTypes::MemberEndType end) const;
-   void IsStrutAndTieRequired(pgsTypes::MemberEndType end,bool bRequired);
+   bool IsStrutAndTieRequired() const;
+   void IsStrutAndTieRequired(bool bRequired);
 
    // 5.8.2.4
    void SetAreStirrupsReqd(bool reqd);
@@ -279,10 +274,12 @@ public:
 
    // Use this function for locations outside of the CSS. This allows checking
    // whether Av/S is decreasing in the end regions
-   void SetEndSpacing(pgsTypes::MemberEndType end,Float64 AvS_provided,Float64 AvS_at_CS);
-   void GetEndSpacing(pgsTypes::MemberEndType end,Float64* pAvS_provided,Float64* pAvS_at_CS);
-   // Returns true if location is outboard of CSS
-   bool IsInEndRegion() const;
+   void SetEndSpacing(Float64 AvS_provided,Float64 AvS_at_CS);
+   void GetEndSpacing(Float64* pAvS_provided,Float64* pAvS_at_CS);
+
+   // Returns true if the check for this artifact occurs in a critical section zone
+   bool IsInCriticalSectionZone() const;
+
    // returns true if this is an end region poi and Av/s is less that at CSS
    bool DidAvsDecreaseAtEnd() const;
 
@@ -331,7 +328,7 @@ protected:
    void MakeCopy(const pgsVerticalShearArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsVerticalShearArtifact& rOther);
+   virtual void MakeAssignment(const pgsVerticalShearArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -339,8 +336,8 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    bool m_bIsApplicable;
-   bool m_bIsStrutAndTieRequired[2]; // pgsTypes::MemberEndType = array index
-   bool m_bEndSpacingApplicable[2];
+   bool m_bIsStrutAndTieRequired;
+   bool m_bEndSpacingApplicable;
 
    // 5.8.2.4
    bool m_AreStirrupsReqd;
@@ -351,8 +348,8 @@ private:
    Float64 m_Demand;
    Float64 m_Capacity;
 
-   Float64 m_AvSprovided[2];
-   Float64 m_AvSatCS[2];
+   Float64 m_AvSprovided;
+   Float64 m_AvSatCS;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -431,7 +428,7 @@ public:
    // composite stirrup Av/S
    Float64 GetAvOverS() const;
    // max stirrup spacing for min spacing check
-   Float64 GetSpacing() const;
+   Float64 GetSMax() const;
 
    Float64 GetNormalCompressionForce() const {return m_NormalCompressionForce;}
    void SetNormalCompressionForce(Float64 force) {m_NormalCompressionForce = force;}
@@ -442,9 +439,9 @@ public:
    Float64 GetFrictionFactor() const {return m_FrictionFactor;}
    void SetFrictionFactor(Float64 factor) {m_FrictionFactor = factor;}
    Float64 GetK1() const;
-   void SetK1(Float64 k1);
+   void SetK1(double k1);
    Float64 GetK2() const;
-   void SetK2(Float64 k2);
+   void SetK2(double k2);
    Float64 GetPhi() const {return m_Phi;}
    void SetPhi(Float64 phi) {m_Phi = phi;}
    // capacities from eqn's 5.8.4.1-1,2,3
@@ -460,12 +457,10 @@ public:
    // additional data for 5.8.4.1-4
    Float64 GetBv() const;
    void SetBv(Float64 bv);
-   Float64 GetSmax() const;
-   void SetSmax(Float64 sMax);
+   Float64 GetSall() const;
+   void SetSall(Float64 sall);
    Float64 GetFy() const;
    void SetFy(Float64 fy);
-   bool WasFyLimited() const;
-   void WasFyLimited(bool bWasLimited);
    bool Is5_8_4_1_4Applicable() const;
    
    Float64 GetAvOverSMin_5_8_4_4_1() const;
@@ -492,16 +487,16 @@ public:
    Float64 GetVu() const;
    void SetVu(const Float64& vu);
    Float64 GetDv() const;
-   void SetDv(Float64 dv);
+   void SetDv(double dv);
    Float64 GetI() const;
-   void SetI(Float64 i);
+   void SetI(double i);
    Float64 GetQ() const;
-   void SetQ(Float64 q);
+   void SetQ(double q);
 
    // Use this function for locations outside of the CSS. This allows checking
    // whether Av/S is decreasing in the end zones
-   void SetEndSpacing(pgsTypes::MemberEndType end,Float64 AvS_provided,Float64 AvS_at_CS);
-   void GetEndSpacing(pgsTypes::MemberEndType end,Float64* pAvS_provided,Float64* pAvS_at_CS);
+   void SetEndSpacing(Float64 AvS_provided,Float64 AvS_at_CS);
+   void GetEndSpacing(Float64* pAvS_provided,Float64* pAvS_at_CS);
 
    // Returns true if this is an end region poi and Av/s is less than at CSS
    bool DidAvsDecreaseAtEnd() const;
@@ -539,7 +534,7 @@ protected:
    void MakeCopy(const pgsHorizontalShearArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsHorizontalShearArtifact& rOther);
+   virtual void MakeAssignment(const pgsHorizontalShearArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -566,9 +561,8 @@ private:
    bool m_bIsTopFlangeRoughened;
 
    Float64 m_Bv;
-   Float64 m_Smax; // maximum allowable spacing (5.8.4.2)
+   Float64 m_Sall;
    Float64 m_Fy;
-   bool    m_bWasFyLimited; // true if fy is limited to 60 ksi per LRFD2013 5.8.4.1
    Float64 m_AvOverSMin_5_8_4_4_1;
    Float64 m_AvOverSMin_5_8_4_1_3;
    Float64 m_AvOverSMin;
@@ -578,9 +572,9 @@ private:
    Float64 m_VsLimit; // max shear strength at which 5.8.4.1-4 is not applicable
 
    // parameters for checking end zone locations
-   bool m_bEndSpacingApplicable[2];
-   Float64 m_AvSprovided[2];
-   Float64 m_AvSatCS[2];
+   bool m_bEndSpacingApplicable;
+   Float64 m_AvSprovided;
+   Float64 m_AvSatCS;
 
 
    // parameters used to compute horizonal shear from vertical shear
@@ -652,6 +646,10 @@ public:
 
 
    // GROUP: OPERATIONS
+   void SetFy(Float64 fy) { m_Fy = fy; }
+   Float64 GetFy() const { return m_Fy; }
+   void SetFc(Float64 fc) { m_Fc = fc; }
+   Float64 GetFc() const { return m_Fc; }
    void SetAvsMin(Float64 avsMin) {m_AvsMin = avsMin;}
    Float64 GetAvsMin() const {return m_AvsMin;}
    void SetAvs(Float64 avs) {m_Avs = avs;}
@@ -674,8 +672,8 @@ public:
    Float64 GetVuLimit() const {return m_VuLimit;}
    void SetApplicability(bool isApp) {m_IsApplicable=isApp;}
    bool IsApplicable() const {return m_IsApplicable;};
-   void SetInEndRegion(bool isApp) {m_IsInEndRegion=isApp;}
-   bool IsInEndRegion() const {return m_IsInEndRegion;};
+   void SetIsInCriticalSectionZone(bool isApp) {m_IsInCritialSectionZone=isApp;}
+   bool IsInCriticalSectionZone() const {return m_IsInCritialSectionZone;};
    bool   Passed() const;
 
    // GROUP: ACCESS
@@ -701,13 +699,15 @@ protected:
    void MakeCopy(const pgsStirrupDetailArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsStirrupDetailArtifact& rOther);
+   virtual void MakeAssignment(const pgsStirrupDetailArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
+   Float64 m_Fy;
+   Float64 m_Fc;
    Float64 m_AvsMin;
    Float64 m_Avs;
    Float64 m_SMax;
@@ -719,7 +719,7 @@ private:
    Float64 m_Vu;
    Float64 m_VuLimit;
    bool m_IsApplicable;
-   bool m_IsInEndRegion;
+   bool m_IsInCritialSectionZone;
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -732,108 +732,6 @@ private:
 
 // EXTERNAL REFERENCES
 //
-
-
-/*****************************************************************************
-CLASS 
-   pgsStirrupCheckAtPoisArtifactKey
-
-   A lookup key for POI based artifacts
-
-
-DESCRIPTION
-   A lookup key for POI based artifacts
-
-
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-
-LOG
-   rab : 11.17.1998 : Created file
-*****************************************************************************/
-
-class PGSEXTCLASS pgsStirrupCheckAtPoisArtifactKey : public pgsPoiArtifactKey
-{
-public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
-   pgsStirrupCheckAtPoisArtifactKey();
-
-   //------------------------------------------------------------------------
-   pgsStirrupCheckAtPoisArtifactKey(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 distFromStart);
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsStirrupCheckAtPoisArtifactKey(const pgsStirrupCheckAtPoisArtifactKey& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsStirrupCheckAtPoisArtifactKey();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsStirrupCheckAtPoisArtifactKey& operator = (const pgsStirrupCheckAtPoisArtifactKey& rOther);
-
-
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsStirrupCheckAtPoisArtifactKey& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsStirrupCheckAtPoisArtifactKey& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
-};
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
 
 
 /*****************************************************************************
@@ -859,8 +757,6 @@ LOG
 class PGSEXTCLASS pgsStirrupCheckAtPoisArtifact
 {
 public:
-   // GROUP: DATA MEMBERS
-
    // vertical shear check results
    void SetVerticalShearArtifact(const pgsVerticalShearArtifact& artifact);
    const pgsVerticalShearArtifact* GetVerticalShearArtifact() const;
@@ -872,8 +768,6 @@ public:
    const pgsLongReinfShearArtifact* GetLongReinfShearArtifact() const;
 
    bool   Passed() const;
-
-   // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
@@ -887,16 +781,14 @@ public:
    // Destructor
    virtual ~pgsStirrupCheckAtPoisArtifact();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    pgsStirrupCheckAtPoisArtifact& operator = (const pgsStirrupCheckAtPoisArtifact& rOther);
+   bool operator<(const pgsStirrupCheckAtPoisArtifact& artifact) const;
 
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-   // GROUP: DEBUG
-   #if defined _DEBUG
+
+   const pgsPointOfInterest& GetPointOfInterest() const;
+   void SetPointOfInterest(const pgsPointOfInterest& poi);
+
+#if defined _DEBUG
    //------------------------------------------------------------------------
    // Returns <b>true</b> if the class is in a valid state, otherwise returns
    // <b>false</b>.
@@ -905,39 +797,18 @@ public:
    //------------------------------------------------------------------------
    // Dumps the contents of the class to the given stream.
    virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
+#endif // _DEBUG
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const pgsStirrupCheckAtPoisArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsStirrupCheckAtPoisArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual void MakeAssignment(const pgsStirrupCheckAtPoisArtifact& rOther);
 
 private:
-   // GROUP: DATA MEMBERS
+   pgsPointOfInterest         m_Poi;
    pgsVerticalShearArtifact   m_VerticalShearArtifact;
    pgsHorizontalShearArtifact m_HorizontalShearArtifact;
    pgsStirrupDetailArtifact   m_StirrupDetailArtifact;
    pgsLongReinfShearArtifact  m_LongReinfShearArtifact;
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 #endif // INCLUDED_PGSEXT_SHEARARTIFACT_H_

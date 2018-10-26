@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,11 +47,6 @@ m_bIsSlabOffsetApplicable(false),m_bIsGlobalGirderStabilityApplicable(false)
 
    m_Provided = 0;
    m_Required =0;
-
-   
-   m_bIsBottomFlangeClearanceApplicable = false;
-   m_C = 0;
-   m_Cmin = 0;
 }
 
 pgsConstructabilityArtifact::pgsConstructabilityArtifact(const pgsConstructabilityArtifact& rOther)
@@ -179,34 +174,19 @@ bool pgsConstructabilityArtifact::GlobalGirderStabilityPassed() const
    return (maxIncline < m_Orientation) ? false : true;
 }
 
-void pgsConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
+void pgsConstructabilityArtifact::SetRebarRowsOutsideOfSection(const std::vector<RowIndexType>& rows)
 {
-   m_bIsBottomFlangeClearanceApplicable = bSet;
+   m_RebarRowsOutsideSection = rows;
 }
 
-bool pgsConstructabilityArtifact::IsBottomFlangeClearnceApplicable() const
+std::vector<RowIndexType> pgsConstructabilityArtifact::GetRebarRowsOutsideOfSection() const
 {
-   return m_bIsBottomFlangeClearanceApplicable;
+   return m_RebarRowsOutsideSection;
 }
 
-void pgsConstructabilityArtifact::SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin)
+bool pgsConstructabilityArtifact::RebarGeometryCheckPassed() const
 {
-   m_C = C;
-   m_Cmin = Cmin;
-}
-
-void pgsConstructabilityArtifact::GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const
-{
-   *pC = m_C;
-   *pCmin = m_Cmin;
-}
-
-bool pgsConstructabilityArtifact::BottomFlangeClearancePassed() const
-{
-   if ( !m_bIsBottomFlangeClearanceApplicable )
-      return true;
-
-   return ::IsGE(m_Cmin,m_C) ? true : false;
+   return m_RebarRowsOutsideSection.empty();
 }
 
 bool pgsConstructabilityArtifact::Pass() const
@@ -217,7 +197,7 @@ bool pgsConstructabilityArtifact::Pass() const
    if ( !GlobalGirderStabilityPassed() )
       return false;
 
-   if ( !BottomFlangeClearancePassed() )
+   if (! RebarGeometryCheckPassed() )
       return false;
 
    return true;
@@ -242,10 +222,7 @@ void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rO
    m_Ybottom = rOther.m_Ybottom;
    m_Orientation = rOther.m_Orientation;
 
-
-   m_bIsBottomFlangeClearanceApplicable = rOther.m_bIsBottomFlangeClearanceApplicable;
-   m_C = rOther.m_C;
-   m_Cmin = rOther.m_Cmin;
+   m_RebarRowsOutsideSection = rOther.m_RebarRowsOutsideSection;
 }
 
 void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)

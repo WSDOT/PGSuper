@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include <Reporting\HoldDownForceCheck.h>
 
 #include <IFace\Artifact.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Bridge.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
@@ -69,38 +69,70 @@ CHoldDownForceCheck& CHoldDownForceCheck::operator= (const CHoldDownForceCheck& 
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CHoldDownForceCheck::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                                        IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsHoldDownForceArtifact* pArtifact = pGdrArtifact->GetHoldDownForceArtifact();
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   if ( pArtifact->IsApplicable() )
+   bool bIsApplicable = false;
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
-
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Hold Down Force"));
-
-      (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(0,1) << COLHDR(_T("Max Hold Down Force"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-      (*pTable)(0,2) << _T("Status");
-
-      (*pTable)(1,0) << force.SetValue(pArtifact->GetDemand());
-      (*pTable)(1,1) << force.SetValue(pArtifact->GetCapacity());
-
-      if ( pArtifact->Passed() )
-         (*pTable)(1,2) << RPT_PASS;
-      else
-         (*pTable)(1,2) << RPT_FAIL;
-
-      return pTable;
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsHoldDownForceArtifact* pArtifact = pSegmentArtifact->GetHoldDownForceArtifact();
+      // no report if not applicable
+      if ( pArtifact->IsApplicable() )
+      {
+         bIsApplicable = true;
+         break;
+      }
    }
-   else
+
+   if ( !bIsApplicable )
+      return;
+
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   *pTitle << _T("Hold Down Force");
+
+   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
+
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
+
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      // no table if not applicable
-      return NULL;
-   }
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsHoldDownForceArtifact* pArtifact = pSegmentArtifact->GetHoldDownForceArtifact();
+      // no report if not applicable
+      if ( pArtifact->IsApplicable() )
+      {
+         if ( 1 < nSegments )
+         {
+            pBody = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+            *pChapter << pBody;
+            *pBody << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         }
+      
+         pBody = new rptParagraph;
+         *pChapter << pBody;
+      
+         rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,NULL);
+
+         (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+         (*pTable)(0,1) << COLHDR(_T("Max Hold Down Force"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+         (*pTable)(0,2) << _T("Status");
+
+         (*pTable)(1,0) << force.SetValue(pArtifact->GetDemand());
+         (*pTable)(1,1) << force.SetValue(pArtifact->GetCapacity());
+
+         if ( pArtifact->Passed() )
+            (*pTable)(1,2) << RPT_PASS;
+         else
+            (*pTable)(1,2) << RPT_FAIL;
+      } // is applicable
+   } // next segment
 }
 
 //======================== ACCESS     =======================================

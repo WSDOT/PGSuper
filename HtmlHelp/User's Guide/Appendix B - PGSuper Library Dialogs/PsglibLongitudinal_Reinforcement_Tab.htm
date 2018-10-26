@@ -19,18 +19,17 @@
 <meta name=topic-time-estimate content=0>
 <meta name=topic-comment content>
 <meta name=topic-id content>
-<meta name=topic-check-list content="Ran Smart Index">
 <meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
 <meta name=generator-major-version content=0.1>
 <meta name=generator-minor-version content=1>
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1821>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1074>
+<meta name=layout-width content=869>
 
 
-<!--(Links)=========================================================-->
+ <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
 
 <link REL="StyleSheet" HREF="..\..\default.css">
 
@@ -48,108 +47,128 @@
 <p>This tab allows you to define the longitudinal reinforcement layout 
  seed data for a girder. Note that longitudinal rebar data from the library 
  is copied to all girders when a girder type is first selected while editing 
- the bridge model. The data can be subsequently overridden in the<a href="../../Girder Editing Wizard/Longitudinal_Reinforcement.htm"> 
- girder editor</a>. Users can also re-copy the data from the library.</p>
-
-<p class=Tip>Refer to the <!--kadov_tag{{<spaces>}}-->&nbsp;<a href="../../Theoretical Manual/Longitudinal_Reinforcement_For_Shear.htm"><!--kadov_tag{{</spaces>}}-->Longitudinal 
- Reinforcement in Girders</a> section in the Theoretical Manual for a discussion 
- of how, and when, longitudinal rebars are used in analysis.</p>
+ the bridge model. The data can be subsequently overridden in the girder 
+ editor. Users can also re-copy the data from the library.</p>
 
 <h2>Mild Steel Material</h2>
 
 <p>Select the appropriate mild steel for longitudinal rebar</p>
 
-<h2>Rows of Longitudinal Mild Steel</h2>
+<h2>Rows of Reinforcement</h2>
 
 <p>PGSuper allows you to describe an unlimited number of horizontal rows 
- of longitudinal reinforcement. Each row can be full-length or a partial-length 
- segment along the girder length. Rows of reinforcement must lie within 
- the girder cross section. The following data is used to describe rows 
- of longitudinal reinforcement.</p>
+ of longitudinal reinforcement. Rows of reinforcement are symmetrical about 
+ the girder centerline. The following data is used to describe rows of 
+ longitudinal reinforcement.</p>
 
-<h3>Measured From</h3>
-
-<p>Input of rebar row segments has five possible measurement modes: 1) 
- Full length , 2) Measured from left end of girder, 3) Measured from right 
- end of girder, 4) Mid-girder measured by length, and 5) Mid-girder measured 
- by distance from ends of girder. The figure below illustrates each measurement 
- option:</p>
-
-<p><img src="../LongRebarOptions.gif"
-		x-maintain-ratio=TRUE
-		style="border: none;
-				width: 314px;
-				height: 598px;
-				float: none;
-				border-style: none;
-				border-style: none;"
-		width=314
-		height=598
-		border=0></p>
-
-<ul style="list-style: disc;"
-	type=disc>
-	
-	<li class=kadov-p><p>Segments that extend beyond the end of the girder 
- are truncated at the end of the girder. </p></li>
-	
-	<li class=kadov-p><p>Full Length and Mid-Girder-End segments grow and 
- shrink as the girder length changes</p></li>
-</ul>
-
-<h3>Girder Face</h3>
+<h3><span style="font-weight: bold;">Girder Face</span></h3>
 
 <p>Rebar rows may be measured either from the top or bottom face of the 
  girder.</p>
 
-<h3><span style="font-weight: bold;"><span style="font-weight: bold;">C</span>over</span></h3>
+<h3><span style="font-weight: bold;">Bar Size</span></h3>
 
-<p>Enter the distance between the specified (top or bottom) girder face 
- to the outside nominal diameter for the specified bar.</p>
-
-<h3>Bar Size</h3>
-
-<p>Select from the available standard bar sizes that may be used for longitudinal 
+<p>Lists all available standard bar sizes that may be used for longitudinal 
  rebar.</p>
 
 <h3><span style="font-weight: bold;"># of Bars</span></h3>
 
 <p>Specify the number of bars to be placed in the row.</p>
 
+<h3><span style="font-weight: bold;">Cover</span></h3>
+
+<p>Enter the distance between the specified girder face to the outside 
+ nominal diameter for the specified bar.</p>
+
 <h3><span style="font-weight: bold;">Spacing</span></h3>
 
-<p>Enter the center-to-center rebar spacing.</p>
+<p>Enter the center-to-center horizontal spacing between the rebars.</p>
 
-<p class=Tip>Note that cover and minimum bar spacing requirements are not 
- checked by the program. It is your responsibility to insure that bars 
- do not overlap or violate pertinent rebar detailing requirements.</p>
+<p>Note that minimum bar spacing requirements are not checked by the program. 
+ It is your responsibility to insure that bars don't overlap.</p>
 
-<h2>Using the Grid Control</h2>
+<h2><img src="Psglib00090000.gif"
+		ALT=Psglib00090000.gif
+		style="width: 12px;
+				height: 17px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=12
+		height=17
+		border=0> Using the Grid Control</h2>
 
 <p>The longitudinal reinforcement row location grid control allows you 
  to add, modify, and delete rows of longitudinal reinforcement in a girder 
  section. The following rules apply:</p>
 
-<ul style="list-style: disc;"
-	type=disc>
-	
-	<li class=kadov-p><p>Row locations may be added above the currently-selected 
+<p><img src="Psglib00090000.gif"
+		ALT=Psglib00090000.gif
+		style="width: 12px;
+				height: 17px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=12
+		height=17
+		border=0> Row locations may be added above the currently-selected 
  row by clicking the “Insert Row” button or selecting “Insert Row” from 
- the right mouse button context menu.</p></li>
-	
-	<li class=kadov-p><p>Row locations may be appended to the last row 
- of the list by clicking the “Append Row” button.</p></li>
-	
-	<li class=kadov-p><p>Row locations may be removed by first selecting 
- the first column (Row #) of the row and then clicking on the “Delete Row” 
- button. Multiple rows may be selected by holding the <span style="font-style: italic;">Ctrl</span> 
+ the right mouse button context menu.</p>
+
+<p><img src="Psglib00090000.gif"
+		ALT=Psglib00090000.gif
+		style="width: 12px;
+				height: 17px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=12
+		height=17
+		border=0> Row locations may be appended the the last row of the 
+ list by clicking the “Append Row” button.</p>
+
+<p><img src="Psglib00090000.gif"
+		ALT=Psglib00090000.gif
+		style="width: 12px;
+				height: 17px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=12
+		height=17
+		border=0> Row locations may be removed by first selecting the first 
+ column (Row #) of the row and then clicking on the “Delete Row” button. 
+ Multiple rows may be selected by holding the <span style="font-style: italic;">Ctrl</span> 
  or <span style="font-style: italic;">Shift</span> keys while you select 
- with the mouse.</p></li>
-	
-	<li class=kadov-p><p>All cells in the grid must be filled in. Blank 
- cells are considered incomplete data.<span style="margin-bottom: 0;">&nbsp; 
- </span></p></li>
-</ul>
+ with the mouse.</p>
+
+<p><img src="Psglib00090000.gif"
+		ALT=Psglib00090000.gif
+		style="width: 12px;
+				height: 17px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
+				border-style: none;"
+		width=12
+		height=17
+		border=0> All cells in the grid must be filled in. Blank cells 
+ are considered incomplete data.<span style="margin-bottom: 0;">&nbsp; 
+ </span></p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

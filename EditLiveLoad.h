@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #define INCLUDED_EDITLIVELOADTXN_H_
 
 #include <System\Transaction.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
 
 struct txnEditLiveLoadData
@@ -40,7 +40,8 @@ class txnEditLiveLoad : public txnTransaction
 public:
    txnEditLiveLoad(const txnEditLiveLoadData& oldDesign,const txnEditLiveLoadData& newDesign,
                    const txnEditLiveLoadData& oldFatigue,const txnEditLiveLoadData& newFatigue,
-                   const txnEditLiveLoadData& oldPermit,const txnEditLiveLoadData& newPermit);
+                   const txnEditLiveLoadData& oldPermit,const txnEditLiveLoadData& newPermit,
+                   EventIndexType oldEventIdx,EventIndexType newEventIdx);
 
    ~txnEditLiveLoad();
 
@@ -55,6 +56,7 @@ private:
    txnEditLiveLoadData m_Design[2];
    txnEditLiveLoadData m_Fatigue[2];
    txnEditLiveLoadData m_Permit[2];
+   EventIndexType m_EventIdx[2];
 
    void DoExecute(int i);
 };

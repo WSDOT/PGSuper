@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "ElasticGainDueToSIDLTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -48,18 +49,17 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-   bool bHasUserLoads = pUDL->DoUserLoadsExist(span,gdr);
+   bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bHasOverlay = pBridge->HasOverlay();
-   pgsTypes::Stage overlayStage = pgsTypes::BridgeSite2;
+   bool bHasOverlay = (pBridge->IsFutureOverlay() == true ? false : true); // only include overlay if it is NOT a future overlay
 
    GET_IFACE2(pBroker,IProductLoads,pLoad);
-   bool bHasSidewalk = pLoad->HasSidewalkLoad(span,gdr);
+   bool bHasSidewalk = pLoad->HasSidewalkLoad(segmentKey);
 
    ColumnIndexType numColumns = 9;
 
@@ -78,7 +78,6 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasSidewalk  = bHasSidewalk;
    table->m_bHasOverlay   = bHasOverlay;
-   table->m_OverlayStage  = overlayStage;
 
    table->scalar.SetFormat(sysNumericFormatTool::Fixed);
    table->scalar.SetWidth(5);
@@ -86,9 +85,15 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   Float64 Ec = pMaterial->GetEcGdr(span,gdr);
-   Float64 Ep = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   Float64 Ec = pMaterials->GetSegmentEc(segmentKey,railingSystemIntervalIdx);
+   Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -108,7 +113,11 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
       *pParagraph << rptRcImage(strImagePath + _T("Muser.png"));
    *pParagraph << rptNewLine;
 
-   *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2.png")) << rptNewLine;
+   if ( spMode == pgsTypes::spmGross )
+      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Gross.png")) << rptNewLine;
+   else
+      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Transformed.png")) << rptNewLine;
+
    *pParagraph << rptRcImage(strImagePath + _T("ElasticGain2.png")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
@@ -122,8 +131,8 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   table->m_BAT = (analysisType == pgsTypes::Simple     ? SimpleSpan : 
-                   analysisType == pgsTypes::Continuous ? ContinuousSpan : MaxSimpleContinuousEnvelope);
+   table->m_BAT = (analysisType == pgsTypes::Simple     ? pgsTypes::SimpleSpan : 
+                   analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : pgsTypes::MaxSimpleContinuousEnvelope);
 
 
    *pParagraph << rptNewLine;
@@ -136,8 +145,8 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    if ( bHasUserLoads )
    {
-      *pParagraph << _T("User DC: ") << Sub2(_T("K"),_T("dc")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite2)) << rptNewLine;
-      *pParagraph << _T("User DW: ") << Sub2(_T("K"),_T("dw")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite2)) << rptNewLine;
+      *pParagraph << _T("User DC: ") << Sub2(_T("K"),_T("dc")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserLoadAfterDeckDCElasticGain()) << rptNewLine;
+      *pParagraph << _T("User DW: ") << Sub2(_T("K"),_T("dw")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserLoadAfterDeckDWElasticGain()) << rptNewLine;
    }
 
    *pParagraph << table << rptNewLine;
@@ -159,44 +168,59 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
       (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("UserDW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   if ( spMode == pgsTypes::spmGross )
+   {
+      (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   }
+   else
+   {
+      (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("ct")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bct")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bgt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   }
    (*table)(0,col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f''"),_T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }
 
-void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
    if ( m_bHasSidewalk )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( pgsTypes::BridgeSite2, pftSidewalk, poi, m_BAT ));
+      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pftSidewalk, poi, m_BAT ));
    }
 
-   (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( pgsTypes::BridgeSite2, pftTrafficBarrier, poi, m_BAT ));
+   (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pftTrafficBarrier, poi, m_BAT ));
 
    if ( m_bHasOverlay )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( m_OverlayStage, pftOverlay, poi, m_BAT ));
+      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( overlayIntervalIdx, pftOverlay, poi, m_BAT ));
    }
 
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( pgsTypes::BridgeSite2, pftUserDC,      poi, m_BAT ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( pgsTypes::BridgeSite2, pftUserDW,      poi, m_BAT ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDC,      poi, m_BAT ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pftUserDW,      poi, m_BAT ) );
    }
 
-   (*this)(row,col++) << moment.SetValue( details.pLosses->GetSidlMoment() );
-   (*this)(row,col++) << ecc.SetValue( details.pLosses->GetEccPermanent() );
-   (*this)(row,col++) << mom_inertia.SetValue( details.pLosses->GetIc() );
-   (*this)(row,col++) << cg.SetValue( details.pLosses->GetYbc() );
-   (*this)(row,col++) << cg.SetValue( details.pLosses->GetYbg() );
-   (*this)(row,col++) << stress.SetValue( details.pLosses->GetDeltaFcd2() );
-   (*this)(row,col++) << stress.SetValue( details.pLosses->ElasticGainDueToSIDL() );
+   (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetSidlMoment() );
+   (*this)(row,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
+   (*this)(row,col++) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
+   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbc() );
+   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbg() );
+   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd2() );
+   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
 }

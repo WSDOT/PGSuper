@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
@@ -32,11 +32,11 @@
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -54,7 +54,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits);
+static void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits);
 
 /****************************************************************************
 CLASS
@@ -79,39 +79,44 @@ LPCTSTR CTexasGirderSummaryChapterBuilder::GetName() const
 
 rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+
+   // This is a single segment report
+   CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   // eject a page break before this chapter
-   pChapter->SetEjectPageBreakBefore(true);
+
+#if defined IGNORE_2007_CHANGES
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   {
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << bold(ON) << "Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored." << bold(OFF) << color(Black) << rptNewLine;
+   }
+#endif
 
    // let the paragraph builder to all the work here...
-   std::vector<SpanGirderHashType> spanGirders;
-   spanGirders.push_back( HashSpanGirder(span, girder) );
-
-   bool doEjectPage;
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker,spanGirders,pDisplayUnits,level,doEjectPage);
+   std::vector<CSegmentKey> segmentKeys;
+   segmentKeys.push_back(segmentKey);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,segmentKeys,pDisplayUnits,level);
 
    *pChapter << pcontent;
 
    // girder line geometry table
-   girder_line_geometry( pChapter, pBroker, span, girder, pDisplayUnits );
+   girder_line_geometry( pChapter, pBroker, segmentKey, pDisplayUnits );
 
-   // put a page break at bottom of table
-   if (doEjectPage)
-   {
-      rptParagraph* p = new rptParagraph;
-      *pChapter << p;
-      *p << rptNewPage;
-   }
 
    return pChapter;
 }
@@ -133,7 +138,7 @@ CChapterBuilder* CTexasGirderSummaryChapterBuilder::Clone() const
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits)
+void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -149,14 +154,12 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    // Get the interfaces we need
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
 
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-   const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
-
-   const CPierData* pPrevPier = pSpan->GetPrevPier();
-   const CPierData* pNextPier = pSpan->GetNextPier();
+   const CPierData2* pPrevPier = pGroup->GetPier(pgsTypes::metStart);
+   const CPierData2* pNextPier = pGroup->GetPier(pgsTypes::metEnd);
 
    rptLengthUnitValue* pUnitValue = (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) ? &length : &component);
 
@@ -171,12 +174,12 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       if ( i == 0 )
       {
          pStr = &strGirderSpacingMeasureAtStartOfSpan;
-         hash = HashGirderSpacing(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetMeasurementLocation(),pSpan->GetGirderSpacing(pgsTypes::metStart)->GetMeasurementType());
+         hash = HashGirderSpacing(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetMeasurementLocation(),pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetMeasurementType());
       }
       else
       {
          pStr = &strGirderSpacingMeasureAtEndOfSpan;
-         hash = HashGirderSpacing(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetMeasurementLocation(),pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetMeasurementType());
+         hash = HashGirderSpacing(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetMeasurementLocation(),pNextPier->GetGirderSpacing(pgsTypes::Back)->GetMeasurementType());
       }
 
       if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem) )
@@ -198,9 +201,9 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
             *pStr = _T("Measured normal to alignment at pier line");
       }
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::NormalToItem) )
-      {
+	   {
          *pStr = _T("Measured normal to alignment at centerline bearing");
-      }
+	   }
    }
 
 
@@ -208,18 +211,18 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    // Populate the table
    (*pTable)(row,0) << _T("Girder Type");
-   (*pTable)(row++,1) << pSpan->GetGirderTypes()->GetGirderName(girder);
+   (*pTable)(row++,1) << pGroup->GetGirder(segmentKey.girderIndex)->GetGirderName();
 
    (*pTable)(row,0) << _T("Span Length, CL Bearing to CL Bearing") ;
-   (*pTable)(row++,1) << length.SetValue(pBridge->GetSpanLength(span,girder));
+   (*pTable)(row++,1) << length.SetValue(pBridge->GetSegmentSpanLength(segmentKey));
 
    (*pTable)(row,0) << _T("Girder Length") ;
-   (*pTable)(row++,1) << length.SetValue(pBridge->GetGirderLength(span,girder));
+   (*pTable)(row++,1) << length.SetValue(pBridge->GetSegmentLength(segmentKey));
 
    (*pTable)(row,0) << _T("Number of Girders");
-   (*pTable)(row++,1) << pBridge->GetGirderCount(span);
+   (*pTable)(row++,1) << pBridge->GetGirderCount(segmentKey.groupIndex);
 
-   if ( pBridge->IsInteriorGirder(span,girder) )
+   if ( pBridge->IsInteriorGirder( segmentKey ) )
    {
       if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
       {
@@ -234,8 +237,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,0) << _T("Left Girder Joint\nStart of Span");
       }
 
-      if ( 1 < pBridge->GetGirderCount(span) )
-         (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(girder-1));
+      if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(segmentKey.girderIndex-1));
       else
          (*pTable)(row++,1) << _T(" - ");
 
@@ -248,8 +251,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,0) << _T("Right Joint Spacing\nStart of Span");
       }
 
-      if ( 1 < pBridge->GetGirderCount(span) )
-         (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(girder));
+      if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(segmentKey.girderIndex));
       else
          (*pTable)(row++,1) << _T(" - ");
 
@@ -267,8 +270,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,0) << _T("Left Joint Spacing\nEnd of Span");
       }
 
-      if ( 1 < pBridge->GetGirderCount(span) )
-         (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(girder-1));
+      if ( 1 < pBridge->GetGirderCount(segmentKey.girderIndex) )
+         (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex-1));
       else
          (*pTable)(row++,1) << _T(" - ");
 
@@ -277,14 +280,14 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       else
          (*pTable)(row,0) << _T("Right Joint Spacing\nEnd of Span");
 
-      if ( 1 < pBridge->GetGirderCount(span) )
-         (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(girder));
+      if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+         (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex));
       else
          (*pTable)(row++,1) << _T(" - ");
    }
    else
    {
-      if ( girder == 0 )
+      if ( segmentKey.girderIndex == 0 )
       {
          if ( IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
          {
@@ -299,8 +302,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
             (*pTable)(row,0) << _T("Right Joint Spacing\nStart of Span");
          }
 
-         if ( 1 < pBridge->GetGirderCount(span) )
-            (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(girder));
+         if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+            (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(segmentKey.girderIndex));
          else
             (*pTable)(row++,1) << _T(" - ");
 
@@ -317,8 +320,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
             (*pTable)(row,0) << _T("Right Joint Spacing\nEnd of Span");
          }
 
-         if ( 1 < pBridge->GetGirderCount(span) )
-            (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(girder));
+         if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+            (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(segmentKey.girderIndex));
          else
             (*pTable)(row++,1) << _T(" - ");
       }
@@ -329,10 +332,10 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          else
             (*pTable)(row,0) << _T("Left Joint Spacing\nStart of Span");
 
-         GirderIndexType nGirders = pSpan->GetGirderCount();
+         GirderIndexType nGirders = pGroup->GetGirderCount();
 
-         if ( 1 < pBridge->GetGirderCount(span) )
-            (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metStart)->GetGirderSpacing(SpacingIndexType(nGirders-2)));
+         if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+            (*pTable)(row++,1) << pUnitValue->SetValue(pPrevPier->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(SpacingIndexType(nGirders-2)));
          else
             (*pTable)(row++,1) << _T(" - ");
 
@@ -341,15 +344,15 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          else
             (*pTable)(row,0) << _T("Left Joint Spacing\nEnd of Span");
 
-         if ( 1 < pBridge->GetGirderCount(span) )
-            (*pTable)(row++,1) << pUnitValue->SetValue(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetGirderSpacing(SpacingIndexType(nGirders-2)));
+         if ( 1 < pBridge->GetGirderCount(segmentKey.groupIndex) )
+            (*pTable)(row++,1) << pUnitValue->SetValue(pNextPier->GetGirderSpacing(pgsTypes::Back)->GetGirderSpacing(SpacingIndexType(nGirders-2)));
          else
             (*pTable)(row++,1) << _T(" - ");
       }
    }
 
 #pragma Reminder("UPDATE: Assumes constant slab thickness")   
-   pgsPointOfInterest poi(span,girder,0.00);
+   pgsPointOfInterest poi(segmentKey,0.00);
    (*pTable)(row,0) << _T("Slab Thickness for Design");
    (*pTable)(row++,1) << component.SetValue(pBridge->GetStructuralSlabDepth( poi ));
 
@@ -357,21 +360,13 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row++,1) << component.SetValue(pBridge->GetGrossSlabDepth( poi ));
 
    (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
-   (*pTable)(row++,1) << component.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart));
+   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(segmentKey.girderIndex,pgsTypes::metStart));
 
    (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
-   (*pTable)(row++,1) << component.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
+   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(segmentKey.girderIndex,pgsTypes::metEnd));
 
-   if ( pDeck->WearingSurface == pgsTypes::wstOverlay )
-   {
-      (*pTable)(row,0) << _T("Overlay");
-      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
-   }
-   else if ( pDeck->WearingSurface == pgsTypes::wstFutureOverlay )
-   {
-      (*pTable)(row,0) << _T("Future Overlay");
-      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
-   }
+   (*pTable)(row,0) << _T("Overlay");
+   (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
 
 #pragma Reminder("#*#*#*#*#*# TXDOT girder summary - Diaphragms #*#*#*#*#*#")
 //   (*pTable)(row,0) << _T("Intermediate Diaphragm (H x W)");
@@ -388,26 +383,25 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row++,1) << pBridgeDesc->GetRightRailingSystem()->strExteriorRailing;
 
    (*pTable)(row,0) << _T("Traffic Barrier Weight (per girder)");
-   (*pTable)(row++,1) << fpl.SetValue( -pProductLoads->GetTrafficBarrierLoad(span,girder) );
+   (*pTable)(row++,1) << fpl.SetValue( -pProductLoads->GetTrafficBarrierLoad(segmentKey) );
 
-   const CPierData* pPier = pBridgeDesc->GetPier(span);
-   std::_tstring strPierLabel(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   std::_tstring strPierLabel(pPrevPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
    Float64 brgOffset, endDistance;
    ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
    ConnectionLibraryEntry::EndDistanceMeasurementType endDistanceMeasure;
-   pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
-   pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDistance,&endDistanceMeasure);
-   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(span);
-   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPier->IsAbutment()) << rptNewLine;
-   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPier->IsAbutment());
+   pPrevPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
+   pPrevPier->GetGirderEndDistance(pgsTypes::Ahead,&endDistance,&endDistanceMeasure);
+   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pPrevPier->GetIndex());
+   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPrevPier->IsAbutment()) << rptNewLine;
+   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPrevPier->IsAbutment());
    row++;
 
-   pPier = pBridgeDesc->GetPier(span+1);
-   strPierLabel = (pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
-   pPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
-   pPier->GetGirderEndDistance(pgsTypes::Back,&endDistance,&endDistanceMeasure);
-   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(span+1);
-   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPier->IsAbutment()) << rptNewLine;
-   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPier->IsAbutment());
+   strPierLabel = (pNextPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   pNextPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
+   pNextPier->GetGirderEndDistance(pgsTypes::Back,&endDistance,&endDistanceMeasure);
+   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pNextPier->GetIndex());
+   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pNextPier->IsAbutment()) << rptNewLine;
+   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pNextPier->IsAbutment());
    row++;
+
 }

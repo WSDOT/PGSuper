@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include <IFace\BeamFamily.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include <Plugins\BeamFactoryCATID.h>
-#include "BeamFamilyImpl.h"
+
 #include "resource.h"
 
 // forward declaration
@@ -40,8 +40,7 @@ class IBeamFamilyImpl :
 public:
    // IBeamFactory
    virtual CString GetName();
-   virtual void RefreshFactoryList();
-   virtual std::vector<CString> GetFactoryNames();
+   virtual const std::vector<CString>& GetFactoryNames();
    virtual CLSID GetFactoryCLSID(LPCTSTR strName);
    virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory);
 
@@ -53,6 +52,7 @@ protected:
 
    typedef std::map<CString,CLSID> FactoryContainer;
    FactoryContainer m_Factories;
+   std::vector<CString> m_Names;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -262,4 +262,57 @@ END_COM_MAP()
 protected:
    virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
    virtual const CATID& GetCATID() { return CATID_DeckedSlabBeamFactory; }
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CSplicedIBeamFamily - beam family for Spliced I-beams
+class ATL_NO_VTABLE CSplicedIBeamFamily : 
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComCoClass<CSplicedIBeamFamily, &CLSID_SplicedIBeamFamily>,
+   public IBeamFamilyImpl
+{
+public:
+	CSplicedIBeamFamily()
+	{
+	}
+
+   HRESULT FinalConstruct() { return Init(); }
+
+DECLARE_REGISTRY_RESOURCEID(IDR_SPLICEDIBEAMFAMILY)
+DECLARE_CLASSFACTORY_SINGLETON(CSplicedIBeamFamily)
+
+BEGIN_COM_MAP(CSplicedIBeamFamily)
+   COM_INTERFACE_ENTRY(IBeamFamily)
+END_COM_MAP()
+
+protected:
+   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() { return CATID_SplicedIBeamFactory; }
+};
+
+/////////////////////////////////////////////////////////////////////////////
+// CSplicedUBeamFamily - beam family for Spliced U-beams
+class ATL_NO_VTABLE CSplicedUBeamFamily : 
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComCoClass<CSplicedUBeamFamily, &CLSID_SplicedUBeamFamily>,
+   public IBeamFamilyImpl
+{
+public:
+	CSplicedUBeamFamily()
+	{
+	}
+
+   HRESULT FinalConstruct() { return Init(); }
+
+DECLARE_REGISTRY_RESOURCEID(IDR_SPLICEDUBEAMFAMILY)
+DECLARE_CLASSFACTORY_SINGLETON(CSplicedUBeamFamily)
+
+BEGIN_COM_MAP(CSplicedUBeamFamily)
+   COM_INTERFACE_ENTRY(IBeamFamily)
+END_COM_MAP()
+
+protected:
+   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() { return CATID_SplicedUBeamFactory; }
 };

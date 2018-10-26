@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
 #endif
+
+#include <PgsExt\PointOfInterest.h>
 
 // LOCAL INCLUDES
 //
@@ -68,7 +70,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsFlexuralCapacityArtifact(bool bPositiveMoment);
+   pgsFlexuralCapacityArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -86,6 +88,8 @@ public:
    // GROUP: OPERATIONS
 
    // GROUP: ACCESS
+   void SetPointOfInterest(const pgsPointOfInterest& poi);
+   const pgsPointOfInterest& GetPointOfInterest() const;
 
    //------------------------------------------------------------------------
    void SetMaxReinforcementRatio(Float64 cde);
@@ -115,14 +119,14 @@ protected:
    void MakeCopy(const pgsFlexuralCapacityArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsFlexuralCapacityArtifact& rOther);
+   virtual void MakeAssignment(const pgsFlexuralCapacityArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
-   bool m_bPositiveMoment;
+   pgsPointOfInterest m_Poi;
    Float64 m_cde;
    Float64 m_cdeMax;
    Float64 m_MrMin;

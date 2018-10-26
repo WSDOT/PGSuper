@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,17 +21,17 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once;
 
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
+
 // MultiGirderSelectGrid.h : header file
 //
-#include <WBFLTypes.h>
+#include <PGSuperAll.h>
+#include <grid\gxall.h>
+#include <PgsExt\SegmentKey.h>
 
 // Container for spans and girders on/off settings
 typedef std::vector<bool> GirderOnVector;
-typedef std::vector<GirderOnVector> SpanGirderOnCollection; // spans containing girders
-typedef SpanGirderOnCollection::iterator SpanGirderOnIterator;
+typedef std::vector<GirderOnVector> GroupGirderOnCollection; // groups containing girders
+typedef GroupGirderOnCollection::iterator GroupGirderOnIterator;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMultiGirderSelectGrid window
@@ -76,13 +76,13 @@ protected:
 
 public:
    // custom stuff for grid
-   void CustomInit(const SpanGirderOnCollection& spanGirderOnCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType));
+   void CustomInit(const GroupGirderOnCollection& groupGirderOnCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType));
 
    bool GetCellValue(ROWCOL nRow, ROWCOL nCol);
    void SetAllValues(bool val);
 
    // Vector of girders turned on (checked)
-   std::vector<SpanGirderHashType> GetData();
+   std::vector<CGirderKey> GetData();
 
 private:
    CGXRangeList m_SelectedRange;

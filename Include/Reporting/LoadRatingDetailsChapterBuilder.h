@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -65,10 +65,10 @@ private:
    CLoadRatingDetailsChapterBuilder(const CLoadRatingDetailsChapterBuilder&);
    CLoadRatingDetailsChapterBuilder& operator=(const CLoadRatingDetailsChapterBuilder&);
 
-   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const;
-   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
-   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const;
-   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const;
-   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
-   void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,GirderIndexType gdrLineIdx,const pgsRatingArtifact* pRatingArtifact) const;
+   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
+   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
+   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const;
+   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const;
+   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const;
+   void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,const pgsRatingArtifact* pRatingArtifact) const;
 };

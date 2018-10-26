@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -88,11 +88,11 @@ private:
 
    void CreateDisplayLists();
    void UpdateDisplayObjects();
-   void BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
+   void BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
+   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
+   void BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
+   void BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
+   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
 
    bool m_bUpdateError;
    std::_tstring m_ErrorMsg;

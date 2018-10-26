@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -74,12 +74,12 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the typical displacements  table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
+   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                              bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
 
    //------------------------------------------------------------------------
    // Builds the displacements  table for the optional deflection live load
-   virtual rptRcTable* BuildLiveLoadTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   virtual rptRcTable* BuildLiveLoadTable(IBroker* pBroker,const CGirderKey& girderKey,
                                           IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -93,7 +93,7 @@ protected:
    void MakeCopy(const CProductDisplacementsTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CProductDisplacementsTable& rOther);
+   virtual void MakeAssignment(const CProductDisplacementsTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

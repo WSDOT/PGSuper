@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,29 +25,24 @@
 
 #include "stdafx.h"
 #include "resource.h"
-
-#include <Plugins\Beams.h>
-
-#include <initguid.h>
-
 #include <psgLib\psgLib.h>
 #include <psgLib\StructuredLoad.h>
+
 #include "LibraryEntryConflict.h"
 
+#include <initguid.h>
 #include <WBFLGeometry_i.c>
 #include <WBFLCore_i.c>
-#include <Plugins\Beams_i.c>
-
 #include <IFace\BeamFamily.h>
 #include <IFace\Project.h>
 #include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
 
-
 #include <BridgeLinkCatCom.h>
 
-#include <PGSuperCatCom.h>
 #include "PGSuperLibraryMgrCATID.h"
+#include <PGSuperCatCom.h>
+#include <PGSpliceCatCom.h>
 
 #include "dllmain.h"
 
@@ -438,7 +433,7 @@ HRESULT pgslibPGSuperDocHeader(IStructuredLoad* pStrLoad)
    if ( FAILED(hr) )
       return hr;
 
-   Float64 ver;
+   double ver;
    pStrLoad->get_Version(&ver);
 
    if ( 1.0 < ver )
@@ -479,7 +474,7 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
    if ( FAILED(hr) )
       return hr;
 
-   Float64 ver;
+   double ver;
    pStrLoad->get_Version(&ver);
    if (ver!=1.0)
       return E_FAIL; // bad version
@@ -554,10 +549,6 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
 
       cmsg += msg.c_str();
       AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);
-      return E_FAIL;
-   }
-   catch (...)
-   {
       return E_FAIL;
    }
 

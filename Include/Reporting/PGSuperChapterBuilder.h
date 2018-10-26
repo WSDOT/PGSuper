@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ LOG
 class REPORTINGCLASS CPGSuperChapterBuilder : public CChapterBuilder
 {
 public:
-   CPGSuperChapterBuilder(bool bSelect);
+   CPGSuperChapterBuilder(bool bSelect=true);
 
    // returns 1
    virtual Uint16 GetMaxLevel() const;
@@ -59,6 +59,8 @@ public:
    // creates a new chapter object and configures it with the correct style for PGSuper reports
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
 
+   // returns true if this chapter builder is selected by default
+   // in the report definition dialog
    virtual bool Select() const;
 
    virtual bool NeedsUpdate(CReportHint* pHint,CReportSpecification* pRptSpec,Uint16 level) const;

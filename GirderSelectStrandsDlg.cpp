@@ -1,25 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 // GirderSelectStrandsDlg.cpp : implementation file
 //
 
@@ -33,15 +11,43 @@
 
 #include <DesignConfigUtil.h>
 #include "PGSuperColors.h"
-#include "PGSuperUIUtil.h"
 
 #define BORDER 7
 
 // Utility functions
+static void StoreFloatInCb(CComboBox* pcb, int idx, Float64 fval)
+{
+   // yes, we are losing precision here, but 32 bits is all we have
+   float val = (float)fval;
+
+   DWORD_PTR dval;
+   memcpy(&dval, &val, 4);
+   pcb->SetItemData(idx, dval);
+}
+
+static int PutFloatInCB(Float64 fval, CComboBox* pcb, sysNumericFormatTool& tool)
+{
+   std::_tstring str = tool.AsString(fval);
+   int idx = pcb->AddString(str.c_str());
+   StoreFloatInCb(pcb, idx, fval);
+
+   return idx;
+}
+
+static float GetFloatFromCb(CComboBox* pcb, int idx)
+{
+   DWORD_PTR dval = pcb->GetItemData(idx);
+
+   float val;
+   memcpy(&val, &dval, 4);
+
+   return val;
+}
+
 inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, bool areHarpedStraight)
 {
    CString msg;
-   CString mss(areHarpedStraight ? _T("A-S") : _T("HS"));
+   CString mss(areHarpedStraight ? _T("S-W") : _T("HS"));
    switch(type)
    {
       case hsoCGFROMTOP:
@@ -70,6 +76,97 @@ inline void UpdateHarpedOffsetLabel(CWnd* pwnd, HarpedStrandOffsetType type, boo
    pwnd->SetWindowText(msg);
 }
 
+// Handy function for putting a range of floats into a combo box with a given increment
+template <class TUnit>
+void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 maxVal, Float64 incrVal,
+                                        CComboBox* pfcCtrl, Uint16 precision, const TUnit& tunit )
+{
+   pfcCtrl->ResetContent();
+
+   sysNumericFormatTool tool;
+   tool.SetFormat( sysNumericFormatTool::Fixed );
+   tool.SetPrecision(precision);
+
+   Float64 toler = pow(10.0, -precision-1); // tolerance on equals
+
+   // First convert to output units
+   selectedVal = ::ConvertFromSysUnits(selectedVal, tunit);
+
+   // Minval and max val set upper and lower bounds
+   minVal = ::ConvertFromSysUnits(minVal, tunit);
+   maxVal = ::ConvertFromSysUnits(maxVal, tunit);
+
+   incrVal = ::ConvertFromSysUnits(incrVal, tunit);
+
+   // string for value to be selected
+   std::_tstring selectedStr = tool.AsString(selectedVal);
+
+   // Force selected value to fit in range
+   if (selectedVal<minVal)
+   {
+      ATLASSERT(0); // may or may not be a problem - although calling routine should deal with this
+      selectedVal=minVal;
+   }
+
+   if (selectedVal>maxVal)
+   {
+      ATLASSERT(0); // may or may not be a problem
+      selectedVal=maxVal;
+   }
+
+   int  idx_sel = CB_ERR; // did we put selected number in yet
+
+   // Next, our min and max values may not fit exactly to our increment. If not, put them on the head or tail 
+   Float64 startVal = CeilOff(minVal, incrVal);
+
+   if (!IsEqual(startVal,minVal,toler))
+   {
+      int idx = PutFloatInCB(minVal, pfcCtrl , tool);
+      if(IsEqual(selectedVal,minVal,toler))
+         idx_sel = idx;
+   }
+
+   Float64 endVal = FloorOff(maxVal, incrVal);
+
+   Float64 curr = startVal;
+   while(curr<=endVal)
+   {
+       if(idx_sel==CB_ERR && ::IsEqual(curr,selectedVal,toler))
+       {
+          idx_sel = PutFloatInCB(selectedVal, pfcCtrl, tool); // put exact selected val into cb
+       }
+       else
+       {
+          if (idx_sel==CB_ERR && ::IsLT(selectedVal,curr,toler))
+          {
+             idx_sel = PutFloatInCB(selectedVal, pfcCtrl, tool); // put exact selected val into cb
+          }
+
+          int idx = PutFloatInCB(curr, pfcCtrl, tool);
+          if (idx_sel==CB_ERR && ::IsEqual(selectedVal,curr,toler))
+             idx_sel = idx;
+      }
+
+      curr += incrVal;
+   }
+
+   if (!IsEqual(endVal,maxVal,toler)) // max might not fit in increment
+   {
+       int idx = PutFloatInCB(maxVal, pfcCtrl, tool);
+       if (idx_sel==CB_ERR && ::IsEqual(selectedVal,maxVal,toler))
+          idx_sel = idx;
+   }
+
+   if(idx_sel==CB_ERR)
+   {
+      ATLASSERT(0); // something is very messed up
+      pfcCtrl->SetCurSel(0);
+   }
+   else
+   {
+      pfcCtrl->SetCurSel(idx_sel);
+   }
+}
 
 // CGirderSelectStrandsDlg dialog
 
@@ -184,9 +281,9 @@ BOOL CGirderSelectStrandsDlg::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType girder, const CPrestressData& rPrestressData, 
-                    const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, 
-                    bool allowEndAdjustment, bool allowHpAdjustment, HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType,
+void CGirderSelectStrandsDlg::InitializeData(const CSegmentKey& segmentKey, const CStrandData& strands, 
+                    const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, bool allowEndAdjustment, bool allowHpAdjustment,
+                    HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType,
                     Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, Float64 maxDebondLength)
 {
    CComPtr<IBroker> pBroker;
@@ -194,63 +291,54 @@ void CGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    m_pGdrEntry = pGdrEntry;
-   m_Span = span;
-   m_Girder = girder;
-   m_DirectFilledStraightStrands  = *(rPrestressData.GetDirectStrandFillStraight());
-   m_DirectFilledHarpedStrands    = *(rPrestressData.GetDirectStrandFillHarped());
-   m_DirectFilledTemporaryStrands = *(rPrestressData.GetDirectStrandFillTemporary());
-
-   m_AdjustableStrandType = rPrestressData.GetAdjustableStrandType();
+   m_SegmentKey = segmentKey;
+   m_DirectFilledStraightStrands  = *(strands.GetDirectStrandFillStraight());
+   m_DirectFilledHarpedStrands    = *(strands.GetDirectStrandFillHarped());
+   m_DirectFilledTemporaryStrands = *(strands.GetDirectStrandFillTemporary());
 
    m_AllowEndAdjustment = allowEndAdjustment;
    m_AllowHpAdjustment  = allowHpAdjustment;
 
    // Get current offset input values - we will force in bounds if needed
    // Make sure legacy values can't sneak in
-   m_HsoEndMeasurement = endMeasureType==hsoLEGACY ? hsoCGFROMTOP    : endMeasureType;
-   m_HsoHpMeasurement =  hpMeasureType==hsoLEGACY  ? hsoCGFROMBOTTOM : hpMeasureType;
+   m_HsoEndMeasurement = (endMeasureType == hsoLEGACY ? hsoCGFROMTOP    : strands.HsoEndMeasurement);
+   m_HsoHpMeasurement  = (hpMeasureType  == hsoLEGACY ? hsoCGFROMBOTTOM : strands.HsoHpMeasurement);
 
    m_HpOffsetAtEnd = hpOffsetAtEnd;
    m_HpOffsetAtHp  = hpOffsetAtHp;
 
    m_bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
-   m_ExtendedStrands[pgsTypes::metStart] = rPrestressData.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
-   m_ExtendedStrands[pgsTypes::metEnd]   = rPrestressData.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
+   m_ExtendedStrands[pgsTypes::metStart] = strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
+   m_ExtendedStrands[pgsTypes::metEnd]   = strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
 
    m_CanDebondStrands = pGdrEntry->CanDebondStraightStrands();
-   m_StraightDebond   = rPrestressData.Debond[pgsTypes::Straight];
-   m_bSymmetricDebond = rPrestressData.bSymmetricDebond;
+   m_StraightDebond   = strands.Debond[pgsTypes::Straight];
+   m_bSymmetricDebond = strands.bSymmetricDebond;
 
    m_MaxDebondLength = maxDebondLength;
 
 }
 
-bool CGirderSelectStrandsDlg::GetData(CPrestressData& rPrestressData)
+bool CGirderSelectStrandsDlg::GetData(CStrandData& strands)
 {
-   rPrestressData.SetDirectStrandFillStraight( m_DirectFilledStraightStrands );
-   rPrestressData.SetDirectStrandFillHarped( m_DirectFilledHarpedStrands );
-   rPrestressData.SetDirectStrandFillTemporary( m_DirectFilledTemporaryStrands );
+   strands.SetDirectStrandFillStraight( m_DirectFilledStraightStrands );
+   strands.SetDirectStrandFillHarped( m_DirectFilledHarpedStrands );
+   strands.SetDirectStrandFillTemporary( m_DirectFilledTemporaryStrands );
 
    if(m_AllowEndAdjustment)
    {
-      rPrestressData.HpOffsetAtEnd = m_HpOffsetAtEnd;
+      strands.HpOffsetAtEnd = m_HpOffsetAtEnd;
    }
 
    if(m_AllowHpAdjustment)
    {
-      rPrestressData.HpOffsetAtHp = m_HpOffsetAtHp;
+      strands.HpOffsetAtHp = m_HpOffsetAtHp;
    }
 
    if (m_CanDebondStrands)
    {
-      rPrestressData.Debond[pgsTypes::Straight] = m_StraightDebond;
-      rPrestressData.bSymmetricDebond           = m_bSymmetricDebond!=FALSE;
-   }
-
-   if (m_bCanExtendStrands )
-   {
-      rPrestressData.SetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart,m_ExtendedStrands[pgsTypes::metStart]);
-      rPrestressData.SetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd,  m_ExtendedStrands[pgsTypes::metEnd]);
+      strands.Debond[pgsTypes::Straight] = m_StraightDebond;
+      strands.bSymmetricDebond           = m_bSymmetricDebond!=FALSE;
    }
 
    return true;
@@ -369,7 +457,7 @@ void CGirderSelectStrandsDlg::OnPaint()
    GirderLibraryEntry::Dimensions dimensions = m_pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrSection;
-   factory->CreateGirderSection(pBroker,-1,m_Span,m_Girder,dimensions,&gdrSection);
+   factory->CreateGirderSection(pBroker,INVALID_ID,dimensions,-1,-1,&gdrSection);
 
    CComQIPtr<IShape> shape(gdrSection);
 
@@ -382,12 +470,6 @@ void CGirderSelectStrandsDlg::OnPaint()
    // Anchor bottom of drawing at bottom center of section shape
    Float64 bottom_width;
    gdrSection->get_BottomWidth(&bottom_width);
-
-   Float64 top_width;
-   gdrSection->get_TopWidth(&top_width);
-
-   Float64 height;
-   gdrSection->get_GirderHeight(&height);
 
    CComPtr<IRect2d> shape_box;
    shape->get_BoundingBox(&shape_box);
@@ -402,33 +484,23 @@ void CGirderSelectStrandsDlg::OnPaint()
    orgin.X() = x;
    orgin.Y() = y;
 
-   // For straight adjustable strands, force hp values equal to end values
-   Float64 hp_incr;
-   Float64 end_incr = m_pGdrEntry->IsVerticalAdjustmentAllowedEnd() ? 0.0 : -1.0;
-   if (m_AdjustableStrandType == pgsTypes::asStraight)
-   {
-      m_HsoHpMeasurement = m_HsoEndMeasurement;
-      m_HpOffsetAtHp     = m_HpOffsetAtEnd;
-      hp_incr            = end_incr;
-   }
-   else
-   {
-      hp_incr  = m_pGdrEntry->IsVerticalAdjustmentAllowedHP() ? 0.0 : -1.0;
-   }
-
    // Get height and width of the area occupied by all possible strand locations
+
    // Convert adjustment of harped strands to absolute
    ConfigStrandFillVector  harped_fillvec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
                                                         m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
 
 
-   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType,
+   Float64 absol_end_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(m_pGdrEntry->GetName().c_str(), 
                                                         harped_fillvec, m_HsoEndMeasurement, m_HpOffsetAtEnd);
 
-   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType,
+   Float64 absol_hp_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(m_pGdrEntry->GetName().c_str(), 
                                                         harped_fillvec, m_HsoHpMeasurement, m_HpOffsetAtHp);
 
    // We need a strand mover to adjust harped strands
+   Float64 end_incr = m_pGdrEntry->IsVerticalAdjustmentAllowedEnd() ? 0.0 : -1.0;
+   Float64 hp_incr  = m_pGdrEntry->IsVerticalAdjustmentAllowedHP() ? 0.0 : -1.0;
+
    CComPtr<IStrandMover> strand_mover;
    factory->CreateStrandMover(dimensions, 
                               IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,
@@ -438,9 +510,9 @@ void CGirderSelectStrandsDlg::OnPaint()
    gpRect2d strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
    gpSize2d world_size;
-   world_size.Dx() = Max3(top_width,bottom_width,strand_bounds.Width());
+   world_size.Dx() = max(bottom_width,strand_bounds.Width());
 
-   world_size.Dy() = max(height,strand_bounds.Height());
+   world_size.Dy() = strand_bounds.Height();
    if ( IsZero(world_size.Dy()) )
       world_size.Dy() = world_size.Dx()/2;
 
@@ -464,8 +536,8 @@ void CGirderSelectStrandsDlg::OnPaint()
 
    mapper.SetWorldOrg(orgin.X(), orgin.Y()-dist);
 
-   CPen solid_pen(PS_SOLID,1,GIRDER_BORDER_COLOR);
-   CBrush solid_brush(GIRDER_FILL_COLOR);
+   CPen solid_pen(PS_SOLID,1,SEGMENT_BORDER_COLOR);
+   CBrush solid_brush(SEGMENT_FILL_COLOR);
 
    CPen void_pen(PS_SOLID,1,VOID_BORDER_COLOR);
    CBrush void_brush(GetSysColor(COLOR_WINDOW));
@@ -622,7 +694,7 @@ void CGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, IS
 
          total_strand_cnt = DrawStrand(pDC, Mapper, xStart, yStart, total_strand_cnt, is_filled, grid_row);
       }
-      else if (strand_type==GirderLibraryEntry::stAdjustable)
+      else if (strand_type==GirderLibraryEntry::stHarped)
       {
          Float64 xs, ys, xe, ye, xhp, yhp;
          m_pGdrEntry->GetHarpedStrandCoordinates(strand_idx, &xs, &ys, &xhp, &yhp, &xe, &ye);
@@ -843,11 +915,11 @@ void CGirderSelectStrandsDlg::UpdateStrandInfo()
    }
 
    StrandIndexType nDebonded = 0;
-   std::vector<CDebondInfo>::iterator iter(m_StraightDebond.begin());
-   std::vector<CDebondInfo>::iterator end(m_StraightDebond.end());
+   std::vector<CDebondData>::iterator iter(m_StraightDebond.begin());
+   std::vector<CDebondData>::iterator end(m_StraightDebond.end());
    for ( ; iter != end; iter++ )
    {
-      CDebondInfo& debond_info = *iter;
+      CDebondData& debond_info = *iter;
       nDebonded += m_DirectFilledStraightStrands.GetFillCountAtIndex(debond_info.strandTypeGridIdx);
 
 #ifdef _DEBUG
@@ -869,9 +941,10 @@ void CGirderSelectStrandsDlg::UpdateStrandInfo()
    msg.Format(_T("Straight (S)=%d"), nStraight);
    GetDlgItem(IDC_STRAIGHT)->SetWindowText(msg);
 
-   if (m_AdjustableStrandType==pgsTypes::asStraight)
+   bool areHarpedStraight = m_pGdrEntry->IsForceHarpedStrandsStraight();
+   if (areHarpedStraight)
    {
-      msg.Format(_T("Adjustable-Straight (A-S)=%d"), nHarped);
+      msg.Format(_T("Straight-Web (S-W)=%d"), nHarped);
    }
    else
    {
@@ -967,10 +1040,10 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // adjustment of harped strands at ends
-   Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType);
-   Float64 hpt_incr = pStrandGeometry->GetHarpedHpOffsetIncrement(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType);
+   Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str());
+   Float64 hpt_incr = pStrandGeometry->GetHarpedHpOffsetIncrement(m_pGdrEntry->GetName().c_str());
 
-   bool areHarpedStraight = m_AdjustableStrandType==pgsTypes::asStraight;
+   bool areHarpedStraight = m_pGdrEntry->IsForceHarpedStrandsStraight();
 
    if (IsLE(end_incr,0.0) && IsLE(hpt_incr,0.0))
    {
@@ -1011,7 +1084,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
 
 
             Float64 lowRange, highRange;
-            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeEnd(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType, harped_fillvec, m_HsoEndMeasurement, &lowRange, &highRange);
+            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeEnd(m_pGdrEntry->GetName().c_str(), harped_fillvec, m_HsoEndMeasurement, &lowRange, &highRange);
 
             Float64 low  = min(lowRange, highRange);
             Float64 high = max(lowRange, highRange);
@@ -1022,7 +1095,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
             else if (m_HpOffsetAtEnd>high)
                m_HpOffsetAtEnd = high;
 
-            FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr, true,
+            FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr,
                                         pctrl, 2, measUnit.UnitOfMeasure);
          }
          else
@@ -1034,7 +1107,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
       }
 
       // Hpt Control
-      if (IsLE(hpt_incr,0.0) || m_AdjustableStrandType==pgsTypes::asStraight)
+      if (IsLE(hpt_incr,0.0))
       {
          ShowHarpedHpAdjustmentControls(FALSE);
       }
@@ -1053,7 +1126,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
                                                                  m_pGdrEntry->GetName().c_str(), m_DirectFilledHarpedStrands);
 
             Float64 lowRange, highRange;
-            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeHp(m_pGdrEntry->GetName().c_str(), m_AdjustableStrandType, harped_fillvec, m_HsoHpMeasurement, &lowRange, &highRange);
+            pStrandGeometry->ComputeValidHarpedOffsetForMeasurementTypeHp(m_pGdrEntry->GetName().c_str(), harped_fillvec, m_HsoHpMeasurement, &lowRange, &highRange);
 
             Float64 low  = min(lowRange, highRange);
             Float64 high = max(lowRange, highRange);
@@ -1063,7 +1136,7 @@ void CGirderSelectStrandsDlg::UpdateStrandAdjustments()
             else if (m_HpOffsetAtHp>high)
                m_HpOffsetAtHp = high;
 
-            FillComboWithUnitFloatRange(m_HpOffsetAtHp, low, high, hpt_incr, true,
+            FillComboWithUnitFloatRange(m_HpOffsetAtHp, low, high, hpt_incr,
                                         pctrl, 2, measUnit.UnitOfMeasure);
          }
          else
@@ -1106,16 +1179,16 @@ void CGirderSelectStrandsDlg::ShowHarpedEndAdjustmentControls(BOOL show, bool Ar
    {
       if(AreHarpStraight)
       {
-         pWnd->SetWindowText(_T("Along Girder:"));
+         pWnd->SetWindowTextW(_T("Along Girder:"));
       }
       else
       {
-         pWnd->SetWindowText(_T("At Girder Ends:"));
+         pWnd->SetWindowTextW(_T("At Girder Ends:"));
       }
    }
    else
    {
-      pWnd->SetWindowText(_T("Not Available"));
+      pWnd->SetWindowTextW(_T("Not Available"));
    }
 
    GetDlgItem(IDC_HARP_END_STATIC2)->ShowWindow(show? SW_SHOW:SW_HIDE);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,7 @@
 #ifndef INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 #define INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 
-#include <PgsExt\DebondUtil.h>
-#include "TxDOTOptionalDesignUtilities.h"
+#include <PgsExt\SegmentKey.h>
 
 interface IEAFDisplayUnits;
 
@@ -51,66 +50,20 @@ LOG
 class CTexasIBNSParagraphBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTexasIBNSParagraphBuilder();
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-
-   //------------------------------------------------------------------------
-   rptParagraph* Build(IBroker* pBroker,const std::vector<SpanGirderHashType>& spanGirders,
+   rptParagraph* Build(IBroker* pBroker,const std::vector<CSegmentKey>& segmentKeys,
                        IEAFDisplayUnits* pDisplayUnits,
-                       Uint16 level, bool& rbEjectPage) const;
-
-   //------------------------------------------------------------------------
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+                       Uint16 level) const;
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
    // Prevent accidental copying and assignment
    CTexasIBNSParagraphBuilder(const CTexasIBNSParagraphBuilder&);
    CTexasIBNSParagraphBuilder& operator=(const CTexasIBNSParagraphBuilder&);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-};
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-/****************************************************************************
-CLASS	TxDOTIBNSDebondWriter
-   Writes debond table to reports
-****************************************************************************/
-
-class TxDOTIBNSDebondWriter : public TxDOTDebondTool
-{
-public:
-   TxDOTIBNSDebondWriter(SpanIndexType span, GirderIndexType gdr, Float64 girderLength, IStrandGeometry* pStrandGeometry):
-   TxDOTDebondTool(span, gdr, girderLength, pStrandGeometry)
-   {;}
-
-   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName);
+   void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const;
 };
 
 #endif // INCLUDED_TEXASIBNSParagraphBUILDER_H_

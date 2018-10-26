@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,14 @@
 
 #include "StdAfx.h"
 #include "TexasStressChecksChapterBuilder.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\StrandStressCheckTable.h>
 #include <Reporting\FlexuralStressCheckTable.h>
 #include <Reporting\FlexuralCapacityCheckTable.h>
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\InterfaceShearTable.h>
+#include <Reporting\ConfinementCheckTable.h>
 #include <Reporting\StrandSlopeCheck.h>
 #include <Reporting\HoldDownForceCheck.h>
 #include <Reporting\ConstructabilityCheckTable.h>
@@ -46,6 +47,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Allowables.h>
+#include <IFace\Intervals.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -79,13 +81,22 @@ LPCTSTR CTexasStressChecksChapterBuilder::GetName() const
 
 rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+
+   // This is a single segment report
+   CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -97,43 +108,25 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
 
 
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   const pgsGirderArtifact* pArtifact = pArtifacts->GetArtifact(span,girder);
+   const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
-
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::CastingYard,pgsTypes::ServiceI);
-
-   if ( pAllowable->CheckTemporaryStresses() )
-   {
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
-   }
-
-   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
-   {
-      // tension and compression
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI);
-   }
-   else
-   {
-      // compression only
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression);
-   }
-
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,castDeckIntervalIdx,     pgsTypes::ServiceI);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI,pgsTypes::Compression);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression);
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension);
+   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression);
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression);
 
 
- 
-   return pChapter;
+    return pChapter;
 }
 
 CChapterBuilder* CTexasStressChecksChapterBuilder::Clone() const

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,16 +48,18 @@ public:
 // Operations
 public:
    void DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw);
-   bool GetSelectedGirder(SpanIndexType* pSpanIdx,GirderIndexType* pGirderIdx);
    bool IsDeckSelected();
    void SelectPier(PierIndexType pierIdx,bool bSelect);
    void SelectSpan(PierIndexType pierIdx,bool bSelect);
-   void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bSelect);
+   bool GetSelectedGirder(CGirderKey* pGirderKey);
+   void SelectGirder(const CGirderKey& girderKey,bool bSelect);
    void SelectDeck(bool bSelect);
    void SelectAlignment(bool bSelect);
+   void SelectTemporarySupport(bool bSelect);
    void ClearSelection();
 
-   SpanIndexType GetSpanIndex();
+   // Returns the index of the girder group that the section cut is being taken from
+   GroupIndexType GetGroupIndex();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -114,7 +116,8 @@ protected:
 
    CBridgeModelViewChildFrame* GetFrame();
 
-   std::map<SpanGirderHashType,IDType> m_GirderIDs;
+   typedef std::map<CGirderKey,IDType> GirderIDCollection;
+   GirderIDCollection m_GirderIDs; // maps girder keys into DMANIP display object IDs
    IDType m_NextGirderID;
 };
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -73,99 +73,84 @@ CProductShearTable& CProductShearTable::operator= (const CProductShearTable& rOt
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
+rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                       bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bFutureOverlay = pBridge->IsFutureOverlay();
-   pgsTypes::Stage overlay_stage = pgsTypes::BridgeSite2;
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   SpanIndexType startSpan, nSpans;
-   pgsTypes::Stage continuity_stage;
+   GroupIndexType startGroup, nGroups;
+   IntervalIndexType continuityIntervalIdx;
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Shears"));
 
-   if ( span == ALL_SPANS )
+
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
+   GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+
+   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
+
+   for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, gdr, pgsTypes::BridgeSite3, POI_ALL, POIFIND_OR );
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
 
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = min(gdr,nGirders-1);
-
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
-
-      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
+      CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<sysSectionValue> girder = pForces2->GetShear(girderLoadStage,pftGirder,vPoi,SimpleSpan);
-      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(pgsTypes::BridgeSite1,pftDiaphragm,vPoi,SimpleSpan);
+      std::vector<sysSectionValue> girder    = pForces2->GetShear(erectSegmentIntervalIdx, pftGirder,   vPoi,maxBAT);
+      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pftDiaphragm,vPoi,maxBAT);
 
       std::vector<sysSectionValue> minSlab, maxSlab;
       std::vector<sysSectionValue> minSlabPad, maxSlabPad;
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      {
-         maxSlab = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlab, vPoi, MaxSimpleContinuousEnvelope );
-         minSlab = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlab, vPoi, MinSimpleContinuousEnvelope );
+      maxSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, maxBAT );
+      minSlab = pForces2->GetShear( castDeckIntervalIdx, pftSlab, vPoi, minBAT );
 
-         maxSlabPad = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MaxSimpleContinuousEnvelope );
-         minSlabPad = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MinSimpleContinuousEnvelope );
-      }
-      else
-      {
-         maxSlab = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-
-         maxSlabPad = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPad, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-      }
+      maxSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT );
+      minSlabPad = pForces2->GetShear( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT );
 
       std::vector<sysSectionValue> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-         {
-            maxConstruction = pForces2->GetShear( pgsTypes::BridgeSite1, pftConstruction, vPoi, MaxSimpleContinuousEnvelope );
-            minConstruction = pForces2->GetShear( pgsTypes::BridgeSite1, pftConstruction, vPoi, MinSimpleContinuousEnvelope );
-         }
-         else
-         {
-            maxConstruction = pForces2->GetShear( pgsTypes::BridgeSite1, pftConstruction, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         }
+         maxConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT );
+         minConstruction = pForces2->GetShear( castDeckIntervalIdx, pftConstruction, vPoi, minBAT );
       }
 
       std::vector<sysSectionValue> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-         {
-            maxDeckPanel = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPanel, vPoi, MaxSimpleContinuousEnvelope );
-            minDeckPanel = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPanel, vPoi, MinSimpleContinuousEnvelope );
-         }
-         else
-         {
-            maxDeckPanel = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPanel, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         }
+         maxDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT );
+         minDeckPanel = pForces2->GetShear( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT );
       }
 
       std::vector<sysSectionValue> dummy;
@@ -198,150 +183,92 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       std::vector<VehicleIndexType> minPermitSpecialLLtruck;
       std::vector<VehicleIndexType> maxPermitSpecialLLtruck;
       
-      if (analysisType == pgsTypes::Envelope)
+      if ( bSidewalk )
       {
-         if ( bSidewalk )
-         {
-            maxSidewalk = pForces2->GetShear( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MaxSimpleContinuousEnvelope );
-            minSidewalk = pForces2->GetShear( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MinSimpleContinuousEnvelope );
-         }
-
-         if ( bShearKey )
-         {
-            maxShearKey = pForces2->GetShear( pgsTypes::BridgeSite1, pftShearKey, vPoi, MaxSimpleContinuousEnvelope );
-            minShearKey = pForces2->GetShear( pgsTypes::BridgeSite1, pftShearKey, vPoi, MinSimpleContinuousEnvelope );
-         }
-
-         maxTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
-         minTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope );
-         maxOverlay = pForces2->GetShear( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
-         minOverlay = pForces2->GetShear( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
-
-         if ( bPedLoading )
-         {
-            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
-            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
-         }
-
-         pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-         pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pForces2->GetLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
-            pForces2->GetLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
-         }
-
-         if ( bPermit )
-         {
-            pForces2->GetLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
-            pForces2->GetLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
-         }
-
-         if ( bRating )
-         {
-            if (!bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-               pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
-               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
-               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
-               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
-               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
-            }
-         }
-      }
-      else
-      {
-         if ( bSidewalk )
-         {
-            maxSidewalk = pForces2->GetShear( pgsTypes::BridgeSite2, pftSidewalk, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         }
-
-         if ( bShearKey )
-         {
-            maxShearKey = pForces2->GetShear( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         }
-
-         maxTrafficBarrier = pForces2->GetShear( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxOverlay = pForces2->GetShear( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-
-         if ( bPedLoading )
-         {
-            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
-         }
-
-         pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pForces2->GetLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minFatigueLL, &maxFatigueLL, &minFatigueLLtruck, &maxFatigueLLtruck );
-         }
-
-         if ( bPermit )
-         {
-            pForces2->GetLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitLL, &maxPermitLL, &minPermitLLtruck, &maxPermitLLtruck );
-         }
-
-         if ( bRating )
-         {
-            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalRoutineLL, &maxLegalRoutineLL, &minLegalRoutineLLtruck, &maxLegalRoutineLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalSpecialLL, &maxLegalSpecialLL, &minLegalSpecialLLtruck, &maxLegalSpecialLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitRoutineLL, &maxPermitRoutineLL, &minPermitRoutineLLtruck, &maxPermitRoutineLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            {
-               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitSpecialLL, &maxPermitSpecialLL, &minPermitSpecialLLtruck, &maxPermitSpecialLLtruck );
-            }
-         }
+         maxSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT );
+         minSidewalk = pForces2->GetShear( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT );
       }
 
+      if ( bShearKey )
+      {
+         maxShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT );
+         minShearKey = pForces2->GetShear( castDeckIntervalIdx, pftShearKey, vPoi, minBAT );
+      }
+
+      maxTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
+      minTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
+      maxOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT );
+      minOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT );
+
+      if ( bPedLoading )
+      {
+         pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
+         pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, minBAT, true, true, &minPedestrian, &dummy );
+      }
+
+      pForces2->GetLiveLoadShear( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+      pForces2->GetLiveLoadShear( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         pForces2->GetLiveLoadShear( pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
+         pForces2->GetLiveLoadShear( pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
+      }
+
+      if ( bPermit )
+      {
+         pForces2->GetLiveLoadShear( pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
+         pForces2->GetLiveLoadShear( pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
+      }
+
+      if ( bRating )
+      {
+         if (!bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            pForces2->GetLiveLoadShear( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+            pForces2->GetLiveLoadShear( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
+            pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
+            pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         {
+            pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
+            pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         {
+            pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
+            pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
+         }
+      }
 
       // write out the results
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      long index = 0;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      IntervalIndexType index = 0;
+      for ( ; i != end; i++, index++ )
       {
          const pgsPointOfInterest& poi = *i;
 
-         int col = 0;
-         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+         const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
+
+         ColumnIndexType col = 0;
+
+         Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
          (*p_table)(row,col++) << shear.SetValue( girder[index] );
          (*p_table)(row,col++) << shear.SetValue( diaphragm[index] );
 
@@ -360,7 +287,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
 
          if ( bConstruction )
          {
-            if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
             {
                (*p_table)(row,col++) << shear.SetValue( maxConstruction[index] );
                (*p_table)(row,col++) << shear.SetValue( minConstruction[index] );
@@ -371,7 +298,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
             }
          }
 
-         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+         if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
          {
             (*p_table)(row,col++) << shear.SetValue( maxSlab[index] );
             (*p_table)(row,col++) << shear.SetValue( minSlab[index] );
@@ -388,7 +315,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
 
          if ( bDeckPanels )
          {
-            if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
             {
                (*p_table)(row,col++) << shear.SetValue( maxDeckPanel[index] );
                (*p_table)(row,col++) << shear.SetValue( minDeckPanel[index] );

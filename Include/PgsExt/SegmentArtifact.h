@@ -1,0 +1,195 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2013  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include <PgsExt\PgsExtExp.h>
+#include <PgsExt\StrandStressArtifact.h>
+#include <PgsExt\FlexuralStressArtifact.h>
+#include <PgsExt\FlexuralCapacityArtifact.h>
+#include <PGSExt\StirrupCheckArtifact.h>
+#include <PgsExt\PoiArtifactKey.h>
+#include <PgsExt\StrandSlopeArtifact.h>
+#include <PgsExt\HoldDownForceArtifact.h>
+#include <PgsExt\ConstructabilityArtifact.h>
+#include <PgsExt\PrecastIGirderDetailingArtifact.h>
+#include <PgsExt\HaulingAnalysisArtifact.h>
+#include <PgsExt\LiftingAnalysisArtifact.h>
+#include <PgsExt\DebondArtifact.h>
+#include <PgsExt\StirrupCheckAtZonesArtifact.h>
+#include <PgsExt\DeflectionCheckArtifact.h>
+
+#include <map>
+
+
+/*****************************************************************************
+   pgsSegmentArtifact
+
+   Code check artifact for a prestressed girder segment.
+*****************************************************************************/
+class PGSEXTCLASS pgsSegmentArtifact
+{
+public:
+   // GROUP: LIFECYCLE
+
+   //------------------------------------------------------------------------
+   // Default constructor
+   pgsSegmentArtifact(const CSegmentKey& segmentKey);
+
+   //------------------------------------------------------------------------
+   // Copy constructor
+   pgsSegmentArtifact(const pgsSegmentArtifact& rOther);
+
+   //------------------------------------------------------------------------
+   // Destructor
+   virtual ~pgsSegmentArtifact();
+
+   // GROUP: OPERATORS
+   //------------------------------------------------------------------------
+   // Assignment operator
+   pgsSegmentArtifact& operator = (const pgsSegmentArtifact& rOther);
+   bool operator<(const pgsSegmentArtifact& rOther) const;
+
+   // GROUP: OPERATIONS
+   // GROUP: ACCESS
+
+   //------------------------------------------------------------------------
+   // Sets the strand stress artifact for this artifact
+   void SetStrandStressArtifact(const pgsStrandStressArtifact& artifact);
+
+   //------------------------------------------------------------------------
+   // Returns a pointer to the strand stress artifact.
+   const pgsStrandStressArtifact* GetStrandStressArtifact() const;
+   pgsStrandStressArtifact* GetStrandStressArtifact();
+
+   void SetStrandSlopeArtifact(const pgsStrandSlopeArtifact& artifact);
+   const pgsStrandSlopeArtifact* GetStrandSlopeArtifact() const;
+   pgsStrandSlopeArtifact* GetStrandSlopeArtifact();
+
+   void SetHoldDownForceArtifact(const pgsHoldDownForceArtifact& artifact);
+   const pgsHoldDownForceArtifact* GetHoldDownForceArtifact() const;
+   pgsHoldDownForceArtifact* GetHoldDownForceArtifact();
+
+   void AddFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,
+                                  const pgsFlexuralStressArtifact& artifact);
+   CollectionIndexType GetFlexuralStressArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx) const;
+   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx);
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const;
+
+   pgsStirrupCheckArtifact* GetStirrupCheckArtifact();
+   const pgsStirrupCheckArtifact* GetStirrupCheckArtifact() const;
+
+   pgsPrecastIGirderDetailingArtifact* GetPrecastIGirderDetailingArtifact();
+   const pgsPrecastIGirderDetailingArtifact* GetPrecastIGirderDetailingArtifact() const;
+
+   void SetConstructabilityArtifact(const pgsConstructabilityArtifact& artifact);
+   const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
+   pgsConstructabilityArtifact* GetConstructabilityArtifact();
+
+   void SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact);
+   const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact() const;
+   
+   void SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact*  artifact);
+   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
+
+   void SetCastingYardCapacityWithMildRebar(Float64 fAllow);
+   Float64 GetCastingYardCapacityWithMildRebar() const;
+   pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
+   const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
+   
+   bool Passed() const;
+
+   bool DidFlexuralStressesPass() const;
+
+   Float64 GetRequiredConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredConcreteStrength() const;
+   Float64 GetRequiredReleaseStrength() const;
+
+   const CSegmentKey& GetSegmentKey() const;
+
+   // GROUP: INQUIRY
+
+protected:
+   // GROUP: DATA MEMBERS
+   // GROUP: LIFECYCLE
+   // GROUP: OPERATORS
+   // GROUP: OPERATIONS
+   //------------------------------------------------------------------------
+   void MakeCopy(const pgsSegmentArtifact& rOther);
+
+   //------------------------------------------------------------------------
+   virtual void MakeAssignment(const pgsSegmentArtifact& rOther);
+
+   // GROUP: ACCESS
+   // GROUP: INQUIRY
+
+private:
+   // GROUP: DATA MEMBERS
+   CSegmentKey m_SegmentKey;
+
+   pgsStrandStressArtifact     m_StrandStressArtifact;
+   pgsStrandSlopeArtifact      m_StrandSlopeArtifact;
+   pgsHoldDownForceArtifact    m_HoldDownForceArtifact;
+   pgsConstructabilityArtifact m_ConstructabilityArtifact;
+
+   struct StressKey
+   {
+      IntervalIndexType intervalIdx;
+      pgsTypes::LimitState ls;
+      pgsTypes::StressType stress;
+      bool operator<(const StressKey& key) const
+      {
+         if ( intervalIdx < key.intervalIdx )
+            return true;
+
+         if ( key.intervalIdx < intervalIdx )
+            return false;
+
+         if ( ls < key.ls )
+            return true;
+
+         if ( key.ls < ls )
+            return false;
+
+         if ( stress < key.stress )
+            return true;
+
+         if ( key.stress < stress )
+            return false;
+
+         return false;
+      }
+   };
+   mutable std::map<StressKey,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
+   std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
+
+   pgsStirrupCheckArtifact m_StirrupCheckArtifact;
+
+   pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
+
+   std::auto_ptr<pgsLiftingAnalysisArtifact> m_pLiftingAnalysisArtifact;
+   std::auto_ptr<pgsHaulingAnalysisArtifact> m_pHaulingAnalysisArtifact;
+
+   pgsDebondArtifact m_DebondArtifact[3];
+   Float64 m_CastingYardAllowable; // allowable tensile stress for casting yard with required mild rebar
+};

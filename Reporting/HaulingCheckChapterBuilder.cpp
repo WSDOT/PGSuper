@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\HaulingCheckChapterBuilder.h>
 #include <Reporting\HaulingCheck.h>
+#include <IFace\Artifact.h>
 
-#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,18 +56,20 @@ LPCTSTR CHaulingCheckChapterBuilder::GetName() const
 
 rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec   = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
+
+   const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    CHaulingCheck check;
-   check.Build(pChapter, pBroker, span, girder, pDisplayUnits);
+   check.Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    return pChapter;
 }

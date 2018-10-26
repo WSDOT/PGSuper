@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <IFace\DistributionFactors.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
@@ -42,10 +42,6 @@ CLASS
    CLiveLoadDistributionFactorTable
 ****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLiveLoadDistributionFactorTable::CLiveLoadDistributionFactorTable()
 {
 }
@@ -59,7 +55,6 @@ CLiveLoadDistributionFactorTable::~CLiveLoadDistributionFactorTable()
 {
 }
 
-//======================== OPERATORS  =======================================
 CLiveLoadDistributionFactorTable& CLiveLoadDistributionFactorTable::operator= (const CLiveLoadDistributionFactorTable& rOther)
 {
    if( this != &rOther )
@@ -70,29 +65,46 @@ CLiveLoadDistributionFactorTable& CLiveLoadDistributionFactorTable::operator= (c
    return *this;
 }
 
-//======================== OPERATIONS =======================================
 void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
-                                             IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                                             IBroker* pBroker,const CGirderKey& girderKey,
                                              IEAFDisplayUnits* pDisplayUnits) const
 {
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
+   rptRcScalar df;
+   df.SetFormat(sysNumericFormatTool::Fixed);
+   df.SetWidth(8);
+   df.SetPrecision(3); // should match format in details reports
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   bool bNegMoments = pBridge->ProcessNegativeMoments(span);
+   SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
+   SpanIndexType endSpanIdx   = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
+   bool bNegMoments = false;
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   {
+      if ( pBridge->ProcessNegativeMoments(spanIdx) )
+      {
+         bNegMoments = true;
+         break;
+      }
+   }
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   ColumnIndexType nCols = 5;
+   rptRcTable* pMasterTable = pgsReportStyleHolder::CreateTableNoHeading(2,NULL);
+   *pBody << pMasterTable;
+   pMasterTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
+   pMasterTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);
+
+   ColumnIndexType nCols = 4;
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      nCols += 4; // for fatigue limit state LLDF
+      nCols += 3; // for fatigue limit state LLDF
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
-   *pBody << pTable;
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Girder"));
+   (*pMasterTable)(0,0) << pTable;
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -106,7 +118,6 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       (*pTable)(0,1) << _T("+M");
       (*pTable)(0,2) << _T("-M");
       (*pTable)(0,3) << _T("V");
-      (*pTable)(0,4) << _T("R");
    }
    else
    {
@@ -115,46 +126,43 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       pTable->SetRowSpan(1,0,SKIP_CELL);
 
-      pTable->SetColumnSpan(0,1,4);
+      pTable->SetColumnSpan(0,1,3);
       (*pTable)(0,1) << _T("Strength/Service");
 
-      pTable->SetColumnSpan(0,2,4);
+      pTable->SetColumnSpan(0,2,3);
       (*pTable)(0,2) << _T("Fatigue/One Lane");
 
       pTable->SetColumnSpan(0,3,SKIP_CELL);
       pTable->SetColumnSpan(0,4,SKIP_CELL);
       pTable->SetColumnSpan(0,5,SKIP_CELL);
       pTable->SetColumnSpan(0,6,SKIP_CELL);
-      pTable->SetColumnSpan(0,7,SKIP_CELL);
-      pTable->SetColumnSpan(0,8,SKIP_CELL);
 
       (*pTable)(1,1) << _T("+M");
       (*pTable)(1,2) << _T("-M");
       (*pTable)(1,3) << _T("V");
-      (*pTable)(1,4) << _T("R");
-      (*pTable)(1,5) << _T("+M");
-      (*pTable)(1,6) << _T("-M");
-      (*pTable)(1,7) << _T("V");
-      (*pTable)(1,8) << _T("R");
+      (*pTable)(1,4) << _T("+M");
+      (*pTable)(1,5) << _T("-M");
+      (*pTable)(1,6) << _T("V");
    }
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span, girder, pgsTypes::BridgeSite3, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
-
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   SpanIndexType last_span_idx = 0;
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   for ( ; iter != end; iter++ )
    {
-      pgsPointOfInterest poi = *iter;
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      pgsPointOfInterest& poi( *iter );
+      const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
+
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+      (*pTable)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
 
       Float64 pM, nM, V;
       pDistFact->GetDistributionFactors(poi,pgsTypes::StrengthI,&pM,&nM,&V);
@@ -170,67 +178,58 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       }
       (*pTable)(row,3) << df.SetValue(V);
 
-      if ( iter == vPoi.begin() || last_span_idx != poi.GetSpan() )
-      {
-         last_span_idx = poi.GetSpan();
-         (*pTable)(row,4) << df.SetValue(pDistFact->GetReactionDistFactor(poi.GetSpan(),poi.GetGirder(),pgsTypes::StrengthI));
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pTable)(row,8) << df.SetValue(pDistFact->GetReactionDistFactor(poi.GetSpan(),poi.GetGirder(),pgsTypes::FatigueI));
-         }
-      }
-      else
-      {
-         (*pTable)(row,4) << _T("");
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pTable)(row,8) << _T("");
-         }
-      }
-
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          pDistFact->GetDistributionFactors(poi,pgsTypes::FatigueI,&pM,&nM,&V);
-         (*pTable)(row,5) << df.SetValue(pM);
+         (*pTable)(row,4) << df.SetValue(pM);
 
          if ( bNegMoments )
          {
-            (*pTable)(row,6) << df.SetValue(nM);
+            (*pTable)(row,5) << df.SetValue(nM);
          }
          else
          {
-            (*pTable)(row,6) << _T("---");
+            (*pTable)(row,5) << _T("---");
          }
 
-         (*pTable)(row,7) << df.SetValue(V);
+         (*pTable)(row,6) << df.SetValue(V);
       }
 
       row++;
    }
 
-   (*pTable)(row-1,4) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan()+1,vPoi.back().GetGirder(),pgsTypes::StrengthI));
+   nCols = 2;
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      nCols++;
+
+   rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reactions"));
+   (*pMasterTable)(0,1) << pTable2;
+   (*pTable2)(0,0) << _T("Pier");
+   (*pTable2)(0,1) << _T("Strength/Service");
+
+   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      (*pTable2)(0,2) << _T("Fatigue/One Lane");
+
+   row = pTable2->GetNumberOfHeaderRows();
+   PierIndexType nPiers = pBridge->GetPierCount();
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++, row++ )
    {
-      (*pTable)(row-1,8) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan()+1,vPoi.back().GetGirder(),pgsTypes::FatigueI));
+      (*pTable2)(row,0) << LABEL_PIER(pierIdx);
+      (*pTable2)(row,1) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::StrengthI));
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         (*pTable2)(row,2) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::FatigueI));
+      }
    }
 
-
    GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);
-   std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
-   if ( !straction.empty() )
+   std::_tstring strSpecialAction = pLiveLoads->GetLLDFSpecialActionText();
+   if ( !strSpecialAction.empty() )
    {
-      (*pBody) << color(Red) << straction << color(Black) << rptNewLine;
+      (*pBody) << color(Red) << strSpecialAction << color(Black) << rptNewLine;
    }
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void CLiveLoadDistributionFactorTable::MakeCopy(const CLiveLoadDistributionFactorTable& rOther)
 {
    // Add copy code here...

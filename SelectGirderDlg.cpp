@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,9 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SelectGirderDlg.h"
 
-#include <IFace\Bridge.h>
+#include <IFace\Project.h>
+#include <PgsExt\BridgeDescription2.h>
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,14 +58,14 @@ void CSelectGirderDlg::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
+	DDX_CBIndex(pDX, IDC_GROUP,  (int&)m_Group);
 	DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
-	DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
 }
 
 
 BEGIN_MESSAGE_MAP(CSelectGirderDlg, CDialog)
 	//{{AFX_MSG_MAP(CSelectGirderDlg)
-	ON_CBN_SELCHANGE(IDC_SPAN, OnSpanChanged)
+	ON_CBN_SELCHANGE(IDC_GROUP, OnGroupChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -74,65 +76,64 @@ BOOL CSelectGirderDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	/* Get interface pointer to Bridge Agent */
-	GET_IFACE( IBridge, pBridge ); 
+	GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-	/* Get combo box pointers */
-	CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-   CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
-	  
-	  /* Get count of spans from bridge agent */
-	SpanIndexType cSpan = pBridge->GetSpanCount();
+	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );
+   CComboBox* pGirderBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
-	/* Extract data from spans */
-	for ( SpanIndexType i = 0; i < cSpan; i++ )
-	{
-		/* Add current span string to span list */
-		CString strSpan;
-		strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
-		pSpanBox->AddString(strSpan);
-	}
+   CEAFDocument* pDoc = EAFGetDocument();
+   bool bPGSuper = (pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? true : false);
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+	   CString strLabel;
+      strLabel.Format(_T("%s %d"),(bPGSuper ? _T("Span") : _T("Group")), LABEL_GROUP(grpIdx));
+	   pGroupBox->AddString(strLabel);
+   }
 
-   OnSpanChanged();
+   OnGroupChanged();
 
 	/* Intialize each combo selections */
-	if ( pSpanBox->SetCurSel((int)m_Span) == CB_ERR )
-      pSpanBox->SetCurSel(0);
+	if ( pGroupBox->SetCurSel((int)m_Group) == CB_ERR )
+      pGroupBox->SetCurSel(0);
 	
-   if ( pGdrBox->SetCurSel((int)m_Girder) == CB_ERR )
-      pGdrBox->SetCurSel(0);
+   if ( pGirderBox->SetCurSel((int)m_Girder) == CB_ERR )
+      pGirderBox->SetCurSel(0);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CSelectGirderDlg::OnSpanChanged() 
+void CSelectGirderDlg::OnGroupChanged() 
 {
-	GET_IFACE( IBridge, pBridge ); 
-	CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-   CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
+	GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   int span = pSpanBox->GetCurSel();
-   if ( span == CB_ERR )
-      span = 0;
+	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );
+   CComboBox* pGirderBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
-   int girder = pGdrBox->GetCurSel();
+   int group = pGroupBox->GetCurSel();
+   if ( group == CB_ERR )
+      group = 0;
+
+   int girder = pGirderBox->GetCurSel();
    if (girder == CB_ERR )
       girder = 0;
 
-   pGdrBox->ResetContent();
+   pGirderBox->ResetContent();
 
 	/* Get count of girders (same number of girders in all spans) */
-   GirderIndexType cGirder = pBridge->GetGirderCount(span);
-	for ( GirderIndexType j = 0; j < cGirder; j++ )
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(group)->GetGirderCount();
+	for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
 	{
 		/* Add current girder string to girder list */
-		CString strGdr;
-		strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
-		pGdrBox->AddString( strGdr );
+		CString strLabel;
+		strLabel.Format( _T("Girder %s"), LABEL_GIRDER(gdrIdx));
+		pGirderBox->AddString( strLabel );
 	}
 
-   girder = (int)min(GirderIndexType(girder), cGirder-1); // don't allow out of bounds if ng decreases between spans
+   girder = (int)min(GirderIndexType(girder), nGirders-1); // don't allow out of bounds if ng decreases between spans
 
-   pGdrBox->SetCurSel(girder);
+   pGirderBox->SetCurSel(girder);
 }

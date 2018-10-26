@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,13 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
+
 #include <PgsExt\GirderData.h>
 #include <Units\SysUnits.h>
-#include <psgLib\StructuredSave.h>
-#include <psgLib\StructuredLoad.h>
 #include <StdIo.h>
+
+#include <psgLib\StructuredSave.h>
+#include <PsgLib\StructuredLoad.h>
 
 #include <Lrfd\StrandPool.h>
 
@@ -42,14 +44,17 @@ CLASS
 
 
 
-
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
 CGirderData::CGirderData()
 {
+   m_pLibraryEntry = NULL;
+
    Condition = pgsTypes::cfGood;
    ConditionFactor = 1.0;
+
+   m_bUsedShearData2 = false;
 }  
 
 CGirderData::CGirderData(const CGirderData& rOther)
@@ -60,7 +65,6 @@ CGirderData::CGirderData(const CGirderData& rOther)
 CGirderData::~CGirderData()
 {
 }
-
 
 //======================== OPERATORS  =======================================
 CGirderData& CGirderData::operator= (const CGirderData& rOther)
@@ -75,7 +79,13 @@ CGirderData& CGirderData::operator= (const CGirderData& rOther)
 
 bool CGirderData::operator==(const CGirderData& rOther) const
 {
-   if ( PrestressData != rOther.PrestressData )
+   if ( m_GirderName != rOther.m_GirderName )
+      return false;
+
+   if ( Strands != rOther.Strands )
+      return false;
+
+   if ( Material != rOther.Material )
       return false;
 
    if ( ShearData != rOther.ShearData )
@@ -85,9 +95,6 @@ bool CGirderData::operator==(const CGirderData& rOther) const
       return false;
 
    if ( HandlingData != rOther.HandlingData )
-      return false;
-
-   if ( Material != rOther.Material )
       return false;
 
    if ( Condition != rOther.Condition )
@@ -103,91 +110,17 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
 {
    int ct = ctNone;
 
-   // first check if prestressing changed
-   if (PrestressData != rOther.PrestressData)
+   if (Strands != rOther.Strands)
          ct |= ctPrestress;
 
-   for ( int i = 0; i < 3; i++ )
+   for ( Uint16 i = 0; i < 3; i++ )
    {
-      if ( Material.pStrandMaterial[i] != rOther.Material.pStrandMaterial[i] )
-      {
+      if ( Strands.StrandMaterial[i] != rOther.Strands.StrandMaterial[i] )
             ct |= ctStrand;
-            break;
-      }
    }
 
-   if ( Material.Type != rOther.Material.Type ) 
-   {
+   if ( Material.Concrete != rOther.Material.Concrete )
       ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.Fci,rOther.Material.Fci) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.Fc,rOther.Material.Fc) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual( Material.WeightDensity, rOther.Material.WeightDensity ) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.StrengthDensity,rOther.Material.StrengthDensity) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.MaxAggregateSize,rOther.Material.MaxAggregateSize) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.EcK1,rOther.Material.EcK1) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.EcK2,rOther.Material.EcK2) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.CreepK1,rOther.Material.CreepK1) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.CreepK2,rOther.Material.CreepK2) )
-   {
-      ct |= ctConcrete;
-   }
-    else if ( !IsEqual(Material.ShrinkageK1,rOther.Material.ShrinkageK1) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.ShrinkageK2,rOther.Material.ShrinkageK2) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( Material.bUserEci != rOther.Material.bUserEci )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.Eci,rOther.Material.Eci) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( Material.bUserEc != rOther.Material.bUserEc )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( !IsEqual(Material.Ec,rOther.Material.Ec) )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( Material.bHasFct != rOther.Material.bHasFct )
-   {
-      ct |= ctConcrete;
-   }
-   else if ( Material.bHasFct && !IsEqual(Material.Fct,rOther.Material.Fct) )
-   {
-      ct |= ctConcrete;
-   }
 
    if ( !IsEqual(HandlingData.LeftLiftPoint,  rOther.HandlingData.LeftLiftPoint) ||
         !IsEqual(HandlingData.RightLiftPoint, rOther.HandlingData.RightLiftPoint) )
@@ -207,16 +140,6 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
       ct |= ctCondition;
    }
 
-   if ( ShearData != rOther.ShearData)
-   {
-      ct |= ctShearData;
-   }
-
-   if ( LongitudinalRebarData != rOther.LongitudinalRebarData)
-   {
-      ct |= ctLongRebar;
-   }
-
    return ct;
 }
 
@@ -227,6 +150,16 @@ bool CGirderData::operator!=(const CGirderData& rOther) const
    return !operator==(rOther);
 }
 
+void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)
+{
+   Strands = rOther.Strands;
+}
+
+void CGirderData::CopyMaterialFrom(const CGirderData& rOther)
+{
+   Material = rOther.Material;
+}
+
 //======================== OPERATIONS =======================================
 HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, 
                           Float64 fc,Float64 weightDensity,Float64 strengthDensity,Float64 maxAggSize)
@@ -235,152 +168,196 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
 
    HRESULT hr = S_OK;
 
-   Float64 parentVersion;
-   pStrLoad->get_ParentVersion(&parentVersion);
+   CComVariant var;
 
-   CComBSTR bstrParentUnit;
-   pStrLoad->get_ParentUnit(&bstrParentUnit);
-
-   pStrLoad->BeginUnit(_T("PrestressData"));  // named this for historical reasons
+   HRESULT hr_girderDataUnit = pStrLoad->BeginUnit(_T("GirderData"));
 
    Float64 version;
    pStrLoad->get_Version(&version);
-
-   // Prestressing
-   hr = PrestressData.Load(pStrLoad);
-   if (FAILED(hr))
-      return hr;
-
-   CComVariant var;
-
-   if ( version < 9 )
+   if ( 4 < version )
    {
-      Material.pStrandMaterial[pgsTypes::Straight]  = 0; // not used in pre-version 9 of this data block
-      Material.pStrandMaterial[pgsTypes::Harped]    = 0; // not used in pre-version 9 of this data block
-      Material.pStrandMaterial[pgsTypes::Temporary] = 0; // not used in pre-version 9 of this data block
-      // the Project Agent will set this value later
-   }
-   else if ( version < 11 )
-   {
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("StrandMaterialKey"),&var);
-      Int32 key = var.lVal;
-      Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
-      ATLASSERT(Material.pStrandMaterial[pgsTypes::Straight] != 0);
-      Material.pStrandMaterial[pgsTypes::Harped] = Material.pStrandMaterial[pgsTypes::Straight];
-      Material.pStrandMaterial[pgsTypes::Temporary] = Material.pStrandMaterial[pgsTypes::Straight];
-   }
-   else
-   {
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-
-      var.Clear();
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("StraightStrandMaterialKey"),&var);
-      Int32 key = var.lVal;
-      Material.pStrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
-
-      pStrLoad->get_Property(_T("HarpedStrandMaterialKey"),&var);
-      key = var.lVal;
-      Material.pStrandMaterial[pgsTypes::Harped] = pPool->GetStrand(key);
-
-      pStrLoad->get_Property(_T("TemporaryStrandMaterialKey"),&var);
-      key = var.lVal;
-      Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand(key);
+      var.vt = VT_BSTR;
+      pStrLoad->get_Property(_T("Girder"),&var); // added version 5
+      m_GirderName = OLE2T(var.bstrVal);
    }
 
-   if ( (bstrParentUnit == CComBSTR("Prestressing") && parentVersion < 4) ||
-        (bstrParentUnit == CComBSTR("GirderTypes")  && parentVersion < 2) ||
-        (bstrParentUnit == CComBSTR("Girders")      && parentVersion < 3) 
-        )
+   Float64 parentVersion;
+   pStrLoad->get_ParentVersion(&parentVersion);
+
+   Float64 strand_data_version;
+   Strands.Load(pStrLoad,pProgress,&strand_data_version);
+
+   if ( version < 3 )
    {
+      // stored here for version == 1 or 2
       var.Clear();
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Fci"), &var );
-      Material.Fci = var.dblVal;
+      Material.Concrete.Fci = var.dblVal;
 
-      if (3.0 <= version)
+      if (3.0 <= strand_data_version)
       {
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("Fc"), &var );
-         Material.Fc = var.dblVal;
+         Material.Concrete.Fc = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("WeightDensity"), &var );
-         Material.WeightDensity = var.dblVal;
+         Material.Concrete.WeightDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("StrengthDensity"), &var );
-         Material.StrengthDensity = var.dblVal;
+         Material.Concrete.StrengthDensity = var.dblVal;
 
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("MaxAggregateSize"), &var );
-         Material.MaxAggregateSize = var.dblVal;
+         Material.Concrete.MaxAggregateSize = var.dblVal;
 
       }
       else
       {
-         Material.Fc               = fc;
-         Material.WeightDensity    = weightDensity;
-         Material.StrengthDensity  = strengthDensity;
-         Material.MaxAggregateSize = maxAggSize;
+         Material.Concrete.Fc               = fc;
+         Material.Concrete.WeightDensity    = weightDensity;
+         Material.Concrete.StrengthDensity  = strengthDensity;
+         Material.Concrete.MaxAggregateSize = maxAggSize;
       }
 
-      if ( 4 <= version )
+      if ( 4 <= strand_data_version )
       {
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("K1"), &var );
-         Material.EcK1 = var.dblVal;
+         Material.Concrete.EcK1 = var.dblVal;
       }
 
-      if ( 7 <= version )
+      if ( 7 <= strand_data_version )
       {
          var.Clear();
          var.vt = VT_BOOL;
          pStrLoad->get_Property(_T("UserEci"), &var );
-         Material.bUserEci = (var.boolVal == VARIANT_TRUE ? true : false);
+         Material.Concrete.bUserEci = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("Eci"), &var);
-         Material.Eci = var.dblVal;
+         Material.Concrete.Eci = var.dblVal;
 
          var.Clear();
          var.vt = VT_BOOL;
          pStrLoad->get_Property(_T("UserEc"), &var );
-         Material.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+         Material.Concrete.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
          var.Clear();
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("Ec"), &var);
-         Material.Ec = var.dblVal;
+         Material.Concrete.Ec = var.dblVal;
       }
+
+      pStrLoad->EndUnit(); // ends StrandData unit
    }
 
-   pStrLoad->EndUnit(); // end PrestressData
-
-   pStrLoad->get_Version(&version);
-
-   if ( bstrParentUnit == CComBSTR("Girders") && 2.0 < version )
+   if ( 2.0 < version )
    {
-      Material.Load(pStrLoad,pProgress);
+      // Don't load with the Concrete object. It has a different data structure.
+      // Load the data from this old format and then populate the Concrete object with data.
+      pStrLoad->BeginUnit(_T("Concrete"));
+
+      var.vt = VT_BSTR;
+      pStrLoad->get_Property(_T("Type"),&var);
+      Material.Concrete.Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
+
+      var.vt = VT_R8;
+      pStrLoad->get_Property(_T("Fci"), &var);
+      Material.Concrete.Fci = var.dblVal;
+
+      pStrLoad->get_Property(_T("Fc"),&var);
+      Material.Concrete.Fc = var.dblVal;
+
+      pStrLoad->get_Property(_T("WeightDensity"), &var);
+      Material.Concrete.WeightDensity = var.dblVal;
+
+      pStrLoad->get_Property(_T("StrengthDensity"),  &var);
+      Material.Concrete.StrengthDensity = var.dblVal;
+
+      pStrLoad->get_Property(_T("MaxAggregateSize"), &var);
+      Material.Concrete.MaxAggregateSize = var.dblVal;
+
+      pStrLoad->get_Property(_T("EcK1"),&var);
+      Material.Concrete.EcK1 = var.dblVal;
+
+      pStrLoad->get_Property(_T("EcK2"),&var);
+      Material.Concrete.EcK2 = var.dblVal;
+
+      pStrLoad->get_Property(_T("CreepK1"),&var);
+      Material.Concrete.CreepK1 = var.dblVal;
+
+      pStrLoad->get_Property(_T("CreepK2"),&var);
+      Material.Concrete.CreepK2 = var.dblVal;
+
+      pStrLoad->get_Property(_T("ShrinkageK1"),&var);
+      Material.Concrete.ShrinkageK1 = var.dblVal;
+
+      pStrLoad->get_Property(_T("ShrinkageK2"),&var);
+      Material.Concrete.ShrinkageK2 = var.dblVal;
+
+      if ( Material.Concrete.Type != pgsTypes::Normal )
+      {
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property(_T("HasFct"),&var);
+         Material.Concrete.bHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         if ( Material.Concrete.bHasFct )
+         {
+            var.vt = VT_R8;
+            pStrLoad->get_Property(_T("Fct"),&var);
+            Material.Concrete.Fct = var.dblVal;
+         }
+      }
+
+      var.vt = VT_BOOL;
+      pStrLoad->get_Property(_T("UserEci"),&var);
+      Material.Concrete.bUserEci = (var.boolVal == VARIANT_TRUE ? true : false);
+      
+      if ( Material.Concrete.bUserEci )
+      {
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("Eci"),&var);
+         Material.Concrete.Eci = var.dblVal;
+      }
+
+      var.vt = VT_BOOL;
+      pStrLoad->get_Property(_T("UserEc"),&var);
+      Material.Concrete.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      if ( Material.Concrete.bUserEc )
+      {
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("Ec"),&var);
+         Material.Concrete.Ec = var.dblVal;
+      }
+
+
+      pStrLoad->EndUnit(); // Concrete
    }
 
-   if ( (bstrParentUnit == CComBSTR("Girders")     && 1.0 < version) ||
-        (bstrParentUnit == CComBSTR("GirderTypes") && 1.0 < version)
-      ) // if parent version greater than 1, then load shear and long rebar data
+   if ( 1.0 < version ) 
    {
-      CStructuredLoad load( pStrLoad );
-      ShearData.Load(&load);
-
+      if ( version < 4 )
+      {
+         CStructuredLoad load( pStrLoad );
+         ShearData.Load(&load);
+         m_bUsedShearData2 = false;
+      }
+      else
+      {
+         CStructuredLoad load(pStrLoad);
+         ShearData2.Load(&load);
+         m_bUsedShearData2 = true;
+      }
       LongitudinalRebarData.Load(pStrLoad,pProgress);
       HandlingData.Load(pStrLoad,pProgress);
    }
@@ -398,51 +375,28 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
       pStrLoad->EndUnit();
    }
 
+   if ( SUCCEEDED(hr_girderDataUnit) )
+      pStrLoad->EndUnit(); // GirderData
+
    return hr;
 }
 
 HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
+   ATLASSERT(false); // should never get here in PGSuper version 3 (PGSplice)
 
-   pStrSave->BeginUnit(_T("PrestressData"),14.0);
+   pStrSave->BeginUnit(_T("GirderData"),5.0);
 
-   // Version 13 moved prestressed data into a separate class and added direct strand fill
-   hr = PrestressData.Save(pStrSave);
-   if (FAILED(hr))
-      return hr;
+   pStrSave->put_Property(_T("Girder"),CComVariant(m_GirderName.c_str())); // added version 5
 
-   ///////////////// Added with data block version 11
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(Material.pStrandMaterial[pgsTypes::Straight]);
-   pStrSave->put_Property(_T("StraightStrandMaterialKey"),CComVariant(key));
-   
-   key = pPool->GetStrandKey(Material.pStrandMaterial[pgsTypes::Harped]);
-   pStrSave->put_Property(_T("HarpedStrandMaterialKey"),CComVariant(key));
-   
-   key = pPool->GetStrandKey(Material.pStrandMaterial[pgsTypes::Temporary]);
-   pStrSave->put_Property(_T("TemporaryStrandMaterialKey"),CComVariant(key));
-
-   // moved out of this data block in version 10 for this data block and version 3 of parent
-   //pStrSave->put_Property(_T("Fci"), CComVariant(Material.Fci ));
-   //pStrSave->put_Property(_T("Fc"),               CComVariant(Material.Fc));
-   //pStrSave->put_Property(_T("WeightDensity"),    CComVariant(Material.WeightDensity));
-   //pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(Material.StrengthDensity));
-   //pStrSave->put_Property(_T("MaxAggregateSize"), CComVariant(Material.MaxAggregateSize));
-   //pStrSave->put_Property(_T("K1"),               CComVariant(Material.K1));
-   //pStrSave->put_Property(_T("UserEci"),          CComVariant(Material.bUserEci));
-   //pStrSave->put_Property(_T("Eci"),              CComVariant(Material.Eci));
-   //pStrSave->put_Property(_T("UserEc"),           CComVariant(Material.bUserEc));
-   //pStrSave->put_Property(_T("Ec"),               CComVariant(Material.Ec));
-
-   pStrSave->EndUnit(); // PrestressData
+   Strands.Save(pStrSave,pProgress);
 
    // Moved here with version 3 of parent data block
-   Material.Save(pStrSave,pProgress);
+   Material.Concrete.Save(pStrSave,pProgress);
 
    CStructuredSave save( pStrSave );
    ShearData.Save(&save);
-
    LongitudinalRebarData.Save(pStrSave,pProgress);
    HandlingData.Save(pStrSave,pProgress);
 
@@ -451,79 +405,54 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("ConditionFactor"),CComVariant(ConditionFactor));
    pStrSave->EndUnit();
 
+   pStrSave->EndUnit(); // GirderData
+
    return hr;
 }
 
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void CGirderData::MakeCopy(const CGirderData& rOther)
 {
-   CopyPrestressingFrom(rOther);
-   CopyMaterialFrom(rOther);
-   CopyShearDataFrom(rOther);
-   CopyLongitudinalRebarFrom(rOther);
-   CopyHandlingDataFrom(rOther);
+   Strands = rOther.Strands;
+
+   m_bUsedShearData2     = rOther.m_bUsedShearData2;
+   ShearData             = rOther.ShearData;
+   ShearData2            = rOther.ShearData2;
+   LongitudinalRebarData = rOther.LongitudinalRebarData;
+   HandlingData          = rOther.HandlingData;
+
+   Material = rOther.Material;
 
    Condition = rOther.Condition;
    ConditionFactor = rOther.ConditionFactor;
+
+   m_GirderName = rOther.m_GirderName;
+   m_pLibraryEntry = rOther.m_pLibraryEntry;
 }
-
-void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)
-{
-   PrestressData = rOther.PrestressData;
-
-   Material.pStrandMaterial[pgsTypes::Straight]  = rOther.Material.pStrandMaterial[pgsTypes::Straight];
-   Material.pStrandMaterial[pgsTypes::Harped]    = rOther.Material.pStrandMaterial[pgsTypes::Harped];
-   Material.pStrandMaterial[pgsTypes::Temporary] = rOther.Material.pStrandMaterial[pgsTypes::Temporary];
-}
-
-void CGirderData::CopyShearDataFrom(const CGirderData& rOther)
-{
-   ShearData = rOther.ShearData;
-}
-
-void CGirderData::CopyLongitudinalRebarFrom(const CGirderData& rOther)
-{
-   LongitudinalRebarData = rOther.LongitudinalRebarData;
-}
-
-void CGirderData::CopyHandlingDataFrom(const CGirderData& rOther)
-{
-   HandlingData = rOther.HandlingData;
-}
-
-void CGirderData::CopyMaterialFrom(const CGirderData& rOther)
-{
-   Material.Type              = rOther.Material.Type;
-   Material.Fci               = rOther.Material.Fci;
-   Material.Fc                = rOther.Material.Fc;
-   Material.WeightDensity     = rOther.Material.WeightDensity;
-   Material.StrengthDensity   = rOther.Material.StrengthDensity;
-   Material.MaxAggregateSize  = rOther.Material.MaxAggregateSize;
-   Material.EcK1              = rOther.Material.EcK1;
-   Material.EcK2              = rOther.Material.EcK2;
-   Material.CreepK1           = rOther.Material.CreepK1;
-   Material.CreepK2           = rOther.Material.CreepK2;
-   Material.ShrinkageK1       = rOther.Material.ShrinkageK1;
-   Material.ShrinkageK2       = rOther.Material.ShrinkageK2;
-   Material.bUserEci          = rOther.Material.bUserEci;
-   Material.Eci               = rOther.Material.Eci;
-   Material.bUserEc           = rOther.Material.bUserEc;
-   Material.Ec                = rOther.Material.Ec;
-   Material.bHasFct           = rOther.Material.bHasFct;
-   Material.Fct               = rOther.Material.Fct;
-}
-
 
 void CGirderData::MakeAssignment(const CGirderData& rOther)
 {
    MakeCopy( rOther );
+}
+
+void CGirderData::SetGirderName(LPCTSTR strName)
+{
+   if ( m_GirderName != strName )
+      Strands.ResetPrestressData();
+
+   m_GirderName = strName;
+}
+
+LPCTSTR CGirderData::GetGirderName() const
+{
+   return m_GirderName.c_str();
+}
+
+void CGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
+{
+   m_pLibraryEntry = pEntry;
+}
+
+const GirderLibraryEntry* CGirderData::GetGirderLibraryEntry() const
+{
+   return m_pLibraryEntry;
 }

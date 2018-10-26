@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,38 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_StirrupCheckArtifact_H_
-#define INCLUDED_PGSEXT_StirrupCheckArtifact_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_MAP_
-#include <map>
-#define INCLUDED_MAP_
-#endif
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_STIRRUPCHECKATPOISARTIFACT_H_
+#include <map>
 #include <PGSExt\StirrupCheckAtPoisArtifact.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_STIRRUPCHECKATZONESARTIFACT_H_
 #include <PGSExt\StirrupCheckAtZonesArtifact.h>
-#endif
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -76,8 +50,6 @@ LOG
 class PGSEXTCLASS pgsStirrupCheckArtifact
 {
 public:
-   // GROUP: LIFECYCLE
-
    //------------------------------------------------------------------------
    // Default constructor
    pgsStirrupCheckArtifact();
@@ -90,18 +62,15 @@ public:
    // Destructor
    virtual ~pgsStirrupCheckArtifact();
 
-   // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
    pgsStirrupCheckArtifact& operator = (const pgsStirrupCheckArtifact& rOther);
 
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
 
-   void AddStirrupCheckAtPoisArtifact(const pgsStirrupCheckAtPoisArtifactKey& key,
-                                      const pgsStirrupCheckAtPoisArtifact& artifact);
-
-   const pgsStirrupCheckAtPoisArtifact* GetStirrupCheckAtPoisArtifact(const pgsStirrupCheckAtPoisArtifactKey& key) const;
+   void AddStirrupCheckAtPoisArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsStirrupCheckAtPoisArtifact& artifact);
+   CollectionIndexType GetStirrupCheckAtPoisArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   const pgsStirrupCheckAtPoisArtifact* GetStirrupCheckAtPoisArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType index) const;
+   const pgsStirrupCheckAtPoisArtifact* GetStirrupCheckAtPoisArtifactAtPOI(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,PoiIDType poiID) const;
 
    // confinement check
    void SetConfinementArtifact(const pgsConfinementArtifact& artifact);
@@ -111,74 +80,45 @@ public:
    pgsSplittingZoneArtifact* GetSplittingZoneArtifact();
    const pgsSplittingZoneArtifact* GetSplittingZoneArtifact() const;
 
-
-   Float64 GetFy() const {return m_Fy;}
-   void SetFy(Float64 fy) {m_Fy=fy;}
-   Float64 GetFc() const {return m_Fc;}
-   void SetFc(Float64 Fc) {m_Fc=Fc;}
-
    // Clear out all data
    void Clear();
 
    bool Passed() const;
 
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    //------------------------------------------------------------------------
    void MakeCopy(const pgsStirrupCheckArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsStirrupCheckArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual void MakeAssignment(const pgsStirrupCheckArtifact& rOther);
 
 private:
-   // GROUP: DATA MEMBERS
-   Float64 m_Fy;
-   Float64 m_Fc;
+   struct Key
+   {
+      IntervalIndexType intervalIdx;
+      pgsTypes::LimitState ls;
+      bool operator<(const Key& other) const
+      {
+         if ( intervalIdx < other.intervalIdx )
+            return true;
 
-   std::map<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact> m_StirrupCheckAtPoisArtifacts;
+         if ( other.intervalIdx < intervalIdx )
+            return false;
+
+         if (ls < other.ls)
+            return true;
+
+         if ( other.ls < ls)
+            return false;
+
+         return false;
+      }
+   };
+
+   mutable std::map<Key,std::vector<pgsStirrupCheckAtPoisArtifact>> m_StirrupCheckAtPoisArtifacts;
+   std::vector<pgsStirrupCheckAtPoisArtifact>& GetStirrupCheckArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
 
    pgsConfinementArtifact m_ConfinementArtifact;
 
    pgsSplittingZoneArtifact m_SplittingZoneArtifact;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PGSEXT_StirrupCheckArtifact_H_

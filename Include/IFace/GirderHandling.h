@@ -1,28 +1,12 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
-
 #ifndef INCLUDED_IFACE_GIRDERHANDLING_H_
 #define INCLUDED_IFACE_GIRDERHANDLING_H_
+
+/*****************************************************************************
+COPYRIGHT
+   Copyright © 1997-1998
+   Washington State Department Of Transportation
+   All Rights Reserved
+*****************************************************************************/
 
 // SYSTEM INCLUDES
 //
@@ -65,9 +49,9 @@ DEFINE_GUID(IID_IGirderLifting,
 interface IGirderLifting : IUnknown
 {
    // location of lifting loop measured from end of girder
-   virtual Float64 GetLeftLiftingLoopLocation(SpanIndexType span,GirderIndexType girder)=0;
-   virtual Float64 GetRightLiftingLoopLocation(SpanIndexType span,GirderIndexType girder)=0;
-   virtual bool SetLiftingLoopLocations(SpanIndexType span,GirderIndexType girder, Float64 left,Float64 right)=0;
+   virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey)=0;
+   virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey)=0;
+   virtual void SetLiftingLoopLocations(const CSegmentKey& segmentKey, Float64 left,Float64 right)=0;
 };
 
 
@@ -86,9 +70,9 @@ DEFINE_GUID(IID_IGirderHauling,
 interface IGirderHauling : IUnknown
 {
    // location of truck support location measured from end of girder
-   virtual Float64 GetLeadingOverhang(SpanIndexType span, GirderIndexType girder)=0;
-   virtual Float64 GetTrailingOverhang(SpanIndexType span, GirderIndexType girder)=0;
-   virtual bool SetTruckSupportLocations(SpanIndexType span, GirderIndexType girder, Float64 leading,Float64 trailing)=0;
+   virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey)=0;
+   virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey)=0;
+   virtual void SetTruckSupportLocations(const CSegmentKey& segmentKey, Float64 leading,Float64 trailing)=0;
 };
 
 #endif // INCLUDED_IFACE_GIRDERHANDLING_H_

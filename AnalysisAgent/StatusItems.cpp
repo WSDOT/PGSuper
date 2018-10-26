@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,10 @@
 
 #include <PgsExt\GirderLabel.h>
 
-pgsVSRatioStatusItem::pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), m_Span(span),m_Girder(gdr)
+#include <IFace\DocumentType.h>
+
+pgsVSRatioStatusItem::pgsVSRatioStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey), m_SegmentKey(segmentKey)
 {
 }
 
@@ -36,7 +38,7 @@ bool pgsVSRatioStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_Span == m_Span && other->m_Girder == m_Girder);
+   return (m_SegmentKey == other->m_SegmentKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -57,7 +59,17 @@ void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    pgsVSRatioStatusItem* pItem = dynamic_cast<pgsVSRatioStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
-   CString msg;
-   msg.Format(_T("Span %d Girder %s: %s"),LABEL_SPAN(pItem->m_Span),LABEL_GIRDER(pItem->m_Girder),pItem->GetDescription().c_str());
-   AfxMessageBox(msg);
+   GET_IFACE(IDocumentType,pDocType);
+   CString strMsg;
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      ATLASSERT(pItem->m_SegmentKey.segmentIndex == 0);
+
+      strMsg.Format(_T("Span %d Girder %s: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),pItem->GetDescription().c_str());
+   }
+   else
+   {
+      strMsg.Format(_T("Group %d Girder %s Segment %d: %s"),LABEL_SPAN(pItem->m_SegmentKey.groupIndex),LABEL_GIRDER(pItem->m_SegmentKey.girderIndex),LABEL_SEGMENT(pItem->m_SegmentKey.segmentIndex),pItem->GetDescription().c_str());
+   }
+   AfxMessageBox(strMsg);
 }

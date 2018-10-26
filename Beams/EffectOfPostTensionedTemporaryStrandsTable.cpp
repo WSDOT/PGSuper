@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,10 @@
 #include "EffectOfPostTensionedTemporaryStrandsTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,7 +51,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // create and configure the table object
    ColumnIndexType numColumns = 10;
@@ -58,20 +60,25 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
-   pgsTypes::TTSUsage tempStrandUsage = pgirderData->PrestressData.TempStrandUsage;
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   pgsTypes::TTSUsage tempStrandUsage = pStrands->TempStrandUsage;
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
 
    // gather some data
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   Float64 Eci = (tempStrandUsage == pgsTypes::ttsPTBeforeShipping ? pMaterial->GetEcGdr(span,gdr) : pMaterial->GetEciGdr(span,gdr));
-   Float64 Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   Float64 Eci = pMaterials->GetSegmentEc(segmentKey,tsInstallIntervalIdx);
+
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   Float64 Ep  = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 nEffectiveStrands;
-   Float64 ept = pStrandGeom->GetTempEccentricity( pgsPointOfInterest(span,gdr,0), &nEffectiveStrands);
-   Float64 Apt = pStrandGeom->GetStrandArea(span,gdr,pgsTypes::Temporary);
-   StrandIndexType Npt = pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Temporary);
+   Float64 ept = pStrandGeom->GetTempEccentricity( tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0), &nEffectiveStrands);
+   Float64 Apt = pStrandGeom->GetStrandArea(segmentKey,tsInstallIntervalIdx,pgsTypes::Temporary);
+   StrandIndexType Npt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
 
    // add content to chapter
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -121,14 +128,14 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    return table;
 }
 
-void CEffectOfPostTensionedTemporaryStrandsTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectOfPostTensionedTemporaryStrandsTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,2) << offset.SetValue( details.pLosses->GetLocation() );
-   (*this)(row,3) << stress.SetValue( details.pLosses->GetFptMax() );
-   (*this)(row,4) << stress.SetValue( details.pLosses->GetFptMin() );
-   (*this)(row,5) << stress.SetValue( details.pLosses->GetFptAvg() );
-   (*this)(row,6) << force.SetValue( details.pLosses->GetPptAvg() );
-   (*this)(row,7) << ecc.SetValue( details.pLosses->GetEccPermanent() );
-   (*this)(row,8) << stress.SetValue( details.pLosses->GetFcgpp() );
-   (*this)(row,9) << stress.SetValue( details.pLosses->GetDeltaFpp() );
+   (*this)(row,2) << offset.SetValue( pDetails->pLosses->GetLocation() );
+   (*this)(row,3) << stress.SetValue( pDetails->pLosses->GetFptMax() );
+   (*this)(row,4) << stress.SetValue( pDetails->pLosses->GetFptMin() );
+   (*this)(row,5) << stress.SetValue( pDetails->pLosses->GetFptAvg() );
+   (*this)(row,6) << force.SetValue( pDetails->pLosses->GetPptAvg() );
+   (*this)(row,7) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
+   (*this)(row,8) << stress.SetValue( pDetails->pLosses->GetFcgpp() );
+   (*this)(row,9) << stress.SetValue( pDetails->pLosses->GetDeltaFpp() );
 }

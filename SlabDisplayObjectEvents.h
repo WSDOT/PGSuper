@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,14 +25,13 @@
 // SlabDisplayObjectEvents.h : header file
 //
 
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 
 #include <DManip\DManip.h>
 interface IBroker;
 class CBridgeModelViewChildFrame;
-class CPGSuper;
 
-#define DECK_ID -400
+#define DECK_ID (INVALID_ID-2)
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents command target
@@ -40,7 +39,7 @@ class CPGSuper;
 class CBridgePlanViewSlabDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CBridgePlanViewSlabDisplayObjectEvents(CPGSuperDoc* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
+	CBridgePlanViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
 
 protected:
 
@@ -68,7 +67,7 @@ protected:
 private:
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
-   CPGSuperDoc* m_pDoc;
+   CPGSuperDocBase* m_pDoc;
    PierIndexType m_nPiers;
 
    bool m_bFillIfNotSelected;
@@ -87,7 +86,7 @@ private:
 class CBridgeSectionViewSlabDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CBridgeSectionViewSlabDisplayObjectEvents(CPGSuperDoc* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
+	CBridgeSectionViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
 
 protected:
 
@@ -115,7 +114,7 @@ protected:
 private:
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
-   CPGSuperDoc* m_pDoc;
+   CPGSuperDocBase* m_pDoc;
 
    bool m_bFillIfNotSelected;
 

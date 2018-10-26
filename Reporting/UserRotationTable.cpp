@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,11 +23,10 @@
 #include "StdAfx.h"
 #include <Reporting\UserRotationTable.h>
 #include <Reporting\UserMomentsTable.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,123 +68,83 @@ CUserRotationTable& CUserRotationTable::operator= (const CUserRotationTable& rOt
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
-   ATLASSERT(girder != ALL_GIRDERS);
-
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(_T("Rotations - User Defined Loads"),true,analysisType,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
+
+   PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroupIdx);
+   PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroupIdx);
+
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
-   // TRICKY: use adapter class to get correct reaction interfaces
-   std::auto_ptr<IProductReactionAdapter> pForcesAdapt =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, pgsTypes::GirderPlacement, span, girder) );
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-   // User iterator to walk locations
-   ReactionLocationIter iter = pForcesAdapt->GetReactionLocations(pBridge);
+   // get poi at start and end of each segment in the girder
+   std::vector<pgsPointOfInterest> vPoi;
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   {
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,girderKey.girderIndex));
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
+         std::vector<pgsPointOfInterest> segPoi1(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
+         std::vector<pgsPointOfInterest> segPoi2(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
+         ATLASSERT(segPoi1.size() == 1);
+         ATLASSERT(segPoi2.size() == 1);
+         vPoi.push_back(segPoi1.front());
+         vPoi.push_back(segPoi2.front());
+      }
+   }
 
+   // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for (iter.First(); !iter.IsDone(); iter.Next())
+   for ( PierIndexType pier = startPier; pier <= endPier; pier++ )
    {
       ColumnIndexType col = 0;
+      pgsPointOfInterest& poi = vPoi[pier-startPier];
 
-      const ReactionLocation& rct_locn = iter.CurrentItem();
-
-      (*p_table)(row,col++) << rct_locn.PierLabel;
-
-      // Use 1/10 point end pois to get rotation at ends of beam
-      SpanIndexType currSpan  = rct_locn.Face==rftBack ? rct_locn.Pier-1 : rct_locn.Pier;
-      PoiAttributeType poiAtt = rct_locn.Face==rftBack ? POI_10L : POI_0L;
-
-      std::vector<pgsPointOfInterest> vPois ( pPOI->GetPointsOfInterest(currSpan,girder,pgsTypes::BridgeSite3, poiAtt,POIFIND_OR) );
-      pgsPointOfInterest& poi = vPois.front();
-
-      // Use reaction decider tool to determine when to report stages
-      ReactionDecider rctdr(BearingReactionsTable, rct_locn, pBridge);
-
+      if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
+         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
+      else
+         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         if (rctdr.DoReport(pgsTypes::BridgeSite1 ))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftUserDC, poi, MaxSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftUserDC, poi, MinSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftUserDW, poi, MaxSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftUserDW, poi, MinSimpleContinuousEnvelope ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, pgsTypes::MinSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, pgsTypes::MinSimpleContinuousEnvelope ) );
 
-         if (rctdr.DoReport(pgsTypes::BridgeSite2 ))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftUserDC,    poi, MaxSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftUserDC,    poi, MinSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftUserDW,    poi, MaxSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftUserDW,    poi, MinSimpleContinuousEnvelope ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDC,    poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDC,    poi, pgsTypes::MinSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDW,    poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDW,    poi, pgsTypes::MinSimpleContinuousEnvelope ) );
          
-         if (rctdr.DoReport(pgsTypes::BridgeSite3 ))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite3, pftUserLLIM, poi, MaxSimpleContinuousEnvelope ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite3, pftUserLLIM, poi, MinSimpleContinuousEnvelope ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, pgsTypes::MinSimpleContinuousEnvelope ) );
       }
       else
       {
-         if (rctdr.DoReport(pgsTypes::BridgeSite1 ))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftUserDC, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite1, pftUserDW, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(pgsTypes::BridgeSite2 ))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftUserDC, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite2, pftUserDW,    poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-            (*p_table)(row,col++) << RPT_NA;
-         }
-
-         if (rctdr.DoReport(pgsTypes::BridgeSite3 ))
-         {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( pgsTypes::BridgeSite3, pftUserLLIM, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan ) );
-         }
-         else
-         {
-            (*p_table)(row,col++) << RPT_NA;
-         }
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDC, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDW,    poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
       }
 
       row++;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,12 +25,12 @@
 
 #include <PgsExt\GirderArtifact.h>
 #include <IFace\Bridge.h>
-#include <IFace\Allowables.h>
+#include <IFace\Intervals.h>
 #include <LRFD\VersionMgr.h>
 
 #include <vector>
 
-// TODO: Re-implement so these huge functions are not inline
+#pragma Reminder("TODO: Re-implement so these huge functions are not inline")
 
 /*****************************************************************************
 
@@ -66,364 +66,425 @@ inline const std::_tstring LimitStateName(pgsTypes::LimitState ls)
 typedef std::vector<std::_tstring> FailureList;
 typedef FailureList::iterator    FailureListIterator;
 
-inline bool flexure_stress_failures(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsGirderArtifact* pArtifact)
+inline bool flexure_stress_failures(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsSegmentArtifact* pArtifact)
 {
-   std::vector<pgsFlexuralStressArtifactKey> keys;
-   keys = pArtifact->GetFlexuralStressArtifactKeys();
-   std::vector<pgsFlexuralStressArtifactKey>::iterator iter;
-   for ( iter = keys.begin(); iter != keys.end(); iter++ )
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   CollectionIndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(intervalIdx,ls,stressType);
+   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
    {
-      pgsFlexuralStressArtifactKey key = *iter;
+      const pgsFlexuralStressArtifact* pFlexure = pArtifact->GetFlexuralStressArtifact( intervalIdx,ls,stressType,idx );
 
-      // is this they type of key we want?
-      if ( key.GetStage() != stage || key.GetLimitState() != ls || key.GetStressType() != stressType )
-         continue;
-
-      const pgsFlexuralStressArtifact* pFlexure = pArtifact->GetFlexuralStressArtifact( key );
-
-      ATLASSERT( pFlexure != NULL );
-      if ( pFlexure == NULL )
-         continue;
-
-      if( !pFlexure->Passed() )
-        return true;
+      if ( liveLoadIntervalIdx <= intervalIdx && ls == pgsTypes::ServiceIII )
+      {
+	      if( !pFlexure->BottomPassed() )
+            return true;;
+      }
+      else if ( liveLoadIntervalIdx <= intervalIdx && (ls == pgsTypes::ServiceIA || ls == pgsTypes::ServiceI || ls == pgsTypes::FatigueI )  )
+      {
+	      if( !pFlexure->TopPassed() )
+            return true;
+      }
+      else
+      {
+	      if( !pFlexure->Passed() )
+            return true;
+      }
    }
 
    return false;
 }
 
 
-inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,SpanIndexType span,GirderIndexType girder,
-                           const pgsGirderArtifact* pArtifact,bool referToDetailsReport)
+inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,
+                           const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   StrandIndexType Nt    = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary);
-   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   const pgsStrandStressArtifact* pStrandStress = pArtifact->GetStrandStressArtifact();
-   if ( !pStrandStress->Passed() )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      if (referToDetailsReport)
-         rFailures.push_back(_T("Strand Stresses [5.9.3] have been exceeded.  See the Details Report for more information"));
-      else
-         rFailures.push_back(_T("Stresses in the prestressing strands are too high."));
-   }
+      CSegmentKey segmentKey(girderKey,segIdx);
 
-   const pgsStrandSlopeArtifact* pStrandSlope = pArtifact->GetStrandSlopeArtifact();
-   if ( !pStrandSlope->Passed() )
-   {
-      rFailures.push_back(_T("Strand slope is too high."));
-   }
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
 
-   const pgsHoldDownForceArtifact* pHoldDownForce = pArtifact->GetHoldDownForceArtifact();
-   if ( !pHoldDownForce->Passed() )
-   {
-      rFailures.push_back(_T("Hold Down Force is excessive."));
-   }
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      StrandIndexType Nt    = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
-   {
-      rFailures.push_back(_T("Compressive stress check failed for Service I for the Casting Yard Stage (At Release)."));
-   }
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
+      const pgsStrandStressArtifact* pStrandStress = pArtifact->GetStrandStressArtifact();
+      if ( !pStrandStress->Passed() )
+      {
+         if (referToDetailsReport)
+            rFailures.push_back(_T("Strand Stresses [5.9.3] have been exceeded.  See the Details Report for more information"));
+         else
+            rFailures.push_back(_T("Stresses in the prestressing strands are too high."));
+      }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
-   {
-      rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release)."));
-   }
+      const pgsStrandSlopeArtifact* pStrandSlope = pArtifact->GetStrandSlopeArtifact();
+      if ( !pStrandSlope->Passed() )
+      {
+         rFailures.push_back(_T("Strand slope is too high."));
+      }
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
-   if ( pAllowable->CheckTemporaryStresses() )
-   {
+      const pgsHoldDownForceArtifact* pHoldDownForce = pArtifact->GetHoldDownForceArtifact();
+      if ( !pHoldDownForce->Passed() )
+      {
+         rFailures.push_back(_T("Hold Down Force is excessive."));
+      }
+
+      if ( flexure_stress_failures(pBroker,segmentKey,releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+      {
+         rFailures.push_back(_T("Compressive stress check failed for Service I for the Casting Yard Stage (At Release)."));
+      }
+
+      if ( flexure_stress_failures(pBroker,segmentKey,releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      {
+         rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release)."));
+      }
+
       if ( 0 < NtMax && 0 < Nt )
       {
-         if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+         if ( flexure_stress_failures(pBroker,segmentKey,tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
          {
             rFailures.push_back(_T("Compressive stress check failed for Service I for the Temporary Strand Removal Stage."));
          }
 
-         if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+         if ( flexure_stress_failures(pBroker,segmentKey,tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
          {
-            rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal Stage."));
+            rFailures.push_back(_T("Tensile stress check failed for Service I for the Temporary Strand Removal."));
          }
       }
 
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
+      if ( flexure_stress_failures(pBroker,segmentKey,castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
       {
          rFailures.push_back(_T("Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
       }
 
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      if ( flexure_stress_failures(pBroker,segmentKey,castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
       {
          rFailures.push_back(_T("Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1)."));
       }
-   }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
-   {
-      rFailures.push_back(_T("Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2)."));
-   }
-
-   if ( pAllowable->CheckFinalDeadLoadTensionStress() )
-   {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact) )
+      if ( flexure_stress_failures(pBroker,segmentKey,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
       {
-         rFailures.push_back(_T("Tension stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2)."));
+         rFailures.push_back(_T("Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2)."));
       }
-   }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
-   {
-      rFailures.push_back(_T("Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3)."));
-   }
-
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-   {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression,pArtifact) )
+      if ( flexure_stress_failures(pBroker,segmentKey,liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
       {
-         rFailures.push_back(_T("Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3)."));
+         rFailures.push_back(_T("Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3)."));
       }
-   }
 
-   if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,pArtifact) )
-   {
-      rFailures.push_back(_T("Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3)."));
-   }
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression,pArtifact) )
+      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         rFailures.push_back(_T("Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3)."));
+         if ( flexure_stress_failures(pBroker,segmentKey,liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,pArtifact) )
+         {
+            rFailures.push_back(_T("Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3)."));
+         }
+      }
+
+      if ( flexure_stress_failures(pBroker,segmentKey,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pArtifact) )
+      {
+         rFailures.push_back(_T("Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3)."));
+      }
+
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         if ( flexure_stress_failures(pBroker,segmentKey,liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,pArtifact) )
+         {
+            rFailures.push_back(_T("Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3)."));
+         }
       }
    }
 }
 
-inline bool momcap_failures(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,pgsTypes::LimitState ls,const pgsGirderArtifact* pArtifact,bool bPositiveMoment)
+inline bool momcap_failures(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
 {
-   std::vector<pgsFlexuralCapacityArtifactKey> keys;
-   keys = pArtifact->GetFlexuralCapacityArtifactKeys();
-   
-   std::vector<pgsFlexuralCapacityArtifactKey>::iterator iter;
-   for ( iter = keys.begin(); iter != keys.end(); iter++ )
+   CollectionIndexType nArtifacts = pGirderArtifact->GetFlexuralCapacityArtifactCount(intervalIdx,ls);
+   for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
-      pgsFlexuralCapacityArtifactKey key = *iter;
-
-      // is this the type of key we are after?
-      if ( key.GetStage() != stage || key.GetLimitState() != ls )
-         continue;
-
       const pgsFlexuralCapacityArtifact* pFlexure = (bPositiveMoment ? 
-         pArtifact->GetPositiveMomentFlexuralCapacityArtifact( key ) :
-         pArtifact->GetNegativeMomentFlexuralCapacityArtifact( key ) );
+         pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx ) :
+         pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx ) );
 
       if ( !pFlexure->Passed() )
          return true;
-   }
+   } // next artifact
 
    return false;
 }
 
-inline void list_momcap_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,pgsTypes::LimitState ls,const pgsGirderArtifact* pArtifact)
+inline void list_momcap_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   if ( momcap_failures(pBroker,span,girder,pgsTypes::BridgeSite3,ls,pArtifact,true) )
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
+   if ( momcap_failures(pBroker,pGirderArtifact,lastIntervalIdx,ls,true) )
    {
-      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (positive moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State")));
+      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (positive moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State for the Bridge Site Stage 3.")));
    }
 
-   if ( momcap_failures(pBroker,span,girder,pgsTypes::BridgeSite3,ls,pArtifact,false) )
+   if ( momcap_failures(pBroker,pGirderArtifact,lastIntervalIdx,ls,false) )
    {
-      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (negative moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State")));
+      rFailures.push_back(std::_tstring(_T("Ultimate moment capacity (negative moment) check failed for ")) + LimitStateName(ls) + std::_tstring(_T(" Limit State for the Bridge Site Stage 3.")));
    }
 }
 
 
-inline void list_vertical_shear_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,pgsTypes::LimitState ls,const pgsGirderArtifact* pArtifact)
+inline void list_vertical_shear_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR) );
-
-   bool bContinue1 = true;
-   bool bContinue2 = true;
-
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsPointOfInterest& poi = *poiIter;
-      const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
-      if ( pPoiArtifacts == NULL )
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
+
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
+
+      bool bContinue1 = true;
+      bool bContinue2 = true;
+
+      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
-         ATLASSERT(false); // why isn't there an artifact at this shear POI?
-         continue;
+         const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+
+         const pgsPointOfInterest& poi = pPoiArtifacts->GetPointOfInterest();
+
+         const pgsVerticalShearArtifact* pShear = pPoiArtifacts->GetVerticalShearArtifact();
+         const pgsLongReinfShearArtifact* pLongReinf = pPoiArtifacts->GetLongReinfShearArtifact();
+
+         if ( bContinue1 && !pShear->Passed() )
+         {
+            rFailures.push_back(_T("Ultimate vertical shear capacity check failed for ") + LimitStateName(ls) + _T(" Limit State for the Bridge Site Stage 3."));
+            bContinue1 = false;
+         }
+
+         if ( bContinue2 && /*pLongReinf->IsApplicable() &&*/ !pLongReinf->Passed() )
+         {
+            rFailures.push_back(_T("Longitudinal Reinforcement for Shear check failed for ") + LimitStateName(ls) + _T(" Limit State for the Bridge Site Stage 3."));
+            bContinue2 = false;
+         }
+
+         if ( !bContinue1 && !bContinue2 )
+            return;
       }
-
-      const pgsVerticalShearArtifact* pShear = pPoiArtifacts->GetVerticalShearArtifact();
-      const pgsLongReinfShearArtifact* pLongReinf = pPoiArtifacts->GetLongReinfShearArtifact();
-
-      if ( bContinue1 && !pShear->Passed() )
-      {
-         rFailures.push_back(_T("Ultimate vertical shear capacity check failed for ") + LimitStateName(ls) + _T(" Limit State"));
-         bContinue1 = false;
-      }
-
-      if ( bContinue2 && /*pLongReinf->IsApplicable() &&*/ !pLongReinf->Passed() )
-      {
-         rFailures.push_back(_T("Longitudinal Reinforcement for Shear check failed for ") + LimitStateName(ls) + _T(" Limit State"));
-         bContinue2 = false;
-      }
-
-      if ( !bContinue1 && !bContinue2 )
-         return;
-   }
+   } // next segment
 }
 
-inline void list_horizontal_shear_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,pgsTypes::LimitState ls,const pgsGirderArtifact* pArtifact)
+inline void list_horizontal_shear_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR) );
-
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsPointOfInterest& poi = *poiIter;
-      const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
-      if ( pPoiArtifacts == NULL )
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
+
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
+
+      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
-         ATLASSERT(false); // why isn't there an artifact at this shear POI?
-         continue;
+         const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+
+         const pgsHorizontalShearArtifact* pShear = pPoiArtifacts->GetHorizontalShearArtifact();
+
+         if ( !pShear->Passed() )
+         {
+            rFailures.push_back(_T("Horizontal Interface Shears/Length check failed for ") + LimitStateName(ls) + _T(" Limit State [5.8.4]."));
+            return;
+         }
+      }
+   } // next segment
+}
+
+inline void list_stirrup_detailing_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
+
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
+
+      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      {
+         const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+
+         const pgsStirrupDetailArtifact* pShear = pPoiArtifacts->GetStirrupDetailArtifact();
+    
+         if ( !pShear->Passed() )
+         {
+            rFailures.push_back(_T("Stirrup detailing checks failed for the ") + LimitStateName(ls) + _T(" Limit State."));
+            return;
+         }
+      }
+   } // next segment
+}
+
+inline void list_debonding_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsDebondArtifact* pDebond = pArtifact->GetDebondArtifact(pgsTypes::Straight);
+
+      if ( !pDebond->Passed() )
+      {
+         CString strMsg;
+         if ( 1 < nSegments )
+            strMsg.Format(_T("Debond arrangement checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+         else
+            strMsg.Format(_T("Debond arrangement checks failed."));
+
+         rFailures.push_back(strMsg.GetBuffer());
+      }
+   } // next segment
+}
+
+inline void list_splitting_zone_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
+      if ( !pBZArtifact->Passed() )
+      {
+         CString strZone( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() ? _T("Splitting") : _T("Bursting") );
+         CString strMsg;
+         if ( 1 < nSegments )
+            strMsg.Format(_T("%s zone check failed for Segment %d."),strZone,LABEL_SEGMENT(segIdx));
+         else
+            strMsg.Format(_T("%s zone check failed."),strZone);
+
+         rFailures.push_back(strMsg.GetBuffer());
+      }
+   } // next segment
+}
+
+inline void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
+      const pgsConfinementArtifact& rShear = pStirrups->GetConfinementArtifact();
+      if ( !rShear.Passed() )
+      {
+         CString strMsg;
+         if ( 1 < nSegments )
+         {
+            strMsg.Format(_T("Confinement zone checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+         }
+         else
+         {
+            strMsg.Format(_T("Confinement zone checks failed."));
+         }
+
+         rFailures.push_back(strMsg.GetBuffer());
+      }
+   } // next segment
+}
+
+
+inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+
+#pragma Reminder("UPDATE: need to list segment number in error message if multi-segment girder")
+
+      // Girder Detailing
+      const pgsPrecastIGirderDetailingArtifact* pBeamDetails = pArtifact->GetPrecastIGirderDetailingArtifact();
+      if ( !pBeamDetails->Passed() )
+      {
+         rFailures.push_back(_T("Girder Dimension Detailing check failed"));
       }
 
-      const pgsHorizontalShearArtifact* pShear = pPoiArtifacts->GetHorizontalShearArtifact();
-
-      if ( !pShear->Passed() )
+      // Constructability
+      const pgsConstructabilityArtifact* pConstruct = pArtifact->GetConstructabilityArtifact();
+      if ( !pConstruct->SlabOffsetPassed() )
       {
-         rFailures.push_back(_T("Horizontal Interface Shears/Length check failed for ") + LimitStateName(ls) + _T(" Limit State [5.8.4]."));
-         return;
-      }
-   }
-}
-
-inline void list_stirrup_detailing_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,pgsTypes::LimitState ls,const pgsGirderArtifact* pArtifact)
-{
-   const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR) );
-
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
-   {
-      const pgsPointOfInterest& poi = *poiIter;
-      const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
-      if ( pPoiArtifacts == NULL )
-      {
-         ATLASSERT(false); // why isn't there an artifact at this shear POI?
-         continue;
+         rFailures.push_back(_T("Slab Offset (\"A\" Dimension) check failed"));
       }
 
-      const pgsStirrupDetailArtifact* pShear = pPoiArtifacts->GetStirrupDetailArtifact();
- 
-      if ( !pShear->Passed() )
+      if ( !pConstruct->GlobalGirderStabilityPassed() )
       {
-         rFailures.push_back(_T("Stirrup detailing checks failed for the ") + LimitStateName(ls) + _T(" Limit State."));
-         return;
+         rFailures.push_back(_T("Global Girder Stability check failed"));
       }
-   }
-}
 
-inline void list_debonding_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
-{
-   const pgsDebondArtifact* pDebond = pArtifact->GetDebondArtifact(pgsTypes::Straight);
-
-   if ( !pDebond->Passed() )
+   if ( !pConstruct->RebarGeometryCheckPassed() )
    {
-         rFailures.push_back(_T("Debond arrangement checks failed."));
-   }
-}
-
-inline void list_splitting_zone_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
-{
-   const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
-   if ( !pBZArtifact->Passed() )
-   {
-      if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
-         rFailures.push_back(_T("Splitting zone check failed."));
-      else
-         rFailures.push_back(_T("Bursting zone check failed."));
-   }
-}
-
-inline void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
-{
-   const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-
-   const pgsConfinementArtifact& rShear = pStirrups->GetConfinementArtifact();
-
-   if ( !rShear.Passed() )
-   {
-      rFailures.push_back(_T("Confinement zone check failed."));
-      return;
-   }
-}
-
-
-inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact,bool referToDetails)
-{
-   // Girder Detailing
-   const pgsPrecastIGirderDetailingArtifact* pBeamDetails = pArtifact->GetPrecastIGirderDetailingArtifact();
-   if ( !pBeamDetails->Passed() )
-   {
-      rFailures.push_back(_T("Girder Dimension Detailing check failed"));
+      rFailures.push_back(_T("Rebars are located outside of the girder section. Rebar geometry check failed"));
    }
 
-   // Constructability
-   const pgsConstructabilityArtifact* pConstruct = pArtifact->GetConstructabilityArtifact();
-   if ( !pConstruct->SlabOffsetPassed() )
-   {
-      rFailures.push_back(_T("Slab Offset (\"A\" Dimension) check failed"));
-   }
+      // Lifting
+      const pgsLiftingAnalysisArtifact* pLifting = pArtifact->GetLiftingAnalysisArtifact();
+      if (pLifting!=NULL && !pLifting->Passed() )
+      {
+         rFailures.push_back(_T("Lifting checks failed"));
+      }
 
-   if ( !pConstruct->GlobalGirderStabilityPassed() )
-   {
-      rFailures.push_back(_T("Global Girder Stability check failed"));
-   }
+      // Hauling
+      const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
+      if (pHauling!=NULL && !pHauling->Passed() )
+      {
+         rFailures.push_back(_T("Hauling checks failed"));
+      }
 
-   if ( !pConstruct->BottomFlangeClearancePassed() )
-   {
-      rFailures.push_back(_T("Bottom flange clearance check failed"));
-   }
-
-   // Lifting
-   const pgsLiftingAnalysisArtifact* pLifting = pArtifact->GetLiftingAnalysisArtifact();
-   if (pLifting!=NULL && !pLifting->Passed() )
-   {
-      rFailures.push_back(_T("Lifting checks failed"));
-   }
-
-   // Hauling
-   const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
-   if (pHauling!=NULL && !pHauling->Passed() )
-   {
-      rFailures.push_back(_T("Hauling checks failed"));
-   }
-
-   // Live Load Deflection
-   const pgsDeflectionCheckArtifact* pDef = pArtifact->GetDeflectionCheckArtifact();
-   if (pDef!=NULL && !pDef->Passed())
-   {
-      if (referToDetails)
-         rFailures.push_back(_T("Live Load Deflection check failed. Refer to the Details or Specification Check Report for more information"));
-      else
-         rFailures.push_back(_T("Live Load Deflection check failed"));
-   }
+      // Live Load Deflection
+   #pragma Reminder("UPDATE: Need to fix deflection check failure notice")
+      // commented out because deflection checks are now done on the girder level, not the segment level
+      //
+      //const pgsDeflectionCheckArtifact* pDef = pArtifact->GetDeflectionCheckArtifact();
+      //if (pDef!=NULL && !pDef->Passed())
+      //{
+      //   if (referToDetails)
+      //      rFailures.push_back(_T("Live Load Deflection check failed. Refer to the Details or Specification Check Report for more information"));
+      //   else
+      //      rFailures.push_back(_T("Live Load Deflection check failed"));
+      //}
+   } // next segment
 }
 
 

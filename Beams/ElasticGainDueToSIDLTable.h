@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <IFace\AnalysisResults.h>
 
 class lrfdLosses;
@@ -37,17 +37,16 @@ class lrfdLosses;
 class CElasticGainDueToSIDLTable : public rptRcTable
 {
 public:
-	static CElasticGainDueToSIDLTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CElasticGainDueToSIDLTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CElasticGainDueToSIDLTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
 
-   BridgeAnalysisType m_BAT;
+   pgsTypes::BridgeAnalysisType m_BAT;
    bool m_bHasUserLoads;
    bool m_bHasSidewalk;
    bool m_bHasOverlay;
-   pgsTypes::Stage m_OverlayStage;
    rptRcScalar scalar;
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );

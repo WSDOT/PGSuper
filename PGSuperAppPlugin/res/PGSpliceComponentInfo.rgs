@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperLibrary.PGSpliceComponentInfo.1 = s 'PGSplice Component Information'
+	{
+		CLSID = s '{52160B92-F03C-495c-A149-CDF1068E99E3}'
+	}
+	PGSuperLibrary.PGSpliceComponentInfo = s 'PGSplice Component Information'
+	{
+		CLSID = s '{352160B92-F03C-495c-A149-CDF1068E99E3}'
+		CurVer = s 'PGSuperLibrary.PGSpliceComponentInfo.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {52160B92-F03C-495c-A149-CDF1068E99E3} = s 'PGSplice Component Information'
+		{
+			ProgID = s 'PGSuperLibrary.PGSpliceComponentInfo.1'
+			VersionIndependentProgID = s 'PGSpliceComponentInfo.PGSuperComponentInfo'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

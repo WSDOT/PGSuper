@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,6 @@
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
 
@@ -52,8 +51,9 @@ LOG
 class REPORTINGCLASS CProductReactionTable
 {
 public:
-   // This class serves dual duty. It can report pier reactions or girder bearing reactions.
+   // This class serves double duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
+   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    // GROUP: LIFECYCLE
 
@@ -78,8 +78,8 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             ReactionTableType type, bool bIncludedImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,
+   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                             TableType type, bool bIncludedImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,
                              IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -93,7 +93,7 @@ protected:
    void MakeCopy(const CProductReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CProductReactionTable& rOther);
+   virtual void MakeAssignment(const CProductReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

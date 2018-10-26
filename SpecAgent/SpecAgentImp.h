@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@
 
 #include <EAF\EAFInterfaceCache.h>
 #include <IFace\ResistanceFactors.h>
-#include <IFace\InterfaceShearRequirements.h>
 
 class GirderLibraryEntry;
 class SpecLibraryEntry;
@@ -42,15 +41,14 @@ class ATL_NO_VTABLE CSpecAgentImp :
 	public IConnectionPointContainerImpl<CSpecAgentImp>,
 	public IAgentEx,
    public IAllowableStrandStress,
+   public IAllowableTendonStress,
    public IAllowableConcreteStress,
    public ITransverseReinforcementSpec,
    public IPrecastIGirderDetailsSpec,
-   public IGirderHaulingSpecCriteriaEx,
-   public IKdotGirderHaulingSpecCriteria,
-   public IGirderLiftingSpecCriteriaEx,
+   public IGirderHaulingSpecCriteria,
+   public IGirderLiftingSpecCriteria,
    public IDebondLimits,
-   public IResistanceFactors,
-   public IInterfaceShearRequirements
+   public IResistanceFactors
 {
 public:
 	CSpecAgentImp()
@@ -64,17 +62,14 @@ BEGIN_COM_MAP(CSpecAgentImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IAllowableStrandStress)
+   COM_INTERFACE_ENTRY(IAllowableTendonStress)
    COM_INTERFACE_ENTRY(IAllowableConcreteStress)
    COM_INTERFACE_ENTRY(ITransverseReinforcementSpec)
    COM_INTERFACE_ENTRY(IPrecastIGirderDetailsSpec)
    COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteria)
-   COM_INTERFACE_ENTRY(IGirderLiftingSpecCriteriaEx)
    COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteria)
-   COM_INTERFACE_ENTRY(IGirderHaulingSpecCriteriaEx)
-   COM_INTERFACE_ENTRY(IKdotGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IDebondLimits)
    COM_INTERFACE_ENTRY(IResistanceFactors)
-   COM_INTERFACE_ENTRY(IInterfaceShearRequirements)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -98,30 +93,26 @@ public:
    virtual bool CheckStressBeforeXfer();
    virtual bool CheckStressAfterXfer();
    virtual bool CheckStressAfterLosses();
-   virtual Float64 GetAllowableAtJacking(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-   virtual Float64 GetAllowableBeforeXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-   virtual Float64 GetAllowableAfterXfer(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-   virtual Float64 GetAllowableAfterLosses(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+   virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
+
+// IAllowableTendonStress
+public:
+   virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey);
+   virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey);
 
 // IAllowableConcreteStress
 public:
-   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type);
-   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type);
-   virtual Float64 GetAllowableStress(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
-   virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls);
-   virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
-   virtual Float64 GetCastingYardAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
-   virtual Float64 GetBridgeSiteAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
-   virtual Float64 GetInitialAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,Float64 fci);
-   virtual Float64 GetInitialAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,Float64 fci, bool useMinRebar);
-   virtual Float64 GetFinalAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc);
-   virtual Float64 GetFinalAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage, Float64 fc);
-   virtual Float64 GetCastingYardAllowableTensionStressCoefficientWithRebar();
-   virtual Float64 GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar();
-   virtual bool CheckTemporaryStresses();
-   virtual bool CheckFinalDeadLoadTensionStress();
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement);
+   virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,bool bWithBondedReinforcement);
+   virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc,bool bWithBondedReinforcement);
+
+   virtual Float64 GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls);
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
 
 // ITransverseReinforcementSpec
 public:
@@ -131,8 +122,7 @@ public:
    virtual matRebar::Size GetMinConfinmentBarSize();
    virtual Float64 GetMaxConfinmentBarSpacing();
    virtual Float64 GetMinConfinmentAvS();
-   virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy); // obsolete
-   virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit);
+   virtual void GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit);
    virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter);
 
 // IPrecastIGirderDetailsSpec
@@ -143,46 +133,42 @@ public:
 
 // IGirderLiftingSpecCriteria
 public:
-   virtual bool IsLiftingCheckEnabled() const;
+   virtual bool IsLiftingAnalysisEnabled() const;
    virtual void GetLiftingImpact(Float64* pDownward, Float64* pUpward) const;
    virtual Float64 GetLiftingCrackingFs() const;
    virtual Float64 GetLiftingFailureFs() const;
-   virtual Float64 GetLiftingAllowableTensileConcreteStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetLiftingAllowableCompressiveConcreteStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetLiftingAllowableTensileConcreteStress(const CSegmentKey& segmentKey);
+   virtual Float64 GetLiftingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingAllowableCompressionFactor();
    virtual Float64 GetLiftingAllowableTensionFactor();
    virtual Float64 GetHeightOfPickPointAboveGirderTop() const;
    virtual Float64 GetLiftingLoopPlacementTolerance() const;
    virtual Float64 GetLiftingCableMinInclination() const;
    virtual Float64 GetLiftingSweepTolerance()const;
-   virtual Float64 GetLiftingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetLiftingWithMildRebarAllowableStress(const CSegmentKey& segmentKey);
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor();
    virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
-   virtual Float64 GetLiftingAllowableTensileConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci, bool includeRebar);
-   virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci);
-   virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
-   virtual Float64 GetLiftingPointLocationAccuracy() const;
-
-// IGirderLiftingSpecCriteriaEx
-public:
+   virtual Float64 GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool includeRebar);
+   virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci);
+   virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey);
+   virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
    virtual Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
-   virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr,Float64 fci,pgsTypes::ConcreteType concType);
+   virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
+   virtual Float64 GetLiftingPointLocationAccuracy() const;
 
 // IGirderHaulingSpecCriteria
 public:
-   virtual bool IsHaulingCheckEnabled() const;
-   virtual pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
+   virtual bool IsHaulingAnalysisEnabled() const;
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const;
    virtual Float64 GetHaulingCrackingFs() const;
    virtual Float64 GetHaulingRolloverFs() const;
    virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
-   virtual Float64 GetHaulingAllowableTensileConcreteStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetHaulingAllowableCompressiveConcreteStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey);
+   virtual Float64 GetHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey);
    virtual Float64 GetHaulingAllowableTensionFactor();
    virtual Float64 GetHaulingAllowableCompressionFactor();
-   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(SpanIndexType span,GirderIndexType gdr,Float64 fc, bool includeRebar);
-   virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(SpanIndexType span,GirderIndexType gdr,Float64 fc);
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar);
+   virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc);
    virtual IGirderHaulingSpecCriteria::RollStiffnessMethod GetRollStiffnessMethod() const;
    virtual Float64 GetLumpSumRollStiffness() const;
    virtual Float64 GetAxleWeightLimit() const;
@@ -198,59 +184,38 @@ public:
    virtual Float64 GetAllowableDistanceBetweenSupports() const;
    virtual Float64 GetAllowableLeadingOverhang() const;
    virtual Float64 GetMaxGirderWgt() const;
-   virtual Float64 GetHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey);
    virtual Float64 GetHaulingWithMildRebarAllowableStressFactor();
-   virtual Float64 GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetMinimumHaulingSupportLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
-   virtual Float64 GetHaulingSupportLocationAccuracy() const;
-
-// IGirderHaulingSpecCriteriaEx
-public:
+   virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey);
+   virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType);
    virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType);
-   virtual Float64 GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr,Float64 fci,pgsTypes::ConcreteType concType);
-
-// IKdotGirderHaulingSpecCriteria
-public:
-   // Spec criteria for KDOT analyses
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetKdotHaulingAllowableTensionFactor();
-   virtual Float64 GetKdotHaulingAllowableCompressionFactor();
-   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor();
-   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(SpanIndexType span,GirderIndexType gdr,Float64 fc, bool includeRebar);
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(SpanIndexType span,GirderIndexType gdr,Float64 fc);
-   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const;
-   virtual Float64 GetHaulingDesignLocationAccuracy() const;
-   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const;
+   virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const;
+   virtual Float64 GetHaulingSupportLocationAccuracy() const;
 
 // IDebondLimits
 public:
-   virtual Float64 GetMaxDebondedStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual Float64 GetMaxDebondedStrandsPerRow(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual Float64 GetMaxDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual void GetMaxDebondLength(SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pLen, pgsTypes::DebondLengthControl* pControl); 
-   virtual Float64 GetMinDebondSectionDistance(SpanIndexType spanIdx,GirderIndexType gdrIdx); 
+   virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey);
+   virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey);
+   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey);
+   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey);
+   virtual void GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl); 
+   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey); 
 
 // IResistanceFactors
 public:
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
-   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl);
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 
-// IInterfaceShearRequirements 
-public:
-   virtual ShearFlowMethod GetShearFlowMethod();
-   virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi);
 
 private:
    DECLARE_AGENT_DATA;
 
-   const GirderLibraryEntry* GetGirderEntry(SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
+   const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;
+
+   Float64 GetAllowableCompressiveStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc);
+   Float64 GetAllowableTensileStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc, bool bWithBondedReinforcement);
 };
 
 #endif //__SPECAGENT_H_

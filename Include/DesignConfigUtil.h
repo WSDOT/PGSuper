@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include <PGSuperTypes.h>
 #include <LRFD\RebarPool.h>
 #include <IFace\Bridge.h>
+
+#pragma Reminder("UPDATE: too many inline functions") // CLEAN THIS UP!!!!
 
 // Various utility functions that operate on CONFIG objects in PGSuperTypes.h
 
@@ -81,12 +83,12 @@ inline ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrand
 }
 
 inline ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
-                                                        SpanIndexType span, GirderIndexType gdr, 
+                                                        const CSegmentKey& segmentKey, 
                                                         const DirectStrandFillCollection& coll)
 {
    // start with unfilled grid (0 strands)
-   ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(span, gdr, type, 0));
-   GridIndexType gridsize = vec.size();
+   ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(segmentKey, type, 0));
+   StrandIndexType gridsize = vec.size();
 
    DirectStrandFillCollection::const_iterator it = coll.begin();
    DirectStrandFillCollection::const_iterator itend = coll.end();
@@ -209,12 +211,12 @@ ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Flo
    {
       bool on_left=true;
 
-      if (location>girderLength/2.)  // zones are symmetric about mid-span
+      if (girderLength/2. < location)  // zones are symmetric about mid-span
       {
          location = girderLength-location;
          on_left=false;
       }
-      CHECK(location>=0);
+      ATLASSERT(0 <= location);
 
       Float64 end_dist;
       if (on_left)
@@ -643,21 +645,21 @@ inline void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matReba
    }
 }
 
-inline void WriteShearDataToStirrupConfig(const CShearData& rShearData, STIRRUPCONFIG& rConfig)
+inline void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG& rConfig)
 {
-   rConfig.bAreZonesSymmetrical = rShearData.bAreZonesSymmetrical;
-   rConfig.bIsRoughenedSurface = rShearData.bIsRoughenedSurface;
-   rConfig.bUsePrimaryForSplitting = rShearData.bUsePrimaryForSplitting;
+   rConfig.bAreZonesSymmetrical    = pShearData->bAreZonesSymmetrical;
+   rConfig.bIsRoughenedSurface     = pShearData->bIsRoughenedSurface;
+   rConfig.bUsePrimaryForSplitting = pShearData->bUsePrimaryForSplitting;
 
    lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
 
    // Primary zones
    rConfig.ShearZones.clear();
-   CShearData::ShearZoneConstIterator sz_it(rShearData.ShearZones.begin());
-   CShearData::ShearZoneConstIterator sz_end(rShearData.ShearZones.end());
+   CShearData2::ShearZoneConstIterator sz_it(pShearData->ShearZones.begin());
+   CShearData2::ShearZoneConstIterator sz_end(pShearData->ShearZones.end());
    while(sz_it != sz_end)
    {
-      const CShearZoneData& sz_data = *sz_it;
+      const CShearZoneData2& sz_data = *sz_it;
 
       STIRRUPCONFIG::SHEARZONEDATA SZ_data;
       SZ_data.ZoneLength         = sz_data.ZoneLength;
@@ -669,7 +671,7 @@ inline void WriteShearDataToStirrupConfig(const CShearData& rShearData, STIRRUPC
 
       if(sz_data.VertBarSize!=matRebar::bsNone)
       {
-         const matRebar* pRebar = prp->GetRebar(rShearData.ShearBarType,rShearData.ShearBarGrade,sz_data.VertBarSize);
+         const matRebar* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,sz_data.VertBarSize);
          SZ_data.VertABar = pRebar->GetNominalArea();
       }
       else
@@ -684,8 +686,8 @@ inline void WriteShearDataToStirrupConfig(const CShearData& rShearData, STIRRUPC
 
    // Horizontal interface zones
    rConfig.HorizontalInterfaceZones.clear();
-   CShearData::HorizontalInterfaceZoneConstIterator hi_it(rShearData.HorizontalInterfaceZones.begin());
-   CShearData::HorizontalInterfaceZoneConstIterator hi_end(rShearData.HorizontalInterfaceZones.end());
+   CShearData2::HorizontalInterfaceZoneConstIterator hi_it(pShearData->HorizontalInterfaceZones.begin());
+   CShearData2::HorizontalInterfaceZoneConstIterator hi_end(pShearData->HorizontalInterfaceZones.end());
    while(hi_it != hi_end)
    {
       const CHorizontalInterfaceZoneData& hi_data = *hi_it;
@@ -698,7 +700,7 @@ inline void WriteShearDataToStirrupConfig(const CShearData& rShearData, STIRRUPC
 
       if(hi_data.BarSize!=matRebar::bsNone)
       {
-         const matRebar* pRebar = prp->GetRebar(rShearData.ShearBarType,rShearData.ShearBarGrade,hi_data.BarSize);
+         const matRebar* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,hi_data.BarSize);
          HI_data.ABar = pRebar->GetNominalArea();
       }
       else
@@ -712,15 +714,15 @@ inline void WriteShearDataToStirrupConfig(const CShearData& rShearData, STIRRUPC
    }
 
    // Splitting (additional)
-   rConfig.SplittingBarSize = rShearData.SplittingBarSize;
-   rConfig.SplittingBarSpacing = rShearData.SplittingBarSpacing;
-   rConfig.SplittingZoneLength = rShearData.SplittingZoneLength;
-   rConfig.nSplittingBars = rShearData.nSplittingBars;
+   rConfig.SplittingBarSize    = pShearData->SplittingBarSize;
+   rConfig.SplittingBarSpacing = pShearData->SplittingBarSpacing;
+   rConfig.SplittingZoneLength = pShearData->SplittingZoneLength;
+   rConfig.nSplittingBars      = pShearData->nSplittingBars;
 
    // Confinement (additional)
-   rConfig.ConfinementBarSize = rShearData.ConfinementBarSize;
-   rConfig.ConfinementBarSpacing = rShearData.ConfinementBarSpacing;
-   rConfig.ConfinementZoneLength = rShearData.ConfinementZoneLength;
+   rConfig.ConfinementBarSize    = pShearData->ConfinementBarSize;
+   rConfig.ConfinementBarSpacing = pShearData->ConfinementBarSpacing;
+   rConfig.ConfinementZoneLength = pShearData->ConfinementZoneLength;
 }
 
 inline bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
@@ -744,80 +746,6 @@ inline bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
 
    return true;
 }
-
-// Some other utilities for dealing with strands. Perhaps we should have called this file strandutil.h
-inline ConfigStrandFillVector ComputeHarpedStrandFillVector(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
-{
-   if (rgdata.PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
-   {
-      ConfigStrandFillVector vec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
-                                   span, gdr,
-                                   *rgdata.PrestressData.GetDirectStrandFillHarped());
-
-      return vec;
-   }
-   else
-   {
-      // Num harped is in a control
-      StrandIndexType Nh = rgdata.PrestressData.GetNstrands(pgsTypes::Harped);
-
-      return pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, Nh);
-   }
-}
-
-inline void DealWithLegacyEndHarpedStrandAdjustment(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
-{
-   // New girder types are given legacy status so we must modify data here
-   if(rgdata.PrestressData.HsoEndMeasurement==hsoLEGACY)
-   {
-      if(rgdata.PrestressData.GetNstrands(pgsTypes::Harped) > 0)
-      {
-         ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(span, gdr, rgdata, pStrandGeometry);
-
-         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(span, gdr, fill,
-                                                                               rgdata.PrestressData.HsoEndMeasurement, 
-                                                                               rgdata.PrestressData.HpOffsetAtEnd);
-
-         Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, fill,
-                                                                                   hsoCGFROMTOP, absol_offset);
-
-         rgdata.PrestressData.HpOffsetAtEnd = topcg_offset;
-      }
-
-      rgdata.PrestressData.HsoEndMeasurement = hsoCGFROMTOP;
-   }
-}
-
-inline void DealWithLegacyHpHarpedStrandAdjustment(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
-{
-   // New girder types are given legacy status so we must modify data here for UI
-   if(rgdata.PrestressData.HsoHpMeasurement==hsoLEGACY)
-   {
-      if(rgdata.PrestressData.GetNstrands(pgsTypes::Harped) > 0)
-      {
-         ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(span, gdr, rgdata, pStrandGeometry);
-
-         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(span, gdr, fill,
-                                                                               rgdata.PrestressData.HsoHpMeasurement, 
-                                                                               rgdata.PrestressData.HpOffsetAtHp);
-
-         Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr, fill,
-                                                                                   hsoCGFROMBOTTOM, absol_offset);
-
-         rgdata.PrestressData.HpOffsetAtHp     = botcg_offset;
-      }
-
-      rgdata.PrestressData.HsoHpMeasurement = hsoCGFROMBOTTOM;
-   }
-}
-
-inline void DealWithLegacyHarpedStrandAdjustment(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
-{
-   DealWithLegacyEndHarpedStrandAdjustment(span, gdr, rgdata, pStrandGeometry);
-   DealWithLegacyHpHarpedStrandAdjustment(span, gdr, rgdata, pStrandGeometry);
-}
-
-
 // NOTE: The method below could be useful to a design algorithm sometime in the future.
 /*
 inline void  WriteLongitudinalRebarDataToConfig(const CLongitudinalRebarData& rRebarData, LONGITUDINALREBARCONFIG& rConfig)

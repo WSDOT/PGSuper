@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -214,7 +214,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CLLDFGrid::AddGirderRow(GirderIndexType gdr, const CSpanData* pSpan)
+void CLLDFGrid::AddGirderRow(GirderIndexType gdr, const CSpanData2* pSpan)
 {
    GetParam()->EnableUndo(FALSE);
 
@@ -275,7 +275,7 @@ void CLLDFGrid::AddGirderRow(GirderIndexType gdr, const CSpanData* pSpan)
    GetParam()->EnableUndo(TRUE);
 }
 
-void CLLDFGrid::GetGirderRow(GirderIndexType gdr, CSpanData* pSpan)
+void CLLDFGrid::GetGirderRow(GirderIndexType gdr, CSpanData2* pSpan)
 {
    ROWCOL row = ROWCOL(gdr + 2);
 
@@ -317,29 +317,30 @@ CString CLLDFGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         return GetValueRowCol(nRow, nCol);
 }
 
-void CLLDFGrid::FillGrid(const CBridgeDescription* pBridgeDesc)
+void CLLDFGrid::FillGrid(const CBridgeDescription2* pBridgeDesc)
 {
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(m_SpanIdx);
-   GirderIndexType ngdrs = pSpan->GetGirderCount();
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_SpanIdx);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
 
-   for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
+   for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
-      AddGirderRow(igdr, pSpan);
+      AddGirderRow(gdrIdx, pSpan);
    }
 
    SetCurrentCell(2,1);
    Enable(m_bEnabled);
 }
 
-void CLLDFGrid::GetData(CBridgeDescription* pBridgeDesc)
+void CLLDFGrid::GetData(CBridgeDescription2* pBridgeDesc)
 {
-   CSpanData* pSpan = pBridgeDesc->GetSpan(m_SpanIdx);
+   CSpanData2* pSpan = pBridgeDesc->GetSpan(m_SpanIdx);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
 
-   GirderIndexType ngdrs = pSpan->GetGirderCount();
-
-   for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
+   for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
-      GetGirderRow(igdr, pSpan);
+      GetGirderRow(gdrIdx, pSpan);
    }
 }
 
@@ -482,7 +483,7 @@ BOOL CLLDFGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	   CGXControl* pControl = GetControl(nRow, nCol);
 	   pControl->GetCurrentText(s);
 
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 	   {
 		   SetWarningText (_T("Distribution factor value must be a non-negative number"));

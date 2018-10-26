@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,30 +69,7 @@ BEGIN_MESSAGE_MAP(CSpecLimitsPage, CPropertyPage)
 		// NOTE: the ClassWizard will add message map macros here
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
-   ON_BN_CLICKED(IDC_CHECK_GIRDER_SAG, &CSpecLimitsPage::OnBnClickedCheckGirderSag)
 END_MESSAGE_MAP()
-
-BOOL CSpecLimitsPage::OnInitDialog()
-{
-   CComboBox* pcbSagOptions = (CComboBox*)GetDlgItem(IDC_SAG_OPTIONS);
-   int idx = pcbSagOptions->AddString(_T("Upper bound camber"));
-   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::UpperBoundCamber);
-
-   idx = pcbSagOptions->AddString(_T("Average camber"));
-   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::AverageCamber);
-
-   idx = pcbSagOptions->AddString(_T("Lower bound camber"));
-   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::LowerBoundCamber);
-
-   CPropertyPage::OnInitDialog();
-
-   OnBnClickedCheckGirderSag();
-
-   // TODO:  Add extra initialization here
-
-   return TRUE;  // return TRUE unless you set the focus to a control
-   // EXCEPTION: OCX Property Pages should return FALSE
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecLimitsPage message handlers
@@ -100,11 +77,4 @@ LRESULT CSpecLimitsPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_SPEC_LIMITS );
    return TRUE;
-}
-
-void CSpecLimitsPage::OnBnClickedCheckGirderSag()
-{
-   // TODO: Add your control notification handler code here
-   BOOL bEnable = (IsDlgButtonChecked(IDC_CHECK_GIRDER_SAG) == BST_CHECKED) ? TRUE : FALSE;
-   GetDlgItem(IDC_SAG_OPTIONS)->EnableWindow(bEnable);
 }

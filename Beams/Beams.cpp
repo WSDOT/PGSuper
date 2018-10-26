@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,15 +51,11 @@
 #include "BoxBeamFactory2.h"
 #include "TxDotDoubleTFactory.h"
 #include "DeckedSlabBeamFactory.h"
-
-#include "IBeamDistFactorEngineer.h"
-#include "BoxBeamDistFactorEngineer.h"
-#include "BulbTeeDistFactorEngineer.h"
-#include "UBeamDistFactorEngineer.h"
-#include "MultiWebDistFactorEngineer.h"
-#include "VoidedSlabDistFactorEngineer.h"
 #include "VoidedSlab2DistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
+
+#include "SplicedIBeamFactoryImpl.h"
+#include "SplicedUBeamFactory.h"
 
 #include <Plugins\Beams.h>
 #include <Plugins\Beams_i.c>
@@ -71,6 +67,7 @@
 #include <WBFLGenericBridgeTools_i.c>
 
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
 #include <IFace\Bridge.h>
@@ -84,10 +81,9 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace\Intervals.h>
 
 #include "StrandMoverImpl.h"
-
-#include <Beams\Helper.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,59 +92,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CComModule _Module;
-
-#define BEGIN_BEAM_FACTORY_LIST static const std::pair<CLSID,CATID> gs_Beams[] = {
-#define BEAM_FACTORY(_ClassID_,_CatID_) std::make_pair(_ClassID_,_CatID_),
-#define END_BEAM_FACTORY_LIST };
-
-BEGIN_BEAM_FACTORY_LIST
-   // I-beam factories
-   BEAM_FACTORY(CLSID_WFBeamFactory,       CATID_WFBeamFactory)
-   BEAM_FACTORY(CLSID_NUBeamFactory,       CATID_WFBeamFactory)
-   BEAM_FACTORY(CLSID_TaperedIBeamFactory, CATID_WFBeamFactory)
-
-   // U-beam factories
-   BEAM_FACTORY(CLSID_UBeamFactory,        CATID_UBeamFactory)
-   BEAM_FACTORY(CLSID_UBeam2Factory,       CATID_UBeamFactory)
-
-   // Deck bulb tee factories
-   BEAM_FACTORY(CLSID_BulbTeeFactory,      CATID_DeckBulbTeeBeamFactory)
-
-   // Double-tee factories
-   BEAM_FACTORY(CLSID_DoubleTeeFactory,    CATID_DoubleTeeBeamFactory)
-   BEAM_FACTORY(CLSID_TxDotDoubleTFactory, CATID_DoubleTeeBeamFactory)
-   BEAM_FACTORY(CLSID_MultiWeb2Factory,    CATID_DoubleTeeBeamFactory)
-
-   // Ribbed beam factories
-   BEAM_FACTORY(CLSID_MultiWebFactory,     CATID_RibbedBeamFactory)
-
-   // Slab factories
-   BEAM_FACTORY(CLSID_VoidedSlabFactory,   CATID_SlabBeamFactory)
-   BEAM_FACTORY(CLSID_VoidedSlab2Factory,  CATID_SlabBeamFactory)
-
-   // box beam factories
-   BEAM_FACTORY(CLSID_BoxBeamFactory,       CATID_BoxBeamFactory)
-   BEAM_FACTORY(CLSID_BoxBeam2Factory,      CATID_BoxBeamFactory)
-
-   // decked slab beam factories
-   BEAM_FACTORY(CLSID_DeckedSlabBeamFactory,      CATID_DeckedSlabBeamFactory)
-END_BEAM_FACTORY_LIST
-
-IndexType GetBeamTypeCount()
-{
-   return sizeof(gs_Beams)/sizeof(gs_Beams[0]);
-}
-
-CLSID GetBeamCLSID(IndexType index)
-{
-   return gs_Beams[index].first;
-}
-
-CATID GetBeamCATID(IndexType index)
-{
-   return gs_Beams[index].second;
-}
-
 
 BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(CLSID_WFBeamFactory,     CIBeamFactory)
@@ -162,10 +105,13 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
    OBJECT_ENTRY(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
    OBJECT_ENTRY(CLSID_BoxBeamFactory,    CBoxBeamFactory)
-   OBJECT_ENTRY(CLSID_BoxBeam2Factory,    CBoxBeamFactory2)
+   OBJECT_ENTRY(CLSID_BoxBeamFactory2,    CBoxBeamFactory2)
    OBJECT_ENTRY(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
 	OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
 	OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory,CDeckedSlabBeamFactory)
+
+   OBJECT_ENTRY(CLSID_SplicedIBeamFactory,   CSplicedIBeamFactory)
+   OBJECT_ENTRY(CLSID_SplicedUBeamFactory,   CSplicedUBeamFactory)
 
    OBJECT_ENTRY(CLSID_WFBeamFamily,          CIBeamFamily)
    OBJECT_ENTRY(CLSID_UBeamFamily,           CUBeamFamily)
@@ -176,14 +122,8 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_SlabBeamFamily,        CSlabBeamFamily)
    OBJECT_ENTRY(CLSID_DeckedSlabBeamFamily,  CDeckedSlabBeamFamily)
 
-
-   OBJECT_ENTRY(CLSID_BoxBeamDistFactorEngineer, CBoxBeamDistFactorEngineer)
-   OBJECT_ENTRY(CLSID_BulbTeeDistFactorEngineer, CBulbTeeDistFactorEngineer)
-   OBJECT_ENTRY(CLSID_MultiWebDistFactorEngineer, CMultiWebDistFactorEngineer)
-   OBJECT_ENTRY(CLSID_IBeamDistFactorEngineer, CIBeamDistFactorEngineer)
-   OBJECT_ENTRY(CLSID_UBeamDistFactorEngineer, CUBeamDistFactorEngineer)
-   OBJECT_ENTRY(CLSID_VoidedSlabDistFactorEngineer, CVoidedSlabDistFactorEngineer)
-   OBJECT_ENTRY(CLSID_VoidedSlab2DistFactorEngineer, CVoidedSlab2DistFactorEngineer)
+   OBJECT_ENTRY(CLSID_SplicedIBeamFamily,    CSplicedIBeamFamily)
+   OBJECT_ENTRY(CLSID_SplicedUBeamFamily,    CSplicedUBeamFamily)
 
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
    OBJECT_ENTRY(CLSID_PsBeamLossEngineer,CPsBeamLossEngineer)
@@ -262,6 +202,9 @@ void Register(bool bRegister)
       sysComCatMgr::CreateCategory(L"PGSuper Slab Beam Factories",          CATID_SlabBeamFactory);
       sysComCatMgr::CreateCategory(L"PGSuper Box Beam Factories",           CATID_BoxBeamFactory);
       sysComCatMgr::CreateCategory(L"PGSuper Decked Slab Beam Factories",   CATID_DeckedSlabBeamFactory);
+
+      sysComCatMgr::CreateCategory(L"PGSplice I-Beam Factories",            CATID_SplicedIBeamFactory);
+      sysComCatMgr::CreateCategory(L"PGSplice U-Beam Factories",            CATID_SplicedUBeamFactory);
    }
    else
    {
@@ -273,30 +216,73 @@ void Register(bool bRegister)
       sysComCatMgr::RemoveCategory(CATID_SlabBeamFactory,true);
       sysComCatMgr::RemoveCategory(CATID_BoxBeamFactory,true);
       sysComCatMgr::RemoveCategory(CATID_DeckedSlabBeamFactory,true);
+
+      sysComCatMgr::RemoveCategory(CATID_SplicedIBeamFactory,true);
+      sysComCatMgr::RemoveCategory(CATID_SplicedUBeamFactory,true);
    }
 
    //////////////////////////////////////////////////////////////
    // Register beam families
    //////////////////////////////////////////////////////////////
-   sysComCatMgr::RegWithCategory(CLSID_WFBeamFamily,          CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_UBeamFamily,           CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFamily,         CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_DeckBulbTeeBeamFamily, CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_DoubleTeeBeamFamily,   CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_RibbedBeamFamily,      CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_SlabBeamFamily,        CATID_BeamFamily, bRegister );
-   sysComCatMgr::RegWithCategory(CLSID_DeckedSlabBeamFamily,  CATID_BeamFamily, bRegister );
+
+   // PGSuper
+   sysComCatMgr::RegWithCategory(CLSID_WFBeamFamily,          CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_UBeamFamily,           CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFamily,         CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_DeckBulbTeeBeamFamily, CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_DoubleTeeBeamFamily,   CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_RibbedBeamFamily,      CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_SlabBeamFamily,        CATID_PGSuperBeamFamily, bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_DeckedSlabBeamFamily,  CATID_PGSuperBeamFamily, bRegister );
+   
+   // PGSplice
+   sysComCatMgr::RegWithCategory(CLSID_SplicedIBeamFamily, CATID_PGSpliceBeamFamily,  bRegister );
+   sysComCatMgr::RegWithCategory(CLSID_SplicedUBeamFamily, CATID_PGSpliceBeamFamily,  bRegister );
 
    //////////////////////////////////////////////////////////////
-   // Register beam factories
+   // Register beam factories (PGSuper)
    //////////////////////////////////////////////////////////////
-   IndexType nBeams = GetBeamTypeCount();
-   for ( IndexType idx = 0; idx < nBeams; idx++ )
-   {
-      CLSID clsid = GetBeamCLSID(idx);
-      CATID catid = GetBeamCATID(idx);
-      sysComCatMgr::RegWithCategory(clsid, catid, bRegister);
-   }
+
+   // I-beam factories
+   sysComCatMgr::RegWithCategory(CLSID_WFBeamFactory,       CATID_WFBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_NUBeamFactory,       CATID_WFBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_TaperedIBeamFactory, CATID_WFBeamFactory, bRegister);
+
+   // U-beam factories
+   sysComCatMgr::RegWithCategory(CLSID_UBeamFactory,        CATID_UBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_UBeam2Factory,       CATID_UBeamFactory, bRegister);
+
+   // Deck bulb tee factories
+   sysComCatMgr::RegWithCategory(CLSID_BulbTeeFactory,      CATID_DeckBulbTeeBeamFactory, bRegister);
+
+   // Double-tee factories
+   sysComCatMgr::RegWithCategory(CLSID_DoubleTeeFactory,    CATID_DoubleTeeBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_TxDotDoubleTFactory, CATID_DoubleTeeBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_MultiWeb2Factory,    CATID_DoubleTeeBeamFactory, bRegister);
+
+   // Ribbed beam factories
+   sysComCatMgr::RegWithCategory(CLSID_MultiWebFactory,     CATID_RibbedBeamFactory, bRegister);
+
+   // Slab factories
+   sysComCatMgr::RegWithCategory(CLSID_VoidedSlabFactory,   CATID_SlabBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_VoidedSlab2Factory,  CATID_SlabBeamFactory, bRegister);
+
+   // box beam factories
+   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory,       CATID_BoxBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory2,      CATID_BoxBeamFactory, bRegister);
+
+   // decked slab beam factories
+   sysComCatMgr::RegWithCategory(CLSID_DeckedSlabBeamFactory,      CATID_DeckedSlabBeamFactory, bRegister);
+
+   //////////////////////////////////////////////////////////////
+   // Register beam factories (PGSplice)
+   //////////////////////////////////////////////////////////////
+
+   // I-beam factories
+   sysComCatMgr::RegWithCategory(CLSID_SplicedIBeamFactory, CATID_SplicedIBeamFactory, bRegister);
+
+   // U-beam factories
+   sysComCatMgr::RegWithCategory(CLSID_SplicedUBeamFactory, CATID_SplicedUBeamFactory, bRegister);
 }
 
 STDAPI DllRegisterServer(void)

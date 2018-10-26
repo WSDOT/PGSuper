@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,9 +35,8 @@
 
 #include "LibEditorListView.h"
 #include "LibraryEditorView.h"
-#include <EAF\EAFChildFrame.h>
 
-class PSGLIBCLASS CLibraryEditorChildFrame : public CEAFChildFrame
+class PSGLIBCLASS CLibraryEditorChildFrame : public CMDIChildWnd
 {
 	DECLARE_DYNCREATE(CLibraryEditorChildFrame)
 public:

@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=910>
-<meta name=layout-width content=991>
+<meta name=layout-height content=732>
+<meta name=layout-width content=963>
 
 
 <!--(Links)=========================================================-->
@@ -52,24 +52,16 @@
  length of the bridge. The supplemental reinforcement is placed over the 
  piers to supplement the primary reinforcement in resisting negative moments.</p>
 
-<p>Reinforcement is modeled with a combination of individual bars and a 
- lump sum quantity. These values are additive. The total area of reinforcement 
- is computed as</p>
-
-<p>As = (Area of individual bar/spacing + lump sum area per unit length) 
- X (Tributary width of deck)</p>
-
 <h2>Reinforcement</h2>
 
 <p>Use the drop down list to select the reinforcing steel used in the deck.</p>
 
 <h2>Cover</h2>
 
-<p>Enter the nominal cover for the top and bottom mat of reinforcing. The 
- top mat cover is measured from the top of the deck to the top of individual 
- bars and to the center of lump sum reinforcement. The bottom mat cover 
- is measured from the bottom (underside) of the deck to the bottom of individual 
- bars and to the center of lump sum reinforcement.</p>
+<p>Enter the cover for the top and bottom mat of reinforcing. The top mat 
+ cover is measured from the top of the deck to the center of the reinforcing 
+ mat. The bottom mat cover is measured from the bottom (underside) of the 
+ deck to the center of the reinforcing mat.</p>
 
 <h2>Primary Reinforcement</h2>
 
@@ -77,7 +69,7 @@
  Describe the reinforcement in the top and bottom mats of the deck.</p>
 
 <p>The reinforcement can be described with a bar size and spacing AND a 
- lump sum area per unit length.</p>
+ lump sum area per unit length (in the transverse direction).</p>
 
 <p>If both bar spacing and lump sum input is provided, they are added together 
  for the total amount of reinforcement. For example, if the top mat is 
@@ -97,15 +89,6 @@
 
 <p>The total reinforcement at a section is equal to the sum of the primary 
  and supplement reinforcement within the tributary width of a girder.</p>
-
-<p class=Tip>Note: For all Primary Reinforcement and Supplemental Reinforcement 
- described using A<span style="vertical-align: Sub;">s </span>; the bars 
- are considered to be fully developed along the full bar length. However: 
- for Supplemental Reinforcement bars described using a bar size and spacing, 
- the area of the bar is reduced for partial development at the ends of 
- the bars.</p>
-
-<p>&nbsp;</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

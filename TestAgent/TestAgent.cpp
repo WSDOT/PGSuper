@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,13 +39,13 @@
 #include "TestAgentImp.h"
 
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
 #include <IFace\StatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
-
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -119,14 +119,28 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
 
+HRESULT RegisterAgent(bool bRegister)
+{
+   HRESULT hr = S_OK;
+   hr = sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
+
 STDAPI DllRegisterServer(void)
 {
 	// registers object, typelib and all interfaces in typelib
-   HRESULT hr = _Module.RegisterServer(FALSE);
+	HRESULT hr = _Module.RegisterServer(FALSE);
    if ( FAILED(hr) )
-      return FALSE;
+      return hr;
 
-	return sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,true);
+   return RegisterAgent(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -134,8 +148,7 @@ STDAPI DllRegisterServer(void)
 
 STDAPI DllUnregisterServer(void)
 {
-   sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,false);
+   RegisterAgent(false);
 	_Module.UnregisterServer();
 	return S_OK;
 }
-

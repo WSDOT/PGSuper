@@ -1,31 +1,39 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF42G    *     42  0.6  270  17.38   8.81  12.00  12.00                                              12  38.0  3.0  6.800  7.800   5.019    -5.084     6415   0.538  0.671   5.597 -2.201 -0.178 -0.254 -2.632 190.27  291.04    1.75    5.00    5.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     1    WF42G  *    40  0.60  270 17.43  8.43  12 38.0  6.600  7.400    4.865   -4.956   6225  0.535  0.671  0.40 -0.18 -0.02 -0.02 -0.21 174.32 257.05   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed.
+Splitting zone checks failed.
+Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    WF42G    *     42  0.6  270  17.38   8.81  12.00  12.00                                              12  38.0  3.0  6.800  7.800   4.999    -5.063     6416   0.536  0.671   5.597 -2.180 -0.178 -0.254 -2.612 190.27  291.97    1.75    5.00    5.00 
-
-
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    WF42G    *     42  0.6  270  17.38   8.81  12.00  12.00                                              12  38.0  3.0  6.800  7.800   4.999    -5.063     6416   0.536  0.671   5.597 -2.180 -0.178 -0.254 -2.612 190.27  291.97    1.75    5.00    5.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     2    WF42G  *    40  0.60  270 17.43  8.43  12 38.0  6.600  7.500    4.869   -4.955   6227  0.536  0.671  0.40 -0.17 -0.02 -0.02 -0.21 174.32 258.07   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Splitting zone check failed.
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     3    WF42G  *    40  0.60  270 17.43  8.43  12 38.0  6.600  7.500    4.869   -4.955   6227  0.536  0.671  0.40 -0.17 -0.02 -0.02 -0.21 174.32 258.07   1.75   5.00   5.00
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Slab Offset ("A" Dimension) check failed
 
 

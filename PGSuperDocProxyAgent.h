@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,16 +33,13 @@
 #include <IFace\VersionInfo.h>
 #include <IFace\Views.h>
 #include <IFace\ViewEvents.h>
-#include <IFace\ExtendUI.h>
+#include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include "PGSuperStatusBar.h"
 #include <EAF\EAFStatusBar.h>
 
-#include "CPPGSuperDocProxyAgent.h"
-
-
-class CPGSuperDoc;
+class CPGSuperDocBase;
 struct IBroker;
 
 // {71D5ABEE-23D6-4593-BB8D-20B092CB2E9A}
@@ -75,8 +72,6 @@ LOG
 class CPGSuperDocProxyAgent :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPGSuperDocProxyAgent,&CLSID_PGSuperDocProxyAgent>,
-	public IConnectionPointContainerImpl<CPGSuperDocProxyAgent>,
-   public CProxyIExtendUIEventSink<CPGSuperDocProxyAgent>,
    public IAgentEx,
    public IAgentUIIntegration,
    public IBridgeDescriptionEventSink,
@@ -96,14 +91,13 @@ class CPGSuperDocProxyAgent :
    public IViews,
    public IVersionInfo,
    public IRegisterViewEvents,
-   public IExtendUI
+   public IDocumentType
 {
 public:
    CPGSuperDocProxyAgent();
    ~CPGSuperDocProxyAgent();
 
 BEGIN_COM_MAP(CPGSuperDocProxyAgent)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
    COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IAgentUIIntegration)
@@ -125,19 +119,13 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IViews)
    COM_INTERFACE_ENTRY(IVersionInfo)
    COM_INTERFACE_ENTRY(IRegisterViewEvents)
-   COM_INTERFACE_ENTRY(IExtendUI)
+   COM_INTERFACE_ENTRY(IDocumentType)
 END_COM_MAP()
 
-BEGIN_CONNECTION_POINT_MAP(CPGSuperDocProxyAgent)
-   CONNECTION_POINT_ENTRY( IID_IExtendUIEventSink )
-END_CONNECTION_POINT_MAP()
-
 public:
-   void SetDocument(CPGSuperDoc* pDoc);
+   void SetDocument(CPGSuperDocBase* pDoc);
    void OnStatusChanged();
    long GetReportViewKey();
-
-   void OnResetHints();
 
 // IAgentEx
 public:
@@ -156,9 +144,9 @@ public:
 
 // IBridgeDescriptionEventSink
 public:
-   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint);
+   virtual HRESULT OnBridgeChanged();
    virtual HRESULT OnGirderFamilyChanged();
-   virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint);
+   virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint);
    virtual HRESULT OnLiveLoadChanged();
    virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName);
    virtual HRESULT OnConstructionLoadChanged();
@@ -201,8 +189,6 @@ public:
 public:
    virtual void HoldEvents(bool bHold=true);
    virtual void FirePendingEvents();
-   virtual void CancelPendingEvents();
-   virtual void FireEvent(CView* pSender = NULL,LPARAM lHint = 0,boost::shared_ptr<CObject> pHint = boost::shared_ptr<CObject>());
 
 // IVersionInfo
 public:
@@ -217,7 +203,7 @@ public:
    virtual GirderIndexType GetGirderIdx();
    virtual void SelectPier(PierIndexType pierIdx);
    virtual void SelectSpan(SpanIndexType spanIdx);
-   virtual void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual void SelectGirder(const CGirderKey& girderKey);
    virtual Float64 GetSectionCutStation();
 
 // ISelectionEx
@@ -226,12 +212,14 @@ public:
    virtual void SelectDeck();
    virtual void SelectAlignment();
    virtual void ClearSelection();
+   virtual void SelectSegment(const CSegmentKey& segmentKey);
 
 // IEditByUI
 public:
    virtual void EditBridgeDescription(int nPage);
    virtual void EditAlignmentDescription(int nPage);
-   virtual bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage);
+   virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage);
+   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage);
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage);
    virtual void EditLiveLoads();
@@ -242,7 +230,7 @@ public:
    virtual UINT GetStdToolBarID();
    virtual UINT GetLibToolBarID();
    virtual UINT GetHelpToolBarID();
-   virtual bool EditDirectInputPrestressing(SpanIndexType span,GirderIndexType girder);
+   virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey);
 
 // IEditByUIEx
 public:
@@ -260,14 +248,14 @@ public:
 
 // IViews
 public:
-   virtual void CreateGirderView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual void CreateGirderView(const CGirderKey& girderKey);
    virtual void CreateBridgeModelView();
-   virtual void CreateAnalysisResultsView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual void CreateStabilityView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual void CreateLoadsView();
    virtual void CreateLibraryEditorView();
    virtual void CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec=true);
    virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
+   virtual void CreateGraphView(CollectionIndexType graphIdx);
+   virtual void BuildGraphMenu(CEAFMenu* pMenu);
 
 // IRegisterViewEvents
 public:
@@ -280,17 +268,10 @@ public:
    virtual bool UnregisterGirderElevationViewCallback(IDType ID);
    virtual bool UnregisterGirderSectionViewCallback(IDType ID);
 
-// IExtendUI
+// IDocumentType
 public:
-   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
-   virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
-   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
-   virtual bool UnregisterEditPierCallback(IDType ID);
-   virtual bool UnregisterEditSpanCallback(IDType ID);
-   virtual bool UnregisterEditGirderCallback(IDType ID);
-   virtual bool UnregisterEditBridgeCallback(IDType ID);
-
+   virtual bool IsPGSuperDocument();
+   virtual bool IsPGSpliceDocument();
 
 private:
    DECLARE_AGENT_DATA;
@@ -307,8 +288,7 @@ private:
    DWORD m_dwLoadModiferCookie;
    DWORD m_dwLibraryConflictGuiCookie;
 
-   int m_EventHoldCount;
-   bool m_bFiringEvents;
+   bool m_bHoldingEvents;
    struct UIEvent
    {
       CView* pSender;
@@ -316,6 +296,7 @@ private:
       boost::shared_ptr<CObject> pHint;
    };
    std::vector<UIEvent> m_UIEvents;
+   void FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint);
 
 
    // look up keys for extra views associated with our document
@@ -324,12 +305,11 @@ private:
    long m_BridgeModelEditorViewKey;
    long m_GirderModelEditorViewKey;
    long m_LibraryEditorViewKey;
-   long m_AnalysisResultsViewKey;
    long m_ReportViewKey;
-   long m_FactorOfSafetyViewKey;
+   long m_GraphingViewKey;
    long m_LoadsViewKey;
    
-   CPGSuperDoc* m_pPGSuperDoc;
+   CPGSuperDocBase* m_pMyDocument;
 
    UINT m_StdToolBarID;
    UINT m_LibToolBarID;
@@ -343,10 +323,5 @@ private:
 
    void CreateStatusBar();
    void ResetStatusBar();
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   CMFCTasksPane m_wndTasks;
-   CDockablePaneAdapter m_wndLoadsViewAdapter;
-#endif
 };
 

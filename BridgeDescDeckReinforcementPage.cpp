@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,19 +24,16 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescDlg.h"
 #include "PGSuperDoc.h"
-#include <MFCTools\CustomDDX.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <Lrfd\RebarPool.h>
-
-#include "PsgLib\RebarUIUtils.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -71,18 +68,8 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    {
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         m_RebarData.TopRebarType = matRebar::A615;
-         m_RebarData.TopRebarGrade = matRebar::Grade60;
-         m_RebarData.BottomRebarType = matRebar::A615;
-         m_RebarData.BottomRebarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
-         GetStirrupMaterial(idx,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
-      }
+      GetStirrupMaterial(idx,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+      GetStirrupMaterial(idx,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
    }
    else
    {
@@ -103,42 +90,13 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_BAR_SPACING,    IDC_TOP_MAT_BAR_SPACING_UNIT,    m_RebarData.TopSpacing,    pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_BAR_SPACING, IDC_BOTTOM_MAT_BAR_SPACING_UNIT, m_RebarData.BottomSpacing, pDisplayUnits->GetComponentDimUnit() );
 
-   if ( pDX->m_bSaveAndValidate )
-   {
-      if ( m_RebarData.TopRebarSize != matRebar::bsNone && IsLE(m_RebarData.TopSpacing,0.0) )
-      {
-         AfxMessageBox(_T("Spacing of top rebar must be greater than zero"));
-         pDX->PrepareEditCtrl(IDC_TOP_MAT_BAR_SPACING);
-         pDX->Fail();
-      }
-
-      if ( m_RebarData.BottomRebarSize != matRebar::bsNone && IsLE(m_RebarData.BottomSpacing,0.0) )
-      {
-         AfxMessageBox(_T("Spacing of bottom rebar must be greater than zero"));
-         pDX->PrepareEditCtrl(IDC_BOTTOM_MAT_BAR_SPACING);
-         pDX->Fail();
-      }
-   }
-
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
-   DDV_UnitValueZeroOrMore(pDX, IDC_TOP_MAT_LUMP_SUM,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
-   DDV_UnitValueZeroOrMore(pDX, IDC_BOTTOM_MAT_LUMP_SUM, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
-
-   DDV_GXGridWnd(pDX,&m_Grid);
    if ( pDX->m_bSaveAndValidate )
-   {
-      if ( !m_Grid.GetRebarData(m_RebarData.NegMomentRebar) )
-         pDX->Fail();
-
-      CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-      pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData = m_RebarData;
-   }
+      m_Grid.GetRebarData(m_RebarData.NegMomentRebar);
    else
-   {
       m_Grid.FillGrid(m_RebarData.NegMomentRebar);
-   }
 }
 
 
@@ -175,10 +133,7 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
    FillRebarComboBox(pcbBottomRebar);
 
    CComboBox* pcbMaterial = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pcbMaterial);
-
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;
+   FillMaterialComboBox(pcbMaterial);
 
    CPropertyPage::OnInitDialog();
    
@@ -218,11 +173,6 @@ void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
    pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
 }
 
-void CBridgeDescDeckReinforcementPage::EnableAddBtn(bool bEnable)
-{
-   GetDlgItem(IDC_ADD)->EnableWindow(bEnable);
-}
-
 void CBridgeDescDeckReinforcementPage::EnableRemoveBtn(bool bEnable)
 {
    GetDlgItem(IDC_REMOVE)->EnableWindow(bEnable);
@@ -236,8 +186,6 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
    BOOL bEnableBottom = TRUE;
    
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-
-   m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 
    if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtNone )
    {
@@ -258,64 +206,35 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
       GetDlgItem(IDC_DECK)->SetWindowText(_T("Describe top and bottom mat of deck reinforcement."));
    }
 
-   GetDlgItem(IDC_TOP_COVER_LABEL)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_COVER)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_COVER_UNIT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_COVER)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_COVER_UNIT)->EnableWindow(bEnableTop);
 
-   GetDlgItem(IDC_TOP_MAT_BAR_LABEL)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_MAT_BAR)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_MAT_BAR_AT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_MAT_BAR_PLUS)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_BAR)->EnableWindow(bEnableTop);
 
-   GetDlgItem(IDC_TOP_MAT_BAR_SPACING)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_MAT_BAR_SPACING_UNIT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_BAR_SPACING)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_MAT_BAR_SPACING_UNIT)->EnableWindow(bEnableTop);
 
-   GetDlgItem(IDC_TOP_MAT_LUMP_SUM)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_TOP_MAT_LUMP_SUM_UNIT)->ShowWindow(bEnableTop ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TOP_MAT_LUMP_SUM)->EnableWindow(bEnableTop);
+   GetDlgItem(IDC_TOP_MAT_LUMP_SUM_UNIT)->EnableWindow(bEnableTop);
 	
 
-   GetDlgItem(IDC_BOTTOM_COVER_LABEL)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_COVER)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_COVER_UNIT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_COVER)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_COVER_UNIT)->EnableWindow(bEnableBottom);
 
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_LABEL)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_MAT_BAR)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_AT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_PLUS)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR)->EnableWindow(bEnableBottom);
 
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING_UNIT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_MAT_BAR_SPACING_UNIT)->EnableWindow(bEnableBottom);
 
-   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM_UNIT)->ShowWindow(bEnableBottom ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM)->EnableWindow(bEnableBottom);
+   GetDlgItem(IDC_BOTTOM_MAT_LUMP_SUM_UNIT)->EnableWindow(bEnableBottom);
 
-   GetDlgItem(IDC_MILD_STEEL_SELECTOR)->ShowWindow(SW_SHOW);
-   GetDlgItem(IDC_PRIMARY_REBAR_GROUP)->ShowWindow(SW_SHOW);
-   GetDlgItem(IDC_PRIMARY_REBAR_GROUP_LABEL)->ShowWindow(SW_SHOW);
-   GetDlgItem(IDC_SECONDARY_REBAR_GROUP)->ShowWindow(SW_SHOW);
-   GetDlgItem(IDC_SECONDARY_REBAR_GROUP_LABEL)->ShowWindow(SW_SHOW);
-   m_Grid.ShowWindow(SW_SHOW);
-   GetDlgItem(IDC_ADD)->ShowWindow(SW_SHOW);
-   GetDlgItem(IDC_REMOVE)->ShowWindow(SW_SHOW);
+   if ( !bEnableTop && !bEnableBottom )
+      m_Grid.EnableWindow(FALSE);
 
    m_Grid.EnableMats(bEnableTop,bEnableBottom);
    GetDlgItem(IDC_ADD)->EnableWindow(bEnableTop || bEnableBottom);
    GetDlgItem(IDC_REMOVE)->EnableWindow(bEnableTop || bEnableBottom);
-
-   m_Grid.UpdatePierList();
-
-   if ( !bEnableTop && !bEnableBottom )
-   {
-      m_Grid.ShowWindow(SW_HIDE);
-      //m_Grid.EnableWindow(FALSE);
-      GetDlgItem(IDC_MILD_STEEL_SELECTOR)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_PRIMARY_REBAR_GROUP)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_PRIMARY_REBAR_GROUP_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_SECONDARY_REBAR_GROUP)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_SECONDARY_REBAR_GROUP_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_ADD)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_REMOVE)->ShowWindow(SW_HIDE);
-   }
 	
    return CPropertyPage::OnSetActive();
 }
@@ -354,4 +273,54 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
       return TRUE;
    }
    return FALSE;
+}
+
+void CBridgeDescDeckReinforcementPage::FillMaterialComboBox(CComboBox* pCB)
+{
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
+}
+
+void CBridgeDescDeckReinforcementPage::GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
+{
+   switch(idx)
+   {
+   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
+   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
+   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
+   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
+   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
+   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
+   default:
+      ATLASSERT(false); // should never get here
+   }
+}
+
+int CBridgeDescDeckReinforcementPage::GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
+{
+   if ( type == matRebar::A615 )
+   {
+      if ( grade == matRebar::Grade40 )
+         return 0;
+      else if ( grade == matRebar::Grade60 )
+         return 1;
+      else if ( grade == matRebar::Grade75 )
+         return 2;
+      else if ( grade == matRebar::Grade80 )
+         return 3;
+   }
+   else
+   {
+      if ( grade == matRebar::Grade60 )
+         return 4;
+      else if ( grade == matRebar::Grade80 )
+         return 5;
+   }
+
+   ATLASSERT(false); // should never get here
+   return -1;
 }

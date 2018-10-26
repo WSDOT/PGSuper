@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,14 @@
 
 #include <PgsExt\PgsExtLib.h>
 
-#include <PgsExt\GirderTypes.h>
-#include <PgsExt\GirderSpacing.h>
-#include <PgsExt\GirderData.h>
+#include "GirderTypes.h"
+#include "GirderSpacing.h"
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\SpanData.h>
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
+
+#include <PgsExt\GirderData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -82,13 +83,10 @@ bool CGirderTypes::operator == (const CGirderTypes& rOther) const
    if ( m_GirderGroups != rOther.m_GirderGroups )
       return false;
 
-   if ( m_GirderNames != rOther.m_GirderNames )
-      return false;
-
    if ( m_GirderData != rOther.m_GirderData )
       return false;
 
-   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
+   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
    {
       if ( m_SlabOffset[pgsTypes::metStart] != rOther.m_SlabOffset[pgsTypes::metStart] )
          return false;
@@ -112,12 +110,12 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    CHRException hr;
 
    m_GirderGroups.clear();
-   m_GirderNames.clear();
    m_GirderData.clear();
-   m_GirderLibraryEntries.clear();
    m_SlabOffset[pgsTypes::metStart].clear();
    m_SlabOffset[pgsTypes::metEnd].clear();
 
+   std::vector<std::_tstring> girderNames; // holds girder names that were stored with this object
+                                           // names ahve been moved to CGirderData object
    try
    {
       hr = pStrLoad->BeginUnit(_T("GirderTypes"));
@@ -129,43 +127,37 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       CComVariant var;
       if ( !bSameGirder )
       {
-         var.vt = VT_I4;
+         var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("GirderGroupCount"), &var );
 
          if ( 3 <= version )
             pStrLoad->BeginUnit(_T("GirderGroups")); // added in GirderTypes version 3
 
-         long nGroups = var.lVal;
-         for ( long grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+         GroupIndexType nGroups = VARIANT2INDEX(var);
+         for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
          {
             hr = pStrLoad->BeginUnit(_T("GirderGroup"));
 
             Float64 grp_version;
             hr = pStrLoad->get_Version(&grp_version);
-            ATLASSERT(grp_version == 1);
 
-            var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property(_T("GirderName"),&var);
+            if ( grp_version < 2.0 )
+            {
+               var.vt = VT_BSTR;
+               hr = pStrLoad->get_Property(_T("GirderName"),&var);
 
-            std::_tstring strName = OLE2T(var.bstrVal);
+               girderNames.push_back(OLE2T(var.bstrVal));
+            }
 
-            var.vt = VT_I2;
+            var.vt = VT_INDEX;
             hr = pStrLoad->get_Property(_T("FirstGirderIndex"),&var);
-            GirderIndexType firstGdrIdx = var.iVal;
+            GirderIndexType firstGdrIdx = VARIANT2INDEX(var);
 
-            var.vt = VT_I2;
             hr = pStrLoad->get_Property(_T("LastGirderIndex"),&var);
-            GirderIndexType lastGdrIdx = var.iVal;
+            GirderIndexType lastGdrIdx = VARIANT2INDEX(var);
          
             GirderGroup group(firstGdrIdx,lastGdrIdx);
             m_GirderGroups.push_back(group);
-
-            // create girder name and lib entries place holders
-            for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
-            {
-               m_GirderNames.push_back(strName);
-               m_GirderLibraryEntries.push_back(NULL);
-            }
 
             hr = pStrLoad->EndUnit();
          }
@@ -178,17 +170,17 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       GirderIndexType nGirders = m_pSpan->GetGirderCount();
 
       // Sometimes bad data get saved... fix it up here
-      if ( nGirders < (GirderIndexType)m_GirderNames.size() )
-      {
-         ATLASSERT(false); // fixing bad data that got stored in the file
-         m_GirderNames.resize(nGirders);
-      }
+      //if ( nGirders < (GirderIndexType)m_GirderNames.size() )
+      //{
+      //   ATLASSERT(false); // fixing bad data that got stored in the file
+      //   m_GirderNames.resize(nGirders);
+      //}
 
-      if ( nGirders < (GirderIndexType)m_GirderLibraryEntries.size() )
-      {
-         ATLASSERT(false); // fixing bad data that got stored in the file
-         m_GirderLibraryEntries.resize(nGirders);
-      }
+      //if ( nGirders < (GirderIndexType)m_GirderLibraryEntries.size() )
+      //{
+      //   ATLASSERT(false); // fixing bad data that got stored in the file
+      //   m_GirderLibraryEntries.resize(nGirders);
+      //}
 
       if ( nGirders < (GirderIndexType)m_GirderGroups.size() )
       {
@@ -236,27 +228,35 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
-         pStrLoad->BeginUnit(_T("GirderData"));
-
          CGirderData girderData;
          girderData.Load(pStrLoad,pProgress,0,0,0,0);
-         m_GirderData.push_back(girderData);
 
-         if ( bSameGirder )
+         // girderNames has entries if GirderTypes data block was less than version 2
+         // put the name that used to be stored in this object into the girder data object
+         if ( 0 < girderNames.size() )
          {
-            // these weren't created before because the same girder isn't used
-            m_GirderNames.push_back(strGirder);
-            m_GirderLibraryEntries.push_back(NULL); // create a place holder for the girder library entry
+            GroupIndexType grpIdx = FindGroup(gdrIdx);
+            girderData.m_GirderName = girderNames[grpIdx];
          }
 
-         pStrLoad->EndUnit(); // GirderData
+         if ( bSameGirder )
+            girderData.m_GirderName = strGirder;
+
+         m_GirderData.push_back(girderData);
+
+         //if ( bSameGirder )
+         //{
+         //   // these weren't created before because the same girder isn't used
+         //   m_GirderNames.push_back(strGirder);
+         //   m_GirderLibraryEntries.push_back(NULL); // create a place holder for the girder library entry
+         //}
       }
    
       if ( 3 <= version )
          pStrLoad->EndUnit(); // added in GirderTypes version 3
 
       // added in version 2
-      if ( 2 <= version && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
+      if ( 2 <= version && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
       {
          pStrLoad->BeginUnit(_T("SlabOffset"));
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -316,9 +316,10 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       {
          GirderGroup group = *iter;
 
-         pStrSave->BeginUnit(_T("GirderGroup"),1.0);
+         pStrSave->BeginUnit(_T("GirderGroup"),2.0);
 
-         pStrSave->put_Property(_T("GirderName"),CComVariant(CComBSTR(m_GirderNames[group.first].c_str())));
+         // moved into girder data object... Data block versions: Girder Group = 2.0
+         //pStrSave->put_Property(_T("GirderName"),CComVariant(CComBSTR(m_GirderNames[group.first].c_str())));
          pStrSave->put_Property(_T("FirstGirderIndex"),CComVariant(group.first));
          pStrSave->put_Property(_T("LastGirderIndex"),CComVariant(group.second));
 
@@ -329,22 +330,19 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
 
 
-    // added in version 3 of GirderTypes
-   pStrSave->BeginUnit(_T("Girders"),1.0);
    GirderIndexType nGirders = m_pSpan->GetGirderCount();
+
+   // added in version 3 of GirderTypes
+   pStrSave->BeginUnit(_T("Girders"),1.0);
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      pStrSave->BeginUnit(_T("GirderData"),4.0);
-
       CGirderData& girderData = m_GirderData[gdrIdx];
       girderData.Save(pStrSave,pProgress);
-
-      pStrSave->EndUnit();
    }
    pStrSave->EndUnit(); // added in version 3 of GirderTypes
 
    // added in version 2
-   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
+   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
    {
       pStrSave->BeginUnit(_T("SlabOffset"),1.0);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -364,8 +362,6 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CGirderTypes::MakeCopy(const CGirderTypes& rOther)
 {
-   m_GirderNames                    = rOther.m_GirderNames;
-   m_GirderLibraryEntries           = rOther.m_GirderLibraryEntries;
    m_GirderGroups                   = rOther.m_GirderGroups;
    m_GirderData                     = rOther.m_GirderData;
    m_pSpan                          = rOther.m_pSpan;
@@ -389,14 +385,18 @@ GroupIndexType CGirderTypes::FindGroup(GirderIndexType gdrIdx) const
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       GirderIndexType firstGdrIdx, lastGdrIdx;
-      std::_tstring strGirderName;
-      GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
+
+      GirderGroup group = m_GirderGroups[grpIdx];
+
+      firstGdrIdx = group.first;
+      lastGdrIdx  = group.second;
+
       if ( firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx )
-         return gdrIdx;
+         return grpIdx;
    }
 
    ATLASSERT(false); // should never get here
-   return 9999;
+   return INVALID_INDEX;
 }
 
 GroupIndexType CGirderTypes::CreateGroup(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx)
@@ -528,7 +528,7 @@ void CGirderTypes::GetGirderGroup(GroupIndexType groupIdx,GirderIndexType* pFirs
         m_pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge() )
    {
       *pFirstGdrIdx = 0;
-      *pLastGdrIdx = min(m_GirderGroups[groupIdx].second,m_pSpan->GetBridgeDescription()->GetGirderCount()-1);
+      *pLastGdrIdx = m_pSpan->GetBridgeDescription()->GetGirderCount()-1;
       strName = m_pSpan->GetBridgeDescription()->GetGirderName();
    }
    else
@@ -539,13 +539,13 @@ void CGirderTypes::GetGirderGroup(GroupIndexType groupIdx,GirderIndexType* pFirs
       *pFirstGdrIdx = group.first;
       *pLastGdrIdx  = group.second;
 
-      strName = m_GirderNames[group.first];  
+      strName = m_GirderData[group.first].GetGirderName();
 
 #if defined _DEBUG
       // make sure every girder in the group has the same name
       for ( GirderIndexType i = group.first + 1; i <= group.second; i++ )
       {
-         _ASSERT(strName == m_GirderNames[i]);
+         _ASSERT(strName == m_GirderData[i].GetGirderName());
       }
 #endif
    }
@@ -553,16 +553,12 @@ void CGirderTypes::GetGirderGroup(GroupIndexType groupIdx,GirderIndexType* pFirs
 
 void CGirderTypes::AddGirders(GirderIndexType nGirders)
 {
-   std::_tstring strName = (m_GirderNames.size() != 0 ? m_GirderNames.back() : _T(""));
-   const GirderLibraryEntry* pEntry = (m_GirderLibraryEntries.size() != 0 ? m_GirderLibraryEntries.back() : NULL );
    const CGirderData& gdrData = (m_GirderData.size() != 0 ? m_GirderData.back() : CGirderData());
    Float64 slabOffsetStart = (m_SlabOffset[pgsTypes::metStart].size() != 0 ? m_SlabOffset[pgsTypes::metStart].back() : m_pSpan->GetBridgeDescription()->GetSlabOffset());
    Float64 slabOffsetEnd   = (m_SlabOffset[pgsTypes::metEnd].size()   != 0 ? m_SlabOffset[pgsTypes::metEnd].back()   : m_pSpan->GetBridgeDescription()->GetSlabOffset());
 
    for ( GirderIndexType i = 0; i < nGirders; i++ )
    {
-      m_GirderNames.push_back(strName);
-      m_GirderLibraryEntries.push_back(pEntry);
       m_GirderData.push_back(gdrData);
       m_SlabOffset[pgsTypes::metStart].push_back(slabOffsetStart);
       m_SlabOffset[pgsTypes::metEnd].push_back(slabOffsetEnd);
@@ -572,33 +568,31 @@ void CGirderTypes::AddGirders(GirderIndexType nGirders)
    {
       GirderGroup group;
       group.first  = 0;
-      group.second = INVALID_INDEX; // we are going to add nGirders to this below. nGirders-1 is the index of the last girder when creating a new group
+      group.second = INVALID_INDEX;
       m_GirderGroups.push_back(group);
    }
 
-   GirderGroup& group = m_GirderGroups.back(); // get the last girder group
+   GirderGroup& group = m_GirderGroups.back();
    if ( group.second == INVALID_INDEX )
       group.second = nGirders-1;
    else
       group.second += nGirders;
-
+   
    IS_VALID;
 }
 
 void CGirderTypes::RemoveGirders(GirderIndexType nGirdersToRemove)
 {
-   _ASSERT( nGirdersToRemove < (GirderIndexType)m_GirderNames.size() ); // trying to remove too many girders
+   _ASSERT( nGirdersToRemove < (GirderIndexType)m_GirderData.size() ); // trying to remove too many girders
 
    for ( GirderIndexType i = 0; i < nGirdersToRemove; i++ )
    {
-      m_GirderNames.pop_back();
-      m_GirderLibraryEntries.pop_back();
       m_GirderData.pop_back();
       m_SlabOffset[pgsTypes::metStart].pop_back();
       m_SlabOffset[pgsTypes::metEnd].pop_back();
    }
 
-   GirderIndexType nGirders = m_GirderNames.size();
+   GirderIndexType nGirders = m_GirderData.size();
 
    std::vector<GirderGroup>::iterator iter;
    GirderIndexType gdrCount = 0;
@@ -622,7 +616,7 @@ void CGirderTypes::RemoveGirders(GirderIndexType nGirdersToRemove)
 void CGirderTypes::ExpandAll()
 {
    m_GirderGroups.clear();
-   GirderIndexType nGirders = m_GirderNames.size();
+   GirderIndexType nGirders = m_GirderData.size();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       m_GirderGroups.push_back(std::make_pair(gdrIdx,gdrIdx));
@@ -655,11 +649,11 @@ void CGirderTypes::Expand(GroupIndexType groupIdx)
 
 void CGirderTypes::JoinAll(GirderIndexType gdrIdx)
 {
-   if ( m_GirderNames.size() == 0 )
+   if ( m_GirderData.size() == 0 )
       return;
 
-   std::_tstring strName = m_GirderNames[gdrIdx];
-   const GirderLibraryEntry* pGdrEntry = m_GirderLibraryEntries[gdrIdx];
+   std::_tstring strName = m_GirderData[gdrIdx].GetGirderName();
+   const GirderLibraryEntry* pGdrEntry = m_GirderData[gdrIdx].GetGirderLibraryEntry();
 
    GirderGroup firstGroup = m_GirderGroups.front();
    GirderGroup lastGroup  = m_GirderGroups.back();
@@ -671,17 +665,13 @@ void CGirderTypes::JoinAll(GirderIndexType gdrIdx)
    m_GirderGroups.clear();
    m_GirderGroups.push_back(joinedGroup);
 
-   std::vector<std::_tstring>::iterator nameIter;
-   std::vector<const GirderLibraryEntry*>::iterator libIter;
-   for ( nameIter = m_GirderNames.begin(),
-         libIter  = m_GirderLibraryEntries.begin();
-         nameIter != m_GirderNames.end(),
-         libIter  != m_GirderLibraryEntries.end(); 
-         nameIter++,
-         libIter++)
+   // make girder name and lib entry the same for all members of the group
+   std::vector<CGirderData>::iterator iter;
+   for ( iter = m_GirderData.begin(); iter != m_GirderData.end(); iter++ )
    {
-      (*nameIter) = strName;
-      (*libIter) = pGdrEntry;
+      CGirderData& girderData = *iter;
+      girderData.SetGirderName(strName.c_str());
+      girderData.SetGirderLibraryEntry(pGdrEntry);
    }
    IS_VALID;
 }
@@ -692,14 +682,14 @@ void CGirderTypes::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx,G
    _ASSERT( firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx );
 
    // get the girder name for the group
-   std::_tstring strName = m_GirderNames[gdrIdx];
-   const GirderLibraryEntry* pEntry = m_GirderLibraryEntries[gdrIdx];
+   std::_tstring strName = m_GirderData[gdrIdx].GetGirderName();
+   const GirderLibraryEntry* pGdrEntry = m_GirderData[gdrIdx].GetGirderLibraryEntry();
 
    // assign the name for the group
    for ( GirderIndexType i = firstGdrIdx; i <= lastGdrIdx; i++ )
    {
-      m_GirderNames[i] = strName;
-      m_GirderLibraryEntries[i] = pEntry;
+      m_GirderData[i].SetGirderName(strName.c_str());
+      m_GirderData[i].SetGirderLibraryEntry(pGdrEntry);
    }
 
    // firstGdrIdx must match the "first" parameter of a GirderGroup
@@ -762,10 +752,10 @@ GroupIndexType CGirderTypes::GetGirderGroupCount() const
 
 void CGirderTypes::SetGirderCount(GirderIndexType nGirders)
 {
-   if ( nGirders < m_GirderNames.size() )
-      RemoveGirders(m_GirderNames.size() - nGirders);
+   if ( nGirders < m_GirderData.size() )
+      RemoveGirders(m_GirderData.size() - nGirders);
    else
-      AddGirders(nGirders - m_GirderNames.size());
+      AddGirders(nGirders - m_GirderData.size());
 
    ATLASSERT( m_GirderGroups.size() != 0 );
 #if defined _DEBUG
@@ -781,7 +771,7 @@ void CGirderTypes::SetGirderCount(GirderIndexType nGirders)
 GirderIndexType CGirderTypes::GetGirderCount() const
 {
    IS_VALID;
-   return m_GirderNames.size();
+   return m_GirderData.size();
 }
 
 void CGirderTypes::RenameGirder(GroupIndexType grpIdx,LPCTSTR strName)
@@ -792,7 +782,7 @@ void CGirderTypes::RenameGirder(GroupIndexType grpIdx,LPCTSTR strName)
 
    for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
    {
-      m_GirderNames[gdrIdx] = strName;
+      m_GirderData[gdrIdx].m_GirderName = strName;
    }
 }
 
@@ -804,11 +794,7 @@ void CGirderTypes::SetGirderName(GroupIndexType grpIdx,LPCTSTR strName)
 
    for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
    {
-      bool bNewName = ( m_GirderNames[gdrIdx] != strName ? true : false);
-      m_GirderNames[gdrIdx] = strName;
-
-      if ( bNewName )
-         m_GirderData[gdrIdx].PrestressData.ResetPrestressData();
+      m_GirderData[gdrIdx].SetGirderName(strName);
    }
 }
 
@@ -817,7 +803,7 @@ LPCTSTR CGirderTypes::GetGirderName(GirderIndexType gdrIdx) const
    if ( m_pSpan && m_pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge() )
       return m_pSpan->GetBridgeDescription()->GetGirderName();
    else
-      return m_GirderNames[gdrIdx].c_str();
+      return m_GirderData[gdrIdx].GetGirderName();
 }
 
 void CGirderTypes::SetGirderLibraryEntry(GroupIndexType grpIdx,const GirderLibraryEntry* pEntry)
@@ -828,7 +814,7 @@ void CGirderTypes::SetGirderLibraryEntry(GroupIndexType grpIdx,const GirderLibra
 
    for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
    {
-      m_GirderLibraryEntries[gdrIdx] = pEntry;
+      m_GirderData[gdrIdx].SetGirderLibraryEntry(pEntry);
    }
 }
 
@@ -839,23 +825,35 @@ const GirderLibraryEntry* CGirderTypes::GetGirderLibraryEntry(GirderIndexType gd
    if ( m_pSpan && m_pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge() )
       pEntry = m_pSpan->GetBridgeDescription()->GetGirderLibraryEntry();
    else
-      pEntry = m_GirderLibraryEntries[gdrIdx];
+      pEntry = m_GirderData[gdrIdx].GetGirderLibraryEntry();
 
    return pEntry;
 }
 
 void CGirderTypes::SetGirderData(GirderIndexType gdrIdx,const CGirderData& gdrData)
 {
+   // The original implementation of this method did not change the girder name or library
+   // entry (they were stored in this object, not the girder data object). Now that the
+   // girder name and library entry are part of the girder data object, the semantics of
+   // this method need to be preserved. That is why the name and entry aren't changed.
+   std::_tstring strName = m_GirderData[gdrIdx].GetGirderName();
+   const GirderLibraryEntry* pEntry = m_GirderData[gdrIdx].GetGirderLibraryEntry();
+
    m_GirderData[gdrIdx] = gdrData;
+
+   m_GirderData[gdrIdx].SetGirderName(strName.c_str());
+   m_GirderData[gdrIdx].SetGirderLibraryEntry(pEntry);
 }
 
 const CGirderData& CGirderTypes::GetGirderData(GirderIndexType gdrIdx) const
 {
+   // only call this method for girder bridges
    return m_GirderData[gdrIdx];
 }
 
 CGirderData& CGirderTypes::GetGirderData(GirderIndexType gdrIdx)
 {
+   // only call this method for girder bridges
    return m_GirderData[gdrIdx];
 }
 
@@ -878,32 +876,26 @@ void CGirderTypes::SetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType 
 
 Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end)
 {
-   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotGirder )
+   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotSegment )
    {
       return m_pSpan->GetSlabOffset(end);
    }
    else
    {
       ATLASSERT(gdrIdx != INVALID_INDEX);
-      if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
-         return 0;
-
       return m_SlabOffset[end][gdrIdx];
    }
 }
 
 Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const
 {
-   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotGirder )
+   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotSegment )
    {
       return m_pSpan->GetSlabOffset(end);
    }
    else
    {
       ATLASSERT(gdrIdx != INVALID_INDEX);
-      if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
-         return 0;
-
       return m_SlabOffset[end][gdrIdx];
    }
 }
@@ -911,16 +903,15 @@ Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndTy
 #if defined _DEBUG
 void CGirderTypes::AssertValid() const
 {
-   ATLASSERT(m_GirderData.size() == m_GirderNames.size());
    ATLASSERT(m_SlabOffset[0].size() == m_SlabOffset[1].size());
-   ATLASSERT(m_GirderLibraryEntries.size() == m_GirderNames.size());
    ATLASSERT(m_GirderData.size() != 0 ? m_GirderData.size() == m_GirderGroups.back().second+1 : true);
-   ATLASSERT(m_GirderGroups.size() <= m_GirderData.size());
+   ATLASSERT(m_GirderData.size() != 0 ? m_GirderGroups.size() <= m_GirderData.size() : true);
 
    // last index must less than or equal to the current index
    GirderIndexType lastIdx = 0;
-   std::vector<GirderGroup>::const_iterator iter;
-   for ( iter = m_GirderGroups.begin(); iter != m_GirderGroups.end(); iter++ )
+   std::vector<GirderGroup>::const_iterator iter(m_GirderGroups.begin());
+   std::vector<GirderGroup>::const_iterator end(m_GirderGroups.end());
+   for ( ; iter != end; iter++ )
    {
       GirderGroup grp = *iter;
       GirderIndexType idx = grp.first;

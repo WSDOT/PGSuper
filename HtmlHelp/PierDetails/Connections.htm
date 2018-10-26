@@ -20,8 +20,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1486>
-<meta name=layout-width content=993>
+<meta name=layout-height content=613>
+<meta name=layout-width content=963>
 
 
 <!--(Links)=========================================================-->
@@ -41,33 +41,33 @@
 											x-format=default
 											x-value=Connections>}}-->Connections<!--kadov_tag{{</variable>}}--></h1>
 
-<p>The structural boundary conditions and the geometry at the ends of the 
- girders are defined on this tab.</p>
+<p>Connections are defined on both sides of the pier. The Back Side of 
+ Pier connection is the connection at the end of the previous span. The 
+ Ahead Side of Pier connection is the connection at the start of the next 
+ span.</p>
 
-<p>Connections are defined on both sides of the pier. The Back Side is 
- at the end of the previous span. The Ahead Side is at the start of the 
- next span.</p>
+<h2>Connection Geometry</h2>
 
-<h2>Boundary Condition</h2>
+<p>The geometry of the connection is defined in a Connection library object. 
+ Select a pre-defined connection from the drop down list.</p>
+
+<h2>Connection Boundary Condition</h2>
 
 <p>The boundary condition defines the connectivity between the spans and 
- the pier. Using the drop down list, choose one of the following options:</p>
+ the pier.</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
 		style="x-cell-content-align: top;
 				width: 100%;
-				border-spacing: 0px;
-				border-spacing: 0px;"
+				border-spacing: 0;"
 		cellspacing=0
 		width=100%>
 <col style="width: 26.352%;">
 <col style="width: 73.648%;">
 
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 26.352%;
-			border-left-width: 1px;
+<tr valign=top>
+<td style="border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-top-style: Solid;
@@ -83,8 +83,7 @@
 			padding-left: 10px;"
 	width=26.352%>
 <p>Hinged</td>
-<td style="width: 73.648%;
-			border-top-style: Solid;
+<td style="border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
 			border-right-width: 1px;
@@ -98,12 +97,10 @@
 	width=73.648%>
 <p>There is no moment connectivity between the spans and piers</td></tr>
 
-<tr style="x-cell-content-align: top;"
-	valign=top>
+<tr valign=top>
 <td colspan=1
 	rowspan=1
-	style="width: 26.352%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-left-style: Solid;
 			border-left-color: #000000;
@@ -118,8 +115,7 @@
 <p>Roller</td>
 <td colspan=1
 	rowspan=1
-	style="width: 73.648%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -130,12 +126,10 @@
 	width=73.648%>
 <p>There is no moment connectivity between the spans and piers</td></tr>
 
-<tr style="x-cell-content-align: top;"
-	valign=top>
+<tr valign=top>
 <td colspan=1
 	rowspan=1
-	style="width: 26.352%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-left-width: 1px;
 			border-left-color: #000000;
@@ -150,8 +144,7 @@
 <p>Continuous Before Deck Placement</td>
 <td colspan=1
 	rowspan=1
-	style="width: 73.648%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-right-width: 1px;
 			border-right-color: #000000;
@@ -163,12 +156,10 @@
 <p>There is moment continuity between spans, but not with the pier. Continuity 
  is achieved before deck placement</td></tr>
 
-<tr style="x-cell-content-align: top;"
-	valign=top>
+<tr valign=top>
 <td colspan=1
 	rowspan=1
-	style="width: 26.352%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-left-style: Solid;
 			border-left-color: #000000;
@@ -183,8 +174,7 @@
 <p>Continuous After Deck Placement</td>
 <td colspan=1
 	rowspan=1
-	style="width: 73.648%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -196,12 +186,10 @@
 <p>There is moment continuity between spans, but not with the pier. Continuity 
  is achieved after deck placement</td></tr>
 
-<tr style="x-cell-content-align: top;"
-	valign=top>
+<tr valign=top>
 <td colspan=1
 	rowspan=1
-	style="width: 26.352%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-left-width: 1px;
 			border-left-color: #000000;
@@ -216,8 +204,7 @@
 <p>Integral Before Deck Placement</td>
 <td colspan=1
 	rowspan=1
-	style="width: 73.648%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-right-width: 1px;
 			border-right-color: #000000;
@@ -229,12 +216,10 @@
 <p>There is moment continuity between the spans and the pier. Continuity 
  is achieved before deck placement</td></tr>
 
-<tr style="x-cell-content-align: top;"
-	valign=top>
+<tr valign=top>
 <td colspan=1
 	rowspan=1
-	style="width: 26.352%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-left-style: Solid;
 			border-left-color: #000000;
@@ -249,8 +234,7 @@
 <p>Integral After Deck Placement</td>
 <td colspan=1
 	rowspan=1
-	style="width: 73.648%;
-			padding-right: 10px;
+	style="padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -261,188 +245,6 @@
 	width=73.648%>
 <p>There is moment continuity between the spans and the pier. Continuity 
  is achieved after deck placement</td></tr>
-</table>
-
-&nbsp; 
-
-<p class=Tip>NOTE: The boundary conditions at all piers are treated as 
- hinged connections if the analysis mode is set to Simple Span. See <a 
- href="../User%27s Guide/AnalysisControls/AnalysisControls.htm">Chapter 
- 7</a> for more details.</p>
-
-<h2>Connection Definition</h2>
-
-<p>The connection definition describes the geometry at the ends of girders 
- as well as the size of any end diaphragms.</p>
-
-<h4>Copy Connection Definition from Library</h4>
-
-<p>Connection definitions that are stored in the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibGirder_Connection_Dialog.htm">Connections 
- Library</a> can be used to quickly define the connection geometry. Press 
- the button labeled &quot;Copy Connection Geometry from Library&quot; to 
- select a pre-defined connection. The connection geometry will be copied 
- from the library into this tab.</p>
-
-<p class=Tip>NOTE: Unlike other library entries, the connection data is 
- not linked to the selected connection library entry.</p>
-
-<h3>Girder Connection Properties</h3>
-
-<p>The girder connection properties describe the location of the centerline 
- of bearing relative to the Abutment/Pier Line, the location of the ends 
- of the girder, and the size of the support area.</p>
-
-<h4>Bearing Offset</h4>
-
-<p>The bearing offset defines the distance from the Abutment/Pier Line 
- to the Centerline of Bearing line. This distance may be measured normal 
- to the Abutment/Pier Line or along the centerline of girders.</p>
-
-<p class=Tip>NOTE: When the bearing offset is measured along the centerline 
- of the girders, and the girders are not parallel, there will be a unique 
- centerline of bearing line for each girder.</p>
-
-<h4>End Distance</h4>
-
-<p>The end distance locates the end of the girder. This distance can be 
- measured from either the Abutment/Pier Line or from the Centerline of 
- Bearing line. This distance can be measured along the centerline of the 
- girders or normal to the Abutment/Pier Line or the Centerline Bearing.</p>
-
-<p>The end distance, along with the bearing to bearing span length, defines 
- the overall plan length of the girder.</p>
-
-<p class=Tip>NOTE: The centerline of bearing line for each girder is always 
- parallel to the Abutment/Pier Line.</p>
-
-<h4>Support Width</h4>
-
-<p>The support width defines the width of the bearing area and locates 
- the face of support for shear calculations. Many of the LRFD specification 
- requirements related to shear reference the face of support. PGSuper locates 
- the face of support at one-half the support width from the centerline 
- of bearing, measured along the centerline of the girder.</p>
-
-<h3>Diaphragm</h3>
-
-<p>The diaphragm data describes the size of diaphragms at the ends of a 
- pier and how the dead load of the diaphragm is to be considered in the 
- structural analysis.</p>
-
-<h4>Diaphragm Height and Width</h4>
-
-<p>Define the cross sectional area of the diaphragm by its height and width. 
- The dead weight of the diaphragm is based on this cross sectional area, 
- the tributary width of the girder, and the unit weight of the slab concrete. 
- </p>
-
-<p>Using the drop down list, specify how the dead load of the diaphragm 
- is considered in the structural analysis.</p>
-
-<!--(Table)=========================================================-->
-<table x-use-null-cells
-		style="x-cell-content-align: top;
-				width: 100%;
-				border-spacing: 0px;
-				border-spacing: 0px;"
-		cellspacing=0
-		width=100%>
-<col style="width: 50%;">
-<col style="width: 50%;">
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 50%;
-			border-left-width: 1px;
-			border-left-color: #000000;
-			border-left-style: Solid;
-			border-top-style: Solid;
-			border-top-color: #000000;
-			border-top-width: 1px;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>Apply weight of diaphragm over CL Bearing</td>
-<td style="width: 50%;
-			border-top-style: Solid;
-			border-top-color: #000000;
-			border-top-width: 1px;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>The weight of the diaphragm is applied directly over the Centerline 
- of Bearing so that it creates only a dead load reaction.</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 50%;
-			border-left-width: 1px;
-			border-left-color: #000000;
-			border-left-style: Solid;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>Apply weight of diaphragm to girder</td>
-<td style="width: 50%;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>The weight of the diaphragm is applied directly to the girder so that 
- it produces moment, shear, and reaction. Enter the distance from the Abutment/Pier 
- Line to the center of gravity of the diaphragm. This is the location where 
- the resultant of the diaphragm dead load is assumed to act.</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 50%;
-			border-left-width: 1px;
-			border-left-color: #000000;
-			border-left-style: Solid;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>Ignore diaphragm weight</td>
-<td style="width: 50%;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>The dead load of the diaphragm is not considered in the structural analysis.</td></tr>
 </table>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->

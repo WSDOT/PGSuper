@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,12 +87,6 @@ dbgLogDumpContext m_Log;
 #define LOG(x) m_Log << x << endl
 #define LOGX(x) m_Log << _T(__FILE__) << _T(" ") << _T("(") << __LINE__ << _T(") ") << x << endl
 
-#define LOG_EXECUTION_TIME(_x_) \
-   { sysTime startTime; \
-   _x_; \
-   sysTime endTime; \
-   LOG((endTime.Seconds() - startTime.Seconds()) << _T(" sec : ") << _T(#_x_)); }
-
 #define CLOSE_LOGFILE m_Log.SetLog(NULL,0)
 
 #else
@@ -101,7 +95,6 @@ dbgLogDumpContext m_Log;
 #define LOG(x)
 #define LOGX(x)
 #define CLOSE_LOGFILE
-#define LOG_EXECUTION_TIME(_x_) _x_
 
 #endif
 

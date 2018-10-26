@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,55 +35,27 @@ struct IStructuredLoad;
 
 
 #include <PgsExt\PgsExtExp.h>
+#include <PgsExt\SegmentKey.h>
 
 // namespace to contain user load enums
-namespace UserLoads
+struct PGSEXTCLASS UserLoads
 {
-   enum Stage{BridgeSite1, BridgeSite2, BridgeSite3};
    enum LoadCase{DC, DW, LL_IM};
    enum DistributedLoadType {Uniform, Trapezoidal};
+   enum UserLoadType { Distributed, Point, Moment };
 
-   static Int32 GetNumStages() // only for DC and DW
-   {
-      return 2;
-   }
+   static IDType ms_NextDistributedLoadID;
+   static IDType ms_NextPointLoadID;
+   static IDType ms_NextMomentLoadID;
 
-   static Stage GetStage(Int32 stagenum)
+   static UserLoadType GetUserLoadTypeFromID(IDType id)
    {
-      switch(stagenum)
-      {
-      case BridgeSite1:
-         return BridgeSite1;
-         break;
-      case BridgeSite2:
-         return BridgeSite2;
-         break;
-      case BridgeSite3:
-         return BridgeSite3;
-         break;
-      default:
-         CHECK(0);
-         return BridgeSite1;
-      }
-   }
-
-   static std::_tstring GetStageName(Int32 stagenum)
-   {
-      switch(stagenum)
-      {
-      case BridgeSite1:
-         return std::_tstring(_T("Bridge Site 1"));
-         break;
-      case BridgeSite2:
-         return std::_tstring(_T("Bridge Site 2"));
-         break;
-      case BridgeSite3:
-         return std::_tstring(_T("Bridge Site 3"));
-         break;
-      default:
-         CHECK(0);
-         return std::_tstring(_T("Error"));
-      }
+      if ( id < 9999 )
+         return Distributed;
+      else if ( id < 19999 )
+         return Point;
+      else
+         return Moment;
    }
 
    static Int32 GetNumLoadCases()
@@ -182,12 +154,12 @@ public:
    bool operator != (const CPointLoadData& rOther) const;
 
    // properties
-   UserLoads::Stage               m_Stage;
-   UserLoads::LoadCase            m_LoadCase;
+   IDType                m_ID;
+   EventIndexType        m_EventIdx;
+   UserLoads::LoadCase   m_LoadCase;
 
-   SpanIndexType    m_Span;      // set to AllSpans if all
-   GirderIndexType    m_Girder;    // set to AllGirders if all
-   Float64  m_Location;   // cannot be negative
+   CSpanGirderKey m_SpanGirderKey;
+   Float64  m_Location;   // measured from CL bearing at start of span
    bool     m_Fractional;
    Float64  m_Magnitude;
    std::_tstring m_Description;

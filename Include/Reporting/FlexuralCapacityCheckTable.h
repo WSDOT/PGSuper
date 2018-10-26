@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,8 @@
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
+class pgsGirderArtifact;
+class pgsClosurePourArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -73,9 +75,14 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   virtual rptRcTable* Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                              IEAFDisplayUnits* pDisplayUnits,
-                             pgsTypes::Stage stage,
+                             IntervalIndexType intervalIdx,
+                             pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const;
+
+   virtual rptRcTable* Build(IBroker* pBroker,const pgsClosurePourArtifact* pClosureArtifact,
+                             IEAFDisplayUnits* pDisplayUnits,
+                             IntervalIndexType intervalIdx,
                              pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -89,7 +96,7 @@ protected:
    void MakeCopy(const CFlexuralCapacityCheckTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CFlexuralCapacityCheckTable& rOther);
+   virtual void MakeAssignment(const CFlexuralCapacityCheckTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

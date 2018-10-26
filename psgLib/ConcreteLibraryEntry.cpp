@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 #include <Units\sysUnits.h>
 
 #include <MathEx.h>
-#include <LRFD\ConcreteUtil.h>
+#include <Material\Concrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,7 +66,12 @@ m_ShrinkageK1(1.0),
 m_ShrinkageK2(1.0),
 m_Type(pgsTypes::Normal),
 m_Fct(0), // need a good default value
-m_bHasFct(false)
+m_bHasFct(false),
+m_bUserACIParameters(false),
+m_A(::ConvertToSysUnits(4.0,unitMeasure::Day)),
+m_B(0.85),
+m_CureMethod(pgsTypes::Moist),
+m_CementType(pgsTypes::TypeI)
 {
 }
 
@@ -94,24 +99,28 @@ ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntr
 //======================== OPERATIONS =======================================
 bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 4.0);
+   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 5.0);
+
+   // Version 5, re-arranged data and added AASHTO and ACI groups.
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
    // added version 4
-   pSave->Property(_T("Type"),lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_Type,false).c_str());
+   pSave->Property(_T("Type"),matConcrete::GetTypeName((matConcrete::Type)m_Type,false).c_str());
    pSave->Property(_T("Dw"), m_Dw);
    pSave->Property(_T("Fc"), m_Fc);
    pSave->Property(_T("Ds"), m_Ds);
    pSave->Property(_T("AggregateSize"),m_AggSize);
+   pSave->Property(_T("UserEc"),m_bUserEc);
+   pSave->Property(_T("Ec"),m_Ec);
+
+   pSave->BeginUnit(_T("AASHTO"),1.0);
    pSave->Property(_T("EccK1"), m_EccK1); // changed from K1 in version 4
    pSave->Property(_T("EccK2"), m_EccK2); // added in version 4
    pSave->Property(_T("CreepK1"), m_CreepK1); // added in version 4
    pSave->Property(_T("CreepK2"), m_CreepK2); // added in version 4
    pSave->Property(_T("ShrinkageK1"), m_ShrinkageK1); // added in version 4
    pSave->Property(_T("ShrinkageK2"), m_ShrinkageK2); // added in version 4
-   pSave->Property(_T("UserEc"),m_bUserEc);
-   pSave->Property(_T("Ec"),m_Ec);
 
    // Version 4
    if ( m_Type != pgsTypes::Normal )
@@ -120,6 +129,15 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       if ( m_bHasFct )
          pSave->Property(_T("AggSplittingStrength"),m_Fct);
    }
+   pSave->EndUnit(); // AASHTO
+
+   pSave->BeginUnit(_T("ACI"),1.0);
+   pSave->Property(_T("UserACI"),m_bUserACIParameters);
+   pSave->Property(_T("A"),m_A);
+   pSave->Property(_T("B"),m_B);
+   pSave->Property(_T("CureMethod"),m_CureMethod);
+   pSave->Property(_T("CementType"),m_CementType);
+   pSave->EndUnit(); // ACI
 
    pSave->EndUnit();
 
@@ -131,7 +149,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
       Float64 version = pLoad->GetVersion();
-      if (4.0 < version )
+      if (5.0 < version )
          THROW_LOAD(BadVersion,pLoad);
 
       std::_tstring name;
@@ -146,7 +164,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          std::_tstring strType;
          pLoad->Property(_T("Type"),&strType);
-         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(strType.c_str());
+         m_Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(strType.c_str());
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))
@@ -166,7 +184,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("K1"),&m_EccK1) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
-      else if ( 4 <= version )
+      else if ( 4 <= version && version < 5 )
       {
          if ( !pLoad->Property(_T("EccK1"),&m_EccK1) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -187,7 +205,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( 3.0 <= version )
+      if ( 3.0 <= version && version < 5 )
       {
          if ( !pLoad->Property(_T("UserEc"),&m_bUserEc) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -196,7 +214,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( 4.0 <= version )
+      if ( 4.0 <= version && version < 5 )
       {
          // Added version 4
          if ( m_Type != pgsTypes::Normal )
@@ -210,6 +228,79 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   THROW_LOAD(InvalidFileFormat,pLoad);
             }
          }
+      }
+
+      if ( 4 < version )
+      {
+         // Version 5
+
+         if ( !pLoad->Property(_T("UserEc"),&m_bUserEc) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Ec"),&m_Ec) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->BeginUnit(_T("AASHTO")) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("EccK1"), &m_EccK1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("EccK2"), &m_EccK2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("CreepK1"), &m_CreepK1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("CreepK2"), &m_CreepK2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ShrinkageK1"), &m_ShrinkageK1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("ShrinkageK2"), &m_ShrinkageK2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+
+         if ( m_Type != pgsTypes::Normal )
+         {
+            if ( !pLoad->Property(_T("HasAggSplittingStrength"),&m_bHasFct) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( m_bHasFct )
+            {
+               if ( !pLoad->Property(_T("AggSplittingStrength"),&m_Fct) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+         if ( !pLoad->EndUnit() ) // AASHTO
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->BeginUnit(_T("ACI")) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if (!pLoad->Property(_T("UserACI"),&m_bUserACIParameters))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("A"),&m_A) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("B"),&m_B) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         int value;
+         if ( !pLoad->Property(_T("CureMethod"),&value) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_CureMethod = (pgsTypes::CureMethod)value;
+
+         if ( !pLoad->Property(_T("CementType"),&value) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_CementType = (pgsTypes::CementType)value;
+
+         if ( !pLoad->EndUnit() ) // ACI
+            THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if(!pLoad->EndUnit())
@@ -246,6 +337,19 @@ bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther, bool cons
          test &= ::IsEqual(m_Fct,rOther.m_Fct);
       }
    }
+
+   test &= (m_bUserACIParameters == rOther.m_bUserACIParameters);
+   if ( m_bUserACIParameters )
+   {
+      test &= ::IsEqual(m_A,rOther.m_A);
+      test &= ::IsEqual(m_B,rOther.m_B);
+   }
+   else
+   {
+      test &= m_CureMethod   == rOther.m_CureMethod;
+      test &= m_CementType   == rOther.m_CementType;
+   }
+
 
    if (considerName)
       test &= this->GetName()==rOther.GetName();
@@ -406,6 +510,56 @@ Float64 ConcreteLibraryEntry::GetAggSplittingStrength() const
    return m_Fct;
 }
 
+bool ConcreteLibraryEntry::UserACIParameters() const
+{
+   return m_bUserACIParameters;
+}
+
+void ConcreteLibraryEntry::UserACIParameters(bool bUser)
+{
+   m_bUserACIParameters = bUser;
+}
+
+Float64 ConcreteLibraryEntry::GetAlpha() const
+{
+   return m_A;
+}
+
+void ConcreteLibraryEntry::SetAlpha(Float64 a)
+{
+   m_A = a;
+}
+
+Float64 ConcreteLibraryEntry::GetBeta() const
+{
+   return m_B;
+}
+
+void ConcreteLibraryEntry::SetBeta(Float64 b)
+{
+   m_B = b;
+}
+
+pgsTypes::CureMethod ConcreteLibraryEntry::GetCureMethod() const
+{
+   return m_CureMethod;
+}
+
+void ConcreteLibraryEntry::SetCureMethod(pgsTypes::CureMethod cureMethod)
+{
+   m_CureMethod = cureMethod;
+}
+
+pgsTypes::CementType ConcreteLibraryEntry::GetCementType() const
+{
+   return m_CementType;
+}
+
+void ConcreteLibraryEntry::SetCementType(pgsTypes::CementType cementType)
+{
+   m_CementType = cementType;
+}
+
 //======================== INQUIRY    =======================================
 HICON  ConcreteLibraryEntry::GetIcon() const
 {
@@ -425,42 +579,61 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing)
 
    // exchange data with dialog
    CConcreteEntryDlg dlg(allowEditing);
-   dlg.m_Fc  = this->GetFc();
-   dlg.m_Ds  = this->GetStrengthDensity();
-   dlg.m_Dw  = this->GetWeightDensity();
-   dlg.m_AggSize = this->GetAggregateSize();
-   dlg.m_EntryName    = this->GetName().c_str();
-   dlg.m_EccK1 = this->GetModEK1();
-   dlg.m_EccK2 = this->GetModEK2();
-   dlg.m_CreepK1 = this->GetCreepK1();
-   dlg.m_CreepK2 = this->GetCreepK2();
-   dlg.m_ShrinkageK1 = this->GetShrinkageK1();
-   dlg.m_ShrinkageK2 = this->GetShrinkageK2();
-   dlg.m_bUserEc = this->UserEc();
-   dlg.m_Ec = this->GetEc();
-   dlg.m_Type = this->GetType();
-   dlg.m_bHasFct = this->HasAggSplittingStrength();
-   dlg.m_Fct = this->GetAggSplittingStrength();
+   dlg.m_General.m_EntryName = this->GetName().c_str();
+   dlg.m_General.m_Fc        = this->GetFc();
+   dlg.m_General.m_Ds        = this->GetStrengthDensity();
+   dlg.m_General.m_Dw        = this->GetWeightDensity();
+   dlg.m_General.m_AggSize   = this->GetAggregateSize();
+   dlg.m_General.m_bUserEc   = this->UserEc();
+   dlg.m_General.m_Ec        = this->GetEc();
+   dlg.m_General.m_Type      = this->GetType();
+
+   dlg.m_AASHTO.m_EccK1       = this->GetModEK1();
+   dlg.m_AASHTO.m_EccK2       = this->GetModEK2();
+   dlg.m_AASHTO.m_CreepK1     = this->GetCreepK1();
+   dlg.m_AASHTO.m_CreepK2     = this->GetCreepK2();
+   dlg.m_AASHTO.m_ShrinkageK1 = this->GetShrinkageK1();
+   dlg.m_AASHTO.m_ShrinkageK2 = this->GetShrinkageK2();
+   dlg.m_AASHTO.m_bHasFct     = this->HasAggSplittingStrength();
+   dlg.m_AASHTO.m_Fct         = this->GetAggSplittingStrength();
+
+   dlg.m_ACI.m_bUserParameters = this->UserACIParameters();
+   dlg.m_ACI.m_A               = this->GetAlpha();
+   dlg.m_ACI.m_B               = this->GetBeta();
+   dlg.m_ACI.m_CureMethod      = this->GetCureMethod();
+   dlg.m_ACI.m_CementType      = this->GetCementType();
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
-      this->SetFc(dlg.m_Fc);
-      this->SetStrengthDensity(dlg.m_Ds);
-      this->SetWeightDensity(dlg.m_Dw );
-      this->SetAggregateSize(dlg.m_AggSize);
-      this->SetName(dlg.m_EntryName);
-      this->SetModEK1(dlg.m_EccK1);
-      this->SetModEK2(dlg.m_EccK2);
-      this->SetCreepK1(dlg.m_CreepK1);
-      this->SetCreepK2(dlg.m_CreepK2);
-      this->SetShrinkageK1(dlg.m_ShrinkageK1);
-      this->SetShrinkageK2(dlg.m_ShrinkageK2);
-      this->SetEc(dlg.m_Ec);
-      this->UserEc(dlg.m_bUserEc);
-      this->SetType(dlg.m_Type);
-      this->HasAggSplittingStrength(dlg.m_bHasFct);
-      this->SetAggSplittingStrength(dlg.m_Fct);
+      this->SetName(dlg.m_General.m_EntryName);
+      this->SetFc(dlg.m_General.m_Fc);
+      this->SetStrengthDensity(dlg.m_General.m_Ds);
+      this->SetWeightDensity(dlg.m_General.m_Dw );
+      this->SetAggregateSize(dlg.m_General.m_AggSize);
+      this->SetEc(dlg.m_General.m_Ec);
+      this->UserEc(dlg.m_General.m_bUserEc);
+      this->SetType(dlg.m_General.m_Type);
+
+      this->SetModEK1(dlg.m_AASHTO.m_EccK1);
+      this->SetModEK2(dlg.m_AASHTO.m_EccK2);
+      this->SetCreepK1(dlg.m_AASHTO.m_CreepK1);
+      this->SetCreepK2(dlg.m_AASHTO.m_CreepK2);
+      this->SetShrinkageK1(dlg.m_AASHTO.m_ShrinkageK1);
+      this->SetShrinkageK2(dlg.m_AASHTO.m_ShrinkageK2);
+      this->HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
+      this->SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
+
+      this->UserACIParameters(dlg.m_ACI.m_bUserParameters);
+      this->SetAlpha(dlg.m_ACI.m_A);
+      this->SetBeta(dlg.m_ACI.m_B);
+      this->SetCureMethod(dlg.m_ACI.m_CureMethod);
+      this->SetCementType(dlg.m_ACI.m_CementType);
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+
       return true;
    }
 
@@ -470,22 +643,31 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing)
 
 void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
 {
+   m_Type    = rOther.m_Type;
    m_Fc      = rOther.m_Fc;
    m_Ds      = rOther.m_Ds;      
    m_Dw      = rOther.m_Dw;       
    m_AggSize = rOther.m_AggSize;
    m_bUserEc = rOther.m_bUserEc;
    m_Ec      = rOther.m_Ec;
-   m_Type    = rOther.m_Type;
-   m_bHasFct  = rOther.m_bHasFct;
-   m_Fct      = rOther.m_Fct;
 
+   // AASHTO
    m_EccK1    = rOther.m_EccK1;
    m_EccK2    = rOther.m_EccK2;
    m_CreepK1  = rOther.m_CreepK1;
    m_CreepK2  = rOther.m_CreepK2;
    m_ShrinkageK1  = rOther.m_ShrinkageK1;
    m_ShrinkageK2  = rOther.m_ShrinkageK2;
+   m_bHasFct  = rOther.m_bHasFct;
+   m_Fct      = rOther.m_Fct;
+
+   // ACI
+   m_bUserACIParameters = rOther.m_bUserACIParameters;
+   m_A                  = rOther.m_A;
+   m_B                  = rOther.m_B;
+   m_CureMethod         = rOther.m_CureMethod;
+   m_CementType         = rOther.m_CementType;
+
 }
 
 void ConcreteLibraryEntry::MakeAssignment(const ConcreteLibraryEntry& rOther)

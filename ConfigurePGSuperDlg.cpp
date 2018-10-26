@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -440,7 +440,7 @@ void CConfigurePGSuperDlg::OnMethod()
    GetDlgItem(IDC_SERVERS_STATIC)->EnableWindow(bEnable);
    GetDlgItem(IDC_SERVERS_STATIC2)->EnableWindow(bEnable);
    GetDlgItem(IDC_PUBLISHERS)->EnableWindow(bEnable);
-   //GetDlgItem(IDC_UPDATENOW)->EnableWindow( bEnable);
+   GetDlgItem(IDC_UPDATENOW)->EnableWindow( bEnable);
    GetDlgItem(IDC_UPDATE_FREQUENCY)->EnableWindow( bEnable);
    GetDlgItem(IDC_UPDATES_STATIC)->EnableWindow( bEnable);
    GetDlgItem(IDC_STATIC_EARTH)->EnableWindow( bEnable);

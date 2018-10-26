@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 //
 #include "PGSuperAppPlugin\resource.h"
 
-class CPierData;
+class CPierData2;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage dialog
@@ -54,8 +54,9 @@ public:
    Float64 m_Station;
    pgsTypes::MovePierOption m_MovePierOption;
    std::_tstring m_strOrientation;
+   EventIndexType m_ErectionEventIndex;
 
-   void Init(const CPierData* pPier);
+   void Init(const CPierData2* pPier);
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -73,11 +74,11 @@ protected:
 	afx_msg void OnKillfocusStation();
 	afx_msg void OnSetfocusMovePier();
    afx_msg void OnHelp();
-   afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
+   afx_msg void OnErectionStageChanged();
+   afx_msg void OnErectionStageChanging();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CComPtr<IStation> m_objStation;
    Float64 m_FromStation;
    Float64 m_NextPierStation;
    Float64 m_PrevPierStation;
@@ -88,8 +89,10 @@ protected:
 
    void DisableAll();
    void UpdateChildWindowState();
+   void FillEventList();
+   EventIndexType CreateEvent();
 
-   BOOL IsValidStation(Float64* pStation);
+   int m_PrevEventIdx;
 };
 
 //{{AFX_INSERT_LOCATION}}

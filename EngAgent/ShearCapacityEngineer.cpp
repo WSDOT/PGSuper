@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "ShearCapacityEngineer.h"
 #include <ReinforcedConcrete\ReinforcedConcrete.h>
-#include <Units\SysUnits.h>
+#include <units\sysUnits.h>
 #include "..\PGSuperException.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -33,9 +33,11 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\ResistanceFactors.h>
-#include <Lrfd\Rebar.h>
-#include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\StatusItem.h>
+#include <IFace\EditByUI.h>
+#include <IFace\Intervals.h>
+#include <lrfd\Rebar.h>
+#include <psglib\SpecLibraryEntry.h>
+#include <pgsext\statusitem.h>
 #include <DesignConfigUtil.h>
 
 #ifdef _DEBUG
@@ -95,43 +97,43 @@ void pgsShearCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID)
 }
 
 void pgsShearCapacityEngineer::ComputeShearCapacity(pgsTypes::LimitState ls, 
-                                                    pgsTypes::Stage stage,
+                                                    IntervalIndexType intervalIdx,
                                                     const pgsPointOfInterest& poi,
                                                     const GDRCONFIG& config,
                                                     SHEARCAPACITYDETAILS* pscd)
 {
    // get known information
-   VERIFY(GetInformation(ls, stage, poi, &config, pscd));
-   ComputeShearCapacityDetails(ls,stage,poi,pscd);
+   VERIFY(GetInformation(ls, intervalIdx, poi, &config, pscd));
+   ComputeShearCapacityDetails(ls,intervalIdx,poi,pscd);
 }
 
 void pgsShearCapacityEngineer::ComputeShearCapacity(pgsTypes::LimitState ls, 
-                                                    pgsTypes::Stage stage,
+                                                    IntervalIndexType intervalIdx,
                                                     const pgsPointOfInterest& poi,
                                                     SHEARCAPACITYDETAILS* pscd)
 {
    // get known information
-   VERIFY(GetInformation(ls, stage, poi, NULL, pscd));
-   ComputeShearCapacityDetails(ls,stage,poi,pscd);
+   VERIFY(GetInformation(ls, intervalIdx, poi, NULL, pscd));
+   ComputeShearCapacityDetails(ls,intervalIdx,poi,pscd);
 }
 
 void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState ls, 
-                                                           pgsTypes::Stage stage,
+                                                           IntervalIndexType intervalIdx,
                                                            const pgsPointOfInterest& poi,
                                                            SHEARCAPACITYDETAILS* pscd)
 {
-   // limited to when and where we calculate capacities
-   ATLASSERT( stage == pgsTypes::BridgeSite3 );
-//   ATLASSERT( 0 <= poi.GetID() ); // Design algorithm will push temporary pois
+#if defined _DEBUG
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
+#endif
 
-   SpanIndexType span  = poi.GetSpan();
-   GirderIndexType gdr = poi.GetGirder();
-
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
+   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
@@ -140,10 +142,10 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
 
    if ( bAfter1999 )
    {
-      GET_IFACE(IBridgeMaterial,pMaterial);
-      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
+      GET_IFACE(IMaterials,pMaterial);
+      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
-      //GET_IFACE(IPrestressForce,pPSForce);
+      //GET_IFACE(IPretensionForce,pPSForce);
       //Float64 xfer = pPSForce->GetXferLengthAdjustment(poi);
 #pragma Reminder("############# - Shear Capacity, strand development length adjustment - ##############")
       // Should be using development lenght because this is an ultimate condition
@@ -178,7 +180,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
 
       std::_tstring msg(_T("An error occured while computing shear capacity"));
       pgsGirderDescriptionStatusItem* pStatusItem =
-            new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+            new pgsGirderDescriptionStatusItem(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
       pStatusCenter->Add(pStatusItem);
 
@@ -253,35 +255,55 @@ void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const
    ComputeVsReqd(poiCS,pscd);
 }
 
-void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const GDRCONFIG& config,FPCDETAILS* pd)
+void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,FPCDETAILS* pd)
 {
-   GET_IFACE(IPrestressForce,pPsForce);
-   GET_IFACE(ISectProp2,pSectProp2);
+   GET_IFACE(IPretensionForce,pPsForce);
+   GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
+   GET_IFACE(IProductForces,pProdForces);
+
+   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
    
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
-   Float64 neff;
-   Float64 e = pStrandGeometry->GetEccentricity( poi, config.PrestressConfig, false, &neff);
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   Float64 P = pPsForce->GetHorizHarpedStrandForce(poi, pgsTypes::AfterLosses,pgsTypes::ServiceI, config)
-             + pPsForce->GetPrestressForce(poi,pgsTypes::Straight,pgsTypes::AfterLosses,pgsTypes::ServiceI,config);
+   Float64 neff;
+   Float64 e, P;
+   if ( pConfig )
+   {
+      e = pStrandGeometry->GetEccentricity( castDeckIntervalIdx, poi, *pConfig, false, &neff);
+
+      P = pPsForce->GetHorizHarpedStrandForce(poi, *pConfig, liveLoadIntervalIdx,pgsTypes::Middle)
+        + pPsForce->GetPrestressForce(poi,*pConfig,pgsTypes::Straight, liveLoadIntervalIdx,pgsTypes::Middle);
+   }
+   else
+   {
+      e = pStrandGeometry->GetEccentricity( castDeckIntervalIdx, poi, false, &neff);
+
+      P = pPsForce->GetHorizHarpedStrandForce(poi, liveLoadIntervalIdx,pgsTypes::Middle)
+        + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, liveLoadIntervalIdx,pgsTypes::Middle);
+   }
 
    // girder only props
-   Float64 Ybg = pSectProp2->GetYb(pgsTypes::BridgeSite1,poi);
-   Float64 I   = pSectProp2->GetIx(pgsTypes::BridgeSite1,poi);
-   Float64 A   = pSectProp2->GetAg(pgsTypes::BridgeSite1,poi);
-   Float64 Ybc = pSectProp2->GetYb(pgsTypes::BridgeSite3,poi);
-   Float64 Hg  = pSectProp2->GetHg(pgsTypes::BridgeSite1,poi);
+   Float64 Ybg = pSectProp->GetYb(castDeckIntervalIdx,poi);
+   Float64 I   = pSectProp->GetIx(castDeckIntervalIdx,poi);
+   Float64 A   = pSectProp->GetAg(castDeckIntervalIdx,poi);
+
+   Float64 Hg  = pSectProp->GetHg(castDeckIntervalIdx,poi);
+   Float64 Ybc = pSectProp->GetYb(liveLoadIntervalIdx,poi);
+
    Float64 c   = Ybg - _cpp_min(Hg,Ybc);
 
 
    GET_IFACE2(m_pBroker,ICombinedForces,pCombinedForces);
-   Float64 Mg = pCombinedForces->GetMoment(lcDC, pgsTypes::BridgeSite1, poi, ctCummulative, SimpleSpan);
-   Mg        += pCombinedForces->GetMoment(lcDW, pgsTypes::BridgeSite1, poi, ctCummulative, SimpleSpan);
+   Float64 Mg = pCombinedForces->GetMoment(lcDC, castDeckIntervalIdx, poi, ctCummulative, bat);
+   Mg        += pCombinedForces->GetMoment(lcDW, castDeckIntervalIdx, poi, ctCummulative, bat);
 
    Float64 fpc = -P/A - P*e*c/I + Mg*c/I;
    fpc *= -1.0; // Need to make the compressive stress a positive value
@@ -352,7 +374,7 @@ bool pgsShearCapacityEngineer::TestMe(dbgLog& rlog)
 }
 #endif // _UNITTEST
 
-bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
 						   const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                      SHEARCAPACITYDETAILS* pscd)
 {
@@ -360,19 +382,18 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    // with everything we know
 
    // general information to get started with
-   SpanIndexType span  = poi.GetSpan();
-   GirderIndexType gdr = poi.GetGirder();
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(ILimitStateForces,pLsForces);
    GET_IFACE(ICombinedForces,pCombinedForces);
    GET_IFACE(IGirder,pGdr);
-   GET_IFACE(ISectProp2,pSectProp2);
+   GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(IBridge, pBridge);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
+   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
@@ -391,34 +412,34 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
       sysSectionValue Vmin, Vmax;
       sysSectionValue Vimin, Vimax; // shear that is concurrent with Mmin and Mmax
 
-      pLsForces->GetMoment( ls, stage, poi, MaxSimpleContinuousEnvelope, &Mmin, &Mmax );
-      pLsForces->GetShear(  ls, stage, poi, MaxSimpleContinuousEnvelope, &Vmin, &Vmax );
-      pLsForces->GetConcurrentShear(  ls, stage, poi, MaxSimpleContinuousEnvelope, &Vimin, &Vimax );
+      pLsForces->GetMoment( ls, intervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Mmin, &Mmax );
+      pLsForces->GetShear(  ls, intervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Vmin, &Vmax );
+      pLsForces->GetConcurrentShear(  ls, intervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Vimin, &Vimax );
       Mu_max = Mmax;
       Vu_max = Vmax;
       Vi_max = Vimax;
 
-      pLsForces->GetMoment( ls, stage, poi, MinSimpleContinuousEnvelope, &Mmin, &Mmax );
-      pLsForces->GetShear(  ls, stage, poi, MinSimpleContinuousEnvelope, &Vmin, &Vmax );
-      pLsForces->GetConcurrentShear(  ls, stage, poi, MinSimpleContinuousEnvelope, &Vimin, &Vimax );
+      pLsForces->GetMoment( ls, intervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &Mmin, &Mmax );
+      pLsForces->GetShear(  ls, intervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &Vmin, &Vmax );
+      pLsForces->GetConcurrentShear(  ls, intervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &Vimin, &Vimax );
       Mu_min = Mmin;
       Vu_min = Vmin;
       Vi_min = Vimin;
 
-      Vd_min =  pCombinedForces->GetShear(lcDC,stage,poi,ctCummulative,MaxSimpleContinuousEnvelope);
-      Vd_min += pCombinedForces->GetShear(lcDW,stage,poi,ctCummulative,MaxSimpleContinuousEnvelope);
-      Vd_max =  pCombinedForces->GetShear(lcDC,stage,poi,ctCummulative,MinSimpleContinuousEnvelope);
-      Vd_max += pCombinedForces->GetShear(lcDW,stage,poi,ctCummulative,MinSimpleContinuousEnvelope);
+      Vd_min =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCummulative,pgsTypes::MaxSimpleContinuousEnvelope);
+      Vd_min += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCummulative,pgsTypes::MaxSimpleContinuousEnvelope);
+      Vd_max =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCummulative,pgsTypes::MinSimpleContinuousEnvelope);
+      Vd_max += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCummulative,pgsTypes::MinSimpleContinuousEnvelope);
    }
    else
    {
-      BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
-      pLsForces->GetMoment( ls, stage, poi, bat, &Mu_min, &Mu_max );
-      pLsForces->GetShear(  ls, stage, poi, bat, &Vu_min, &Vu_max );
-      pLsForces->GetConcurrentShear(  ls, stage, poi, bat, &Vi_min, &Vi_max );
+      pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+      pLsForces->GetMoment( ls, intervalIdx, poi, bat, &Mu_min, &Mu_max );
+      pLsForces->GetShear(  ls, intervalIdx, poi, bat, &Vu_min, &Vu_max );
+      pLsForces->GetConcurrentShear(  ls, intervalIdx, poi, bat, &Vi_min, &Vi_max );
 
-      Vd_min =  pCombinedForces->GetShear(lcDC,stage,poi,ctCummulative,bat);
-      Vd_min += pCombinedForces->GetShear(lcDW,stage,poi,ctCummulative,bat);
+      Vd_min =  pCombinedForces->GetShear(lcDC,intervalIdx,poi,ctCummulative,bat);
+      Vd_min += pCombinedForces->GetShear(lcDW,intervalIdx,poi,ctCummulative,bat);
       Vd_max = Vd_min;
    }
 
@@ -434,7 +455,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    // Determine if the tension side is on the top half or bottom half of the girder
    // The flexural tension side is on the bottom when the maximum (positive) bending moment
    // exceeds the minimum (negative) bending moment
-   bool bTensionOnBottom = (fabs(Mu_max) >= fabs(Mu_min) ? true : false);
+   bool bTensionOnBottom = ( fabs(Mu_min) <= fabs(Mu_max) ? true : false);
    pscd->bTensionBottom = bTensionOnBottom;
 
    // axial force
@@ -464,8 +485,9 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
 
    // phi factor for shear
    GET_IFACE(IResistanceFactors,pResistanceFactors);
-   GET_IFACE(IBridgeMaterialEx,pMaterial);
-   pscd->Phi = pResistanceFactors->GetShearResistanceFactor( pMaterial->GetGdrConcreteType(span,gdr) );
+   GET_IFACE(IMaterials,pMaterial);
+
+   pscd->Phi = pResistanceFactors->GetShearResistanceFactor( pMaterial->GetSegmentConcreteType(segmentKey) );
 
    // shear area (bv and dv)
    pscd->bv = pGdr->GetShearWidth(poi);
@@ -477,31 +499,38 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
       pscd->fc = pConfig->Fc;
 
       if ( pConfig->bUserEc )
+      {
          pscd->Ec = pConfig->Ec;
+      }
       else
-         pscd->Ec = pMaterial->GetEconc(pConfig->Fci,pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetEccK1Gdr(span,gdr),pMaterial->GetEccK2Gdr(span,gdr));
+      {
+         pscd->Ec = pMaterial->GetEconc(pConfig->Fc,
+                                        pMaterial->GetSegmentStrengthDensity(segmentKey),
+                                        pMaterial->GetSegmentEccK1(segmentKey),
+                                        pMaterial->GetSegmentEccK2(segmentKey));
+      }
    }
    else
    {
-      pscd->fc = pMaterial->GetFcGdr(span,gdr);
-      pscd->Ec = pMaterial->GetEcGdr(span,gdr);
+      pscd->fc = pMaterial->GetSegmentFc(segmentKey,intervalIdx);
+      pscd->Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
    }
 
-   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
-   ATLASSERT(pStrand!=0);
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   ATLASSERT(pStrand != 0);
    pscd->Ep = pStrand->GetE();
 
    // stirrup properties
    GET_IFACE(IStirrupGeometry,pStirrups);
    Float64 Es, fy, fu;
-   pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
 
-   // added with LRFD 7th Edition 2014
-   // fy <= 100 ksi
-   // See LRFD 5.8.2.5
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( poi.HasAttribute(POI_CLOSURE) )
    {
-      fy = min(fy,::ConvertToSysUnits(100.0,unitMeasure::KSI));
+      pMaterial->GetClosurePourTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
+   }
+   else
+   {
+      pMaterial->GetSegmentTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
    }
 
    Float64 s;
@@ -509,14 +538,14 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    Float64 nl;
    Float64 abar;
    Float64 avs;
-   if(pConfig!=NULL)
+   if(pConfig != NULL)
    {
-      Float64 gdr_length = pBridge->GetGirderLength(span,gdr);
-      Float64 location = poi.GetDistFromStart();
-      Float64 lft_supp_loc = pBridge->GetGirderStartConnectionLength(span,gdr);
-      Float64 rgt_sup_loc = gdr_length - pBridge->GetGirderEndConnectionLength(span,gdr);
+      Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+      Float64 location       = poi.GetDistFromStart();
+      Float64 lft_supp_loc   = pBridge->GetSegmentStartBearingOffset(segmentKey);
+      Float64 rgt_sup_loc    = segment_length - pBridge->GetSegmentEndBearingOffset(segmentKey);
 
-      avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, poi.GetDistFromStart(), gdr_length, 
+      avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, poi.GetDistFromStart(), segment_length, 
                                  lft_supp_loc, rgt_sup_loc, &size, &abar, &nl, &s);
    }
    else
@@ -524,9 +553,9 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
       avs = pStirrups->GetVertStirrupAvs(poi, &size, &abar, &nl, &s);
    }
 
-   pscd->Av = abar*nl;
-   pscd->fy = fy;
-   pscd->S  = s;
+   pscd->Av    = abar*nl;
+   pscd->fy    = fy;
+   pscd->S     = s;
    pscd->Alpha = pStirrups->GetAlpha(poi);
 
    // long rebar
@@ -537,28 +566,27 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    else
       pscd->As = pLongRebarGeometry->GetAsTopHalf(poi,true);
 
-   pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy,&fu);
+   pMaterial->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
    pscd->Es = Es;
 
    // areas on tension side of axis
    if ( bTensionOnBottom )
-      pscd->Ac = pSectProp2->GetAcBottomHalf(poi); 
+      pscd->Ac = pSectProp->GetAcBottomHalf(poi); 
    else
-      pscd->Ac = pSectProp2->GetAcTopHalf(poi); 
+      pscd->Ac = pSectProp->GetAcTopHalf(poi); 
 
    return true;
 }
 
-bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
+bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,
 						   const pgsPointOfInterest& poi, 
                      const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd)
 {
-   GetGeneralInformation(ls,stage,poi,pConfig,pscd);
+   GetGeneralInformation(ls,intervalIdx,poi,pConfig,pscd);
 
-   SpanIndexType span = poi.GetSpan();
-   GirderIndexType gdr = poi.GetGirder();
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IPrestressForce,pPsForce);
+   GET_IFACE(IPretensionForce,pPsForce);
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
    GET_IFACE(IBridge,pBridge);
@@ -567,31 +595,31 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
    // vertical component of prestress force
    if (pConfig!=NULL)
    {
-      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,pgsTypes::AfterLosses,pgsTypes::ServiceI,*pConfig);
+      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,*pConfig,intervalIdx,pgsTypes::Middle);
    }
    else
    {
-      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,pgsTypes::AfterLosses,pgsTypes::ServiceI);
+      pscd->Vp = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::Middle);
    }
 
    MOMENTCAPACITYDETAILS capdet;
    if (pConfig!=NULL)
    {
-      pMomentCapacity->GetMomentCapacityDetails(stage, poi, *pConfig, (pscd->bTensionBottom ? true : false), &capdet);
+      pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, *pConfig, (pscd->bTensionBottom ? true : false), &capdet);
    }
    else
    {
-      pMomentCapacity->GetMomentCapacityDetails(stage, poi, (pscd->bTensionBottom ? true : false), &capdet);
+      pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, (pscd->bTensionBottom ? true : false), &capdet);
    }
 
    pscd->de = capdet.de_shear; // see PCI BDM 8.4.1.2
    pscd->MomentArm = capdet.MomentArm;
-   pscd->PhiMu = capdet.Phi;
+   pscd->PhiMu     = capdet.Phi;
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
+   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
@@ -615,33 +643,33 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
 
       if ( Mu < MuMin )
       {
-         pscd->Mu = MuSign*MuMin;
-         pscd->RealMu = MuSign*Mu;
+         pscd->Mu          = MuSign*MuMin;
+         pscd->RealMu      = MuSign*Mu;
          pscd->MuLimitUsed = true;
       }
       else
       {
-         pscd->Mu = MuSign*Mu;
-         pscd->RealMu = MuSign*Mu;
+         pscd->Mu          = MuSign*Mu;
+         pscd->RealMu      = MuSign*Mu;
          pscd->MuLimitUsed = false;
       }
    }
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   if (pConfig!=NULL)
+   if (pConfig != NULL)
    {
       pscd->fpc = pShearCapacity->GetFpc(poi, *pConfig);
-      pscd->fpe = pPsForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI,*pConfig);
+      pscd->fpe = pPsForce->GetEffectivePrestress(poi,*pConfig,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
    }
    else
    {
       pscd->fpc = pShearCapacity->GetFpc(poi);
-      pscd->fpe = pPsForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI);
+      pscd->fpe = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle);
    }
 
    // prestress area - factor for development length
    Float64 apsu = 0;
-   if (pConfig!=NULL)
+   if (pConfig != NULL)
    {
       // Use approximate method during design. The performance gain is around 30%. However, this does
       // change results slightly in the end zones for some files. If this becomes problematic, check out the 
@@ -661,32 +689,32 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
 
    pscd->Aps = apsu;
 
-   GET_IFACE(IBridgeMaterial,pMat);
-   pscd->ag = pMat->GetMaxAggrSizeGdr(span, gdr);
+   GET_IFACE(IMaterials,pMat);
+   pscd->ag = pMat->GetSegmentMaxAggrSize(segmentKey);
    pscd->sx = pscd->dv; // We don't have input for this, so use dv. Assume area provided is > 0.003bvsx
 
    // cracking moment parameters for LRFD simplified method
    CRACKINGMOMENTDETAILS mcr_details;
-   if (pConfig!=NULL)
+   if (pConfig != NULL)
    {
-      pMomentCapacity->GetCrackingMomentDetails(stage,poi,*pConfig,(pscd->bTensionBottom ? true : false),&mcr_details);
+      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,*pConfig,(pscd->bTensionBottom ? true : false),&mcr_details);
    }
    else
    {
-      pMomentCapacity->GetCrackingMomentDetails(stage,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
+      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
    }
 
-   GET_IFACE(IBridgeMaterialEx,pMaterial);
+   GET_IFACE(IMaterials,pMaterial);
 
    pscd->McrDetails = mcr_details;
    if ( (pscd->bTensionBottom ? true : false) )
-      pscd->McrDetails.fr = pMaterial->GetShearFrGdr(poi.GetSpan(),poi.GetGirder());
+      pscd->McrDetails.fr = pMaterial->GetSegmentShearFr(segmentKey,intervalIdx);
    else
-      pscd->McrDetails.fr = pMaterial->GetShearFrSlab();
+      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(intervalIdx);
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);
 
-   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+   pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
    pscd->ConcreteType = concType;
    switch( concType )
    {
@@ -696,10 +724,10 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
       break;
 
    case pgsTypes::AllLightweight:
-      if ( pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr) )
+      if ( pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey) )
       {
          pscd->bHasFct = true;
-         pscd->fct = pMaterial->GetGdrConcreteAggSplittingStrength(span,gdr);
+         pscd->fct = pMaterial->GetSegmentConcreteAggSplittingStrength(segmentKey);
       }
       else
       {
@@ -709,10 +737,10 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
       break;
 
    case pgsTypes::SandLightweight:
-      if ( pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr) )
+      if ( pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey) )
       {
          pscd->bHasFct = true;
-         pscd->fct = pMaterial->GetGdrConcreteAggSplittingStrength(span,gdr);
+         pscd->fct = pMaterial->GetSegmentConcreteAggSplittingStrength(segmentKey);
       }
       else
       {
@@ -731,39 +759,35 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
 
 bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd)
 {
-   SpanIndexType span  = poi.GetSpan();
-   GirderIndexType gdr = poi.GetGirder();
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    lrfdShearData data;
-   data.Mu  = pscd->Mu;
-   data.Nu  = pscd->Nu;
-   data.Vu  = pscd->Vu;
-   data.phi = pscd->Phi;
-   data.Vp  = pscd->Vp;
-   data.dv  = pscd->dv;
-   data.bv  = pscd->bv;
-   data.Es  = pscd->Es;
-   data.As  = pscd->As;
-   data.Ep  = pscd->Ep;
-   data.Aps = pscd->Aps;
-   data.Ec  = pscd->Ec;
-   data.Ac  = pscd->Ac;
-   data.fpo = pscd->fpo; 
-   data.fc  = pscd->fc;
-   data.fy  = pscd->fy;
-   data.AvS = IsZero(pscd->S) ? 0 : pscd->Av/pscd->S;
-   data.Vi   = pscd->Vi;
-   data.Vd   = pscd->Vd;
-   data.Mcre = pscd->McrDetails.Mcr;
-   data.fpc  = pscd->fpc;
+   data.Mu           = pscd->Mu;
+   data.Nu           = pscd->Nu;
+   data.Vu           = pscd->Vu;
+   data.phi          = pscd->Phi;
+   data.Vp           = pscd->Vp;
+   data.dv           = pscd->dv;
+   data.bv           = pscd->bv;
+   data.Es           = pscd->Es;
+   data.As           = pscd->As;
+   data.Ep           = pscd->Ep;
+   data.Aps          = pscd->Aps;
+   data.Ec           = pscd->Ec;
+   data.Ac           = pscd->Ac;
+   data.fpo          = pscd->fpo;
+   data.fc           = pscd->fc;
+   data.fy           = pscd->fy;
+   data.AvS          = IsZero(pscd->S) ? 0 : pscd->Av/pscd->S;
+   data.Vi           = pscd->Vi;
+   data.Vd           = pscd->Vd;
+   data.Mcre         = pscd->McrDetails.Mcr;
+   data.fpc          = pscd->fpc;
    data.ConcreteType = (matConcrete::Type)pscd->ConcreteType;
-   data.bHasfct = pscd->bHasFct;
-   data.fct = pscd->fct;
-   data.sx = pscd->sx; // cracking
-   data.ag = pscd->ag;
-
-   GET_IFACE(IBridgeMaterial,pMat);
-   data.lambda = pMat->GetLambdaGdr(span,gdr);
+   data.bHasfct      = pscd->bHasFct;
+   data.fct          = pscd->fct;
+   data.sx           = pscd->sx; // cracking
+   data.ag           = pscd->ag;
 
 
    GET_IFACE(ISpecification, pSpec);
@@ -791,7 +815,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          ATLASSERT(shear_capacity_method == scmWSDOT2001);
 
          GET_IFACE(IPointOfInterest,pPOI);
-         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(poi.GetSpan(),poi.GetGirder(),pgsTypes::BridgeSite3,POI_15H) );
+         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_15H) );
          ATLASSERT(vPOI.size() == 2);
          Float64 l1 = vPOI[0].GetDistFromStart();
          Float64 l2 = vPOI[1].GetDistFromStart();
@@ -813,7 +837,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
 
          std::_tstring msg(_T("Error computing shear capacity - could not converge on a solution"));
          pgsGirderDescriptionStatusItem* pStatusItem =
-            new pgsGirderDescriptionStatusItem(poi.GetSpan(),poi.GetGirder(),2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+            new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
          pStatusCenter->Add(pStatusItem);
 
@@ -888,47 +912,39 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          Float64 fct = ::ConvertFromSysUnits( pscd->fct, *pStressUnit );
 
          // 5.8.3.3-3
-         Float64 Vc = K * data.lambda * Beta * bv * dv;
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+         Float64 Vc = K * Beta * bv * dv;
+         switch( pscd->ConcreteType )
          {
-            switch( pscd->ConcreteType )
-            {
-            case pgsTypes::Normal:
-               Vc *= sqrt(fc);
-               break;
-
-            case pgsTypes::AllLightweight:
-               if ( pscd->bHasFct )
-               {
-                  Vc *= min(Kfct*fct,sqrt(fc));
-               }
-               else
-               {
-                  Vc *= 0.75*sqrt(fc);
-               }
-               break;
-
-            case pgsTypes::SandLightweight:
-               if ( pscd->bHasFct )
-               {
-                  Vc *= min(Kfct*fct,sqrt(fc));
-               }
-               else
-               {
-                  Vc *= 0.85*sqrt(fc);
-               }
-               break;
-
-            default:
-               ATLASSERT(false); // is there a new concrete type
-               Vc *= sqrt(fc);
-               break;
-            }
-         }
-         else
-         {
+         case pgsTypes::Normal:
             Vc *= sqrt(fc);
+            break;
+
+         case pgsTypes::AllLightweight:
+            if ( pscd->bHasFct )
+            {
+               Vc *= min(Kfct*fct,sqrt(fc));
+            }
+            else
+            {
+               Vc *= 0.75*sqrt(fc);
+            }
+            break;
+
+         case pgsTypes::SandLightweight:
+            if ( pscd->bHasFct )
+            {
+               Vc *= min(Kfct*fct,sqrt(fc));
+            }
+            else
+            {
+               Vc *= 0.85*sqrt(fc);
+            }
+            break;
+
+         default:
+            ATLASSERT(false); // is there a new concrete type
+            Vc *= sqrt(fc);
+            break;
          }
 
          Vc = ::ConvertToSysUnits( Vc, *pForceUnit);
@@ -1001,24 +1017,14 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
 
          Float64 sqrt_fc;
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            GET_IFACE(IBridgeMaterial,pMaterial);
-            Float64 lambda = pMaterial->GetLambdaGdr(poi.GetSpan(),poi.GetGirder());
-            sqrt_fc = lambda * sqrt(fc);
-         }
-         else
-         {
-            // LRFD 5.8.2.2
-            if ( pscd->ConcreteType == pgsTypes::Normal )
-               sqrt_fc = sqrt(fc);
-            else if ( (pscd->ConcreteType == pgsTypes::AllLightweight || pscd->ConcreteType == pgsTypes::SandLightweight) && pscd->bHasFct )
-               sqrt_fc = min(Kfct*fct,sqrt(fc));
-            else if ( pscd->ConcreteType == pgsTypes::AllLightweight && !pscd->bHasFct )
-               sqrt_fc = 0.75*sqrt(fc);
-            else if ( pscd->ConcreteType == pgsTypes::SandLightweight && !pscd->bHasFct )
-               sqrt_fc = 0.85*sqrt(fc);
-         }
+         if ( pscd->ConcreteType == pgsTypes::Normal )
+            sqrt_fc = sqrt(fc);
+         else if ( (pscd->ConcreteType == pgsTypes::AllLightweight || pscd->ConcreteType == pgsTypes::SandLightweight) && pscd->bHasFct )
+            sqrt_fc = min(Kfct*fct,sqrt(fc));
+         else if ( pscd->ConcreteType == pgsTypes::AllLightweight && !pscd->bHasFct )
+            sqrt_fc = 0.75*sqrt(fc);
+         else if ( pscd->ConcreteType == pgsTypes::SandLightweight && !pscd->bHasFct )
+            sqrt_fc = 0.85*sqrt(fc);
 
          cot_theta = _cpp_min(1.0+K*(fpc/sqrt_fc),1.8);
       }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,6 +69,7 @@ HRESULT IBeamFamilyImpl::Init()
       CString str(pszUserType);
 
       m_Factories.insert( std::make_pair(str,clsid[0]) );
+      m_Names.push_back(str);
    }
 
    return S_OK;
@@ -85,22 +86,9 @@ CString IBeamFamilyImpl::GetName()
    return strName;
 }
 
-void IBeamFamilyImpl::RefreshFactoryList()
+const std::vector<CString>& IBeamFamilyImpl::GetFactoryNames()
 {
-   m_Factories.clear();
-   Init();
-}
-
-std::vector<CString> IBeamFamilyImpl::GetFactoryNames()
-{
-   FactoryContainer::iterator iter;
-   std::vector<CString> names;
-   for ( iter = m_Factories.begin(); iter != m_Factories.end(); iter++ )
-   {
-      names.push_back( iter->first );
-   }
-
-   return names;
+   return m_Names;
 }
 
 CLSID IBeamFamilyImpl::GetFactoryCLSID(LPCTSTR strName)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,29 +39,31 @@ CLASS
 ****************************************************************************/
 
 // free functions
-GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridge)
+inline GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridge)
 {
    PierIndexType nPiers = pBridge->GetPierCount();
 
    // Number of girders at pier is max in attached spans
    if (pierIdx == 0)
    {
-      return pBridge->GetGirderCount(0);
+      return pBridge->GetGirderCountBySpan(0);
    }
-   else if(pierIdx == nPiers-1)
+   else if (pierIdx == nPiers-1)
    {
-      return pBridge->GetGirderCount(nPiers-2);
+      return pBridge->GetGirderCountBySpan(pierIdx-1);
    }
    else
    {
-      GirderIndexType prvNgdrs = pBridge->GetGirderCount(pierIdx-1);
-      GirderIndexType nxtNgdrs = pBridge->GetGirderCount(pierIdx);
+      SpanIndexType prevSpanIdx = pierIdx-1;
+      SpanIndexType nextSpanIdx = prevSpanIdx+1;
+      GirderIndexType prvNgdrs = pBridge->GetGirderCountBySpan(prevSpanIdx);
+      GirderIndexType nxtNgdrs = pBridge->GetGirderCountBySpan(nextSpanIdx);
       return max(prvNgdrs, nxtNgdrs);
    }
 }
 
 
-void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,IEAFDisplayUnits* pDisplayUnits);
+void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,IEAFDisplayUnits* pDisplayUnits);
 void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pier,IEAFDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -102,7 +104,7 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(CReportSpecification
        if ( pierIdx < nPiers-1 )
        {
           SpanIndexType spanIdx = (SpanIndexType)pierIdx;
-          WriteGirderTable(pChapter, pBroker, spanIdx, pDisplayUnits);
+          WriteSpanTable(pChapter, pBroker, spanIdx, pDisplayUnits);
        }
    }
 
@@ -115,11 +117,17 @@ CChapterBuilder* CDistributionFactorSummaryChapterBuilder::Clone() const
    return new CDistributionFactorSummaryChapterBuilder;
 }
 
-void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,IEAFDisplayUnits* pDisplayUnits)
+void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,IEAFDisplayUnits* pDisplayUnits)
 {
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
-   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
-   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
+   rptRcScalar df;
+   df.SetFormat(sysNumericFormatTool::Fixed);
+   df.SetWidth(8);
+   df.SetPrecision(3); // should match format in details reports
+
+   rptRcSectionScalar dfM;
+   dfM.SetFormat(sysNumericFormatTool::Fixed);
+   dfM.SetWidth(8);
+   dfM.SetPrecision(3); // should match format in details reports
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -134,11 +142,12 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
       nCols += 3; // for fatigue limit state LLDF
 
    std::_tostringstream os;
-   os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(", Girder Distribution Factors");
+   os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(", Distribution Factors");
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str());
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str().c_str());
    *pBody << pTable;
 
+   (*pTable)(0,0) << _T("");
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
@@ -171,26 +180,33 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
       (*pTable)(1,6) << _T("V");
    }
 
-   GirderIndexType ngdrs = pBridge->GetGirderCount(spanIdx);
+   GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   for ( GirderIndexType igdr = 0; igdr<ngdrs; igdr++ )
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      Float64 girder_length = pBridge->GetGirderLength(spanIdx,igdr);
+      // get the length of segments within a span
+      std::vector<std::pair<SegmentIndexType,Float64>> vSegments = pBridge->GetSegmentLengths(spanIdx,gdrIdx);
 
-      (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(igdr);
+      // create POI at start and end of span
+      SegmentIndexType segIdx = vSegments.front().first;
+      pgsPointOfInterest poi_start(CSegmentKey(grpIdx,gdrIdx,segIdx),0.0);
+      
+      segIdx = vSegments.back().first;
+      Float64 distFromStartOfSegment = vSegments.back().second;
+      pgsPointOfInterest poi_end(CSegmentKey(grpIdx,gdrIdx,segIdx),distFromStartOfSegment);
 
-      pgsPointOfInterest poi_start(spanIdx,igdr,0.0);
-      pgsPointOfInterest poi_end(spanIdx,igdr,girder_length);
+      (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
 
-      Float64 pM, VStart, VEnd;
+      Float64 pM, V;
       Float64 nm;
       sysSectionValue nM;
-      pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &VStart);
+      pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &V);
       nM.Left() = nm;
 
-      pDistFact->GetDistributionFactors(poi_end, pgsTypes::StrengthI, &pM, &nm, &VEnd);
+      pDistFact->GetDistributionFactors(poi_end, pgsTypes::StrengthI, &pM, &nm, &V);
       nM.Right() = nm;
 
       (*pTable)(row,1) << df.SetValue(pM);
@@ -204,23 +220,15 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
          (*pTable)(row,2) << _T("------");
       }
 
-      if ( IsEqual(VStart,VEnd) )
-      {
-         (*pTable)(row,3) << dfV.SetValue(VStart);
-      }
-      else
-      {
-         (*pTable)(row,3) << dfV.SetValue(VStart) << _T(" (Left End)") << rptNewLine;
-         (*pTable)(row,3) << dfV.SetValue(VEnd) << _T(" (Right End)");
-      }
+      (*pTable)(row,3) << df.SetValue(V);
 
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&VStart);
+         pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&V);
          nM.Left() = nm;
 
-         pDistFact->GetDistributionFactors(poi_end,pgsTypes::FatigueI,&pM,&nm,&VEnd);
+         pDistFact->GetDistributionFactors(poi_end,pgsTypes::FatigueI,&pM,&nm,&V);
          nM.Right() = nm;
 
          (*pTable)(row,4) << df.SetValue(pM);
@@ -234,15 +242,7 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
             (*pTable)(row,5) << _T("------");
          }
 
-         if ( IsEqual(VStart,VEnd) )
-         {
-            (*pTable)(row,6) << dfV.SetValue(VStart);
-         }
-         else
-         {
-            (*pTable)(row,6) << dfV.SetValue(VStart) << _T(" (Left End)") << rptNewLine;
-            (*pTable)(row,6) << dfV.SetValue(VEnd) << _T(" (Right End)");
-         }
+         (*pTable)(row,6) << df.SetValue(V);
       }
 
       row++;
@@ -251,8 +251,15 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
 
 void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,IEAFDisplayUnits* pDisplayUnits)
 {
-   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
-   INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
+   rptRcSectionScalar dfM;
+   dfM.SetFormat(sysNumericFormatTool::Fixed);
+   dfM.SetWidth(8);
+   dfM.SetPrecision(3); // should match format in details reports
+
+   rptRcScalar dfV;
+   dfV.SetFormat(sysNumericFormatTool::Fixed);
+   dfV.SetWidth(8);
+   dfV.SetPrecision(3); // should match format in details reports
 
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -275,9 +282,10 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    std::_tostringstream os;
    os << _T("Pier ") << LABEL_PIER(pierIdx) << _T(", Distribution Factors");
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str());
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,os.str().c_str());
    *pBody << pTable;
 
+   (*pTable)(0,0) << _T("");
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
@@ -307,15 +315,15 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
 
    // report ahead face of pier except at end
    PierIndexType nPiers = pBridge->GetPierCount();
-   pgsTypes::PierFaceType face = pierIdx!=nPiers-1 ? pgsTypes::Ahead : pgsTypes::Back;
-   GirderIndexType ngdrs = GetPierGirderCount(pierIdx,pBridge);
+   pgsTypes::PierFaceType face = (pierIdx != nPiers-1 ? pgsTypes::Ahead : pgsTypes::Back);
+   GirderIndexType nGirders = GetPierGirderCount(pierIdx,pBridge);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
 
-   for ( GirderIndexType igdr = 0; igdr<ngdrs; igdr++ )
+   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(igdr);
+      (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
 
       sysSectionValue nM;
       Float64 V;
@@ -323,18 +331,18 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
       {
          if ( pierIdx == 0 )
          {
-            nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Ahead);
+            nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
             nM.Left() = nM.Right();
          }
          else if ( pierIdx == nPiers-1 )
          {
-            nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Back);
+            nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
             nM.Right() = nM.Left();
          }
          else
          {
-            nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Back);
-            nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::StrengthI,pgsTypes::Ahead);
+            nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
          }
          (*pTable)(row,1) << dfM.SetValue(nM);
       }
@@ -343,7 +351,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
          (*pTable)(row,1) << _T("------");
       }
 
-      V = pDistFact->GetReactionDistFactor(pierIdx,igdr,pgsTypes::StrengthI);
+      V = pDistFact->GetReactionDistFactor(pierIdx,gdrIdx,pgsTypes::StrengthI);
       (*pTable)(row,2) << dfV.SetValue(V);
 
 
@@ -353,18 +361,18 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
          {
             if ( pierIdx == 0 )
             {
-               nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Ahead);
+               nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::FatigueI,pgsTypes::Ahead);
                nM.Left() = nM.Right();
             }
             else if ( pierIdx == nPiers-1 )
             {
-               nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Back);
+               nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::FatigueI,pgsTypes::Back);
                nM.Right() = nM.Left();
             }
             else
             {
-               nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Back);
-               nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,igdr,pgsTypes::FatigueI,pgsTypes::Ahead);
+               nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::FatigueI,pgsTypes::Back);
+               nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::FatigueI,pgsTypes::Ahead);
             }
             (*pTable)(row,3) << dfM.SetValue(nM);
          }
@@ -373,7 +381,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
             (*pTable)(row,3) << _T("------");
          }
 
-         V = pDistFact->GetReactionDistFactor(pierIdx,igdr,pgsTypes::FatigueI);
+         V = pDistFact->GetReactionDistFactor(pierIdx,gdrIdx,pgsTypes::FatigueI);
          (*pTable)(row,4) << dfV.SetValue(V);
       }
 

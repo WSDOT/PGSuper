@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,12 @@
 #include "SectionCutDisplayImpl.h"
 #include "mfcdual.h"
 #include <MathEx.h>
-#include <MfcTools\MfcTools.h> 
 #include <PGSuperColors.h>
 #include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
+#include "PGSuperDocBase.h"
+
+#include <PgsExt\BridgeDescription2.h>
 #include "PGSuperDoc.h"
 
 #ifdef _DEBUG
@@ -84,17 +87,16 @@ DELEGATE_CUSTOM_INTERFACE(CSectionCutDisplayImpl,DragData);
  END_DISPATCH_MAP()
  
 
-
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc)
+STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,Strategy);
 
    pThis->m_pBroker = pBroker;
-   pThis->m_SpanIdx = spanIdx;
-   pThis->m_GirderIdx = gdrIdx;
 
-   GET_IFACE2(pThis->m_pBroker,IBridge,pBridge);
-   pThis->m_gdrLength = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   pThis->m_GirderKey = girderKey;
+
+   pThis->m_MinCutLocation = pCutLoc->GetMinCutLocation();
+   pThis->m_MaxCutLocation = pCutLoc->GetMaxCutLocation();
 
    pThis->m_pCutLocation = pCutLoc;
 
@@ -114,6 +116,12 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::SetColor(COLORREF color)
    pThis->m_Color = color;
 }
 
+
+STDMETHODIMP_(pgsPointOfInterest) CSectionCutDisplayImpl::XStrategy::GetCutPOI(Float64 distFromStartOfGirder)
+{
+   METHOD_PROLOGUE(CSectionCutDisplayImpl,Strategy);
+   return pThis->GetCutPOI(distFromStartOfGirder);
+}
 
 STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
 {
@@ -212,7 +220,7 @@ void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF col
 {
    Float64 x;
    userLoc->get_X(&x);
-   x = ::ForceIntoRange(0.0,x,m_gdrLength);
+   x = ::ForceIntoRange(m_MinCutLocation,x,m_MaxCutLocation);
 
    Float64 wtop, wleft, wright, wbottom;
    GetBoundingBox(pDO, x, &wtop, &wleft, &wright, &wbottom);
@@ -268,26 +276,77 @@ void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF col
    pDC->SelectObject(old_brush);
 }
 
-Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirder)
+pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 distFromStart)
 {
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   GET_IFACE(ISplicedGirder,pGirder);
+   GET_IFACE(IBridge,pBridge);
+
+   Float64 distFromStartOfGirder = 0;
+   GroupIndexType groupIndex = INVALID_INDEX;
+   Float64 group_offset = 0;
+   GroupIndexType startGroupIdx = (m_GirderKey.groupIndex == ALL_GROUPS ? 0 : m_GirderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (m_GirderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   {
+      Float64 girder_layout_length = pGirder->GetSplicedGirderLayoutLength(CSegmentKey(grpIdx,m_GirderKey.girderIndex,INVALID_INDEX));
+      if ( ::InRange(group_offset,distFromStart,group_offset+girder_layout_length) )
+      {
+         distFromStartOfGirder = distFromStart - group_offset;
+         groupIndex = grpIdx;
+         break;
+      }
+      else
+      {
+         group_offset += girder_layout_length;
+      }
+   }
+
+   SegmentIndexType segmentIndex = INVALID_INDEX;
+   SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(groupIndex)->GetGirder(m_GirderKey.girderIndex)->GetSegmentCount();
+   GET_IFACE(IGirderSegment,pSegment);
+   Float64 running_segment_length = 0;
+   Float64 distFromStartOfSegment = 0;
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(CSegmentKey(groupIndex,m_GirderKey.girderIndex,segIdx));
+      if ( ::InRange(running_segment_length,distFromStartOfGirder,running_segment_length+segment_layout_length))
+      {
+         distFromStartOfSegment = distFromStartOfGirder - running_segment_length;
+         distFromStartOfSegment = ::ForceIntoRange(0.0,distFromStartOfSegment,segment_layout_length);
+         segmentIndex = segIdx;
+         break;
+      }
+      else
+      {
+         running_segment_length += segment_layout_length;
+      }
+   }
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   pgsPointOfInterest poi = pPoi->GetPointOfInterest(CSegmentKey(groupIndex,m_GirderKey.girderIndex,segmentIndex),distFromStartOfSegment);
+   return poi;
+}
+
+Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStart)
+{
+   pgsPointOfInterest poi = GetCutPOI(distFromStart);
+
    GET_IFACE(IGirder,pGirder);
-   GET_IFACE(IPointOfInterest,pPOI);
-
-   pgsPointOfInterest poi = pPOI->GetPointOfInterest(pgsTypes::CastingYard,m_SpanIdx,m_GirderIdx,distFromStartOfGirder);
-   if ( poi.GetID() == INVALID_ID )
-      poi.SetDistFromStart(distFromStartOfGirder);
-
-   Float64 gdrHeight = pGirder->GetHeight(poi);
-   return gdrHeight;
+   Float64 height = pGirder->GetHeight(poi);
+   return height;
 }
 
 STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDisplayObject* pDO)
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
 
-   iPointDisplayObject* ppdo = dynamic_cast<iPointDisplayObject*>(pDO);
+   iPointDisplayObject* pPointDO = dynamic_cast<iPointDisplayObject*>(pDO);
+   ATLASSERT(pPointDO);
 
-   if (ppdo)
+   if (pPointDO)
    {
       Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
    
@@ -295,10 +354,8 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDis
       pnt.CoCreateInstance(CLSID_Point2d);
       pnt->put_X(pos);
       pnt->put_Y( 0.0 );
-      ppdo->SetPosition(pnt, TRUE, FALSE);
+      pPointDO->SetPosition(pnt, TRUE, FALSE);
    }
-   else
-      ATLASSERT(0);
 }
 
 
@@ -348,13 +405,7 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(
    // If control key is pressed, don't clear current selection
    // (i.e. we want multi-select)
    BOOL bMultiSelect = nFlags & MK_CONTROL ? TRUE : FALSE;
-/*
-   if ( bMultiSelect )
-   {
-      // clear all selected objects that aren't part of the load list
-      dispMgr->ClearSelectedObjectsByList(LOAD_LIST,atByID,FALSE);
-   }
-*/
+
    dispMgr->SelectObject(pDO,!bMultiSelect);
 
    // d&d task
@@ -404,7 +455,7 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseWheel(i
    METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
    Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
    Float64 xoff = BinarySign(zDelta)*1.0;
-   pos += xoff * pThis->m_gdrLength/100.0;
+   pos += xoff * (pThis->m_MaxCutLocation - pThis->m_MinCutLocation)/100.0;
    pThis->PutPosition(pos);
    return true;
 }
@@ -421,7 +472,7 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(iDis
          Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
 
          Float64 xoff = nChar==VK_RIGHT ? 1.0 : -1.0;
-         pos += xoff * pThis->m_gdrLength/100.0;
+         pos += xoff * (pThis->m_MaxCutLocation - pThis->m_MinCutLocation)/100.0;
 
          pThis->PutPosition(pos);
 
@@ -449,19 +500,18 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
       if ( callbacks.size() == 0 )
          return false;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnAlignmentContextMenu(pMenu);
+         IBridgePlanViewEventCallback* callback = iter->second;
+         callback->OnAlignmentContextMenu(pMenu);
       }
 
       bool bResult = false;
@@ -481,11 +531,7 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(
 
 void CSectionCutDisplayImpl::PutPosition(Float64 pos)
 {
-   if (pos < 0.0)
-      pos = 0.0;
-   else if (pos>m_gdrLength)
-      pos = m_gdrLength;
-      
+   pos = ::ForceIntoRange(m_MinCutLocation,pos,m_MaxCutLocation);
    m_pCutLocation->CutAt(pos);
 }
 
@@ -517,9 +563,9 @@ STDMETHODIMP_(BOOL) CSectionCutDisplayImpl::XDragData::PrepareForDrag(iDisplayOb
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&pThis->m_Color,sizeof(COLORREF));
    pSink->Write(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSink->Write(ms_Format,&pThis->m_SpanIdx,sizeof(SpanIndexType));
-   pSink->Write(ms_Format,&pThis->m_GirderIdx,sizeof(GirderIndexType));
-   pSink->Write(ms_Format,&pThis->m_gdrLength,sizeof(Float64));
+   pSink->Write(ms_Format,&pThis->m_GirderKey,sizeof(CSegmentKey));
+   pSink->Write(ms_Format,&pThis->m_MinCutLocation,sizeof(Float64));
+   pSink->Write(ms_Format,&pThis->m_MaxCutLocation,sizeof(Float64));
    pSink->Write(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
 
    return TRUE;
@@ -542,10 +588,9 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject* pD
 
    pSource->Read(ms_Format,&pThis->m_Color,sizeof(COLORREF));
    pSource->Read(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSource->Read(ms_Format,&pThis->m_SpanIdx,sizeof(SpanIndexType));
-   pSource->Read(ms_Format,&pThis->m_GirderIdx,sizeof(GirderIndexType));
-   pSource->Read(ms_Format,&pThis->m_gdrLength,sizeof(Float64));
+   pSource->Read(ms_Format,&pThis->m_GirderKey,sizeof(CSegmentKey));
+   pSource->Read(ms_Format,&pThis->m_MinCutLocation,sizeof(Float64));
+   pSource->Read(ms_Format,&pThis->m_MaxCutLocation,sizeof(Float64));
    pSource->Read(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
-
 }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@
 //
 
 #include "PGSuperAppPlugin\resource.h"
-#include <MfcTools\MetaFileStatic.h>
 
 class CGirderDescDlg;
 
@@ -55,10 +54,6 @@ public:
 	//}}AFX_DATA
 
    CGirderDescDlg* m_pParent;
-
-   Float64 m_LiftingLocation;
-   Float64 m_LeadingOverhang;
-   Float64 m_TrailingOverhang;
 
 // Overrides
 	// ClassWizard generate virtual function overrides

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,20 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BRIDGEDESCFRAMINGGRID_H_INCLUDED_)
-#define AFX_BRIDGEDESCFRAMINGGRID_H_INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+
 // BridgeDescFramingGrid.h : header file
 //
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <WBFLCogo.h>
-
-#include "SpanDetailsDlg.h"
-#include "PierDetailsDlg.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingGrid window
@@ -53,6 +46,7 @@ public:
 public:
    std::vector<Float64> GetSpanLengths();
    void SetSpanLengths(const std::vector<Float64>& spanLengths,PierIndexType fixedPierIdx);
+   void SetPierOrientation(LPCTSTR strOrientation);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -61,6 +55,8 @@ public:
 
 // Implementation
 public:
+   PierIndexType GetSelectedPier();
+   PierIndexType GetPierCount();
 
 	// Generated message map functions
 public:
@@ -87,34 +83,38 @@ public:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    // fill grid with data
-   void FillGrid(const CBridgeDescription& bridgeDesc);
-   void GetGridData();
-   CPierData* GetPierRowData(ROWCOL nRow);
+   void FillGrid(const CBridgeDescription2& bridgeDesc);
 
-	void OnAddSpan();
-	void OnRemoveSpan();
-   bool EnableItemDelete();
+   CPierData2* GetPierRowData(ROWCOL nRow);
+   CTemporarySupportData GetTemporarySupportRowData(ROWCOL nRow);
+
+	void OnAddPier();
+	void OnRemovePier();
+   bool EnableRemovePierBtn();
+
+   void OnAddTemporarySupport();
+   void OnRemoveTemporarySupport();
+   bool EnableRemoveTemporarySupportBtn();
 
 private:
-   void GetConnectionData(CPierData* pPier,pgsTypes::MemberEndType end,pgsTypes::PierFaceType pierFace,CSpanDetailsDlg& dlg);
-
    void InsertRow();
 
-   void FillPierRow(ROWCOL row,const CPierData& pierData);
-   void FillSpanRow(ROWCOL row,const CSpanData& spanData);
+   void FillPierRow(ROWCOL row,const CPierData2* pPierData);
+   //void FillSpanRow(ROWCOL row,const CSpanData* pSpanData);
+   void FillTemporarySupportRow(ROWCOL row,const CTemporarySupportData* pTSData);
+   void FillSegmentRow(ROWCOL row);
+   void FillSegmentColumn();
+   void FillSpanColumn();
 
-   // set up styles for interior rows
-   void SetPierRowStyle(ROWCOL nRow,const CPierData& pierData);
-   void SetSpanRowStyle(ROWCOL nRow,const CSpanData& spanData);
-
-   PierIndexType GetPierCount();
-
-   void EditSpan(SpanIndexType spanIdx);
    void EditPier(PierIndexType pierIdx);
-   ROWCOL GetSpanRow(SpanIndexType spanIdx);
+   void EditSpan(SpanIndexType spanIdx);
+   void EditTemporarySupport(SupportIndexType tsIdx);
+
    ROWCOL GetPierRow(PierIndexType pierIdx);
-   SpanIndexType GetSpanIndex(ROWCOL nRow);
    PierIndexType GetPierIndex(ROWCOL nRow);
+
+   ROWCOL GetTemporarySupportRow(SupportIndexType tsIdx);
+   SupportIndexType GetTemporarySupportIndex(ROWCOL nRow);
 
    CComPtr<IStation> m_objStation;
 };
@@ -123,5 +123,3 @@ private:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_BRIDGEDESCFRAMINGGRID_H_INCLUDED_)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,8 +26,8 @@
 
 #pragma warning(disable : 4996)
 
-int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName);
-int FindTemplateFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName);
+int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension);
+int FindTemplateFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension);
 int FindIconFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName);
 int FindFiles(HZIP hz,_TCHAR* lpszExtension,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName);
 
@@ -61,7 +61,7 @@ int ListPGZ(_TCHAR* fileName)
 }
 
 
-int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName)
+int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension)
 {
   HZIP hz;
   hz = CreateZip(pgzFileName,0);
@@ -95,7 +95,7 @@ int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName)
   }
   else
   {
-     retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName);
+     retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtension);
   }
 
   FindClose(hFind);
@@ -106,9 +106,9 @@ int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName)
 	return retval;
 }
 
-int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName)
+int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension)
 {
-   int result = FindTemplateFiles(hz,lpszFolderName,lpszZipFolderName,pgzFileName); // look for templates in this folder
+   int result = FindTemplateFiles(hz,lpszFolderName,lpszZipFolderName,pgzFileName,lpszTemplateExtension); // look for templates in this folder
    if ( result != -1 )
       FindIconFiles(hz,lpszFolderName,lpszZipFolderName,pgzFileName); // if there are template files, look for icon files
 
@@ -128,7 +128,7 @@ int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR
          _stprintf(full_path,_T("%s\\%s"),lpszFolderName,FindFileData.cFileName);
          TCHAR full_zip_path[MAX_PATH];
          _stprintf(full_zip_path,_T("%s\\%s"),lpszZipFolderName,FindFileData.cFileName);
-         FindInFolder(hz,full_path,full_zip_path,pgzFileName);
+         FindInFolder(hz,full_path,full_zip_path,pgzFileName,lpszTemplateExtension);
       }
 
    } while ( FindNextFile(hFind,&FindFileData) );
@@ -138,9 +138,9 @@ int FindInFolder(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR
    return 0;
 }
 
-int FindTemplateFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName)
+int FindTemplateFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName,_TCHAR* lpszTemplateExtension)
 {
-   return FindFiles(hz,_T("pgt"),lpszFolderName,lpszZipFolderName,pgzFileName);
+   return FindFiles(hz,lpszTemplateExtension,lpszFolderName,lpszZipFolderName,pgzFileName);
 }
 
 int FindIconFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName)

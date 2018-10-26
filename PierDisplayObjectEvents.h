@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 
 #include <DManip\DManip.h>
 #include "BridgeModelViewChildFrame.h"
+#include <PgsExt\BridgeDescription2.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDisplayObjectEvents command target
@@ -38,12 +39,11 @@
 class CPierDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CPierDisplayObjectEvents(PierIndexType pierIdx,PierIndexType nPiers,bool bHasDeck,CBridgeModelViewChildFrame* pFrame);
+	CPierDisplayObjectEvents(PierIndexType pierIdx,const CBridgeDescription2* pBridgeDesc,CBridgeModelViewChildFrame* pFrame);
 
 protected:
    PierIndexType m_PierIdx;
-   PierIndexType m_nPiers;
-   bool m_bHasDeck; // true if the bridge has a deck display object to select
+   const CBridgeDescription2* m_pBridgeDesc;
    CBridgeModelViewChildFrame* m_pFrame;
 
 	DECLARE_INTERFACE_MAP()

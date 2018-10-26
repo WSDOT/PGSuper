@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,8 +40,32 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 pgsFlexuralStressArtifact::pgsFlexuralStressArtifact():
-m_fTopPrestress(0.0),
-m_fBotPrestress(0.0),
+m_fTopPretension(0.0),
+m_fBotPretension(0.0),
+m_fTopPosttension(0.0),
+m_fBotPosttension(0.0),
+m_fTopExternal(0.0),
+m_fBotExternal(0.0),
+m_fTopDemand(0.0),
+m_fBotDemand(0.0),
+m_fAllowableStress(0.0),
+m_Yna(0.0),
+m_At(0.0),
+m_T(0.0),
+m_AsProvided(0.0),
+m_AsRequired(0.0),
+m_fAltAllowableStress(0.0),
+m_FcReqd(-99999),
+m_bIsAltTensileStressApplicable(false)
+{
+}
+
+pgsFlexuralStressArtifact::pgsFlexuralStressArtifact(const pgsPointOfInterest& poi):
+m_Poi(poi),
+m_fTopPretension(0.0),
+m_fBotPretension(0.0),
+m_fTopPosttension(0.0),
+m_fBotPosttension(0.0),
 m_fTopExternal(0.0),
 m_fBotExternal(0.0),
 m_fTopDemand(0.0),
@@ -78,17 +102,43 @@ pgsFlexuralStressArtifact& pgsFlexuralStressArtifact::operator=(const pgsFlexura
    return *this;
 }
 
-//======================== OPERATIONS =======================================
-void pgsFlexuralStressArtifact::SetPrestressEffects(Float64 fTop,Float64 fBot)
+void pgsFlexuralStressArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
 {
-   m_fTopPrestress = fTop;
-   m_fBotPrestress = fBot;
+   m_Poi = poi;
 }
 
-void pgsFlexuralStressArtifact::GetPrestressEffects(Float64* pfTop,Float64* pfBot) const
+const pgsPointOfInterest& pgsFlexuralStressArtifact::GetPointOfInterest() const
 {
-   *pfTop = m_fTopPrestress;
-   *pfBot = m_fBotPrestress;
+   return m_Poi;
+}
+
+bool pgsFlexuralStressArtifact::operator<(const pgsFlexuralStressArtifact& rOther) const
+{
+   return m_Poi < rOther.m_Poi;
+}
+
+void pgsFlexuralStressArtifact::SetPretensionEffects(Float64 fTop,Float64 fBot)
+{
+   m_fTopPretension = fTop;
+   m_fBotPretension = fBot;
+}
+
+void pgsFlexuralStressArtifact::GetPretensionEffects(Float64* pfTop,Float64* pfBot) const
+{
+   *pfTop = m_fTopPretension;
+   *pfBot = m_fBotPretension;
+}
+
+void pgsFlexuralStressArtifact::SetPosttensionEffects(Float64 fTop,Float64 fBot)
+{
+   m_fTopPosttension = fTop;
+   m_fBotPosttension = fBot;
+}
+
+void pgsFlexuralStressArtifact::GetPosttensionEffects(Float64* pfTop,Float64* pfBot) const
+{
+   *pfTop = m_fTopPosttension;
+   *pfBot = m_fBotPosttension;
 }
 
 void pgsFlexuralStressArtifact::SetExternalEffects(Float64 fTop,Float64 fBot)
@@ -115,15 +165,21 @@ void pgsFlexuralStressArtifact::GetDemand(Float64* pfTop,Float64* pfBot) const
    *pfBot = m_fBotDemand;
 }
 
-void pgsFlexuralStressArtifact::SetCapacity(Float64 fAllowable,pgsTypes::StressType stressType)
+void pgsFlexuralStressArtifact::SetCapacity(Float64 fAllowable,pgsTypes::LimitState ls,pgsTypes::StressType stressType)
 {
    m_fAllowableStress = fAllowable;
-   m_StressType = stressType;
+   m_LimitState       = ls;
+   m_StressType       = stressType;
 }
 
 Float64 pgsFlexuralStressArtifact::GetCapacity() const
 {
    return m_fAllowableStress;
+}
+
+pgsTypes::LimitState pgsFlexuralStressArtifact::GetLimitState() const
+{
+   return m_LimitState;
 }
 
 pgsTypes::StressType pgsFlexuralStressArtifact::GetStressType() const
@@ -247,92 +303,47 @@ bool pgsFlexuralStressArtifact::Passed() const
    // Bridge Site 1,              Tension,     top and bottom
    // Bridge Site 1,              Compression, top and bottom
    // Bridge Site 2,              Compression, top and bottom
-   // Bridge Site 2,              Tension,     bottom only
    // Bridge Site 3, Service I,   Compression, top and bottom
    // Bridge Site 3, Service IA,  Compression, top and bottom
-   // Bridge Site 3, Service III, Tension,     bottom only
-
+   // Bridge Site 3, Fatigue I,   Compression, top and bottom
+   // Bridge Site 3, Service III, Tension,     bottom
    bool bPassed = false;
-   switch( m_Key.GetStage() )
+   if ( m_LimitState == pgsTypes::ServiceIII )
    {
-   case pgsTypes::CastingYard:
-//   case pgsTypes::GirderPlacement:
-   case pgsTypes::TemporaryStrandRemoval:
-   case pgsTypes::BridgeSite1:
-      bPassed = (TopPassed() && BottomPassed());
-      break;
-
-   case pgsTypes::BridgeSite2:
-      if ( m_StressType == pgsTypes::Compression )
-      {
-         bPassed = (TopPassed() && BottomPassed());
-      }
-      else
-      {
-         bPassed = BottomPassed();
-      }
-      break;
-
-   case pgsTypes::BridgeSite3:
-      switch( m_Key.GetLimitState() )
-      {
-      case pgsTypes::ServiceI:
-      case pgsTypes::ServiceIA:
-      case pgsTypes::FatigueI:
-         bPassed = (TopPassed() && BottomPassed());
-         break;
-
-      case pgsTypes::ServiceIII:
       bPassed = BottomPassed();
-         break;
-      }
-      break;
-
-      default:
-         ATLASSERT(false);
    }
+   else
+   {
+      bPassed = (TopPassed() && BottomPassed());
+   }
+
    return bPassed;
 }
 
- //======================== ACCESS     =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther)
 {
-   m_fTopPrestress    = rOther.m_fTopPrestress;
-   m_fBotPrestress    = rOther.m_fBotPrestress;
-   m_fTopExternal     = rOther.m_fTopExternal;
-   m_fBotExternal     = rOther.m_fBotExternal;
-   m_fTopDemand       = rOther.m_fTopDemand;
-   m_fBotDemand       = rOther.m_fBotDemand;
-   m_fAllowableStress = rOther.m_fAllowableStress;
-   m_fAltAllowableStress = rOther.m_fAltAllowableStress;
-   m_StressType       = rOther.m_StressType;
+   m_Poi                           = rOther.m_Poi;
+   m_fTopPretension                = rOther.m_fTopPretension;
+   m_fBotPretension                = rOther.m_fBotPretension;
+   m_fTopPosttension               = rOther.m_fTopPosttension;
+   m_fBotPosttension               = rOther.m_fBotPosttension;
+   m_fTopExternal                  = rOther.m_fTopExternal;
+   m_fBotExternal                  = rOther.m_fBotExternal;
+   m_fTopDemand                    = rOther.m_fTopDemand;
+   m_fBotDemand                    = rOther.m_fBotDemand;
+   m_fAllowableStress              = rOther.m_fAllowableStress;
+   m_fAltAllowableStress           = rOther.m_fAltAllowableStress;
+   m_LimitState                    = rOther.m_LimitState;
+   m_StressType                    = rOther.m_StressType;
    m_Yna = rOther.m_Yna;
    m_At  = rOther.m_At;
    m_T   = rOther.m_T;
    m_AsProvided  = rOther.m_AsProvided;
    m_AsRequired  = rOther.m_AsRequired;
    m_FcReqd = rOther.m_FcReqd;
-   m_Key = rOther.m_Key;
 }
 
 void pgsFlexuralStressArtifact::MakeAssignment(const pgsFlexuralStressArtifact& rOther)
 {
    MakeCopy( rOther );
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

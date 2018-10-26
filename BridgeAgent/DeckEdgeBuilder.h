@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #ifndef INCLUDED_DECKEDGEBUILDER_H_
 #define INCLUDED_DECKEDGEBUILDER_H_
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DeckPoint.h>
 
 class CDeckEdgeBuilder
@@ -31,10 +31,10 @@ class CDeckEdgeBuilder
 public:
    CDeckEdgeBuilder();
    ~CDeckEdgeBuilder();
-   void BuildDeckEdges(const CBridgeDescription* pBridgeDesc,ICogoEngine* pCogoEngine,IAlignment* pAlignment,IPath** ppLeftEdgePath,IPath** ppRightEdgePath);
+   void BuildDeckEdges(const CBridgeDescription2* pBridgeDesc,ICogoEngine* pCogoEngine,IAlignment* pAlignment,IPath** ppLeftEdgePath,IPath** ppRightEdgePath);
 
 private:
-   const CBridgeDescription* m_pBridgeDesc;
+   const CBridgeDescription2* m_pBridgeDesc;
    int m_LeftEdgeState;
    int m_RightEdgeState;
    CComPtr<ICogoEngine> m_CogoEngine;

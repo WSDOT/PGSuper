@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,20 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\BridgeDescription.h>
 #include <PgsExt\GirderData.h>
+#include <BridgeDescription.h>
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
 
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\TimelineManager.h>
+
 #include <IFace\Project.h>
+
+#pragma Reminder("UPDATE: remove all functions that are no longer used")
+// CBridgeDescription and all of its related classes exist only
+// read old files.. remove all functions that don't have anything to do with 
+// reading old files.
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,8 +46,6 @@ static char THIS_FILE[] = __FILE__;
 CLASS
    CBridgeDescription
 ****************************************************************************/
-
-
 CBridgeDescription::CBridgeDescription()
 {
    m_bSameNumberOfGirders = true;
@@ -71,128 +77,27 @@ CBridgeDescription::CBridgeDescription()
    m_Deck.SetBridgeDescription(this);
 }
 
-CBridgeDescription::CBridgeDescription(const CBridgeDescription& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CBridgeDescription::~CBridgeDescription()
-{
-   Clear();
-}
-
-CBridgeDescription& CBridgeDescription::operator= (const CBridgeDescription& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-bool CBridgeDescription::operator==(const CBridgeDescription& rOther) const
-{
-   if ( m_strGirderFamilyName != rOther.m_strGirderFamilyName )
-      return false;
-
-   if ( m_GirderOrientation != rOther.m_GirderOrientation )
-      return false;
-
-   if ( m_bSameGirderName != rOther.m_bSameGirderName )
-      return false;
-
-   if ( m_bSameGirderName &&  m_strGirderName != rOther.m_strGirderName )
-      return false;
-   
-   if ( m_bSameNumberOfGirders != rOther.m_bSameNumberOfGirders )
-      return false;
-
-   if ( m_bSameNumberOfGirders && m_nGirders != rOther.m_nGirders )
-      return false;
-
-   if ( m_GirderSpacingType != rOther.m_GirderSpacingType )
-      return false;
-
-   if ( m_AlignmentOffset != rOther.m_AlignmentOffset )
-      return false;
-
-   if ( m_SlabOffsetType != rOther.m_SlabOffsetType )
-      return false;
-
-   if ( m_SlabOffsetType == pgsTypes::sotBridge )
-   {
-      if ( !IsEqual(m_SlabOffset,rOther.m_SlabOffset) )
-         return false;
-   }
-
-   // the bridge-wide value of girder spacing only applies
-   // if spacing is "sbsUniform"
-   if ( m_GirderSpacingType == pgsTypes::sbsUniform || 
-        m_GirderSpacingType == pgsTypes::sbsUniformAdjacent ||
-        m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
-   {
-      if ( !IsEqual(m_GirderSpacing,rOther.m_GirderSpacing) )
-         return false;
-
-      if ( m_MeasurementLocation != rOther.m_MeasurementLocation )
-         return false;
-
-      if ( m_MeasurementType != rOther.m_MeasurementType )
-         return false;
-
-      if ( m_RefGirderIdx != rOther.m_RefGirderIdx )
-         return false;
-
-      if ( !IsEqual(m_RefGirderOffset,rOther.m_RefGirderOffset) )
-         return false;
-
-      if ( m_RefGirderOffsetType != rOther.m_RefGirderOffsetType )
-         return false;
-   }
-
-   if ( m_Piers.size() != rOther.m_Piers.size() )
-      return false;
-
-   PierIndexType nPiers = m_Piers.size();
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-   {
-      if (*m_Piers[pierIdx] != *rOther.m_Piers[pierIdx] )
-         return false;
-   }
-
-   if ( m_Spans.size() != rOther.m_Spans.size() )
-      return false;
-
-   SpanIndexType nSpans = m_Spans.size();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
-   {
-      if (*m_Spans[spanIdx] != *rOther.m_Spans[spanIdx] )
-         return false;
-   }
-
-   if ( m_Deck != rOther.m_Deck )
-      return false;
-
-   if ( m_LeftRailingSystem != rOther.m_LeftRailingSystem )
-      return false;
-
-   if ( m_RightRailingSystem != rOther.m_RightRailingSystem )
-      return false;
-
-   if ( m_LLDFMethod != rOther.m_LLDFMethod )
-      return false;
-
-   return true;
-}
-
-bool CBridgeDescription::operator!=(const CBridgeDescription& rOther) const
-{
-   return !operator==(rOther);
-}
-
 HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
+   // Use this version of Load if you are directly loading an old version
+
+   HRESULT hr = pStrLoad->BeginUnit(_T("BridgeDescription"));
+   ATLASSERT(SUCCEEDED(hr));
+
+   Float64 version;
+   pStrLoad->get_Version(&version);
+
+   hr = Load(version,pStrLoad,pProgress);
+   pStrLoad->EndUnit();
+
+   return S_OK;
+}
+      
+HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress)
+{
+   // Use this version of you've already started the "BridgeDescription" data block
+   // This is done by the newer bridge description object
+
    USES_CONVERSION;
 
    Clear();
@@ -201,13 +106,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    try
    {
-      hr = pStrLoad->BeginUnit(_T("BridgeDescription"));
-
-      Float64 version;
-      pStrLoad->get_Version(&version);
-      
       CComVariant var;
-      var.vt = VT_BOOL;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("GirderFamilyName"),&var);
@@ -258,9 +157,9 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if ( m_bSameNumberOfGirders )
       {
-         var.vt = VT_I2;
+         var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("GirderCount"),&var);
-         m_nGirders = (GirderIndexType)var.iVal;
+         m_nGirders = VARIANT2INDEX(var);
       }
 
       if ( version < 2 )
@@ -305,10 +204,11 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( 4 <= version )
          {
             // added in version 4
-            var.vt = VT_I4;
+            var.vt = VT_INDEX;
             hr = pStrLoad->get_Property(_T("RefGirder"),&var);
-            m_RefGirderIdx = (GirderIndexType)var.lVal;
+            m_RefGirderIdx = VARIANT2INDEX(var);
 
+            var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("RefGirderOffsetType"),&var);
             m_RefGirderOffsetType = (pgsTypes::OffsetMeasurementType)(var.lVal);
 
@@ -345,9 +245,9 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
 
       hr = pStrLoad->BeginUnit(_T("Piers"));
-      var.vt = VT_UI2;
+      var.vt = VT_INDEX;
       hr = pStrLoad->get_Property(_T("PierCount"),&var);
-      PierIndexType nPiers = (PierIndexType)var.uiVal;
+      PierIndexType nPiers = VARIANT2INDEX(var);
       PierIndexType pierIdx = 0;
       // allocate, number, and associated all piers with bridge before loading
       // this has to be done so that links can be restored property
@@ -358,6 +258,17 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          pPier->SetPierIndex(pierIdx);
          m_Piers.push_back(pPier);
       }
+      SpanIndexType nSpans = nPiers-1;
+      for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+      {
+         CSpanData* pSpan = new CSpanData;
+         pSpan->SetBridgeDescription(this);
+         pSpan->SetSpanIndex(spanIdx);
+         m_Spans.push_back(pSpan);
+      }
+
+      RenumberSpans(); // numbers the spans, piers, and hooks up the pointers
+
       // load each pier
       for ( pierIdx = 0; pierIdx < nPiers; pierIdx++ )
       {
@@ -366,20 +277,14 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
       pStrLoad->EndUnit();
 
-
+      // load each span
       pStrLoad->BeginUnit(_T("Spans"));
-      SpanIndexType nSpans = nPiers-1;
       for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
       {
-         CSpanData* pSpan = new CSpanData;
-         pSpan->SetBridgeDescription(this);
-         pSpan->SetSpanIndex(spanIdx);
+         CSpanData* pSpan = m_Spans[spanIdx];
          hr = pSpan->Load(pStrLoad,pProgress);
-         m_Spans.push_back(pSpan);
       }
       pStrLoad->EndUnit();
-
-      RenumberSpans(); // numbers the spans, piers, and hooks up the pointers
 
       // load the deck parameters... the slab offset has been added to this data block (at version 5)
       // if the deck data block is older, the slab offset is for the entire bridge and it is read
@@ -410,17 +315,17 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          // if before version 2, it was assumed that the slab material was used
          // for the railing system.
-         m_LeftRailingSystem.fc              = m_Deck.SlabFc;
-         m_LeftRailingSystem.bUserEc         = m_Deck.SlabUserEc;
-         m_LeftRailingSystem.Ec              = m_Deck.SlabEc;
-         m_LeftRailingSystem.StrengthDensity = m_Deck.SlabStrengthDensity;
-         m_LeftRailingSystem.WeightDensity   = m_Deck.SlabWeightDensity;
-         m_LeftRailingSystem.EcK1            = m_Deck.SlabEcK1;
-         m_LeftRailingSystem.EcK2            = m_Deck.SlabEcK2;
-         m_LeftRailingSystem.CreepK1         = m_Deck.SlabCreepK1;
-         m_LeftRailingSystem.CreepK2         = m_Deck.SlabCreepK2;
-         m_LeftRailingSystem.ShrinkageK1     = m_Deck.SlabShrinkageK1;
-         m_LeftRailingSystem.ShrinkageK2     = m_Deck.SlabShrinkageK2;
+         m_LeftRailingSystem.Concrete.Fc              = m_Deck.SlabFc;
+         m_LeftRailingSystem.Concrete.bUserEc         = m_Deck.SlabUserEc;
+         m_LeftRailingSystem.Concrete.Ec              = m_Deck.SlabEc;
+         m_LeftRailingSystem.Concrete.StrengthDensity = m_Deck.SlabStrengthDensity;
+         m_LeftRailingSystem.Concrete.WeightDensity   = m_Deck.SlabWeightDensity;
+         m_LeftRailingSystem.Concrete.EcK1            = m_Deck.SlabEcK1;
+         m_LeftRailingSystem.Concrete.EcK2            = m_Deck.SlabEcK2;
+         m_LeftRailingSystem.Concrete.CreepK1         = m_Deck.SlabCreepK1;
+         m_LeftRailingSystem.Concrete.CreepK2         = m_Deck.SlabCreepK2;
+         m_LeftRailingSystem.Concrete.ShrinkageK1     = m_Deck.SlabShrinkageK1;
+         m_LeftRailingSystem.Concrete.ShrinkageK2     = m_Deck.SlabShrinkageK2;
       }
 
       hr = pStrLoad->EndUnit();
@@ -433,21 +338,19 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          // if before version 2, it was assumed that the slab material was used
          // for the railing system.
-         m_RightRailingSystem.fc              = m_Deck.SlabFc;
-         m_RightRailingSystem.bUserEc         = m_Deck.SlabUserEc;
-         m_RightRailingSystem.Ec              = m_Deck.SlabEc;
-         m_RightRailingSystem.StrengthDensity = m_Deck.SlabStrengthDensity;
-         m_RightRailingSystem.WeightDensity   = m_Deck.SlabWeightDensity;
-         m_RightRailingSystem.EcK1            = m_Deck.SlabEcK1;
-         m_RightRailingSystem.EcK2            = m_Deck.SlabEcK2;
-         m_RightRailingSystem.CreepK1         = m_Deck.SlabCreepK1;
-         m_RightRailingSystem.CreepK2         = m_Deck.SlabCreepK2;
-         m_RightRailingSystem.ShrinkageK1     = m_Deck.SlabShrinkageK1;
-         m_RightRailingSystem.ShrinkageK2     = m_Deck.SlabShrinkageK2;
+         m_RightRailingSystem.Concrete.Fc              = m_Deck.SlabFc;
+         m_RightRailingSystem.Concrete.bUserEc         = m_Deck.SlabUserEc;
+         m_RightRailingSystem.Concrete.Ec              = m_Deck.SlabEc;
+         m_RightRailingSystem.Concrete.StrengthDensity = m_Deck.SlabStrengthDensity;
+         m_RightRailingSystem.Concrete.WeightDensity   = m_Deck.SlabWeightDensity;
+         m_RightRailingSystem.Concrete.EcK1            = m_Deck.SlabEcK1;
+         m_RightRailingSystem.Concrete.EcK2            = m_Deck.SlabEcK2;
+         m_RightRailingSystem.Concrete.CreepK1         = m_Deck.SlabCreepK1;
+         m_RightRailingSystem.Concrete.CreepK2         = m_Deck.SlabCreepK2;
+         m_RightRailingSystem.Concrete.ShrinkageK1     = m_Deck.SlabShrinkageK1;
+         m_RightRailingSystem.Concrete.ShrinkageK2     = m_Deck.SlabShrinkageK2;
       }
       hr = pStrLoad->EndUnit();
-
-      hr = pStrLoad->EndUnit(); // BridgeDescription
 
       CopyDown(m_bSameNumberOfGirders, 
                m_bSameGirderName, 
@@ -459,87 +362,7 @@ HRESULT CBridgeDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       ATLASSERT(0);
    }
 
-   AssertValid();
-   return hr;
-}
-
-HRESULT CBridgeDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
-{
-   HRESULT hr = S_OK;
-   pStrSave->BeginUnit(_T("BridgeDescription"),6.0);
-
-   // GirderFamilyName was actually a beam factory name in version 5... in version 6 of this
-   // data block, it is really a girder family name
-   pStrSave->put_Property(_T("GirderFamilyName"),CComVariant(CComBSTR(m_strGirderFamilyName.c_str())));
-
-   pStrSave->put_Property(_T("GirderOrientation"),CComVariant(m_GirderOrientation));
-
-   pStrSave->put_Property(_T("UseSameGirderForEntireBridge"),CComVariant(m_bSameGirderName));
-   if ( m_bSameGirderName )
-   {
-      pStrSave->put_Property(_T("Girder"),CComVariant(CComBSTR(m_strGirderName.c_str())));
-   }
-
-   pStrSave->put_Property(_T("UseSameNumberOfGirdersInAllSpans"),CComVariant(m_bSameNumberOfGirders) );
-   if ( m_bSameNumberOfGirders )
-   {
-      pStrSave->put_Property(_T("GirderCount"),CComVariant(m_nGirders));
-   }
-
-   pStrSave->put_Property(_T("GirderSpacingType"),CComVariant(m_GirderSpacingType) ); // changed in version 2
-   if ( IsBridgeSpacing(m_GirderSpacingType) )
-   {
-      pStrSave->put_Property(_T("GirderSpacing"),       CComVariant(m_GirderSpacing));
-      pStrSave->put_Property(_T("MeasurementLocation"), CComVariant(m_MeasurementLocation));
-      pStrSave->put_Property(_T("MeasurementType"),     CComVariant(m_MeasurementType));
-
-      // added in version 4
-      pStrSave->put_Property(_T("RefGirder"),CComVariant(m_RefGirderIdx));
-      pStrSave->put_Property(_T("RefGirderOffsetType"),CComVariant(m_RefGirderOffsetType));
-      pStrSave->put_Property(_T("RefGirderOffset"),CComVariant(m_RefGirderOffset));
-   }
-
-   hr = pStrSave->put_Property(_T("LLDFMethod"),CComVariant(m_LLDFMethod));
-
-   hr = pStrSave->put_Property(_T("AlignmentOffset"),CComVariant(m_AlignmentOffset)); // added in version 4
-
-   // added in version 5
-   hr = pStrSave->put_Property(_T("SlabOffsetType"),CComVariant(m_SlabOffsetType));
-   if ( m_SlabOffsetType == pgsTypes::sotBridge )
-      hr = pStrSave->put_Property(_T("SlabOffset"),CComVariant(m_SlabOffset));
-   
-   pStrSave->BeginUnit(_T("Piers"),1.0);
-   pStrSave->put_Property(_T("PierCount"),CComVariant((long)m_Piers.size()));
-   std::vector<CPierData*>::iterator pierIter;
-   for ( pierIter = m_Piers.begin(); pierIter != m_Piers.end(); pierIter++ )
-   {
-      CPierData* pPier = *pierIter;
-      pPier->Save(pStrSave,pProgress);
-   }
-   pStrSave->EndUnit();
-
-
-   pStrSave->BeginUnit(_T("Spans"),1.0);
-   std::vector<CSpanData*>::iterator spanIter;
-   for ( spanIter = m_Spans.begin(); spanIter != m_Spans.end(); spanIter++ )
-   {
-      CSpanData* pSpan = *spanIter;
-      pSpan->Save(pStrSave,pProgress);
-   }
-   pStrSave->EndUnit();
-
-
-   m_Deck.Save(pStrSave,pProgress);
-
-   pStrSave->BeginUnit(_T("LeftRailingSystem"),2.0);
-   m_LeftRailingSystem.Save(pStrSave,pProgress);
-   pStrSave->EndUnit();
-
-   pStrSave->BeginUnit(_T("RightRailingSystem"),2.0);
-   m_RightRailingSystem.Save(pStrSave,pProgress);
-   pStrSave->EndUnit();
-   
-   pStrSave->EndUnit(); // BridgeDescription
+   ASSERT_VALID;
    return hr;
 }
 
@@ -576,14 +399,15 @@ void CBridgeDescription::MakeCopy(const CBridgeDescription& rOther)
 
    m_Deck               = rOther.m_Deck;
 
-   std::vector<CPierData*>::const_iterator pierIter = rOther.m_Piers.begin();
+   std::vector<CPierData*>::const_iterator pierIter( rOther.m_Piers.begin() );
+   std::vector<CPierData*>::const_iterator pierIterEnd( rOther.m_Piers.end() );
    const CPierData* pFirstPier = *pierIter;
    pierIter++;
 
-   std::vector<CSpanData*>::const_iterator spanIter = rOther.m_Spans.begin();
+   std::vector<CSpanData*>::const_iterator spanIter( rOther.m_Spans.begin() );
 
    bool bFirst = true;
-   for ( ; pierIter != rOther.m_Piers.end(); pierIter++, spanIter++ )
+   for ( ; pierIter != pierIterEnd; pierIter++, spanIter++ )
    {
       const CSpanData* pSpan = *spanIter;
       const CPierData* pPier = *pierIter;
@@ -599,10 +423,9 @@ void CBridgeDescription::MakeCopy(const CBridgeDescription& rOther)
       }
    }
 
-
    m_LLDFMethod = rOther.m_LLDFMethod;
 
-   AssertValid();
+   ASSERT_VALID;
 }
 
 void CBridgeDescription::MakeAssignment(const CBridgeDescription& rOther)
@@ -640,26 +463,239 @@ const CRailingSystem* CBridgeDescription::GetRightRailingSystem() const
    return &m_RightRailingSystem;
 }
 
+Float64 CBridgeDescription::GetLength() const
+{
+   return m_Piers.back()->GetStation() - m_Piers.front()->GetStation();
+}
+
+void CBridgeDescription::GetStationRange(Float64& startStation,Float64& endStation) const
+{
+   startStation = m_Piers.front()->GetStation();
+   endStation   = m_Piers.back()->GetStation();
+}
+
+bool CBridgeDescription::IsOnBridge(Float64 station) const
+{
+   return ::InRange(m_Piers.front()->GetStation(),station,m_Piers.back()->GetStation());
+}
+
+void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
+{
+   // Put the bridge description data from this model
+   // into the new bridge description model
+
+   // Girder Family
+   pBridgeDesc->SetGirderFamilyName(m_strGirderFamilyName.c_str());
+
+   // Girder Type
+   pBridgeDesc->UseSameGirderForEntireBridge(m_bSameGirderName);
+   pBridgeDesc->SetGirderName(m_strGirderName.c_str());
+
+   // Number of Girders
+   pBridgeDesc->UseSameNumberOfGirdersInAllGroups(m_bSameNumberOfGirders);
+   pBridgeDesc->SetGirderCount(m_nGirders);
+
+   // Girder Spacing
+   pBridgeDesc->SetGirderSpacingType(m_GirderSpacingType);
+   pBridgeDesc->SetGirderSpacing(m_GirderSpacing);
+   pBridgeDesc->SetGirderOrientation(m_GirderOrientation);
+   pBridgeDesc->SetRefGirder(m_RefGirderIdx);
+   pBridgeDesc->SetRefGirderOffset(m_RefGirderOffset);
+   pBridgeDesc->SetRefGirderOffsetType(m_RefGirderOffsetType);
+   pBridgeDesc->SetMeasurementLocation(m_MeasurementLocation);
+   pBridgeDesc->SetMeasurementType(m_MeasurementType);
+
+   // Live Load Distribution Factor Method
+   pBridgeDesc->SetDistributionFactorMethod(m_LLDFMethod);
+
+   // Slab Offset
+   pBridgeDesc->SetSlabOffset(m_SlabOffset);
+   pBridgeDesc->SetSlabOffsetType(m_SlabOffsetType);
+
+   // Bridge Deck
+   CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+   pDeck->bInputAsDepthAndDensity = m_Deck.bInputAsDepthAndDensity;
+   pDeck->Condition               = m_Deck.Condition;
+   pDeck->ConditionFactor         = m_Deck.ConditionFactor;
+   pDeck->DeckEdgePoints          = m_Deck.DeckEdgePoints;
+   pDeck->DeckRebarData           = m_Deck.DeckRebarData;
+   pDeck->DeckType                = m_Deck.DeckType;
+   pDeck->Fillet                  = m_Deck.Fillet;
+   pDeck->GrossDepth              = m_Deck.GrossDepth;
+   pDeck->OverhangEdgeDepth       = m_Deck.OverhangEdgeDepth;
+   pDeck->OverhangTaper           = m_Deck.OverhangTaper;
+   pDeck->OverlayDensity          = m_Deck.OverlayDensity;
+   pDeck->OverlayDepth            = m_Deck.OverlayDepth;
+   pDeck->OverlayWeight           = m_Deck.OverlayWeight;
+   pDeck->PanelDepth              = m_Deck.PanelDepth;
+   pDeck->PanelSupport            = m_Deck.PanelSupport;
+   pDeck->SacrificialDepth        = m_Deck.SacrificialDepth;
+   pDeck->Concrete.Type           = m_Deck.SlabConcreteType;
+   pDeck->Concrete.CreepK1             = m_Deck.SlabCreepK1;
+   pDeck->Concrete.CreepK2             = m_Deck.SlabCreepK2;
+   pDeck->Concrete.Ec                  = m_Deck.SlabEc;
+   pDeck->Concrete.EcK1                = m_Deck.SlabEcK1;
+   pDeck->Concrete.EcK2                = m_Deck.SlabEcK2;
+   pDeck->Concrete.Fc                  = m_Deck.SlabFc;
+   pDeck->Concrete.Fct                 = m_Deck.SlabFct;
+   pDeck->Concrete.bHasFct             = m_Deck.SlabHasFct;
+   pDeck->Concrete.MaxAggregateSize    = m_Deck.SlabMaxAggregateSize;
+   pDeck->Concrete.ShrinkageK1         = m_Deck.SlabShrinkageK1;
+   pDeck->Concrete.ShrinkageK2         = m_Deck.SlabShrinkageK2;
+   pDeck->Concrete.StrengthDensity     = m_Deck.SlabStrengthDensity;
+   pDeck->Concrete.bUserEc             = m_Deck.SlabUserEc;
+   pDeck->Concrete.WeightDensity       = m_Deck.SlabWeightDensity;
+   pDeck->TransverseConnectivity       = m_Deck.TransverseConnectivity;
+   pDeck->WearingSurface               = m_Deck.WearingSurface;
+
+   // Railing systems
+   *pBridgeDesc->GetLeftRailingSystem()  = m_LeftRailingSystem;
+   *pBridgeDesc->GetRightRailingSystem() = m_RightRailingSystem;
+
+   // Set the alignment offset
+   pBridgeDesc->SetAlignmentOffset(m_AlignmentOffset);
+
+   // Layout the basic bridge structure
+   std::vector<CSpanData*>::const_iterator spanIter(m_Spans.begin());
+   std::vector<CSpanData*>::const_iterator spanIterEnd(m_Spans.end());
+   for ( ; spanIter != spanIterEnd; spanIter++ )
+   {
+      if ( spanIter == m_Spans.begin() )
+         pBridgeDesc->CreateFirstSpan(NULL,NULL,NULL,INVALID_INDEX);
+      else
+         pBridgeDesc->AppendSpan(NULL,NULL,true,INVALID_INDEX);
+   }
+   
+   // Copy the pier data
+   std::vector<CPierData*>::const_iterator pierIter(m_Piers.begin());
+   std::vector<CPierData*>::const_iterator pierIterEnd(m_Piers.end());
+   for ( ; pierIter != pierIterEnd; pierIter++ )
+   {
+      CPierData* pOldPier = *pierIter;
+      CPierData2* pNewPier = pBridgeDesc->GetPier(pOldPier->GetPierIndex());
+      pNewPier->SetPierData(pOldPier);
+   }
+
+   // Copy the span data
+   spanIter = m_Spans.begin();
+   for ( ; spanIter != spanIterEnd; spanIter++ )
+   {
+      const CSpanData* pOldSpan = *spanIter;
+
+      CSpanData2* pNewSpan = pBridgeDesc->GetSpan(pOldSpan->GetSpanIndex());
+
+      // Each span is a girder group, get the associated group 
+      CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pNewSpan);
+
+      // Create girders in the group
+      GirderIndexType nGirders = pOldSpan->GetGirderCount();
+      pGroup->Initialize(nGirders);
+
+      pGroup->SetSlabOffset(pgsTypes::metStart,pOldSpan->GetSlabOffset(pgsTypes::metStart));
+      pGroup->SetSlabOffset(pgsTypes::metEnd,  pOldSpan->GetSlabOffset(pgsTypes::metEnd));
+
+      // Copy over girder data
+      const CGirderTypes* pGirderTypes = pOldSpan->GetGirderTypes();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CGirderData& girderData = pGirderTypes->GetGirderData(gdrIdx);
+
+         CSplicedGirderData* pNewGirder = pGroup->GetGirder(gdrIdx);
+         pNewGirder->SetGirderName(girderData.GetGirderName());
+         pNewGirder->SetGirderLibraryEntry(girderData.GetGirderLibraryEntry());
+
+         pNewGirder->SetConditionFactor(girderData.ConditionFactor);
+         pNewGirder->SetConditionFactorType(girderData.Condition);
+
+         CPrecastSegmentData* pNewSegment = pNewGirder->GetSegment(0);
+
+         pNewSegment->HandlingData          = girderData.HandlingData;
+         pNewSegment->LongitudinalRebarData = girderData.LongitudinalRebarData;
+         pNewSegment->Material              = girderData.Material;
+         pNewSegment->Material.Concrete.CureMethod = pgsTypes::Steam; // Steam for precast components
+         matACI209Concrete::GetModelParameters( (matACI209Concrete::CureMethod)pNewSegment->Material.Concrete.CureMethod,
+                                                (matACI209Concrete::CementType)pNewSegment->Material.Concrete.CementType,
+                                                 &pNewSegment->Material.Concrete.A,
+                                                 &pNewSegment->Material.Concrete.B);
+
+         if ( girderData.m_bUsedShearData2 )
+         {
+            pNewSegment->ShearData = girderData.ShearData2;
+         }
+         else
+         {
+            pNewSegment->ShearData = girderData.ShearData.Convert();
+         }
+
+         pNewSegment->Strands = girderData.Strands;
+
+         pNewSegment->SetSlabOffset(pgsTypes::metStart,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart));
+         pNewSegment->SetSlabOffset(pgsTypes::metEnd,  pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)  );
+
+
+         // copy over distribution factor data
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::LimitState ls = (i == 0 ? pgsTypes::StrengthI : pgsTypes::FatigueI);
+
+            pNewSpan->SetLLDFNegMoment(gdrIdx,ls,pOldSpan->GetLLDFNegMoment(gdrIdx,ls));
+            pNewSpan->SetLLDFPosMoment(gdrIdx,ls,pOldSpan->GetLLDFPosMoment(gdrIdx,ls));
+            pNewSpan->SetLLDFShear(    gdrIdx,ls,pOldSpan->GetLLDFShear(gdrIdx,ls));
+         }
+      }
+
+      // Copy the girder type groups
+      // Girders 1-3: WF74G, Girders 4-5: WF74G_Modified, Girders 6-9: WF74G
+      pGroup->ExpandAll();
+      GroupIndexType nGirderTypeGroups = pGirderTypes->GetGirderGroupCount();
+      for ( GroupIndexType girderTypeGroupIdx = 0; girderTypeGroupIdx < nGirderTypeGroups; girderTypeGroupIdx++ )
+      {
+         GirderIndexType firstGirderIdx,lastGirderIdx;
+         std::_tstring strName;
+         pGirderTypes->GetGirderGroup(girderTypeGroupIdx,&firstGirderIdx,&lastGirderIdx,strName);
+         pGroup->Join(firstGirderIdx,lastGirderIdx,firstGirderIdx);
+      }
+
+      // Copy over girder spacing
+      // Spacing is defined at ends of segments... for the old bridge type, segments end
+      // at the piers on either end of the span
+      const CGirderSpacing* pGirderSpacingStart = pOldSpan->GetGirderSpacing(pgsTypes::metStart);
+      const CGirderSpacing* pGirderSpacingEnd   = pOldSpan->GetGirderSpacing(pgsTypes::metEnd);
+
+      CPierData2* pPrevPier = pNewSpan->GetPrevPier();
+      CGirderSpacing2* pSpacingAtPrevPier = pPrevPier->GetGirderSpacing(pgsTypes::Ahead);
+      pSpacingAtPrevPier->SetGirderCount(nGirders);
+      pGirderSpacingStart->SetSpacingData(pSpacingAtPrevPier);
+
+      CPierData2* pNextPier = pNewSpan->GetNextPier();
+      CGirderSpacing2* pSpacingAtNextPier = pNextPier->GetGirderSpacing(pgsTypes::Back);
+      pSpacingAtNextPier->SetGirderCount(nGirders);
+      pGirderSpacingEnd->SetSpacingData(pSpacingAtNextPier);
+   }
+}
+
 void CBridgeDescription::Clear()
 {
-   std::vector<CPierData*>::iterator pierIter;
-   for ( pierIter = m_Piers.begin(); pierIter != m_Piers.end(); pierIter++ )
+   m_Deck.DeckEdgePoints.clear();
+
+   std::vector<CPierData*>::iterator pierIter(m_Piers.begin());
+   std::vector<CPierData*>::iterator pierIterEnd(m_Piers.end());
+   for ( ; pierIter != pierIterEnd; pierIter++ )
    {
       CPierData* pPierData = *pierIter;
       delete pPierData;
    }
    m_Piers.clear();
 
-   std::vector<CSpanData*>::iterator spanIter;
-   for ( spanIter = m_Spans.begin(); spanIter != m_Spans.end(); spanIter++ )
+   std::vector<CSpanData*>::iterator spanIter(m_Spans.begin());
+   std::vector<CSpanData*>::iterator spanIterEnd(m_Spans.end());
+   for ( ; spanIter != spanIterEnd; spanIter++ )
    {
       CSpanData* pSpanData = *spanIter;
       delete pSpanData;
    }
    m_Spans.clear();
 
-   m_Deck.DeckEdgePoints.clear();
-   m_Deck.DeckRebarData.NegMomentRebar.clear();
 }
 
 void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpanData* pFirstSpan,const CPierData* pNextPier)
@@ -703,12 +739,13 @@ void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpan
    if ( !pFirstSpan )
       firstSpan->SetGirderCount(m_nGirders);
 
-   AssertValid();
+   ASSERT_VALID;
 }
 
 void CBridgeDescription::AppendSpan(const CSpanData* pSpanData,const CPierData* pPierData)
 {
-   // Use pier stationing to determine span length
+   // INVALID_INDEX -> insert new span after the last pier
+   // -1.0 -> Use pier station stationing to determine span length
    InsertSpan(INVALID_INDEX,pgsTypes::Ahead,-1.0,pSpanData,pPierData);
 }
 
@@ -717,16 +754,16 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    ASSERT( 2 <= m_Piers.size() && 1 <= m_Spans.size() ); // if this first, then the call to CreateFirstSpan hasn't been made yet
 
    // Negative span length means that we take stationing from piers - better have pier data
-   if ( newSpanLength<=0  )
+   if ( newSpanLength <= 0  )
    {
       if (!pPierData)
       {
-         ASSERT(0); // Assert will warn above about this case, take care if it happens
+         ASSERT(false); // span length < 0 and a pier isn't provided
          newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
       }
    }
 
-   // if refPierIdx == INVALID_INDEX then treat this as an append
+   // if refPierIdx < 0 then treat this as an append
    if ( refPierIdx == INVALID_INDEX )
    {
       refPierIdx = m_Piers.size()-1;
@@ -740,16 +777,16 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    }
    else
    {
-      newSpanIdx = pierFace==pgsTypes::Back ? refPierIdx-1 : refPierIdx;
+      newSpanIdx = (pierFace == pgsTypes::Back ? refPierIdx-1 : refPierIdx);
    }
 
    // Copy properties from the span on the side of the pier in question (if it exists)
    SpanIndexType refSpanIdx;
-   if (refPierIdx<=0)
+   if (refPierIdx <= 0)
    {
       refSpanIdx = 0;
    }
-   else if (refPierIdx >= (PierIndexType)m_Piers.size()-1)
+   else if ((PierIndexType)m_Piers.size()-1 <= refPierIdx)
    {
       refSpanIdx = m_Piers.size()-2;
    }
@@ -785,25 +822,7 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    pNewSpan->SetBridgeDescription(this);
    pNewPier->SetBridgeDescription(this);
 
-   // store the new span and pier
    m_Spans.insert(m_Spans.begin()+newSpanIdx,pNewSpan); 
-
-   PierIndexType nPiers = m_Piers.size();
-   CPierData* pRefPier = m_Piers[refPierIdx];
-   if ( (pierFace == pgsTypes::Back && refPierIdx == 0) || (pierFace == pgsTypes::Ahead && refPierIdx != nPiers-1) )
-   {
-      pgsTypes::PierFaceType fromFace = (pierFace == pgsTypes::Back ? pgsTypes::Ahead : pgsTypes::Back);
-      pgsTypes::PierFaceType toFace   = (pierFace == pgsTypes::Back ? pgsTypes::Back  : pgsTypes::Ahead);
-      Float64 brgOffset, endDist, supportWidth;
-      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-      ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-      pRefPier->GetBearingOffset(fromFace,&brgOffset,&brgOffsetMeasure);
-      pRefPier->GetGirderEndDistance(fromFace,&endDist,&endDistMeasure);
-      supportWidth = pRefPier->GetSupportWidth(fromFace);
-      pRefPier->SetBearingOffset(toFace,brgOffset,brgOffsetMeasure);
-      pRefPier->SetGirderEndDistance(toFace,endDist,endDistMeasure);
-      pRefPier->SetSupportWidth(toFace,supportWidth);
-   }
 
    std::vector<CPierData*>::iterator backPierIter; // pier just to the back of our new span
    if ( pierFace == pgsTypes::Back )
@@ -815,10 +834,7 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    {
       // insert new pier after the reference pier
       backPierIter = m_Piers.insert(m_Piers.begin() + refPierIdx + 1, pNewPier);
-      backPierIter--;
    }
-
-
 
    // renumbers spans and sets the pier<-->span<-->pier pointers
    RenumberSpans();
@@ -826,10 +842,7 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    // Adjust location of down-station piers
    if ( refPierIdx == 0 && refSpanIdx == 0 && pierFace == pgsTypes::Back )
    {
-      // If the new span is inserted before the first span, its station is
-      CPierData* pFirstInteriorPier = m_Piers[1];
-      CPierData* pPier = m_Piers.front();
-      pPier->SetStation(pFirstInteriorPier->GetStation() - newSpanLength);
+      // If the new span is inserted before the first span, don't adjust anything
    }
    else
    {
@@ -845,95 +858,12 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       }
    }
 
+
    if ( !pSpanData && m_bSameNumberOfGirders )
       pNewSpan->SetGirderCount(m_nGirders);
 
-   UpdateConnectionDimensions(pRefPier);
-   UpdateConnectionDimensions(pNewPier);
-
-   AssertValid();
+   ASSERT_VALID;
 }
-
-void CBridgeDescription::UpdateConnectionDimensions(CPierData* pPier)
-{
-   if ( pPier->IsAbutment() )
-      return;
-
-   Float64 brgOffset[2], endDist[2];
-   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure[2];
-   ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure[2];
-   pPier->GetBearingOffset(pgsTypes::Back,&brgOffset[pgsTypes::Back],&brgOffsetMeasure[pgsTypes::Back]);
-   pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset[pgsTypes::Ahead],&brgOffsetMeasure[pgsTypes::Ahead]);
-   pPier->GetGirderEndDistance(pgsTypes::Back,&endDist[pgsTypes::Back],&endDistMeasure[pgsTypes::Back]);
-   pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist[pgsTypes::Ahead],&endDistMeasure[pgsTypes::Ahead]);
-
-   if ( endDistMeasure[pgsTypes::Back] == ConnectionLibraryEntry::FromPierAlongGirder ||
-        endDistMeasure[pgsTypes::Back] == ConnectionLibraryEntry::FromPierNormalToPier
-      )
-   {
-      // if measuring the location of the end of the girder from the pier line
-      // then the end distance cannot exceed the bearing offset (otherwise 
-      // the end of the girder will be off the bearing)
-      //
-      //                       CL Bearing
-      //                       |
-      //    End of Girder (girder isn't supported)
-      //  ------------------+  |
-      //                    |  |
-      //  ------------------+  |
-      //
-      // NOTE: there is one problem with this adjustment. If the bearing offset
-      // and end distance are measured in different directions, and the girders
-      // are non-parallel, we could still end up with girder end overlay/interference
-      if ( brgOffset[pgsTypes::Back] < endDist[pgsTypes::Back] )
-      {
-         endDist[pgsTypes::Back] = brgOffset[pgsTypes::Back];
-      }
-   }
-
-   if ( endDistMeasure[pgsTypes::Ahead] == ConnectionLibraryEntry::FromPierAlongGirder ||
-        endDistMeasure[pgsTypes::Ahead] == ConnectionLibraryEntry::FromPierNormalToPier
-      )
-   {
-      // if measuring the location of the end of the girder from the pier line
-      // then the end distance cannot exceed the bearing offset (otherwise 
-      // the end of the girder will be off the bearing)
-      //
-      // CL Bearing
-      // |
-      // |  End of Girder (girder isn't supported)
-      // |  +---------------
-      // |  |
-      // |  +---------------
-      //
-      // NOTE: there is one problem with this adjustment. If the bearing offset
-      // and end distance are measured in different directions, and the girders
-      // are non-parallel, we could still end up with girder end overlay/interference
-      if ( brgOffset[pgsTypes::Ahead] < endDist[pgsTypes::Ahead] )
-      {
-         endDist[pgsTypes::Ahead] = brgOffset[pgsTypes::Ahead];
-      }
-   }
-
-   if ( brgOffset[pgsTypes::Back]+brgOffset[pgsTypes::Ahead] < endDist[pgsTypes::Back]+endDist[pgsTypes::Ahead] )
-   {
-      // girder ends overlap...
-      endDist[pgsTypes::Back] = brgOffset[pgsTypes::Back];
-      endDist[pgsTypes::Ahead] = brgOffset[pgsTypes::Ahead];
-   }
-
-   pPier->SetGirderEndDistance(pgsTypes::Back,endDist[pgsTypes::Back],endDistMeasure[pgsTypes::Back]);
-   pPier->SetGirderEndDistance(pgsTypes::Ahead,endDist[pgsTypes::Ahead],endDistMeasure[pgsTypes::Ahead]);
-}
-
-class RemoveNegMomentRebar
-{
-public:
-   RemoveNegMomentRebar(PierIndexType pierIdx) { m_PierIdx = pierIdx; }
-   bool operator()(CDeckRebarData::NegMomentRebarData& rebarData) { return rebarData.PierIdx == m_PierIdx; }
-private:
-   PierIndexType m_PierIdx;
-};
 
 void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
@@ -947,12 +877,14 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    Float64 span_length = pSpan->GetSpanLength();
    PierIndexType removePierIdx;
 
-   PierIndexType nPiers = m_Piers.size(); // number of piers before removal
-
+   Float64 removedPierStation;
    if ( rmPierType == pgsTypes::PrevPier )
    {
       removePierIdx = spanIdx;
       m_Spans.erase(m_Spans.begin()+spanIdx);
+
+      removedPierStation = m_Piers[removePierIdx]->GetStation();
+
       m_Piers.erase(m_Piers.begin()+removePierIdx);
       delete pPrevPier;
       delete pSpan;
@@ -961,31 +893,15 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    {
       removePierIdx = spanIdx + 1;
       m_Spans.erase(m_Spans.begin()+spanIdx);
+
+      removedPierStation = m_Piers[removePierIdx]->GetStation();
+
       m_Piers.erase(m_Piers.begin()+removePierIdx);
       delete pSpan;
       delete pNextPier;
    }
 
-   // Remove negative rebar data at the pier that is being removed
-   PierIndexType rebarRemovePierIdx(removePierIdx);
-   if ( rebarRemovePierIdx == 0 )
-   {
-      // if the first pier is removed, the next pier becomes the first pier and it can't have neg moment
-      // rebar so remove the rebar from that pier;
-      rebarRemovePierIdx++;
-   }
-   else if ( rebarRemovePierIdx == nPiers-1 )
-   {
-      // if the last pier is removed, the next to last pier becomes the last pier and it can't have neg moment
-      // rebar so remove the rebar from that pier
-      rebarRemovePierIdx--;
-   }
-
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
-   m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
-
+   // Fix up the span/pier points and update the span/pier index values
    RenumberSpans();
 
    if ( spanIdx == 0 && removePierIdx == 0 )
@@ -1003,7 +919,7 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
       }
    }
 
-   AssertValid();
+   ASSERT_VALID;
 }
 
 PierIndexType CBridgeDescription::GetPierCount() const
@@ -1048,6 +964,7 @@ const CSpanData* CBridgeDescription::GetSpan(SpanIndexType spanIdx) const
    return NULL;
 }
 
+
 void CBridgeDescription::UseSameNumberOfGirdersInAllSpans(bool bSame) 
 {
    m_bSameNumberOfGirders = bSame;
@@ -1060,14 +977,17 @@ bool CBridgeDescription::UseSameNumberOfGirdersInAllSpans() const
 
 void CBridgeDescription::SetGirderCount(GirderIndexType nGirders)
 {
+   GirderIndexType deltaGirderCount = nGirders - m_nGirders;
+
    m_nGirders = nGirders;
 
    if ( m_bSameNumberOfGirders )
    {
-      std::vector<CSpanData*>::iterator iter;
-      for ( iter = m_Spans.begin(); iter != m_Spans.end(); iter++ )
+      std::vector<CSpanData*>::const_iterator spanIter(m_Spans.begin());
+      std::vector<CSpanData*>::const_iterator spanIterEnd(m_Spans.end());
+      for ( ; spanIter != spanIterEnd; spanIter++ )
       {
-         CSpanData* pSpan = *iter;
+         CSpanData* pSpan = *spanIter;
          pSpan->SetGirderCount(nGirders);
       }
    }
@@ -1124,7 +1044,7 @@ void CBridgeDescription::SetGirderName(LPCTSTR strName)
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             CGirderData& girderData = girderTypes.GetGirderData(gdrIdx);
-            girderData.PrestressData.ResetPrestressData();
+            girderData.Strands.ResetPrestressData();
             pSpan->SetGirderTypes(girderTypes);
          }
 
@@ -1204,6 +1124,9 @@ bool CBridgeDescription::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
    if ( IsZero(deltaL) )
       return false;
 
+   Float64 endSpanStation = pSpan->GetNextPier()->GetStation();
+
+   // move all the piers from the end of this span to the end of the bridge
    while ( pSpan )
    {
       CPierData* pNextPier = pSpan->GetNextPier();
@@ -1265,31 +1188,6 @@ pgsTypes::SlabOffsetType CBridgeDescription::GetSlabOffsetType() const
    return m_SlabOffsetType;
 }
 
-std::vector<pgsTypes::PierConnectionType> CBridgeDescription::GetConnectionTypes(PierIndexType pierIdx) const
-{
-   std::vector<pgsTypes::PierConnectionType> connectionTypes;
-
-   connectionTypes.push_back(pgsTypes::Hinged);
-   connectionTypes.push_back(pgsTypes::Roller);
-   connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-   connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
-
-   const CPierData* pPier = GetPier(pierIdx);
-   if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
-   {
-      // all these connection types require that there is a span on 
-      // both sides of this pier
-      connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
-      connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
-   }
-
-   return connectionTypes;
-}
-
 void CBridgeDescription::SetSlabOffset(Float64 slabOffset)
 {
    m_SlabOffset = slabOffset;
@@ -1297,19 +1195,16 @@ void CBridgeDescription::SetSlabOffset(Float64 slabOffset)
 
 Float64 CBridgeDescription::GetSlabOffset() const
 {
-   if ( m_Deck.DeckType == pgsTypes::sdtNone)
-      return 0;
-
    return m_SlabOffset;
 }
 
-Float64 CBridgeDescription::GetMinSlabOffset() const
+Float64 CBridgeDescription::GetMaxSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
-      return GetSlabOffset();
+      return m_SlabOffset;
 
    const CSpanData* pSpan = GetSpan(0);
-   Float64 minSlabOffset = DBL_MAX;
+   Float64 maxSlabOffset = 0;
    do
    {
       const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
@@ -1319,13 +1214,13 @@ Float64 CBridgeDescription::GetMinSlabOffset() const
          Float64 startSlabOffset = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart);
          Float64 endSlabOffset   = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd);
 
-         minSlabOffset = ::Min3(minSlabOffset,startSlabOffset,endSlabOffset);
+         maxSlabOffset = ::Max3(maxSlabOffset,startSlabOffset,endSlabOffset);
       }
 
       pSpan = pSpan->GetNextPier()->GetNextSpan();
    } while (pSpan);
 
-   return minSlabOffset;
+   return maxSlabOffset;
 }
 
 void CBridgeDescription::SetDistributionFactorMethod(pgsTypes::DistributionFactorMethod method)
@@ -1386,10 +1281,11 @@ bool CBridgeDescription::MoveBridge(PierIndexType pierIdx,Float64 newStation)
    }
 
    // move all the deck points
-   std::vector<CDeckPoint>::iterator iter;
-   for ( iter = m_Deck.DeckEdgePoints.begin(); iter != m_Deck.DeckEdgePoints.end(); iter++ )
+   std::vector<CDeckPoint>::iterator ptIter(m_Deck.DeckEdgePoints.begin());
+   std::vector<CDeckPoint>::iterator ptIterEnd(m_Deck.DeckEdgePoints.end());
+   for ( ; ptIter != ptIterEnd; ptIter++ )
    {
-      CDeckPoint& deckPoint = *iter;
+      CDeckPoint& deckPoint = *ptIter;
       deckPoint.Station += deltaStation;
    }
 
@@ -1474,21 +1370,21 @@ void CBridgeDescription::CopyDown(bool bGirderCount,bool bGirderType,bool bSpaci
 
       if ( bSpacing )
       {
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->JoinAll(0);
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->SetGirderSpacing(0,m_GirderSpacing);
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->SetMeasurementLocation(m_MeasurementLocation);
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->SetMeasurementType(m_MeasurementType);
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->SetRefGirder(m_RefGirderIdx);
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->SetRefGirderOffset(m_RefGirderOffset);
-         pSpan->GetGirderSpacing(pgsTypes::metStart)->SetRefGirderOffsetType(m_RefGirderOffsetType);
+         pSpan->GirderSpacing(pgsTypes::metStart)->JoinAll(0);
+         pSpan->GirderSpacing(pgsTypes::metStart)->SetGirderSpacing(0,m_GirderSpacing);
+         pSpan->GirderSpacing(pgsTypes::metStart)->SetMeasurementLocation(m_MeasurementLocation);
+         pSpan->GirderSpacing(pgsTypes::metStart)->SetMeasurementType(m_MeasurementType);
+         pSpan->GirderSpacing(pgsTypes::metStart)->SetRefGirder(m_RefGirderIdx);
+         pSpan->GirderSpacing(pgsTypes::metStart)->SetRefGirderOffset(m_RefGirderOffset);
+         pSpan->GirderSpacing(pgsTypes::metStart)->SetRefGirderOffsetType(m_RefGirderOffsetType);
 
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->JoinAll(0);
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->SetGirderSpacing(0,m_GirderSpacing);
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->SetMeasurementLocation(m_MeasurementLocation);
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->SetMeasurementType(m_MeasurementType);
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->SetRefGirder(m_RefGirderIdx);
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->SetRefGirderOffset(m_RefGirderOffset);
-         pSpan->GetGirderSpacing(pgsTypes::metEnd)->SetRefGirderOffsetType(m_RefGirderOffsetType);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->JoinAll(0);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->SetGirderSpacing(0,m_GirderSpacing);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->SetMeasurementLocation(m_MeasurementLocation);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->SetMeasurementType(m_MeasurementType);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->SetRefGirder(m_RefGirderIdx);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->SetRefGirderOffset(m_RefGirderOffset);
+         pSpan->GirderSpacing(pgsTypes::metEnd)->SetRefGirderOffsetType(m_RefGirderOffsetType);
       }
 
       if ( bGirderType )
@@ -1533,7 +1429,7 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
    }
 
    bool copyGirderType = false;
-   if (this->m_bSameGirderName)
+   if ( m_bSameGirderName )
    {
       if (!pOriginal->m_bSameGirderName ||
           this->m_strGirderName != pOriginal->m_strGirderName)
@@ -1573,8 +1469,10 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
    // NOTE: The logic here isn't, and probably can't be perfect. If spans or girder groups are added and 
    //       shuffled, it's impossible to compare with the original configuration. The default here
    //       is, if in doubt, use seed data
-   std::vector<CSpanData*>::const_iterator origSpanIter = pOriginal->m_Spans.begin();
-   for(std::vector<CSpanData*>::iterator thisSpanIter = m_Spans.begin(); thisSpanIter!=m_Spans.end(); thisSpanIter++)
+   std::vector<CSpanData*>::const_iterator origSpanIter( pOriginal->m_Spans.begin() );
+   std::vector<CSpanData*>::iterator thisSpanIter( m_Spans.begin() );
+   std::vector<CSpanData*>::iterator thisSpanIterEnd( m_Spans.end() );
+   for(; thisSpanIter != thisSpanIterEnd; thisSpanIter++)
    {
       if(origSpanIter != pOriginal->m_Spans.end())
          origSpanIter++;
@@ -1598,7 +1496,7 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
             pOrigSpan->GetGirderTypes()->GetGirderGroup(iGroup, &norigGstart, &norigGend, origGirderName);
          }
 
-         if (copyGirderType || thisGirderName != origGirderName)
+         if (thisGirderName != origGirderName)
          {
             // Enough evidence here that the girder type was changed - refill with seed data
             const GirderLibraryEntry* pGird = pLib->GetGirderEntry( thisGirderName.c_str());
@@ -1621,8 +1519,10 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
 void CBridgeDescription::RenumberSpans()
 {
    // renumbers the spans and piers and updates all the prev/next pointers.
-   std::vector<CSpanData*>::iterator spanIter = m_Spans.begin();
-   std::vector<CPierData*>::iterator pierIter = m_Piers.begin();
+   std::vector<CSpanData*>::iterator spanIter(    m_Spans.begin() );
+   std::vector<CSpanData*>::iterator spanIterEnd( m_Spans.end()   );
+   std::vector<CPierData*>::iterator pierIter(    m_Piers.begin() );
+   std::vector<CPierData*>::iterator pierIterEnd( m_Piers.end()   );
 
    SpanIndexType spanIdx = 0;
    PierIndexType pierIdx = 0;
@@ -1631,7 +1531,7 @@ void CBridgeDescription::RenumberSpans()
    CPierData* pPrevPier = *pierIter++;
    pPrevPier->SetPierIndex(pierIdx++);
 
-   for ( ; spanIter != m_Spans.end() && pierIter != m_Piers.end(); spanIter++, pierIter++, spanIdx++, pierIdx++ )
+   for ( ; spanIter != spanIterEnd && pierIter != pierIterEnd; spanIter++, pierIter++, spanIdx++, pierIdx++ )
    {
       CSpanData* pThisSpan = *spanIter;
       CPierData* pNextPier = *pierIter;
@@ -1651,9 +1551,9 @@ void CBridgeDescription::RenumberSpans()
    pLastPier->SetSpans(pPrevSpan,NULL);
 }
 
+#if defined _DEBUG
 void CBridgeDescription::AssertValid()
 {
-#if defined _DEBUG
    SpanIndexType nSpans = GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
@@ -1665,6 +1565,8 @@ void CBridgeDescription::AssertValid()
       {
          _ASSERT( pPrevSpan->GetNextPier() == pThisSpan->GetPrevPier() );
       }
+
+      pThisSpan->AssertValid();
 
       if ( pNextSpan )
       {
@@ -1691,5 +1593,5 @@ void CBridgeDescription::AssertValid()
          _ASSERT( pThisPier->GetStation() < pNextPier->GetStation() );
       }
    }
-#endif
 }
+#endif

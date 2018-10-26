@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Beams\Helper.h>
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,7 +35,12 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
    if (lrd.Nb>1)
    {
       INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
-      INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+      rptRcScalar scalar;
+      scalar.SetFormat( sysNumericFormatTool::Fixed );
+      scalar.SetWidth(6);
+      scalar.SetPrecision(3);
+      scalar.SetTolerance(1.0e-6);
 
       std::vector<Float64>::iterator iter;
       std::_tstring strImageName(lrd.bWasExterior ? _T("LeverRuleExterior.gif") : _T("LeverRuleInterior.gif"));
@@ -43,11 +48,11 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
       (*pPara) << _T("Multiple Presence Factor: m = ") << lrd.m << rptNewLine;
       if (isMoment)
       {
-         (*pPara) << _T("mg") << Super(lrd.bWasExterior ? _T("ME") : _T("MI")) << Sub(lrd.nLanesUsed > 1 ? _T("2+") : _T("1")) << _T(" = (");
+         (*pPara) << _T("mg") << Super((lrd.bWasExterior ? _T("ME") : _T("MI"))) << Sub((lrd.nLanesUsed > 1 ? _T("2+") : _T("1"))) << _T(" = (");
       }
       else
       {
-         (*pPara) << _T("mg") << Super(lrd.bWasExterior ? _T("VE") : _T("VI")) << Sub(lrd.nLanesUsed > 1 ? _T("2+") : _T("1")) << _T(" = (");
+         (*pPara) << _T("mg") << Super((lrd.bWasExterior ? _T("VE") : _T("VI"))) << Sub((lrd.nLanesUsed > 1 ? _T("2+") : _T("1"))) << _T(" = (");
       }
 
       if (specialFactor != 1.0)
@@ -165,7 +170,11 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
 
    (*pPara) << rptRcImage(std::_tstring(pgsReportStyleHolder::GetImagePath()) + _T("RigidMethod.gif")) << rptNewLine;
    (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
@@ -190,12 +199,16 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
       (*pPara) << _T("(") << xdim.SetValue(x) << _T(")") << Super(_T("2"));
    }
    (*pPara) << _T("] = ") << scalar.SetValue(rd.mg/rd.m) << rptNewLine;
-   (*pPara) << _T("mg") << Super(_T("ME")) << Sub(rd.e.size() > 1 ? _T("2+") : _T("1")) << _T(" = ") << scalar.SetValue(rd.mg) << rptNewLine;
+   (*pPara) << _T("mg") << Super(_T("ME")) << Sub((rd.e.size() > 1 ? _T("2+") : _T("1"))) << _T(" = ") << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
 void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
 
    (*pPara) << _T("Multiple Presence Factor: m = ") << rd.m << rptNewLine;
    (*pPara) << _T("g = ") << _T("(") << rd.m <<_T(")(")<< rd.Nl << _T("/") << rd.Nb << _T(") = ") << scalar.SetValue(rd.mg) << rptNewLine;

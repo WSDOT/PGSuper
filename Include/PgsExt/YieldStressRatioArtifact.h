@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 /*****************************************************************************
 CLASS 
@@ -55,7 +55,7 @@ public:
    pgsYieldStressRatioArtifact& operator = (const pgsYieldStressRatioArtifact& rOther);
 
    void SetPointOfInterest(const pgsPointOfInterest& poi);
-   const pgsPointOfInterest& GetPointOfInterest() const;
+   const pgsPointOfInterest& GetGirderPointOfInterest() const;
 
    void SetRatingType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LoadRatingType GetLoadRatingType() const;
@@ -83,10 +83,6 @@ public:
 
    void SetWearingSurfaceMoment(Float64 Mdw);
    Float64 GetWearingSurfaceMoment() const;
-
-   
-   void SetLiveLoadDistributionFactor(Float64 gM);
-   Float64 GetLiveLoadDistributionFactor() const;
 
    void SetLiveLoadFactor(Float64 gLL);
    Float64 GetLiveLoadFactor() const;
@@ -122,7 +118,7 @@ public:
 
 protected:
    void MakeCopy(const pgsYieldStressRatioArtifact& rOther);
-   void MakeAssignment(const pgsYieldStressRatioArtifact& rOther);
+   virtual void MakeAssignment(const pgsYieldStressRatioArtifact& rOther);
 
    mutable bool m_bRFComputed;
    mutable Float64 m_RF;
@@ -151,5 +147,4 @@ protected:
    Float64 m_gDC;
    Float64 m_gDW;
    Float64 m_gLL;
-   Float64 m_gM;   // LLDF used.. in Mllim... just holding on to it here for reporting
 };

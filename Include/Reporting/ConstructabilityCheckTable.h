@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
+class pgsGirderArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -73,10 +74,9 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the constructability check table.
-   rptRcTable* BuildSlabOffsetTable(IBroker* pBroker, const std::vector<SpanGirderHashType>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* BuildSlabOffsetTable(IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildLongitudinalRebarGeometryCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -90,7 +90,7 @@ protected:
    void MakeCopy(const CConstructabilityCheckTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CConstructabilityCheckTable& rOther);
+   virtual void MakeAssignment(const CConstructabilityCheckTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

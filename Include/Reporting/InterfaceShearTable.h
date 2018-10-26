@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_INTERFACESHEARTABLE_H_
-#define INCLUDED_INTERFACESHEARTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
+class pgsGirderArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -50,8 +50,6 @@ LOG
 class REPORTINGCLASS CInterfaceShearTable
 {
 public:
-   // GROUP: LIFECYCLE
-
    //------------------------------------------------------------------------
    // Default constructor
    CInterfaceShearTable();
@@ -60,63 +58,18 @@ public:
    // Destructor
    virtual ~CInterfaceShearTable();
 
-   // GROUP: OPERATORS
-
-   // GROUP: OPERATIONS
-
    //------------------------------------------------------------------------
    // Builds the table.
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder,
+                      const pgsGirderArtifact* pGirderArtifact,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,
+                      IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Copy constructor
    CInterfaceShearTable(const CInterfaceShearTable& rOther);
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_INTERFACESHEARTABLE_H_

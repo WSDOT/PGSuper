@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,15 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SPECCHECKSUMMARYCHAPTERBUILDER_H_
-#define INCLUDED_SPECCHECKSUMMARYCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
+#include <PgsExt\SegmentKey.h>
+
 class pgsGirderArtifact;
-class CSpanGirderReportSpecification;
 
 /*****************************************************************************
 CLASS 
@@ -53,11 +53,7 @@ LOG
 class REPORTINGCLASS CSpecCheckSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
-CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect = true);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
+   CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
@@ -67,47 +63,23 @@ CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect = true);
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
 
    //------------------------------------------------------------------------
-   virtual rptChapter* BuildEx(CSpanGirderReportSpecification* pSGRptSpec,Uint16 level,
-                               SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const;
+   virtual rptChapter* BuildEx(CReportSpecification* pRptSpec,Uint16 level,
+                               const pgsGirderArtifact* pGirderArtifact) const;
 
    //------------------------------------------------------------------------
    void CreateContent(rptChapter* pChapter, IBroker* pBroker,
-                      SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const;
+                      const pgsGirderArtifact* pGirderArtifact) const;
 
 
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
    bool m_ReferToDetailsReport;
-   // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment
    CSpecCheckSummaryChapterBuilder(const CSpecCheckSummaryChapterBuilder&);
    CSpecCheckSummaryChapterBuilder& operator=(const CSpecCheckSummaryChapterBuilder&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_SPECCHECKSUMMARYCHAPTERBUILDER_H_

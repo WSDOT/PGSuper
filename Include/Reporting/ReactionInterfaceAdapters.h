@@ -28,10 +28,10 @@
 
 // PROJECT INCLUDES
 //
-#include <Reporting\ReportingExp.h>
 #include <PGSuperTypes.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
+#include <EAF\EAFUtilities.h>
 
 // LOCAL INCLUDES
 //
@@ -39,51 +39,55 @@
 // FORWARD DECLARATIONS
 //
 
+// MISCELLANEOUS
+//
+inline bool DoDoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey, IBearingDesign* pointer)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(girderKey.groupIndex);
+   PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(girderKey.groupIndex);
+
+   if (pierIdx < startPierIdx || endPierIdx < pierIdx)
+   {
+      return false;
+   }
+   else
+   {
+      bool bleft, bright;
+      pointer->AreBearingReactionsAvailable(girderKey, &bleft, &bright);
+      if (pierIdx == startPierIdx)
+      {
+         return bleft;
+      }
+      else
+      {
+         return bright;
+      }
+   }
+}
+
+// The adapters in this file allow tables to serve double duty by reporting pier reactions or girder bearing reactions.
+// The two are identical except for the title and the interfaces they use to get responses
+enum TableType { PierReactionsTable, BearingReactionsTable};
 
 /*****************************************************************************
 CLASS 
-   ReactionLocation and IReactionLocationContainer
+   IProductReactionAdapter
 
-   Utility classes for defining reaction locations, iterating them, and reporting the location
+   Utility adapter class for redirecting reaction interfaces so they can be used by the same 
+   reporting clients
 
 DESCRIPTION
-***************************************************************************/
 
-// Enum that describes the type of reaction report to be generated
-enum ReactionTableType { PierReactionsTable, BearingReactionsTable};
+COPYRIGHT
+   Copyright © 1997-2011
+   Washington State Department Of Transportation
+   All Rights Reserved
 
-// Simple span bearing reactions can occur at back/ahead. Continuous and pier reactions are at mid
-enum PierReactionFaceType {rftBack, rftMid, rftAhead};
-
-class ReactionLocation
-{
-public:
-   PierIndexType Pier;
-   PierReactionFaceType  Face;
-   GirderIndexType Girder;
-   std::wstring  PierLabel;
-};
-
-typedef std::vector<ReactionLocation> ReactionLocationContainer;
-typedef std::vector<ReactionLocation>::const_iterator ReactionLocationIterator;
-
-class ReactionLocationIter
-{
-public:
-   ReactionLocationIter(const ReactionLocationContainer& container);
-
-   void First();
-   void Next();
-   bool IsDone();
-   const ReactionLocation& CurrentItem();
-
-private:
-   ReactionLocationIter();
-   const ReactionLocationContainer& m_rContainer;
-   ReactionLocationIterator m_Iter;
-};
-
-
+LOG
+*****************************************************************************/
 /****************************************************************************
 CLASS
    IProductReactionAdapter
@@ -94,62 +98,108 @@ CLASS
 class IProductReactionAdapter
 {
 public:
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
-   virtual bool DoReportAtPier(PierIndexType pier,GirderIndexType gdr)=0;
-
-   virtual Float64 GetReaction(pgsTypes::Stage stage, const ReactionLocation& rLocation, ProductForceType type, BridgeAnalysisType bat) = 0;
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage, const ReactionLocation& rLocation,BridgeAnalysisType bat,
-                                    bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
+   virtual bool DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)=0;
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,ProductForceType type,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig = NULL,VehicleIndexType* pMaxConfig = NULL) = 0;
 };
 
-/////////////////////////////////////////
-// ProductForcesReactionAdapter
-//
-// Adapter class to return pier total reactions
-
-class REPORTINGCLASS ProductForcesReactionAdapter: public IProductReactionAdapter
+// Next implementation classes:
+class ProductForcesReactionAdapter: public IProductReactionAdapter
 {
 public:
-   ProductForcesReactionAdapter(IProductForces* pForces, SpanIndexType span, GirderIndexType girder);
+   ProductForcesReactionAdapter(IProductForces* pForces):
+      m_Pointer(pForces)
+   {;}
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
-   virtual bool DoReportAtPier(PierIndexType pier,GirderIndexType gdr);
-   virtual Float64 GetReaction(pgsTypes::Stage stage,const ReactionLocation& rLocation,ProductForceType type,BridgeAnalysisType bat);
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage, const ReactionLocation& rLocation,BridgeAnalysisType bat,
+   virtual bool DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
+   {
+      return true; // always report pier reactions
+   }
+
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,ProductForceType type,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat)
+   {
+      return m_Pointer->GetReaction(intervalIdx, type, pierIdx, girderKey, bat);
+   }
+
+   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
+                                    VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL)
+   {
+      m_Pointer->GetLiveLoadReaction(llType, intervalIdx, pierIdx, girderKey, bat, bIncludeImpact, bIncludeLLDF, pRmin, pRmax, pMinConfig, pMaxConfig);
+   }
 
 private:
    IProductForces* m_Pointer;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-   ReactionLocationContainer m_Locations;
 };
 
-///////////////////////////////////////////////
-//   BearingDesignProductReactionAdapter
-//
 // Adapter to get bearing reactions. Note we have to play a game here because IProductForces wants reactions by pier
 // and IBearingDesign returns them by span
-class REPORTINGCLASS BearingDesignProductReactionAdapter: public IProductReactionAdapter
+class BearingDesignProductReactionAdapter: public IProductReactionAdapter
 {
 public:
-   BearingDesignProductReactionAdapter(IBearingDesign* pForces, pgsTypes::Stage stage, SpanIndexType span, GirderIndexType girder);
+   BearingDesignProductReactionAdapter(IBearingDesign* pForces, PierIndexType leftPierIdx,PierIndexType rightPierIdx):
+      m_Pointer(pForces),
+      m_LeftPierIdx(leftPierIdx),
+      m_RightPierIdx(rightPierIdx)
+   {
+   }
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
-   virtual bool DoReportAtPier(PierIndexType pier,GirderIndexType gdr);
-   virtual Float64 GetReaction(pgsTypes::Stage stage,const ReactionLocation& rLocation,ProductForceType type,BridgeAnalysisType bat);
-   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage, const ReactionLocation& rLocation,BridgeAnalysisType bat,
+   virtual bool DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
+   {
+      return DoDoReportAtPier(pierIdx, girderKey, m_Pointer);
+   }
+
+   virtual Float64 GetReaction(IntervalIndexType intervalIdx,ProductForceType type,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat)
+   {
+      ATLASSERT(m_LeftPierIdx <= pierIdx && pierIdx <= m_RightPierIdx);
+      Float64 Rleft, Rright;
+      m_Pointer->GetBearingProductReaction(intervalIdx, type, girderKey, ctIncremental, bat, &Rleft, &Rright);
+      return pierIdx == m_LeftPierIdx ? Rleft : Rright;
+   }
+
+   virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL);
+                                    VehicleIndexType* pMinConfig=NULL, VehicleIndexType* pMaxConfig=NULL)
+   {
+    // convert from span to pier locations
+     Float64 LeftRmin, LeftRmax, LeftTmin, LeftTmax;
+     Float64 RightRmin, RightRmax, RightTmin, RightTmax;
+     VehicleIndexType LeftMinConfig , LeftMaxConfig;
+     VehicleIndexType RightMinConfig, RightMaxConfig;
+
+     m_Pointer->GetBearingLiveLoadReaction(llType, intervalIdx, girderKey, bat, bIncludeImpact, bIncludeLLDF, 
+                                           &LeftRmin, &LeftRmax, &LeftTmin, &LeftTmax, &RightRmin, &RightRmax, &RightTmin, &RightTmax,
+                                           &LeftMinConfig, &LeftMaxConfig, &RightMinConfig, &RightMaxConfig);
+
+     if(pierIdx == m_LeftPierIdx)
+     {
+         *pRmin = LeftRmin;
+         *pRmax = LeftRmax;
+         if (pMinConfig!=NULL)
+         {
+            *pMinConfig = LeftMinConfig;
+            *pMaxConfig = LeftMaxConfig;
+         }
+     }
+     else
+     {
+         *pRmin = RightRmin;
+         *pRmax = RightRmax;
+         if (pMinConfig!=NULL)
+         {
+            *pMinConfig = RightMinConfig;
+            *pMaxConfig = RightMaxConfig;
+         }
+     }
+   }
+
 private:
-   IBearingDesign* m_pBearingDesign;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-   ReactionLocationContainer m_Locations;
-   pgsTypes::Stage m_Stage;
+   IBearingDesign* m_Pointer;
+   PierIndexType m_LeftPierIdx;
+   PierIndexType m_RightPierIdx;
 };
+
+
 
 /*****************************************************************************
 CLASS 
@@ -167,80 +217,129 @@ COPYRIGHT
 
 LOG
 *****************************************************************************/
-
-
+/****************************************************************************
+CLASS
+   ICmbLsReactionAdapter
+****************************************************************************/
+// Use a local adapter so we can use either the ICombinedForces or ILimitStateForces interfaces
+// to provide results for the table.
+// First the pure virtual adapter class:
 class ICmbLsReactionAdapter
 {
 public:
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
-   virtual bool DoReportAtPier(PierIndexType pier,GirderIndexType gdr)=0;
+   virtual bool DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey) = 0;
 
    // From ICombinedForces
-   virtual Float64 GetReaction(LoadingCombination combo,pgsTypes::Stage stage,const ReactionLocation& rLocation,CombinationType type,BridgeAnalysisType bat) = 0;
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const ReactionLocation& rLocation,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
+   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) = 0;
 
    // From ILimitStateForces
-   virtual void GetReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,const ReactionLocation& rLocation,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
+   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) = 0;
 };
 
-class REPORTINGCLASS CombinedLsForcesReactionAdapter: public ICmbLsReactionAdapter
+class CombinedLsForcesReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CombinedLsForcesReactionAdapter(ICombinedForces* pCmbForces, ILimitStateForces* pForces, SpanIndexType span, GirderIndexType girder);
+   CombinedLsForcesReactionAdapter(ICombinedForces* pCmbForces, ILimitStateForces* pForces):
+      m_CmbPointer(pCmbForces), m_LsPointer(pForces)
+   {;}
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
-   virtual bool DoReportAtPier(PierIndexType pier,GirderIndexType gdr);
-   virtual Float64 GetReaction(LoadingCombination combo,pgsTypes::Stage stage,const ReactionLocation& rLocation,CombinationType type,BridgeAnalysisType bat);
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const ReactionLocation& rLocation,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   virtual bool DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
+   {
+      return true; // always report for pier reactions
+   }
+
+
+   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,CombinationType type,pgsTypes::BridgeAnalysisType bat)
+   {
+      return m_CmbPointer->GetReaction(combo, intervalIdx, pierIdx, girderKey, type, bat);
+   }
+
+   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
+   {
+      return m_CmbPointer->GetCombinedLiveLoadReaction(llType, intervalIdx, pierIdx, girderKey, bat, bIncludeImpact, pRmin, pRmax);
+   }
 
    // From ILimitStateForces
-   virtual void GetReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,const ReactionLocation& rLocation,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax);
+   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax)
+   {
+      return m_LsPointer->GetReaction(ls, intervalIdx, pierIdx, girderKey, bat, bIncludeImpact, pMin, pMax);
+   }
+
 
 private:
    ICombinedForces*   m_CmbPointer;
    ILimitStateForces* m_LsPointer;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-   ReactionLocationContainer m_Locations;
 };
 
 
 // Adapter to get bearing reactions. Note we have to play a game here because IProductForces wants reactions by pier
 // and IBearingDesign returns them by span
-class REPORTINGCLASS CmbLsBearingDesignReactionAdapter: public ICmbLsReactionAdapter
+class CmbLsBearingDesignReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CmbLsBearingDesignReactionAdapter(IBearingDesign* pForces, pgsTypes::Stage stage, SpanIndexType span, GirderIndexType girder);
+   CmbLsBearingDesignReactionAdapter(IBearingDesign* pForces, PierIndexType leftPierIdx,PierIndexType rightPierIdx):
+      m_Pointer(pForces),
+      m_LeftPierIdx(leftPierIdx),
+      m_RightPierIdx(rightPierIdx)
+   {
+   }
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
-   virtual bool DoReportAtPier(PierIndexType pier,GirderIndexType gdr);
+   virtual bool DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
+   {
+      return DoDoReportAtPier(pierIdx, girderKey, m_Pointer);
+   }
 
-   virtual Float64 GetReaction(LoadingCombination combo,pgsTypes::Stage stage,const ReactionLocation& rLocation,CombinationType type,BridgeAnalysisType bat);
-   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const ReactionLocation& rLocation,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
-   virtual void GetReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,const ReactionLocation& rLocation,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,CombinationType type,pgsTypes::BridgeAnalysisType bat)
+   {
+      ATLASSERT(m_LeftPierIdx <= pierIdx && pierIdx <= m_RightPierIdx); // bearing reactions are by span.
+      Float64 Rleft, Rright;
+      m_Pointer->GetBearingCombinedReaction(combo, intervalIdx, girderKey, type, bat, &Rleft, &Rright);
+      return pierIdx==m_LeftPierIdx? Rleft : Rright;
+   }
+
+   virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
+   {
+     Float64 LeftRmin, LeftRmax;
+     Float64 RightRmin, RightRmax;
+     m_Pointer->GetBearingCombinedLiveLoadReaction(llType, intervalIdx, girderKey, bat, bIncludeImpact, &LeftRmin, &LeftRmax, &RightRmin, &RightRmax);
+
+     if(pierIdx == m_LeftPierIdx)
+     {
+        *pRmin = LeftRmin;
+        *pRmax = LeftRmax;
+     }
+     else
+     {
+        *pRmin = RightRmin;
+        *pRmax = RightRmax;
+     }
+   }
+
+   virtual void GetReaction(pgsTypes::LimitState ls,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
+   {
+      Float64 LeftRmin, LeftRmax;
+      Float64 RightRmin, RightRmax;
+      m_Pointer->GetBearingLimitStateReaction(ls, intervalIdx, girderKey, bat, bIncludeImpact, &LeftRmin, &LeftRmax, &RightRmin, &RightRmax);
+      if(pierIdx == m_LeftPierIdx)
+      {
+         *pRmin = LeftRmin;
+         *pRmax = LeftRmax;
+      }
+      else
+      {
+         *pRmin = RightRmin;
+         *pRmax = RightRmax;
+      }
+   }
 
 private:
-   IBearingDesign* m_pBearingDesign;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-   ReactionLocationContainer m_Locations;
-   pgsTypes::Stage m_Stage;
+   IBearingDesign* m_Pointer;
+   PierIndexType m_LeftPierIdx;
+   PierIndexType m_RightPierIdx;
 };
 
 
-// Class that decides whether to print reaction data based on report type, boundary conditions,
-// and stage
-class ReactionDecider
-{
-public:
-   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, IBridge* pBridge);
 
-   // If true, report results
-   bool DoReport(pgsTypes::Stage);
-
-private:
-   bool            m_AlwaysReport;
-   pgsTypes::Stage m_ThresholdStage;
-};
 
 #endif // INCLUDED_REACTIONINTERFACEADAPTERS_H_

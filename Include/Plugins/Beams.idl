@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -44,7 +44,7 @@ import "WBFLGenericBridgeTools.idl";
 [
    uuid(D3810B3E-91D6-4aed-A748-8ABEB87FCF44)
 ]
-interface IDummyInterface : IUnknown
+interface DummyBeamFactory : IUnknown
 {
    [helpstring("method Dummy")] HRESULT Dummy();
 };
@@ -59,19 +59,19 @@ interface IDummyInterface : IUnknown
 interface IConfigureStrandMover : IUnknown
 {
    // offset limits and default increments for harped strands
-   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]Float64 topGirderElevation, 
-																						  [in]Float64 topHpElevationBoundary,[in]Float64 botHpElevationBoundary,
-																						  [in]Float64 topEndElevationBoundary,[in]Float64 botEndElevationBoundary,
-																						  [in]Float64 endIncrement,[in]Float64 hpIncrement);
+   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]double topGirderElevation, 
+																						  [in]double topHpElevationBoundary,[in]double botHpElevationBoundary,
+																						  [in]double topEndElevationBoundary,[in]double botEndElevationBoundary,
+																						  [in]double endIncrement,[in]double hpIncrement);
    // remove all regions
    [helpstring("method ClearAll")] HRESULT ClearAll();
    // Add a shape that is to be tested for PointInShape, and arcSlope (x/y) that a strand
    // point is to be moved along
-   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]Float64 arcSlope);
+   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]double arcSlope);
 
    // methods to help debugging
-   [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]IndexType* pNum);
-   [helpstring("method GetRegion")] HRESULT GetRegion([in]IndexType index, [out]IShape** shape,[out]Float64* arcSlope);
+   [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]CollectionIndexType* pNum);
+   [helpstring("method GetRegion")] HRESULT GetRegion([in]CollectionIndexType index, [out]IShape** shape,[out]double* arcSlope);
 };
 
 
@@ -89,7 +89,7 @@ library PGSuperBeamFactory
 	]
 	coclass WFBeamFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -97,7 +97,7 @@ library PGSuperBeamFactory
 	]
 	coclass TaperedIBeamFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -105,7 +105,7 @@ library PGSuperBeamFactory
 	]
 	coclass NUBeamFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -113,7 +113,7 @@ library PGSuperBeamFactory
 	]
 	coclass UBeamFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -121,7 +121,7 @@ library PGSuperBeamFactory
 	]
 	coclass UBeam2Factory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -129,7 +129,7 @@ library PGSuperBeamFactory
 	]
 	coclass BulbTeeFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -137,7 +137,7 @@ library PGSuperBeamFactory
 	]
 	coclass MultiWebFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -145,7 +145,7 @@ library PGSuperBeamFactory
 	]
 	coclass MultiWeb2Factory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -153,7 +153,7 @@ library PGSuperBeamFactory
 	]
 	coclass DoubleTeeFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -161,7 +161,7 @@ library PGSuperBeamFactory
 	]
 	coclass VoidedSlabFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -169,7 +169,7 @@ library PGSuperBeamFactory
 	]
 	coclass VoidedSlab2Factory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -177,15 +177,15 @@ library PGSuperBeamFactory
 	]
 	coclass BoxBeamFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
 		uuid(09D3E8EA-B66F-4d99-8DDE-3F55BBC14D54)
 	]
-	coclass BoxBeam2Factory
+	coclass BoxBeamFactory2
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -202,7 +202,7 @@ library PGSuperBeamFactory
 	]
 	coclass TxDotDoubleTFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
 	[
@@ -210,63 +210,24 @@ library PGSuperBeamFactory
 	]
 	coclass DeckedSlabBeamFactory
 	{
-		[default] interface IDummyInterface;
+		[default] interface DummyBeamFactory;
 	};
 
-   // Distribution Factor Engineers
-   [
-      uuid(3AC40380-8764-4087-BD7C-47A50A369AE6)
-   ]
-   coclass IBeamDistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
+   // PGSplice
 
    [
-      uuid(E5597CC7-8499-4dbd-9FB4-3E7C529F2C3B)
-   ]
-   coclass BoxBeamDistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
+		uuid(94272D8A-4914-44bb-A0D2-937A6A8BD7B0)
+	]
+	coclass SplicedIBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
 
    [
-      uuid(DA437468-B32C-4012-8B8E-51BAE278C170)
-   ]
-   coclass BulbTeeDistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
-
-   [
-      uuid(5F9F0F5B-0BCE-4aad-B2A6-47FC36BB331A)
-   ]
-   coclass MultiWebDistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
-
-   [
-      uuid(41AB468B-C89F-4153-96FC-A37E18A33C68)
-   ]
-   coclass UBeamDistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
-
-   [
-      uuid(F8E32DC6-9B2F-45fa-8C67-E9788DD48BAC)
-   ]
-   coclass VoidedSlabDistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
-
-   [
-      uuid(43BA23FE-C697-4277-A1C0-943E6E9DFBF9)
-   ]
-   coclass VoidedSlab2DistFactorEngineer
-   {
-      [default] interface IDummyInterface;
-   };
+		uuid(6A00C215-C139-4755-8DD5-929EE2DED305)
+	]
+	coclass SplicedUBeamFactory
+	{
+		[default] interface DummyBeamFactory;
+	};
 };

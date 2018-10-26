@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,16 +34,15 @@
 // :TRICKY: rab 11.23.96 : Modifying default behavior
 // :FILE: ChildFrm.h
 //
-// We override CEAFChildFrame to customize the MDI child's title bar.
+// We override CMDIChildWnd to customize the MDI child's title bar.
 // By default the title bar shows the document name.  But we want
 // it to instead show the text defined as the first string in
 // the document template STRINGTABLE resource.  This string is
 // the name of the view.  If we didn't customize the title bar, two
 // MDI child windows containing differnt view types would
 // show MYDOC:1 and MYDOC:2 if the document were named MYDOC.
-#include <EAF\EAFChildFrame.h>
 
-class CChildFrame : public CEAFChildFrame
+class CChildFrame : public CMDIChildWnd
 {
 	DECLARE_DYNCREATE(CChildFrame)
 public:

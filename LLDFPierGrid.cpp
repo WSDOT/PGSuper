@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -190,7 +190,7 @@ void CLLDFPierGrid::CustomInit(PierIndexType iPier)
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CLLDFPierGrid::AddGirderRow(GirderIndexType gdr, const CPierData* pPier)
+void CLLDFPierGrid::AddGirderRow(GirderIndexType gdr, const CPierData2* pPier)
 {
    GetParam()->EnableUndo(FALSE);
 
@@ -244,7 +244,7 @@ void CLLDFPierGrid::AddGirderRow(GirderIndexType gdr, const CPierData* pPier)
    GetParam()->EnableUndo(TRUE);
 }
 
-void CLLDFPierGrid::GetGirderRow(GirderIndexType gdr, CPierData* pPier)
+void CLLDFPierGrid::GetGirderRow(GirderIndexType gdr, CPierData2* pPier)
 {
    bool bContinuous  = pPier->IsContinuous();
 
@@ -278,9 +278,9 @@ CString CLLDFPierGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         return GetValueRowCol(nRow, nCol);
 }
 
-void CLLDFPierGrid::FillGrid(const CBridgeDescription* pBridgeDesc)
+void CLLDFPierGrid::FillGrid(const CBridgeDescription2* pBridgeDesc)
 {
-   const CPierData* pPier = pBridgeDesc->GetPier(m_PierIdx);
+   const CPierData2* pPier = pBridgeDesc->GetPier(m_PierIdx);
 
    GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
@@ -293,9 +293,9 @@ void CLLDFPierGrid::FillGrid(const CBridgeDescription* pBridgeDesc)
    Enable(m_bEnabled);
 }
 
-void CLLDFPierGrid::GetData(CBridgeDescription* pBridgeDesc)
+void CLLDFPierGrid::GetData(CBridgeDescription2* pBridgeDesc)
 {
-   CPierData* pPier = pBridgeDesc->GetPier(m_PierIdx);
+   CPierData2* pPier = pBridgeDesc->GetPier(m_PierIdx);
 
    GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
@@ -444,7 +444,7 @@ BOOL CLLDFPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	   CGXControl* pControl = GetControl(nRow, nCol);
 	   pControl->GetCurrentText(s);
 
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 	   {
 		   SetWarningText (_T("Distribution factor value must be a non-negative number"));

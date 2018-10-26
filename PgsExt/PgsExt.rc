@@ -70,8 +70,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,2,1
- PRODUCTVERSION 2,9,2,1
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -89,12 +89,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "2.9.2.1"
+            VALUE "FileVersion", "3.0.0.0"
             VALUE "InternalName", "PgsExt"
-            VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.2.1"
+            VALUE "ProductVersion", "3.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -108,6 +108,17 @@ END
 //
 // Dialog
 //
+
+IDD_BOUNDARY_CONDITIONS DIALOGEX 0, 0, 316, 180
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Boundary Condition Error"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,159,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,159,50,14
+    LTEXT           "The boundary conditions at all intermediate piers for post-tensioned bridges must provide continuity.\n\nSelect a boundary condition for all intermediate piers or Cancel and change each pier individually.",IDC_STATIC,7,7,302,43
+    COMBOBOX        IDC_BOUNDARY_CONDITION,49,66,229,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+END
 
 IDD_STATUS_DIALOG DIALOG  0, 0, 242, 174
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -143,14 +154,15 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,12,116,149,10
 END
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDB_HINGES              BITMAP                  "..\\res\\Hinges.bmp"
-IDB_ROLLERS             BITMAP                  "..\\res\\Rollers.bmp"
-IDB_CONTINUOUS          BITMAP                  "..\\res\\Continuous.bmp"
+IDB_HINGES              BITMAP                  "res\\Hinges.bmp"
+IDB_ROLLERS             BITMAP                  "res\\Rollers.bmp"
+IDB_CONTINUOUS          BITMAP                  "res\\Continuous.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

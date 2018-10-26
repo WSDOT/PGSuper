@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,12 +96,7 @@ rptReportContent& rptCapacityToDemand::SetValue(Float64 capacity, Float64 demand
 
 std::_tstring rptCapacityToDemand::AsString() const
 {
-   if (Sign(m_Capacity) != Sign(m_Demand))
-   {
-      // Cannot have negative c/d
-      return std::_tstring(_T("-"));
-   }
-   else if(IsEqual(m_Capacity,0.0))
+   if(IsEqual(m_Capacity,0.0))
    {
 //      ATLASSERT(0); // c/d for c==0.0 makes no sense - return return 0.00, but this should be caught by caller
       return std::_tstring(_T("0.00")); 
@@ -110,11 +105,16 @@ std::_tstring rptCapacityToDemand::AsString() const
    {
       return std::_tstring(_T("inf")); 
    }
+   else if (Sign(m_Capacity) != Sign(m_Demand))
+   {
+      // Cannot have negative c/d
+      return std::_tstring(_T("-"));
+   }
    else
    {
       Float64 cd = m_Capacity/m_Demand;
 
-      if (10.0 < cd)
+      if (cd > 10.0)
       {
          return std::_tstring(_T("10+"));
       }

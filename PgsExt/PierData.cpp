@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,13 +25,14 @@
 #include <PgsExt\SpanData.h>
 #include <PgsExt\BridgeDescription.h>
 
-#include <EAF\EAFUtilities.h>
-#include <IFace\Project.h>
+#include <PgsExt\PierData2.h>
 
 #include <Units\SysUnits.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <WBFLCogo.h>
+
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,14 +44,6 @@ static char THIS_FILE[] = __FILE__;
 CLASS
    CPierData
 ****************************************************************************/
-
-// old data storage format
-//BEGIN_STRSTORAGEMAP(CPierData,_T("PierData"),1.0)
-//   PROPERTY(_T("Station"),     SDT_R8, m_Station )
-//   PROPERTY(_T("Orientation"), SDT_I4, Orientation )
-//   PROPERTY(_T("Angle"),       SDT_R8, Angle )
-//   PROPERTY(_T("Connection"),  SDT_STDSTRING, m_Connection[pgsTypes::Back] )
-//END_STRSTORAGEMAP
 
 CPierData::CPierData()
 {
@@ -64,11 +57,10 @@ CPierData::CPierData()
    Orientation = Normal;
    Angle       = 0.0;
 
-   m_ConnectionType = pgsTypes::Hinged;
-   
+   m_ConnectionType                    = pgsTypes::Hinge;
    m_strOrientation = _T("Normal");
 
-    for ( int i = 0; i < 2; i++ )
+   for ( int i = 0; i < 2; i++ )
    {
       m_GirderEndDistance[i]            = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
       m_EndDistanceMeasurementType[i]   = ConnectionLibraryEntry::FromBearingNormalToPier;
@@ -84,7 +76,7 @@ CPierData::CPierData()
       m_DiaphragmLoadLocation[i] = 0;
    }
 
-    m_DistributionFactorsFromOlderVersion = false;
+   m_DistributionFactorsFromOlderVersion = false;
 }
 
 CPierData::CPierData(const CPierData& rOther)
@@ -147,19 +139,8 @@ bool CPierData::operator==(const CPierData& rOther) const
 
       if ( !IsEqual(m_SupportWidth[i], rOther.m_SupportWidth[i]) )
          return false;
-
-      if ( !IsEqual(m_DiaphragmHeight[i], rOther.m_DiaphragmHeight[i]) )
-         return false;
-      
-      if ( !IsEqual(m_DiaphragmWidth[i], rOther.m_DiaphragmWidth[i]) )
-         return false;
-
-      if ( m_DiaphragmLoadType[i] != rOther.m_DiaphragmLoadType[i] )
-         return false;
-
-      if ( !IsEqual(m_DiaphragmLoadLocation[i], rOther.m_DiaphragmLoadLocation[i]) )
-         return false;
    }
+
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
@@ -179,7 +160,7 @@ LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
 {
    switch(type)
    { 
-   case pgsTypes::Hinged:
+   case pgsTypes::Hinge:
       return _T("Hinged");
 
    case pgsTypes::Roller:
@@ -208,6 +189,9 @@ LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
 
    case pgsTypes::IntegralBeforeDeckHingeAhead:
       return _T("Integral on back side before deck placement; Hinged on ahead side");
+
+   case pgsTypes::ContinuousSegment:
+      return _T("Continuous girder segment");
    
    default:
       ATLASSERT(0);
@@ -219,62 +203,75 @@ LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
 
 HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
-   USES_CONVERSION;
-   HRESULT hr = S_OK;
+   // Use this version of Load if you are directly loading an old version
+   std::_tstring strUnitName(_T("PierDataDetails"));
+   HRESULT hr2 = pStrLoad->BeginUnit(strUnitName.c_str());
 
-   HRESULT hr2 = pStrLoad->BeginUnit(_T("PierDataDetails"));
+   if ( FAILED(hr2) )
+   {
+      strUnitName = _T("PierData");
+      hr2 = pStrLoad->BeginUnit(strUnitName.c_str());
+   }
 
-   bool bUpdateFromLibrary = false;
-   std::_tstring connectionLibName[2]; // temporary data for loading library connection name.... at end of load,
-   // data will be extracted from library entries and filled into the data members of this class
+   if ( FAILED(hr2) )
+      return STRLOAD_E_INVALIDFORMAT;
 
    Float64 version;
    pStrLoad->get_Version(&version);
+
+   if ( FAILED(Load(version,pStrLoad,pProgress,strUnitName)) )
+      return STRLOAD_E_INVALIDFORMAT;
+
+   if ( FAILED(pStrLoad->EndUnit()) )
+      return STRLOAD_E_INVALIDFORMAT;
+
+   return S_OK;
+}
+
+HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress,const std::_tstring& strUnitName)
+{
+   // Use this version of you've already started the "PierData" or "PierDataDetails" data block
+   // This is done by the newer bridge description object
+
+   USES_CONVERSION;
+   HRESULT hr = S_OK;
+
+   std::_tstring strConnection[2];
+
    if ( version == 1.0 )
    {
-      bUpdateFromLibrary = true;
-      //STRSTG_LOAD( hr, pStrLoad, pProgress );
-      //BEGIN_STRSTORAGEMAP(CPierData,_T("PierData"),1.0)
-      //   PROPERTY(_T("Station"),     SDT_R8, m_Station )
-      //   PROPERTY(_T("Orientation"), SDT_I4, Orientation )
-      //   PROPERTY(_T("Angle"),       SDT_R8, Angle )
-      //   PROPERTY(_T("Connection"),  SDT_STDSTRING, m_Connection[pgsTypes::Back] )
-      //END_STRSTORAGEMAP
-
-      // replacement for structured storage map... map had to be replaced because
-      // of the connection data member was eliminated in version 9
       CComVariant var;
-      pStrLoad->BeginUnit(_T("PierData"));
       var.vt = VT_R8;
+
       if ( FAILED(pStrLoad->get_Property(_T("Station"),&var)) )
          return STRLOAD_E_INVALIDFORMAT;
       else
          m_Station = var.dblVal;
 
+      var.Clear();
       var.vt = VT_I4;
-      if ( FAILED(pStrLoad->get_Property(_T("Orientation"),&var)) )
+      if (FAILED(pStrLoad->get_Property(_T("Orientation"), &var )) )
          return STRLOAD_E_INVALIDFORMAT;
       else
-         Orientation = (CPierData::PierOrientation)(var.iVal);
+         Orientation = (PierOrientation)var.lVal;
 
       var.vt = VT_R8;
+
       if ( FAILED(pStrLoad->get_Property(_T("Angle"),&var)) )
          return STRLOAD_E_INVALIDFORMAT;
       else
          Angle = var.dblVal;
 
+
+      var.Clear();
       var.vt = VT_BSTR;
-      if ( FAILED(pStrLoad->get_Property(_T("Connection"),&var)) )
+      if (FAILED(pStrLoad->get_Property(_T("Connection"), &var )) )
          return STRLOAD_E_INVALIDFORMAT;
       else
-         connectionLibName[pgsTypes::Back] = OLE2T(var.bstrVal);
+         strConnection[pgsTypes::Back] = OLE2T(var.bstrVal);
 
-      pStrLoad->EndUnit(); // PierData
-
-
-      connectionLibName[pgsTypes::Ahead] = connectionLibName[pgsTypes::Back];
-
-      m_ConnectionType  = pgsTypes::Hinged;
+      strConnection[pgsTypes::Ahead] = strConnection[pgsTypes::Back];
+      m_ConnectionType  = pgsTypes::Hinge;
 
       // Convert old input into a bearing string
       CComPtr<IDirectionDisplayUnitFormatter> dirFormatter;
@@ -309,9 +306,9 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          return STRLOAD_E_INVALIDFORMAT;
       }
 
-      if ( FAILED(hr2) )
+      if ( strUnitName == std::_tstring(_T("PierData")) )
       {
-         // Failed to read "PierDataDetails" block. This means the file was
+         // Data block unit name is PierData. This means the file was
          // created before changing out the COGO engine in bmfBridgeModeling.
          //
          // The reference for bearings has changed. Do a conversion here.
@@ -322,6 +319,33 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                Angle += 2*M_PI;
          }
       }
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,ILibrary, pLib );
+      const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Ahead].c_str());
+      m_GirderEndDistance[pgsTypes::Ahead]            = pConnEntry->GetGirderEndDistance();
+      m_EndDistanceMeasurementType[pgsTypes::Ahead]   = pConnEntry->GetEndDistanceMeasurementType();
+      m_GirderBearingOffset[pgsTypes::Ahead]          = pConnEntry->GetGirderBearingOffset();
+      m_BearingOffsetMeasurementType[pgsTypes::Ahead] = pConnEntry->GetBearingOffsetMeasurementType();
+      m_SupportWidth[pgsTypes::Ahead]                 = pConnEntry->GetSupportWidth();
+
+      m_DiaphragmHeight[pgsTypes::Ahead]             = pConnEntry->GetDiaphragmHeight();
+      m_DiaphragmWidth[pgsTypes::Ahead]              = pConnEntry->GetDiaphragmWidth();
+      m_DiaphragmLoadType[pgsTypes::Ahead]           = pConnEntry->GetDiaphragmLoadType();
+      m_DiaphragmLoadLocation[pgsTypes::Ahead]       = pConnEntry->GetDiaphragmLoadLocation();
+
+      pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Back].c_str());
+      m_GirderEndDistance[pgsTypes::Back]            = pConnEntry->GetGirderEndDistance();
+      m_EndDistanceMeasurementType[pgsTypes::Back]   = pConnEntry->GetEndDistanceMeasurementType();
+      m_GirderBearingOffset[pgsTypes::Back]          = pConnEntry->GetGirderBearingOffset();
+      m_BearingOffsetMeasurementType[pgsTypes::Back] = pConnEntry->GetBearingOffsetMeasurementType();
+      m_SupportWidth[pgsTypes::Back]                 = pConnEntry->GetSupportWidth();
+
+      m_DiaphragmHeight[pgsTypes::Back]             = pConnEntry->GetDiaphragmHeight();
+      m_DiaphragmWidth[pgsTypes::Back]              = pConnEntry->GetDiaphragmWidth();
+      m_DiaphragmLoadType[pgsTypes::Back]           = pConnEntry->GetDiaphragmLoadType();
+      m_DiaphragmLoadLocation[pgsTypes::Back]       = pConnEntry->GetDiaphragmLoadLocation();
    }
    else
    {
@@ -354,292 +378,144 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 //               m_AlignmentOffset = var.dblVal;
          }
 
-         // prior to version 9.0, a reference to the connection library entry was stored...
-         if ( version < 9.0 )
+         // prior to version 7 we had left and right boundary conditions with an option to make both same
+
+         bool use_same_both = false;
+         pgsTypes::PierConnectionType back_conn_type, ahead_conn_type;
+         if ( 5.0 <= version && version < 7.0 )
          {
-            bUpdateFromLibrary = true;
+            var.vt = VT_BOOL;
+            if (FAILED(pStrLoad->get_Property(_T("UseSameConnectionOnBothSides"),&var)))
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               use_same_both = (var.boolVal == VARIANT_TRUE);
+         }
 
-            // prior to version 7 we had left and right boundary conditions with an option to make both same
-            bool use_same_both = false;
-            pgsTypes::PierConnectionType back_conn_type, ahead_conn_type;
-            if ( 5.0 <= version && version < 7.0 )
-            {
-               var.vt = VT_BOOL;
-               if (FAILED(pStrLoad->get_Property(_T("UseSameConnectionOnBothSides"),&var)))
-                  return STRLOAD_E_INVALIDFORMAT;
-               else
-                  use_same_both = (var.boolVal == VARIANT_TRUE);
-            }
 
+         if ( version < 9 )
+         {
             var.vt = VT_BSTR;
             if (FAILED(pStrLoad->get_Property(_T("LeftConnection"), &var )) )
                return STRLOAD_E_INVALIDFORMAT;
             else
-               connectionLibName[pgsTypes::Back] = OLE2T(var.bstrVal);
+               strConnection[pgsTypes::Back] = OLE2T(var.bstrVal);
+         }
 
-            if ( version < 7.0 )
-            {
-               var.Clear();
-               var.vt = VT_I4;
-               if ( FAILED(pStrLoad->get_Property(_T("LeftConnectionType"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-               else
-                  back_conn_type = (pgsTypes::PierConnectionType)var.lVal;
-            }
+         if ( version < 7.0 )
+         {
+            var.Clear();
+            var.vt = VT_I4;
+            if ( FAILED(pStrLoad->get_Property(_T("LeftConnectionType"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               back_conn_type = (pgsTypes::PierConnectionType)var.lVal;
+         }
 
+         if ( version < 9 )
+         {
             var.Clear();
             var.vt = VT_BSTR;
             if (FAILED(pStrLoad->get_Property(_T("RightConnection"), &var )) )
-            {
                return STRLOAD_E_INVALIDFORMAT;
-            }
             else
             {
                if (!use_same_both)
                {
-                  connectionLibName[pgsTypes::Ahead] = OLE2T(var.bstrVal);
+                  strConnection[pgsTypes::Ahead] = OLE2T(var.bstrVal);
                }
                else
                {
-                  connectionLibName[pgsTypes::Ahead] = connectionLibName[pgsTypes::Back]; 
+                  strConnection[pgsTypes::Ahead] = strConnection[pgsTypes::Back]; 
                }
-            }               
-
-            if ( 7.0 <= version )
-            {
-               // After version 7.0, we have single definition for boundary conditions over pier
-               var.Clear();
-               var.vt = VT_I4;
-               if ( FAILED(pStrLoad->get_Property(_T("ConnectionType"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-               else
-                  m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
             }
+         }
+
+         if ( 7.0 <= version )
+         {
+            // After version 7.0, we have single definition for boundary conditions over pier
+            var.Clear();
+            var.vt = VT_I4;
+            if ( FAILED(pStrLoad->get_Property(_T("ConnectionType"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
             else
-            {
-               var.Clear();
-               var.vt = VT_I4;
-               if ( FAILED(pStrLoad->get_Property(_T("RightConnectionType"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-               else
-                  ahead_conn_type = (pgsTypes::PierConnectionType)var.lVal;
-
-               // Pre-version 7.0, we must resolve separate bc's for ahead and back
-               // Tricky: this can be ambiguous
-               m_ConnectionType = back_conn_type;
-
-               if (!use_same_both)
-               {
-                  // Only some conditions where different bc's made sense (main reason why we got rid of ahead/back bc concept)
-                  if ( back_conn_type < 0 )
-                  {
-                     // there isn't a back side to this pier
-                     m_ConnectionType = ahead_conn_type;
-                  }
-                  else if ( ahead_conn_type < 0 )
-                  {
-                     // there isn't an ahead side to this pier
-                     m_ConnectionType = back_conn_type;
-                  }
-                  else if (back_conn_type == pgsTypes::ContinuousAfterDeck || ahead_conn_type == pgsTypes::ContinuousAfterDeck)
-                  {
-                     m_ConnectionType = pgsTypes::ContinuousAfterDeck;
-                  }
-                  else if (back_conn_type == pgsTypes::ContinuousBeforeDeck || ahead_conn_type == pgsTypes::ContinuousBeforeDeck)
-                  {
-                     m_ConnectionType = pgsTypes::ContinuousBeforeDeck;
-                  }
-                  else if (back_conn_type == pgsTypes::IntegralAfterDeck)
-                  {
-                     if (ahead_conn_type == pgsTypes::Hinged || ahead_conn_type == pgsTypes::Roller)
-                     {
-                        m_ConnectionType = pgsTypes::IntegralAfterDeckHingeAhead;
-                     }
-                  }
-                  else if (back_conn_type == pgsTypes::IntegralBeforeDeck)
-                  {
-                     if (ahead_conn_type == pgsTypes::Hinged || ahead_conn_type == pgsTypes::Roller)
-                     {
-                        m_ConnectionType = pgsTypes::IntegralBeforeDeckHingeAhead;
-                     }
-                  }
-                  else if (ahead_conn_type == pgsTypes::IntegralAfterDeck)
-                  {
-                     if (back_conn_type == pgsTypes::Hinged || back_conn_type == pgsTypes::Roller)
-                     {
-                        m_ConnectionType = pgsTypes::IntegralAfterDeckHingeBack;
-                     }
-                  }
-                  else if (ahead_conn_type == pgsTypes::IntegralBeforeDeck)
-                  {
-                     if (back_conn_type == pgsTypes::Hinged || back_conn_type == pgsTypes::Roller)
-                     {
-                        m_ConnectionType = pgsTypes::IntegralBeforeDeckHingeBack;
-                     }
-                  }
-               } // !use_same_both
-            } // 7.0 <= version
-         } // version < 9.0
+               m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+         }
          else
          {
-            // 9.0 <= version
-            // Starting with version 9, full connection dimensions for back and ahead sides are stored
+            var.Clear();
             var.vt = VT_I4;
-            hr = pStrLoad->get_Property(_T("ConnectionType"),&var);
-            m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+            if ( FAILED(pStrLoad->get_Property(_T("RightConnectionType"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               ahead_conn_type = (pgsTypes::PierConnectionType)var.lVal;
 
-            hr = pStrLoad->BeginUnit(_T("Back"));
+            // Pre-version 7.0, we must resolve separate bc's for ahead and back
+            // Tricky: this can be ambiguous
+            m_ConnectionType = back_conn_type;
 
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
-            m_GirderEndDistance[pgsTypes::Back] = var.dblVal;
-
-            var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var);
-            m_EndDistanceMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
-
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("GirderBearingOffset"),&var);
-            m_GirderBearingOffset[pgsTypes::Back] = var.dblVal;
-
-            var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
-            m_BearingOffsetMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
-
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
-            m_SupportWidth[pgsTypes::Back] = var.dblVal;
-
+            if (!use_same_both)
             {
-               hr = pStrLoad->BeginUnit(_T("Diaphragm"));
-               var.vt = VT_R8;
-               hr = pStrLoad->get_Property(_T("DiaphragmWidth"),&var);
-               m_DiaphragmWidth[pgsTypes::Back] = var.dblVal;
-
-               hr = pStrLoad->get_Property(_T("DiaphragmHeight"),&var);
-               m_DiaphragmHeight[pgsTypes::Back] = var.dblVal;
-
-               var.vt = VT_BSTR;
-               hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
-               if ( FAILED(hr) )
+               // Only some conditions where different bc's made sense (main reason why we got rid of ahead/back bc concept)
+               if ( back_conn_type < 0 )
                {
-                  // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
-                  // be omitted when it was set to "DontApply". If there is a problem loading
-                  // the DiaphragmLoadType, assume it should be "DontApply"
-                  var.bstrVal = T2BSTR(_T("DontApply"));
-                  hr = S_OK;
+                  // there isn't a back side to this pier
+                  m_ConnectionType = ahead_conn_type;
                }
-
-               std::_tstring tmp(OLE2T(var.bstrVal));
-               if (tmp == _T("ApplyAtBearingCenterline"))
+               else if ( ahead_conn_type < 0 )
                {
-                  m_DiaphragmLoadType[pgsTypes::Back] = ConnectionLibraryEntry::ApplyAtBearingCenterline;
+                  // there isn't an ahead side to this pier
+                  m_ConnectionType = back_conn_type;
                }
-               else if (tmp == _T("ApplyAtSpecifiedLocation"))
+               else if (back_conn_type == pgsTypes::ContinuousAfterDeck || ahead_conn_type == pgsTypes::ContinuousAfterDeck)
                {
-                  m_DiaphragmLoadType[pgsTypes::Back] = ConnectionLibraryEntry::ApplyAtSpecifiedLocation;
-
-                  var.vt = VT_R8;
-                  hr = pStrLoad->get_Property(_T("DiaphragmLoadLocation"),&var);
-                  m_DiaphragmLoadLocation[pgsTypes::Back] = var.dblVal;
+                  m_ConnectionType = pgsTypes::ContinuousAfterDeck;
                }
-               else if (tmp == _T("DontApply"))
+               else if (back_conn_type == pgsTypes::ContinuousBeforeDeck || ahead_conn_type == pgsTypes::ContinuousBeforeDeck)
                {
-                  m_DiaphragmLoadType[pgsTypes::Back] = ConnectionLibraryEntry::DontApply;
+                  m_ConnectionType = pgsTypes::ContinuousBeforeDeck;
                }
-               else
+               else if (back_conn_type == pgsTypes::IntegralAfterDeck)
                {
-                  hr = STRLOAD_E_INVALIDFORMAT;
+                  if (ahead_conn_type == pgsTypes::Hinge || ahead_conn_type == pgsTypes::Roller)
+                  {
+                     m_ConnectionType = pgsTypes::IntegralAfterDeckHingeAhead;
+                  }
                }
-
-               hr = pStrLoad->EndUnit(); // Diaphragm
+               else if (back_conn_type == pgsTypes::IntegralBeforeDeck)
+               {
+                  if (ahead_conn_type == pgsTypes::Hinge || ahead_conn_type == pgsTypes::Roller)
+                  {
+                     m_ConnectionType = pgsTypes::IntegralBeforeDeckHingeAhead;
+                  }
+               }
+               else if (ahead_conn_type == pgsTypes::IntegralAfterDeck)
+               {
+                  if (back_conn_type == pgsTypes::Hinge || back_conn_type == pgsTypes::Roller)
+                  {
+                     m_ConnectionType = pgsTypes::IntegralAfterDeckHingeBack;
+                  }
+               }
+               else if (ahead_conn_type == pgsTypes::IntegralBeforeDeck)
+               {
+                  if (back_conn_type == pgsTypes::Hinge || back_conn_type == pgsTypes::Roller)
+                  {
+                     m_ConnectionType = pgsTypes::IntegralBeforeDeckHingeBack;
+                  }
+               }
             }
-
-            hr = pStrLoad->EndUnit(); // Back
-
-            hr = pStrLoad->BeginUnit(_T("Ahead"));
-
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
-            m_GirderEndDistance[pgsTypes::Ahead] = var.dblVal;
-
-            var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var);
-            m_EndDistanceMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
-
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("GirderBearingOffset"),&var);
-            m_GirderBearingOffset[pgsTypes::Ahead] = var.dblVal;
-
-            var.vt = VT_BSTR;
-            hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
-            m_BearingOffsetMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
-
-            var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
-            m_SupportWidth[pgsTypes::Ahead] = var.dblVal;
-
-            {
-               hr = pStrLoad->BeginUnit(_T("Diaphragm"));
-               var.vt = VT_R8;
-               hr = pStrLoad->get_Property(_T("DiaphragmWidth"),&var);
-               m_DiaphragmWidth[pgsTypes::Ahead] = var.dblVal;
-
-               hr = pStrLoad->get_Property(_T("DiaphragmHeight"),&var);
-               m_DiaphragmHeight[pgsTypes::Ahead] = var.dblVal;
-
-               var.vt = VT_BSTR;
-               hr = pStrLoad->get_Property(_T("DiaphragmLoadType"),&var);
-               if ( FAILED(hr) )
-               {
-                  // there was a bug in version 2.8.2 that caused the DiaphragmLoadType to
-                  // be omitted when it was set to "DontApply". If there is a problem loading
-                  // the DiaphragmLoadType, assume it should be "DontApply"
-                  var.bstrVal = T2BSTR(_T("DontApply"));
-                  hr = S_OK;
-               }
-
-               std::_tstring tmp(OLE2T(var.bstrVal));
-               if (tmp == _T("ApplyAtBearingCenterline"))
-               {
-                  m_DiaphragmLoadType[pgsTypes::Ahead] = ConnectionLibraryEntry::ApplyAtBearingCenterline;
-               }
-               else if (tmp == _T("ApplyAtSpecifiedLocation"))
-               {
-                  m_DiaphragmLoadType[pgsTypes::Ahead] = ConnectionLibraryEntry::ApplyAtSpecifiedLocation;
-
-                  var.vt = VT_R8;
-                  hr = pStrLoad->get_Property(_T("DiaphragmLoadLocation"),&var);
-                  m_DiaphragmLoadLocation[pgsTypes::Ahead] = var.dblVal;
-               }
-               else if (tmp == _T("DontApply"))
-               {
-                  m_DiaphragmLoadType[pgsTypes::Ahead] = ConnectionLibraryEntry::DontApply;
-               }
-               else
-               {
-                  hr = STRLOAD_E_INVALIDFORMAT;
-               }
-
-               hr = pStrLoad->EndUnit(); // Diaphragm
-            }
-            hr = pStrLoad->EndUnit(); // Ahead
          }
+
       }
-      else // 4.0 <= version
+      else
       {
-         // version is less that 4.0
-
-         bUpdateFromLibrary = true;
-
          var.Clear();
          var.vt = VT_BSTR;
          if (FAILED(pStrLoad->get_Property(_T("Connection"), &var )) )
             return STRLOAD_E_INVALIDFORMAT;
          else
-            connectionLibName[pgsTypes::Back] = OLE2T(var.bstrVal);
+            strConnection[pgsTypes::Back] = OLE2T(var.bstrVal);
 
-         connectionLibName[pgsTypes::Ahead] = connectionLibName[pgsTypes::Back];
+         strConnection[pgsTypes::Ahead] = strConnection[pgsTypes::Back];
 
          if ( 3.0 <= version )
          {
@@ -650,7 +526,202 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             else
                m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
          }
-      } // 4.0 <= version
+      }
+
+      if ( 8 < version )
+      {
+         // added in version 9
+         pStrLoad->BeginUnit(_T("Back"));
+
+         var.vt = VT_R8;
+         if ( FAILED( pStrLoad->get_Property(_T("GirderEndDistance"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else 
+            m_GirderEndDistance[pgsTypes::Back] = var.dblVal;
+
+         var.vt = VT_BSTR;
+         if ( FAILED(pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_EndDistanceMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
+
+         var.vt = VT_R8;
+         if ( FAILED(pStrLoad->get_Property(_T("GirderBearingOffset"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else 
+            m_GirderBearingOffset[pgsTypes::Back] = var.dblVal;
+
+         var.vt = VT_BSTR;
+         if ( FAILED(pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else 
+            m_BearingOffsetMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
+
+         var.vt = VT_R8;
+         if ( FAILED(pStrLoad->get_Property(_T("SupportWidth"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_SupportWidth[pgsTypes::Back] = var.dblVal;
+
+         pStrLoad->BeginUnit(_T("Diaphragm"));
+         var.vt = VT_R8;
+         if( FAILED(pStrLoad->get_Property(_T("DiaphragmWidth"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_DiaphragmWidth[pgsTypes::Back] = var.dblVal;
+
+         if( FAILED(pStrLoad->get_Property(_T("DiaphragmHeight"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_DiaphragmHeight[pgsTypes::Back] = var.dblVal;
+
+
+         var.vt = VT_BSTR;
+         if( FAILED(pStrLoad->get_Property(_T("DiaphragmLoadType"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+
+         std::_tstring tmp(OLE2T(var.bstrVal));
+         if (tmp==_T("ApplyAtBearingCenterline"))
+         {
+            m_DiaphragmLoadType[pgsTypes::Back] = ConnectionLibraryEntry::ApplyAtBearingCenterline;
+         }
+         else if (tmp==_T("ApplyAtSpecifiedLocation"))
+         {
+            m_DiaphragmLoadType[pgsTypes::Back] = ConnectionLibraryEntry::ApplyAtSpecifiedLocation;
+
+            var.vt = VT_R8;
+            if ( FAILED(pStrLoad->get_Property(_T("DiaphragmLoadLocation"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               m_DiaphragmLoadLocation[pgsTypes::Back] = var.dblVal;
+         }
+         else if (tmp==_T("DontApply"))
+         {
+            m_DiaphragmLoadType[pgsTypes::Back] = ConnectionLibraryEntry::DontApply;
+         }
+         else
+         {
+            return STRLOAD_E_INVALIDFORMAT;
+         }
+
+         pStrLoad->EndUnit(); // Diaphragm
+         pStrLoad->EndUnit(); // Back
+
+         // added in version 9
+         pStrLoad->BeginUnit(_T("Ahead"));
+
+         var.vt = VT_R8;
+         if ( FAILED( pStrLoad->get_Property(_T("GirderEndDistance"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else 
+            m_GirderEndDistance[pgsTypes::Ahead] = var.dblVal;
+
+         var.vt = VT_BSTR;
+         if ( FAILED(pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_EndDistanceMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
+
+         var.vt = VT_R8;
+         if ( FAILED(pStrLoad->get_Property(_T("GirderBearingOffset"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else 
+            m_GirderBearingOffset[pgsTypes::Ahead] = var.dblVal;
+
+         var.vt = VT_BSTR;
+         if ( FAILED(pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else 
+            m_BearingOffsetMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
+
+         var.vt = VT_R8;
+         if ( FAILED(pStrLoad->get_Property(_T("SupportWidth"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_SupportWidth[pgsTypes::Ahead] = var.dblVal;
+
+         pStrLoad->BeginUnit(_T("Diaphragm"));
+         var.vt = VT_R8;
+         if( FAILED(pStrLoad->get_Property(_T("DiaphragmWidth"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_DiaphragmWidth[pgsTypes::Ahead] = var.dblVal;
+
+         if( FAILED(pStrLoad->get_Property(_T("DiaphragmHeight"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+         else
+            m_DiaphragmHeight[pgsTypes::Ahead] = var.dblVal;
+
+
+         var.vt = VT_BSTR;
+         if( FAILED(pStrLoad->get_Property(_T("DiaphragmLoadType"),&var)) )
+            return STRLOAD_E_INVALIDFORMAT;
+
+         tmp = OLE2T(var.bstrVal);
+         if (tmp==_T("ApplyAtBearingCenterline"))
+         {
+            m_DiaphragmLoadType[pgsTypes::Ahead] = ConnectionLibraryEntry::ApplyAtBearingCenterline;
+         }
+         else if (tmp==_T("ApplyAtSpecifiedLocation"))
+         {
+            m_DiaphragmLoadType[pgsTypes::Ahead] = ConnectionLibraryEntry::ApplyAtSpecifiedLocation;
+
+            var.vt = VT_R8;
+            if ( FAILED(pStrLoad->get_Property(_T("DiaphragmLoadLocation"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               m_DiaphragmLoadLocation[pgsTypes::Ahead] = var.dblVal;
+         }
+         else if (tmp==_T("DontApply"))
+         {
+            m_DiaphragmLoadType[pgsTypes::Ahead] = ConnectionLibraryEntry::DontApply;
+         }
+         else
+         {
+            return STRLOAD_E_INVALIDFORMAT;
+         }
+
+         pStrLoad->EndUnit(); // Diaphragm
+
+         pStrLoad->EndUnit(); // Ahead
+      }
+      else
+      {
+         // look up connection details and set values
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,ILibrary, pLib );
+
+         if ( m_pBridgeDesc == NULL || m_pBridgeDesc && m_pPrevSpan )
+         {
+            const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Back].c_str());
+            m_GirderEndDistance[pgsTypes::Back]            = pConnEntry->GetGirderEndDistance();
+            m_EndDistanceMeasurementType[pgsTypes::Back]   = pConnEntry->GetEndDistanceMeasurementType();
+            m_GirderBearingOffset[pgsTypes::Back]          = pConnEntry->GetGirderBearingOffset();
+            m_BearingOffsetMeasurementType[pgsTypes::Back] = pConnEntry->GetBearingOffsetMeasurementType();
+            m_SupportWidth[pgsTypes::Back]                 = pConnEntry->GetSupportWidth();
+
+            m_DiaphragmHeight[pgsTypes::Back]              = pConnEntry->GetDiaphragmHeight();
+            m_DiaphragmWidth[pgsTypes::Back]               = pConnEntry->GetDiaphragmWidth();
+            m_DiaphragmLoadType[pgsTypes::Back]            = pConnEntry->GetDiaphragmLoadType();
+            m_DiaphragmLoadLocation[pgsTypes::Back]        = pConnEntry->GetDiaphragmLoadLocation();
+         }
+
+         if ( m_pBridgeDesc == NULL || m_pBridgeDesc && m_pNextSpan )
+         {
+            const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Ahead].c_str());
+            m_GirderEndDistance[pgsTypes::Ahead]            = pConnEntry->GetGirderEndDistance();
+            m_EndDistanceMeasurementType[pgsTypes::Ahead]   = pConnEntry->GetEndDistanceMeasurementType();
+            m_GirderBearingOffset[pgsTypes::Ahead]          = pConnEntry->GetGirderBearingOffset();
+            m_BearingOffsetMeasurementType[pgsTypes::Ahead] = pConnEntry->GetBearingOffsetMeasurementType();
+            m_SupportWidth[pgsTypes::Ahead]                 = pConnEntry->GetSupportWidth();
+
+            m_DiaphragmHeight[pgsTypes::Ahead]              = pConnEntry->GetDiaphragmHeight();
+            m_DiaphragmWidth[pgsTypes::Ahead]               = pConnEntry->GetDiaphragmWidth();
+            m_DiaphragmLoadType[pgsTypes::Ahead]            = pConnEntry->GetDiaphragmLoadType();
+            m_DiaphragmLoadLocation[pgsTypes::Ahead]        = pConnEntry->GetDiaphragmLoadLocation();
+         }
+      }
 
       if ( 5.0 <= version )
       {
@@ -770,13 +841,13 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             else
             {
                // distribution factors by girder
-               var.vt = VT_I4;
+               var.vt = VT_INDEX;
                hr = pStrLoad->get_Property(_T("nLLDFGirders"),&var);
-               int ng = var.lVal;
+               IndexType ng = VARIANT2INDEX(var);
 
                var.vt = VT_R8;
 
-               for (int ig=0; ig<ng; ig++)
+               for (IndexType ig=0; ig<ng; ig++)
                {
                   LLDF lldf;
 
@@ -816,152 +887,91 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
    }
 
-   // Get connection data from library entry
-   if ( bUpdateFromLibrary )
-   {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,ILibrary,pLibrary);
-      for ( int i = 0; i < 2; i++ )
-      {
-         const ConnectionLibraryEntry* pConnection = pLibrary->GetConnectionEntry(connectionLibName[i].c_str());
-         if ( pConnection )
-         {
-            m_GirderEndDistance[i]          = pConnection->GetGirderEndDistance();
-            m_EndDistanceMeasurementType[i] = pConnection->GetEndDistanceMeasurementType();;
-            
-            m_GirderBearingOffset[i]          = pConnection->GetGirderBearingOffset();
-            m_BearingOffsetMeasurementType[i] = pConnection->GetBearingOffsetMeasurementType();
-
-            m_SupportWidth[i] = pConnection->GetSupportWidth();
-
-            m_DiaphragmHeight[i]       = pConnection->GetDiaphragmHeight();
-            m_DiaphragmWidth[i]        = pConnection->GetDiaphragmWidth();
-            m_DiaphragmLoadType[i]     = pConnection->GetDiaphragmLoadType();
-            m_DiaphragmLoadLocation[i] = pConnection->GetDiaphragmLoadLocation();
-         }
-      }
-   }
-
-   if ( SUCCEEDED(hr2) )
-      pStrLoad->EndUnit();
-
    return hr;
 }
 
 HRESULT CPierData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
+   ATLASSERT(false); // should never get here
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),9.0);
+   //pStrSave->BeginUnit(_T("PierDataDetails"),9.0);
 
-   pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
-   pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
-   //pStrSave->put_Property(_T("AlignmentOffset"), CComVariant( m_AlignmentOffset) ); // added in version 6, removed in version 8
-   //pStrSave->put_Property(_T("LeftConnection"),  CComVariant( CComBSTR(m_Connection[pgsTypes::Back].c_str()) ) ); // removed in version 9
-   //pStrSave->put_Property(_T("RightConnection"), CComVariant( CComBSTR(m_Connection[pgsTypes::Ahead].c_str()) ) ); // removed in version 9
-   pStrSave->put_Property(_T("ConnectionType"),  CComVariant( m_ConnectionType ) ); // changed from left and right to a single value in version 7
+   //pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
+   //pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
+   ////pStrSave->put_Property(_T("AlignmentOffset"), CComVariant( m_AlignmentOffset) ); // added in version 6, removed in version 8
+   ////pStrSave->put_Property(_T("LeftConnection"),  CComVariant( CComBSTR(m_Connection[pgsTypes::Back].c_str()) ) ); // removed in version 9
+   ////pStrSave->put_Property(_T("RightConnection"), CComVariant( CComBSTR(m_Connection[pgsTypes::Ahead].c_str()) ) ); // removed in version 9
+   //pStrSave->put_Property(_T("ConnectionType"),  CComVariant( m_ConnectionType ) ); // changed from left and right to a single value in version 7
 
+   //// added in version 9
+   //pStrSave->BeginUnit(_T("Back"),1.0);
+   //pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Back] ) );
+   //pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Back]).c_str()) );
+   //pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Back]));
+   //pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
+   //pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
+   //pStrSave->EndUnit();
 
-   // Back unit and everything in it was added in version 9
-   pStrSave->BeginUnit(_T("Back"),1.0);
-   pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Back] ) );
-   pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Back]).c_str()) );
-   pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Back]));
-   pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
+   //// added in version 9
+   //pStrSave->BeginUnit(_T("Ahead"),1.0);
+   //pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Ahead] ) );
+   //pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Ahead]).c_str()) );
+   //pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
+   //pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
+   //pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
+   //pStrSave->EndUnit();
 
-   {
-      pStrSave->BeginUnit(_T("Diaphragm"),1.0);
-      pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth[pgsTypes::Back]));
-      pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight[pgsTypes::Back]));
+   //pStrSave->BeginUnit(_T("Diaphragm"),1.0);
+   //pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth));
+   //pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight));
 
-      if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtBearingCenterline)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
-         pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation[pgsTypes::Back]));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::DontApply)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new load type?
-      }
-      pStrSave->EndUnit(); // Diaphragm
-   }
-   pStrSave->EndUnit(); // Back
+   //if (m_DiaphragmLoadType == ConnectionLibraryEntry::ApplyAtBearingCenterline)
+   //{
+   //   pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
+   //}
+   //else if (m_DiaphragmLoadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+   //{
+   //   pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
+   //   pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation));
+   //}
+   //else if (m_DiaphragmLoadType == ConnectionLibraryEntry::DontApply)
+   //{
+   //   pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
+   //}
+   //else
+   //{
+   //   ATLASSERT(false); // is there a new load type?
+   //}
+   //pStrSave->EndUnit(); // Diaphragm
 
-   // Ahead unit and everything in it was added in version 9
-   pStrSave->BeginUnit(_T("Ahead"),1.0);
-   pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Ahead] ) );
-   pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Ahead]).c_str()) );
-   pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
-   pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
+   //// added in version 5
+   //if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   //{
+   //   pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
 
-   {
-      pStrSave->BeginUnit(_T("Diaphragm"),1.0);
-      pStrSave->put_Property(_T("DiaphragmWidth"),  CComVariant(m_DiaphragmWidth[pgsTypes::Ahead]));
-      pStrSave->put_Property(_T("DiaphragmHeight"), CComVariant(m_DiaphragmHeight[pgsTypes::Ahead]));
+   //   GirderIndexType ngs = GetLldfGirderCount();
+   //   pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
 
-      if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtBearingCenterline)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtBearingCenterline")));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("ApplyAtSpecifiedLocation")));
-         pStrSave->put_Property(_T("DiaphragmLoadLocation"),CComVariant(m_DiaphragmLoadLocation[pgsTypes::Ahead]));
-      }
-      else if (m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::DontApply)
-      {
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new load type?
-         pStrSave->put_Property(_T("DiaphragmLoadType"),CComVariant(_T("DontApply")));
-      }
-      pStrSave->EndUnit(); // Diaphragm
-   }
-   pStrSave->EndUnit(); // Ahead
+   //   for (GirderIndexType igs=0; igs<ngs; igs++)
+   //   {
+   //      pStrSave->BeginUnit(_T("LLDF_Girder"),1.0);
+   //      LLDF& lldf = GetLLDF(igs);
 
+   //      pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
+   //      pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
+   //      pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
+   //      pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
+   //      pStrSave->EndUnit(); // LLDF_Girder
+   //   }
 
+   //   pStrSave->EndUnit(); // LLDF
+   //}
 
+   //// added in version 5 - RAB: 10/17/2008 - not linking any more
+   //pStrSave->put_Property(_T("IsLinked"),CComVariant(VARIANT_FALSE));
 
-   // added in version 5
-   if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
-
-      GirderIndexType ngs = GetLldfGirderCount();
-      pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
-
-      for (GirderIndexType igs=0; igs<ngs; igs++)
-      {
-         pStrSave->BeginUnit(_T("LLDF_Girder"),1.0);
-         LLDF& lldf = GetLLDF(igs);
-
-         pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
-         pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
-         pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
-         pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
-         pStrSave->EndUnit(); // LLDF_Girder
-      }
-
-      pStrSave->EndUnit(); // LLDF
-   }
-
-   // added in version 5 - RAB: 10/17/2008 - not linking any more
-   pStrSave->put_Property(_T("IsLinked"),CComVariant(VARIANT_FALSE));
-
-   pStrSave->EndUnit();
+   //pStrSave->EndUnit();
 
    return hr;
 }
@@ -974,9 +984,9 @@ void CPierData::MakeCopy(const CPierData& rOther)
    Orientation             = rOther.Orientation;
    Angle                   = rOther.Angle;
    
-   m_ConnectionType  = rOther.m_ConnectionType;
+   m_ConnectionType        = rOther.m_ConnectionType;
 
-   m_strOrientation  = rOther.m_strOrientation;
+   m_strOrientation        = rOther.m_strOrientation;
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -993,7 +1003,6 @@ void CPierData::MakeCopy(const CPierData& rOther)
    }
 
    m_LLDFs = rOther.m_LLDFs;
-
    m_DistributionFactorsFromOlderVersion = rOther.m_DistributionFactorsFromOlderVersion;
 }
 
@@ -1012,12 +1021,17 @@ PierIndexType CPierData::GetPierIndex() const
    return m_PierIdx;
 }
 
-void CPierData::SetBridgeDescription(const CBridgeDescription* pBridge)
+void CPierData::SetBridgeDescription(CBridgeDescription* pBridge)
 {
    m_pBridgeDesc = pBridge;
 }
 
 const CBridgeDescription* CPierData::GetBridgeDescription() const
+{
+   return m_pBridgeDesc;
+}
+
+CBridgeDescription* CPierData::GetBridgeDescription()
 {
    return m_pBridgeDesc;
 }
@@ -1058,12 +1072,12 @@ const CSpanData* CPierData::GetSpan(pgsTypes::PierFaceType face) const
    return (face == pgsTypes::Ahead ? m_pNextSpan : m_pPrevSpan);
 }
 
-Float64 CPierData::GetStation() const
+double CPierData::GetStation() const
 {
    return m_Station;
 }
 
-void CPierData::SetStation(Float64 station)
+void CPierData::SetStation(double station)
 {
    m_Station = station;
 }
@@ -1085,95 +1099,8 @@ pgsTypes::PierConnectionType CPierData::GetConnectionType() const
 
 void CPierData::SetConnectionType(pgsTypes::PierConnectionType type)
 {
+   pgsTypes::PierConnectionType oldType = m_ConnectionType;
    m_ConnectionType = type;
-}
-
-Float64 CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   return rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0];
-}
-
-void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM)
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
-}
-
-void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
-{
-   GirderIndexType ngdrs = GetLldfGirderCount();
-   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
-   {
-      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
-      {
-         SetLLDFNegMoment(ig,ls,gM);
-      }
-   }
-   else if (gdrloc==pgsTypes::Exterior)
-   {
-      SetLLDFNegMoment(0,ls,gM);
-      SetLLDFNegMoment(ngdrs-1,ls,gM);
-   }
-}
-
-Float64 CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
-}
-
-void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gR)
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
-}
-
-void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
-{
-   GirderIndexType ngdrs = GetLldfGirderCount();
-   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
-   {
-      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
-      {
-         SetLLDFReaction(ig,ls,gM);
-      }
-   }
-   else if (gdrloc==pgsTypes::Exterior)
-   {
-      SetLLDFReaction(0,ls,gM);
-      SetLLDFReaction(ngdrs-1,ls,gM);
-   }
-}
-
-
-bool CPierData::IsContinuous() const
-{
-   return m_ConnectionType == pgsTypes::ContinuousBeforeDeck || m_ConnectionType == pgsTypes::ContinuousAfterDeck;
-}
-
-void CPierData::IsIntegral(bool* pbLeft,bool* pbRight) const
-{
-   if (m_ConnectionType == pgsTypes::IntegralBeforeDeck || m_ConnectionType == pgsTypes::IntegralAfterDeck)
-   {
-      *pbLeft  = true;
-      *pbRight = true;
-   }
-   else
-   {
-      *pbLeft  = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead;
-
-      *pbRight = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeBack  || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeBack;
-   }
-}
-
-bool CPierData::IsAbutment() const
-{
-   return (m_pPrevSpan == NULL || m_pNextSpan == NULL ? true : false);
 }
 
 void CPierData::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
@@ -1210,45 +1137,127 @@ Float64 CPierData::GetSupportWidth(pgsTypes::PierFaceType face) const
    return m_SupportWidth[face];
 }
 
-void CPierData::SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d)
+void CPierData::SetDiaphragmHeight(pgsTypes::PierFaceType face,Float64 d)
 {
-   m_DiaphragmHeight[pierFace] = d;
+   m_DiaphragmHeight[face] = d;
 }
 
-Float64 CPierData::GetDiaphragmHeight(pgsTypes::PierFaceType pierFace) const
+Float64 CPierData::GetDiaphragmHeight(pgsTypes::PierFaceType face) const
 {
-   return m_DiaphragmHeight[pierFace];
+   return m_DiaphragmHeight[face];
 }
 
-void CPierData::SetDiaphragmWidth(pgsTypes::PierFaceType pierFace,Float64 w)
+void CPierData::SetDiaphragmWidth(pgsTypes::PierFaceType face,Float64 w)
 {
-   m_DiaphragmWidth[pierFace] = w;
+   m_DiaphragmWidth[face] = w;
 }
 
-Float64 CPierData::GetDiaphragmWidth(pgsTypes::PierFaceType pierFace)const
+Float64 CPierData::GetDiaphragmWidth(pgsTypes::PierFaceType face)const
 {
-   return m_DiaphragmWidth[pierFace];
+   return m_DiaphragmWidth[face];
 }
 
-ConnectionLibraryEntry::DiaphragmLoadType CPierData::GetDiaphragmLoadType(pgsTypes::PierFaceType pierFace) const
+ConnectionLibraryEntry::DiaphragmLoadType CPierData::GetDiaphragmLoadType(pgsTypes::PierFaceType face) const
 {
-   return m_DiaphragmLoadType[pierFace];
+   return m_DiaphragmLoadType[face];
 }
 
-void CPierData::SetDiaphragmLoadType(pgsTypes::PierFaceType pierFace,ConnectionLibraryEntry::DiaphragmLoadType type)
+void CPierData::SetDiaphragmLoadType(pgsTypes::PierFaceType face,ConnectionLibraryEntry::DiaphragmLoadType type)
 {
-   m_DiaphragmLoadType[pierFace] = type;
-   m_DiaphragmLoadLocation[pierFace] = 0.0;
+   m_DiaphragmLoadType[face] = type;
+   m_DiaphragmLoadLocation[face]=0.0;
 }
 
-Float64 CPierData::GetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace) const
+Float64 CPierData::GetDiaphragmLoadLocation(pgsTypes::PierFaceType face) const
 {
-   return m_DiaphragmLoadLocation[pierFace];
+   return m_DiaphragmLoadLocation[face];
 }
 
-void CPierData::SetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace,Float64 loc)
+void CPierData::SetDiaphragmLoadLocation(pgsTypes::PierFaceType face,Float64 loc)
 {
-   m_DiaphragmLoadLocation[pierFace] = loc;
+   m_DiaphragmLoadLocation[face] = loc;
+}
+
+double CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+{
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   return rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0];
+}
+
+void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gM)
+{
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
+}
+
+void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+{
+   GirderIndexType ngdrs = GetLldfGirderCount();
+   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
+   {
+      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
+      {
+         SetLLDFNegMoment(ig,ls,gM);
+      }
+   }
+   else if (gdrloc==pgsTypes::Exterior)
+   {
+      SetLLDFNegMoment(0,ls,gM);
+      SetLLDFNegMoment(ngdrs-1,ls,gM);
+   }
+}
+
+double CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+{
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
+}
+
+void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gR)
+{
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
+}
+
+void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+{
+   GirderIndexType ngdrs = GetLldfGirderCount();
+   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
+   {
+      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
+      {
+         SetLLDFReaction(ig,ls,gM);
+      }
+   }
+   else if (gdrloc==pgsTypes::Exterior)
+   {
+      SetLLDFReaction(0,ls,gM);
+      SetLLDFReaction(ngdrs-1,ls,gM);
+   }
+}
+
+bool CPierData::IsContinuous() const
+{
+   return m_ConnectionType == pgsTypes::ContinuousBeforeDeck || m_ConnectionType == pgsTypes::ContinuousAfterDeck;
+}
+
+void CPierData::IsIntegral(bool* pbLeft,bool* pbRight) const
+{
+   if (m_ConnectionType == pgsTypes::IntegralBeforeDeck || m_ConnectionType == pgsTypes::IntegralAfterDeck)
+   {
+      *pbLeft  = true;
+      *pbRight = true;
+   }
+   else
+   {
+      *pbLeft  = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead;
+
+      *pbRight = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeBack  || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeBack;
+   }
 }
 
 CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
@@ -1257,7 +1266,7 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
    GirderIndexType ngdrs = GetLldfGirderCount();
    ATLASSERT(ngdrs>0);
 
-   IndexType ndfs = m_LLDFs.size();
+   GirderIndexType ndfs = m_LLDFs.size();
 
    if (m_DistributionFactorsFromOlderVersion)
    {
@@ -1360,4 +1369,14 @@ GirderIndexType CPierData::GetLldfGirderCount() const
    {
       return max(ahead, back);
    }
+}
+
+bool CPierData::IsAbutment() const
+{
+   return (m_pPrevSpan == NULL || m_pNextSpan == NULL) ? true : false;
+}
+
+bool CPierData::IsPier() const
+{
+   return (m_pPrevSpan != NULL && m_pNextSpan != NULL) ? true : false;
 }

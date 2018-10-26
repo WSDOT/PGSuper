@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -115,6 +115,8 @@ public:
    // ConfigurationType - how truck/lane are combined
    enum LiveLoadConfigurationType {lcTruckOnly,lcLaneOnly,lcTruckPlusLane,lcTruckLaneEnvelope};
 
+   enum LiveLoadApplicabilityType { llaEntireStructure, llaContraflexure, llaNegMomentAndInteriorPierReaction };
+
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Default constructor
@@ -165,8 +167,8 @@ public:
 
    //------------------------------------------------------------------------
    // LiveLoadApplicabilityType - Determines how and where results are used
-   void SetLiveLoadApplicabilityType(pgsTypes::LiveLoadApplicabilityType applicability);
-   pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicabilityType() const;
+   void SetLiveLoadApplicabilityType(LiveLoadApplicabilityType applicability);
+   LiveLoadApplicabilityType GetLiveLoadApplicabilityType() const;
 
    //------------------------------------------------------------------------
    // LaneLoad - Value of distributed lane load
@@ -224,7 +226,7 @@ protected:
    void MakeCopy(const LiveLoadLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const LiveLoadLibraryEntry& rOther);
+   virtual void MakeAssignment(const LiveLoadLibraryEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 
@@ -237,7 +239,7 @@ private:
    // GROUP: DATA MEMBERS
    bool m_IsNotional;
    LiveLoadConfigurationType m_LiveLoadConfigurationType;
-   pgsTypes::LiveLoadApplicabilityType m_LiveLoadApplicabilityType;
+   LiveLoadApplicabilityType m_LiveLoadApplicabilityType;
    Float64 m_LaneLoad;
    Float64 m_LaneLoadSpanLength;
    Float64 m_MaxVariableAxleSpacing;

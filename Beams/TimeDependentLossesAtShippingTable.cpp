@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,23 +52,23 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::_tstring strSpecName = pSpec->GetSpecification();
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   int method = pSpecEntry->GetLossMethod();
-   bool bIgnoreInitialRelaxation = ( method == LOSSES_WSDOT_REFINED || method == LOSSES_WSDOT_LUMPSUM ) ? false : true;
-   if ((pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 && method == LOSSES_AASHTO_REFINED) ||
-        method == LOSSES_TXDOT_REFINED_2004)
+   bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
+
+   if ((lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 && loss_method == pgsTypes::AASHTO_REFINED) ||
+        loss_method == pgsTypes::TXDOT_REFINED_2004)
    {
       bIgnoreInitialRelaxation = false;
    }
@@ -78,7 +78,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( bIgnoreInitialRelaxation ) // for perm strands
       numColumns--;
 
-   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
       numColumns++;
 
    if ( bTemporaryStrands )
@@ -93,21 +93,19 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    pgsReportStyleHolder::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
-
-   table->m_pGirderData = pgirderData;
+   table->m_pStrands = pStrands;
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses at Shipping") << rptNewLine;
 
-   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       *pParagraph << _T("Prestressed Permanent Strands") << rptNewLine;
    }
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-
 
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pH")) << _T(" = ");
@@ -117,7 +115,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << rptNewLine;
@@ -125,14 +123,14 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    if ( bTemporaryStrands )
    {
-      if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
+      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
    }
    else
    {
-      if ( method == LOSSES_WSDOT_REFINED || method == LOSSES_AASHTO_REFINED || method == LOSSES_TXDOT_REFINED_2004 )
+      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
@@ -140,7 +138,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    *pParagraph << table << rptNewLine;
 
-   int col = 0;
+   ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
@@ -157,7 +155,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       if ( bIgnoreInitialRelaxation )
          colspan--;
 
-      table->SetColumnSpan(0,2,colspan + (pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ? 1 : 0));
+      table->SetColumnSpan(0,2,colspan + (pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ? 1 : 0));
       (*table)(0,2) << _T("Permanent Strands");
 
       table->SetColumnSpan(0,3,colspan);
@@ -169,12 +167,14 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       // permanent
       col = 2;
       if ( !bIgnoreInitialRelaxation )
+      {
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+      if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
       {
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
@@ -198,7 +198,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+      if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
       {
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
@@ -207,33 +207,37 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    }
 
 
-
    return table;
 }
 
-void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
-   if ( !details.pLosses->IgnoreInitialRelaxation() )
-         (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
+   if ( !pDetails->pLosses->IgnoreInitialRelaxation() )
+         (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
 
-   (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->PermanentStrand_ElasticShorteningLosses());
-   (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->PermanentStrand_TimeDependentLossesAtShipping());
-   if ( m_pGirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+   Float64 fpLTH = pDetails->pLosses->PermanentStrand_TimeDependentLossesAtShipping();
+   Float64 fpH = pDetails->pLosses->PermanentStrand_AtShipping();
+
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpLTH);
+   if ( m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->GetDeltaFpp());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }
-   (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->PermanentStrand_AtShipping());
+
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpH);
 
    if ( m_bTemporaryStrands )
    {
-      if ( !details.pLosses->IgnoreInitialRelaxation() )
-         (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer());
+      if ( !pDetails->pLosses->IgnoreInitialRelaxation() )
+         (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer());
 
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->TemporaryStrand_ElasticShorteningLosses());
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->TemporaryStrand_TimeDependentLossesAtShipping());
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->TemporaryStrand_AtShipping());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_AtShipping());
    }
 }

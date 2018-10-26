@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,10 +75,10 @@ public:
    // Builds the combined results table
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder,
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
-                      bool bDesign,bool bRating) const;
+                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
+                      bool bDesign=true,bool bRating=true) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -90,19 +90,19 @@ protected:
    // GROUP: OPERATIONS
 
    void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder,
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                      IntervalIndexType intervalIDx,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
    void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder,
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
    void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder,
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;

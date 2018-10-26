@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=2231>
-<meta name=layout-width content=774>
+<meta name=layout-height content=1877>
+<meta name=layout-width content=1361>
 
 
 <!--(Links)=========================================================-->
@@ -48,10 +48,10 @@
 <p>This project-specific dialog allows you to chose whether live load distribution 
  factors are to be computed using the method specified in the current <a 
  href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibSpecification_Entry_Dialog.htm">Project 
- Criteria</a>, computed using the lever rule, or input manually. Options 
- are also available to override safeguards when parameters lie outside 
- of the ranges of applicability specified in the AASHTO LRFD Bridge Design 
- Specifications.</p>
+ Criteria library entry</a>, input manually, or computed using only the 
+ lever rule. Options are also available to override safeguards when parameters 
+ lie outside of the ranges of applicability specified in the AASHTO LRFD 
+ Bridge Design Specifications.</p>
 
 <h2>Compute Live Load Distribution Factors in Accordance With the Currently 
  Selected Project Criteria</h2>
@@ -100,27 +100,8 @@
 
 <h2>Directly Input All Live Load Distribution Factors</h2>
 
-<p>When this option is selected, you input the live load distribution factors 
- that are to be used in the analysis. LRFD 4.6.2.2.1 defines live load 
- distribution factors for positive moment, negative moment near interior 
- supports, negative moment in main spans, shear, and reaction. </p>
-
-<p CLASS=Tip>Tip: If the configuration of the bridge you are designing 
- doesn't conform to the simplified method of analysis described in the 
- AASHTO LRFD Bridge Design Specifications, compute the live load distribution 
- factors using another method and then input them into this dialog.</p>
-
-<p>Two input grids are provided to accommodate the required input; one 
- for inputting factors in the main span; and another for inputting factors 
- near interior supports. Toggle between the two grids by selecting the 
- &quot;Span Factors&quot; and &quot;Abutment/Pier Factors&quot; options.</p>
-
-<p><span class=expandtext>NOTE: You must enter distribution factors in 
- both the Span Factors and Abutment/Pier Factors grids.</span></p>
-
-<h3>Using the User-Input Grid</h3>
-
-<p>The following symbols are used in the input grids</p>
+<p>When this option is selected, use the input grid to define distribution 
+ factors directly for each girder and bearing location in the structure.</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -215,6 +196,18 @@
 	width=83.469%>
 <p>Reactions</td></tr>
 </table>
+
+<p CLASS=Tip>Tip: If the configuration of the bridge you are designing 
+ doesn't conform to the simplified method of analysis described in the 
+ AASHTO LRFD Bridge Design Specifications, compute the live load distribution 
+ factors using another method and then input them into this dialog.</p>
+
+<h3>Using the User-Input Grid</h3>
+
+<p>There are two User-Input Factors grids; one for inputting factors for 
+ individual girders; and another for inputting factors at pier bearings. 
+ Toggle between the two grids by selecting the &quot;Girder Factors&quot; 
+ and &quot;Abutment/Pier Factors&quot; radio buttons.</p>
 
 <p>The tab control at the bottom of the input grid is used to select which 
  span(s) (or pier(s)) are to be edited. In the same manner as Excel, multiple 

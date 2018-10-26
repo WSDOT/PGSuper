@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -106,8 +106,8 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
    int p = createString.Find(_T('|'));
    if ( p != -1 )
    {
-      CString strType(createString.Left(p));
-      CString strAddress(createString.Mid(p+1));
+      CString strType = createString.Left(p);
+      CString strAddress = createString.Mid(p+1);
       if (strType==_T("FTP"))
       {
          CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
@@ -341,10 +341,6 @@ m_TemplateFileExt(strExt)
 {
 }
 
-CPGSuperCatalogServer::~CPGSuperCatalogServer()
-{
-}
-
 CString CPGSuperCatalogServer::GetServerName() const
 {
    return m_Name;
@@ -423,7 +419,7 @@ CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp,strExt)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
-   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software"),pApp->m_pszProfileName);
+   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software/BridgeLink"),pApp->m_pszProfileName);
    Init();
 }
 
@@ -1289,7 +1285,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
    // First step is to copy the pgzfile and its md5 to our cache folder
    CString pgzFolder(cacheFolder);
    CString pgzCachedFile = cacheFolder + GetPgzFilename();
-   CString strPgzFile = CleanHTTPURL(pgzFileURL,true);
+   CString strPgzFile = CleanFTPURL(pgzFileURL,true);
 
    if(pProgress!=NULL)
       pProgress->put_Message(0,CComBSTR("Downloading Compressed Library/Template file"));

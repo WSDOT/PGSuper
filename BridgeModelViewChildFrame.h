@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,7 +68,10 @@ public:
 	//}}AFX_VIRTUAL
    void SelectPier(PierIndexType pierIdx);
    void SelectSpan(SpanIndexType spanIdx);
-   void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   void SelectGirder(const CGirderKey& girderKey);
+   void SelectSegment(const CSegmentKey& segmentKey);
+   void SelectClosurePour(const CSegmentKey& closureKey);
+   void SelectTemporarySupport(SupportIDType tsID);
    void SelectDeck();
    void SelectAlignment();
    void ClearSelection();
@@ -76,8 +79,10 @@ public:
    // iCutLocation
    void InvalidateCutLocation() {m_bCutLocationInitialized = false;}
    Float64 GetCurrentCutLocation();
-   void CutAt(Float64 cut);
+   void CutAt(Float64 Xg);
    void ShowCutDlg();
+   Float64 GetMinCutLocation();
+   Float64 GetMaxCutLocation();
 
    LPCTSTR GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const;
 
@@ -103,7 +108,6 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
    afx_msg void OnEditSpan();
 	afx_msg void OnEditPier();
-	afx_msg void OnEditGirder();
 	afx_msg void OnViewGirder();
 	afx_msg void OnDeletePier();
 	afx_msg void OnUpdateDeletePier(CCmdUI* pCmdUI);
@@ -118,6 +122,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    bool m_bCutLocationInitialized;
+
+   bool m_bSelecting; // set to true while a display object is being selected (prevents recurive selection)
 
    virtual CRuntimeClass* GetLowerPaneClass() const;
    virtual Float64 GetTopFrameFraction() const;

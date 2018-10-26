@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -117,9 +117,9 @@ public:
          return true;
       };
 
-      // Get locations of rebar start and end measured from left end of girder
-      // given a girder length. Return false if entire bar is outside of girder.
-      bool GetRebarStartEnd(Float64 girderLength, Float64* pBarStart, Float64* pBarEnd) const;
+      // Get locations of rebar start and end measured from left end of segment
+      // given a segment length. Return false if entire bar is outside of segment.
+      bool GetRebarStartEnd(Float64 segmentLength, Float64* pBarStart, Float64* pBarEnd) const;
 
    };
 
@@ -169,7 +169,7 @@ protected:
    void MakeCopy(const CLongitudinalRebarData& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CLongitudinalRebarData& rOther);
+   virtual void MakeAssignment(const CLongitudinalRebarData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

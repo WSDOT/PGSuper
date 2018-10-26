@@ -1,25 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 // PermitRatingPage.cpp : implementation file
 //
 
@@ -27,7 +5,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PermitRatingPage.h"
 #include "RatingOptionsDlg.h"
-#include <MFCTools\CustomDDX.h>
+
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include "HtmlHelp\HelpTopics.hh"
@@ -178,7 +156,6 @@ BOOL CPermitRatingPage::OnInitDialog()
 BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
 {
    pgsTypes::LimitState limit_state;
-   pgsTypes::SpecialPermitType specialPermitType = GetSpecialPermitType();
    bool bIsLoadFactorTip = false;
 
    TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
@@ -191,7 +168,7 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       switch(nID)
       {
       case IDC_PERMIT_TRUCK_IMPACT:
-         m_strTip = _T("MBE 6A.4.5.5 For slow moving vehicles (<= 10 mph) IM = 0%\rMBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations or depressions IM = 20%");
+         m_strTip = _T("MBE 6A.4.5.5 For slow moving vehicles (<= 10 mph) IM = 0%\rMBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%");
          break;
 
       case IDC_STRENGTH_II_LL_PERMIT:
@@ -221,7 +198,7 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       if ( bIsLoadFactorTip )
       {
          CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
-         pParent->GetLoadFactorToolTip(m_strTip,limit_state,specialPermitType);
+         pParent->GetLoadFactorToolTip(m_strTip,limit_state);
       }
 
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
@@ -246,14 +223,6 @@ void CPermitRatingPage::OnCheckYieldingClicked()
    GetDlgItem(IDC_FY)->EnableWindow(bEnable);
 }
 
-pgsTypes::SpecialPermitType CPermitRatingPage::GetSpecialPermitType()
-{
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PERMIT_TYPE);
-   int curSel = pCB->GetCurSel();
-   pgsTypes::SpecialPermitType permitType = (pgsTypes::SpecialPermitType)pCB->GetItemData(curSel);
-   return permitType;
-}
-
 void CPermitRatingPage::OnPermitTypeChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PERMIT_TYPE);
@@ -266,20 +235,17 @@ void CPermitRatingPage::OnPermitTypeChanged()
    GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
-   bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(permitType);
+   if ( !permit.AllowUserOverride() )
    {
-      const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(permitType);
-      bAllowUserOverride = permit.AllowUserOverride();
+      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT2)->EnableWindow(FALSE);
+      GetDlgItem(IDC_SERVICE_I_LL_PERMIT2)->EnableWindow(FALSE);
    }
    else
    {
-      const CLiveLoadFactorModel2& permit = pRatingEntry->GetLiveLoadFactorModel2(permitType);
-      bAllowUserOverride = permit.AllowUserOverride();
+      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT2)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_I_LL_PERMIT2)->EnableWindow(TRUE);
    }
-
-   GetDlgItem(IDC_STRENGTH_II_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
-   GetDlgItem(IDC_SERVICE_I_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
 }
 
 BOOL CPermitRatingPage::OnSetActive()
@@ -298,29 +264,18 @@ BOOL CPermitRatingPage::OnSetActive()
    CDataExchange dx(this,false);
    Float64 gLL = -1;
 
-   bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-      bAllowUserOverride = permit.AllowUserOverride();
-   }
-   else
-   {
-      const CLiveLoadFactorModel2& permit = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
-      bAllowUserOverride = permit.AllowUserOverride();
-   }
-
-   if ( bAllowUserOverride )
-   {
-      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
-   }
-   else
+   const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+   if ( !permit.AllowUserOverride() )
    {
       DDX_Keyword(&dx,IDC_STRENGTH_II_LL_PERMIT,_T("Compute"),gLL);
       DDX_Keyword(&dx,IDC_SERVICE_I_LL_PERMIT,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(FALSE);
+   }
+   else
+   {
+      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
    }
 
    return TRUE;

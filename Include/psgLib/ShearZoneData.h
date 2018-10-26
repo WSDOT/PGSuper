@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@
 //
    class sysIStructuredLoad;
    class sysIStructuredSave;
-   class CShearData;
+   class CShearData2;
 // MISCELLANEOUS
 //
 
@@ -66,20 +66,18 @@ LOG
    rdp : 12.03.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS CShearZoneData
+class PSGLIBCLASS CShearZoneData2
 {
-   friend CShearData; // only or friend can see legacy data
+   friend CShearData2; // only or friend can see legacy data
 
 public:
-   Uint32  ZoneNum;
+   ZoneIndexType  ZoneNum;
    matRebar::Size VertBarSize;
    Float64 BarSpacing;
    Float64 ZoneLength;
    Float64 nVertBars;
    Float64 nHorzInterfaceBars;
    matRebar::Size ConfinementBarSize;
-
-   bool bWasDesigned; // For use by design algorithm only
 
 private:
    // These values are used only for CShearData version < 9
@@ -90,22 +88,22 @@ private:
 public:
    //------------------------------------------------------------------------
    // Default constructor
-   CShearZoneData();
+   CShearZoneData2();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   CShearZoneData(const CShearZoneData& rOther);
+   CShearZoneData2(const CShearZoneData2& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   ~CShearZoneData();
+   ~CShearZoneData2();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   CShearZoneData& operator = (const CShearZoneData& rOther);
-   bool operator == (const CShearZoneData& rOther) const;
-   bool operator != (const CShearZoneData& rOther) const;
+   CShearZoneData2& operator = (const CShearZoneData2& rOther);
+   bool operator == (const CShearZoneData2& rOther) const;
+   bool operator != (const CShearZoneData2& rOther) const;
 
    // GROUP: OPERATIONS
 
@@ -124,10 +122,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const CShearZoneData& rOther);
+   void MakeCopy(const CShearZoneData2& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CShearZoneData& rOther);
+   virtual void MakeAssignment(const CShearZoneData2& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -146,10 +144,10 @@ private:
 
 // EXTERNAL REFERENCES
 //
-class PSGLIBCLASS ShearZoneDataLess
+class PSGLIBCLASS ShearZoneData2Less
 {
 public:
-   bool operator()(const CShearZoneData& a, const CShearZoneData& b)
+   bool operator()(const CShearZoneData2& a, const CShearZoneData2& b)
    {
       return a.ZoneNum < b.ZoneNum;
    }

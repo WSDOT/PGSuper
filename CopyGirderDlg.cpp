@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,13 +27,14 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperDoc.h"
+#include "PGSpliceDoc.h"
 #include "CopyGirderDlg.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -47,18 +48,12 @@ static char THIS_FILE[] = __FILE__;
 // CCopyGirderDlg dialog
 
 
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, CPGSuperDoc* pDoc, CWnd* pParent /*=NULL*/)
+CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, CWnd* pParent /*=NULL*/)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
-   m_pDoc(pDoc),
    m_pBroker(pBroker)
 {
 	//{{AFX_DATA_INIT(CCopyGirderDlg)
 	//}}AFX_DATA_INIT
-}
-
-std::vector<IDType> CCopyGirderDlg::GetCallbackIDs()
-{
-   return m_CallbackIDs;
 }
 
 
@@ -66,29 +61,32 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCopyGirderDlg)
-   DDX_Control(pDX, IDC_LIST, m_PropertiesList);
+	DDX_Control(pDX, IDC_COPY_GIRDER, m_DoCopyGirder);
+	DDX_Control(pDX, IDC_COPY_MATERIAL, m_DoCopyMaterial);
+	DDX_Control(pDX, IDC_COPY_TRANSVERSE, m_DoCopyTransverse);
+	DDX_Control(pDX, IDC_COPY_PRESTRESSING, m_DoCopyPrestressing);
+	DDX_Control(pDX, IDC_COPY_HANDLING, m_DoCopyHandling);
+	DDX_Control(pDX, IDC_COPY_SLABOFFSET, m_DoCopySlabOffset);
+   DDX_Control(pDX, IDC_LONGITUDINAL_REBAR, m_DoCopyLongitudinalRebar);
 
-   DDX_Control(pDX, IDC_FROM_SPAN,   m_FromSpan);
+   DDX_Control(pDX, IDC_FROM_SPAN,   m_FromGroup);
    DDX_Control(pDX, IDC_FROM_GIRDER, m_FromGirder);
-   DDX_Control(pDX, IDC_TO_SPAN,     m_ToSpan);
+   DDX_Control(pDX, IDC_TO_SPAN,     m_ToGroup);
    DDX_Control(pDX, IDC_TO_GIRDER,   m_ToGirder);
 	//}}AFX_DATA_MAP
 
+   DDX_Check(pDX, IDC_COPY_GIRDER,       m_bCopyGirder);
+   DDX_Check(pDX, IDC_COPY_TRANSVERSE,   m_bCopyTransverse);
+   DDX_Check(pDX, IDC_COPY_PRESTRESSING, m_bCopyPrestressing);
+   DDX_Check(pDX, IDC_COPY_HANDLING,     m_bCopyHandling);
+   DDX_Check(pDX, IDC_COPY_MATERIAL,     m_bCopyMaterial);
+   DDX_Check(pDX, IDC_LONGITUDINAL_REBAR, m_bCopyLongitudinalRebar);
+   DDX_Check(pDX, IDC_COPY_SLABOFFSET,   m_bCopySlabOffset);
+
    if ( pDX->m_bSaveAndValidate )
    {
-      m_FromSpanGirderHashValue = GetFromSpanGirder();
-      m_ToSpanGirderHashValues  = GetToSpanGirders();
-
-      m_CallbackIDs.clear();
-      int nItems = m_PropertiesList.GetCount();
-      for ( int idx = 0; idx < nItems; idx++ )
-      {
-         if ( m_PropertiesList.GetCheck(idx) == BST_CHECKED )
-         {
-            IDType callbackID = (IDType)m_PropertiesList.GetItemData(idx);
-            m_CallbackIDs.push_back(callbackID);
-         }
-      }
+      m_FromGirderKey = GetFromGirder();
+      m_ToGirderKeys  = GetToGirders();
    }
    else
    {
@@ -99,12 +97,20 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
    }
 }
 
+
 BEGIN_MESSAGE_MAP(CCopyGirderDlg, CDialog)
 	//{{AFX_MSG_MAP(CCopyGirderDlg)
-   ON_CBN_SELCHANGE(IDC_FROM_SPAN,OnFromSpanChanged)
-   ON_CBN_SELCHANGE(IDC_TO_SPAN,OnToSpanChanged)
+   ON_CBN_SELCHANGE(IDC_FROM_SPAN,OnFromGroupChanged)
+   ON_CBN_SELCHANGE(IDC_TO_SPAN,OnToGroupChanged)
    ON_CBN_SELCHANGE(IDC_TO_GIRDER,OnToGirderChanged)
+	ON_BN_CLICKED(IDC_COPY_PRESTRESSING, OnCopyPrestressing)
+	ON_BN_CLICKED(IDC_COPY_HANDLING, OnCopyHandling)
+	ON_BN_CLICKED(IDC_COPY_SLABOFFSET, OnCopySlabOffset)
+	ON_BN_CLICKED(IDC_COPY_TRANSVERSE, OnCopyTransverse)
+   ON_BN_CLICKED(IDC_LONGITUDINAL_REBAR, OnCopyLongitudinalRebar)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
+	ON_BN_CLICKED(IDC_COPY_MATERIAL, OnCopyMaterial)
+	ON_BN_CLICKED(IDC_COPY_GIRDER, OnCopyGirder)
    ON_BN_CLICKED(IDC_RADIO1, &CCopyGirderDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_RADIO2, &CCopyGirderDlg::OnBnClickedRadio)
 	//}}AFX_MSG_MAP
@@ -116,75 +122,140 @@ END_MESSAGE_MAP()
 
 BOOL CCopyGirderDlg::OnInitDialog() 
 {
+	CDialog::OnInitDialog();
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   // prestressing and longitudinal rebar can only be copied if
+   // the source and destination girders are the same time
+   UINT chkMainReinforcement = BST_CHECKED;
+
+   if ( pBridgeDesc->UseSameGirderForEntireBridge() )
+   {
+      m_DoCopyGirder.SetCheck(BST_UNCHECKED);
+      m_DoCopyGirder.EnableWindow(FALSE);
+
+      chkMainReinforcement = BST_CHECKED;
+   }
+   else
+   {
+      m_DoCopyGirder.SetCheck(BST_CHECKED);
+      chkMainReinforcement = BST_UNCHECKED;
+   }
+
+   m_DoCopyPrestressing.SetCheck(chkMainReinforcement);
+   m_DoCopyLongitudinalRebar.SetCheck(chkMainReinforcement);
+   m_DoCopyTransverse.SetCheck(BST_CHECKED);
+   m_DoCopyHandling.SetCheck(BST_CHECKED);
+   m_DoCopyMaterial.SetCheck(BST_CHECKED);
+
+   if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+   {
+      m_DoCopySlabOffset.SetCheck(BST_UNCHECKED);
+      m_DoCopySlabOffset.EnableWindow(FALSE);
+   }
+   else
+   {
+      m_DoCopySlabOffset.SetCheck(BST_CHECKED);
+   }
+
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      m_DoCopyPrestressing.SetWindowText(_T("Copy Prestressing and Post-Tensioning"));
+      m_DoCopyGirder.SetWindowText(_T("Copy Segment Variation"));
+      m_DoCopyGirder.SetCheck(BST_CHECKED);
+      m_DoCopyGirder.EnableWindow(TRUE);
+   }
+
+   FillComboBoxes(m_FromGroup,m_FromGirder,false,false);
+   FillComboBoxes(m_ToGroup,  m_ToGirder,  pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? false : true, true );
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      // in PGSplice, copying can only happen within a group
+      // disable the to group combo box and keep it in sync with the from group combo box
+      m_ToGroup.EnableWindow(FALSE);
+   }
+
+   GET_IFACE(ISelectionEx,pSelection);
+   CSelection selection = pSelection->GetSelection();
+   if ( selection.Type == CSelection::Girder || selection.TemporarySupport == CSelection::Segment )
+   {
+      m_FromGroup.SetCurSel((int)selection.GroupIdx);
+      OnFromGroupChanged();
+      m_FromGirder.SetCurSel((int)selection.GirderIdx);
+
+      m_ToGroup.SetCurSel((int)selection.GroupIdx+1);
+      OnToGroupChanged();
+   }
+	
+   UpdateApply();
+
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
-
-	CDialog::OnInitDialog();
-
-   FillComboBoxes(m_FromSpan,m_FromGirder,false);
-   FillComboBoxes(m_ToSpan,  m_ToGirder,  true );
-
-   GET_IFACE(ISelection,pSelection);
-   SpanIndexType currSpan = pSelection->GetSpanIdx();
-   GirderIndexType currGirder = pSelection->GetGirderIdx();
-   if ( currSpan != INVALID_INDEX && currGirder != INVALID_INDEX )
-   {
-      m_FromSpan.SetCurSel((int)currSpan);
-      OnFromSpanChanged();
-      m_FromGirder.SetCurSel((int)currGirder);
-
-      m_ToSpan.SetCurSel((int)currSpan+1);
-      OnToSpanChanged();
-   }
-
-
-   CopyToSelectionChanged();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CCopyGirderDlg::FillComboBoxes(CComboBox& cbSpan,CComboBox& cbGirder, bool bIncludeAllSpanGirder)
+void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders)
 {
-   cbSpan.ResetContent();
+   cbGroup.ResetContent();
 
-   if ( bIncludeAllSpanGirder )
+   CString strGroupLabel;
+   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      int idx = cbSpan.AddString(_T("All Spans"));
-      cbSpan.SetItemData(idx,ALL_SPANS);
+      strGroupLabel = _T("Span");
+   }
+   else
+   {
+      strGroupLabel = _T("Group");
    }
 
-   GET_IFACE(IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   if ( bIncludeAllGroups )
+   {
+      CString strItem;
+      strItem.Format(_T("All %ss"),strGroupLabel);
+      int idx = cbGroup.AddString(strItem);
+      cbGroup.SetItemData(idx,ALL_GROUPS);
+   }
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString str;
-      str.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
+      str.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
 
-      int idx = cbSpan.AddString(str);
-      cbSpan.SetItemData(idx,spanIdx);
+      int idx = cbGroup.AddString(str);
+      cbGroup.SetItemData(idx,grpIdx);
    }
 
-   cbSpan.SetCurSel(0);
+   cbGroup.SetCurSel(0);
 
-   FillGirderComboBox(cbGirder,0,bIncludeAllSpanGirder);
+   FillGirderComboBox(cbGirder,0,bIncludeAllGirders);
 }
 
-void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanIdx,bool bIncludeAll)
+void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpIdx,bool bIncludeAllGirders)
 {
    int curSel = cbGirder.GetCurSel();
 
    cbGirder.ResetContent();
 
-   if ( bIncludeAll )
+   if ( bIncludeAllGirders )
    {
       int idx = cbGirder.AddString(_T("All Girders"));
       cbGirder.SetItemData(idx,ALL_GIRDERS);
    }
 
-   GET_IFACE(IBridge,pBridge);
-   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx == ALL_SPANS ? 0 : spanIdx);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx == ALL_GROUPS ? 0 : grpIdx)->GetGirderCount();
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CString str;
@@ -201,27 +272,32 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanId
       cbGirder.SetCurSel(0);
 }
 
-void CCopyGirderDlg::OnFromSpanChanged() 
+void CCopyGirderDlg::OnFromGroupChanged() 
 {
-   int curSel = m_FromSpan.GetCurSel();
+   int curSel = m_FromGroup.GetCurSel();
    if ( curSel != CB_ERR )
    {
-      SpanIndexType spanIdx = (SpanIndexType)m_FromSpan.GetItemData(curSel);
-      FillGirderComboBox(m_FromGirder,spanIdx,false);
+      GroupIndexType groupIdx = (GroupIndexType)m_FromGroup.GetItemData(curSel);
+      FillGirderComboBox(m_FromGirder,groupIdx,false);
    }
    else
    {
       FillGirderComboBox(m_FromGirder,0,false);
    }
+
+   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      m_ToGroup.SetCurSel(m_FromGroup.GetCurSel());
+   }
 }
 
-void CCopyGirderDlg::OnToSpanChanged() 
+void CCopyGirderDlg::OnToGroupChanged() 
 {
-   int curSel = m_ToSpan.GetCurSel();
+   int curSel = m_ToGroup.GetCurSel();
    if ( curSel != CB_ERR )
    {
-      SpanIndexType spanIdx = (SpanIndexType)m_ToSpan.GetItemData(curSel);
-      FillGirderComboBox(m_ToGirder,spanIdx,true);
+      GroupIndexType groupIdx = (GroupIndexType)m_ToGroup.GetItemData(curSel);
+      FillGirderComboBox(m_ToGirder,groupIdx,true);
    }
    else
    {
@@ -238,50 +314,77 @@ void CCopyGirderDlg::OnToGirderChanged()
 
 void CCopyGirderDlg::CopyToSelectionChanged() 
 {
-   SpanGirderHashType copyFrom = GetFromSpanGirder();
-   std::vector<SpanGirderHashType> copyTo = GetToSpanGirders();
+   // if the source and any of the destination girders are not the same type
+   // the prestressing and longitudinal reinforcement data can't be copied
+   CGirderKey copyFrom = GetFromGirder();
+   std::vector<CGirderKey> copyTo = GetToGirders();
 
-   std::map<IDType,int> buttonStates;
-   int nItems = m_PropertiesList.GetCount();
-   for ( int idx = 0; idx < nItems; idx++ )
+   GroupIndexType fromGroup = copyFrom.groupIndex;
+   GirderIndexType fromGirder = copyFrom.girderIndex;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(fromGroup);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(fromGirder);
+
+   std::_tstring strFromGirder( pGirder->GetGirderName() );
+
+   BOOL bCanCopy = TRUE;
+
+   std::vector<CGirderKey>::iterator iter;
+   for ( iter = copyTo.begin(); iter != copyTo.end(); iter++ )
    {
-      IDType callbackID = (IDType)m_PropertiesList.GetItemData(idx);
-      buttonStates.insert(std::make_pair(callbackID,m_PropertiesList.GetCheck(idx)));
-   }
+      CGirderKey& dwTo = *iter;
+      GroupIndexType toGroup = dwTo.groupIndex;
+      GirderIndexType toGirder = dwTo.girderIndex;
 
-   m_PropertiesList.ResetContent();
+      std::_tstring strToGirder( pBridgeDesc->GetGirderGroup(toGroup)->GetGirder(toGirder)->GetGirderName() );
 
-   const std::map<IDType,ICopyGirderPropertiesCallback*>& callbacks = m_pDoc->GetCopyGirderPropertiesCallbacks();
-   std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator iter(callbacks.begin());
-   std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator end(callbacks.end());
-   for ( ; iter != end; iter++ )
-   {
-      IDType callbackID = iter->first;
-      ICopyGirderPropertiesCallback* pCallback = iter->second;
-      if ( pCallback->CanCopy(copyFrom,copyTo) )
+      if ( strFromGirder != strToGirder )
       {
-         LPCTSTR strName = pCallback->GetName();
-         int idx = m_PropertiesList.AddString(strName);
-         m_PropertiesList.SetItemData(idx,(DWORD_PTR)callbackID);
-
-         int checked = BST_CHECKED;
-         std::map<IDType,int>::iterator found = buttonStates.find(callbackID);
-         if ( found != buttonStates.end() )
-         {
-            checked = found->second;
-         }
-         m_PropertiesList.SetCheck(idx,checked);
+         bCanCopy = FALSE;
+         break;
       }
    }
+   m_DoCopyPrestressing.SetCheck(bCanCopy ? BST_CHECKED : BST_UNCHECKED);
+   m_DoCopyPrestressing.EnableWindow(bCanCopy);
+   m_DoCopyLongitudinalRebar.SetCheck(bCanCopy ? BST_CHECKED : BST_UNCHECKED);
+   m_DoCopyLongitudinalRebar.EnableWindow(bCanCopy);
+
+   UpdateApply();
 }
 
-SpanGirderHashType CCopyGirderDlg::GetFromSpanGirder()
+void CCopyGirderDlg::UpdateApply()
 {
-   SpanIndexType spanIdx = 0;
-   int sel = m_FromSpan.GetCurSel();
+   BOOL enable = TRUE;
+   if (m_DoCopyTransverse.GetCheck()==1   ||
+       m_DoCopyGirder.GetCheck()==1 ||
+       m_DoCopyPrestressing.GetCheck()==1 ||
+       m_DoCopyHandling.GetCheck()==1     ||
+       m_DoCopyMaterial.GetCheck()==1     ||
+       m_DoCopySlabOffset.GetCheck()==1     ||
+       m_DoCopyLongitudinalRebar.GetCheck() == 1)
+   {
+      enable = TRUE;
+   }
+   else
+   {
+      enable = FALSE;
+   }
+   CWnd* butok = GetDlgItem(IDOK);
+   ASSERT(butok!=0);
+   butok->EnableWindow(enable);
+}
+
+CGirderKey CCopyGirderDlg::GetFromGirder()
+{
+   GroupIndexType grpIdx = 0;
+   int sel = m_FromGroup.GetCurSel();
    if ( sel != CB_ERR )
    {
-      spanIdx = (SpanIndexType)m_FromSpan.GetItemData(sel);
+      grpIdx = (GroupIndexType)m_FromGroup.GetItemData(sel);
    }
 
    GirderIndexType gdrIdx = 0;
@@ -291,57 +394,61 @@ SpanGirderHashType CCopyGirderDlg::GetFromSpanGirder()
       gdrIdx = (GirderIndexType)m_FromGirder.GetItemData(sel);
    }
 
-   return HashSpanGirder(spanIdx,gdrIdx);
+   return CGirderKey(grpIdx,gdrIdx);
 }
 
-std::vector<SpanGirderHashType> CCopyGirderDlg::GetToSpanGirders()
+std::vector<CGirderKey> CCopyGirderDlg::GetToGirders()
 {
-   std::vector<SpanGirderHashType> vec;
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   std::vector<CGirderKey> vec;
 
    // See which control to get data from
    BOOL enab_combo = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
 
-   if (enab_combo)
+   if ( enab_combo )
    {
-      GET_IFACE(IBridge,pBridge);
-      SpanIndexType firstSpan, lastSpan;
-      int sel = m_ToSpan.GetCurSel();
-      firstSpan = (SpanIndexType)m_ToSpan.GetItemData(sel);
-      if ( firstSpan == ALL_SPANS )
+   GroupIndexType firstGroupIdx, lastGroupIdx;
+   int sel = m_ToGroup.GetCurSel();
+   firstGroupIdx = (GroupIndexType)m_ToGroup.GetItemData(sel);
+   if ( firstGroupIdx == ALL_GROUPS )
+   {
+      firstGroupIdx = 0;
+      lastGroupIdx  = pBridgeDesc->GetGirderGroupCount()-1;
+   }
+   else
+   {
+      lastGroupIdx = firstGroupIdx;
+   }
+
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+
+      GirderIndexType firstGdr, lastGdr;
+      sel = m_ToGirder.GetCurSel();
+      firstGdr = (GirderIndexType)m_ToGirder.GetItemData(sel);
+      if ( firstGdr == ALL_GIRDERS )
       {
-         firstSpan = 0;
-         lastSpan = pBridge->GetSpanCount()-1;
+         firstGdr = 0;
+         lastGdr = pGroup->GetGirderCount()-1;
       }
       else
       {
-         lastSpan = firstSpan;
+         lastGdr = firstGdr;
       }
 
-      for ( SpanIndexType spanIdx = firstSpan; spanIdx <= lastSpan; spanIdx++ )
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for (GirderIndexType gdrIdx = firstGdr; gdrIdx <= lastGdr; gdrIdx++ )
       {
-         GirderIndexType firstGdr, lastGdr;
-         sel = m_ToGirder.GetCurSel();
-         firstGdr = (GirderIndexType)m_ToGirder.GetItemData(sel);
-         if ( firstGdr == ALL_GIRDERS )
-         {
-            firstGdr = 0;
-            lastGdr = pBridge->GetGirderCount(spanIdx)-1;
-         }
-         else
-         {
-            lastGdr = firstGdr;
-         }
+         GirderIndexType realGdrIdx = gdrIdx;
+         if ( nGirders <= gdrIdx )
+            realGdrIdx = nGirders-1;
 
-         for (GirderIndexType gdrIdx = firstGdr; gdrIdx <= lastGdr; gdrIdx++ )
-         {
-            GirderIndexType realGdrIdx = gdrIdx;
-            GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-            if ( nGirders <= gdrIdx )
-               realGdrIdx = nGirders-1;
-
-            vec.push_back( HashSpanGirder(spanIdx,realGdrIdx) );
-         }
+         vec.push_back( CGirderKey(grpIdx,realGdrIdx) );
       }
+   }
    }
    else
    {
@@ -352,9 +459,44 @@ std::vector<SpanGirderHashType> CCopyGirderDlg::GetToSpanGirders()
    return vec;
 }
 
+void CCopyGirderDlg::OnCopyPrestressing() 
+{
+   UpdateApply();
+}
+
+void CCopyGirderDlg::OnCopyHandling() 
+{
+   UpdateApply();
+}
+
+void CCopyGirderDlg::OnCopySlabOffset() 
+{
+   UpdateApply();
+}
+
+void CCopyGirderDlg::OnCopyTransverse()  
+{
+   UpdateApply();
+}
+
+void CCopyGirderDlg::OnCopyLongitudinalRebar()
+{
+   UpdateApply();
+}
+
 void CCopyGirderDlg::OnHelp()
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_COPYGDRPROPERTIES );
+}
+
+void CCopyGirderDlg::OnCopyMaterial() 
+{
+   UpdateApply();
+}
+
+void CCopyGirderDlg::OnCopyGirder() 
+{
+   UpdateApply();	
 }
 
 void CCopyGirderDlg::OnBnClickedRadio()
@@ -373,16 +515,29 @@ void CCopyGirderDlg::OnBnClickedRadio()
 void CCopyGirderDlg::OnBnClickedSelectGirders()
 {
    CMultiGirderSelectDlg dlg;
-   dlg.m_SelGdrs = m_MultiDialogSelections;
+   std::vector<CGirderKey>::iterator iter(m_MultiDialogSelections.begin());
+   std::vector<CGirderKey>::iterator end(m_MultiDialogSelections.end());
+   for ( ; iter != end; iter++ )
+   {
+      CGirderKey& girderKey(*iter);
+      dlg.m_GirderKeys.push_back( girderKey );
+   }
 
    if (dlg.DoModal()==IDOK)
    {
       // update button text
       CString msg;
-      msg.Format(_T("Select Girders\n(%d Selected)"), dlg.m_SelGdrs.size());
+      msg.Format(_T("Select Girders\n(%d Selected)"), dlg.m_GirderKeys.size());
       GetDlgItem(IDC_SELECT_GIRDERS)->SetWindowText(msg);
 
-      m_MultiDialogSelections = dlg.m_SelGdrs;
+      m_MultiDialogSelections.clear();
+      std::vector<CGirderKey>::const_iterator iter(dlg.m_GirderKeys.begin());
+      std::vector<CGirderKey>::const_iterator end(dlg.m_GirderKeys.end());
+      for ( ; iter != end; iter++ )
+      {
+         const CGirderKey& girderKey(*iter);
+         m_MultiDialogSelections.push_back(girderKey);
+      }
 
       CopyToSelectionChanged();
    }

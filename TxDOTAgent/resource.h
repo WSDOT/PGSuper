@@ -10,7 +10,6 @@
 #define IDR_TXDOTAGENTIMP               103
 #define IDR_TXDOTCADEXPORTER            104
 #define IDR_TXDOTCOMPONENTINFO          105
-#define IDR_XDOTCOMPONENTINFO           105
 #define IDR_TXDOTAPPPLUGIN              106
 #define IDR_TXDOTOPTIONALDESIGN         107
 #define IDR_TXDOTOPTIONALDESIGNTOOLBAR  107
@@ -43,7 +42,6 @@
 #define IDC_COMMENTS                    216
 #define IDD_PROJ_CRIT_NOT_FOUND         216
 #define IDC_BEAM_NO                     217
-#define IDD_DIRECT_FILL_DLG             217
 #define IDC_BEAM_SPACING                218
 #define IDC_SPAN_LENGTH                 219
 #define IDC_SLAB_THICKNESS              220
@@ -92,6 +90,7 @@
 #define IDC_OPT_BOX                     253
 #define IDC_OPT_STRAND_TYPE             254
 #define IDC_OPT_TO_VALID_RANGE          255
+#define IDC_BUTTON1                     255
 #define IDC_ORIG_STRAND_TYPE            255
 #define IDC_SELECT_ALL                  255
 #define IDC_TO_TAG                      256
@@ -114,11 +113,6 @@
 #define IDC_PROJECT_CRITERIA            265
 #define IDC_WARNING_MSG                 266
 #define IDC_CY_STRESS_FACTOR            267
-#define IDC_SELECT_STRANDS              268
-#define IDC_ORG_FILLTYPE_COMBO          269
-#define IDC_OPT_FILLTYPE_COMBO          270
-#define IDC_DIRECT_STATIC               270
-#define IDD_GIRDER_SELECT_STRANDS       324
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026
 #define ID_SELECTED_GIRDER              1086
@@ -136,20 +130,11 @@
 #define IDC_RIGHT_HARP                  1186
 #define IDC_RIGHT_END                   1188
 #define IDC_USER_CUT                    1191
-#define IDC_COMBO_VIEWLOC               1407
-#define IDC_PICTURE                     1445
-#define IDC_CHECK_SYMM                  1446
 #define IDC_SHOW_TRANSV_REINF           1457
-#define IDC_EXTENDED_RIGHT              1528
-#define IDC_SHOW_NUMBERS                1562
 #define IDC_SELECT_GRID                 1606
-#define IDC_STRAND_GRID                 1622
-#define IDC_GRID_STATIC                 1630
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
-#define IDC_DEBONDED                    1638
 #define IDS_PROJCRIT_ERROR              1639
-#define IDC_STRAIGHT                    1639
 #define IDS_E_INVALIDFORMAT             1640
 #define IDS_E_FILENOTFOUND              1642
 #define IDS_E_READ                      1644
@@ -162,6 +147,7 @@
 #define IDS_GDR_ERROR3                  1756
 #define IDC_GROUP                       3003
 #define IDS_E_NOGIRDERS                 3005
+
 #define ID_LEFTEND                      36864
 #define ID_RIGHTEND                     36865
 #define ID_LEFT_HP                      36866
@@ -184,9 +170,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        219
+#define _APS_NEXT_RESOURCE_VALUE        217
 #define _APS_NEXT_COMMAND_VALUE         36882
-#define _APS_NEXT_CONTROL_VALUE         271
+#define _APS_NEXT_CONTROL_VALUE         268
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

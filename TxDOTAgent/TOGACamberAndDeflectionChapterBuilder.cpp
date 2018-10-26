@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 
@@ -33,11 +33,11 @@
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData.h>
+#include <PgsExt\PierData2.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -74,9 +74,10 @@ LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
 
 rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -119,8 +120,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pTable->SetColumnSpan(0,2,2);
    (*pTable)(0,2) << _T("Fabricator Optional Design");
 
-   pTable->SetColumnSpan(0,3,SKIP_CELL);
-   pTable->SetColumnSpan(0,4,SKIP_CELL);
+   pTable->SetColumnSpan(0,3,-1);
+   pTable->SetColumnSpan(0,4,-1);
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDisplacementUnit(), true );
@@ -134,10 +135,17 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    GET_IFACE2(pBroker,IProductLoads, pProductLoads);
    GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec );
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
-//   const CGirderData* pgirderData_orig = pGirderData->GetGirderData(TOGA_SPAN, TOGA_ORIG_GDR);
-//   const CGirderData* pgirderData_fabr = pGirderData->GetGirderData(TOGA_SPAN, TOGA_FABR_GDR);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+   CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
+   CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -146,13 +154,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Get Midspan poi's
-   std::vector<pgsPointOfInterest> vPoi_orig = pIPOI->GetPointsOfInterest(TOGA_SPAN, TOGA_ORIG_GDR,pgsTypes::BridgeSite3,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi_orig( pIPOI->GetPointsOfInterest(origSegmentKey,POI_MIDSPAN) );
    CHECK(vPoi_orig.size()==1);
-   pgsPointOfInterest poi_orig = *vPoi_orig.begin();
+   pgsPointOfInterest poi_orig( *vPoi_orig.begin() );
 
-   std::vector<pgsPointOfInterest> vPoi_fabr = pIPOI->GetPointsOfInterest(TOGA_SPAN, TOGA_FABR_GDR,pgsTypes::BridgeSite3,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi_fabr( pIPOI->GetPointsOfInterest(fabrSegmentKey,POI_MIDSPAN) );
    CHECK(vPoi_fabr.size()==1);
-   pgsPointOfInterest poi_fabr = *vPoi_fabr.begin();
+   pgsPointOfInterest poi_fabr( *vPoi_fabr.begin() );
 
    // Compute mid span deflections
    Float64 delta_gdr_orig, delta_gdr_fabr; // due to girder self weight
@@ -166,41 +174,37 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    delta_gdr_orig = pProductForces->GetGirderDeflectionForCamber( poi_orig );
    delta_gdr_fabr = pProductForces->GetGirderDeflectionForCamber( poi_fabr );
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   delta_dl_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi_orig, bat )
-                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi_orig, bat )
-                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi_orig, bat );
+   delta_dl_orig = pProductForces->GetDisplacement(castDeckIntervalIdx, pftSlab, poi_orig, bat )
+                 + pProductForces->GetDisplacement(castDeckIntervalIdx, pftDiaphragm, poi_orig, bat );
 
-   delta_dl_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi_fabr, bat )
-                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi_fabr, bat )
-                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi_fabr, bat );
+   delta_dl_fabr = pProductForces->GetDisplacement(castDeckIntervalIdx, pftSlab, poi_fabr, bat )
+                 + pProductForces->GetDisplacement(castDeckIntervalIdx, pftDiaphragm, poi_fabr, bat );
 
-   pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+   delta_ol_orig = pProductForces->GetDisplacement(overlayIntervalIdx, pftOverlay, poi_orig, bat );
+   delta_ol_fabr = pProductForces->GetDisplacement(overlayIntervalIdx, pftOverlay, poi_fabr, bat );
 
-   delta_ol_orig = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi_orig, bat );
-   delta_ol_fabr = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi_fabr, bat );
+   delta_tb_orig = pProductForces->GetDisplacement(railingSystemIntervalIdx, pftTrafficBarrier, poi_orig, bat );
+   delta_tb_fabr = pProductForces->GetDisplacement(railingSystemIntervalIdx, pftTrafficBarrier, poi_fabr, bat );
 
-   delta_tb_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi_orig, bat );
-   delta_tb_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi_fabr, bat );
+   Float64 delta_dcu_orig = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDC, poi_orig, bat);
+   delta_dcu_orig        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDC, poi_orig, bat);
 
-   Float64 delta_dcu_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC, poi_orig, bat);
-   delta_dcu_orig        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC, poi_orig, bat);
+   Float64 delta_dcu_fabr = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDC, poi_fabr, bat);
+   delta_dcu_fabr        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDC, poi_fabr, bat);
 
-   Float64 delta_dcu_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC, poi_fabr, bat);
-   delta_dcu_fabr        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC, poi_fabr, bat);
+   Float64 delta_dwu_orig = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDW, poi_orig, bat);
+   delta_dwu_orig        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDW, poi_orig, bat);
 
-   Float64 delta_dwu_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW, poi_orig, bat);
-   delta_dwu_orig        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW, poi_orig, bat);
+   Float64 delta_dwu_fabr = pProductForces->GetDisplacement(castDeckIntervalIdx,pftUserDW, poi_fabr, bat);
+   delta_dwu_fabr        += pProductForces->GetDisplacement(compositeDeckIntervalIdx,pftUserDW, poi_fabr, bat);
 
-   Float64 delta_dwu_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW, poi_fabr, bat);
-   delta_dwu_fabr        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW, poi_fabr, bat);
+   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, liveLoadIntervalIdx, poi_orig, bat, true, false, &delta_ll_orig, &temp );
+   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, liveLoadIntervalIdx, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );
 
-   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, pgsTypes::BridgeSite3, poi_orig, bat, true, false, &delta_ll_orig, &temp );
-   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, pgsTypes::BridgeSite3, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );
-
-   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_orig, &delta_oll_orig, &temp );
-   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, &delta_oll_fabr, &temp );
+   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_orig, bat, &delta_oll_orig, &temp );
+   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, bat, &delta_oll_fabr, &temp );
 
    // get # of days for creep
    Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
@@ -211,7 +215,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    Uint16 row = 1;
    (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
 
-   Float64 D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MINTIME);
+   double D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MINTIME);
    if ( D_orig < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
@@ -223,7 +227,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       (*pTable)(row,2) << dispft.SetValue( D_orig );
    }
 
-   Float64 D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MINTIME);
+   double D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MINTIME);
    if ( D_fabr < 0 )
    {
       (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
@@ -318,7 +322,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    row++;
 
    (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
-   Float64 excess_camber = pCamber->GetExcessCamber(poi_orig,CREEP_MAXTIME);
+   double excess_camber = pCamber->GetExcessCamber(poi_orig,CREEP_MAXTIME);
    if ( excess_camber < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( excess_camber ) << color(Black);

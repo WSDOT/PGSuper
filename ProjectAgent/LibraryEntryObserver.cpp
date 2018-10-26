@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,26 +70,22 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
       if ( m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == pSubject )
          m_pAgent->m_BridgeDescription.RenameGirder( pSubject->GetName().c_str() );
 
-      CSpanData* pSpan = m_pAgent->m_BridgeDescription.GetSpan(0);
-      while ( pSpan )
+      GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
+      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
-         CGirderTypes girderTypes = *pSpan->GetGirderTypes();
-         GroupIndexType nGroups = girderTypes.GetGirderGroupCount();
-         for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+         CGirderGroupData* pGroup = m_pAgent->m_BridgeDescription.GetGirderGroup(grpIdx);
+         GroupIndexType nGirderTypeGroups = pGroup->GetGirderTypeGroupCount();
+         for ( GroupIndexType gdrGroupIdx = 0; gdrGroupIdx < nGirderTypeGroups; gdrGroupIdx++ )
          {
             GirderIndexType firstGdrIdx,lastGdrIdx;
             std::_tstring strGirderName;
-            girderTypes.GetGirderGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,strGirderName);
+            pGroup->GetGirderTypeGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&strGirderName);
 
-            if ( girderTypes.GetGirderLibraryEntry(firstGdrIdx) == pSubject )
+            if ( pGroup->GetGirderLibraryEntry(firstGdrIdx) == pSubject )
             {
-               girderTypes.RenameGirder( grpIdx, pSubject->GetName().c_str() );
+               pGroup->RenameGirder( grpIdx, pSubject->GetName().c_str() );
             }
          }
-
-         pSpan->SetGirderTypes(girderTypes);
-
-         pSpan = pSpan->GetNextPier()->GetNextSpan();
       }
 
       m_pAgent->Fire_BridgeChanged(); // if we had a lessor event, we should fire that

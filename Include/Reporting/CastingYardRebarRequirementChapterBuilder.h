@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,8 +86,6 @@ private:
    // Prevent accidental copying and assignment
    CCastingYardRebarRequirementChapterBuilder(const CCastingYardRebarRequirementChapterBuilder&);
    CCastingYardRebarRequirementChapterBuilder& operator=(const CCastingYardRebarRequirementChapterBuilder&);
-
-   void Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,Uint16 level) const;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

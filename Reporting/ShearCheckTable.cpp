@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,11 @@
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Project.h>
 #include <IFace\Artifact.h>
 
 #include <PgsExt\CapacityToDemand.h>
@@ -60,27 +60,29 @@ CShearCheckTable::~CShearCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                                                IEAFDisplayUnits* pDisplayUnits,
-                                               pgsTypes::Stage stage,
+                                               IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const
 {
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,_T(" "));
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   if (ls==pgsTypes::StrengthI)
-      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State for Bridge Site Stage 3 [5.8]");
+   if (ls == pgsTypes::StrengthI)
+      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State [5.8]");
    else
-      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State for Bridge Site Stage 3 [5.8]");
+      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State [5.8]");
   
-   if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   else
+   //if ( stage == constructionStageIdx )
+   //   (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   //else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1) << _T("Stirrups") << rptNewLine << _T("Required");
@@ -92,81 +94,86 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    rptCapacityToDemand cap_demand;
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
-   const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
-   CHECK(pstirrup_artifact);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-   if ( stage == pgsTypes::CastingYard )
-      end_size = 0; // don't adjust if CY stage
-
-   Float64 Lg = pBridge->GetGirderLength(span,girder);
-
-   bStrutAndTieRequired = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+
+   bool bIsStrutAndTieRequired = false;
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsPointOfInterest& poi = *i;
-      const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
-      if ( psArtifact == NULL )
-         continue;
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
 
-      const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
-
-      bool needs_strut_tie = pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd);
-
-      if ( pArtifact->IsApplicable() )
+      const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
+      ATLASSERT(pStirrupArtifact);
+      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
-         (*table)(row,0) << location.SetValue( stage, poi, end_size );
-         (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? _T("Yes") : _T("No"));
-         (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? _T("Yes") : _T("No"));
+         const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+         if ( psArtifact == NULL )
+            continue;
 
-         Float64 Vu;
-         Float64 Vr;
-         Vu = pArtifact->GetDemand();
-         Vr = pArtifact->GetCapacity();
+         const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
-         (*table)(row,3) << shear.SetValue( Vu );
-         (*table)(row,4) << shear.SetValue( Vr );
+         const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
 
-         if(needs_strut_tie)
-            (*table)(row,5) << _T("*");
+         bool needs_strut_tie = pArtifact->IsStrutAndTieRequired();
 
-         bool bPassed = pArtifact->Passed();
-         if ( bPassed )
-            (*table)(row,5) << RPT_PASS;
-         else
-            (*table)(row,5) << RPT_FAIL;
+         if ( pArtifact->IsApplicable() )
+         {
+            (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+            (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? _T("Yes") : _T("No"));
+            (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? _T("Yes") : _T("No"));
 
-         (*table)(row,5) << rptNewLine << _T("(") << cap_demand.SetValue(Vr,Vu,bPassed) << _T(")");
+            Float64 Vu;
+            Float64 Vr;
+            Vu = pArtifact->GetDemand();
+            Vr = pArtifact->GetCapacity();
 
-         row++;
+            (*table)(row,3) << shear.SetValue( Vu );
+            (*table)(row,4) << shear.SetValue( Vr );
+
+            if(needs_strut_tie)
+               (*table)(row,5) << _T("*");
+
+            bool bPassed = pArtifact->Passed();
+            if ( bPassed )
+               (*table)(row,5) << RPT_PASS;
+            else
+               (*table)(row,5) << RPT_FAIL;
+
+            (*table)(row,5) << rptNewLine << _T("(") << cap_demand.SetValue(Vr,Vu,bPassed) << _T(")");
+
+            row++;
+         }// next artifact
+
+         if (needs_strut_tie)
+            bIsStrutAndTieRequired = true;
+
       }
 
-      if (needs_strut_tie)
-         bStrutAndTieRequired = true;
-   }
+   } // next segment
+
+   bStrutAndTieRequired = bIsStrutAndTieRequired;
 
    return table;
 }
 
 void CShearCheckTable::BuildNotes(rptChapter* pChapter, 
-                           IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                           IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                            IEAFDisplayUnits* pDisplayUnits,
-                           pgsTypes::Stage stage, pgsTypes::LimitState ls, bool bStrutAndTieRequired) const
+                           IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bStrutAndTieRequired) const
 {
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
    if ( bStrutAndTieRequired )
    {
       rptParagraph* p = new rptParagraph();
@@ -179,40 +186,40 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
       *pChapter << p;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-      GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
-      const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-      const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
-      CHECK(pstirrup_artifact);
-
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
-
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
       INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   true );
 
       *p << SUPPORT_COMPRESSION << rptNewLine << rptNewLine;
 
-      // Cycle through artifacts to see if av/s decreases past CSS - generate a FAIL if so
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         const pgsPointOfInterest& poi = *i;
-         const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
-         if ( psArtifact == NULL )
-            continue;
+         const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+         const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
+         ATLASSERT(pStirrupArtifact);
 
-         const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
-
-         if ( pArtifact->DidAvsDecreaseAtEnd() )
+         // Cycle through artifacts to see if av/s decreases past CSS - generate a FAIL if so
+         CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+         for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
          {
+            const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+            if ( psArtifact == NULL )
+               continue;
 
-            *p << RPT_FAIL << _T(" - The shear capacity, V")<< Sub(_T("s")) << _T(" at ") << location.SetValue(stage, poi, end_size)
-               << _T(" is less than the capacity at the design section (CS). Revise stirrup details to increase ") << Sub2(_T("A"),_T("v")) << _T("/S")
-               << _T(" at this location.") << rptNewLine;
+            const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
+
+            const pgsVerticalShearArtifact* pArtifact = psArtifact->GetVerticalShearArtifact();
+
+            if ( pArtifact->DidAvsDecreaseAtEnd() )
+            {
+
+               *p << RPT_FAIL << _T(" - The shear capacity, V")<< Sub(_T("s")) << _T(" at ") << location.SetValue(POI_ERECTED_SEGMENT, poi, end_size)
+                  << _T(" is less than the capacity at the design section (CS). Revise stirrup details to increase ") << Sub2(_T("A"),_T("v")) << _T("/S")
+                  << _T(" at this location.") << rptNewLine;
+            }
          }
-      }
+      } // next segment
    }
 
 }

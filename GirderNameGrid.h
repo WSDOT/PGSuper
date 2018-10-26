@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,8 +29,7 @@
 // GirderNameGrid.h : header file
 //
 
-#include <PgsExt\GirderTypes.h>
-#include <PgsExt\SpanData.h>
+#include <PgsExt\GirderGroupData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderNameGrid window
@@ -70,7 +69,7 @@ protected:
 
 public:
    // custom stuff for grid
-   void CustomInit(const CSpanData* pSpanData);
+   void CustomInit(const CGirderGroupData* pGirderGroup);
    void FillGrid();
    void OnGirderFamilyChanged(LPCTSTR strGirderFamily);
 
@@ -82,7 +81,7 @@ public:
    void UseSameGirderName(bool bSame);
    void UseSameNumGirders(bool bSame);
 
-   CGirderTypes m_GirderTypes;
+   CGirderGroupData m_GirderGroup;
 
 private:
    BOOL m_bEnabled;

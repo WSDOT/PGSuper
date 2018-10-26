@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,8 @@
 #include <IFace\EditByUI.h>
 #include "BridgeSectionView.h"
 
+#include <PgsExt\BridgeDescription2.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -43,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents
 
-CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSuperDoc* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;
@@ -67,12 +69,12 @@ void CBridgePlanViewSlabDisplayObjectEvents::EditSlab()
 
 void CBridgePlanViewSlabDisplayObjectEvents::SelectPrev()
 {
-   m_pFrame->SelectPier(m_nPiers-1); // prev object is last pier
+   m_pFrame->SelectAlignment();
 }
 
 void CBridgePlanViewSlabDisplayObjectEvents::SelectNext()
 {
-   m_pFrame->SelectPier(0); // next object is first pier
+   m_pFrame->SelectAlignment();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -149,7 +151,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnKeyDown(i
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder(0,0);
+      pThis->m_pFrame->SelectGirder( CSegmentKey(0,0,INVALID_INDEX) );
       return true;
    }
 
@@ -176,13 +178,12 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
 
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnDeckContextMenu(pMenu);
+         IBridgePlanViewEventCallback* callback = iter->second;
+         callback->OnDeckContextMenu(pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
@@ -260,7 +261,7 @@ STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnUnselect(
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSlabDisplayObjectEvents
 
-CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSuperDoc* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSuperDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;
@@ -281,17 +282,17 @@ void CBridgeSectionViewSlabDisplayObjectEvents::EditSlab()
 
 void CBridgeSectionViewSlabDisplayObjectEvents::SelectPrev()
 {
-   SpanIndexType spanIdx = m_pFrame->GetBridgeSectionView()->GetSpanIndex();
-
-   GET_IFACE(IBridge,pBridge);
-   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-   m_pFrame->SelectGirder(spanIdx,nGirders-1);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GroupIndexType grpIdx = m_pFrame->GetBridgeSectionView()->GetGroupIndex();
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
+   m_pFrame->SelectGirder( CSegmentKey(grpIdx,nGirders-1,INVALID_INDEX) );
 }
 
 void CBridgeSectionViewSlabDisplayObjectEvents::SelectNext()
 {
-   SpanIndexType spanIdx = m_pFrame->GetBridgeSectionView()->GetSpanIndex();
-   m_pFrame->SelectGirder(spanIdx,0);
+   GroupIndexType grpIdx = m_pFrame->GetBridgeSectionView()->GetGroupIndex();
+   m_pFrame->SelectGirder( CSegmentKey(grpIdx,0,INVALID_INDEX) );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -389,13 +390,12 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
 
-      const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();
-      std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgeSectionViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
+      std::map<IDType,IBridgeSectionViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnDeckContextMenu(pMenu);
+         IBridgeSectionViewEventCallback* callback = iter->second;
+         callback->OnDeckContextMenu(pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

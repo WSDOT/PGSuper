@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ class CGirderDescDlg;
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDebondPage dialog
 
-class CGirderDescDebondPage : public CPropertyPage
+class CGirderDescDebondPage : public CPropertyPage, public IDebondGridParent
 {
    friend CGirderDescDlg;
 // Construction
@@ -61,9 +61,12 @@ public:
 	//}}AFX_VIRTUAL
 
 public:
-   void OnChange();
+   virtual LPCTSTR GetGirderName();
+   virtual void OnChange();
+   virtual const CSegmentKey& GetSegmentKey();
+   virtual ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
-   std::vector<CDebondInfo> GetDebondInfo() const;
+   std::vector<CDebondData> GetDebondInfo() const;
 
 // Implementation
 protected:
@@ -74,7 +77,6 @@ protected:
 
    StrandIndexType GetNumStrands();
    StrandIndexType GetNumPermanentStrands();
-   bool CanDebondMore();
    void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
    void DrawStrands(CDC* pDC,grlibPointMapper& mapper);
 

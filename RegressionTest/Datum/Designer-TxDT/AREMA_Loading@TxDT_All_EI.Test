@@ -1,16 +1,13 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 13.00    2   0.00     CP Bridge       1     1    Stand          50  0.6  270   5.30   5.30                                              4.000  5.000   1.876    -1.877     2602   0.500  1.000   0.622  0.000  0.000 -0.003 -0.003 122.79  513.91    0.00    2.00    2.00 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 13.00   2  0.00  1     1   Stand       48  0.60  270  5.23  5.23   0  2.50  26   0  0  0  0  0  0  0  0  0  0  0  4.500  5.000    1.876   -1.877    2602 0.500  1.000  0.04  0.00  0.00 -0.00 -0.00 106.03 411.88   0.00   2.00   2.00
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
-Lifting checks failed
-Hauling checks failed
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 
 

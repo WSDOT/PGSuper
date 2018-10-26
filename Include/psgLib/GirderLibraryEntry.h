@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,8 +42,6 @@
 
 #include <System\SubjectT.h>
 
-#include <IFace\BeamFactory.h>
-
 #include <MathEx.h>
 
 #include <Material\Rebar.h>
@@ -62,6 +60,7 @@ class GirderLibraryEntryObserver;
 PSGLIBTPL sysSubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
+interface IBeamFactory;
 
 // MISCELLANEOUS
 //
@@ -165,7 +164,7 @@ public:
    // the dialog is our friend.
    friend CGirderMainSheet;
 
-   enum psStrandType { stStraight, stAdjustable };
+   enum psStrandType { stStraight, stHarped };
 
    // describes from where something is location is measured
    enum MeasurementLocation { mlEndOfGirder        = 0, 
@@ -318,8 +317,7 @@ public:
                     BarSpacingIsZero,
                     InteriorDiaphragmTooWide,
                     LongitudinalRebarOutsideOfGirder,
-                    TopFlangeBarSpacingIsZero,
-                    DesignAlgorithmStrategyMismatch
+                    TopFlangeBarSpacingIsZero
    };
 
    class GirderEntryDataError
@@ -520,20 +518,12 @@ public:
    bool IsVerticalAdjustmentAllowedHP() const;
 
    //------------------------------------------------------------------------
-   // Allow adjustment of adjustable straight strands
-   void AllowVerticalAdjustmentStraight(bool d);
-   bool IsVerticalAdjustmentAllowedStraight() const;
-
-   //------------------------------------------------------------------------
    // Set/get the harped strand adjustment limits at ends and harping points
    void SetHPAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
    void GetHPAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
 
    void SetEndAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
    void GetEndAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
-
-   void SetStraightAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
-   void GetStraightAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
 
    //------------------------------------------------------------------------
    // Set the max downward strand increment for design at girder end
@@ -551,13 +541,10 @@ public:
    // Get the max Upward strand increment at harping point
    Float64 GetHPStrandIncrement() const;
 
-   void SetStraightStrandIncrement(Float64 d);
-   Float64 GetStraightStrandIncrement() const;
-
    //------------------------------------------------------------------------
    // Set/Get shear data struct
-   void SetShearData(const CShearData& cdata);
-   const CShearData& GetShearData() const;
+   void SetShearData(const CShearData2& cdata);
+   const CShearData2& GetShearData() const;
 
    //------------------------------------------------------------------------
    // Set vector of longitidinal steel information.
@@ -599,8 +586,8 @@ public:
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
 
-   pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
-   void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
+   bool IsForceHarpedStrandsStraight() const;
+   void ForceHarpedStrandsStraight(bool bEnable);
 
    void ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
    void ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
@@ -642,10 +629,6 @@ public:
    std::_tstring GetSectionName() const;
 
    //------------------------------------------------------------------------
-   // Returns true if this girder can be post-tensioned
-   bool CanPostTension() const;
-
-   //------------------------------------------------------------------------
    // Data for Shear Design Algorithm
    //------------------------------------------------------------------------
    // Available bars for design
@@ -682,18 +665,13 @@ public:
    LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
    void SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method);
 
-   // Prestressing design strategies
-   IndexType GetNumPrestressDesignStrategies() const;
-   void GetPrestressDesignStrategy(IndexType index,  arFlexuralDesignType* pFlexuralDesignType, Float64* pMaxFci, Float64* pMaxFc) const;
-
-   // call this to set data to strategy used before strategies were added
-   void SetDefaultPrestressDesignStrategy();
-
 protected:
    void MakeCopy(const GirderLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const GirderLibraryEntry& rOther);
+   virtual void MakeAssignment(const GirderLibraryEntry& rOther);
+  // GROUP: ACCESS
+  // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
@@ -711,7 +689,7 @@ private:
    MeasurementLocation m_HarpPointReference;
    MeasurementType   m_HarpPointMeasure;
    bool m_bOddNumberOfHarpedStrands;
-   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
+   bool m_bForceHarpedStrandsStraight;
 
    // version 13
    // debond limits
@@ -854,11 +832,10 @@ private:
 
 	HarpedStrandAdjustment m_HPAdjustment;
 	HarpedStrandAdjustment m_EndAdjustment;
-	HarpedStrandAdjustment m_StraightAdjustment; // straight adjustable strands
 
    //------------------------------------------------------------------------
    // Our main shear reinforcement data
-   CShearData m_ShearData;
+   CShearData2 m_ShearData;
 
    //------------------------------------------------------------------------
    // LegacyShearData
@@ -880,7 +857,7 @@ private:
          {;}
 
       // Conversion function to ShearData
-      CShearData ConvertToShearData() const;
+      CShearData2 ConvertToShearData() const;
 
       // grade and type for all stirrups, confinement, and extra top flange bars
       matRebar::Type  m_StirrupBarType;
@@ -940,34 +917,6 @@ private:
    bool m_DoExtendBarsIntoDeck;
    bool m_DoBarsActAsConfinement;
    LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
-
-   // Data members for prestressed design strategy
-   struct PrestressDesignStrategy
-   {
-      arFlexuralDesignType m_FlexuralDesignType;
-      Float64 m_MaxFci;
-      Float64 m_MaxFc;
-
-      bool operator == (const PrestressDesignStrategy& other) const
-      {
-         if(!m_FlexuralDesignType == other.m_FlexuralDesignType)
-            return false;
-
-         if(!::IsEqual(m_MaxFci, other.m_MaxFci))
-            return false;
-
-         if(!::IsEqual(m_MaxFc, other.m_MaxFc))
-            return false;
-
-         return true;
-      }
-   };
-
-   typedef std::vector<PrestressDesignStrategy> PrestressDesignStrategyContainer;
-   typedef PrestressDesignStrategyContainer::iterator PrestressDesignStrategyIterator;
-   typedef PrestressDesignStrategyContainer::const_iterator PrestressDesignStrategyConstIterator;
-
-   PrestressDesignStrategyContainer m_PrestressDesignStrategies;
 
 
    // GROUP: LIFECYCLE

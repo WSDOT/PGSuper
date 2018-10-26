@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,17 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_LIVELOADREACTIONTABLE_H_
-#define INCLUDED_LIVELOADREACTIONTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -55,10 +50,9 @@ LOG
 class REPORTINGCLASS CLiveLoadReactionTable
 {
 public:
-   // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
+   // This class serves double duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
-
-   // GROUP: LIFECYCLE
+   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    //------------------------------------------------------------------------
    // Default constructor
@@ -72,38 +66,21 @@ public:
    // Destructor
    virtual ~CLiveLoadReactionTable();
 
-   // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
    CLiveLoadReactionTable& operator = (const CLiveLoadReactionTable& rOther);
 
-   // GROUP: OPERATIONS
-
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder,
-                      IEAFDisplayUnits* pDisplayUnits, ReactionTableType tableType,
-                      pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+                      const CGirderKey& girderKey,
+                      IEAFDisplayUnits* pDisplayUnits, TableType tableType,
+                      IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType) const;
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    //------------------------------------------------------------------------
    void MakeCopy(const CLiveLoadReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CLiveLoadReactionTable& rOther);
+   virtual void MakeAssignment(const CLiveLoadReactionTable& rOther);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_LIVELOADREACTIONTABLE_H_

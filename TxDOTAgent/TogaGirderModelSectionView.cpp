@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "TxDOTOptionalDesignDoc.h"
-#include "PGSuperUnits.h"
 #include "PGSuperColors.h"
 #include "TogaGirderModelSectionView.h"
 #include "TxDOTOptionalDesignGirderViewPage.h"
@@ -38,6 +37,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <MfcTools\Text.h>
+#include <IFace\Intervals.h>
 
 #include <WBFLGenericBridgeTools.h>
 #include <WBFLDManip.h>
@@ -210,6 +210,8 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    if ( span == ALL_SPANS || girder == ALL_GIRDERS)
       return;
 
+   CSegmentKey segmentKey(span,girder,0);
+
    // Grab hold of the broker so we can pass it as a parameter
    try
    {
@@ -217,19 +219,19 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
 
       UINT settings = pDoc->GetGirderEditorSettings();
 
-      BuildSectionDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildSectionDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
 
       if ( settings & IDG_SV_SHOW_STRANDS )
-         BuildStrandDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+         BuildStrandDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
 
       if ( settings & IDG_SV_SHOW_LONG_REINF )
-         BuildLongReinfDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+         BuildLongReinfDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
 
       if (settings & IDG_SV_SHOW_PS_CG)
-         BuildCGDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+         BuildCGDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
 
       if ( settings & IDG_SV_SHOW_DIMENSIONS )
-         BuildDimensionDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+         BuildDimensionDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
 
       SetMappingMode(DManip::Isotropic);
    }
@@ -239,17 +241,18 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    }
 }
 
-void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
 {
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(SECTION_LIST,&pDL);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   pgsPointOfInterest poi(span,girder,m_pFrame->GetCurrentCutLocation());
+   pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IGirder,pGirder);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
@@ -263,23 +266,15 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    ::CoCreateInstance(CLSID_ShapeDrawStrategy,NULL,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
    doPnt->SetDrawingStrategy(strategy);
 
-   CComPtr<IShape> shape;
-   pSectProp->GetGirderShape(poi,pgsTypes::CastingYard,false,&shape);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   // Girder shape is positioned at its real coordiantes in the cross section
-   // The strands (see BuildStrandDisplayObjects) are position relative to the bottom
-   // center of the girder.
-   // Move the girder so that it is in the same coordinate system as the strands.
-   
-   CComPtr<IPoint2d> point;
-   point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(0,0);
-   CComQIPtr<IXYPosition> position(shape);
-   position->put_LocatorPoint(lpBottomCenter,point);
+   CComPtr<IShape> shape;
+   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
    strategy->SetShape(shape);
-   strategy->SetSolidLineColor(GIRDER_BORDER_COLOR);
-   strategy->SetSolidFillColor(GIRDER_FILL_COLOR);
+   strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
+   strategy->SetSolidFillColor(SEGMENT_FILL_COLOR);
    strategy->SetVoidLineColor(VOID_BORDER_COLOR);
    strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
    strategy->DoFill(true);
@@ -325,15 +320,15 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
 {
-   pgsPointOfInterest poi(span,girder,m_pFrame->GetCurrentCutLocation());
+   pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
 
-   GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Straight);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
@@ -385,7 +380,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    ATLASSERT(pHarpedDL);
    pHarpedDL->Clear();
 
-   pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Harped);
+   pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Harped);
    diameter = pStrand->GetNominalDiameter();
 
    points.Release();
@@ -411,7 +406,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    ATLASSERT(pTempDL);
    pTempDL->Clear();
 
-   pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Temporary);
+   pStrand  = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
    diameter = pStrand->GetNominalDiameter();
 
    points.Release();
@@ -432,14 +427,14 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    }
 }
 
-void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
 {
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(LONG_REINF_LIST,&pDL);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   pgsPointOfInterest poi(span,girder,m_pFrame->GetCurrentCutLocation());
+   pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
    ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,NULL,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
@@ -481,21 +476,24 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
    }
 }
 
-void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
 {
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(CG_LIST,&pDL);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   pgsPointOfInterest poi(span,girder,m_pFrame->GetCurrentCutLocation());
+   pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 nEff;
-   Float64 ecc = pStrandGeom->GetEccentricity(poi,true, &nEff);
+   Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi,true, &nEff);
 
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
-   Float64 Yb = pSectProp->GetYb(pgsTypes::CastingYard,poi);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   Float64 Yb = pSectProp->GetYb(releaseIntervalIdx,poi);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
@@ -524,7 +522,7 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
 {
    CComPtr<iDisplayList> pDL;
    pDispMgr->FindDisplayList(DIMENSION_LIST,&pDL);
@@ -627,18 +625,21 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    }
 
    // set the text labels on the dimension lines
-   pgsPointOfInterest poi(span,girder,m_pFrame->GetCurrentCutLocation());
+   pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
    
    GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
    Float64 height = pGirder->GetHeight(poi);
    Float64 nEff;
-   Float64 ecc = pStrandGeometry->GetEccentricity(poi,true, &nEff);
-   Float64 yps = pSectProp->GetYb(pgsTypes::CastingYard,poi) - ecc;
+   Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true, &nEff);
+   Float64 yps = pSectProp->GetYb(releaseIntervalIdx,poi) - ecc;
 
    CString strDim;
    CComPtr<iTextBlock> textBlock;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,14 +28,15 @@
 #endif // _MSC_VER >= 1000
 // ShearSteelPage.h : header file
 //
+#include "psgLibLib.h"
 #include "resource.h"
 #include <Units\Measure.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <psgLib\ShearData.h>
-#include "psgLibLib.h"
 
-class CShearSteelGrid;
-class CHorizShearGrid;
+#include <psgLib\ShearSteelGrid.h>
+#include <psgLib\HorizShearGrid.h>
+
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelPage dialog
 
@@ -52,7 +53,7 @@ public:
 	//{{AFX_DATA(CShearSteelPage)
    static const DWORD  IDD;
 	//}}AFX_DATA
-private:
+protected:
    std::auto_ptr<CShearSteelGrid> m_pGrid;
    std::auto_ptr<CHorizShearGrid> m_pHorizGrid;
 public:
@@ -92,7 +93,7 @@ public:
    void DoRemoveHorizRows();
    void DoInsertHorizRow();
 
-   CShearData m_ShearData;
+   CShearData2 m_ShearData;
 
     virtual void DoRestoreDefaults(); // Allow children to implement
 protected:

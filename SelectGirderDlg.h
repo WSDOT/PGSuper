@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,8 +43,8 @@ public:
 	//{{AFX_DATA(CSelectGirderDlg)
 	enum { IDD = IDD_SELECT_GIRDER };
 		// NOTE: the ClassWizard will add data members here
-	GirderIndexType		m_Girder;
-	SpanIndexType  		m_Span;
+	GroupIndexType	m_Group;
+	GirderIndexType m_Girder;
 	//}}AFX_DATA
 
 
@@ -61,7 +61,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSelectGirderDlg)
 	virtual BOOL OnInitDialog();
-   void OnSpanChanged();
+   void OnGroupChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

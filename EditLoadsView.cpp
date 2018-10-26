@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,12 @@
 
 #include <PgsExt\InsertDeleteLoad.h>
 
+#include <IFace\Bridge.h>
+
+#include <PgsExt\BridgeDescription2.h>
+
+#include "PGSpliceDoc.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -58,8 +64,7 @@ IMPLEMENT_DYNCREATE(CEditLoadsView, CFormView)
 
 CEditLoadsView::CEditLoadsView()
 	: CFormView(CEditLoadsView::IDD),
-   m_FirstSizeEvent(true),
-   m_FormatTool(sysNumericFormatTool::Automatic, 9, 4)
+   m_FirstSizeEvent(true)
 {
 	//{{AFX_DATA_INIT(CEditLoadsView)
 		// NOTE: the ClassWizard will add member initialization here
@@ -135,9 +140,9 @@ void CEditLoadsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
    if (!m_IsInitialUpdate)
    {
-      if (lHint==HINT_UNITSCHANGED)
+      if (lHint == HINT_UNITSCHANGED)
       {
-         UpdateUnits();
+         InsertData();
       }
 
       if ( lHint == HINT_GIRDERCHANGED )
@@ -159,8 +164,6 @@ void CEditLoadsView::OnInitialUpdate()
 
    EAFGetBroker(&m_pBroker);
 
-   UpdateUnits();
-
    m_IsInitialUpdate = true;  // have to play a game here to get onupdate to work right
 
 	CFormView::OnInitialUpdate();
@@ -179,33 +182,33 @@ void CEditLoadsView::OnInitialUpdate()
    int st;
    st = m_LoadsListCtrl.InsertColumn(0,_T("Type"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(1,_T("Stage"),LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(1,_T("Event"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
    st = m_LoadsListCtrl.InsertColumn(2,_T("Load Case"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(3,_T("Span"),LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(3,_T("Location"),LVCFMT_LEFT,lft_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(4,_T("Girder"),LVCFMT_LEFT,lft_wid);
+   st = m_LoadsListCtrl.InsertColumn(4,_T("Magnitude"),LVCFMT_LEFT,rgt_wid);
    ATLASSERT(st!=-1);
-   st = m_LoadsListCtrl.InsertColumn(5,_T("Location"),LVCFMT_LEFT,rgt_wid);
-   ATLASSERT(st!=-1);
-
-   std::_tstring flab(_T("Magnitude"));
-   st = m_LoadsListCtrl.InsertColumn(6,flab.c_str(),LVCFMT_LEFT,rgt_wid);
-   ATLASSERT(st!=-1);
-
-   st = m_LoadsListCtrl.InsertColumn(7,_T("Description"),LVCFMT_LEFT,rgt_wid);
+   st = m_LoadsListCtrl.InsertColumn(5,_T("Description"),LVCFMT_LEFT,rgt_wid);
    ATLASSERT(st!=-1);
 
    InsertData();
    Sort(m_SortColIdx,false);
+
+   // Moment loads not used in PGSplice... Hide the button
+   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      GetDlgItem(IDC_ADD_MOMENTLOAD)->ShowWindow(SW_HIDE);
+   }
 }
 
 void CEditLoadsView::OnAddPointload() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	CEditPointLoadDlg dlg(CPointLoadData(),m_pBroker);
+	CPointLoadData load;
+   CEditPointLoadDlg dlg(load);
    if (dlg.DoModal() == IDOK)
    {
       txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
@@ -217,7 +220,8 @@ void CEditLoadsView::OnAddMomentload()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	CEditMomentLoadDlg dlg(CMomentLoadData(),m_pBroker);
+   CMomentLoadData load;
+   CEditMomentLoadDlg dlg(load);
    if (dlg.DoModal() == IDOK)
    {
       txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
@@ -238,12 +242,12 @@ void CEditLoadsView::OnDeleteLoad()
 
       GET_IFACE(IUserDefinedLoadData, pUdl);
 
-      if (load_type ==W_POINT_LOAD)
+      if (load_type == W_POINT_LOAD)
       {
          txnDeletePointLoad* pTxn = new txnDeletePointLoad(load_idx);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
-      else if (load_type ==W_DISTRIBUTED_LOAD)
+      else if (load_type == W_DISTRIBUTED_LOAD)
       {
          txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(load_idx);
          txnTxnManager::GetInstance()->Execute(pTxn);
@@ -268,28 +272,6 @@ void CEditLoadsView::OnEditLoad()
    }
 }
 
-void CEditLoadsView::UpdateUnits()
-{
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   m_bUnitsSI = IS_SI_UNITS(pDisplayUnits);
-
-   if (m_bUnitsSI)
-   {
-      m_pLengthUnit = &unitMeasure::Meter;
-      m_pForceUnit = &unitMeasure::Kilonewton;
-      m_pForcePerLengthUnit = &unitMeasure::KilonewtonPerMeter;
-      m_pMomentUnit = &unitMeasure::KilonewtonMeter;
-   }
-   else
-   {
-      m_pLengthUnit = &unitMeasure::Feet;
-      m_pForceUnit = &unitMeasure::Kip;
-      m_pForcePerLengthUnit = &unitMeasure::KipPerFoot;
-      m_pMomentUnit = &unitMeasure::KipFeet;
-   }
-}
-
-
 void CEditLoadsView::OnDblclkLoadsList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
@@ -306,7 +288,8 @@ void CEditLoadsView::OnAddNewDistributed()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	CEditDistributedLoadDlg dlg(CDistributedLoadData(),m_pBroker);
+   CDistributedLoadData load;
+	CEditDistributedLoadDlg dlg(load);
    if (dlg.DoModal() == IDOK)
    {
       txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
@@ -376,89 +359,64 @@ void CEditLoadsView::InsertData()
    m_DeleteCtrl.EnableWindow(FALSE);
 }
 
-void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& rld)
+CString CEditLoadsView::GetEventName(EventIndexType eventIdx)
 {
-   m_LoadsListCtrl.SetItemText(irow, 1, UserLoads::GetStageName(rld.m_Stage).c_str());
-   m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(rld.m_LoadCase).c_str());
-
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    CString str;
-   if (rld.m_Span != ALL_SPANS)
-      str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
-   else
-      str = _T("All Spans");
-
-   m_LoadsListCtrl.SetItemText(irow, 3, str);
-
-   if (rld.m_Girder != ALL_GIRDERS)
-      str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
-   else
-      str = _T("All Girders");
-
-   m_LoadsListCtrl.SetItemText(irow, 4, str);
-
-   std::_tstring stdstr;
-   if (rld.m_Fractional)
-   {
-      stdstr = D2S(rld.m_Location*100.0) + std::_tstring(_T(" %"));
-   }
-   else
-   {
-      Float64 val = ::ConvertFromSysUnits(rld.m_Location, *m_pLengthUnit);
-      stdstr = D2S(val) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
-   }
-
-   m_LoadsListCtrl.SetItemText(irow, 5, stdstr.c_str());
-
-   Float64 val = ::ConvertFromSysUnits(rld.m_Magnitude, *m_pForceUnit);
-   stdstr = D2S(val) + std::_tstring(_T(" ")) + m_pForceUnit->UnitTag();
-
-   m_LoadsListCtrl.SetItemText(irow, 6, stdstr.c_str());
-   m_LoadsListCtrl.SetItemText(irow, 7, rld.m_Description.c_str());
+   str.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pIBridgeDesc->GetEventByIndex(eventIdx)->GetDescription());
+   return str;
 }
 
-void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& rld)
+void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
 {
-   m_LoadsListCtrl.SetItemText(irow, 1, UserLoads::GetStageName(rld.m_Stage).c_str());
-   m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(rld.m_LoadCase).c_str());
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   CString str;
-   if (rld.m_Span != ALL_SPANS)
-      str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
+   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(ptLoad.m_EventIdx));
+   m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(ptLoad.m_LoadCase).c_str());
+
+   CString strSpan;
+   if ( ptLoad.m_SpanGirderKey.spanIndex == ALL_SPANS )
+      strSpan.Format(_T("%s"),_T("All Spans"));
    else
-      str = _T("All Spans");
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_SpanGirderKey.spanIndex));
 
-   m_LoadsListCtrl.SetItemText(irow, 3, str);
-
-   if (rld.m_Girder != ALL_GIRDERS)
-      str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
-   else
-      str = _T("All Girders");
-
-   m_LoadsListCtrl.SetItemText(irow, 4, str);
-
-   std::_tstring stdstr;
-   if (rld.m_Fractional)
+   CString strGirder;
+   if ( ptLoad.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
    {
-      stdstr = D2S(rld.m_Location*100.0) + std::_tstring(_T(" %"));
+      strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      Float64 val = ::ConvertFromSysUnits(rld.m_Location, *m_pLengthUnit);
-      stdstr = D2S(val) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(ptLoad.m_SpanGirderKey.girderIndex));
    }
 
-   m_LoadsListCtrl.SetItemText(irow, 5, stdstr.c_str());
+   CString strLocation;
+   if (ptLoad.m_Fractional)
+   {
+      strLocation.Format(_T("%s"),FormatPercentage(ptLoad.m_Location));
+   }
+   else
+   {
+      strLocation.Format(_T("%s"),FormatDimension(ptLoad.m_Location,pDisplayUnits->GetSpanLengthUnit()));
+   }
 
-   Float64 val = ::ConvertFromSysUnits(rld.m_Magnitude, *m_pMomentUnit);
-   stdstr = D2S(val) + std::_tstring(_T(" ")) + m_pMomentUnit->UnitTag();
+   CString strLabel;
+   strLabel.Format(_T("%s, %s, %s"),strSpan,strGirder,strLocation);
 
-   m_LoadsListCtrl.SetItemText(irow, 6, stdstr.c_str());
-   m_LoadsListCtrl.SetItemText(irow, 7, rld.m_Description.c_str());
+   m_LoadsListCtrl.SetItemText(irow,3,strLabel);
+
+   CString strMagnitude;
+   strMagnitude.Format(_T("%s"),FormatDimension(ptLoad.m_Magnitude,pDisplayUnits->GetGeneralForceUnit()));
+
+   m_LoadsListCtrl.SetItemText(irow, 4, strMagnitude);
+   m_LoadsListCtrl.SetItemText(irow, 5, ptLoad.m_Description.c_str());
 }
 
-void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadData& rld)
+void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadData& load)
 {
-   if (rld.m_Type==UserLoads::Uniform)
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+   if (load.m_Type == UserLoads::Uniform)
    {
       m_LoadsListCtrl.SetItemText(irow, 0, _T("Uniform"));
    }
@@ -467,60 +425,104 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
       m_LoadsListCtrl.SetItemText(irow, 0, _T("Trapezoidal"));
    }
 
-   m_LoadsListCtrl.SetItemText(irow, 1, UserLoads::GetStageName(rld.m_Stage).c_str());
-   m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(rld.m_LoadCase).c_str());
+   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_EventIdx));
+   m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
 
-   CString str;
-   if (rld.m_Span != ALL_SPANS)
-      str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
+   CString strSpan;
+   if ( load.m_SpanGirderKey.spanIndex == ALL_SPANS )
+      strSpan.Format(_T("%s"),_T("All Spans"));
    else
-      str = _T("All Spans");
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanGirderKey.spanIndex));
 
-   m_LoadsListCtrl.SetItemText(irow, 3, str);
-
-   if (rld.m_Girder != ALL_GIRDERS)
-      str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
-   else
-      str = _T("All Girders");
-
-   m_LoadsListCtrl.SetItemText(irow, 4, str);
-
-   std::_tstring stdstr;
-
-   if (rld.m_Type==UserLoads::Uniform)
+   CString strGirder;
+   if ( load.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
    {
-      stdstr = _T("Entire Span");
+      strGirder.Format(_T("%s"),_T("All Girders"));
    }
    else
    {
-      if (rld.m_Fractional)
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_SpanGirderKey.girderIndex));
+   }
+
+   CString strLocation;
+   if ( load.m_Type == UserLoads::Uniform )
+   {
+      strLocation.Format(_T("%s"),_T("Entire Span"));
+   }
+   else
+   {
+      if (load.m_Fractional)
       {
-         stdstr = D2S(rld.m_StartLocation*100.0) + std::_tstring(_T(" - ")) + D2S(rld.m_EndLocation*100.0) + std::_tstring(_T(" %"));;
+         strLocation.Format(_T("%s - %s"),FormatPercentage(load.m_StartLocation,false),FormatPercentage(load.m_EndLocation));
       }
       else
       {
-         Float64 startval = ::ConvertFromSysUnits(rld.m_StartLocation, *m_pLengthUnit);
-         Float64 endval = ::ConvertFromSysUnits(rld.m_EndLocation, *m_pLengthUnit);
-         stdstr = D2S(startval) + std::_tstring(_T(" - ")) + D2S(endval) + std::_tstring(_T(" ")) +  m_pLengthUnit->UnitTag();
+         strLocation.Format(_T("%s - %s"),FormatDimension(load.m_StartLocation,pDisplayUnits->GetSpanLengthUnit(),false),FormatDimension(load.m_EndLocation,pDisplayUnits->GetSpanLengthUnit()));
       }
    }
 
-   m_LoadsListCtrl.SetItemText(irow, 5, stdstr.c_str());
+   CString strLabel;
+   strLabel.Format(_T("%s, %s, %s"),strSpan,strGirder,strLocation);
 
-   if (rld.m_Type==UserLoads::Uniform)
+   m_LoadsListCtrl.SetItemText(irow,3,strLabel);
+
+   CString strMagnitude;
+   if (load.m_Type == UserLoads::Uniform)
    {
-      Float64 val = ::ConvertFromSysUnits(rld.m_WStart, *m_pForcePerLengthUnit);
-      stdstr = D2S(val) + std::_tstring(_T(" ")) + m_pForcePerLengthUnit->UnitTag();
+      strMagnitude.Format(_T("%s"),FormatDimension(load.m_WStart,pDisplayUnits->GetForcePerLengthUnit()));
    }
    else
    {
-      Float64 startval = ::ConvertFromSysUnits(rld.m_WStart, *m_pForcePerLengthUnit);
-      Float64 endval = ::ConvertFromSysUnits(rld.m_WEnd, *m_pForcePerLengthUnit);
-      stdstr = D2S(startval) + std::_tstring(_T(" - ")) + D2S(endval) + std::_tstring(_T(" ")) + m_pForcePerLengthUnit->UnitTag();
+      strMagnitude.Format(_T("%s - %s"),FormatDimension(load.m_WStart,pDisplayUnits->GetForcePerLengthUnit(),false),FormatDimension(load.m_WEnd,pDisplayUnits->GetForcePerLengthUnit()));
    }
 
-   m_LoadsListCtrl.SetItemText(irow, 6, stdstr.c_str());
-   m_LoadsListCtrl.SetItemText(irow, 7, rld.m_Description.c_str());
+   m_LoadsListCtrl.SetItemText(irow, 4, strMagnitude);
+   m_LoadsListCtrl.SetItemText(irow, 5, load.m_Description.c_str());
+}
+
+void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
+{
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+   m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_EventIdx));
+   m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
+
+   CString strSpan;
+   if ( load.m_SpanGirderKey.spanIndex == ALL_SPANS )
+      strSpan.Format(_T("%s"),_T("All Spans"));
+   else
+      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanGirderKey.spanIndex));
+
+   CString strGirder;
+   if ( load.m_SpanGirderKey.girderIndex == ALL_GIRDERS )
+   {
+      strGirder.Format(_T("%s"),_T("All Girders"));
+   }
+   else
+   {
+      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(load.m_SpanGirderKey.girderIndex));
+   }
+
+   CString strLocation;
+   if (load.m_Fractional)
+   {
+      strLocation.Format(_T("%s"),FormatPercentage(load.m_Location));
+   }
+   else
+   {
+      strLocation.Format(_T("%s"),FormatDimension(load.m_Location,pDisplayUnits->GetSpanLengthUnit()));
+   }
+
+   CString strLabel;
+   strLabel.Format(_T("%s, %s, %s"),strSpan,strGirder,strLocation);
+
+   m_LoadsListCtrl.SetItemText(irow,3,strLabel);
+
+   CString strMagnitude;
+   strMagnitude.Format(_T("%s"),FormatDimension(load.m_Magnitude,pDisplayUnits->GetMomentUnit()));
+
+   m_LoadsListCtrl.SetItemText(irow, 4, strMagnitude);
+   m_LoadsListCtrl.SetItemText(irow, 5, load.m_Description.c_str());
 }
 
 void CEditLoadsView::EditLoad(POSITION pos)
@@ -535,15 +537,15 @@ void CEditLoadsView::EditLoad(POSITION pos)
 
    GET_IFACE(IUserDefinedLoadData, pUdl);
 
-   if (load_type ==W_POINT_LOAD)
+   if (load_type == W_POINT_LOAD)
    {
       // edit our point load
       CPointLoadData rld = pUdl->GetPointLoad(load_idx);
 
-	   CEditPointLoadDlg dlg(rld,m_pBroker);
+	   CEditPointLoadDlg dlg(rld);
       if (dlg.DoModal() == IDOK)
       {
-         if (rld!=dlg.m_Load)
+         if (rld != dlg.m_Load)
          {
             txnEditPointLoad* pTxn = new txnEditPointLoad(load_idx,rld,dlg.m_Load);
             txnTxnManager::GetInstance()->Execute(pTxn);
@@ -551,12 +553,12 @@ void CEditLoadsView::EditLoad(POSITION pos)
          }
       }
    }
-   else if (load_type ==W_MOMENT_LOAD)
+   else if (load_type == W_MOMENT_LOAD)
    {
       // edit our moment load
       CMomentLoadData rld = pUdl->GetMomentLoad(load_idx);
 
-	   CEditMomentLoadDlg dlg(rld,m_pBroker);
+	   CEditMomentLoadDlg dlg(rld);
       if (dlg.DoModal() == IDOK)
       {
          if (rld!=dlg.m_Load)
@@ -572,7 +574,7 @@ void CEditLoadsView::EditLoad(POSITION pos)
       // edit our distributed load
       CDistributedLoadData rld = pUdl->GetDistributedLoad(load_idx);
 
-	   CEditDistributedLoadDlg dlg(rld,m_pBroker);
+	   CEditDistributedLoadDlg dlg(rld);
       if (dlg.DoModal() == IDOK)
       {
          if (rld!=dlg.m_Load)
@@ -611,6 +613,13 @@ void CEditLoadsView::OnContextMenu(CWnd* pWnd,CPoint point)
       // Nothing selected
       CMenu menu;
       VERIFY( menu.LoadMenu(IDR_NEWLOADS) );
+
+      // Moment Loads not used in PGSplice
+      if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+      {
+         menu.RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND);
+      }
+
       menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, this);
    }
    else
@@ -700,24 +709,13 @@ void CEditLoadsView::OnHelp()
 	
 }
 
-std::_tstring CEditLoadsView::D2S(Float64 val)
-{
-   // format number and strip off white space
-   std::_tstring str = m_FormatTool.AsString(val);
-
-   std::_tstring::size_type  notwhite = str.find_first_not_of(_T(" \t\n"));
-   str.erase(0,notwhite);
-
-   return str;
-}
-
 BOOL CEditLoadsView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    if ( !CFormView::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext) )
       return FALSE;
 
-   CEAFApp* pApp = EAFGetApp();
+   CWinApp* pApp = AfxGetApp();
    m_SortColIdx = pApp->GetProfileInt(_T("Settings"),_T("LoadViewSortColumn"),-1);
    m_bSortAscending = pApp->GetProfileInt(_T("Settings"),_T("LoadViewSortAscending"),1) == 1 ? true : false;
 
@@ -728,7 +726,8 @@ void CEditLoadsView::OnDestroy()
 {
    CFormView::OnDestroy();
 
-   CEAFApp* pApp = EAFGetApp();
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
    pApp->WriteProfileInt(_T("Settings"),_T("LoadViewSortColumn"),m_SortColIdx);
    pApp->WriteProfileInt(_T("Settings"),_T("LoadViewSortAscending"),(int)m_bSortAscending);
 }
@@ -739,7 +738,7 @@ public:
    static CComPtr<IUserDefinedLoadData> m_pUdl;
    static bool m_bSortAscending;
    static int CALLBACK SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort);
-   static std::_tstring GetStage(LPARAM lParam);
+   static std::_tstring GetEvent(LPARAM lParam);
    static UserLoads::LoadCase GetLoadCase(LPARAM lParam);
    static SpanIndexType GetSpan(LPARAM lParam);
    static GirderIndexType GetGirder(LPARAM lParam);
@@ -751,25 +750,29 @@ public:
 CComPtr<IUserDefinedLoadData> SortObject::m_pUdl;
 bool SortObject::m_bSortAscending = true;
 
-std::_tstring SortObject::GetStage(LPARAM lParam)
+std::_tstring SortObject::GetEvent(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
    WORD load_idx  = HIWORD(lParam);
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return UserLoads::GetStageName(loadData.m_Stage);
+      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIdx) );
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return UserLoads::GetStageName(loadData.m_Stage);
+      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIdx) );
    }
    else
    {
       const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return UserLoads::GetStageName(loadData.m_Stage);
+      return std::_tstring( pEventMap->GetEventName(loadData.m_EventIdx) );
    }
 }
 
@@ -803,17 +806,17 @@ SpanIndexType SortObject::GetSpan(LPARAM lParam)
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_Span;
+      return loadData.m_SpanGirderKey.spanIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_Span;
+      return loadData.m_SpanGirderKey.spanIndex;
    }
    else
    {
       const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_Span;
+      return loadData.m_SpanGirderKey.spanIndex;
    }
 }
 
@@ -825,17 +828,17 @@ GirderIndexType SortObject::GetGirder(LPARAM lParam)
    if ( load_type == W_POINT_LOAD )
    {
       const CPointLoadData& loadData = m_pUdl->GetPointLoad(load_idx);
-      return loadData.m_Girder;
+      return loadData.m_SpanGirderKey.girderIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
       const CDistributedLoadData& loadData = m_pUdl->GetDistributedLoad(load_idx);
-      return loadData.m_Girder;
+      return loadData.m_SpanGirderKey.girderIndex;
    }
    else
    {
       const CMomentLoadData& loadData = m_pUdl->GetMomentLoad(load_idx);
-      return loadData.m_Girder;
+      return loadData.m_SpanGirderKey.girderIndex;
    }
 }
 
@@ -923,8 +926,8 @@ int SortObject::SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort)
       result = load_type_1 < load_type_2;
       break;
 
-   case 1: // Stage
-      result = SortObject::GetStage(lParam1) < SortObject::GetStage(lParam2);
+   case 1: // Event
+      result = SortObject::GetEvent(lParam1) < SortObject::GetEvent(lParam2);
       break;
 
    case 2: // Load Case

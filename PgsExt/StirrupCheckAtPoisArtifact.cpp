@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -352,15 +352,12 @@ pgsVerticalShearArtifact::pgsVerticalShearArtifact() :
 m_bIsApplicable(true),
 m_AvOverSReqd(0.0),
 m_Capacity(0.0),
-m_Demand(0.0)
+m_Demand(0.0),
+m_bIsStrutAndTieRequired(false),
+m_bEndSpacingApplicable(false),
+m_AvSprovided(0.0),
+m_AvSatCS(0.0)
 {
-   for ( int i = 0; i < 2; i++ )
-   {
-      m_bIsStrutAndTieRequired[i] = false;
-      m_bEndSpacingApplicable[i] = false;
-      m_AvSprovided[i] = 0.0;
-      m_AvSatCS[i] = 0.0;
-   }
 }
 
 pgsVerticalShearArtifact::pgsVerticalShearArtifact(const pgsVerticalShearArtifact& rOther)
@@ -395,14 +392,14 @@ void pgsVerticalShearArtifact::IsApplicable(bool bApplicable)
    m_bIsApplicable = bApplicable;
 }
 
-bool pgsVerticalShearArtifact::IsStrutAndTieRequired(pgsTypes::MemberEndType end) const
+bool pgsVerticalShearArtifact::IsStrutAndTieRequired() const
 {
-   return m_bIsStrutAndTieRequired[end];
+   return m_bIsStrutAndTieRequired;
 }
 
-void pgsVerticalShearArtifact::IsStrutAndTieRequired(pgsTypes::MemberEndType end,bool bRequired)
+void pgsVerticalShearArtifact::IsStrutAndTieRequired(bool bRequired)
 {
-   m_bIsStrutAndTieRequired[end] = bRequired;
+   m_bIsStrutAndTieRequired = bRequired;
 }
 
 void pgsVerticalShearArtifact::SetAreStirrupsReqd(bool reqd)
@@ -455,31 +452,28 @@ Float64 pgsVerticalShearArtifact::GetCapacity() const
    return m_Capacity;
 }
 
-void pgsVerticalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,Float64 AvS_provided,Float64 AvS_at_CS)
+void pgsVerticalShearArtifact::SetEndSpacing(Float64 AvS_provided,Float64 AvS_at_CS)
 {
-   m_bEndSpacingApplicable[end] = true;
-   m_AvSprovided[end] = AvS_provided;
-   m_AvSatCS[end]     = AvS_at_CS;
+   m_bEndSpacingApplicable = true;
+   m_AvSprovided = AvS_provided;
+   m_AvSatCS     = AvS_at_CS;
 }
 
-void pgsVerticalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,Float64* pAvS_provided,Float64* pAvS_at_CS)
+void pgsVerticalShearArtifact::GetEndSpacing(Float64* pAvS_provided,Float64* pAvS_at_CS)
 {
-   *pAvS_provided = m_AvSprovided[end];
-   *pAvS_at_CS    = m_AvSatCS[end];
+   *pAvS_provided = m_AvSprovided;
+   *pAvS_at_CS    = m_AvSatCS;
 }
 
-bool pgsVerticalShearArtifact::IsInEndRegion() const
+bool pgsVerticalShearArtifact::IsInCriticalSectionZone() const
 {
-   return m_bEndSpacingApplicable[0] || m_bEndSpacingApplicable[1];
+   return m_bEndSpacingApplicable;
 }
 
 bool pgsVerticalShearArtifact::DidAvsDecreaseAtEnd() const
 {
-   for ( int i = 0; i < 2; i++ )
-   {
-      if ( m_bEndSpacingApplicable[i] && m_AvSprovided[i] < m_AvSatCS[i] )
-         return true;
-   }
+   if ( m_bEndSpacingApplicable && m_AvSprovided < m_AvSatCS )
+      return true;
 
    return false;
 }
@@ -491,11 +485,8 @@ bool pgsVerticalShearArtifact::Passed() const
 
    if ( m_bIsApplicable )
    {
-      for ( int i = 0; i < 2; i++ )
-      {
-         if ( m_bIsStrutAndTieRequired[i] )
-            return false;
-      }
+      if ( m_bIsStrutAndTieRequired )
+         return false;
 
       if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)
          return false;
@@ -530,13 +521,10 @@ void pgsVerticalShearArtifact::MakeCopy(const pgsVerticalShearArtifact& rOther)
 {
    m_bIsApplicable = rOther.m_bIsApplicable;
 
-   for (int i = 0; i < 2; i++ )
-   {
-      m_bIsStrutAndTieRequired[i] = rOther.m_bIsStrutAndTieRequired[i];
-      m_AvSprovided[i]            = rOther.m_AvSprovided[i];
-      m_AvSatCS [i]               = rOther.m_AvSatCS[i];
-      m_bEndSpacingApplicable[i]  = rOther.m_bEndSpacingApplicable[i];
-   }
+   m_bIsStrutAndTieRequired = rOther.m_bIsStrutAndTieRequired;
+   m_AvSprovided            = rOther.m_AvSprovided;
+   m_AvSatCS                = rOther.m_AvSatCS;
+   m_bEndSpacingApplicable  = rOther.m_bEndSpacingApplicable;
 
    m_AreStirrupsReqd     = rOther.m_AreStirrupsReqd;
    m_AreStirrupsProvided = rOther.m_AreStirrupsProvided;
@@ -586,9 +574,8 @@ m_Vn2(0),
 m_Vn3(0),
 m_Fc(0),
 m_Bv(0),
-m_Smax(0),
+m_Sall(0),
 m_Fy(0),
-m_bWasFyLimited(false),
 m_AvOverSMin_5_8_4_4_1(0),
 m_AvOverSMin_5_8_4_1_3(0),
 m_AvOverSMin(0),
@@ -603,14 +590,11 @@ m_UltimateHorizontalShear(0),
 m_AvsReqd(0.0),
 m_bDoAllPrimaryStirrupsEngageDeck(false),
 m_bIsTopFlangeRoughened(false),
-m_IsApplicable(false)
+m_IsApplicable(false),
+m_bEndSpacingApplicable(false),
+m_AvSprovided(0.0),
+m_AvSatCS(0.0)
 {
-   for ( int i = 0; i < 2; i++ )
-   {
-      m_bEndSpacingApplicable[i] = false;
-      m_AvSprovided[i] = 0.0;
-      m_AvSatCS[i] = 0.0;
-   }
 }
 
 pgsHorizontalShearArtifact::pgsHorizontalShearArtifact(const pgsHorizontalShearArtifact& rOther)
@@ -648,7 +632,7 @@ bool pgsHorizontalShearArtifact::SpacingPassed() const
 {
    if (m_IsApplicable && 0.0 < GetAvOverS())
    {
-      return GetSpacing() <= m_Smax;
+      return GetSMax() <= m_Sall;
    }
    else
    {
@@ -730,16 +714,12 @@ Float64 pgsHorizontalShearArtifact::GetAvOverS() const
    return avsg + avstf;
 }
 
-Float64 pgsHorizontalShearArtifact::GetSpacing() const
+Float64 pgsHorizontalShearArtifact::GetSMax() const
 {
    if (0.0 < m_AvfGirder && 0.0 < m_AvfAdditional)
-   {
       return min(m_SGirder, m_SAdditional);
-   }
    else
-   {
       return max(m_SGirder, m_SAdditional);
-   }
 }
 
 //======================== ACCESS     =======================================
@@ -800,14 +780,14 @@ void pgsHorizontalShearArtifact::SetSGirder(Float64 s)
    m_SGirder = s;
 }
 
-Float64 pgsHorizontalShearArtifact::GetSmax() const
+Float64 pgsHorizontalShearArtifact::GetSall() const
 {
-   return m_Smax;
+   return m_Sall;
 }
 
-void pgsHorizontalShearArtifact::SetSmax(Float64 sMax)
+void pgsHorizontalShearArtifact::SetSall(Float64 sall)
 {
-   m_Smax = sMax;
+   m_Sall = sall;
 }
 
 Float64 pgsHorizontalShearArtifact::GetFy() const
@@ -820,19 +800,9 @@ void pgsHorizontalShearArtifact::SetFy(Float64 fy)
    m_Fy = fy;
 }
 
-bool pgsHorizontalShearArtifact::WasFyLimited() const
-{
-   return m_bWasFyLimited;
-}
-
-void pgsHorizontalShearArtifact::WasFyLimited(bool bWasLimited)
-{
-   m_bWasFyLimited = bWasLimited;
-}
-
 bool pgsHorizontalShearArtifact::Is5_8_4_1_4Applicable() const
 {
-   return m_VsLimit <= m_VsAvg;
+   return m_VsAvg >= m_VsLimit;
 }
 
 Float64 pgsHorizontalShearArtifact::GetAvOverSMin_5_8_4_4_1() const
@@ -941,7 +911,7 @@ Float64 pgsHorizontalShearArtifact::GetDv() const
    return m_Dv;
 }
 
-void pgsHorizontalShearArtifact::SetDv(Float64 dv)
+void pgsHorizontalShearArtifact::SetDv(double dv)
 {
    m_Dv = dv;
 }
@@ -951,7 +921,7 @@ Float64 pgsHorizontalShearArtifact::GetI() const
    return m_I;
 }
 
-void pgsHorizontalShearArtifact::SetI(Float64 i)
+void pgsHorizontalShearArtifact::SetI(double i)
 {
    m_I = i;
 }
@@ -961,7 +931,7 @@ Float64 pgsHorizontalShearArtifact::GetQ() const
    return m_Q;
 }
 
-void pgsHorizontalShearArtifact::SetQ(Float64 q)
+void pgsHorizontalShearArtifact::SetQ(double q)
 {
    m_Q = q;
 }
@@ -971,7 +941,7 @@ Float64 pgsHorizontalShearArtifact::GetK1() const
    return m_K1;
 }
 
-void pgsHorizontalShearArtifact::SetK1(Float64 k1)
+void pgsHorizontalShearArtifact::SetK1(double k1)
 {
    m_K1 = k1;
 }
@@ -981,7 +951,7 @@ Float64 pgsHorizontalShearArtifact::GetK2() const
    return m_K2;
 }
 
-void pgsHorizontalShearArtifact::SetK2(Float64 k2)
+void pgsHorizontalShearArtifact::SetK2(double k2)
 {
    m_K2 = k2;
 }
@@ -996,26 +966,23 @@ void pgsHorizontalShearArtifact::SetAvOverSReqd(const Float64& vu)
    m_AvsReqd = vu;
 }
 
-void pgsHorizontalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,Float64 AvS_provided,Float64 AvS_at_CS)
+void pgsHorizontalShearArtifact::SetEndSpacing(Float64 AvS_provided,Float64 AvS_at_CS)
 {
-   m_bEndSpacingApplicable[end] = true;
-   m_AvSprovided[end] = AvS_provided;
-   m_AvSatCS[end]     = AvS_at_CS;
+   m_bEndSpacingApplicable = true;
+   m_AvSprovided = AvS_provided;
+   m_AvSatCS     = AvS_at_CS;
 }
 
-void pgsHorizontalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,Float64* pAvS_provided,Float64* pAvS_at_CS)
+void pgsHorizontalShearArtifact::GetEndSpacing(Float64* pAvS_provided,Float64* pAvS_at_CS)
 {
-   *pAvS_provided = m_AvSprovided[end];
-   *pAvS_at_CS    = m_AvSatCS[end];
+   *pAvS_provided = m_AvSprovided;
+   *pAvS_at_CS    = m_AvSatCS;
 }
 
 bool pgsHorizontalShearArtifact::DidAvsDecreaseAtEnd() const
 {
-   for ( int i = 0; i < 2; i++ )
-   {
-      if ( m_bEndSpacingApplicable[i] && m_AvSprovided[i] < m_AvSatCS[i] )
-         return true;
-   }
+   if ( m_bEndSpacingApplicable && m_AvSprovided < m_AvSatCS )
+      return true;
 
    return false;
 }
@@ -1069,9 +1036,8 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_SAdditional   = rOther.m_SAdditional;
    m_AvfGirder    = rOther.m_AvfGirder;
    m_SGirder      = rOther.m_SGirder;
-   m_Smax         = rOther.m_Smax;
+   m_Sall         = rOther.m_Sall;
    m_Fy           = rOther.m_Fy;
-   m_bWasFyLimited = rOther.m_bWasFyLimited;
    m_AvOverSMin_5_8_4_4_1   = rOther.m_AvOverSMin_5_8_4_4_1;
    m_AvOverSMin_5_8_4_1_3   = rOther.m_AvOverSMin_5_8_4_1_3;
    m_AvOverSMin   = rOther.m_AvOverSMin;
@@ -1090,12 +1056,9 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
 
    m_AvsReqd = rOther.m_AvsReqd;
 
-   for (int i = 0; i < 2; i++ )
-   {
-      m_AvSprovided[i]            = rOther.m_AvSprovided[i];
-      m_AvSatCS [i]               = rOther.m_AvSatCS[i];
-      m_bEndSpacingApplicable[i]  = rOther.m_bEndSpacingApplicable[i];
-   }
+   m_AvSprovided            = rOther.m_AvSprovided;
+   m_AvSatCS                = rOther.m_AvSatCS;
+   m_bEndSpacingApplicable  = rOther.m_bEndSpacingApplicable;
 }
 
 void pgsHorizontalShearArtifact::MakeAssignment(const pgsHorizontalShearArtifact& rOther)
@@ -1154,15 +1117,15 @@ bool pgsStirrupDetailArtifact::Passed() const
 {
    if ( IsApplicable() )
    {
-      if (m_AvsMin>m_Avs)
+      if (m_Avs < m_AvsMin)
          return false;
    }
 
    // always check spacing requirements
-   if (m_SMax<m_S-TOLERANCE)
+   if (m_SMax < m_S-TOLERANCE)
       return false;
 
-   if (m_SMin>m_S+TOLERANCE)
+   if (m_S+TOLERANCE < m_SMin)
       return false;
 
    return true;
@@ -1191,6 +1154,8 @@ void pgsStirrupDetailArtifact::Dump(dbgDumpContext& os) const
 //======================== OPERATIONS =======================================
 void pgsStirrupDetailArtifact::MakeCopy(const pgsStirrupDetailArtifact& rOther)
 {
+   m_Fy = rOther.m_Fy;
+   m_Fc = rOther.m_Fc;
    m_AvsMin = rOther.m_AvsMin;
    m_Avs = rOther.m_Avs;
    m_SMax = rOther.m_SMax;
@@ -1202,7 +1167,7 @@ void pgsStirrupDetailArtifact::MakeCopy(const pgsStirrupDetailArtifact& rOther)
    m_Vu = rOther.m_Vu;
    m_VuLimit = rOther.m_VuLimit;
    m_IsApplicable = rOther.m_IsApplicable;
-   m_IsInEndRegion = rOther.m_IsInEndRegion;
+   m_IsInCritialSectionZone = rOther.m_IsInCritialSectionZone;
 }
 
 void pgsStirrupDetailArtifact::MakeAssignment(const pgsStirrupDetailArtifact& rOther)
@@ -1231,6 +1196,9 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
+#pragma Reminder("UPDATE: rename this class to pgsSectionalShearCheckArtifact")
+// this class encapulates the results of section based shear checks.... it does more than
+// check stirrups
 pgsStirrupCheckAtPoisArtifact::pgsStirrupCheckAtPoisArtifact()
 {
 }
@@ -1253,6 +1221,23 @@ pgsStirrupCheckAtPoisArtifact& pgsStirrupCheckAtPoisArtifact::operator= (const p
    }
 
    return *this;
+}
+
+bool pgsStirrupCheckAtPoisArtifact::operator<(const pgsStirrupCheckAtPoisArtifact& artifact) const
+{
+   // this operator is used for sorting the artifacts in their container
+   // sort by POI
+   return m_Poi < artifact.m_Poi;
+}
+
+const pgsPointOfInterest& pgsStirrupCheckAtPoisArtifact::GetPointOfInterest() const
+{
+   return m_Poi;
+}
+
+void pgsStirrupCheckAtPoisArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
+{
+   m_Poi = poi;
 }
 
 //======================== OPERATIONS =======================================
@@ -1336,10 +1321,11 @@ void pgsStirrupCheckAtPoisArtifact::Dump(dbgDumpContext& os) const
 //======================== OPERATIONS =======================================
 void pgsStirrupCheckAtPoisArtifact::MakeCopy(const pgsStirrupCheckAtPoisArtifact& rOther)
 {
+   m_Poi                     = rOther.m_Poi;
    m_VerticalShearArtifact   = rOther.m_VerticalShearArtifact;
    m_HorizontalShearArtifact = rOther.m_HorizontalShearArtifact;
-   m_StirrupDetailArtifact = rOther.m_StirrupDetailArtifact;
-   m_LongReinfShearArtifact = rOther.m_LongReinfShearArtifact;
+   m_StirrupDetailArtifact   = rOther.m_StirrupDetailArtifact;
+   m_LongReinfShearArtifact  = rOther.m_LongReinfShearArtifact;
 }
 
 void pgsStirrupCheckAtPoisArtifact::MakeAssignment(const pgsStirrupCheckAtPoisArtifact& rOther)
@@ -1358,94 +1344,3 @@ void pgsStirrupCheckAtPoisArtifact::MakeAssignment(const pgsStirrupCheckAtPoisAr
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-
-/****************************************************************************
-CLASS
-   pgsStirrupCheckAtPoisArtifactKey
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsStirrupCheckAtPoisArtifactKey::pgsStirrupCheckAtPoisArtifactKey():
-pgsPoiArtifactKey()
-{
-}
-
-pgsStirrupCheckAtPoisArtifactKey::pgsStirrupCheckAtPoisArtifactKey(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 distFromStart):
-pgsPoiArtifactKey(stage,ls,distFromStart)
-{
-}
-
-pgsStirrupCheckAtPoisArtifactKey::pgsStirrupCheckAtPoisArtifactKey(const pgsStirrupCheckAtPoisArtifactKey& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsStirrupCheckAtPoisArtifactKey::~pgsStirrupCheckAtPoisArtifactKey()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsStirrupCheckAtPoisArtifactKey& pgsStirrupCheckAtPoisArtifactKey::operator = (const pgsStirrupCheckAtPoisArtifactKey& rOther)
-{
-   if ( this != &rOther )
-      MakeAssignment( rOther );
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsStirrupCheckAtPoisArtifactKey::MakeCopy(const pgsStirrupCheckAtPoisArtifactKey& rOther)
-{
-   pgsPoiArtifactKey::MakeCopy(rOther);
-}
-
-void pgsStirrupCheckAtPoisArtifactKey::MakeAssignment(const pgsStirrupCheckAtPoisArtifactKey& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsStirrupCheckAtPoisArtifactKey::AssertValid() const
-{
-   pgsPoiArtifactKey::AssertValid();
-   return true;
-}
-
-void pgsStirrupCheckAtPoisArtifactKey::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsStirrupCheckAtPoisArtifactKey" << endl;
-   pgsPoiArtifactKey::Dump(os);
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsStirrupCheckAtPoisArtifactKey::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsStirrupCheckAtPoisArtifactKey");
-
-   pgsPoiArtifactKey::TestMe(rlog);
-
-   TESTME_EPILOG("pgsStirrupCheckAtPoisArtifactKey");
-}
-#endif // _UNITTEST

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -121,12 +121,6 @@ Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pg
       }
    }
 
-   if ( *ppArtifact == NULL && 0 < pRatings->size() )
-   {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(pRatings->front().second);
-   }
-
    return RF;
 }
 
@@ -151,12 +145,6 @@ Float64 pgsRatingArtifact::GetShearRatingFactorEx(const pgsShearRatingArtifact**
          RF = rating_factor;
          *ppArtifact = &artifact;
       }
-   }
-
-   if ( *ppArtifact == NULL && 0 < m_ShearRatings.size() )
-   {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(m_ShearRatings.front().second);
    }
 
    return RF;
@@ -185,12 +173,6 @@ Float64 pgsRatingArtifact::GetStressRatingFactorEx(const pgsStressRatingArtifact
       }
    }
 
-   if ( *ppArtifact == NULL && 0 < m_StressRatings.size() )
-   {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(m_StressRatings.front().second);
-   }
-
    return RF;
 }
 
@@ -216,12 +198,6 @@ Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment,const pgsY
          RF = ratio;
          *ppArtifact = &artifact;
       }
-   }
-
-   if ( *ppArtifact == NULL && 0 < pRatios->size() )
-   {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(pRatios->front().second);
    }
 
    return RF;
@@ -258,7 +234,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    Float64 RF_ys_nM = GetYieldStressRatioEx(false,ppYieldStressNegativeMoment);
 
    Float64 RF = DBL_MAX;
-   int i = -1; // initialize to an invalid value so that we know if a rating factor wasn't found
+   int i;
    if ( RF_pM < RF )
    {
       RF = RF_pM;
@@ -353,12 +329,8 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    else
    {
       // ??? rating wasn't done?
-      // this can happen if we are rating with a negative moment only truck
-      // but the bridge is simple span... we run the truck because we want
-      // reactions, but the reating factors are DBL_MAX...
-      // since all types of ratings control equally, use positive moment as controlling factor
-      ATLASSERT(i == -1);
-      //(*ppPositiveMoment)            = NULL;
+      ATLASSERT(false);
+      (*ppPositiveMoment)            = NULL;
       (*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;
       (*ppStress)                    = NULL;

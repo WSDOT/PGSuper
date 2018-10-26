@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -94,11 +94,11 @@ bool pgsLiftingStressAnalysisArtifact::TensionPassed() const
 {
    Float64 fTop, fBottom, CapacityTop, CapacityBottom;
    GetMaxTensileStress(&fTop, &fBottom, &CapacityTop, &CapacityBottom);
-   if ( IsGT(CapacityTop,fTop) )
+   if ( IsGT(fTop, CapacityTop) )
    {
       return false;
    }
-   else if ( IsGT(CapacityBottom,fBottom) )
+   else if ( IsGT(fBottom, CapacityBottom) )
    {
       return false;
    }
@@ -1121,7 +1121,7 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
    }
 }
 
-void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64 poiTolerance,Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const
+void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64* topStress, Float64* botStress,Float64* topDistFromStart,Float64* botDistFromStart) const
 {
    ATLASSERT(0 < m_LiftingStressAnalysisArtifacts.size());
 
@@ -1157,7 +1157,7 @@ void pgsLiftingAnalysisArtifact::GetEndZoneMinMaxRawStresses(Float64 poiToleranc
       Float64 distFromStart = is->first;
       const pgsLiftingStressAnalysisArtifact& rart = is->second;
 
-      if ( IsEqual(distFromStart,left_loc,poiTolerance) || IsEqual(distFromStart,right_loc,poiTolerance))
+      if ( IsEqual(distFromStart,left_loc) || IsEqual(distFromStart,right_loc))
       {
          found++;
 
@@ -1411,8 +1411,9 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
 
    os <<_T(" Stress Artifacts")<<endl;
    os << _T("================") <<endl;
-   std::vector<pgsPointOfInterest>::const_iterator iter;
-   for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
+   std::vector<pgsPointOfInterest>::const_iterator iter(m_LiftingPois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_LiftingPois.end());
+   for ( ; iter != end; iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
@@ -1435,7 +1436,9 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
 
    os <<_T(" Cracking Artifacts")<<endl;
    os << _T("==================") <<endl;
-   for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
+   iter = m_LiftingPois.begin();
+   end  = m_LiftingPois.end();
+   for ( ; iter != end; iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();

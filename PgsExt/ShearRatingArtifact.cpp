@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,7 @@ void pgsShearRatingArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
    m_POI = poi;
 }
 
-const pgsPointOfInterest& pgsShearRatingArtifact::GetPointOfInterest() const
+const pgsPointOfInterest& pgsShearRatingArtifact::GetGirderPointOfInterest() const
 {
    return m_POI;
 }
@@ -240,28 +240,17 @@ Float64 pgsShearRatingArtifact::GetRatingFactor() const
    }
    else
    {
-      Float64 p = max(m_SystemFactor*m_ConditionFactor,0.85); // MBE 6A.4.2.1-3
+      Float64 p = m_SystemFactor * m_ConditionFactor;
+      if ( p < 0.85 )
+         p = 0.85; // 6A.4.2.1-3)
 
       Float64 C = p * m_CapacityRedutionFactor * m_Vn;
-      Float64 RFtop = C - fabs(m_gDC*m_Vdc + m_gDW*m_Vdw);
-      Float64 RFbot = fabs(m_gLL*m_Vllim);
+      Float64 RF = (C - m_gDC*m_Vdc - m_gDW*m_Vdw)/(m_gLL*m_Vllim);
 
-      if ( IsZero(C) || RFtop < 0 )
-      {
-         // There isn't any capacity remaining for live load
-         m_RF = 0;
-      }
-      else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
-      {
-         // (fr - DL) and LL have opposite signs
-         // this case probably shouldn't happen, but if does,
-         // the rating is great
-         m_RF = DBL_MAX;
-      }
-      else
-      {
-         m_RF = RFtop/RFbot;
-      }
+      if ( RF < 0 )
+         RF = 0;
+
+      m_RF = RF;
    }
 
    m_bRFComputed = true;

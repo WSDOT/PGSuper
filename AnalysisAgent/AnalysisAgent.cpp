@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,8 @@
 #include "AnalysisAgent_i.c"
 
 #include <WBFLFem2d_i.c>
+#include <WBFLGeometry_i.c>
+#include <WBFLCogo_i.c>
 
 #include <WBFLLBAMAnalysisUtility_i.c>
 #include <WBFLLBAMAnalysis_i.c>
@@ -46,17 +48,18 @@
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <WBFLCore_i.c>
-#include <WBFLGeometry_i.c>
-#include <WBFLCogo_i.c>
 
 #include "AnalysisAgentImp.h"
 
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
 #include <IFace\StatusCenter.h>
-#include <IFace\GirderHandlingPointOfInterest.h>
+#include <IFace\PointOfInterest.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -114,21 +117,30 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
+HRESULT RegisterAgent(bool bRegister)
+{
+   HRESULT hr = S_OK;
+   hr = sysComCatMgr::RegWithCategory(CLSID_AnalysisAgent,CATID_PGSuperAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_AnalysisAgent,CATID_PGSpliceAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
 
 STDAPI DllRegisterServer(void)
 {
 	// registers object, typelib and all interfaces in typelib
 	HRESULT hr = _Module.RegisterServer(FALSE);
    if ( FAILED(hr) )
-   {
       return hr;
-   }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_AnalysisAgent,CATID_PGSuperAgent,true);
+   hr = RegisterAgent(true);
    if ( FAILED(hr) )
-   {
       return hr;
-   }
 
    return S_OK;
 }
@@ -138,8 +150,11 @@ STDAPI DllRegisterServer(void)
 
 STDAPI DllUnregisterServer(void)
 {
-   sysComCatMgr::RegWithCategory(CLSID_AnalysisAgent,CATID_PGSuperAgent,false);
-	_Module.UnregisterServer();
+   HRESULT hr = RegisterAgent(false);
+   if ( FAILED(hr) )
+      return hr;
+
+   _Module.UnregisterServer();
 	return S_OK;
 }
 

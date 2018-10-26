@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,16 +31,9 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
-CGirderReportSpecification(strReportName,pBroker,gdrIdx)
+CGirderLineReportSpecification(strReportName,pBroker,gdrIdx)
 {
    SetOptions(bDesign,bRating);
-}
-
-CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(const CBridgeAnalysisReportSpecification& other) :
-CGirderReportSpecification(other)
-{
-   m_bDesign = other.m_bDesign;
-   m_bRating = other.m_bRating;
 }
 
 CBridgeAnalysisReportSpecification::~CBridgeAnalysisReportSpecification(void)

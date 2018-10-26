@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,13 +29,14 @@
 #include "BridgeDescRailingSystemPage.h"
 #include "BridgeDescDlg.h"
 #include "ConcreteDetailsDlg.h"
+#include "PGSuperAppPlugin\TimelineEventDlg.h"
 #include <PGSuperUnits.h>
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <MfcTools\CustomDDX.h>
+
 #include <PGSuperColors.h>
 
 #ifdef _DEBUG
@@ -56,7 +57,7 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
 
-   GET_IFACE(IBridgeMaterialEx,pMaterial);
+   GET_IFACE(IMaterials,pMaterial);
    m_MinNWCDensity = pMaterial->GetNWCDensityLimit();
    m_MaxLWCDensity = pMaterial->GetLWCDensityLimit();
 }
@@ -120,31 +121,31 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_LEFT_DEPTH,  IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT,  m_RightRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
    DDV_UnitValueZeroOrMore( pDX, IDC_RIGHT_SIDEWALK_LEFT_DEPTH, m_RightRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
 
-   DDX_UnitValueAndTag(pDX,IDC_LEFT_FC, IDC_LEFT_FC_UNIT, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
-   DDX_Check_Bool(pDX,IDC_LEFT_MOD_E, m_LeftRailingSystem.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_LEFT_DENSITY,  IDC_LEFT_DENSITY_UNIT, m_LeftRailingSystem.WeightDensity, pDisplayUnits->GetDensityUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_LEFT_EC,  IDC_LEFT_EC_UNIT, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_LEFT_FC, IDC_LEFT_FC_UNIT, m_LeftRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+   DDX_Check_Bool(pDX,IDC_LEFT_MOD_E, m_LeftRailingSystem.Concrete.bUserEc);
+   DDX_UnitValueAndTag( pDX, IDC_LEFT_EC,  IDC_LEFT_EC_UNIT, m_LeftRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LEFT_DENSITY,  IDC_LEFT_DENSITY_UNIT, m_LeftRailingSystem.Concrete.WeightDensity, pDisplayUnits->GetDensityUnit() );
 
-   DDX_UnitValueAndTag(pDX,IDC_RIGHT_FC, IDC_RIGHT_FC_UNIT, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
-   DDX_Check_Bool(pDX,IDC_RIGHT_MOD_E, m_RightRailingSystem.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_RIGHT_DENSITY,  IDC_RIGHT_DENSITY_UNIT, m_RightRailingSystem.WeightDensity, pDisplayUnits->GetDensityUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_RIGHT_EC,  IDC_RIGHT_EC_UNIT, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_RIGHT_FC, IDC_RIGHT_FC_UNIT, m_RightRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+   DDX_Check_Bool(pDX,IDC_RIGHT_MOD_E, m_RightRailingSystem.Concrete.bUserEc);
+   DDX_UnitValueAndTag( pDX, IDC_RIGHT_EC,  IDC_RIGHT_EC_UNIT, m_RightRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_RIGHT_DENSITY,  IDC_RIGHT_DENSITY_UNIT, m_RightRailingSystem.Concrete.WeightDensity, pDisplayUnits->GetDensityUnit() );
 
    if ( pDX->m_bSaveAndValidate )
    {
-      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_FC, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_EC, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_FC, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_EC, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_FC, m_LeftRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_EC, m_LeftRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_FC, m_RightRailingSystem.Concrete.Fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_EC, m_RightRailingSystem.Concrete.Ec, pDisplayUnits->GetModEUnit() );
    }
 
-   if ( pDX->m_bSaveAndValidate && m_LeftRailingSystem.bUserEc )
+   if ( pDX->m_bSaveAndValidate && m_LeftRailingSystem.Concrete.bUserEc )
    {
       CWnd* pWnd = GetDlgItem(IDC_LEFT_EC);
       pWnd->GetWindowText(m_strLeftUserEc);
    }
 
-   if ( pDX->m_bSaveAndValidate && m_RightRailingSystem.bUserEc )
+   if ( pDX->m_bSaveAndValidate && m_RightRailingSystem.Concrete.bUserEc )
    {
       CWnd* pWnd = GetDlgItem(IDC_RIGHT_EC);
       pWnd->GetWindowText(m_strRightUserEc);
@@ -160,12 +161,14 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
 
    if ( !pDX->m_bSaveAndValidate )
    {
-      SetConcreteTypeLabel(IDC_LEFT_CONCRETE_TYPE_LABEL, m_LeftRailingSystem.ConcreteType);
-      SetConcreteTypeLabel(IDC_RIGHT_CONCRETE_TYPE_LABEL,m_RightRailingSystem.ConcreteType);
+      SetConcreteTypeLabel(IDC_LEFT_CONCRETE_TYPE_LABEL, m_LeftRailingSystem.Concrete.Type);
+      SetConcreteTypeLabel(IDC_RIGHT_CONCRETE_TYPE_LABEL,m_RightRailingSystem.Concrete.Type);
 
       GetDlgItem(IDC_LEFT_DENSITY)->Invalidate();
       GetDlgItem(IDC_RIGHT_DENSITY)->Invalidate();
    }
+
+   DDX_CBItemData(pDX,IDC_EVENT,m_EventIndex);
 }
 
 
@@ -188,6 +191,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescRailingSystemPage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_WM_CTLCOLOR()
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_CBN_SELCHANGE(IDC_EVENT, OnEventChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -196,9 +200,13 @@ END_MESSAGE_MAP()
 
 BOOL CBridgeDescRailingSystemPage::OnInitDialog() 
 {
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   m_EventIndex = pParent->m_BridgeDesc.GetTimelineManager()->GetRailingSystemLoadEventIndex();
+
+   FillEventList();
+
    FillTrafficBarrierComboBoxes();
 
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    m_LeftRailingSystem = *(pParent->m_BridgeDesc.GetLeftRailingSystem());
    m_RightRailingSystem = *(pParent->m_BridgeDesc.GetRightRailingSystem());
 
@@ -439,41 +447,61 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
 
    UpdateData(TRUE);
 
-   dlg.m_Type    = pRailingSystem->ConcreteType;
-   dlg.m_Fc      = pRailingSystem->fc;
-   dlg.m_AggSize = pRailingSystem->MaxAggSize;
-   dlg.m_bUserEc = pRailingSystem->bUserEc;
-   dlg.m_Ds      = pRailingSystem->StrengthDensity;
-   dlg.m_Dw      = pRailingSystem->WeightDensity;
-   dlg.m_Ec      = pRailingSystem->Ec;
-   dlg.m_EccK1       = pRailingSystem->EcK1;
-   dlg.m_EccK2       = pRailingSystem->EcK2;
-   dlg.m_CreepK1     = pRailingSystem->CreepK1;
-   dlg.m_CreepK2     = pRailingSystem->CreepK2;
-   dlg.m_ShrinkageK1 = pRailingSystem->ShrinkageK1;
-   dlg.m_ShrinkageK2 = pRailingSystem->ShrinkageK2;
-   dlg.m_strUserEc  = m_strRightUserEc;
-   dlg.m_bHasFct    = pRailingSystem->bHasFct;
-   dlg.m_Fct        = pRailingSystem->Fct;
+   dlg.m_General.m_Type    = pRailingSystem->Concrete.Type;
+   dlg.m_General.m_Fc      = pRailingSystem->Concrete.Fc;
+   dlg.m_General.m_AggSize = pRailingSystem->Concrete.MaxAggregateSize;
+   dlg.m_General.m_bUserEc = pRailingSystem->Concrete.bUserEc;
+   dlg.m_General.m_Ds      = pRailingSystem->Concrete.StrengthDensity;
+   dlg.m_General.m_Dw      = pRailingSystem->Concrete.WeightDensity;
+   dlg.m_General.m_Ec      = pRailingSystem->Concrete.Ec;
+   dlg.m_General.m_strUserEc  = m_strRightUserEc;
+
+   dlg.m_AASHTO.m_EccK1       = pRailingSystem->Concrete.EcK1;
+   dlg.m_AASHTO.m_EccK2       = pRailingSystem->Concrete.EcK2;
+   dlg.m_AASHTO.m_CreepK1     = pRailingSystem->Concrete.CreepK1;
+   dlg.m_AASHTO.m_CreepK2     = pRailingSystem->Concrete.CreepK2;
+   dlg.m_AASHTO.m_ShrinkageK1 = pRailingSystem->Concrete.ShrinkageK1;
+   dlg.m_AASHTO.m_ShrinkageK2 = pRailingSystem->Concrete.ShrinkageK2;
+   dlg.m_AASHTO.m_bHasFct     = pRailingSystem->Concrete.bHasFct;
+   dlg.m_AASHTO.m_Fct         = pRailingSystem->Concrete.Fct;
+
+   dlg.m_ACI.m_bUserParameters = pRailingSystem->Concrete.bACIUserParameters;
+   dlg.m_ACI.m_A               = pRailingSystem->Concrete.A;
+   dlg.m_ACI.m_B               = pRailingSystem->Concrete.B;
+   dlg.m_ACI.m_CureMethod      = pRailingSystem->Concrete.CureMethod;
+   dlg.m_ACI.m_CementType      = pRailingSystem->Concrete.CementType;
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
    if ( dlg.DoModal() == IDOK )
    {
-      pRailingSystem->ConcreteType     = dlg.m_Type;
-      pRailingSystem->fc               = dlg.m_Fc;
-      pRailingSystem->bUserEc          = dlg.m_bUserEc;
-      pRailingSystem->StrengthDensity  = dlg.m_Ds;
-      pRailingSystem->WeightDensity    = dlg.m_Dw;
-      pRailingSystem->Ec               = dlg.m_Ec;
-      pRailingSystem->MaxAggSize       = dlg.m_AggSize;
-      pRailingSystem->EcK1             = dlg.m_EccK1;
-      pRailingSystem->EcK2             = dlg.m_EccK2;
-      pRailingSystem->CreepK1          = dlg.m_CreepK1;
-      pRailingSystem->CreepK2          = dlg.m_CreepK2;
-      pRailingSystem->ShrinkageK1      = dlg.m_ShrinkageK1;
-      pRailingSystem->ShrinkageK2      = dlg.m_ShrinkageK2;
-      m_strRightUserEc                 = dlg.m_strUserEc;
-      pRailingSystem->bHasFct          = dlg.m_bHasFct;
-      pRailingSystem->Fct              = dlg.m_Fct;
+      pRailingSystem->Concrete.Type               = dlg.m_General.m_Type;
+      pRailingSystem->Concrete.Fc                 = dlg.m_General.m_Fc;
+      pRailingSystem->Concrete.bUserEc            = dlg.m_General.m_bUserEc;
+      pRailingSystem->Concrete.StrengthDensity    = dlg.m_General.m_Ds;
+      pRailingSystem->Concrete.WeightDensity      = dlg.m_General.m_Dw;
+      pRailingSystem->Concrete.Ec                 = dlg.m_General.m_Ec;
+      pRailingSystem->Concrete.MaxAggregateSize   = dlg.m_General.m_AggSize;
+
+      pRailingSystem->Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
+      pRailingSystem->Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
+      pRailingSystem->Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
+      pRailingSystem->Concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
+      pRailingSystem->Concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
+      pRailingSystem->Concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
+      pRailingSystem->Concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
+      pRailingSystem->Concrete.Fct              = dlg.m_AASHTO.m_Fct;
+
+
+     pRailingSystem->Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
+     pRailingSystem->Concrete.A                  = dlg.m_ACI.m_A;
+     pRailingSystem->Concrete.B                  = dlg.m_ACI.m_B;
+     pRailingSystem->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
+     pRailingSystem->Concrete.CementType         = dlg.m_ACI.m_CementType;
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+
+      m_strRightUserEc                 = dlg.m_General.m_strUserEc;
 
       UpdateData(FALSE);
    }
@@ -651,8 +679,8 @@ void CBridgeDescRailingSystemPage::UpdateRightEc()
       pWndFc->GetWindowText(strFc);
       pWndDensity->GetWindowText(strDensity);
 
-      strK1.Format(_T("%f"),m_RightRailingSystem.EcK1);
-      strK2.Format(_T("%f"),m_RightRailingSystem.EcK2);
+      strK1.Format(_T("%f"),m_RightRailingSystem.Concrete.EcK1);
+      strK2.Format(_T("%f"),m_RightRailingSystem.Concrete.EcK2);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       pWndEc->SetWindowText(strEc);
@@ -677,8 +705,8 @@ void CBridgeDescRailingSystemPage::UpdateLeftEc()
       pWndFc->GetWindowText(strFc);
       pWndDensity->GetWindowText(strDensity);
 
-      strK1.Format(_T("%f"),m_LeftRailingSystem.EcK1);
-      strK2.Format(_T("%f"),m_LeftRailingSystem.EcK2);
+      strK1.Format(_T("%f"),m_LeftRailingSystem.Concrete.EcK1);
+      strK2.Format(_T("%f"),m_LeftRailingSystem.Concrete.EcK2);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       pWndEc->SetWindowText(strEc);
@@ -714,7 +742,7 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
             Float64 value;
             DDX_UnitValue(&dx, IDC_LEFT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
 
-            if ( !IsDensityInRange(value,m_LeftRailingSystem.ConcreteType) )
+            if ( !IsDensityInRange(value,m_LeftRailingSystem.Concrete.Type) )
             {
                pDC->SetTextColor( RED );
             }
@@ -746,7 +774,7 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
             Float64 value;
             DDX_UnitValue(&dx, IDC_RIGHT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
 
-            if ( !IsDensityInRange(value,m_RightRailingSystem.ConcreteType) )
+            if ( !IsDensityInRange(value,m_RightRailingSystem.Concrete.Type) )
             {
                pDC->SetTextColor( RED );
             }
@@ -819,10 +847,10 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pRailingSystem->ConcreteType,true).c_str(),
-      _T("Unit Weight"),FormatDimension(pRailingSystem->StrengthDensity,density),
-      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pRailingSystem->WeightDensity,density),
-      _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->MaxAggSize,aggsize)
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pRailingSystem->Concrete.Type,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pRailingSystem->Concrete.StrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pRailingSystem->Concrete.WeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->Concrete.MaxAggregateSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -835,11 +863,11 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
    //   strTip += strK1;
    //}
 
-   if ( pRailingSystem->ConcreteType != pgsTypes::Normal && pRailingSystem->bHasFct )
+   if ( pRailingSystem->Concrete.Type != pgsTypes::Normal && pRailingSystem->Concrete.bHasFct )
    {
       CString strLWC;
       strLWC.Format(_T("\r\n%-20s %s"),
-         _T("fct"),FormatDimension(pRailingSystem->Fct,stress));
+         _T("fct"),FormatDimension(pRailingSystem->Concrete.Fct,stress));
 
       strTip += strLWC;
    }
@@ -858,18 +886,18 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
    // Make sure data was successfully parsed before issuing a message
    if(bRetValue!=0)
    {
-      if ( !IsDensityInRange(m_LeftRailingSystem.StrengthDensity,m_LeftRailingSystem.ConcreteType) ||
-           !IsDensityInRange(m_LeftRailingSystem.WeightDensity,  m_LeftRailingSystem.ConcreteType) )
+      if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) ||
+           !IsDensityInRange(m_LeftRailingSystem.Concrete.WeightDensity,  m_LeftRailingSystem.Concrete.Type) )
       {
-         if ( m_LeftRailingSystem.ConcreteType == pgsTypes::Normal )
+         if ( m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal )
             AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
          else
             AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
-      else if ( !IsDensityInRange(m_RightRailingSystem.StrengthDensity,m_RightRailingSystem.ConcreteType) ||
-                !IsDensityInRange(m_RightRailingSystem.WeightDensity,  m_RightRailingSystem.ConcreteType) )
+      else if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) ||
+                !IsDensityInRange(m_RightRailingSystem.Concrete.WeightDensity,  m_RightRailingSystem.Concrete.Type) )
       {
-         if ( m_RightRailingSystem.ConcreteType == pgsTypes::Normal )
+         if ( m_RightRailingSystem.Concrete.Type == pgsTypes::Normal )
             AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
          else
             AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
@@ -882,7 +910,7 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
 void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::ConcreteType type)
 {
    CWnd* pWnd = GetDlgItem(nID);
-   pWnd->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)type,true).c_str() );
+   pWnd->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)type,true).c_str() );
 }
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
@@ -895,4 +923,89 @@ bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::Co
    {
       return (density <= m_MaxLWCDensity);
    }
+}
+
+
+void CBridgeDescRailingSystemPage::FillEventList()
+{
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      GetDlgItem(IDC_EVENT_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_EVENT)->ShowWindow(SW_HIDE);
+
+      return;
+   }
+
+   CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
+
+   int eventIdx = pcbEvent->GetCurSel();
+
+   pcbEvent->ResetContent();
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+
+   EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   {
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+
+      CString label;
+      label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+
+      pcbEvent->SetItemData(pcbEvent->AddString(label),eventIdx);
+   }
+
+   CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+   pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+
+   if ( eventIdx != CB_ERR )
+      pcbEvent->SetCurSel(eventIdx);
+}
+
+
+void CBridgeDescRailingSystemPage::OnEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIndexType idx = (EventIndexType)pCB->GetItemData(curSel);
+   if ( idx == CREATE_TIMELINE_EVENT )
+   {
+      EventIndexType eventIdx = CreateEvent();
+      if (eventIdx != INVALID_INDEX)
+      {
+         CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         pIBridgeDesc->SetRailingSystemLoadEventByIndex(eventIdx);
+
+         FillEventList();
+
+         pCB->SetCurSel((int)idx);
+         m_EventIndex = eventIdx;
+      }
+      else
+      {
+         pCB->SetCurSel((int)m_EventIndex);
+      }
+   }
+}
+
+EventIndexType CBridgeDescRailingSystemPage::CreateEvent()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+  }
+
+   return INVALID_INDEX;
 }

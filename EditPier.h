@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,26 +24,31 @@
 #define INCLUDED_EDITPIER_H_
 
 #include <System\Transaction.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\GirderSpacing.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\GirderSpacing2.h>
 #include <IFace\Project.h>
 
 struct txnEditPierData
 {
    txnEditPierData();
-   txnEditPierData(const CPierData* pPier);
+   txnEditPierData(const CPierData2* pPier);
+
    Float64 Station;
    std::_tstring Orientation;
+   EventIndexType ErectionEventIndex;
+
+   pgsTypes::PierConnectionType ConnectionType;
    Float64 BearingOffset[2];
    Float64 EndDistance[2];
    Float64 SupportWidth[2];
    ConnectionLibraryEntry::EndDistanceMeasurementType EndDistanceMeasurementType[2];
    ConnectionLibraryEntry::BearingOffsetMeasurementType BearingOffsetMeasurementType[2];
+
    GirderIndexType nGirders[2];
-   
-   pgsTypes::PierConnectionType ConnectionType;
-   CGirderSpacing GirderSpacing[2];
+   CGirderSpacing2 GirderSpacing[2];
+   pgsTypes::SlabOffsetType SlabOffsetType;
+   Float64 SlabOffset[2];
 
    Float64 DiaphragmHeight[2];
    Float64 DiaphragmWidth[2];
@@ -53,10 +58,7 @@ struct txnEditPierData
    // data for the entire bridge
    pgsTypes::SupportedBeamSpacing GirderSpacingType;
    pgsTypes::MeasurementLocation GirderMeasurementLocation;
-   bool UseSameNumberOfGirdersInAllSpans;
-
-   pgsTypes::SlabOffsetType SlabOffsetType;
-   Float64 SlabOffset[2];
+   bool UseSameNumberOfGirdersInAllGroups;
 };
 
 class txnEditPier : public txnTransaction

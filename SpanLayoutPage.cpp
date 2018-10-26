@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,11 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "PGSuperDoc.h"
 #include "SpanLayoutPage.h"
 #include "SpanDetailsDlg.h"
-#include <MfcTools\CustomDDX.h>
+
 #include <EAF\EAFDisplayUnits.h>
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -77,7 +77,7 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanLayoutPage message handlers
-void CSpanLayoutPage::Init(const CSpanData* pSpan)
+void CSpanLayoutPage::Init(const CSpanData2* pSpan)
 {
    m_SpanLength = pSpan->GetSpanLength();
 }
@@ -85,14 +85,14 @@ void CSpanLayoutPage::Init(const CSpanData* pSpan)
 BOOL CSpanLayoutPage::OnInitDialog() 
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   SpanIndexType spanIdx = pParent->m_pSpanData->GetSpanIndex();
+   SpanIndexType spanIdx = pParent->m_pSpanData->GetIndex();
    PierIndexType prevPierIdx = (PierIndexType)spanIdx;
    PierIndexType nextPierIdx = prevPierIdx+1;
    
    CPropertyPage::OnInitDialog();
 
-   const CSpanData* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
-   const CSpanData* pNextSpan = pParent->m_pSpanData->GetNextPier()->GetNextSpan();
+   const CSpanData2* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
+   const CSpanData2* pNextSpan = pParent->m_pSpanData->GetNextPier()->GetNextSpan();
 
    CString strPrevPierType(pPrevSpan ? _T("Pier") : _T("Abutment"));
    CString strNextPierType(pNextSpan ? _T("Pier") : _T("Abutment"));

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <pgsExt\PrestressData.h>
+#include <PgsExt\StrandData.h>
 #include <psgLib\GirderLibraryEntry.h>
 
 // This is a pure virtual adapter class for IPrecastGirder which allows input of strands using 

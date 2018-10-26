@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,2,1
- PRODUCTVERSION 2,9,2,1
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "Beams Module for PGSuper"
-            VALUE "FileVersion", "2.9.2.1"
+            VALUE "FileVersion", "3.0.0.0"
             VALUE "InternalName", "Beams"
-            VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "Beams.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.2.1"
+            VALUE "ProductVersion", "3.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -99,6 +99,7 @@ END
 //
 
 IBEAM                   METAFILE                "res\\IBeam.emf"
+SPLICEDIBEAM            METAFILE                "res\\SplicedIBeam.emf"
 UBEAM                   METAFILE                "res\\UBeam.emf"
 UBEAM2                  METAFILE                "res\\UBeam2.emf"
 NUBEAM                  METAFILE                "res\\NUBeam.emf"
@@ -143,14 +144,13 @@ IDR_DOUBLETEEBEAMFAMILY REGISTRY                "DoubleTeeFamily.rgs"
 IDR_RIBBEDBEAMFAMILY    REGISTRY                "MultiWebFamily.rgs"
 IDR_SLABBEAMFAMILY      REGISTRY                "VoidedSlabFamily.rgs"
 IDR_DECKEDSLABBEAMFAMILY REGISTRY                "DeckedSlabBeamFamily.rgs"
+IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY       "VoidedSlab2DistFactorEngineer.rgs"
 IDR_PSBEAMLOSSENGINEER REGISTRY                 "PsBeamLossEngineer.rgs"
-IDR_IBEAMDISTFACTORENGINEER REGISTRY           "IBeamDistFactorEngineer.rgs"
-IDR_BOXBEAMDISTFACTORENGINEER REGISTRY          "BoxBeamDistFactorEngineer.rgs"
-IDR_BULBTEEDISTFACTORENGINEER REGISTRY          "BulbTeeDistFactorEngineer.rgs"
-IDR_MULTIWEBDISTFACTORENGINEER REGISTRY          "MultiWebDistFactorEngineer.rgs"
-IDR_UBEAMDISTFACTORENGINEER REGISTRY           "UBeamDistFactorEngineer.rgs"
-IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY           "VoidedSlabDistFactorEngineer.rgs"
-IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY           "VoidedSlab2DistFactorEngineer.rgs"
+
+IDR_SPLICEDIBEAMFACTORY        REGISTRY         "SplicedIBeamFactory.rgs"
+IDR_SPLICEDUBEAMFACTORY        REGISTRY         "SplicedUBeamFactory.rgs"
+IDR_SPLICEDIBEAMFAMILY   REGISTRY                "SplicedIBeamFamily.rgs"
+IDR_SPLICEDUBEAMFAMILY   REGISTRY                "SplicedUBeamFamily.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

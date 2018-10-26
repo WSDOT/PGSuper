@@ -1,0 +1,79 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2013  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+#pragma once
+
+#include "resource.h"       // main symbols
+#include "IFace\PsLossEngineer.h"
+#include <PgsExt\PoiKey.h>
+
+// {26275720-66E8-40f6-A4C3-79404FB64968}
+DEFINE_GUID(CLSID_TimeStepLossEngineer, 
+0x26275720, 0x66e8, 0x40f6, 0xa4, 0xc3, 0x79, 0x40, 0x4f, 0xb6, 0x49, 0x68);
+
+/////////////////////////////////////////////////////////////////////////////
+// CTimeStepLossEngineer
+class ATL_NO_VTABLE CTimeStepLossEngineer : 
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComCoClass<CTimeStepLossEngineer, &CLSID_TimeStepLossEngineer>,
+   public IPsLossEngineer
+{
+public:
+	CTimeStepLossEngineer()
+	{
+	}
+
+   HRESULT FinalConstruct();
+
+BEGIN_COM_MAP(CTimeStepLossEngineer)
+   COM_INTERFACE_ENTRY(IPsLossEngineer)
+END_COM_MAP()
+
+public:
+   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi);
+   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+   virtual void ClearDesignLosses();
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
+
+private:
+   IBroker* m_pBroker;
+   StatusGroupIDType m_StatusGroupID;
+
+   struct LOSSES
+   {
+      std::vector<ANCHORSETDETAILS> AnchorSet;
+      std::map<pgsPointOfInterest,LOSSDETAILS> SectionLosses;
+   };
+
+   std::map<CGirderKey,LOSSES> m_Losses;
+
+
+   void ComputeLosses(const CGirderKey& girderKey);
+   void ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses);
+   void ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses);
+   void ComputeSectionLosses(const CGirderKey& girderKey,LOSSES* pLosses);
+   void InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
+   void AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses);
+   void FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
+};

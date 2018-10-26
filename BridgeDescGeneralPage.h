@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 
 #include "PGSuperAppPlugin\resource.h"
 #include <IFace\BeamFactory.h>
-#include <PgsExt\DeckDescription.h>
+#include <PgsExt\DeckDescription2.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescGeneralPage dialog
@@ -49,10 +49,12 @@ public:
 	//{{AFX_DATA(CBridgeDescGeneralPage)
 	enum { IDD = IDD_BRIDGEDESC_GENERAL };
 	CSpinButtonCtrl	m_NumGdrSpinner;
+   CStatic  m_AlignmentOffsetFormat;
 		// NOTE - ClassWizard will add data members here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
+   Float64 m_AlignmentOffset;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -83,7 +85,8 @@ protected:
    afx_msg void OnGirderSpacingTypeChanged();
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
    afx_msg void OnHelp();
-	//}}AFX_MSG
+	afx_msg void OnPostTension();
+   //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    void Init();
@@ -98,6 +101,7 @@ protected:
    void FillRefGirderOffsetTypeComboBox();
    void FillRefGirderComboBox();
    void FillGirderConnectivityComboBox();
+   void UpdatePTControls();
 
    void UpdateGirderFactory();
    CString GetDeckString(pgsTypes::SupportedDeckType deckType);
@@ -118,6 +122,7 @@ protected:
 
    bool m_bSameNumberOfGirders;
    bool m_bSameGirderName;
+   bool m_bPostTension;
 
    GirderIndexType m_nGirders;
    CString m_GirderName;
@@ -135,7 +140,7 @@ protected:
    Float64 m_MinGirderSpacing;
    Float64 m_MaxGirderSpacing;
 
-   CDeckDescription m_Deck;
+   CDeckDescription2 m_Deck;
    std::vector<CDeckPoint> m_CacheDeckEdgePoints;
 
    CString m_strToolTipText; // buffer for storing tool tip text

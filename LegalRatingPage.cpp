@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LegalRatingPage.h"
 #include "RatingOptionsDlg.h"
-#include <MFCTools\CustomDDX.h>
+
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -180,7 +180,7 @@ BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       {
       case IDC_ROUTINE_TRUCK_IMPACT:
       case IDC_SPECIAL_TRUCK_IMPACT:
-         m_strTip = _T("MBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations or depressions IM = 20%");
+         m_strTip = _T("MBE 6A.4.4.3 Normal Conditions IM = 33%\rMBE C6A.4.4.3 For spans greater than 40 ft:\rSmooth riding surface at approaches, bridge deck, and expansion joints IM = 10%\rMinor surface deviations ar depressions IM = 20%");
          break;
 
       case IDC_RATE_FOR_STRESS:
@@ -244,54 +244,33 @@ BOOL CLegalRatingPage::OnSetActive()
    CDataExchange dx(this,false);
    Float64 gLL = -1;
 
-   bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      const CLiveLoadFactorModel& routine = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
-      bAllowUserOverride = routine.AllowUserOverride();
-   }
-   else
-   {
-      const CLiveLoadFactorModel2& routine = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Routine);
-      bAllowUserOverride = routine.AllowUserOverride();
-   }
-
-   if ( bAllowUserOverride )
-   {
-      GetDlgItem(IDC_STRENGTH_I_LL_ROUTINE)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_III_LL_ROUTINE)->EnableWindow(TRUE);
-   }
-   else
+   const CLiveLoadFactorModel& routine = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
+   if ( !routine.AllowUserOverride() )
    {
       DDX_Keyword(&dx,IDC_STRENGTH_I_LL_ROUTINE,_T("Compute"),gLL);
       DDX_Keyword(&dx,IDC_SERVICE_III_LL_ROUTINE,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_ROUTINE)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL_ROUTINE)->EnableWindow(FALSE);
    }
-
-
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      const CLiveLoadFactorModel& special = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
-      bAllowUserOverride = special.AllowUserOverride();
-   }
    else
    {
-      const CLiveLoadFactorModel2& special = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Special);
-      bAllowUserOverride = special.AllowUserOverride();
+      GetDlgItem(IDC_STRENGTH_I_LL_ROUTINE)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_III_LL_ROUTINE)->EnableWindow(TRUE);
    }
 
-   if ( bAllowUserOverride )
-   {
-      GetDlgItem(IDC_STRENGTH_I_LL_SPECIAL)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(TRUE);
-   }
-   else
+
+   const CLiveLoadFactorModel& special = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
+   if ( !special.AllowUserOverride() )
    {
       DDX_Keyword(&dx,IDC_STRENGTH_I_LL_SPECIAL,_T("Compute"),gLL);
       DDX_Keyword(&dx,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_SPECIAL)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(FALSE);
+   }
+   else
+   {
+      GetDlgItem(IDC_STRENGTH_I_LL_SPECIAL)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(TRUE);
    }
 
    return TRUE;

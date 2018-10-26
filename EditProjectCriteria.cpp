@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,10 +31,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria)
+txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType)
 {
    m_strProjectCriteria[0] = strOldCriteria;
    m_strProjectCriteria[1] = strNewCriteria;
+
+   m_AnalysisType[0] = oldAnalysisType;
+   m_AnalysisType[1] = newAnalysisType;
 }
 
 txnEditProjectCriteria::~txnEditProjectCriteria()
@@ -62,12 +65,13 @@ void txnEditProjectCriteria::Execute(int i)
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
    pSpec->SetSpecification( m_strProjectCriteria[i] );
+   pSpec->SetAnalysisType(m_AnalysisType[i]);
    pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditProjectCriteria::CreateClone() const
 {
-   return new txnEditProjectCriteria(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str());
+   return new txnEditProjectCriteria(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1]);
 }
 
 std::_tstring txnEditProjectCriteria::Name() const

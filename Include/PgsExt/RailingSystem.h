@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,8 @@
 #if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
 #endif
+
+#include <PgsExt\ConcreteMaterial.h>
 
 class TrafficBarrierEntry;
 interface ILibrary;
@@ -90,25 +92,11 @@ public:
    bool bSidewalkStructurallyContinuous;
 
    // material properties
-   pgsTypes::ConcreteType ConcreteType;
-   Float64 fc;
-   Float64 Ec;
-   bool bUserEc;
-   Float64 StrengthDensity;
-   Float64 WeightDensity;
-   Float64 EcK1;
-   Float64 EcK2;
-   Float64 CreepK1;
-   Float64 CreepK2;
-   Float64 ShrinkageK1;
-   Float64 ShrinkageK2;
-   Float64 MaxAggSize;
-   bool bHasFct;
-   Float64 Fct;
+   CConcreteMaterial Concrete;
 
 protected:
    void MakeCopy(const CRailingSystem& rOther);
-   void MakeAssignment(const CRailingSystem& rOther);
+   virtual void MakeAssignment(const CRailingSystem& rOther);
 
    const TrafficBarrierEntry* pExteriorRailing;
    const TrafficBarrierEntry* pInteriorRailing;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,10 +27,12 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperAppPlugin\Resource.h"
 
+#include "PGSpliceDoc.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDlg.h"
 #include "ConcreteDetailsDlg.h"
+#include "PGSuperAppPlugin\TimelineEventDlg.h"
 #include "UIHintsDlg.h"
 #include "Hints.h"
 
@@ -39,8 +41,6 @@
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <WBFLGenericBridge.h>
-
-#include <MfcTools\CustomDDX.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -78,6 +78,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 	
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   CEAFDocument* pDoc = EAFGetDocument();
+   
 
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
@@ -129,20 +132,42 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
       // slab material
       ExchangeConcreteData(pDX);
-   }
 
-   // sacrificial depth
-   DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
-   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-   {
+      DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
-      else // all others
+      else
          DDV_UnitValueLessThanLimit(pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit(), _T("Please enter a sacrificial depth that is less than %f %s") );
    }
 
-   // overlay
+   // wearing surface
    DDX_CBItemData( pDX, IDC_WEARINGSURFACETYPE, pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface );
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      EventIndexType overlayEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetOverlayLoadEventIndex();
+      DDX_CBItemData(pDX,IDC_OVERLAY_EVENT,overlayEventIdx);
+
+      if ( pDX->m_bSaveAndValidate )
+      {
+         // saving data - dialog is closing
+
+         if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface != pgsTypes::wstSacrificialDepth )
+         {
+            // there is an overlay
+            if ( overlayEventIdx == INVALID_INDEX ) // the choice is invalid... alert the user
+            {
+               pDX->PrepareCtrl(IDC_OVERLAY_EVENT);
+               AfxMessageBox(_T("Select the event when the overlay is installed"));
+               pDX->Fail();
+            }
+         }
+         else
+         {
+            // there is not an overlay... remove the overlay activity from the timeline
+            VERIFY(pParent->m_BridgeDesc.GetTimelineManager()->RemoveOverlayLoadEvent() == TLM_SUCCESS);
+         }
+      }
+   }
 
    int bInputAsDepthAndDensity;
    if ( !pDX->m_bSaveAndValidate )
@@ -167,10 +192,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface == pgsTypes::wstSacrificialDepth )
       {
          DDV_UnitValueZeroOrMore( pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
-         if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-         {
-            DDV_UnitValueLessThanLimit( pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
-         }
+         DDV_UnitValueLessThanLimit( pDX, IDC_SACDEPTH,pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
       }
       else
       {
@@ -203,19 +225,22 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
          Float64 grossDepth;
          bool bCheckDepth = false;
-         CString strMsg;
+         CString strMsg1;
+         CString strMsg2;
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP ||
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay ) // CIP deck
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            strMsg = _T("Slab Offset must be larger than the gross slab depth + fillet");
+            strMsg1 = _T("Slab Offset must be larger than the gross slab depth");
+            strMsg2 = _T("Overhang edge depth must be less than the gross slab depth");
             bCheckDepth = true;
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          {
             grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth + fillet");
+            strMsg1 = _T("Slab Offset must be larger than the cast depth + panel depth");
+            strMsg2 = _T("Overhang edge depth must be less than the cast depth + panel depth");
             bCheckDepth = true;
          }
          else
@@ -224,9 +249,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             // should not get here
          }
 
-         if ( bCheckDepth && m_SlabOffset < grossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet )
+         if ( bCheckDepth && m_SlabOffset < grossDepth )
          {
-            AfxMessageBox(strMsg);
+            AfxMessageBox(strMsg1);
             pDX->PrepareEditCtrl(IDC_ADIM);
             pDX->Fail();
          }
@@ -236,23 +261,21 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          // Slab offset is span-by-span or girder-by-girder. Have user adjust the slab depth if it doesn't
          // fit with the current values for slab offset.
          
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder); // force to girder-by-girder
+         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotSegment); // force to segment-by-segment
 
-         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+         Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeCIP || 
               pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeOverlay )
          {
             pDX->PrepareEditCtrl(IDC_GROSS_DEPTH);
-            Float64 maxGrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
-            Float64 grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            if ( ::IsLT(maxGrossDepth,grossDepth) )
+            if ( maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
             {
                CString msg;
-               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and minimum slab offset of %s"),
-                            FormatDimension(maxGrossDepth,pDisplayUnits->GetComponentDimUnit()),
+               msg.Format(_T("Gross slab depth must less than %s to accomodate the %s fillet and maximum slab offset of %s"),
+                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -260,16 +283,14 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP )
          {
             pDX->PrepareEditCtrl(IDC_PANEL_DEPTH);
-            Float64 maxCastDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet;
-            Float64 castDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            if ( ::IsLT(maxCastDepth,castDepth) )
+            if ( maxSlabOffset -  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
             {
                CString msg;
-               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and minimum slab offset of %s"),
-                            FormatDimension(maxCastDepth,pDisplayUnits->GetComponentDimUnit()),
+               msg.Format(_T("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and maximum slab offset of %s"),
+                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDisplayUnits->GetComponentDimUnit()),
                             FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
-                            FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -284,12 +305,20 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      DDV_DeckPointGrid(pDX,IDC_GRID,&m_Grid);
       pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints = m_Grid.GetEdgePoints();
    }
    else
    {
       m_Grid.FillGrid(pParent->m_BridgeDesc.GetDeckDescription());
+   }
+
+   DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, pParent->m_BridgeDesc.GetDeckDescription()->Condition);
+   DDX_Text(pDX,   IDC_CONDITION_FACTOR,      pParent->m_BridgeDesc.GetDeckDescription()->ConditionFactor);
+
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) && !pDX->m_bSaveAndValidate )
+   {
+      EventIndexType deckEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastDeckEventIndex();
+      DDX_CBItemData(pDX,IDC_DECK_EVENT,deckEventIdx);
    }
 }
 
@@ -303,16 +332,16 @@ void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   DDX_UnitValueAndTag( pDX, IDC_SLAB_FC, IDC_SLAB_FC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->SlabFc, pDisplayUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_SLAB_FC, IDC_SLAB_FC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
-   DDX_Check_Bool(pDX,IDC_MOD_E, pParent->m_BridgeDesc.GetDeckDescription()->SlabUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->SlabEc, pDisplayUnits->GetModEUnit() );
+   DDX_Check_Bool(pDX,IDC_MOD_E, pParent->m_BridgeDesc.GetDeckDescription()->Concrete.bUserEc);
+   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Concrete.Ec, pDisplayUnits->GetModEUnit() );
 
 
    if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone && pDX->m_bSaveAndValidate )
    {
-      DDV_UnitValueGreaterThanZero( pDX, IDC_SLAB_FC, pParent->m_BridgeDesc.GetDeckDescription()->SlabFc, pDisplayUnits->GetStressUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_BridgeDesc.GetDeckDescription()->SlabEc, pDisplayUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_SLAB_FC, pParent->m_BridgeDesc.GetDeckDescription()->Concrete.Fc, pDisplayUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, IDC_EC,      pParent->m_BridgeDesc.GetDeckDescription()->Concrete.Ec, pDisplayUnits->GetModEUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
@@ -335,6 +364,11 @@ BEGIN_MESSAGE_MAP(CBridgeDescDeckDetailsPage, CPropertyPage)
    ON_BN_CLICKED(IDC_OLAY_WEIGHT_LABEL, &CBridgeDescDeckDetailsPage::OnBnClickedOlayWeightLabel)
    ON_BN_CLICKED(IDC_OLAY_DEPTH_LABEL, &CBridgeDescDeckDetailsPage::OnBnClickedOlayDepthLabel)
    ON_BN_CLICKED(IDC_SAMESLABOFFSET, &CBridgeDescDeckDetailsPage::OnBnClickedSameslaboffset)
+   ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CBridgeDescDeckDetailsPage::OnConditionFactorTypeChanged)
+   ON_CBN_SELCHANGE(IDC_DECK_EVENT, OnDeckEventChanged)
+   ON_CBN_DROPDOWN(IDC_DECK_EVENT, OnDeckEventChanging)
+   ON_CBN_SELCHANGE(IDC_OVERLAY_EVENT, OnOverlayEventChanged)
+   ON_CBN_DROPDOWN(IDC_OVERLAY_EVENT, OnOverlayEventChanging)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -347,6 +381,11 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   CEAFDocument* pDoc = EAFGetDocument();
+
+   FillEventList();
+
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -362,29 +401,50 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    // fill up slab overhang taper options
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_OVERHANG_TAPER);
    int idx = pCB->AddString(_T("Taper overhang to top of top flange"));
-   pCB->SetItemData(idx,(DWORD)pgsTypes::TopTopFlange);
+   pCB->SetItemData(idx,(DWORD)pgsTypes::dotTopTopFlange);
 
    idx = pCB->AddString(_T("Taper overhang to bottom of top flange"));
-   pCB->SetItemData(idx,(DWORD)pgsTypes::BottomTopFlange);
+   pCB->SetItemData(idx,(DWORD)pgsTypes::dotBottomTopFlange);
 
    idx = pCB->AddString(_T("Don't taper overhang"));
-   pCB->SetItemData(idx,(DWORD)pgsTypes::None);
+   pCB->SetItemData(idx,(DWORD)pgsTypes::dotNone);
 
    // wearing surface types
    pCB = (CComboBox*)GetDlgItem(IDC_WEARINGSURFACETYPE);
 
-   idx = pCB->AddString(_T("Sacrificial Depth"));
-   pCB->SetItemData(idx,(DWORD)pgsTypes::wstSacrificialDepth);
+   if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
+      idx = pCB->AddString(_T("Sacrificial Depth"));
+      pCB->SetItemData(idx,(DWORD)pgsTypes::wstSacrificialDepth);
+   }
 
    idx = pCB->AddString(_T("Overlay"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::wstOverlay);
 
-   idx = pCB->AddString(_T("Future Overlay"));
-   pCB->SetItemData(idx,(DWORD)pgsTypes::wstFutureOverlay);
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      idx = pCB->AddString(_T("Future Overlay"));
+      pCB->SetItemData(idx,(DWORD)pgsTypes::wstFutureOverlay);
+   }
+
+   // disable wearing surface stage if it doesn't apply
+   pCB = (CComboBox*)GetDlgItem(IDC_OVERLAY_EVENT);
+   if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface == pgsTypes::wstSacrificialDepth )
+   {
+      pCB->EnableWindow(FALSE);
+   }
 
    m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
    m_bSlabOffsetWholeBridge = pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge ? true : false;
    m_strSlabOffsetCache.Format(_T("%s"),FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
+
+   // Initialize the condition factor combo box
+   CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
+   pcbConditionFactor->AddString(_T("Good or Satisfactory (Structure condition rating 6 or higher)"));
+   pcbConditionFactor->AddString(_T("Fair (Structure condition rating of 5)"));
+   pcbConditionFactor->AddString(_T("Poor (Structure condition rating 4 or lower)"));
+   pcbConditionFactor->AddString(_T("Other"));
+   pcbConditionFactor->SetCurSel(0);
 
    CPropertyPage::OnInitDialog();
 
@@ -399,6 +459,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    EnableRemove(FALSE);
 	
+   OnConditionFactorTypeChanged();
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -492,6 +554,7 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
       GetDlgItem(IDC_OVERHANG_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
       GetDlgItem(IDC_ADIM)->SetWindowText(_T(""));
+      GetDlgItem(IDC_SACDEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_SUPPORT)->SetWindowText(_T(""));
       GetDlgItem(IDC_SLAB_FC)->SetWindowText(_T(""));
@@ -561,9 +624,9 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      strDensity.Format(_T("%s"),FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK1);
-      strK2.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->SlabEcK2);
+      strDensity.Format(_T("%s"),FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
+      strK1.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK1);
+      strK2.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK2);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
@@ -582,17 +645,21 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
 
    int iOption = GetCheckedRadioButton(IDC_OLAY_WEIGHT_LABEL,IDC_OLAY_DEPTH_LABEL);
 
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+
    pgsTypes::WearingSurfaceType ws = (pgsTypes::WearingSurfaceType)(pCB->GetItemData(idx));
    if ( ws == pgsTypes::wstSacrificialDepth )
    {
-      bSacDepth               = TRUE;
+      bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
       bOverlayLabel           = FALSE;
       bOverlayWeight          = FALSE;
       bOverlayDepthAndDensity = FALSE;
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
-      bSacDepth               = TRUE;
+      bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
@@ -604,6 +671,8 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
    }
+
+   GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow( !bSacDepth );
 
    GetDlgItem(IDC_OLAY_WEIGHT_LABEL)->EnableWindow( bOverlayLabel );
    GetDlgItem(IDC_OLAY_WEIGHT)->EnableWindow( bOverlayWeight );
@@ -634,46 +703,61 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
 
-   CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+   CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
-   dlg.m_Type    = pDeck->SlabConcreteType;
-   dlg.m_Fc      = pDeck->SlabFc;
-   dlg.m_AggSize = pDeck->SlabMaxAggregateSize;
-   dlg.m_bUserEc = pDeck->SlabUserEc;
-   dlg.m_Ds      = pDeck->SlabStrengthDensity;
-   dlg.m_Dw      = pDeck->SlabWeightDensity;
-   dlg.m_Ec      = pDeck->SlabEc;
-   dlg.m_EccK1   = pDeck->SlabEcK1;
-   dlg.m_EccK2   = pDeck->SlabEcK2;
-   dlg.m_CreepK1 = pDeck->SlabCreepK1;
-   dlg.m_CreepK2 = pDeck->SlabCreepK2;
-   dlg.m_ShrinkageK1 = pDeck->SlabShrinkageK1;
-   dlg.m_ShrinkageK2 = pDeck->SlabShrinkageK2;
-   dlg.m_bHasFct = pDeck->SlabHasFct;
-   dlg.m_Fct     = pDeck->SlabFct;
+   dlg.m_General.m_Type    = pDeck->Concrete.Type;
+   dlg.m_General.m_Fc      = pDeck->Concrete.Fc;
+   dlg.m_General.m_AggSize = pDeck->Concrete.MaxAggregateSize;
+   dlg.m_General.m_bUserEc = pDeck->Concrete.bUserEc;
+   dlg.m_General.m_Ds      = pDeck->Concrete.StrengthDensity;
+   dlg.m_General.m_Dw      = pDeck->Concrete.WeightDensity;
+   dlg.m_General.m_Ec      = pDeck->Concrete.Ec;
+   dlg.m_General.m_strUserEc  = m_strUserEc;
 
+   dlg.m_AASHTO.m_EccK1       = pDeck->Concrete.EcK1;
+   dlg.m_AASHTO.m_EccK2       = pDeck->Concrete.EcK2;
+   dlg.m_AASHTO.m_CreepK1     = pDeck->Concrete.CreepK1;
+   dlg.m_AASHTO.m_CreepK2     = pDeck->Concrete.CreepK2;
+   dlg.m_AASHTO.m_ShrinkageK1 = pDeck->Concrete.ShrinkageK1;
+   dlg.m_AASHTO.m_ShrinkageK2 = pDeck->Concrete.ShrinkageK2;
+   dlg.m_AASHTO.m_bHasFct     = pDeck->Concrete.bHasFct;
+   dlg.m_AASHTO.m_Fct         = pDeck->Concrete.Fct;
 
-   dlg.m_strUserEc  = m_strUserEc;
+   dlg.m_ACI.m_bUserParameters = pDeck->Concrete.bACIUserParameters;
+   dlg.m_ACI.m_A               = pDeck->Concrete.A;
+   dlg.m_ACI.m_B               = pDeck->Concrete.B;
+   dlg.m_ACI.m_CureMethod      = pDeck->Concrete.CureMethod;
+   dlg.m_ACI.m_CementType      = pDeck->Concrete.CementType;
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
    if ( dlg.DoModal() == IDOK )
    {
-      pDeck->SlabConcreteType     = dlg.m_Type;
-      pDeck->SlabFc               = dlg.m_Fc;
-      pDeck->SlabMaxAggregateSize = dlg.m_AggSize;
-      pDeck->SlabUserEc           = dlg.m_bUserEc;
-      pDeck->SlabStrengthDensity  = dlg.m_Ds;
-      pDeck->SlabWeightDensity    = dlg.m_Dw;
-      pDeck->SlabEc               = dlg.m_Ec;
-      pDeck->SlabEcK1             = dlg.m_EccK1;
-      pDeck->SlabEcK2             = dlg.m_EccK2;
-      pDeck->SlabCreepK1          = dlg.m_CreepK1;
-      pDeck->SlabCreepK2          = dlg.m_CreepK2;
-      pDeck->SlabShrinkageK1      = dlg.m_ShrinkageK1;
-      pDeck->SlabShrinkageK2      = dlg.m_ShrinkageK2;
-      pDeck->SlabHasFct           = dlg.m_bHasFct;
-      pDeck->SlabFct              = dlg.m_Fct;
+      pDeck->Concrete.Type             = dlg.m_General.m_Type;
+      pDeck->Concrete.Fc               = dlg.m_General.m_Fc;
+      pDeck->Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
+      pDeck->Concrete.bUserEc          = dlg.m_General.m_bUserEc;
+      pDeck->Concrete.StrengthDensity  = dlg.m_General.m_Ds;
+      pDeck->Concrete.WeightDensity    = dlg.m_General.m_Dw;
+      pDeck->Concrete.Ec               = dlg.m_General.m_Ec;
+      pDeck->Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
+      pDeck->Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
+      pDeck->Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
+      pDeck->Concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
+      pDeck->Concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
+      pDeck->Concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
+      pDeck->Concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
+      pDeck->Concrete.Fct              = dlg.m_AASHTO.m_Fct;
 
-      m_strUserEc  = dlg.m_strUserEc;
+      pDeck->Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
+      pDeck->Concrete.A                  = dlg.m_ACI.m_A;
+      pDeck->Concrete.B                  = dlg.m_ACI.m_B;
+      pDeck->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
+      pDeck->Concrete.CementType         = dlg.m_ACI.m_CementType;
+
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+
+      m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
 
       UpdateConcreteControls();
@@ -696,8 +780,8 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteControls()
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
-   const CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
-   pWnd->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str() );
+   const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+   pWnd->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str() );
 }
 
 BOOL CBridgeDescDeckDetailsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
@@ -741,14 +825,14 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
    const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
 
-   const CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+   const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
-      _T("Unit Weight"),FormatDimension(pDeck->SlabStrengthDensity,density),
-      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pDeck->SlabWeightDensity,density),
-      _T("Max Aggregate Size"),  FormatDimension(pDeck->SlabMaxAggregateSize,aggsize)
+      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+      _T("Unit Weight"),FormatDimension(pDeck->Concrete.StrengthDensity,density),
+      _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pDeck->Concrete.WeightDensity,density),
+      _T("Max Aggregate Size"),  FormatDimension(pDeck->Concrete.MaxAggregateSize,aggsize)
       );
 
    //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -761,11 +845,11 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    //   strTip += strK1;
    //}
 
-   if ( pDeck->SlabConcreteType != pgsTypes::Normal && pDeck->SlabHasFct )
+   if ( pDeck->Concrete.Type != pgsTypes::Normal && pDeck->Concrete.bHasFct )
    {
       CString strLWC;
       strLWC.Format(_T("\r\n%-20s %s"),
-         _T("fct"),FormatDimension(pDeck->SlabFct,stress));
+         _T("fct"),FormatDimension(pDeck->Concrete.Fct,stress));
 
       strTip += strLWC;
    }
@@ -781,7 +865,7 @@ void CBridgeDescDeckDetailsPage::OnAddDeckEdgePoint()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+   CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
    pDeck->DeckEdgePoints = m_Grid.GetEdgePoints();
 
@@ -877,8 +961,7 @@ void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)pFrame->GetDocument();
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
@@ -893,4 +976,223 @@ void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
          pDoc->SetUIHintSettings(hintSettings);
       }
    }
+}
+
+void CBridgeDescDeckDetailsPage::OnConditionFactorTypeChanged()
+{
+   CEdit* pEdit = (CEdit*)GetDlgItem(IDC_CONDITION_FACTOR);
+   CComboBox* pcbConditionFactor = (CComboBox*)GetDlgItem(IDC_CONDITION_FACTOR_TYPE);
+
+   int idx = pcbConditionFactor->GetCurSel();
+   switch(idx)
+   {
+   case 0:
+      pEdit->EnableWindow(FALSE);
+      pEdit->SetWindowText(_T("1.00"));
+      break;
+   case 1:
+      pEdit->EnableWindow(FALSE);
+      pEdit->SetWindowText(_T("0.95"));
+      break;
+   case 2:
+      pEdit->EnableWindow(FALSE);
+      pEdit->SetWindowText(_T("0.85"));
+      break;
+   case 3:
+      pEdit->EnableWindow(TRUE);
+      break;
+   }
+}
+
+
+
+void CBridgeDescDeckDetailsPage::FillEventList()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      GetDlgItem(IDC_DECK_EVENT_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DECK_EVENT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_OVERLAY_EVENT)->ShowWindow(SW_HIDE);
+
+      return;
+   }
+
+   CComboBox* pcbDeckEvent = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
+   CComboBox* pcbOverlayEvent = (CComboBox*)GetDlgItem(IDC_OVERLAY_EVENT);
+
+   int deckEventIdx = pcbDeckEvent->GetCurSel();
+   int overlayEventIdx = pcbOverlayEvent->GetCurSel();
+
+   pcbDeckEvent->ResetContent();
+   pcbOverlayEvent->ResetContent();
+
+   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+
+   EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   {
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+
+      CString label;
+      label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+
+      pcbDeckEvent->SetItemData(pcbDeckEvent->AddString(label),eventIdx);
+      pcbOverlayEvent->SetItemData(pcbOverlayEvent->AddString(label),eventIdx);
+   }
+
+   CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+   pcbDeckEvent->SetItemData(pcbDeckEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+   pcbOverlayEvent->SetItemData(pcbOverlayEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+
+   if ( deckEventIdx != CB_ERR )
+      pcbDeckEvent->SetCurSel(deckEventIdx);
+
+   if ( overlayEventIdx != CB_ERR )
+      pcbOverlayEvent->SetCurSel(overlayEventIdx);
+}
+
+void CBridgeDescDeckDetailsPage::OnDeckEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
+   m_PrevDeckEventIdx = pCB->GetCurSel();
+}
+
+void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
+   {
+      eventIdx = CreateEvent();
+   }
+
+   if (eventIdx != INVALID_INDEX)
+   {
+      CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+      bool bDone = false;
+      bool bAdjustTimeline = false;
+      while ( !bDone )
+      {
+         int result = pParent->m_BridgeDesc.GetTimelineManager()->SetCastDeckEventByIndex(eventIdx,bAdjustTimeline);
+         if ( result == TLM_SUCCESS )
+         {
+            bDone = true;
+         }
+         else
+         {
+            CString strProblem;
+            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+               strProblem = _T("This event begins before the activities in the previous event have completed.");
+            else
+               strProblem = _T("The activities in this event end after the next event begins.");
+
+            CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
+
+            CString strMsg;
+            strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
+            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            {
+               bAdjustTimeline = true;
+            }
+            else
+            {
+               return;
+            }
+
+         }
+      }
+
+      FillEventList();
+
+      pCB->SetCurSel((int)eventIdx);
+   }
+   else
+   {
+      pCB->SetCurSel((int)m_PrevDeckEventIdx);
+   }
+}
+
+void CBridgeDescDeckDetailsPage::OnOverlayEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_OVERLAY_EVENT);
+   m_PrevOverlayEventIdx = pCB->GetCurSel();
+}
+
+void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_OVERLAY_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
+   if ( eventIdx == CREATE_TIMELINE_EVENT )
+   {
+      CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+      CTimelineEventDlg dlg(pParent->m_BridgeDesc.GetTimelineManager(),FALSE);
+      if ( dlg.DoModal() == IDOK )
+      {
+         bool bDone = false;
+         bool bAdjustTimeline = false;
+         while ( !bDone )
+         {
+            int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(dlg.m_TimelineEvent,bAdjustTimeline,&eventIdx);
+            if ( result == TLM_SUCCESS )
+            {
+               bDone = true;
+            }
+            else
+            {
+               CString strProblem;
+               if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
+                  strProblem = _T("This event begins before the activities in the previous event have completed.");
+               else
+                  strProblem = _T("The activities in this event end after the next event begins.");
+
+               CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
+
+               CString strMsg;
+               strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
+               if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+               {
+                  bAdjustTimeline = true;
+               }
+               else
+               {
+                  bDone = true;
+               }
+            }
+         }
+     }
+   }
+
+   if (eventIdx != INVALID_INDEX)
+   {
+      CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+      pParent->m_BridgeDesc.GetTimelineManager()->SetOverlayLoadEventByIndex(eventIdx);
+
+      FillEventList();
+
+      pCB->SetCurSel((int)eventIdx);
+   }
+   else
+   {
+      pCB->SetCurSel((int)m_PrevOverlayEventIdx);
+   }
+}
+
+EventIndexType CBridgeDescDeckDetailsPage::CreateEvent()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   CTimelineEventDlg dlg(pParent->m_BridgeDesc.GetTimelineManager(),FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      EventIndexType eventIdx;
+      int result = pParent->m_BridgeDesc.GetTimelineManager()->AddTimelineEvent(dlg.m_TimelineEvent,true,&eventIdx);
+      return eventIdx;
+  }
+
+   return INVALID_INDEX;
 }

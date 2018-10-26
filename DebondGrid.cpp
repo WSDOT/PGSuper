@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,8 @@
 #include "DebondGrid.h"
 #include "DebondDlg.h"
 #include "GirderDescDlg.h"
+#include "PGSuperAppPlugin\GirderSegmentDlg.h"
+#include "PGSuperAppPlugin\GirderSegmentStrandsPage.h"
 #include <Units\Measure.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -103,7 +105,7 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
-   CGirderDescDlg* pParent = (CGirderDescDlg*)(GetParent()->GetParent());
+   IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
 	Initialize( );
 
@@ -203,7 +205,8 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 
 
    // if their can't be any debonded strands, hide the debond columns
-   CanDebond( pStrandGeom->CanDebondStrands(pParent->m_strGirderName.c_str(),pgsTypes::Straight) );
+   bool bCanDebond = pStrandGeom->CanDebondStrands(pParent->GetGirderName(),pgsTypes::Straight);
+   CanDebond(bCanDebond,bSymmetricDebond);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -214,8 +217,6 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
    }
 
 	GetParam( )->EnableUndo(TRUE);
-
-   SymmetricDebond(bSymmetricDebond);
 }
 
 void CGirderDescDebondGrid::SetRowStyle(ROWCOL nRow)
@@ -276,9 +277,9 @@ CString CGirderDescDebondGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
     }
 }
 
-void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
+void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 {
-   CGirderDescDlg* pParent = (CGirderDescDlg*)(GetParent()->GetParent());
+   IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -313,12 +314,12 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
    }
 
    CComPtr<IIndexArray> debondables;
-   pStrandGeom->ListDebondableStrands(pParent->m_strGirderName.c_str(), straightStrandFill,pgsTypes::Straight, &debondables); 
+   pStrandGeom->ListDebondableStrands(pParent->GetGirderName(), straightStrandFill,pgsTypes::Straight, &debondables); 
 
    CComPtr<IIndexArray> strandids;
-   pStrandGeom->ComputePermanentStrandIndices(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,&strandids);
+   pStrandGeom->ComputePermanentStrandIndices(pParent->GetGirderName(),config,pgsTypes::Straight,&strandids);
 
-   StrandIndexType nStrands = girderData.PrestressData.GetNstrands(pgsTypes::Straight);
+   StrandIndexType nStrands = segment.Strands.GetNstrands(pgsTypes::Straight);
 
    ConfigStrandFillTool fillTool(straightStrandFill);
 
@@ -407,10 +408,10 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
       gridIdx++;
    }
 
-   std::vector<CDebondInfo>::const_iterator debond_iter;
-   for ( debond_iter = girderData.PrestressData.Debond[pgsTypes::Straight].begin(); debond_iter != girderData.PrestressData.Debond[pgsTypes::Straight].end(); debond_iter++ )
+   std::vector<CDebondData>::const_iterator debond_iter;
+   for ( debond_iter = segment.Strands.Debond[pgsTypes::Straight].begin(); debond_iter != segment.Strands.Debond[pgsTypes::Straight].end(); debond_iter++ )
    {
-      const CDebondInfo& debond_info = *debond_iter;
+      const CDebondData& debond_info = *debond_iter;
       ROWCOL row = GetRow(debond_info.strandTypeGridIdx);
 
       // set debond check mark
@@ -452,7 +453,7 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
          );
    }
 
-   const std::vector<GridIndexType>& extStrandsStart = girderData.PrestressData.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
+   const std::vector<GridIndexType>& extStrandsStart = segment.Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
    std::vector<GridIndexType>::const_iterator extend_iter(extStrandsStart.begin());
    std::vector<GridIndexType>::const_iterator extend_iter_end(extStrandsStart.end());
    for ( ; extend_iter != extend_iter_end; extend_iter++ )
@@ -462,7 +463,7 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
          SetStyleRange(CGXRange(row,FIRST_EXTEND_COL),CGXStyle().SetValue(_T("1")));
    }
 
-   const std::vector<GridIndexType>& extStrandsEnd = girderData.PrestressData.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
+   const std::vector<GridIndexType>& extStrandsEnd = segment.Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
    extend_iter     = extStrandsEnd.begin();
    extend_iter_end = extStrandsEnd.end();
    for ( ; extend_iter != extend_iter_end; extend_iter++ )
@@ -481,23 +482,23 @@ void CGirderDescDebondGrid::FillGrid(const CGirderData& girderData)
 	GetParam()->EnableUndo(TRUE);
 }
 
-void CGirderDescDebondGrid::GetData(CGirderData& girderData)
+void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 {
-   girderData.PrestressData.Debond[pgsTypes::Straight].clear();
-   girderData.PrestressData.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
-   girderData.PrestressData.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
+   segment.Strands.Debond[pgsTypes::Straight].clear();
+   segment.Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
+   segment.Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
    
    ROWCOL nRows = GetRowCount();
 
-   CGirderDescDlg* pParent = (CGirderDescDlg*)(GetParent()->GetParent());
+   IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
-   StrandIndexType nStrands = girderData.PrestressData.GetNstrands(pgsTypes::Straight);
+   StrandIndexType nStrands = segment.Strands.GetNstrands(pgsTypes::Straight);
 
-   ConfigStrandFillVector straightStrandFill = pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(),pgsTypes::Straight,nStrands);
+   ConfigStrandFillVector straightStrandFill = pStrandGeom->ComputeStrandFill(pParent->GetGirderName(),pgsTypes::Straight,nStrands);
    
    ConfigStrandFillTool fillTool(straightStrandFill);
 
@@ -511,7 +512,7 @@ void CGirderDescDebondGrid::GetData(CGirderData& girderData)
       CString strDebondCheck = GetCellValue(row+1,1);
       if ( strDebondCheck == _T("1") )
       {
-         CDebondInfo debond_info;
+         CDebondData debond_info;
 
          debond_info.strandTypeGridIdx = pUserData->gridIdx;
 
@@ -530,7 +531,7 @@ void CGirderDescDebondGrid::GetData(CGirderData& girderData)
             debond_info.Length2 = length;
          }
 
-         girderData.PrestressData.Debond[pgsTypes::Straight].push_back(debond_info);
+         segment.Strands.Debond[pgsTypes::Straight].push_back(debond_info);
       }
       else
       {
@@ -540,7 +541,7 @@ void CGirderDescDebondGrid::GetData(CGirderData& girderData)
             if ( strCheck == _T("1") )
             {
                ATLASSERT( pUserData->gridIdx != INVALID_INDEX );
-               girderData.PrestressData.AddExtendedStrand(pgsTypes::Straight,c == FIRST_EXTEND_COL ? pgsTypes::metStart : pgsTypes::metEnd,pUserData->gridIdx);
+               segment.Strands.AddExtendedStrand(pgsTypes::Straight,c == FIRST_EXTEND_COL ? pgsTypes::metStart : pgsTypes::metEnd,pUserData->gridIdx);
             }
          }
       }
@@ -551,7 +552,6 @@ Float64 CGirderDescDebondGrid::GetLeftDebondLength(ROWCOL row)
 {
    return GetDebondLength(row,2);
 }
-
 
 Float64 CGirderDescDebondGrid::GetRightDebondLength(ROWCOL row)
 {
@@ -728,13 +728,20 @@ StrandIndexType CGirderDescDebondGrid::GetNumExtendedStrands(pgsTypes::MemberEnd
    return nStrands;
 }
 
-void CGirderDescDebondGrid::SymmetricDebond(bool bSymmetricDebond)
+void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    m_bSymmetricDebond = bSymmetricDebond;
+
+   VERIFY(HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,bCanDebond ? FALSE : TRUE));
+   if ( bCanDebond && m_bSymmetricDebond )
+      HideCols(LAST_DEBOND_COL,LAST_DEBOND_COL);
+
+   if (!bCanDebond)
+      return;
 
    CString strColHeading = CString(_T("Debond\nLength\n(")) + 
                            CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
@@ -757,11 +764,4 @@ void CGirderDescDebondGrid::SymmetricDebond(bool bSymmetricDebond)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetValue(strColHeading)
 		);
-}
-
-void CGirderDescDebondGrid::CanDebond(bool bCanDebond)
-{
-   VERIFY(HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,bCanDebond ? FALSE : TRUE));
-   if ( bCanDebond && m_bSymmetricDebond )
-      HideCols(LAST_DEBOND_COL,LAST_DEBOND_COL);
 }

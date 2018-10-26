@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -89,9 +89,9 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    return table;
 }
 
-void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << stress.SetValue(details.pLosses->TimeDependentLossesBeforeDeck());
-   (*this)(row,2) << stress.SetValue(details.pLosses->TimeDependentLossesAfterDeck());
-   (*this)(row,3) << stress.SetValue(details.pLosses->TimeDependentLosses());
+   (*this)(row,1) << stress.SetValue(pDetails->pLosses->TimeDependentLossesBeforeDeck());
+   (*this)(row,2) << stress.SetValue(pDetails->pLosses->TimeDependentLossesAfterDeck());
+   (*this)(row,3) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
 }

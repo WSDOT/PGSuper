@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsDeflectionCheckArtifact::pgsDeflectionCheckArtifact()
+pgsDeflectionCheckArtifact::pgsDeflectionCheckArtifact(SpanIndexType spanIdx) :
+m_SpanIdx(spanIdx)
 {
 }
 
@@ -63,6 +64,16 @@ pgsDeflectionCheckArtifact& pgsDeflectionCheckArtifact::operator=(const pgsDefle
 }
 
 //======================== OPERATIONS =======================================
+void pgsDeflectionCheckArtifact::SetSpan(SpanIndexType spanIdx)
+{
+   m_SpanIdx = spanIdx;
+}
+
+SpanIndexType pgsDeflectionCheckArtifact::GetSpan() const
+{
+   return m_SpanIdx;
+}
+
 void pgsDeflectionCheckArtifact::SetAllowableSpanRatio(Float64 val)
 {
    m_AllowableSpanRatio = val;
@@ -131,6 +142,8 @@ void pgsDeflectionCheckArtifact::MakeCopy(const pgsDeflectionCheckArtifact& rOth
    m_MaxDemand          = rOther.m_MaxDemand;
    m_Capacity           = rOther.m_Capacity;
    m_AllowableSpanRatio = rOther.m_AllowableSpanRatio;
+
+   m_SpanIdx = rOther.m_SpanIdx;
 }
 
 void pgsDeflectionCheckArtifact::MakeAssignment(const pgsDeflectionCheckArtifact& rOther)

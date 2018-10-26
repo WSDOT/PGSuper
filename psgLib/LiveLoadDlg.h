@@ -1,26 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
-
 #if !defined(AFX_LIVELOADDLG_H__F9C9AC38_E2D9_4ABE_872F_2984E9B1C8BF__INCLUDED_)
 #define AFX_LIVELOADDLG_H__F9C9AC38_E2D9_4ABE_872F_2984E9B1C8BF__INCLUDED_
 
@@ -47,12 +24,12 @@ public:
 	//{{AFX_DATA(CLiveLoadDlg)
 	enum { IDD = IDD_LIVE_LOAD_ENTRY };
 	CString	m_EntryName;
-	Float64	m_LaneLoad;
-   Float64 m_LaneLoadSpanLength;
+	double	m_LaneLoad;
+   double m_LaneLoadSpanLength;
 	BOOL	m_IsNotional;
 	//}}AFX_DATA
 	LiveLoadLibraryEntry::LiveLoadConfigurationType m_ConfigType;
-   pgsTypes::LiveLoadApplicabilityType m_UsageType;
+   LiveLoadLibraryEntry::LiveLoadApplicabilityType m_UsageType;
 
    Float64 m_MaxVariableAxleSpacing;
    AxleIndexType m_VariableAxleIndex;

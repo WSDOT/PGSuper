@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,8 @@
 #define BEAMS_AUTOLIBNAME "PGSuperBeams.lib"
 
 #pragma comment(lib,BEAMS_AUTOLIBNAME)
-//#if defined AUTOLIB
-//#pragma message("Automatically linking with " BEAMS_AUTOLIBNAME)
-//#endif // AUTOLIB
+#if defined AUTOLIB
+#pragma message("PGSuperBeams.dll will automatically link with " (lib,BEAMS_AUTOLIBNAME))
+#endif // AUTOLIB
 
 #endif // (BUILDBEAMSLIB)

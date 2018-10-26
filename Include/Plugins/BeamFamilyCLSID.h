@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright c 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,8 @@
 #pragma once
 
 /////////////////////////////////////////////////////////////////////////////
-// Beam family CLSIDs
+// Beam family CLSIDs (PGSuper)
+/////////////////////////////////////////////////////////////////////////////
 
 // {AB6A4CD6-0F10-4d2f-BB98-4425146B133E}
 DEFINE_GUID(CLSID_WFBeamFamily, 
@@ -57,3 +58,13 @@ DEFINE_GUID(CLSID_SlabBeamFamily,
 DEFINE_GUID(CLSID_DeckedSlabBeamFamily, 
 0xbfc403e9, 0xaaf5, 0x4e49, 0x86, 0xab, 0xb5, 0x37, 0xf1, 0xc5, 0x0, 0x66);
 
+/////////////////////////////////////////////////////////////////////////////
+// Beam family CLSIDs (PGSplice)
+/////////////////////////////////////////////////////////////////////////////
+// {137DE1EA-B3A8-4cfb-8CAC-762991ACBCCE}
+DEFINE_GUID(CLSID_SplicedIBeamFamily, 
+0x137de1ea, 0xb3a8, 0x4cfb, 0x8c, 0xac, 0x76, 0x29, 0x91, 0xac, 0xbc, 0xce);
+
+// {4229DFFE-F5D7-4c16-9D11-F296ED06161C}
+DEFINE_GUID(CLSID_SplicedUBeamFamily, 
+0x4229dffe, 0xf5d7, 0x4c16, 0x9d, 0x11, 0xf2, 0x96, 0xed, 0x6, 0x16, 0x1c);

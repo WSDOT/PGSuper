@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,8 +49,8 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CLibEditorListView, CListView)
 
 CLibEditorListView::CLibEditorListView():
-m_LibIndex(INVALID_INDEX),
-m_ItemSelected(INVALID_INDEX)
+m_LibIndex(-1),
+m_ItemSelected(-1)
 {
 }
 
@@ -110,15 +110,15 @@ void CLibEditorListView::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // CLibEditorListView message handlers
-void CLibEditorListView::OnLibrarySelected(IndexType libnum, const CString& name)
+void CLibEditorListView::OnLibrarySelected(int libnum, const CString& name)
 {
-   if (libnum==INVALID_INDEX)
+   if (libnum==-1)
    {
       // user selected a library manager node - display a blank list
       CListCtrl& rlist = this->GetListCtrl( );
       rlist.DeleteAllItems();
       m_LibName = "Library Manager";
-      m_LibIndex = INVALID_INDEX;
+      m_LibIndex = -1;
    }
    else
    {
@@ -184,8 +184,8 @@ void CLibEditorListView::RedrawAllEntries()
                const std::_tstring& name = *kit;
                const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
                CHECK(pentry);
-               CollectionIndexType st = InsertEntryToList(pentry, plib, i);
-               CHECK(st != INVALID_INDEX);
+               int st = InsertEntryToList(pentry, plib, i);
+               CHECK(st!=-1);
                i++;
             }
          }
@@ -219,7 +219,7 @@ bool CLibEditorListView::AddNewEntry()
       CollectionIndexType n = plib->GetCount();
       const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
       CollectionIndexType it = InsertEntryToList(pentry, plib, ni-1);
-      if (it != INVALID_INDEX)
+      if (it!=-1)
       {
          m_ItemSelected = (int)it;
          rlist.EditLabel((int)it);
@@ -256,27 +256,26 @@ void CLibEditorListView::OnRButtonDown(UINT nFlags, CPoint point)
 		   MessageBox(_T("Could not create CMenu"));
 	   }
 
-	   IndexType idx;
+	   int idx;
 	   LV_HITTESTINFO lvH;
 	   lvH.pt.x = point.x;
       lvH.pt.y = point.y;	   
       idx = rlist.HitTest(&lvH);
       m_ItemSelected = idx;
 
-      if ( idx != INVALID_INDEX)
+      if ( idx != -1)
       {
-         CString entry_name = rlist.GetItemText((int)m_ItemSelected,0);
-         libILibrary* plib = (libILibrary*)rlist.GetItemData((int)m_ItemSelected);
+         CString entry_name = rlist.GetItemText(m_ItemSelected,0);
+         libILibrary* plib = (libILibrary*)rlist.GetItemData(m_ItemSelected);
          ASSERT(plib);
          UINT dodel = plib->IsEditingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
-         UINT dodup = plib->IsCopyingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
 
          menu.AppendMenu( dodel,                  IDM_DELETE_ENTRY, _T("Delete") );
-         menu.AppendMenu( dodup,                  IDM_DUPLICATE_ENTRY, _T("Duplicate") );
+         menu.AppendMenu( MF_STRING | MF_ENABLED, IDM_DUPLICATE_ENTRY, _T("Duplicate") );
          menu.AppendMenu( MF_STRING | MF_ENABLED, IDM_EDIT_ENTRY, _T("Edit") );
          menu.AppendMenu( dodel,                  IDM_RENAME_ENTRY, _T("Rename") );
 
-         rlist.SetItemState( (int)m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
+         rlist.SetItemState( m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
       }
       else
       {
@@ -303,10 +302,10 @@ bool CLibEditorListView::EditEntry(libILibrary* plib, LPCTSTR entryName)
       this->RedrawAllEntries();
 
       // re-select our entry
-      if (m_ItemSelected != INVALID_INDEX)
+      if (m_ItemSelected!=-1)
       {
          CListCtrl& rlist = this->GetListCtrl();
-         rlist.SetItemState( (int)m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
+         rlist.SetItemState( m_ItemSelected,LVIS_SELECTED | LVIS_FOCUSED , LVIS_SELECTED | LVIS_FOCUSED);   
       }
 
       return true;
@@ -433,7 +432,7 @@ bool CLibEditorListView::IsEditableItemSelected()const
 bool CLibEditorListView::IsLibrarySelected() const
 {
    // a library must be selected
-   return m_LibIndex != INVALID_INDEX;
+   return m_LibIndex!=-1;
 }
 
 void CLibEditorListView::DeleteSelectedEntry()
@@ -459,21 +458,6 @@ void CLibEditorListView::DuplicateSelectedEntry()
       ASSERT(0);
 }
 
-bool CLibEditorListView::CanDuplicateEntry()
-{
-   CString entry_name;
-   libILibrary* plib;
-   if( !GetSelectedEntry(&entry_name, &plib) )
-      return false;
-
-   const libLibraryEntry* pEntry = plib->GetEntry(entry_name);
-   if ( pEntry )
-      return pEntry->IsCopyingEnabled();
-
-   ATLASSERT(false); // entry should have been retrieved
-   return false;
-}
-
 void CLibEditorListView::EditSelectedEntry()
 {
    CString entry_name;
@@ -491,7 +475,7 @@ void CLibEditorListView::RenameSelectedEntry()
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
-      rlist.EditLabel((int)m_ItemSelected);
+      rlist.EditLabel(m_ItemSelected);
       CDocument* pDoc = GetDocument();
       pDoc->SetModifiedFlag(true);
    }
@@ -593,7 +577,7 @@ bool CLibEditorListView::GetSelectedEntry(CString* pentryName, libILibrary** ppl
    CListCtrl& rlist = this->GetListCtrl();
    int idx = rlist.GetNextItem(-1,LVNI_SELECTED);
    m_ItemSelected=idx;
-   if ( idx != INVALID_INDEX)
+   if ( idx != -1)
    {
       *pentryName = rlist.GetItemText(idx,0);
       *pplib = (libILibrary*)rlist.GetItemData(idx);
@@ -659,7 +643,7 @@ void CLibEditorListView::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
    }
 }
 
-CollectionIndexType CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i)
+int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i)
 {
    CListCtrl& rlist = this->GetListCtrl( );
 
@@ -713,6 +697,6 @@ CollectionIndexType CLibEditorListView::InsertEntryToList(const libLibraryEntry*
     lvi.stateMask      = LVIS_STATEIMAGEMASK;
     lvi.lParam         = (LPARAM)plib; // entry holds pointer to its library
 
-    return (CollectionIndexType)rlist.InsertItem (&lvi);
+    return rlist.InsertItem (&lvi);
 }
 

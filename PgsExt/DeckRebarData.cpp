@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -206,12 +206,12 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("BottomSpacing"),&var);
    BottomSpacing = var.dblVal;
 
-   var.vt = VT_I4;
+   var.vt = VT_INDEX;
    pStrLoad->get_Property(_T("NegMomentCount"),&var);
-   long count = var.lVal;
+   IndexType count = VARIANT2INDEX(var);
    NegMomentRebar.clear();
 
-   for ( long i = 0; i < count; i++ )
+   for ( IndexType i = 0; i < count; i++ )
    {
       NegMomentRebarData rebar;
       pStrLoad->BeginUnit(_T("NegMomentRebar"));

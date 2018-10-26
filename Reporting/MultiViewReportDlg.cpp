@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,8 @@
 #include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
+
 #include <PgsExt\GirderLabel.h>
 
 #include "HtmlHelp\HelpTopics.hh"
@@ -39,12 +41,11 @@
 IMPLEMENT_DYNAMIC(CMultiViewReportDlg, CDialog)
 
 CMultiViewReportDlg::CMultiViewReportDlg(IBroker* pBroker,const CReportDescription& rptDesc, boost::shared_ptr<CReportSpecification>& pRptSpec,
-                                         SpanIndexType span, GirderIndexType girder,
+                                         const CGirderKey& girderKey,
                                          UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
-   m_Span   = span;
-   m_Girder = girder;
+   m_GirderKey = girderKey;
    m_pBroker = pBroker;
 }
 
@@ -60,8 +61,8 @@ void CMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Control(pDX, IDC_LIST, m_ChList);
 
-   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
-   DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
+   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_GirderKey.groupIndex);
+   DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_GirderKey.girderIndex);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -70,11 +71,10 @@ void CMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
       BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
       if (enab_sgl)
       {
-         m_GirderList.clear();
-         SpanGirderHashType hash =  HashSpanGirder(m_Span, m_Girder);
-         m_GirderList.push_back(hash);
+         m_GirderKeys.clear();
+         m_GirderKeys.push_back(m_GirderKey);
       }
-      else if (m_GirderList.empty())
+      else if (m_GirderKeys.empty())
       {
          AfxMessageBox(_T("You must select at least one girder"));
          pDX->Fail();
@@ -129,18 +129,22 @@ BOOL CMultiViewReportDlg::OnInitDialog()
    // Fill up the span and girder combo boxes
    GET_IFACE( IBridge, pBridge );
 
+   GET_IFACE(IDocumentType,pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
+
    // fill up the span box
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-   SpanIndexType cSpan = pBridge->GetSpanCount();
-   for ( SpanIndexType i = 0; i < cSpan; i++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CString strSpan;
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
-      pSpanBox->AddString(strSpan);
+      CString strLabel;
+      strLabel.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      pSpanBox->AddString(strLabel);
    }
-   pSpanBox->SetCurSel((int)m_Span);
+   pSpanBox->SetCurSel((int)m_GirderKey.groupIndex);
 
-   UpdateGirderComboBox(m_Span);
+   UpdateGirderComboBox(m_GirderKey.groupIndex);
 
    CDialog::OnInitDialog();
 
@@ -253,22 +257,12 @@ void CMultiViewReportDlg::InitChapterListFromSpec()
 
 void CMultiViewReportDlg::InitFromRptSpec()
 {
-   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
+   boost::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
    if (pRptSpec)
    {
-      m_GirderList.clear();
-
-      std::vector<SpanGirderHashType> girders = pRptSpec->GetGirderList();
-      bool first(true);
-      for (std::vector<SpanGirderHashType>::iterator it=girders.begin(); it!=girders.end(); it++)
-      {
-         if (first) // take first girder from list as default single girder
-         {
-            UnhashSpanGirder(*it, &m_Span, &m_Girder);
-         }
-
-         m_GirderList.push_back(*it);
-      }
+      m_GirderKeys.clear();
+      m_GirderKeys = pRptSpec->GetGirderKeys();
+      m_GirderKey = m_GirderKeys.front();
    }
    else
    {
@@ -291,7 +285,7 @@ void CMultiViewReportDlg::OnBnClickedRadio()
 
    GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->EnableWindow(enab_mpl);
 
-   if ( enab_mpl && m_GirderList.size() == 0 )
+   if ( enab_mpl && m_GirderKeys.size() == 0 )
    {
       OnBnClickedSelectMultipleButton();
    }
@@ -301,20 +295,20 @@ void CMultiViewReportDlg::OnBnClickedSelectMultipleButton()
 {
 
    CRMultiGirderSelectDlg dlg;
-   dlg.m_SelGdrs = m_GirderList;
+   dlg.m_SelGdrs = m_GirderKeys;
 
    if (dlg.DoModal()==IDOK)
    {
-      m_GirderList = dlg.m_SelGdrs;
+      m_GirderKeys = dlg.m_SelGdrs;
 
       // update button text
       CString msg;
-      msg.Format(_T("Select Girders\n(%d Selected)"), m_GirderList.size());
+      msg.Format(_T("Select Girders\n(%d Selected)"), m_GirderKeys.size());
       GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->SetWindowText(msg);
    }
 }
 
-std::vector<SpanGirderHashType> CMultiViewReportDlg::GetGirderList() const
+std::vector<CGirderKey> CMultiViewReportDlg::GetGirderKeys() const
 {
-   return m_GirderList;
+   return m_GirderKeys;
 }

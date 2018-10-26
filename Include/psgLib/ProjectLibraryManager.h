@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,4 +47,20 @@ public:
    Float64 m_DCmax[6];
    Float64 m_DWmax[6];
    Float64 m_LLIMmax[6];
+
+   // General Lump Sum loss paramters
+   Float64 m_FinalLosses;
+   Float64 m_LiftingLosses;
+   Float64 m_ShippingLosses;
+   Float64 m_BeforeXferLosses;
+   Float64 m_AfterXferLosses;
+   Float64 m_BeforeTempStrandRemovalLosses;
+   Float64 m_AfterTempStrandRemovalLosses;
+   Float64 m_AfterDeckPlacementLosses;
+   Float64 m_AfterSIDLLosses;
+
+   // Post-Tension loss parameters were removed from Spec Library entry version43
+   Float64 m_DSet;
+   Float64 m_WobbleFriction;
+   Float64 m_FrictionCoefficient;
 };

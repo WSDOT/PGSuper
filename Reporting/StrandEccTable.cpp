@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,10 +24,11 @@
 #include <Reporting\StrandEccTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\DocumentType.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,20 +70,27 @@ CStrandEccTable& CStrandEccTable::operator= (const CStrandEccTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,
                                    IEAFDisplayUnits* pDisplayUnits) const
 {
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed );
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) ? true : false);
+   bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) ? true : false);
 
    // Setup table
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    std::_tostringstream os;
-   os << _T("Strand Eccentricity for Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(girder);
+   if ( pDocType->IsPGSuperDocument() )
+      os << "Strand Eccentricity for Span " << LABEL_GROUP(segmentKey.groupIndex) << " Girder " << LABEL_GIRDER(segmentKey.girderIndex);
+   else
+      os << "Strand Eccentricity for Group " << LABEL_GROUP(segmentKey.groupIndex) << " Girder " << LABEL_GIRDER(segmentKey.girderIndex) << " Segment " << LABEL_SEGMENT(segmentKey.segmentIndex);
+
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7,os.str().c_str());
 
    p_table->SetNumberOfHeaderRows(2);
 
-   int col = 0;
+   ColumnIndexType col = 0;
 
    // build first heading row
    p_table->SetRowSpan(0,col,2);
@@ -109,7 +117,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    p_table->SetRowSpan(1,col++,SKIP_CELL);
 
    (*p_table)(1,col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(1,col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder)),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {
@@ -132,47 +140,29 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    GET_IFACE2( pBroker, IPointOfInterest, pPoi );
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    StrandIndexType Ns, Nh, Nt;
-   Ns = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Straight);
-   Nh = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Harped);
-   Nt = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary);
+   Ns = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Straight);
+   Nh = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Harped);
+   Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
 
-   // Get all the tabular poi's for flexure and shear
-   // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> poi[6];
-   poi[0] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite1,POI_FLEXURESTRESS   | POI_TABULAR);
-   poi[1] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite1,POI_FLEXURECAPACITY | POI_TABULAR);
-   poi[2] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite1,POI_SHEAR           | POI_TABULAR);
-   
-   poi[3] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_FLEXURESTRESS   | POI_TABULAR);
-   poi[4] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_PICKPOINT);
-   poi[5] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_BUNKPOINT);
+   std::vector<pgsPointOfInterest> pois(pPoi->GetPointsOfInterest(segmentKey));
+   pPoi->RemovePointsOfInterest(pois,POI_CLOSURE);
+   pPoi->RemovePointsOfInterest(pois,POI_PIER);
 
-   std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > pois; // use a set to eliminate duplicates
-   std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> >::iterator iter;
-
-   for ( i = 0; i < 6; i++ )
-   {
-      pgsTypes::Stage stage = ( i < 3 ? pgsTypes::BridgeSite1 : pgsTypes::CastingYard );
-      for ( std::vector<pgsPointOfInterest>::iterator k = poi[i].begin(); k != poi[i].end(); k++ )
-      {
-         pois.insert( std::make_pair(*k,stage) );
-      }
-   }
-
-   pgsPointOfInterest prev_poi(0,0,0);
+   pgsPointOfInterest prev_poi(segmentKey,0);
    bool bSkipToNextRow = false;
 
    RowIndexType firstRow = p_table->GetNumberOfHeaderRows();
    RowIndexType row = firstRow;
-   for ( iter = pois.begin(); iter != pois.end(); iter++ )
+   std::vector<pgsPointOfInterest>::iterator iter(pois.begin());
+   std::vector<pgsPointOfInterest>::iterator end(pois.end());
+   for ( ; iter != end; iter++ )
    {
       bSkipToNextRow = false;
 
-      const pgsPointOfInterest& poi = (*iter).first;
-      pgsTypes::Stage stage = (*iter).second;
+      const pgsPointOfInterest& poi = *iter;
 
       col = 0;
 
@@ -182,41 +172,44 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
          bSkipToNextRow = true;
       }
 
-      if ( stage == pgsTypes::CastingYard )
-      {
-         (*p_table)(row,col++) << gdrloc.SetValue(stage, poi);
+#pragma Reminder("UPDATE: review")
+      // does the eccentricity table need two typs of poi location objects?
+      //if ( stage == pgsTypes::CastingYard )
+      //{
+         //(*p_table)(row,col++) << gdrloc.SetValue(stage, poi);
+         (*p_table)(row,col++) << gdrloc.SetValue(POI_RELEASED_SEGMENT, poi);
          (*p_table)(row,col++) << _T("");
-      }
-      else
-      {
-         (*p_table)(row,col++) << _T("");
-         (*p_table)(row,col++) << spanloc.SetValue( stage, poi, end_size );
-      }
+      //}
+      //else
+      //{
+      //   (*p_table)(row,col++) << _T("");
+      //   (*p_table)(row,col++) << spanloc.SetValue( stage, poi, end_size );
+      //}
 
       if ( !bSkipToNextRow )
       {
          Float64 nEff;
          if ( 0 < Ns )
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetSsEccentricity( poi, &nEff ) );
+            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetSsEccentricity( spType, intervalIdx, poi, &nEff ) );
          else
             (*p_table)(row,col++) << _T("-");
 
          if ( 0 < Nh )
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetHsEccentricity( poi, &nEff ) );
+            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetHsEccentricity( spType, intervalIdx, poi, &nEff ) );
          else
             (*p_table)(row,col++) << _T("-");
 
          if ( bTempStrands )
          {
             if ( 0 < Nt )
-               (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetTempEccentricity( poi, &nEff ) );
+               (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetTempEccentricity( spType, intervalIdx, poi, &nEff ) );
             else
                (*p_table)(row,col++) << _T("-");
 
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( poi, true, &nEff ) );
+            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, true, &nEff ) );
          }
 
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( poi, false, &nEff ) );
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, false, &nEff ) );
 
          if ( 0 < Nh )
          {

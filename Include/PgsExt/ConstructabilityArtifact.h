@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -126,11 +126,10 @@ public:
    Float64 GetMaxGirderIncline() const;
    bool GlobalGirderStabilityPassed() const;
 
-   void SetBottomFlangeClearanceApplicability(bool bSet);
-   bool IsBottomFlangeClearnceApplicable() const;
-   void SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin);
-   void GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const;
-   bool BottomFlangeClearancePassed() const;
+   // Vector containing rows that have rebars outside of the girder section
+   void SetRebarRowsOutsideOfSection(const std::vector<RowIndexType>& rows);
+   std::vector<RowIndexType> GetRebarRowsOutsideOfSection() const;
+   bool RebarGeometryCheckPassed() const; // fails if there are rebars in space
 
    bool Pass() const;
 
@@ -145,7 +144,7 @@ protected:
    void MakeCopy(const pgsConstructabilityArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsConstructabilityArtifact& rOther);
+   virtual void MakeAssignment(const pgsConstructabilityArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -162,9 +161,8 @@ private:
    Float64 m_Ybottom;
    Float64 m_Orientation;
 
-   bool m_bIsBottomFlangeClearanceApplicable;
-   Float64 m_C;
-   Float64 m_Cmin;
+   // Rebar rows with bars outside of girder section
+   std::vector<RowIndexType> m_RebarRowsOutsideSection;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

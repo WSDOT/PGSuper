@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,21 +56,31 @@ CRailingSystem::CRailingSystem()
    LeftDepth  = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
    RightDepth = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
 
-   ConcreteType    = pgsTypes::Normal;
-   fc              = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
-   Ec              = 0;
-   bUserEc         = false;
-   StrengthDensity = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
-   WeightDensity   = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
-   MaxAggSize      = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
-   EcK1            = 1.0;
-   EcK2            = 1.0;
-   CreepK1         = 1.0;
-   CreepK2         = 1.0;
-   ShrinkageK1     = 1.0;
-   ShrinkageK2     = 1.0;
-   bHasFct         = false;
-   Fct             = 0.0;
+   Concrete.Type    = pgsTypes::Normal;
+   Concrete.bHasInitial     = false;
+   Concrete.Fci             = -99999; // not used
+   Concrete.Eci             = -99999; // not used
+   Concrete.bUserEci        = false;  // not used
+   Concrete.Fc              = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
+   Concrete.Ec              = 0;
+   Concrete.bUserEc         = false;
+   Concrete.StrengthDensity = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
+   Concrete.WeightDensity   = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
+   Concrete.MaxAggregateSize= ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   Concrete.EcK1            = 1.0;
+   Concrete.EcK2            = 1.0;
+   Concrete.CreepK1         = 1.0;
+   Concrete.CreepK2         = 1.0;
+   Concrete.ShrinkageK1     = 1.0;
+   Concrete.ShrinkageK2     = 1.0;
+   Concrete.bHasFct         = false;
+   Concrete.Fct             = 0.0;
+
+   Concrete.bACIUserParameters = false;
+   Concrete.A                  = ::ConvertToSysUnits(4.0,unitMeasure::Day);
+   Concrete.B                  = 0.85;
+   Concrete.CureMethod         = pgsTypes::Moist;
+   Concrete.CementType         = pgsTypes::TypeI;
 }
 
 CRailingSystem::CRailingSystem(const CRailingSystem& rOther)
@@ -128,41 +138,9 @@ bool CRailingSystem::operator == (const CRailingSystem& rOther) const
       }
    }
 
-   if ( !IsEqual(fc,rOther.fc) )
+   if ( Concrete != rOther.Concrete )
       return false;
 
-   if ( bUserEc != rOther.bUserEc )
-      return false;
-
-   if ( bUserEc && !IsEqual(Ec,rOther.Ec) )
-      return false;
-
-   if ( !IsEqual(StrengthDensity,rOther.StrengthDensity) )
-      return false;
-
-   if ( !IsEqual(WeightDensity,rOther.WeightDensity) )
-      return false;
-
-   if ( !IsEqual(MaxAggSize,rOther.MaxAggSize) )
-      return false;
-
-   if ( !IsEqual(EcK1,rOther.EcK1) )
-      return false;
-
-   if ( !IsEqual(EcK2,rOther.EcK2) )
-      return false;
-
-   if ( !IsEqual(CreepK1,rOther.CreepK1) )
-      return false;
-
-   if ( !IsEqual(CreepK2,rOther.CreepK2) )
-      return false;
-
-   if ( !IsEqual(ShrinkageK1,rOther.ShrinkageK1) )
-      return false;
-
-   if ( !IsEqual(ShrinkageK2,rOther.ShrinkageK2) )
-      return false;
 
    return true;
 }
@@ -236,37 +214,37 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
       }
 
-      if ( 3 <= version )
+      if ( 3 <= version && version < 5 )
       {
          // added in version 3
          if ( version == 3 )
          {
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("fc"),&var);
-            fc = var.dblVal;
+            Concrete.Fc = var.dblVal;
 
             var.vt = VT_BOOL;
             hr = pStrLoad->get_Property(_T("UserEc"),&var);
-            bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+            Concrete.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
             var.vt = VT_R8;
-            if ( bUserEc )
+            if ( Concrete.bUserEc )
             {
                hr = pStrLoad->get_Property(_T("Ec"),&var);
-               Ec = var.dblVal;
+               Concrete.Ec = var.dblVal;
             }
 
             hr = pStrLoad->get_Property(_T("StrengthDensity"),&var);
-            StrengthDensity = var.dblVal;
+            Concrete.StrengthDensity = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("WeightDensity"),&var);
-            WeightDensity = var.dblVal;
+            Concrete.WeightDensity = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("MaxAggSize"),&var);
-            MaxAggSize = var.dblVal;
+            Concrete.MaxAggregateSize = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("K1"),&var);
-            EcK1 = var.dblVal;
+            Concrete.EcK1 = var.dblVal;
          }
          else
          {
@@ -274,66 +252,71 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             var.vt = VT_BSTR;
             hr = pStrLoad->get_Property(_T("Type"),&var);
-            ConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
+            Concrete.Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
 
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("fc"),&var);
-            fc = var.dblVal;
+            Concrete.Fc = var.dblVal;
 
             var.vt = VT_BOOL;
             hr = pStrLoad->get_Property(_T("UserEc"),&var);
-            bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
+            Concrete.bUserEc = (var.boolVal == VARIANT_TRUE ? true : false);
 
             var.vt = VT_R8;
-            if ( bUserEc )
+            if ( Concrete.bUserEc )
             {
                hr = pStrLoad->get_Property(_T("Ec"),&var);
-               Ec = var.dblVal;
+               Concrete.Ec = var.dblVal;
             }
 
             hr = pStrLoad->get_Property(_T("StrengthDensity"),&var);
-            StrengthDensity = var.dblVal;
+            Concrete.StrengthDensity = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("WeightDensity"),&var);
-            WeightDensity = var.dblVal;
+            Concrete.WeightDensity = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("MaxAggSize"),&var);
-            MaxAggSize = var.dblVal;
+            Concrete.MaxAggregateSize = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("EcK1"),&var);
-            EcK1 = var.dblVal;
+            Concrete.EcK1 = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("EcK2"),&var);
-            EcK2 = var.dblVal;
+            Concrete.EcK2 = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("CreepK1"),&var);
-            CreepK1 = var.dblVal;
+            Concrete.CreepK1 = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("CreepK2"),&var);
-            CreepK2 = var.dblVal;
+            Concrete.CreepK2 = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("ShrinkageK1"),&var);
-            ShrinkageK1 = var.dblVal;
+            Concrete.ShrinkageK1 = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("ShrinkageK2"),&var);
-            ShrinkageK2 = var.dblVal;
+            Concrete.ShrinkageK2 = var.dblVal;
 
-            if ( ConcreteType != pgsTypes::Normal )
+            if ( Concrete.Type != pgsTypes::Normal )
             {
                var.vt = VT_BOOL;
                hr = pStrLoad->get_Property(_T("HasFct"),&var);
-               bHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
+               Concrete.bHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
 
-               if ( bHasFct )
+               if ( Concrete.bHasFct )
                {
                   var.vt = VT_R8;
                   hr = pStrLoad->get_Property(_T("Fct"),&var);
-                  Fct = var.dblVal;
+                  Concrete.Fct = var.dblVal;
                }
             }
 
             pStrLoad->EndUnit();
          }
+      }
+      else if ( 5 <= version )
+      {
+         // version 5 and later
+         Concrete.Load(pStrLoad,pProgress);
       }
 
       hr = pStrLoad->EndUnit();
@@ -350,7 +333,7 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("RailingSystem"),4.0);
+   pStrSave->BeginUnit(_T("RailingSystem"),5.0);
 
    pStrSave->put_Property(_T("ExteriorRailingName"),     CComVariant(strExteriorRailing.c_str()));
    pStrSave->put_Property(_T("Sidewalk"),                CComVariant(bUseSidewalk));
@@ -370,31 +353,32 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
          pStrSave->put_Property(_T("InteriorRailingName"), CComVariant(strInteriorRailing.c_str()));
    }
 
-   // added in version 3, updated version 4
-   pStrSave->BeginUnit(_T("Concrete"),1.0);
-      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
-      pStrSave->put_Property(_T("fc"),CComVariant(fc));
-      pStrSave->put_Property(_T("UserEc"),CComVariant(bUserEc));
-      if ( bUserEc )
-         pStrSave->put_Property(_T("Ec"),CComVariant(Ec));
+   // added in version 3, updated version 4, removed version 5, replaced with concrete object
+   //pStrSave->BeginUnit(_T("Concrete"),1.0);
+   //   pStrSave->put_Property(_T("Type"),CComVariant( matConcrete::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
+   //   pStrSave->put_Property(_T("fc"),CComVariant(fc));
+   //   pStrSave->put_Property(_T("UserEc"),CComVariant(bUserEc));
+   //   if ( bUserEc )
+   //      pStrSave->put_Property(_T("Ec"),CComVariant(Ec));
 
-      pStrSave->put_Property(_T("StrengthDensity"),CComVariant(StrengthDensity));
-      pStrSave->put_Property(_T("WeightDensity"),CComVariant(WeightDensity));
-      pStrSave->put_Property(_T("MaxAggSize"),CComVariant(MaxAggSize));
-      pStrSave->put_Property(_T("EcK1"),CComVariant(EcK1));
-      pStrSave->put_Property(_T("EcK2"),CComVariant(EcK2));
-      pStrSave->put_Property(_T("CreepK1"),CComVariant(CreepK1));
-      pStrSave->put_Property(_T("CreepK2"),CComVariant(CreepK2));
-      pStrSave->put_Property(_T("ShrinkageK1"),CComVariant(ShrinkageK1));
-      pStrSave->put_Property(_T("ShrinkageK2"),CComVariant(ShrinkageK2));
+   //   pStrSave->put_Property(_T("StrengthDensity"),CComVariant(StrengthDensity));
+   //   pStrSave->put_Property(_T("WeightDensity"),CComVariant(WeightDensity));
+   //   pStrSave->put_Property(_T("MaxAggSize"),CComVariant(MaxAggSize));
+   //   pStrSave->put_Property(_T("EcK1"),CComVariant(EcK1));
+   //   pStrSave->put_Property(_T("EcK2"),CComVariant(EcK2));
+   //   pStrSave->put_Property(_T("CreepK1"),CComVariant(CreepK1));
+   //   pStrSave->put_Property(_T("CreepK2"),CComVariant(CreepK2));
+   //   pStrSave->put_Property(_T("ShrinkageK1"),CComVariant(ShrinkageK1));
+   //   pStrSave->put_Property(_T("ShrinkageK2"),CComVariant(ShrinkageK2));
 
-      if ( ConcreteType != pgsTypes::Normal )
-      {
-         pStrSave->put_Property(_T("HasFct"),CComVariant(bHasFct));
-         if ( bHasFct )
-            pStrSave->put_Property(_T("Fct"),CComVariant(Fct));
-      }
-   pStrSave->EndUnit();
+   //   if ( ConcreteType != pgsTypes::Normal )
+   //   {
+   //      pStrSave->put_Property(_T("HasFct"),CComVariant(bHasFct));
+   //      if ( bHasFct )
+   //         pStrSave->put_Property(_T("Fct"),CComVariant(Fct));
+   //   }
+   //pStrSave->EndUnit();
+   Concrete.Save(pStrSave,pProgress);
 
    pStrSave->EndUnit();
 
@@ -445,21 +429,7 @@ void CRailingSystem::MakeCopy(const CRailingSystem& rOther)
    LeftDepth  = rOther.LeftDepth;
    RightDepth = rOther.RightDepth;
 
-   ConcreteType    = rOther.ConcreteType;
-   fc              = rOther.fc;
-   Ec              = rOther.Ec;
-   bUserEc         = rOther.bUserEc;
-   StrengthDensity = rOther.StrengthDensity;
-   WeightDensity   = rOther.WeightDensity;
-   MaxAggSize      = rOther.MaxAggSize;
-   EcK1            = rOther.EcK1;
-   EcK2            = rOther.EcK2;
-   CreepK1         = rOther.CreepK1;
-   CreepK2         = rOther.CreepK2;
-   ShrinkageK1     = rOther.ShrinkageK1;
-   ShrinkageK2     = rOther.ShrinkageK2;
-   bHasFct         = rOther.bHasFct;
-   Fct             = rOther.Fct;
+   Concrete   = rOther.Concrete;
 }
 
 void CRailingSystem::MakeAssignment(const CRailingSystem& rOther)

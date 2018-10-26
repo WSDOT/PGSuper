@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 // LLDFPierGrid.h : header file
 //
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 // local data structures for lldfs
 // TRICKY: Order must be same as grid columns
@@ -90,8 +90,8 @@ protected:
    BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags);
 
 private:
-   void AddGirderRow(GirderIndexType gdr, const CPierData* pPier);
-   void GetGirderRow(GirderIndexType gdr, CPierData* pPier);
+   void AddGirderRow(GirderIndexType gdr, const CPierData2* pPier);
+   void GetGirderRow(GirderIndexType gdr, CPierData2* pPier);
 
 public:
    // custom stuff for grid
@@ -107,8 +107,8 @@ public:
    void SetGirderLLDF(GirderIndexType gdr, const PierLLDF& rlldf );
 
    // fill grid with data
-   void FillGrid(const CBridgeDescription* pBridgeDesc);
-   void GetData(CBridgeDescription* pBridgeDesc);
+   void FillGrid(const CBridgeDescription2* pBridgeDesc);
+   void GetData(CBridgeDescription2* pBridgeDesc);
    afx_msg void OnEditCopy();
    afx_msg void OnEditPaste();
 };

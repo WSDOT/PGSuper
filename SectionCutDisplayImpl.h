@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 #include <DManip\DManip.h>
 #include "SectionCutDrawStrategy.h" 
+#include <PgsExt\PointOfInterest.h>
 
 class CSectionCutDisplayImpl : public CCmdTarget
 {
@@ -32,11 +33,14 @@ public:
    CSectionCutDisplayImpl();
    ~CSectionCutDisplayImpl();
 
+   pgsPointOfInterest GetCutPOI(Float64 distFromStart);
+
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iSectionCutDrawStrategy)
    STDMETHOD_(void,SetColor)(COLORREF color);
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc);
+	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc);
+   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 distFromStartOfGirder);
    END_INTERFACE_PART(Strategy)
 
 //   BEGIN_INTERFACE_PART(Events,iSectionCutEvents)
@@ -93,10 +97,10 @@ private:
    Float64 GetGirderHeight(Float64 distFromStartOfGirder);
 
    COLORREF           m_Color;
-   SpanIndexType      m_SpanIdx;
-   GirderIndexType    m_GirderIdx;
+   CGirderKey         m_GirderKey;
    IBroker*           m_pBroker;
-   Float64            m_gdrLength;
+   Float64            m_MinCutLocation;
+   Float64            m_MaxCutLocation;
    iCutLocation*      m_pCutLocation;
    
    CComPtr<IPoint2d> m_CachePoint;

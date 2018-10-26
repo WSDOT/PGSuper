@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -61,19 +61,18 @@ DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
 DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,EditLoad);
 
 
-void CPointLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CPointLoadData load,
-                                                 IndexType loadIndex, Float64 girderDepth, Float64 spanLength, 
+void CPointLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, const CPointLoadData& load,
+                                                 CollectionIndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
    METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,Strategy);
 
-   pThis->m_Load = load;
-   pThis->m_LoadIndex = loadIndex;
-   pThis->m_pBroker = pBroker;
-   pThis->m_Color = color;
-   pThis->m_MaxMagnitude = maxMagnitude;
-   pThis->m_GirderDepth = girderDepth;
-   pThis->m_SpanLength = spanLength;
+   pThis->m_Load          = load;
+   pThis->m_LoadIndex     = loadIndex;
+   pThis->m_pBroker       = pBroker;
+   pThis->m_Color         = color;
+   pThis->m_MaxMagnitude  = maxMagnitude;
+   pThis->m_SpanLength    = spanLength;
 }
 
 
@@ -172,7 +171,8 @@ void CPointLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF
    GetWSymbolSize(pMap, &wid, &hgt);
 
    // line style and width
-   bool funky_load = m_Load.m_Magnitude==0.0 || wx>m_SpanLength;
+   Float64 location = (m_Load.m_Fractional ? m_SpanLength*m_Load.m_Location : m_Load.m_Location);
+   bool funky_load = m_Load.m_Magnitude==0.0 || m_SpanLength < location;
 
    int nWidth    = funky_load ? 1 : 2;
    int nPenStyle = funky_load ? PS_DOT : PS_SOLID;
@@ -408,14 +408,14 @@ void CPointLoadDrawStrategyImpl::EditLoad()
 
    CHECK(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetPointLoadCount());
 
-   CPointLoadData rld = pUdl->GetPointLoad(m_LoadIndex);
+   const CPointLoadData& load = pUdl->GetPointLoad(m_LoadIndex);
 
-	CEditPointLoadDlg dlg(rld,m_pBroker);
+	CEditPointLoadDlg dlg(load);
    if (dlg.DoModal() == IDOK)
    {
-      if (rld!=dlg.m_Load)
+      if (load != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,rld,dlg.m_Load);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(m_LoadIndex,load,dlg.m_Load);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

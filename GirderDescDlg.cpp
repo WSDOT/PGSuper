@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,20 +39,22 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define IDC_CHECKBOX 100
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 
 IMPLEMENT_DYNAMIC(CGirderDescDlg, CPropertySheet)
 
-CGirderDescDlg::CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCTSTR strGirderName,CWnd* pParentWnd, UINT iSelectPage)
+CGirderDescDlg::CGirderDescDlg(const CSegmentKey& segmentKey,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
-   m_CurrentSpanIdx   = spanIdx;
-   m_CurrentGirderIdx = gdrIdx;
-   m_strGirderName = strGirderName;
+   m_SegmentKey = segmentKey;
+
+   ATLASSERT(m_SegmentKey.segmentIndex == 0); // this is a PGSuper dialog
 
    CString strTitle;
-   strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(m_CurrentSpanIdx),LABEL_GIRDER(m_CurrentGirderIdx));
+   strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
    SetTitle(strTitle);
 
    Init();
@@ -60,22 +62,12 @@ CGirderDescDlg::CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCT
 
 CGirderDescDlg::~CGirderDescDlg()
 {
-   DestroyExtensionPages();
-}
-
-INT_PTR CGirderDescDlg::DoModal()
-{
-   INT_PTR result = CPropertySheet::DoModal();
-   if ( result == IDOK )
-   {
-      NotifyExtensionPages();
-   }
-
-   return result;
 }
 
 void CGirderDescDlg::Init()
 {
+   m_bApplyToAll = false;
+
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
 
    m_General.m_psp.dwFlags   |= PSP_HASHELP;
@@ -84,8 +76,6 @@ void CGirderDescDlg::Init()
    m_LongRebar.m_psp.dwFlags |= PSP_HASHELP;
    m_Lifting.m_psp.dwFlags   |= PSP_HASHELP;
    m_Debond.m_psp.dwFlags    |= PSP_HASHELP;
-   m_Rating.m_psp.dwFlags    |= PSP_HASHELP;
-
 
    AddPage( &m_General );
    AddPage( &m_Prestress );
@@ -97,95 +87,15 @@ void CGirderDescDlg::Init()
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   this->AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_CurrentSpanIdx,m_CurrentGirderIdx,pgsTypes::Straight) );
-
-   CreateExtensionPages();
-}
-
-void CGirderDescDlg::CreateExtensionPages()
-{
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
-
-   const std::map<IDType,IEditGirderCallback*>& callbacks = pDoc->GetEditGirderCallbacks();
-   std::map<IDType,IEditGirderCallback*>::const_iterator callbackIter(callbacks.begin());
-   std::map<IDType,IEditGirderCallback*>::const_iterator callbackIterEnd(callbacks.end());
-   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
-   {
-      IEditGirderCallback* pCallback = callbackIter->second;
-      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
-      if ( pPage )
-      {
-         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
-         AddPage(pPage);
-      }
-   }
-}
-
-void CGirderDescDlg::DestroyExtensionPages()
-{
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
-   for ( ; pageIter != pageIterEnd; pageIter++ )
-   {
-      CPropertyPage* pPage = pageIter->second;
-      delete pPage;
-   }
-   m_ExtensionPages.clear();
-}
-
-txnTransaction* CGirderDescDlg::GetExtensionPageTransaction()
-{
-   if ( 0 < m_Macro.GetTxnCount() )
-      return m_Macro.CreateClone();
-   else
-      return NULL;
-}
-
-void CGirderDescDlg::NotifyExtensionPages()
-{
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIter(m_ExtensionPages.begin());
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator pageIterEnd(m_ExtensionPages.end());
-   for ( ; pageIter != pageIterEnd; pageIter++ )
-   {
-      IEditGirderCallback* pCallback = pageIter->first;
-      CPropertyPage* pPage = pageIter->second;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
-      if ( pTxn )
-      {
-         m_Macro.AddTransaction(pTxn);
-      }
-   }
+   AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CGirderDescDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
+      WBFL_ON_PROPSHEET_OK
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
-
-LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
-{
-   // The CPropertySheet::OnKickIdle method calls GetActivePage()
-   // which doesn't work with extension pages. Since GetActivePage
-   // is not virtual, we have to replace the implementation of
-   // OnKickIdle.
-   // The same problem exists with OnCommandHelp
-
-	ASSERT_VALID(this);
-
-	CPropertyPage* pPage = GetPage(GetActiveIndex());
-
-	/* Forward the message on to the active page of the property sheet */
-	if( pPage != NULL )
-	{
-		//ASSERT_VALID(pPage);
-		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
-	}
-	else
-		return 0;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg message handlers
@@ -196,7 +106,6 @@ void CGirderDescDlg::DoUpdate()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
    GET_IFACE2(pBroker,IShear,pShear);
    GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);
    GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
@@ -204,30 +113,38 @@ void CGirderDescDlg::DoUpdate()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
+   m_Segment = *pGirder->GetSegment(m_SegmentKey.segmentIndex);
+   m_strGirderName = pGroup->GetGirderName(m_SegmentKey.girderIndex);
+
+   m_ConditionFactorType = pGirder->GetConditionFactorType();
+   m_ConditionFactor     = pGirder->GetConditionFactor();
 
    // Setup girder data for our pages
    m_General.m_bUseSameGirderType = pBridgeDesc->UseSameGirderForEntireBridge();
-
-   m_GirderData = *pGirderData->GetGirderData(m_CurrentSpanIdx,m_CurrentGirderIdx);
+   m_General.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
+   pIBridgeDesc->GetSlabOffset(m_SegmentKey,&m_General.m_SlabOffset[pgsTypes::metStart],&m_General.m_SlabOffset[pgsTypes::metEnd]);
 
    // shear page
-   m_Shear.m_CurGrdName = pBridgeDesc->GetSpan(m_CurrentSpanIdx)->GetGirderTypes()->GetGirderName(m_CurrentGirderIdx);
-   m_Shear.m_ShearData = pShear->GetShearData(m_CurrentSpanIdx,m_CurrentGirderIdx);
+   m_Shear.m_CurGrdName = pGirder->GetGirderName();
+   m_Shear.m_ShearData  = m_Segment.ShearData;
 
    // longitudinal rebar page
    m_LongRebar.m_CurGrdName = m_Shear.m_CurGrdName;
-   m_LongRebar.m_RebarData  = pLongitudinaRebar->GetLongitudinalRebarData(m_CurrentSpanIdx,m_CurrentGirderIdx);
+}
 
-   // Guts of program can now handle unequal overhangs
-   Float64 lifting_loc = pGirderLifting->GetLeftLiftingLoopLocation(m_CurrentSpanIdx,m_CurrentGirderIdx);
-   m_Lifting.m_LiftingLocation = lifting_loc;
+BOOL CGirderDescDlg::OnOK()
+{
+   UpdateData(TRUE); // calls DoDataExchange
+   return FALSE; // MUST RETURN FALSE!!!!
+}
 
-   Float64 trailingOverhang = pGirderHauling->GetTrailingOverhang(m_CurrentSpanIdx,m_CurrentGirderIdx);
-   m_Lifting.m_TrailingOverhang = trailingOverhang;
-
-   Float64 leadingOverhang = pGirderHauling->GetLeadingOverhang(m_CurrentSpanIdx,m_CurrentGirderIdx);
-   m_Lifting.m_LeadingOverhang = leadingOverhang;
+void CGirderDescDlg::DoDataExchange(CDataExchange* pDX)
+{
+   CPropertySheet::DoDataExchange(pDX);
+   DDX_Check_Bool(pDX,IDC_CHECKBOX,m_bApplyToAll);
 }
 
 BOOL CGirderDescDlg::OnInitDialog() 
@@ -235,12 +152,32 @@ BOOL CGirderDescDlg::OnInitDialog()
 	DoUpdate();
 
 	BOOL bResult = CPropertySheet::OnInitDialog();
-		
+
+   // Set the dialog icon
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_EDIT_GIRDER),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
 
    SetDebondTabName();
+
+   // Build the OK button
+   CWnd* pOK = GetDlgItem(IDOK);
+   CRect rOK;
+   pOK->GetWindowRect(&rOK);
+
+   CRect wndPage;
+   GetActivePage()->GetWindowRect(&wndPage);
+
+   CRect rect;
+   rect.left = wndPage.left;
+   rect.top = rOK.top;
+   rect.bottom = rOK.bottom;
+   rect.right = rOK.left - 7;
+   ScreenToClient(&rect);
+   m_CheckBox.Create(_T("Copy to all girders in this span"),WS_CHILD | WS_VISIBLE | BS_LEFTTEXT | BS_RIGHT | BS_AUTOCHECKBOX,rect,this,IDC_CHECKBOX);
+   m_CheckBox.SetFont(GetFont());
+
+   UpdateData(FALSE); // calls DoDataExchange
 
    return bResult;
 }
@@ -274,12 +211,40 @@ void CGirderDescDlg::SetDebondTabName()
 
 StrandIndexType CGirderDescDlg::GetStraightStrandCount()
 {
-   return  m_GirderData.PrestressData.GetNstrands(pgsTypes::Straight);
+   return m_Segment.Strands.Nstrands[pgsTypes::Straight];
 }
 
 StrandIndexType CGirderDescDlg::GetHarpedStrandCount()
 {
-   return  m_GirderData.PrestressData.GetNstrands(pgsTypes::Harped);
+   return m_Segment.Strands.Nstrands[pgsTypes::Harped];
+}
+
+void CGirderDescDlg::SetSegment(const CPrecastSegmentData& segment)
+{
+   m_Segment = segment;
+   m_Shear.m_ShearData = m_Segment.ShearData;
+}
+
+const CPrecastSegmentData& CGirderDescDlg::GetSegment()
+{
+   m_Segment.ShearData = m_Shear.m_ShearData;
+   return m_Segment;
+}
+
+void CGirderDescDlg::SetConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor)
+{
+   m_ConditionFactorType = conditionFactorType;
+   m_ConditionFactor     = conditionFactor;
+}
+
+pgsTypes::ConditionFactorType CGirderDescDlg::GetConditionFactorType()
+{
+   return m_ConditionFactorType;
+}
+
+Float64 CGirderDescDlg::GetConditionFactor()
+{
+   return m_ConditionFactor;
 }
 
 ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandType type)
@@ -288,29 +253,27 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-   int filltype = m_GirderData.PrestressData.GetNumPermStrandsType();
-
-   if (filltype == NPS_DIRECT_SELECTION)
+   if (m_Segment.Strands.NumPermStrandsType == CStrandData::npsDirectSelection)
    {
       // first get in girderdata format
       const DirectStrandFillCollection* pDirectFillData(NULL);
       if (type==pgsTypes::Straight)
       {
-         pDirectFillData = m_GirderData.PrestressData.GetDirectStrandFillStraight();
+         pDirectFillData = m_Segment.Strands.GetDirectStrandFillStraight();
       }
       else if (type==pgsTypes::Harped)
       {
-         pDirectFillData = m_GirderData.PrestressData.GetDirectStrandFillHarped();
+         pDirectFillData = m_Segment.Strands.GetDirectStrandFillHarped();
       }
       if (type==pgsTypes::Temporary)
       {
-         pDirectFillData = m_GirderData.PrestressData.GetDirectStrandFillTemporary();
+         pDirectFillData = m_Segment.Strands.GetDirectStrandFillTemporary();
       }
 
       // Convert girderdata to config
       // Start with unfilled grid 
       ConfigStrandFillVector vec(pStrandGeometry->ComputeStrandFill(m_strGirderName.c_str(), type, 0));
-      GridIndexType gridsize = vec.size();
+      StrandIndexType gridsize = vec.size();
 
       if(pDirectFillData!=NULL)
       {
@@ -318,7 +281,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
          DirectStrandFillCollection::const_iterator itend = pDirectFillData->end();
          while(it != itend)
          {
-            GridIndexType idx = it->permStrandGridIdx;
+            StrandIndexType idx = it->permStrandGridIdx;
             if (idx<gridsize)
             {
                vec[idx] = it->numFilled;
@@ -335,9 +298,9 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    else
    {
       // Continuous fill
-      StrandIndexType Ns = m_GirderData.PrestressData.GetNstrands(type);
+      StrandIndexType Ns = m_Segment.Strands.GetNstrands(type);
 
-      return pStrandGeometry->ComputeStrandFill(m_CurrentSpanIdx, m_CurrentGirderIdx, type, Ns);
+      return pStrandGeometry->ComputeStrandFill(m_SegmentKey, type, Ns);
    }
 }
 
@@ -357,12 +320,10 @@ void CGirderDescDlg::AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool 
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
 
    // don't add page if both hauling and lifting checks are disabled
-   if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled() || pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
+   if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled() || pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       AddPage( &m_Lifting );
    }
-
-   AddPage( &m_Rating );
 }
 
 void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding)
@@ -376,11 +337,4 @@ void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebo
 
    AddAdditionalPropertyPages(bAllowExtendedStrands,bIsDebonding);
    SetDebondTabName();
-
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator iter(m_ExtensionPages.begin());
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator end(m_ExtensionPages.end());
-   for ( ; iter != end; iter++ )
-   {
-      AddPage(iter->second);
-   }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,14 +35,14 @@ static char THIS_FILE[] = __FILE__;
 
 /****************************************************************************
 CLASS
-   CShearZoneData
+   CShearZoneData2
 ****************************************************************************/
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CShearZoneData::CShearZoneData():
+CShearZoneData2::CShearZoneData2():
 ZoneNum(0),
 BarSpacing(0),
 ZoneLength(0),
@@ -56,17 +56,17 @@ legacy_nHorzBars(2)
 
 }
 
-CShearZoneData::CShearZoneData(const CShearZoneData& rOther)
+CShearZoneData2::CShearZoneData2(const CShearZoneData2& rOther)
 {
    MakeCopy(rOther);
 }
 
-CShearZoneData::~CShearZoneData()
+CShearZoneData2::~CShearZoneData2()
 {
 }
 
 //======================== OPERATORS  =======================================
-CShearZoneData& CShearZoneData::operator= (const CShearZoneData& rOther)
+CShearZoneData2& CShearZoneData2::operator= (const CShearZoneData2& rOther)
 {
    if( this != &rOther )
    {
@@ -76,7 +76,7 @@ CShearZoneData& CShearZoneData::operator= (const CShearZoneData& rOther)
    return *this;
 }
 
-bool CShearZoneData::operator == (const CShearZoneData& rOther) const
+bool CShearZoneData2::operator == (const CShearZoneData2& rOther) const
 {
    if ( ZoneNum != rOther.ZoneNum )
       return false;
@@ -108,13 +108,13 @@ bool CShearZoneData::operator == (const CShearZoneData& rOther) const
    return true;
 }
 
-bool CShearZoneData::operator != (const CShearZoneData& rOther) const
+bool CShearZoneData2::operator != (const CShearZoneData2& rOther) const
 {
    return !operator==( rOther );
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CShearZoneData::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
+HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 matRebar::Size confinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck)
 {
@@ -278,7 +278,7 @@ HRESULT CShearZoneData::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShearD
    return hr;
 }
 
-HRESULT CShearZoneData::Save(sysIStructuredSave* pStrSave)
+HRESULT CShearZoneData2::Save(sysIStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 
@@ -302,7 +302,7 @@ HRESULT CShearZoneData::Save(sysIStructuredSave* pStrSave)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void CShearZoneData::MakeCopy(const CShearZoneData& rOther)
+void CShearZoneData2::MakeCopy(const CShearZoneData2& rOther)
 {
    ZoneNum       = rOther.ZoneNum;
    BarSpacing    = rOther.BarSpacing;
@@ -316,7 +316,7 @@ void CShearZoneData::MakeCopy(const CShearZoneData& rOther)
    legacy_nHorzBars   = rOther.legacy_nHorzBars;
 }
 
-void CShearZoneData::MakeAssignment(const CShearZoneData& rOther)
+void CShearZoneData2::MakeAssignment(const CShearZoneData2& rOther)
 {
    MakeCopy( rOther );
 }

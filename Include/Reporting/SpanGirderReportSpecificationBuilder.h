@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\BrokerReportSpecificationBuilder.h>
 #include <ReportManager\ReportManager.h>
+#include <PgsExt\SegmentKey.h>
 #include <WBFLCore.h>
 
 class REPORTINGCLASS CSpanReportSpecificationBuilder :
@@ -38,23 +39,26 @@ public:
    virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
 
-class REPORTINGCLASS CSpanGirderReportSpecificationBuilder :
-   public CSpanReportSpecificationBuilder
-{
-public:
-   CSpanGirderReportSpecificationBuilder(IBroker* pBroker);
-   ~CSpanGirderReportSpecificationBuilder(void);
-
-   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
-};
-
 class REPORTINGCLASS CGirderReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CGirderReportSpecificationBuilder(IBroker* pBroker);
+   CGirderReportSpecificationBuilder(IBroker* pBroker,const CGirderKey& defaultGirderKey);
    ~CGirderReportSpecificationBuilder(void);
+
+   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+
+private:
+   CGirderKey m_GirderKey;
+};
+
+class REPORTINGCLASS CGirderLineReportSpecificationBuilder :
+   public CBrokerReportSpecificationBuilder
+{
+public:
+   CGirderLineReportSpecificationBuilder(IBroker* pBroker);
+   ~CGirderLineReportSpecificationBuilder(void);
 
    virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
    virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);

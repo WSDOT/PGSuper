@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STIRRUPDETAILINGCHECKCHAPTERBUILDER_H_
-#define INCLUDED_STIRRUPDETAILINGCHECKCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -50,15 +49,10 @@ LOG
 class REPORTINGCLASS CStirrupDetailingCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CStirrupDetailingCheckChapterBuilder(bool bSelect = true);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
-   
 
    //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
@@ -66,35 +60,10 @@ public:
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
    // Prevent accidental copying and assignment
    CStirrupDetailingCheckChapterBuilder(const CStirrupDetailingCheckChapterBuilder&);
    CStirrupDetailingCheckChapterBuilder& operator=(const CStirrupDetailingCheckChapterBuilder&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_STIRRUPDETAILINGCHECKCHAPTERBUILDER_H_

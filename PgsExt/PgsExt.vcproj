@@ -59,16 +59,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PgsExt\PgsExtLib.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
@@ -166,16 +163,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PgsExt\PgsExtLib.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
@@ -268,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -276,9 +270,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PgsExt\PgsExtLib.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -369,7 +360,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="BUILDPGSEXTLIB;_USRDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -377,9 +368,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PgsExt\PgsExtLib.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -475,16 +463,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PgsExt\PgsExtLib.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -582,16 +567,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;BUILDPGSEXTLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PgsExt\PgsExtLib.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -658,7 +640,15 @@
 			Filter="cpp"
 			>
 			<File
+				RelativePath=".\ApplyLoadActivity.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\BoundaryConditionComboBox.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BoundaryConditionDlg.cpp"
 				>
 			</File>
 			<File
@@ -720,11 +710,31 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BridgeDescription2.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CapacityToDemand.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\CapacityToDemand.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CastDeckActivity.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ConcreteMaterial.cpp"
 				>
 			</File>
 			<File
@@ -844,6 +854,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DebondData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DebondUtil.cpp"
+				>
+			</File>
+			<File
 				RelativePath="DeckDescription.cpp"
 				>
 				<FileConfiguration
@@ -900,6 +918,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\DeckDescription2.cpp"
+				>
 			</File>
 			<File
 				RelativePath="DeckPoint.cpp"
@@ -1192,6 +1214,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\EditBridge.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ErectPiersActivity.cpp"
+				>
+			</File>
+			<File
 				RelativePath="FlexuralCapacityArtifact.cpp"
 				>
 				<FileConfiguration
@@ -1424,6 +1454,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GirderGroupData.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GirderLabel.cpp"
 				>
 			</File>
@@ -1490,6 +1524,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderPointOfInterest.cpp"
+				>
+			</File>
+			<File
 				RelativePath="GirderSpacing.cpp"
 				>
 				<FileConfiguration
@@ -1546,6 +1584,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GirderSpacing2.cpp"
+				>
 			</File>
 			<File
 				RelativePath="GirderTypes.cpp"
@@ -1780,7 +1822,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\KdotHaulingAnalysisArtifact.cpp"
+				RelativePath=".\InsertDeleteLoad.cpp"
 				>
 			</File>
 			<File
@@ -2014,10 +2056,6 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\MacroTxn.cpp"
-				>
 			</File>
 			<File
 				RelativePath="main.cpp"
@@ -2254,6 +2292,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\PierData2.cpp"
+				>
 			</File>
 			<File
 				RelativePath="PoiArtifactKey.cpp"
@@ -2550,7 +2592,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\PrestressData.cpp"
+				RelativePath=".\PrecastSegmentData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PTData.cpp"
 				>
 			</File>
 			<File
@@ -2620,11 +2666,31 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReportStyleHolder.cpp"
+				RelativePath=".\RemoveTemporarySupportsActivity.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentActivity.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SegmentRelatedStatusItem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShearData.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\ShearRatingArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShearZoneData.cpp"
 				>
 			</File>
 			<File
@@ -2686,11 +2752,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\SpanData2.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SpanGirderRelatedStatusItem.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\StageCompare.cpp"
+				RelativePath=".\SplicedGirderData.cpp"
 				>
 			</File>
 			<File
@@ -2930,6 +3000,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\StrandData.cpp"
+				>
+			</File>
+			<File
 				RelativePath="StrandSlopeArtifact.cpp"
 				>
 				<FileConfiguration
@@ -3050,6 +3124,26 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StressTendonActivity.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TendonStressArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimelineEvent.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimelineManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\YieldStressRatioArtifact.cpp"
 				>
 			</File>
@@ -3059,11 +3153,11 @@
 			Filter="H"
 			>
 			<File
-				RelativePath="..\Include\PgsExt\AutoLib.h"
+				RelativePath="..\Include\PgsExt\ApplyLoadActivity.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\AutoProgress.h"
+				RelativePath="..\Include\PgsExt\AutoLib.h"
 				>
 			</File>
 			<File
@@ -3071,11 +3165,35 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\BridgeDescription.h"
+				RelativePath=".\BoundaryConditionDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BridgeDescription.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\BridgeDescription2.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\CapacityToDemand.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\CastDeckActivity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ClosurePourArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ClosurePourData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ConcreteMaterial.h"
 				>
 			</File>
 			<File
@@ -3087,11 +3205,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\DebondData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\DebondUtil.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\DeckDescription.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\DeckDescription2.h"
 				>
 			</File>
 			<File
@@ -3115,6 +3241,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\EditBridge.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ErectPiersActivity.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\FlexuralCapacityArtifact.h"
 				>
 			</File>
@@ -3135,6 +3269,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\GirderGroupData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\GirderLabel.h"
 				>
 			</File>
@@ -3147,11 +3285,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\GirderSpacing.h"
+				RelativePath="..\Include\PgsExt\GirderPointOfInterest.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\GirderTypes.h"
+				RelativePath=".\GirderSpacing.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\GirderSpacing2.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderTypes.h"
 				>
 			</File>
 			<File
@@ -3167,7 +3313,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\KdotHaulingAnalysisArtifact.h"
+				RelativePath="..\Include\PgsExt\InsertDeleteLoad.h"
 				>
 			</File>
 			<File
@@ -3188,10 +3334,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\LongRebarInstance.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\MacroTxn.h"
 				>
 			</File>
 			<File
@@ -3219,7 +3361,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\PierData.h"
+				RelativePath=".\PierData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\PierData2.h"
 				>
 			</File>
 			<File
@@ -3251,7 +3397,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\PrestressData.h"
+				RelativePath="..\Include\PgsExt\PrecastSegmentData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\PTData.h"
 				>
 			</File>
 			<File
@@ -3267,7 +3417,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\ReportStyleHolder.h"
+				RelativePath="..\Include\PgsExt\RemoveTemporarySupportsActivity.h"
 				>
 			</File>
 			<File
@@ -3275,11 +3425,39 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\SegmentActivity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\SegmentArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\SegmentKey.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\SegmentRelatedStatusItem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ShearData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\ShearRatingArtifact.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\SpanData.h"
+				RelativePath="..\Include\PgsExt\ShearZoneData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpanData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\SpanData2.h"
 				>
 			</File>
 			<File
@@ -3287,7 +3465,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\StageCompare.h"
+				RelativePath="..\Include\PgsExt\SplicedGirderData.h"
 				>
 			</File>
 			<File
@@ -3315,6 +3493,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\StrandData.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\StrandSlopeArtifact.h"
 				>
 			</File>
@@ -3327,19 +3509,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\StressTendonActivity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\TemporarySupportData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\TendonStressArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\TimelineEvent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\TimelineManager.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PgsExt\YieldStressRatioArtifact.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Transactions"
-			>
-			<File
-				RelativePath=".\InsertDeleteLoad.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\PgsExt\InsertDeleteLoad.h"
 				>
 			</File>
 		</Filter>

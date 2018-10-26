@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -71,7 +71,7 @@ LOG
    rdp : 12.03.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS CShearData
+class PSGLIBCLASS CShearData2
 {
 public:
    matRebar::Type  ShearBarType;
@@ -81,7 +81,7 @@ public:
    bool  bAreZonesSymmetrical;
    bool  bUsePrimaryForSplitting;
 
-   typedef std::vector<CShearZoneData> ShearZoneVec;
+   typedef std::vector<CShearZoneData2> ShearZoneVec;
    typedef ShearZoneVec::iterator ShearZoneIterator;
    typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
    typedef ShearZoneVec::reverse_iterator ShearZoneReverseIterator;
@@ -95,12 +95,16 @@ public:
    typedef HorizontalInterfaceZoneVec::reverse_iterator HorizontalInterfaceZoneReverseIterator;
    typedef HorizontalInterfaceZoneVec::const_reverse_iterator HorizontalInterfaceZoneConstReverseIterator;
    HorizontalInterfaceZoneVec HorizontalInterfaceZones;
-   
+
+   // Additional reinforcement at girder ends
+
+   // Splitting
    matRebar::Size SplittingBarSize;
    Float64 SplittingBarSpacing;
    Float64 SplittingZoneLength;
    Float64 nSplittingBars;
 
+   // Confinement
    matRebar::Size ConfinementBarSize;
    Float64 ConfinementBarSpacing;
    Float64 ConfinementZoneLength;
@@ -109,22 +113,22 @@ public:
 
    //------------------------------------------------------------------------
    // Constructor
-   CShearData();
+   CShearData2();
 
    //------------------------------------------------------------------------
    // Copy constructor
-   CShearData(const CShearData& rOther);
+   CShearData2(const CShearData2& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   ~CShearData();
+   ~CShearData2();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   CShearData& operator = (const CShearData& rOther);
-   bool operator == (const CShearData& rOther) const;
-   bool operator != (const CShearData& rOther) const;
+   CShearData2& operator = (const CShearData2& rOther);
+   bool operator == (const CShearData2& rOther) const;
+   bool operator != (const CShearData2& rOther) const;
 
    // GROUP: OPERATIONS
 
@@ -143,10 +147,10 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const CShearData& rOther);
+   void MakeCopy(const CShearData2& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CShearData& rOther);
+   virtual void MakeAssignment(const CShearData2& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 
 #include <DManip\DManip.h>
 #include "BridgeModelViewChildFrame.h"
+#include <PgsExt\TemporarySupportData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSpanDisplayObjectEvents command target
@@ -43,6 +44,7 @@ public:
 protected:
    SpanIndexType m_SpanIdx;
    CBridgeModelViewChildFrame* m_pFrame;
+   std::vector<const CTemporarySupportData*> m_TempSupports;
 
 	DECLARE_INTERFACE_MAP()
 

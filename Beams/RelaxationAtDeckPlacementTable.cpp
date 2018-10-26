@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,7 +53,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -62,19 +61,11 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return NULL;
-   }
-
    // Create and configure the table
    ColumnIndexType numColumns = 2;
-   if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   if ( pDetails->RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
       numColumns++;
-   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   else if (pDetails->RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
       numColumns += 4;
 
    CRelaxationAtDeckPlacementTable* table = new CRelaxationAtDeckPlacementTable( numColumns, pDisplayUnits );
@@ -91,20 +82,20 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);
 
-   switch(ptl->GetRelaxationLossMethod() )
+   switch(pDetails->RefinedLosses2005.GetRelaxationLossMethod() )
    {
    case lrfdRefinedLosses2005::Simplified:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1_Simplified.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())              << rptNewLine;
-      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetKL()                        << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(pDetails->RefinedLosses2005.GetFpy())              << rptNewLine;
+      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << pDetails->RefinedLosses2005.GetKL()                        << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::Refined:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())                              << rptNewLine;
-      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetKL()                                       << rptNewLine;
-      *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetInitialAge())         << rptNewLine;
-      *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtDeckPlacement()) << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(pDetails->RefinedLosses2005.GetFpy())                              << rptNewLine;
+      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << pDetails->RefinedLosses2005.GetKL()                                       << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetInitialAge())         << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetAgeAtDeckPlacement()) << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::LumpSum:
@@ -123,11 +114,11 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    *pParagraph << table << rptNewLine;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
-   if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   if (pDetails->RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
    {
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
-   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   else if (pDetails->RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
    {
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -140,28 +131,19 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    return table;
 }
 
-void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
-
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
+   if (pDetails->RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
    {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
+      (*this)(row,col++) << stress.SetValue(pDetails->RefinedLosses2005.GetPermanentStrandFpt());
    }
-
-   if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   else if (pDetails->RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
    {
-      (*this)(row,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
+      (*this)(row,col++) << stress.SetValue(pDetails->RefinedLosses2005.GetPermanentStrandFpt());
+      (*this)(row,col++) << stress.SetValue(pDetails->RefinedLosses2005.ShrinkageLossBeforeDeckPlacement());
+      (*this)(row,col++) << stress.SetValue(pDetails->RefinedLosses2005.CreepLossBeforeDeckPlacement());
+      (*this)(row,col++) << scalar.SetValue(pDetails->RefinedLosses2005.GetKid());
    }
-   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
-   {
-      (*this)(row,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
-      (*this)(row,col++) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
-      (*this)(row,col++) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement());
-      (*this)(row,col++) << scalar.SetValue(ptl->GetKid());
-   }
-   (*this)(row,col++) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
+   (*this)(row,col++) << stress.SetValue(pDetails->RefinedLosses2005.RelaxationLossBeforeDeckPlacement());
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,8 +34,8 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iDistributedLoadDrawStrategy)
-      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
-                            Float64 loadLength, Float64 spanLength, Float64 girderDepthAtStartOfLoad, Float64 girderDepthAtEndOfLoad, Float64 maxMagnitude, 
+      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, CollectionIndexType loadIndex, 
+                            Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, 
                             COLORREF color);
    END_INTERFACE_PART(Strategy)
 
@@ -92,8 +92,6 @@ private:
    Float64  m_StartLoc;
    Float64  m_EndLoc;
    Float64  m_MaxMagnitude;
-   Float64  m_GirderDepthAtStartOfLoad;
-   Float64  m_GirderDepthAtEndOfLoad;
    Float64  m_SpanLength;
    Float64  m_LoadLength;
    Float64  m_ArrowSpacing;

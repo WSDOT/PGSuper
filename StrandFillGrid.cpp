@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -334,7 +334,7 @@ void CStrandFillGrid::FillGrid()
          m_pGdrEntry->GetStraightStrandCoordinates(localIdx, &xs, &ys, &xe, &ye, &canDebond);
          oneOrTwo = (xs==0.0 && xe==0.0) ? 1 : 2;
       }
-      else if (strandType==GirderLibraryEntry::stAdjustable)
+      else if (strandType==GirderLibraryEntry::stHarped)
       {
          Float64 xs, ys, xh, yh, xe, ye;
          m_pGdrEntry->GetHarpedStrandCoordinates(localIdx, &xs, &ys, &xh, &yh, &xe, &ye);
@@ -364,10 +364,10 @@ void CStrandFillGrid::FillGrid()
          else
             strType = _T("S");
       }
-      else if (strandType==GirderLibraryEntry::stAdjustable)
+      else if (strandType==GirderLibraryEntry::stHarped)
       {
-         if(m_pParent->m_AdjustableStrandType==pgsTypes::asStraight)
-            strType = _T("A-S");
+         if(m_pGdrEntry->IsForceHarpedStrandsStraight())
+            strType = _T("S-W");
          else
             strType = _T("H");
       }
@@ -732,7 +732,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 
          if (pUserData->strandTypeGridIdx != INVALID_INDEX)
          {
-            CDebondInfo dbinfo;
+            CDebondData dbinfo;
             dbinfo.strandTypeGridIdx = pUserData->strandTypeGridIdx;
             dbinfo.Length1 = leftDebond;
             dbinfo.Length2 = rightDebond;
@@ -965,7 +965,7 @@ bool CStrandFillGrid::IsPermStrandFilled(GirderLibraryEntry::psStrandType strand
    {
       return m_pParent->m_DirectFilledStraightStrands.IsStrandFilled(idxStrandGrid);
    }
-   if (strandType==GirderLibraryEntry::stAdjustable)
+   if (strandType==GirderLibraryEntry::stHarped)
    {
       return m_pParent->m_DirectFilledHarpedStrands.IsStrandFilled(idxStrandGrid);
    }
@@ -1035,8 +1035,8 @@ bool CStrandFillGrid::IsStrandExtended(GridIndexType gridIdx,pgsTypes::MemberEnd
 
 bool CStrandFillGrid::GetDebondInfo(StrandIndexType straightStrandGridIdx, Float64* pleftDebond, Float64* prightDebond)
 {
-   std::vector<CDebondInfo>::iterator it    = m_pParent->m_StraightDebond.begin();
-   std::vector<CDebondInfo>::iterator itend = m_pParent->m_StraightDebond.end();
+   std::vector<CDebondData>::iterator it    = m_pParent->m_StraightDebond.begin();
+   std::vector<CDebondData>::iterator itend = m_pParent->m_StraightDebond.end();
    while(it!=itend)
    {
       if (it->strandTypeGridIdx == straightStrandGridIdx)

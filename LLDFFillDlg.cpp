@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -177,8 +177,9 @@ void CLLDFFillDlg::OnCbnSelchangeGirderSpan()
          else
          {
             SpanIndexType spidx = sel-2;
-            const CSpanData* pSpan = m_pBridgeDesc->GetSpan(spidx);
-            ngdrs = pSpan->GetGirderCount();
+            const CSpanData2* pSpan = m_pBridgeDesc->GetSpan(spidx);
+            const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
+            ngdrs = pGroup->GetGirderCount();
          }
 
          m_GirderGirderCB.AddString(_T("All"));
@@ -191,7 +192,7 @@ void CLLDFFillDlg::OnCbnSelchangeGirderSpan()
          }
 
          // Go back to previous selection if possible
-         gsel = gsel> (int)ngdrs ? 0:gsel;
+         gsel = gsel>(int)ngdrs ? 0:gsel;
          m_GirderGirderCB.SetCurSel(gsel);
       }
    }
@@ -226,7 +227,7 @@ void CLLDFFillDlg::OnCbnSelchangePier()
          else
          {
             PierIndexType pieridx = sel-2;
-            const CPierData* pPier = m_pBridgeDesc->GetPier(pieridx);
+            const CPierData2* pPier = m_pBridgeDesc->GetPier(pieridx);
             ngdrs = GetPierGirderCount(pPier);
          }
 
@@ -257,8 +258,9 @@ void CLLDFFillDlg::ComputeMaxNumGirders()
    SpanIndexType nspans = m_pBridgeDesc->GetSpanCount();
    for (SpanIndexType ispan=0; ispan<nspans; ispan++)
    {
-      const CSpanData* pSpan = m_pBridgeDesc->GetSpan(ispan);
-      GirderIndexType ngdrs = pSpan->GetGirderCount();
+      const CSpanData2* pSpan = m_pBridgeDesc->GetSpan(ispan);
+      const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
+      GirderIndexType ngdrs = pGroup->GetGirderCount();
 
       m_MaxNumGirders = max(m_MaxNumGirders, ngdrs);
    }
@@ -281,8 +283,9 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
             if (gdrsel==0)
             {
                // all girders
-               const CSpanData* pSpan = m_pBridgeDesc->GetSpan(ispan);
-               GirderIndexType ngdrs = pSpan->GetGirderCount();
+               const CSpanData2* pSpan = m_pBridgeDesc->GetSpan(ispan);
+               const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
+               GirderIndexType ngdrs = pGroup->GetGirderCount();
 
                for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
                {
@@ -305,8 +308,9 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
          if (gdrsel==0)
          {
             // all girders
-            const CSpanData* pSpan = m_pBridgeDesc->GetSpan(span);
-            GirderIndexType ngdrs = pSpan->GetGirderCount();
+            const CSpanData2* pSpan = m_pBridgeDesc->GetSpan(span);
+            const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
+            GirderIndexType ngdrs = pGroup->GetGirderCount();
 
             for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
             {
@@ -342,7 +346,7 @@ PierGirderList CLLDFFillDlg::GetPierGirders()
             if (gdrsel==0)
             {
                // all girders
-               const CPierData* pPier = m_pBridgeDesc->GetPier(iPier);
+               const CPierData2* pPier = m_pBridgeDesc->GetPier(iPier);
                GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
                for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
@@ -366,7 +370,7 @@ PierGirderList CLLDFFillDlg::GetPierGirders()
          if (gdrsel==0)
          {
             // all girders
-            const CPierData* pPier = m_pBridgeDesc->GetPier(Pier);
+            const CPierData2* pPier = m_pBridgeDesc->GetPier(Pier);
             GirderIndexType ngdrs = GetPierGirderCount(pPier);
 
             for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)

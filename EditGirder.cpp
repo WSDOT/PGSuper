@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "EditGirder.h"
 #include "PGSuperDoc.h"
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <IFace\GirderHandling.h>
 
 #ifdef _DEBUG
@@ -32,54 +32,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditGirder::txnEditGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,
-                             bool bOldUseSameGirder, bool bNewUseSameGirder,
-                             const std::_tstring& strOldGirderName, const std::_tstring& strNewGirderName,
-                             const CGirderData& oldGirderData,const CGirderData& newGirderData,
-                             const CShearData& oldShearData,const CShearData& newShearData,
-                             const CLongitudinalRebarData& oldRebarData,const CLongitudinalRebarData& newRebarData,
-                             Float64 oldLiftingLocation,  Float64 newLiftingLocation,
-                             Float64 oldTrailingOverhang, Float64 newTrailingOverhang,
-                             Float64 oldLeadingOverhang,  Float64 newLeadingOverhang,
-                             pgsTypes::SlabOffsetType oldSlabOffsetType,pgsTypes::SlabOffsetType newSlabOffsetType,
-                             Float64 oldSlabOffsetStart,Float64 newSlabOffsetStart,
-                             Float64 oldSlabOffsetEnd, Float64 newSlabOffsetEnd)
+txnEditGirder::txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData& newGirderData)
 {
-   m_SpanIdx   = spanIdx;
-   m_GirderIdx = gdrIdx;
-
-   m_bUseSameGirder[0] = bOldUseSameGirder;
-   m_bUseSameGirder[1] = bNewUseSameGirder;
-
-   m_strGirderName[0] = strOldGirderName;
-   m_strGirderName[1] = strNewGirderName;
-
-   m_GirderData[0] = oldGirderData;
-   m_GirderData[1] = newGirderData;
-
-   m_ShearData[0] = oldShearData;
-   m_ShearData[1] = newShearData;
-
-   m_RebarData[0] = oldRebarData;
-   m_RebarData[1] = newRebarData;
-
-   m_LiftingLocation[0] = oldLiftingLocation;
-   m_LiftingLocation[1] = newLiftingLocation;
-
-   m_TrailingOverhang[0] = oldTrailingOverhang;
-   m_TrailingOverhang[1] = newTrailingOverhang;
-
-   m_LeadingOverhang[0] = oldLeadingOverhang;
-   m_LeadingOverhang[1] = newLeadingOverhang;
-
-   m_SlabOffsetType[0] = oldSlabOffsetType;
-   m_SlabOffsetType[1] = newSlabOffsetType;
-
-   m_SlabOffset[0][pgsTypes::metStart] = oldSlabOffsetStart;
-   m_SlabOffset[1][pgsTypes::metStart] = newSlabOffsetStart;
-
-   m_SlabOffset[0][pgsTypes::metEnd] = oldSlabOffsetEnd;
-   m_SlabOffset[1][pgsTypes::metEnd] = newSlabOffsetEnd;
+   m_GirderKey = girderKey;
+   ATLASSERT(m_GirderKey.groupIndex != INVALID_INDEX);
+   m_NewGirderData = newGirderData;
 }
 
 txnEditGirder::~txnEditGirder()
@@ -88,36 +45,81 @@ txnEditGirder::~txnEditGirder()
 
 bool txnEditGirder::Execute()
 {
-   DoExecute(1);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IEvents, pEvents);
+   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+
+   m_OldGirderData.clear();
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
+
+   GirderIndexType nGirders    = pGroup->GetGirderCount();
+   GirderIndexType firstGdrIdx = (m_GirderKey.girderIndex == ALL_GIRDERS ? 0 : m_GirderKey.girderIndex);
+   GirderIndexType lastGdrIdx  = (m_GirderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGdrIdx);
+
+   for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+   {
+      // collect up the old girder data (we will need it for Undo)
+      txnEditGirderData oldGirderData;
+      oldGirderData.m_GirderKey = m_GirderKey;
+      oldGirderData.m_GirderKey.girderIndex = gdrIdx;
+
+      oldGirderData.m_bUseSameGirder = pIBridgeDesc->UseSameGirderForEntireBridge();
+      oldGirderData.m_strGirderName = pGroup->GetGirderName(gdrIdx);
+
+      oldGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
+
+      // this is a precast girder (only one segment per girder)
+      CSegmentKey segmentKey(m_GirderKey.groupIndex,gdrIdx,0);
+      pIBridgeDesc->GetSlabOffset(segmentKey,
+                                  &oldGirderData.m_SlabOffset[pgsTypes::metStart],
+                                  &oldGirderData.m_SlabOffset[pgsTypes::metEnd]);
+
+      oldGirderData.m_Girder = *pGroup->GetGirder(gdrIdx);
+
+      m_OldGirderData.insert(oldGirderData);
+
+      // Copy the new girder data onto this girder
+      SetGirderData(oldGirderData.m_GirderKey,m_NewGirderData,false);
+   }
+
+   pEvents->FirePendingEvents();
+
    return true;
 }
 
 void txnEditGirder::Undo()
 {
-   DoExecute(0);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IEvents, pEvents);
+   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+
+   std::set<txnEditGirderData>::iterator iter(m_OldGirderData.begin());
+   std::set<txnEditGirderData>::iterator end(m_OldGirderData.end());
+   for ( ; iter != end; iter++ )
+   {
+      txnEditGirderData& oldGirderData = *iter;
+      SetGirderData(oldGirderData.m_GirderKey,oldGirderData,true);
+   }
+
+   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditGirder::CreateClone() const
 {
-   return new txnEditGirder(m_SpanIdx, m_GirderIdx,
-                            m_bUseSameGirder[0],   m_bUseSameGirder[1],
-                            m_strGirderName[0],    m_strGirderName[1],
-                            m_GirderData[0],       m_GirderData[1],
-                            m_ShearData[0],        m_ShearData[1],
-                            m_RebarData[0],        m_RebarData[1],
-                            m_LiftingLocation[0],  m_LiftingLocation[1],
-                            m_TrailingOverhang[0], m_TrailingOverhang[1],
-                            m_LeadingOverhang[0],  m_LeadingOverhang[1],
-                            m_SlabOffsetType[0],   m_SlabOffsetType[1],
-                            m_SlabOffset[0][pgsTypes::metStart],m_SlabOffset[1][pgsTypes::metStart],
-                            m_SlabOffset[0][pgsTypes::metEnd],  m_SlabOffset[1][pgsTypes::metEnd]
-                            );
+   return new txnEditGirder(m_GirderKey,m_NewGirderData);
 }
 
 std::_tstring txnEditGirder::Name() const
 {
    std::_tostringstream os;
-   os << "Edit Span " << LABEL_SPAN(m_SpanIdx) << " Girder " << LABEL_GIRDER(m_GirderIdx);
+   os << "Edit Span " << LABEL_SPAN(m_NewGirderData.m_GirderKey.groupIndex) << " Girder " << LABEL_GIRDER(m_NewGirderData.m_GirderKey.girderIndex);
    return os.str();
 }
 
@@ -131,33 +133,33 @@ bool txnEditGirder::IsRepeatable()
    return false;
 }
 
-void txnEditGirder::DoExecute(int i)
+void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirderData& gdrData,bool bUndo)
 {
+   /// this is a precast girder bridge (PGSuepr) so there is only the one segment
+   CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
-
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   pIBridgeDesc->UseSameGirderForEntireBridge( m_bUseSameGirder[i] );
+   pIBridgeDesc->UseSameGirderForEntireBridge( gdrData.m_bUseSameGirder );
 
    // set the slab offset
-   if ( m_SlabOffsetType[i] == pgsTypes::sotBridge )
+   if ( gdrData.m_SlabOffsetType == pgsTypes::sotBridge )
    {
       // for the entire bridge
-      pIBridgeDesc->SetSlabOffset( m_SlabOffset[i][pgsTypes::metStart] );
+      pIBridgeDesc->SetSlabOffset( gdrData.m_SlabOffset[pgsTypes::metStart] );
    }
-   else if ( m_SlabOffsetType[i] == pgsTypes::sotSpan )
+   else if ( gdrData.m_SlabOffsetType == pgsTypes::sotGroup )
    {
       // for this span
-      pIBridgeDesc->SetSlabOffset(m_SpanIdx,m_SlabOffset[i][pgsTypes::metStart], m_SlabOffset[i][pgsTypes::metEnd] );
+      pIBridgeDesc->SetSlabOffset(girderKey.groupIndex,gdrData.m_SlabOffset[pgsTypes::metStart], gdrData.m_SlabOffset[pgsTypes::metEnd] );
    }
    else
    {
       // by girder
-      if ( i == 1 && m_SlabOffsetType[0] != m_SlabOffsetType[1] )
+      if ( !bUndo && gdrData.m_SlabOffsetType != m_NewGirderData.m_SlabOffsetType )
       {
          // we are changing the slab offset type from something to "by girder"
 
@@ -166,43 +168,30 @@ void txnEditGirder::DoExecute(int i)
 
          // get the current value of the slab offset
          Float64 start, end;
-         pIBridgeDesc->GetSlabOffset(m_SpanIdx,m_GirderIdx,&start,&end);
+         pIBridgeDesc->GetSlabOffset(segmentKey,&start,&end);
 
          // set the value for each girder to this current value
-         GirderIndexType nGirders = pIBridgeDesc->GetSpan(m_SpanIdx)->GetGirderCount();
+         GirderIndexType nGirders = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(girderKey.groupIndex)->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-            pIBridgeDesc->SetSlabOffset( m_SpanIdx, gdrIdx, start, end );
+         {
+            CSegmentKey thisSegmentKey(girderKey.groupIndex,gdrIdx,0);
+            pIBridgeDesc->SetSlabOffset( thisSegmentKey, start, end );
+         }
       }
       
       // change the girder that was edited
-      pIBridgeDesc->SetSlabOffset( m_SpanIdx, m_GirderIdx, m_SlabOffset[i][pgsTypes::metStart], m_SlabOffset[i][pgsTypes::metEnd] );
+      pIBridgeDesc->SetSlabOffset( girderKey.groupIndex, gdrData.m_SlabOffset[pgsTypes::metStart], gdrData.m_SlabOffset[pgsTypes::metEnd] );
    }
 
-   if ( !m_bUseSameGirder[i] )
-      pIBridgeDesc->SetGirderName( m_SpanIdx, m_GirderIdx, m_strGirderName[i].c_str() );
+   if ( !gdrData.m_bUseSameGirder )
+   {
+      pIBridgeDesc->SetGirderName( segmentKey, gdrData.m_strGirderName.c_str() );
+   }
    else
-      pIBridgeDesc->SetGirderName( m_strGirderName[i].c_str() );
+   {
+      pIBridgeDesc->SetGirderName( gdrData.m_strGirderName.c_str() );
+   }
 
-   // Prestress Data
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   pGirderData->SetGirderData( m_GirderData[i], m_SpanIdx, m_GirderIdx );
-
-   // Shear Data
-   GET_IFACE2(pBroker,IShear,pShear);
-   pShear->SetShearData( m_ShearData[i], m_SpanIdx, m_GirderIdx );
-
-   // Longitudinal Rebar Data
-   GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinalRebar);
-   pLongitudinalRebar->SetLongitudinalRebarData( m_RebarData[i], m_SpanIdx, m_GirderIdx );
-
-
-   // lifting location
-   GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
-   pGirderLifting->SetLiftingLoopLocations( m_SpanIdx, m_GirderIdx, m_LiftingLocation[i], m_LiftingLocation[i]);
-
-   // truck support location
-   GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
-   pGirderHauling->SetTruckSupportLocations( m_SpanIdx, m_GirderIdx, m_TrailingOverhang[i], m_LeadingOverhang[i]);
-
-   pEvents->FirePendingEvents();
+   // Girder Data
+   pIBridgeDesc->SetGirder(girderKey,gdrData.m_Girder);
 }

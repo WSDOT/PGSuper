@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,31 +29,17 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   pgsGirderArtifact
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsGirderArtifact::pgsGirderArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx)
-{
-   m_SpanIdx = spanIdx;
-   m_GirderIdx  = gdrIdx;
-}
-
-pgsGirderArtifact::pgsGirderArtifact(const pgsGirderArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsGirderArtifact::~pgsGirderArtifact()
+pgsGirderArtifact::pgsGirderArtifact(const CGirderKey& girderKey) :
+m_GirderKey(girderKey)
 {
 }
 
-//======================== OPERATORS  =======================================
+pgsGirderArtifact::pgsGirderArtifact(const pgsGirderArtifact& other)
+{
+   MakeCopy(other);
+}
+
 pgsGirderArtifact& pgsGirderArtifact::operator= (const pgsGirderArtifact& rOther)
 {
    if( this != &rOther )
@@ -64,444 +50,297 @@ pgsGirderArtifact& pgsGirderArtifact::operator= (const pgsGirderArtifact& rOther
    return *this;
 }
 
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-void pgsGirderArtifact::SetStrandStressArtifact(const pgsStrandStressArtifact& artifact)
+const CGirderKey& pgsGirderArtifact::GetGirderKey() const
 {
-   m_StrandStressArtifact = artifact;
+   return m_GirderKey;
 }
 
-const pgsStrandStressArtifact* pgsGirderArtifact::GetStrandStressArtifact() const
+void pgsGirderArtifact::AddFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
+                                                    const pgsFlexuralCapacityArtifact& pmArtifact,
+                                                    const pgsFlexuralCapacityArtifact& nmArtifact)
 {
-   return &m_StrandStressArtifact;
-}
-
-pgsStrandStressArtifact* pgsGirderArtifact::GetStrandStressArtifact()
-{
-   return &m_StrandStressArtifact;
-}
-
-void pgsGirderArtifact::SetStrandSlopeArtifact(const pgsStrandSlopeArtifact& artifact)
-{
-   m_StrandSlopeArtifact = artifact;
-}
-
-const pgsStrandSlopeArtifact* pgsGirderArtifact::GetStrandSlopeArtifact() const
-{
-   return &m_StrandSlopeArtifact;
-}
-
-pgsStrandSlopeArtifact* pgsGirderArtifact::GetStrandSlopeArtifact()
-{
-   return &m_StrandSlopeArtifact;
-}
-
-void pgsGirderArtifact::SetHoldDownForceArtifact(const pgsHoldDownForceArtifact& artifact)
-{
-   m_HoldDownForceArtifact = artifact;
-}
-
-const pgsHoldDownForceArtifact* pgsGirderArtifact::GetHoldDownForceArtifact() const
-{
-   return &m_HoldDownForceArtifact;
-}
-
-pgsHoldDownForceArtifact* pgsGirderArtifact::GetHoldDownForceArtifact()
-{
-   return &m_HoldDownForceArtifact;
-}
-
-void pgsGirderArtifact::AddFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key,
-                                                  const pgsFlexuralStressArtifact& artifact)
-{
-   m_FlexuralStressArtifacts.insert(std::make_pair(key,artifact));
-}
-
-const pgsFlexuralStressArtifact* pgsGirderArtifact::GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key) const
-{
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator found;
-   found = m_FlexuralStressArtifacts.find( key );
-   if ( found == m_FlexuralStressArtifacts.end() )
-      return 0;
-
-   return &(*found).second;
-}
-
-pgsFlexuralStressArtifact* pgsGirderArtifact::GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key)
-{
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::iterator found;
-   found = m_FlexuralStressArtifacts.find( key );
-   if ( found == m_FlexuralStressArtifacts.end() )
-      return 0;
-
-   return &(*found).second;
-}
-
-std::vector<pgsFlexuralStressArtifactKey> pgsGirderArtifact::GetFlexuralStressArtifactKeys() const
-{
-   std::vector<pgsFlexuralStressArtifactKey> keys;
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator iter;
-   for ( iter = m_FlexuralStressArtifacts.begin(); iter != m_FlexuralStressArtifacts.end(); iter++ )
+   if ( m_FlexuralCapacityArtifacts[ls].size() < intervalIdx )
    {
-      keys.push_back(iter->first);
-   }
-
-   return keys;
-}
-
-void pgsGirderArtifact::AddFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key,
-                                                  const pgsFlexuralCapacityArtifact& pmartifact,
-                                                  const pgsFlexuralCapacityArtifact& nmartifact)
-{
-   m_PositiveMomentFlexuralCapacityArtifacts.insert(std::make_pair(key,pmartifact));
-   m_NegativeMomentFlexuralCapacityArtifacts.insert(std::make_pair(key,nmartifact));
-}
-
-std::vector<pgsFlexuralCapacityArtifactKey> pgsGirderArtifact::GetFlexuralCapacityArtifactKeys() const
-{
-   std::vector<pgsFlexuralCapacityArtifactKey> keys;
-   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>::const_iterator iter;
-   for ( iter = m_PositiveMomentFlexuralCapacityArtifacts.begin(); iter != m_PositiveMomentFlexuralCapacityArtifacts.end(); iter++ )
-   {
-      keys.push_back(iter->first);
-   }
-
-   return keys;
-}
-
-const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const
-{
-   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>::const_iterator found;
-   found = m_PositiveMomentFlexuralCapacityArtifacts.find( key );
-   if ( found == m_PositiveMomentFlexuralCapacityArtifacts.end() )
-      return 0;
-
-   return &(*found).second;
-}
-
-const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetNegativeMomentFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key) const
-{
-   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>::const_iterator found;
-   found = m_NegativeMomentFlexuralCapacityArtifacts.find( key );
-   if ( found == m_NegativeMomentFlexuralCapacityArtifacts.end() )
-      return 0;
-
-   return &(*found).second;
-}
-
-const pgsStirrupCheckArtifact* pgsGirderArtifact::GetStirrupCheckArtifact() const
-{
-   return &m_StirrupCheckArtifact;
-}
-
-pgsStirrupCheckArtifact* pgsGirderArtifact::GetStirrupCheckArtifact()
-{
-   return &m_StirrupCheckArtifact;
-}
-
-const pgsPrecastIGirderDetailingArtifact* pgsGirderArtifact::GetPrecastIGirderDetailingArtifact() const
-{
-   return &m_PrecastIGirderDetailingArtifact;
-}
-
-pgsPrecastIGirderDetailingArtifact* pgsGirderArtifact::GetPrecastIGirderDetailingArtifact()
-{
-   return &m_PrecastIGirderDetailingArtifact;
-}
-
-void pgsGirderArtifact::SetConstructabilityArtifact(const pgsConstructabilityArtifact& artifact)
-{
-   m_ConstructabilityArtifact = artifact;
-}
-
-const pgsConstructabilityArtifact* pgsGirderArtifact::GetConstructabilityArtifact() const
-{
-   return &m_ConstructabilityArtifact;
-}
-
-pgsConstructabilityArtifact* pgsGirderArtifact::GetConstructabilityArtifact()
-{
-   return &m_ConstructabilityArtifact;
-}
-
-void pgsGirderArtifact::SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact)
-{
-   m_pLiftingAnalysisArtifact = std::auto_ptr<pgsLiftingAnalysisArtifact>(artifact);
-}
-
-const pgsLiftingAnalysisArtifact* pgsGirderArtifact::GetLiftingAnalysisArtifact() const
-{
-   return m_pLiftingAnalysisArtifact.get();
-}
-
-void pgsGirderArtifact::SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact* artifact)
-{
-   m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(artifact);;
-}
-
-const pgsHaulingAnalysisArtifact* pgsGirderArtifact::GetHaulingAnalysisArtifact() const
-{
-   return m_pHaulingAnalysisArtifact.get();
-}
-
-pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact()
-{
-   return &m_DeflectionCheckArtifact;
-}
-
-const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact() const
-{
-   return &m_DeflectionCheckArtifact;
-}
-
-
-void pgsGirderArtifact::SetCastingYardCapacityWithMildRebar(Float64 fAllow)
-{
-    m_CastingYardAllowable = fAllow;
-}
-
-Float64 pgsGirderArtifact::GetCastingYardCapacityWithMildRebar() const
-{
-    return m_CastingYardAllowable;
-}
-
-void pgsGirderArtifact::SetTempStrandRemovalCapacityWithMildRebar(Float64 fAllow)
-{
-   m_TempStrandRemovalAllowable = fAllow;
-}
-
-Float64 pgsGirderArtifact::GetTempStrandRemovalCapacityWithMildRebar() const
-{
-   return m_TempStrandRemovalAllowable;
-}
-
-void pgsGirderArtifact::SetDeckCastingCapacityWithMildRebar(Float64 fAllow)
-{
-   m_DeckCastingAllowable = fAllow;
-}
-
-Float64 pgsGirderArtifact::GetDeckCastingCapacityWithMildRebar() const
-{
-   return m_DeckCastingAllowable;
-}
-
-pgsDebondArtifact* pgsGirderArtifact::GetDebondArtifact(pgsTypes::StrandType strandType)
-{
-   return &m_DebondArtifact[strandType];
-}
-
-const pgsDebondArtifact* pgsGirderArtifact::GetDebondArtifact(pgsTypes::StrandType strandType) const
-{
-   return &m_DebondArtifact[strandType];
-}
-
-bool pgsGirderArtifact::Passed() const
-{
-   bool bPassed = true;
-
-   bPassed &= m_ConstructabilityArtifact.Pass();
-   bPassed &= m_HoldDownForceArtifact.Passed();
-   bPassed &= m_StrandSlopeArtifact.Passed();
-   bPassed &= m_StrandStressArtifact.Passed();
-
-   std::map<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>::const_iterator i1;
-   for ( i1 = m_PositiveMomentFlexuralCapacityArtifacts.begin(); i1 != m_PositiveMomentFlexuralCapacityArtifacts.end(); i1++ )
-   {
-      const std::pair<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>& artifact = *i1;
-      bPassed &= artifact.second.Passed();
-   }
-
-   for ( i1 = m_NegativeMomentFlexuralCapacityArtifacts.begin(); i1 != m_NegativeMomentFlexuralCapacityArtifacts.end(); i1++ )
-   {
-      const std::pair<pgsFlexuralCapacityArtifactKey,pgsFlexuralCapacityArtifact>& artifact = *i1;
-      bPassed &= artifact.second.Passed();
-   }
-
-   bPassed &= DidFlexuralStressesPass();
-
-   bPassed &= m_StirrupCheckArtifact.Passed();
-
-   bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
-
-   if (m_pLiftingAnalysisArtifact.get()!=NULL)
-      bPassed &= m_pLiftingAnalysisArtifact->Passed();
-
-   if (m_pHaulingAnalysisArtifact.get()!=NULL)
-      bPassed &= m_pHaulingAnalysisArtifact->Passed();
-
-   bPassed &= m_DeflectionCheckArtifact.Passed();
-
-   for ( Uint16 i = 0; i < 3; i++ )
-      bPassed &= m_DebondArtifact[i].Passed();
-
-   return bPassed;
-}
-
-bool pgsGirderArtifact::DidFlexuralStressesPass() const
-{
-   bool bPassed = true;
-
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator  i2;
-   for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
-   {
-      const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i2;
-      bPassed &= artifact.second.Passed();
-   }
-
-   return bPassed;
-}
-
-
-Float64 pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const
-{
-   Float64 fc_reqd = 0;
-
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
-   for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
-   {
-      const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i;
-      const pgsFlexuralStressArtifactKey& key = artifact.first;
-
-      if ( key.GetStage() == stage && key.GetLimitState() == ls )
+      for ( IntervalIndexType idx = m_FlexuralCapacityArtifacts[ls].size(); idx <= intervalIdx; idx++ )
       {
-         Float64 fc = artifact.second.GetRequiredConcreteStrength();
-
-         if ( fc < 0 ) 
-            return fc;
-
-         if ( 0 < fc )
-            fc_reqd = _cpp_max(fc,fc_reqd);
+         std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>> vArtifacts;
+         m_FlexuralCapacityArtifacts[ls].insert(std::make_pair(idx,vArtifacts));
       }
    }
 
-   return fc_reqd;
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::iterator found;
+   found = m_FlexuralCapacityArtifacts[ls].find(intervalIdx);
+
+   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
+   ATLASSERT(pmArtifact.GetPointOfInterest() == nmArtifact.GetPointOfInterest());
+   vArtifacts.push_back(std::make_pair(pmArtifact,nmArtifact));
+}
+
+CollectionIndexType pgsGirderArtifact::GetFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+{
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator found;
+   found = m_FlexuralCapacityArtifacts[ls].find(intervalIdx);
+   if ( found == m_FlexuralCapacityArtifacts[ls].end() )
+      return 0;
+
+   const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
+   return vArtifacts.size();
+}
+
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const
+{
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator found;
+   found = m_FlexuralCapacityArtifacts[ls].find(intervalIdx);
+   if ( found == m_FlexuralCapacityArtifacts[ls].end() )
+      return NULL;
+
+   const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
+   const pgsFlexuralCapacityArtifact* pArtifact = &(vArtifacts[artifactIdx].first);
+   return pArtifact;
+}
+
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const
+{
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator found;
+   found = m_FlexuralCapacityArtifacts[ls].find(intervalIdx);
+   if ( found == m_FlexuralCapacityArtifacts[ls].end() )
+      return NULL;
+
+   const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
+   const pgsFlexuralCapacityArtifact* pArtifact = &(vArtifacts[artifactIdx].second);
+   return pArtifact;
+}
+
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::FindPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi) const
+{
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator found;
+   found = m_FlexuralCapacityArtifacts[ls].find(intervalIdx);
+   if ( found == m_FlexuralCapacityArtifacts[ls].end() )
+      return NULL;
+
+   const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
+   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iter(vArtifacts.begin());
+   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      const pgsFlexuralCapacityArtifact* pArtifact = &(iter->first);
+      if ( pArtifact->GetPointOfInterest() == poi )
+         return pArtifact;
+   }
+
+   return NULL;
+}
+
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::FindNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi) const
+{
+   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator found;
+   found = m_FlexuralCapacityArtifacts[ls].find(intervalIdx);
+   if ( found == m_FlexuralCapacityArtifacts[ls].end() )
+      return NULL;
+
+   const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
+   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iter(vArtifacts.begin());
+   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iterEnd(vArtifacts.end());
+   for ( ; iter != iterEnd; iter++ )
+   {
+      const pgsFlexuralCapacityArtifact* pArtifact = &(iter->second);
+      if ( pArtifact->GetPointOfInterest() == poi )
+         return pArtifact;
+   }
+
+   return NULL;
+}
+
+void pgsGirderArtifact::AddSegmentArtifact(const pgsSegmentArtifact& artifact)
+{
+   ATLASSERT(artifact.GetSegmentKey().groupIndex  == m_GirderKey.groupIndex);
+   ATLASSERT(artifact.GetSegmentKey().girderIndex == m_GirderKey.girderIndex);
+   m_SegmentArtifacts.insert(artifact);
+}
+
+const pgsSegmentArtifact* pgsGirderArtifact::GetSegmentArtifact(SegmentIndexType segIdx) const
+{
+   pgsSegmentArtifact key(CSegmentKey(m_GirderKey,segIdx));
+   std::set<pgsSegmentArtifact>::const_iterator found = m_SegmentArtifacts.find(key);
+   ATLASSERT(found != m_SegmentArtifacts.end());
+   if ( found == m_SegmentArtifacts.end() )
+      return NULL;
+
+   return &(*found);
+}
+
+pgsSegmentArtifact* pgsGirderArtifact::GetSegmentArtifact(SegmentIndexType segIdx)
+{
+   pgsSegmentArtifact key(CSegmentKey(m_GirderKey,segIdx));
+   std::set<pgsSegmentArtifact>::iterator found = m_SegmentArtifacts.find(key);
+   if ( found == m_SegmentArtifacts.end() )
+   {
+      std::pair<std::set<pgsSegmentArtifact>::iterator,bool> result = m_SegmentArtifacts.insert(key);
+      ATLASSERT(result.second == true);
+      found = result.first;
+   }
+
+   ATLASSERT(found != m_SegmentArtifacts.end());
+   return &(*found);
+}
+
+void pgsGirderArtifact::AddClosurePourArtifact(const pgsClosurePourArtifact& artifact)
+{
+   ATLASSERT(artifact.GetClosurePourKey().groupIndex  == m_GirderKey.groupIndex);
+   ATLASSERT(artifact.GetClosurePourKey().girderIndex == m_GirderKey.girderIndex);
+   m_ClosurePourArtifacts.insert(artifact);
+}
+
+const pgsClosurePourArtifact* pgsGirderArtifact::GetClosurePourArtifact(SegmentIndexType segIdx) const
+{
+   pgsClosurePourArtifact key(CSegmentKey(m_GirderKey,segIdx));
+   std::set<pgsClosurePourArtifact>::const_iterator found = m_ClosurePourArtifacts.find(key);
+   ATLASSERT(found != m_ClosurePourArtifacts.end());
+   if ( found == m_ClosurePourArtifacts.end() )
+      return NULL;
+
+   return &(*found);
+}
+
+pgsClosurePourArtifact* pgsGirderArtifact::GetClosurePourArtifact(SegmentIndexType segIdx)
+{
+   pgsClosurePourArtifact key(CSegmentKey(m_GirderKey,segIdx));
+   std::set<pgsClosurePourArtifact>::iterator found = m_ClosurePourArtifacts.find(key);
+   if ( found == m_ClosurePourArtifacts.end() )
+   {
+      std::pair<std::set<pgsClosurePourArtifact>::iterator,bool> result = m_ClosurePourArtifacts.insert(key);
+      ATLASSERT(result.second == true);
+      found = result.first;
+   }
+
+   ATLASSERT(found != m_ClosurePourArtifacts.end());
+   return &(*found);
+}
+
+void pgsGirderArtifact::SetTendonStressArtifact(const pgsTendonStressArtifact& artifact)
+{
+   m_TendonStressArtifact = artifact;
+}
+
+const pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact() const
+{
+   return &m_TendonStressArtifact;
+}
+
+pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact()
+{
+   return &m_TendonStressArtifact;
+}
+
+void pgsGirderArtifact::AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact)
+{
+   ATLASSERT(artifact.GetSpan() != INVALID_INDEX);
+   m_DeflectionCheckArtifact.push_back(artifact);
+}
+
+IndexType pgsGirderArtifact::GetDeflectionCheckArtifactCount()
+{
+   return m_DeflectionCheckArtifact.size();
+}
+
+pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(IndexType idx)
+{
+   return &m_DeflectionCheckArtifact[idx];
+}
+
+const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(IndexType idx) const
+{
+   return &m_DeflectionCheckArtifact[idx];
 }
 
 Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
 {
-   Float64 fc_reqd = 0;
-
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
-   for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
+   Float64 f = 0;
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
    {
-      const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i;
-
-      if ( artifact.first.GetStage() == pgsTypes::CastingYard )
-         continue;
-
-      Float64 fc = artifact.second.GetRequiredConcreteStrength();
-
-      if ( fc < 0 ) // there is no concrete strength that will work
-         return fc;
-
-      if ( 0 < fc )
-         fc_reqd = _cpp_max(fc,fc_reqd);
+      const pgsSegmentArtifact& artifact = *iter;
+      f = max(f,artifact.GetRequiredConcreteStrength());
    }
-
-   if (m_pLiftingAnalysisArtifact.get()!=NULL)
-   {
-      Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
-      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
-
-      Float64 fc_reqd_Lifting = max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
-
-      if ( fc_reqd_Lifting < 0 ) // there is no concrete strength that will work
-         return fc_reqd_Lifting;
-
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_Lifting);
-   }
-
-   if (m_pHaulingAnalysisArtifact.get()!=NULL)
-   {
-      Float64 fc_reqd_hauling_comp, fc_reqd_hauling_tens, fc_reqd_hauling_tens_wbar;
-      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens, &fc_reqd_hauling_tens_wbar);
-
-      Float64 fc_reqd_hauling = max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
-
-      if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
-         return fc_reqd_hauling;
-
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_hauling);
-   }
-
-   return fc_reqd;
+   return f;
 }
 
 Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 {
-   Float64 fc_reqd = 0;
-
-   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
-   for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
+   Float64 f = 0;
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
    {
-      const std::pair<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>& artifact = *i;
-
-      if ( artifact.first.GetStage() != pgsTypes::CastingYard )
-         continue;
-
-      Float64 fc = artifact.second.GetRequiredConcreteStrength();
-
-      if ( fc < 0 ) // there is no concrete strength that will work
-         return fc;
-
-      if ( 0 < fc )
-         fc_reqd = _cpp_max(fc,fc_reqd);
+      const pgsSegmentArtifact& artifact = *iter;
+      f = max(f,artifact.GetRequiredReleaseStrength());
    }
-
-   if (m_pLiftingAnalysisArtifact.get()!=NULL)
-   {
-      Float64 fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar;
-      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens_norebar,&fc_reqd_lifting_tens_withrebar);
-
-      Float64 fc_reqd_lifting = Max3(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
-
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_lifting);
-   }
-
-   return fc_reqd;
+   return f;
 }
 
-//======================== INQUIRY    =======================================
+bool pgsGirderArtifact::Passed() const
+{
+   if ( !m_TendonStressArtifact.Passed() )
+      return false;
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
+   for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
+   {
+      std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator mcIter(m_FlexuralCapacityArtifacts[lsIdx].begin());
+      std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator mcIterEnd(m_FlexuralCapacityArtifacts[lsIdx].end());
+      for ( ; mcIter != mcIterEnd; mcIter++ )
+      {
+         const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(mcIter->second);
+         std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator artifactIter(vArtifacts.begin());
+         std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator artifactIterEnd(vArtifacts.end());
+         for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+         {
+            const pgsFlexuralCapacityArtifact& pmArtifact(artifactIter->first);
+            const pgsFlexuralCapacityArtifact& nmArtifact(artifactIter->second);
 
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
+            if ( !pmArtifact.Passed() )
+               return false;
+
+            if ( !nmArtifact.Passed() )
+               return false;
+         }
+      }
+   }
+
+   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsSegmentArtifact& artifact = *iter;
+      if ( !artifact.Passed() )
+         return false;
+   }
+
+   std::vector<pgsDeflectionCheckArtifact>::const_iterator deflIter(m_DeflectionCheckArtifact.begin());
+   std::vector<pgsDeflectionCheckArtifact>::const_iterator deflIterEnd(m_DeflectionCheckArtifact.end());
+   for ( ; deflIter != deflIterEnd; deflIter++ )
+   {
+      const pgsDeflectionCheckArtifact& artifact = *deflIter;
+      if ( !artifact.Passed() )
+         return false;
+   }
+
+   return true;
+}
+
 void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
 {
-   m_SpanIdx = rOther.m_SpanIdx;
-   m_GirderIdx = rOther.m_GirderIdx;
+   m_GirderKey                 = rOther.m_GirderKey;
+   m_TendonStressArtifact      = rOther.m_TendonStressArtifact;
 
-   m_StrandStressArtifact            = rOther.m_StrandStressArtifact;
-   m_FlexuralStressArtifacts         = rOther.m_FlexuralStressArtifacts;
-   m_PositiveMomentFlexuralCapacityArtifacts       = rOther.m_PositiveMomentFlexuralCapacityArtifacts;
-   m_NegativeMomentFlexuralCapacityArtifacts       = rOther.m_NegativeMomentFlexuralCapacityArtifacts;
-   m_StirrupCheckArtifact            = rOther.m_StirrupCheckArtifact;
-   m_PrecastIGirderDetailingArtifact = rOther.m_PrecastIGirderDetailingArtifact;
-   m_StrandSlopeArtifact             = rOther.m_StrandSlopeArtifact;
-   m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
-   m_ConstructabilityArtifact        = rOther.m_ConstructabilityArtifact;
-
-   if(rOther.m_pLiftingAnalysisArtifact.get()!=NULL)
+   for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
    {
-      m_pLiftingAnalysisArtifact = std::auto_ptr<pgsLiftingAnalysisArtifact>(new pgsLiftingAnalysisArtifact);
-      *m_pLiftingAnalysisArtifact            = *rOther.m_pLiftingAnalysisArtifact;
+      m_FlexuralCapacityArtifacts[lsIdx] = rOther.m_FlexuralCapacityArtifacts[lsIdx];
    }
 
-   if(rOther.m_pHaulingAnalysisArtifact.get()!=NULL)
-   {
-      m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(rOther.m_pHaulingAnalysisArtifact->Clone());
-   }
-
-
-   m_DeflectionCheckArtifact         = rOther.m_DeflectionCheckArtifact;
-   m_CastingYardAllowable            = rOther.m_CastingYardAllowable;
-   m_TempStrandRemovalAllowable      = rOther.m_TempStrandRemovalAllowable;
-   m_DeckCastingAllowable            = rOther.m_DeckCastingAllowable;
-
-   for ( Uint16 i = 0; i < 3; i++ )
-      m_DebondArtifact[i] = rOther.m_DebondArtifact[i];
+   m_SegmentArtifacts          = rOther.m_SegmentArtifacts;
+   m_ClosurePourArtifacts      = rOther.m_ClosurePourArtifacts;
+   m_DeflectionCheckArtifact   = rOther.m_DeflectionCheckArtifact;
 }
 
 void pgsGirderArtifact::MakeAssignment(const pgsGirderArtifact& rOther)

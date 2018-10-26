@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,14 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BridgeDescFramingPage.cpp : implementation file
+// BridgeDescFramingPage2.cpp : implementation file
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescFramingPage.h"
-#include <MFCTools\CogoDDX.h>
-#include <MFCTools\CustomDDX.h>
 #include "SpanLengthDlg.h"
 #include "BridgeDescDlg.h"
 
@@ -57,8 +55,6 @@ CPropertyPage(CBridgeDescFramingPage::IDD)
 {
 	//{{AFX_DATA_INIT(CBridgeDescFramingPage)
 	//}}AFX_DATA_INIT
-   m_strRemoveSpanTip = "Select a span row in the grid.\nRemoves the selected span and the next pier from the bridge model";
-   m_strAddSpanTip = "Adds a pier and a span at the end of the selected span\nAdds a span and a pier after the selected pier";
 }
 
 CBridgeDescFramingPage::~CBridgeDescFramingPage()
@@ -73,7 +69,6 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
    //{{AFX_DATA_MAP(CBridgeDescFramingPage)
    DDX_Control(pDX, IDC_ORIENTATIONFMT, m_OrientationFormat);
 	DDX_Control(pDX, IDC_STATIONFMT, m_StationFormat);
-   DDX_Control(pDX, IDC_ALIGNMENTOFFSET_FMT, m_AlignmentOffsetFormat);
 	//}}AFX_DATA_MAP
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
@@ -82,49 +77,69 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       DDV_GXGridWnd(pDX, &m_Grid);
-
-      m_Grid.GetGridData();
+#pragma Reminder("BUG? why validate grid and then not get the data out of it?")
+//      m_Grid.GetGridData();
    }
    else
    {
       m_Grid.FillGrid(pParent->m_BridgeDesc);
    }
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   if ( !pDX->m_bSaveAndValidate )
-   {
-      m_AlignmentOffset = pParent->m_BridgeDesc.GetAlignmentOffset();
-   }
-
-   DDX_OffsetAndTag(pDX, IDC_ALIGNMENTOFFSET, IDC_ALIGNMENTOFFSET_UNIT, m_AlignmentOffset, pDisplayUnits->GetAlignmentLengthUnit() );
-   
-   if ( pDX->m_bSaveAndValidate )
-   {
-      pParent->m_BridgeDesc.SetAlignmentOffset(m_AlignmentOffset);
-   }
-
 }
 
 
 BEGIN_MESSAGE_MAP(CBridgeDescFramingPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CBridgeDescFramingPage)
 	ON_COMMAND(ID_HELP, OnHelp)
-   ON_COMMAND(IDC_ADD_SPAN, OnAddSpan)
-   ON_COMMAND(IDC_REMOVE_SPAN, OnRemoveSpan)
+   ON_COMMAND(IDC_ADD_PIER, OnAddPier)
+   ON_COMMAND(IDC_REMOVE_PIER, OnRemovePier)
+   ON_COMMAND(IDC_ADD_TEMP_SUPPORT, OnAddTemporarySupport)
+   ON_COMMAND(IDC_REMOVE_TEMP_SUPPORT, OnRemoveTemporarySupport)
    ON_COMMAND(IDC_LAYOUT, OnLayoutBySpanLengths)
-   ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_ORIENT_PIERS, &CBridgeDescFramingPage::OnOrientPiers)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingPage message handlers
 
-void CBridgeDescFramingPage::EnableRemove(BOOL bEnable)
+void CBridgeDescFramingPage::EnableRemovePierBtn(BOOL bEnable)
 {
-   GetDlgItem(IDC_REMOVE_SPAN)->EnableWindow(bEnable);
+   GetDlgItem(IDC_REMOVE_PIER)->EnableWindow(bEnable);
+   if ( bEnable )
+   {
+      PierIndexType pierIdx = m_Grid.GetSelectedPier();
+      PierIndexType nPiers  = m_Grid.GetPierCount();
+
+      if ( pierIdx == INVALID_INDEX )
+      {
+         GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(_T("Remove Span"));
+      }
+      else
+      {
+         CString strLabel;
+         if ( pierIdx == nPiers-1 )
+         {
+            // last pier is selected
+            strLabel.Format(_T("Remove Span %d/Pier %d"),LABEL_SPAN(pierIdx-1),LABEL_PIER(pierIdx));
+         }
+         else
+         {
+            strLabel.Format(_T("Remove Pier %d/Span %d"),LABEL_PIER(pierIdx),LABEL_SPAN(pierIdx));
+         }
+
+         GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(strLabel);
+      }
+
+   }
+   else
+   {
+      GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(_T("Remove Span"));
+   }
+}
+
+void CBridgeDescFramingPage::EnableRemoveTemporarySupportBtn(BOOL bEnable)
+{
+   GetDlgItem(IDC_REMOVE_TEMP_SUPPORT)->EnableWindow(bEnable);
 }
 
 BOOL CBridgeDescFramingPage::OnInitDialog() 
@@ -149,11 +164,9 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
    m_OrientationFormat.SetWindowText( fmt );
 
-   fmt.LoadString( IDS_ALIGNMENTOFFSET_FMT);
-   m_AlignmentOffsetFormat.SetWindowText(fmt);
-
    // causes the Remove Span button to be enabled/disabled
-   EnableRemove(m_Grid.EnableItemDelete());
+   EnableRemovePierBtn(m_Grid.EnableRemovePierBtn());
+   EnableRemoveTemporarySupportBtn(m_Grid.EnableRemoveTemporarySupportBtn());
 
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -165,15 +178,15 @@ void CBridgeDescFramingPage::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGEDESC_FRAMING );
 }
 
-void CBridgeDescFramingPage::OnRemoveSpan() 
+void CBridgeDescFramingPage::OnRemovePier() 
 {
-   m_Grid.OnRemoveSpan();
-   EnableRemove(FALSE); // nothing selected
+   m_Grid.OnRemovePier();
+   EnableRemovePierBtn(FALSE); // nothing selected
 }
 
-void CBridgeDescFramingPage::OnAddSpan() 
+void CBridgeDescFramingPage::OnAddPier() 
 {
-   m_Grid.OnAddSpan();
+   m_Grid.OnAddPier();
 }
 
 void CBridgeDescFramingPage::OnLayoutBySpanLengths()
@@ -189,38 +202,6 @@ void CBridgeDescFramingPage::OnLayoutBySpanLengths()
    }
 }
 
-BOOL CBridgeDescFramingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
-{
-   TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
-   HWND hwndTool = (HWND)pNMHDR->idFrom;
-   if ( pTTT->uFlags & TTF_IDISHWND )
-   {
-      // idFrom is actually HWND of tool
-      UINT nID = ::GetDlgCtrlID(hwndTool);
-      switch(nID)
-      {
-      case IDC_ADD_SPAN:
-         pTTT->lpszText = m_strAddSpanTip.LockBuffer();
-         pTTT->hinst = NULL;
-         break;
-
-      case IDC_REMOVE_SPAN:
-         pTTT->lpszText = m_strRemoveSpanTip.LockBuffer();
-         pTTT->hinst = NULL;
-         break;
-
-      default:
-         return FALSE;
-      }
-
-      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
-      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
-
-      return TRUE;
-   }
-   return FALSE;
-}
-
 BOOL CBridgeDescFramingPage::OnNcActivate(BOOL bActive)
 {
    // This is required when a CGXComboBox is used in the grid. It prevents
@@ -229,4 +210,24 @@ BOOL CBridgeDescFramingPage::OnNcActivate(BOOL bActive)
       return true;
 
    return CPropertyPage::OnNcActivate(bActive);
+}
+
+void CBridgeDescFramingPage::OnAddTemporarySupport()
+{
+   m_Grid.OnAddTemporarySupport();
+}
+
+void CBridgeDescFramingPage::OnRemoveTemporarySupport()
+{
+   m_Grid.OnRemoveTemporarySupport();
+   EnableRemoveTemporarySupportBtn(FALSE); // nothing selected
+}
+
+void CBridgeDescFramingPage::OnOrientPiers()
+{
+   CString strResult;
+   if ( AfxQuestion(_T("Orient Piers"),_T("Enter orientation of all piers and temporary supports"),_T("NORMAL"),strResult) )
+   {
+      m_Grid.SetPierOrientation(strResult);
+   }
 }

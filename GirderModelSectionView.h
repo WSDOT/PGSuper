@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,14 +30,16 @@
 
 #include <DManip\DisplayView.h>
 
-//
+// Forward declarations
 class CGirderModelChildFrame;
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelSectionView view
 
 class CGirderModelSectionView : public CDisplayView
 {
    friend CGirderModelChildFrame;
+
 protected:
 	CGirderModelSectionView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CGirderModelSectionView)
@@ -87,24 +89,26 @@ protected:
 
 private:
    CGirderModelChildFrame* m_pFrame;
+   bool m_bOnIntialUpdateComplete;
 
    void CreateDisplayLists();
    void UpdateDisplayObjects();
-   void BuildSectionDisplayObjects(CPGSuperDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildStrandDisplayObjects(CPGSuperDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildLongReinfDisplayObjects(CPGSuperDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildCGDisplayObjects(CPGSuperDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
-   void BuildDimensionDisplayObjects(CPGSuperDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr);
+   void BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
+   void BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
+   void BuildDuctDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
+   void BuildLongReinfDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
+   void BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
+   void BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
 
    bool m_bUpdateError;
    std::_tstring m_ErrorMsg;
 
    // Store our current girder so we can ask frame if the selection has changed
    bool DidGirderSelectionChange();
+   
+   CGirderKey GetGirderKey();
 
-   SpanIndexType m_CurrentSpanIdx;
-   GirderIndexType m_CurrentGirderIdx;
-
+   CGirderKey m_GirderKey;
 };
 
 /////////////////////////////////////////////////////////////////////////////

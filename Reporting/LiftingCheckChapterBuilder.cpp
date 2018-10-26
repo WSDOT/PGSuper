@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,9 @@
 #include "StdAfx.h"
 #include <Reporting\LiftingCheckChapterBuilder.h>
 #include <Reporting\LiftingCheck.h>
+#include <IFace\Artifact.h>
 
-#include <EAF\EAFDisplayUnits.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,17 +39,11 @@ CLASS
    CLiftingCheckChapterBuilder
 ****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLiftingCheckChapterBuilder::CLiftingCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLiftingCheckChapterBuilder::GetName() const
 {
    return TEXT("Lifting Check");
@@ -56,18 +51,20 @@ LPCTSTR CLiftingCheckChapterBuilder::GetName() const
 
 rptChapter* CLiftingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec   = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
+
+   const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    CLiftingCheck check;
-   check.Build(pChapter,pBroker,span,girder,pDisplayUnits);
+   check.Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    return pChapter;
 }
@@ -77,22 +74,3 @@ CChapterBuilder* CLiftingCheckChapterBuilder::Clone() const
 {
    return new CLiftingCheckChapterBuilder;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,11 +29,11 @@
 #include "BridgeSectionCutDisplayImpl.h"
 #include "BridgeModelViewChildFrame.h"
 #include "mfcdual.h"
-#include "pgsuperdoc.h"
+#include "PGSuperDocBase.h"
 #include <IFace\Bridge.h>
 #include <WBFLDManip.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -135,15 +135,32 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayOb
    }
    else if ( nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder(0,0);
+      pThis->m_pFrame->SelectGirder(CSegmentKey(0,0,0));
       return true;
    }
    else if ( nChar == VK_UP )
    {
-      GET_IFACE2(pThis->m_pBroker,IBridge,pBridge);
-      SpanIndexType nSpans = pBridge->GetSpanCount();
-      GirderIndexType nGirders = pBridge->GetGirderCount(nSpans-1);
-      pThis->m_pFrame->SelectGirder(nSpans-1,nGirders-1);
+      GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+      GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirderCount();
+      SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirder(nGirders-1)->GetSegmentCount();
+      pThis->m_pFrame->SelectGirder(CSegmentKey(nGroups-1,nGirders-1,nSegments-1));
+
+      return true;
+   }
+   else if ( nChar == VK_LEFT )
+   {
+      GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      pThis->m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
+      return true;
+   }
+   else if ( nChar == VK_RIGHT )
+   {
+      GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      pThis->m_pFrame->SelectPier(0);
       return true;
    }
 
@@ -163,9 +180,9 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
 
       // the alignment doesn't have its own context menu, so if there aren't callbacks to add anything
       // then just return
@@ -173,12 +190,11 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
          return false;
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnAlignmentContextMenu(pMenu);
+         IBridgePlanViewEventCallback* callback = iter->second;
+         callback->OnAlignmentContextMenu(pMenu);
       }
 
       bool bResult = false;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include <Reporting\StirrupTable.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\Project.h>
 
 #include <Lrfd\RebarPool.h>
@@ -68,7 +68,7 @@ CStirrupTable& CStirrupTable::operator= (const CStirrupTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
                                 IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
@@ -94,13 +94,13 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*p_table)(0,7) << _T("Confinement") << rptNewLine << _T("Bar Size");
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   ZoneIndexType nz = pStirrupGeometry->GetNumPrimaryZones(span,girder);
+   ZoneIndexType nz = pStirrupGeometry->GetNumPrimaryZones(segmentKey);
    for (ZoneIndexType iz=0; iz<nz; iz++)
    {
       (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);
 
       Float64 zoneStart, zoneEnd;
-      pStirrupGeometry->GetPrimaryZoneBounds(span , girder, iz, &zoneStart, &zoneEnd);
+      pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
 
       (*p_table)(row,1) << loc.SetValue(zoneStart);
       (*p_table)(row,2) << loc.SetValue(zoneEnd);
@@ -108,7 +108,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       matRebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
-      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,girder,iz,&barSize,&nStirrups,&spacing);
+      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
 
       if (barSize != matRebar::bsNone)
@@ -117,7 +117,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*p_table)(row,4) << dim.SetValue(spacing);
          (*p_table)(row,5) << nStirrups;
 
-         Float64 num_legs = pStirrupGeometry->GetPrimaryHorizInterfaceBarCount(span,girder,iz);
+         Float64 num_legs = pStirrupGeometry->GetPrimaryHorizInterfaceBarCount(segmentKey,iz);
          (*p_table)(row,6) << num_legs;
 
       }
@@ -129,7 +129,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*p_table)(row,6) << _T("(None)");
       }
 
-      barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(span,girder,iz);
+      barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(segmentKey,iz);
       if (barSize != matRebar::bsNone)
       {
          (*p_table)(row,7) << lrfdRebarPool::GetBarSize(barSize).c_str();
@@ -156,13 +156,13 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*p_table)(0,5) << _T("# of")<< rptNewLine<<_T("Legs");
 
    row = p_table->GetNumberOfHeaderRows();
-   nz = pStirrupGeometry->GetNumHorizInterfaceZones(span,girder);
+   nz = pStirrupGeometry->GetNumHorizInterfaceZones(segmentKey);
    for (ZoneIndexType iz=0; iz<nz; iz++)
    {
       (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);
 
       Float64 zoneStart, zoneEnd;
-      pStirrupGeometry->GetHorizInterfaceZoneBounds(span , girder, iz, &zoneStart, &zoneEnd);
+      pStirrupGeometry->GetHorizInterfaceZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
 
       (*p_table)(row,1) << loc.SetValue(zoneStart);
       (*p_table)(row,2) << loc.SetValue(zoneEnd);
@@ -170,7 +170,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       matRebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
-      pStirrupGeometry->GetHorizInterfaceBarInfo(span,girder,iz,&barSize,&nStirrups,&spacing);
+      pStirrupGeometry->GetHorizInterfaceBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
       if (barSize != matRebar::bsNone)
       {
@@ -191,7 +191,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    // Additional Splitting Bars
    matRebar::Size size;
    Float64 zoneLength, nBars, spacing;
-   pStirrupGeometry->GetAddSplittingBarInfo(span, girder, &size, &zoneLength, &nBars, &spacing);
+   pStirrupGeometry->GetAddSplittingBarInfo(segmentKey, &size, &zoneLength, &nBars, &spacing);
 
    if (size != matRebar::bsNone)
    {
@@ -222,7 +222,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    }
 
    // bottom flange confinement steel
-   pStirrupGeometry->GetAddConfinementBarInfo(span, girder, &size, &zoneLength, &spacing);
+   pStirrupGeometry->GetAddConfinementBarInfo(segmentKey, &size, &zoneLength, &spacing);
 
    if (size != matRebar::bsNone)
    {

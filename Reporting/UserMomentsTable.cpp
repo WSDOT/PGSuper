@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,11 @@
 #include <Reporting\UserMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,17 +70,17 @@ CUserMomentsTable& CUserMomentsTable::operator= (const CUserMomentsTable& rOther
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>(_T("Moments - User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
-   if ( span == ALL_SPANS )
+   if (girderKey.groupIndex == ALL_GROUPS)
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -91,63 +91,57 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderI
    GET_IFACE2(pBroker,IProductForces2,pForces2);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+   GET_IFACE2(pBroker,IProductForces,pForces);
+   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, gdrIdx, pgsTypes::BridgeSite1, POI_ALL, POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS)) );
 
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
       std::vector<Float64> minDC1, maxDC1, minDC2, maxDC2;
       std::vector<Float64> minDW1, maxDW1, minDW2, maxDW2;
       std::vector<Float64> minLL3, maxLL3;
 
 
-      if ( analysisType == pgsTypes::Envelope )
-      {
-         maxDC1 = pForces2->GetMoment( pgsTypes::BridgeSite1, pftUserDC, vPoi, MaxSimpleContinuousEnvelope );
-         minDC1 = pForces2->GetMoment( pgsTypes::BridgeSite1, pftUserDC, vPoi, MinSimpleContinuousEnvelope );
-         maxDC2 = pForces2->GetMoment( pgsTypes::BridgeSite2, pftUserDC, vPoi, MaxSimpleContinuousEnvelope );
-         minDC2 = pForces2->GetMoment( pgsTypes::BridgeSite2, pftUserDC, vPoi, MinSimpleContinuousEnvelope );
-      }
-      else
-      {
-         maxDC1 = pForces2->GetMoment( pgsTypes::BridgeSite1, pftUserDC, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxDC2 = pForces2->GetMoment( pgsTypes::BridgeSite2, pftUserDC, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-      }
+      maxDC1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
+      minDC1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC2 = pForces2->GetMoment( compositeDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
+      minDC2 = pForces2->GetMoment( compositeDeckIntervalIdx, pftUserDC, vPoi, minBAT );
 
 
-      if ( analysisType == pgsTypes::Envelope )
-      {
-         maxDW1 = pForces2->GetMoment( pgsTypes::BridgeSite1, pftUserDW, vPoi, MaxSimpleContinuousEnvelope );
-         minDW1 = pForces2->GetMoment( pgsTypes::BridgeSite1, pftUserDW, vPoi, MinSimpleContinuousEnvelope );
-         maxDW2 = pForces2->GetMoment( pgsTypes::BridgeSite2, pftUserDW, vPoi, MaxSimpleContinuousEnvelope );
-         minDW2 = pForces2->GetMoment( pgsTypes::BridgeSite2, pftUserDW, vPoi, MinSimpleContinuousEnvelope );
-         maxLL3 = pForces2->GetMoment( pgsTypes::BridgeSite3, pftUserLLIM, vPoi, MaxSimpleContinuousEnvelope );
-         minLL3 = pForces2->GetMoment( pgsTypes::BridgeSite3, pftUserLLIM, vPoi, MinSimpleContinuousEnvelope );
-      }
-      else
-      {
-         maxDW1 = pForces2->GetMoment( pgsTypes::BridgeSite1, pftUserDW, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxDW2 = pForces2->GetMoment( pgsTypes::BridgeSite2, pftUserDW, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxLL3 = pForces2->GetMoment( pgsTypes::BridgeSite3, pftUserLLIM, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-      }
+      maxDW1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
+      minDW1 = pForces2->GetMoment( castDeckIntervalIdx, pftUserDW, vPoi, minBAT );
+      maxDW2 = pForces2->GetMoment( compositeDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
+      minDW2 = pForces2->GetMoment( compositeDeckIntervalIdx, pftUserDW, vPoi, minBAT );
+      maxLL3 = pForces2->GetMoment( liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT );
+      minLL3 = pForces2->GetMoment( liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT );
 
       // Fill up the table
-      long index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      IndexType index = 0;
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      for ( ; i != end; i++, index++ )
       {
-         int col = 0;
+         ColumnIndexType col = 0;
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {

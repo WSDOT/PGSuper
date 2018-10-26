@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,9 @@
 #include <Reporting\StrandLocations.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
-#include <PgsExt\GirderData.h>
+
+#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,15 +67,13 @@ CStrandLocations& CStrandLocations::operator= (const CStrandLocations& rOther)
 }
 
 //======================== OPERATIONS =======================================
-void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
                                 IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nspans = pBridge->GetSpanCount();
-   CHECK(span<nspans);
 
-   Float64 Lg = pBridge->GetGirderLength(span,girder);
+   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, len, pDisplayUnits->GetSpanLengthUnit(),  false );
@@ -85,9 +83,10 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
    *pChapter << pHead;
    *pHead <<_T("Prestressing Strand Locations")<<rptNewLine;
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,girder);
-   if (pgirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   if (pStrands->NumPermStrandsType == CStrandData::npsDirectSelection)
    {
       rptParagraph* p = new rptParagraph;
       *pChapter << p;
@@ -95,11 +94,11 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
    }
 
    // Straight strands
-   pgsPointOfInterest end_poi(span,girder,0.0);
-   StrandIndexType nss = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
-   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
-   StrandIndexType nExtendedLeft  = pStrandGeometry->GetNumExtendedStrands(span,girder,pgsTypes::metStart,pgsTypes::Straight);
-   StrandIndexType nExtendedRight = pStrandGeometry->GetNumExtendedStrands(span,girder,pgsTypes::metEnd,pgsTypes::Straight);
+   pgsPointOfInterest end_poi(segmentKey,0.0);
+   StrandIndexType nss = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Straight);
+   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+   StrandIndexType nExtendedLeft  = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
+   StrandIndexType nExtendedRight = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
    if (0 < nss)
    {
       rptParagraph* pPara = new rptParagraph;
@@ -147,15 +146,15 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
          CComPtr<IPoint2d> spt;
          spts->get_Item(is, &spt);
          Float64 x,y;
-         spt->get_X(&x);
-         spt->get_Y(&y);
+         spt->Location(&x,&y);
          (*p_table)(row,col++) << dim.SetValue(x);
          (*p_table)(row,col++) << dim.SetValue(y);
+
 
          if ( 0 < nDebonded ) 
          {
             Float64 start,end;
-            if ( pStrandGeometry->IsStrandDebonded(span,girder,is,pgsTypes::Straight,&start,&end) )
+            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Straight,&start,&end) )
             {
                (*p_table)(row,col++) << len.SetValue(start);
                (*p_table)(row,col++) << len.SetValue(Lg - end);
@@ -169,12 +168,12 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
 
          if ( 0 < nExtendedLeft || 0 < nExtendedRight )
          {
-            if ( pStrandGeometry->IsExtendedStrand(span,girder,pgsTypes::metStart,is,pgsTypes::Straight) )
+            if ( pStrandGeometry->IsExtendedStrand(segmentKey,pgsTypes::metStart,is,pgsTypes::Straight) )
                (*p_table)(row,col++) << symbol(DOT);
             else
                (*p_table)(row,col++) << _T("");
 
-            if ( pStrandGeometry->IsExtendedStrand(span,girder,pgsTypes::metEnd,is,pgsTypes::Straight) )
+            if ( pStrandGeometry->IsExtendedStrand(segmentKey,pgsTypes::metEnd,is,pgsTypes::Straight) )
                (*p_table)(row,col++) << symbol(DOT);
             else
                (*p_table)(row,col++) << _T("");
@@ -196,10 +195,10 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
    }
 
    // Temporary strands
-   if ( 0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary) )
+   if ( 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
    {
-      StrandIndexType nts = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Temporary);
-      nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Temporary);
+      StrandIndexType nts = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
       if (nts >0)
       {
          rptParagraph* pPara = new rptParagraph;
@@ -236,7 +235,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
             if ( 0 < nDebonded ) 
             {
                Float64 start,end;
-               if ( pStrandGeometry->IsStrandDebonded(span,girder,is,pgsTypes::Temporary,&start,&end) )
+               if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,&start,&end) )
                {
                   (*p_table)(row,3) << len.SetValue(start);
                   (*p_table)(row,4) << len.SetValue(end);
@@ -265,18 +264,18 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
    }
 
    // Harped strands
-   StrandIndexType nhs = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
-   nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Harped);
+   StrandIndexType nhs = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+   nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
    if (0 < nhs)
    {
-      bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(span,girder);
+      bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      std::_tstring label( (areHarpedStraight ? _T("Adjustable Straight Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
+      std::_tstring label( (areHarpedStraight ? _T("Straight-Web Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),label);
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (nDebonded > 0 ? 2 : 0),label.c_str());
       *pPara << p_table;
 
       (*p_table)(0,0) << _T("Strand");
@@ -300,15 +299,14 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
          CComPtr<IPoint2d> spt;
          spts->get_Item(is, &spt);
          Float64 x,y;
-         spt->get_X(&x);
-         spt->get_Y(&y);
+         spt->Location(&x,&y);
          (*p_table)(row,1) << dim.SetValue(x);
          (*p_table)(row,2) << dim.SetValue(y);
 
          if ( 0 < nDebonded ) 
          {
             Float64 start,end;
-            if ( pStrandGeometry->IsStrandDebonded(span,girder,is,pgsTypes::Harped,&start,&end) )
+            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Harped,&start,&end) )
             {
                (*p_table)(row,3) << len.SetValue(start);
                (*p_table)(row,4) << len.SetValue(end);
@@ -323,38 +321,37 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
          row++;
       }
 
-      if (!areHarpedStraight)
+      if ( !areHarpedStraight )
       {
-         // harped strands at harping point
-         Float64 mid = pBridge->GetGirderLength(span,girder)/2.;
-         pgsPointOfInterest harp_poi(span,girder,mid);
+      // harped strands at harping point
+      Float64 mid = pBridge->GetSegmentLength(segmentKey)/2.;
+      pgsPointOfInterest harp_poi(segmentKey,mid);
 
-         pPara = new rptParagraph;
-         *pChapter << pPara;
+      pPara = new rptParagraph;
+      *pChapter << pPara;
 
-         p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Harped Strand Locations at Harping Points"));
-         *pPara << p_table;
+      p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Harped Strand Locations at Harping Points"));
+      *pPara << p_table;
 
-         (*p_table)(0,0) << _T("Strand");
-         (*p_table)(0,1) << COLHDR(_T("X Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*p_table)(0,2) << COLHDR(_T("Y Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,0) << _T("Strand");
+      (*p_table)(0,1) << COLHDR(_T("X Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Y Location"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
-         CComPtr<IPoint2dCollection> hspts;
-         pStrandGeometry->GetStrandPositions(harp_poi, pgsTypes::Harped, &hspts);
+      CComPtr<IPoint2dCollection> hspts;
+      pStrandGeometry->GetStrandPositions(harp_poi, pgsTypes::Harped, &hspts);
 
-         row=1;
-         for (is=0; is<nhs; is++)
-         {
-            (*p_table)(row,0) << (Uint16)row;
-            CComPtr<IPoint2d> spt;
-            hspts->get_Item(is, &spt);
-            Float64 x,y;
-            spt->get_X(&x);
-            spt->get_Y(&y);
-            (*p_table)(row,1) << dim.SetValue(x);
-            (*p_table)(row,2) << dim.SetValue(y);
-            row++;
-         }
+      row=1;
+      for (is=0; is<nhs; is++)
+      {
+         (*p_table)(row,0) << (Uint16)row;
+         CComPtr<IPoint2d> spt;
+         hspts->get_Item(is, &spt);
+         Float64 x,y;
+         spt->Location(&x,&y);
+         (*p_table)(row,1) << dim.SetValue(x);
+         (*p_table)(row,2) << dim.SetValue(y);
+         row++;
+      }
       }
    }
    else
@@ -370,10 +367,10 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
    }
 
    // Temporary strands
-   if ( 0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary) )
+   if ( 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
    {
-      StrandIndexType nts = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Temporary);
-      nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Temporary);
+      StrandIndexType nts = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Temporary);
+      nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary);
       if (nts >0)
       {
          rptParagraph* pPara = new rptParagraph;
@@ -401,7 +398,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
             (*p_table)(row,0) << row;
             CComPtr<IPoint2d> spt;
             spts->get_Item(is, &spt);
-            Float64 x,y;
+            double x,y;
             spt->get_X(&x);
             spt->get_Y(&y);
             (*p_table)(row,1) << dim.SetValue(x);
@@ -410,7 +407,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
             if ( 0 < nDebonded ) 
             {
                Float64 start,end;
-               if ( pStrandGeometry->IsStrandDebonded(span,girder,is,pgsTypes::Temporary,&start,&end) )
+               if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,&start,&end) )
                {
                   (*p_table)(row,3) << len.SetValue(start);
                   (*p_table)(row,4) << len.SetValue(end);

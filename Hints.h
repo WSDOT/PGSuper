@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@
 #define UIHINT_SAME_GIRDER_SPACING        0x0002
 #define UIHINT_SAME_GIRDER_NAME           0x0004
 #define UIHINT_SINGLE_SLAB_OFFSET         0x0008
-#define UIHINT_FAVORITES_MENU             0x0010
 
 // This file contains all the hints sets to the views
 // in the OnUpdate method.
@@ -73,22 +72,8 @@ class CGirderHint : public CObject
 {
 public:
    Uint32 lHint; // one of the GCH_xxx hints in IFace\Project.h
-   SpanIndexType spanIdx;
-   GirderIndexType gdrIdx;
-
-   ~CGirderHint()
-   {
-      ; // A place to break to check for memory leaks
-   }
+   CGirderKey girderKey;
 };
 
-class CBridgeHint : public CObject
-{
-public:
-   // Used when a span is added or removed... 
-   PierIndexType PierIdx; // Reference pier where the span is added or removed
-   pgsTypes::PierFaceType PierFace; // Pier face where the span is added or removed
-   bool bAdded;
-};
 
 #endif // INCLUDED_HINTS_H_

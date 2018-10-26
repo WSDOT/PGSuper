@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -77,7 +77,7 @@ CDeckDescription::CDeckDescription()
    PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
                          // for horizontal shear capacity)
 
-   OverhangTaper = pgsTypes::TopTopFlange;
+   OverhangTaper = pgsTypes::dotTopTopFlange;
    OverhangEdgeDepth = ::ConvertToSysUnits( 7.0, unitMeasure::Inch );
 
    Condition = pgsTypes::cfGood;
@@ -162,32 +162,8 @@ bool CDeckDescription::operator == (const CDeckDescription& rOther) const
    if ( !IsEqual(SlabEc,rOther.SlabEc) )
       return false;
 
-   if ( SlabHasFct != rOther.SlabHasFct )
+   if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
       return false;
-
-   if ( SlabHasFct && !IsEqual(SlabFct,rOther.SlabFct) )
-      return false;
-
-   if (bInputAsDepthAndDensity != rOther.bInputAsDepthAndDensity)
-   {
-      return false;
-   }
-
-   if (bInputAsDepthAndDensity)
-   {
-      if ( !IsEqual( OverlayDepth, rOther.OverlayDepth ) )
-         return false;
-
-      if ( !IsEqual( OverlayDensity, rOther.OverlayDensity ) )
-         return false;
-
-      ATLASSERT(IsEqual(OverlayWeight, rOther.OverlayWeight )); // Sanity check. This should have been computed and synched elsewhere
-   }
-   else
-   {
-      if ( !IsEqual( OverlayWeight, rOther.OverlayWeight ) )
-         return false;
-   }
 
 	if ( !IsEqual( SacrificialDepth, rOther.SacrificialDepth ) )
       return false;
@@ -222,15 +198,6 @@ bool CDeckDescription::operator != (const CDeckDescription& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-
-// this global and free function are used to clean up neg moment rebar data
-// during load. See information at bottom of Load method
-PierIndexType g_NumPiers;
-bool MaxPierIdx(CDeckRebarData::NegMomentRebarData& rebarData)
-{
-   return g_NumPiers <= rebarData.PierIdx;
-}
-
 HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pgsTypes::SlabOffsetType* pSlabOffsetType,Float64* pSlabOffset)
 {
    USES_CONVERSION;
@@ -285,14 +252,14 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       }
       else
       {
-         var.vt = VT_I4;
+         var.vt = VT_INDEX;
          pStrLoad->get_Property(_T("DeckEdgePointCount"),&var);
-         long nPoints = var.lVal;
+         IndexType nPoints = VARIANT2INDEX(var);
 
-         if ( 0 < nPoints )
+         if ( 0 < nPoints && nPoints != INVALID_INDEX )
          {
             pStrLoad->BeginUnit(_T("DeckEdgePoints"));
-            for ( long i = 0;i < nPoints; i++ )
+            for ( IndexType i = 0; i < nPoints; i++ )
             {
                CDeckPoint point;
                point.Load(pStrLoad,pProgress);
@@ -401,7 +368,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       // there was a bug in the PGSuper interface that allowed the sacrifical depth to
       // be greater than the gross/cast depth of the slab. Obviously this is incorrect.
       // If this is encountered in the input, fix it.
-      if ( DeckType != pgsTypes::sdtNone && GrossDepth <= SacrificialDepth )
+      if ( GrossDepth <= SacrificialDepth )
          SacrificialDepth = GrossDepth/2;
 
       if ( version < 6 )
@@ -448,7 +415,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          var.Clear();
          var.vt = VT_BSTR;
          hr = pStrLoad->get_Property(_T("Type"),&var);
-         SlabConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
+         SlabConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
 
          var.Clear();
          var.vt = VT_R8;
@@ -560,15 +527,6 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       ATLASSERT(0);
    }
 
-   // Not sure how this happened, but at least on regression test file (UserSelect.pgs) has negative
-   // moment rebar data for a pier that doesn't exist. If it happened for that file, it is likely
-   // to have happened for other files as well. When this data is encountered in other places in 
-   // the software it causes a crash. This code block removes deck rebar data at piers that 
-   // don't exist.
-   g_NumPiers = m_pBridgeDesc->GetPierCount();
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator new_end = std::remove_if(DeckRebarData.NegMomentRebar.begin(),DeckRebarData.NegMomentRebar.end(),MaxPierIdx);
-   DeckRebarData.NegMomentRebar.erase(new_end,DeckRebarData.NegMomentRebar.end());
-
    return hr;
 }
 
@@ -587,8 +545,9 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    if ( 0 < DeckEdgePoints.size() )
    {
       pStrSave->BeginUnit(_T("DeckEdgePoints"),1.0);
-      std::vector<CDeckPoint>::iterator iter;
-      for ( iter = DeckEdgePoints.begin(); iter != DeckEdgePoints.end(); iter++ )
+      std::vector<CDeckPoint>::iterator iter(DeckEdgePoints.begin());
+      std::vector<CDeckPoint>::iterator end(DeckEdgePoints.end());
+      for ( ; iter != end; iter++ )
       {
          CDeckPoint& point = *iter;
          point.Save(pStrSave,pProgress);
@@ -621,7 +580,7 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // new parameters are Unit, SlabConcreteType, SlabHasFct, and SlabFct
    pStrSave->BeginUnit(_T("SlabConcrete"),1.0);
 
-      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("Type"),CComVariant( matConcrete::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
       pStrSave->put_Property(_T("Fc"),               CComVariant(SlabFc));
       pStrSave->put_Property(_T("WeightDensity"),    CComVariant(SlabWeightDensity));
       pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(SlabStrengthDensity));

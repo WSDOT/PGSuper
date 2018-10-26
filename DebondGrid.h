@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,17 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BRIDGEDEBONDGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_)
-#define AFX_BRIDGEDEBONDGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+
 // DebondGrid.h : header file
 //
 
-#include <PgsExt\GirderData.h>
+#include <PgsExt\DebondData.h>
+#include <PgsExt\SegmentKey.h>
+#include <PgsExt\PrecastSegmentData.h>
 
+
+interface IDebondGridParent
+{
+   virtual LPCTSTR GetGirderName() = 0;
+   virtual void OnChange() = 0;
+   virtual const CSegmentKey& GetSegmentKey() = 0;
+   virtual ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type) = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDebondGrid window
@@ -76,8 +82,8 @@ public:
    // insert a row above the currently selected cell or at the top if no selection
    void InsertRow();
 
-   void FillGrid(const CGirderData& girderData);
-   void GetData(CGirderData& girderData);
+   void FillGrid(const CPrecastSegmentData& segment);
+   void GetData(CPrecastSegmentData& segment);
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
@@ -85,8 +91,7 @@ public:
    StrandIndexType GetNumDebondedStrands();
    StrandIndexType GetNumExtendedStrands(pgsTypes::MemberEndType endType);
 
-   void SymmetricDebond(bool bSymmetricDebond);
-   void CanDebond(bool bCanDebond);
+   void CanDebond(bool bCanDebond,bool bSymmetricDebond);
 
 private:
    // set up styles for interior rows
@@ -105,5 +110,3 @@ private:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_BRIDGEDEBONDGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_)

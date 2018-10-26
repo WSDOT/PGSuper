@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -62,6 +62,7 @@ public:
 
    CRailingSystem m_LeftRailingSystem;
    CRailingSystem m_RightRailingSystem;
+   EventIndexType m_EventIndex;
 
 // Implementation
 protected:
@@ -83,6 +84,7 @@ protected:
    afx_msg void OnRightUserEc();
    afx_msg void OnChangeRightFc();
    afx_msg void OnChangeRightDensity();
+   afx_msg void OnEventChanged();
 
    afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
@@ -118,6 +120,9 @@ protected:
    Float64 m_MaxLWCDensity;
 
    bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
+
+   void FillEventList();
+   EventIndexType CreateEvent();
 
 public:
    virtual BOOL OnKillActive();

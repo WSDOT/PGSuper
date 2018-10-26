@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
@@ -48,7 +48,7 @@ CRatingSummaryTable::~CRatingSummaryTable()
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexType gdrLineIdx,CRatingSummaryTable::RatingTableType ratingTableType) const
+rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirderKey& girderKey,CRatingSummaryTable::RatingTableType ratingTableType) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -202,8 +202,8 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
    }
 
    GET_IFACE2(pBroker,IArtifact,pArtifact);
-   const pgsRatingArtifact* pRoutineRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,routine_rating_type,INVALID_INDEX);
-   const pgsRatingArtifact* pSpecialRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,special_rating_type,INVALID_INDEX);
+   const pgsRatingArtifact* pRoutineRatingArtifact = pArtifact->GetRatingArtifact(girderKey,routine_rating_type,INVALID_INDEX);
+   const pgsRatingArtifact* pSpecialRatingArtifact = pArtifact->GetRatingArtifact(girderKey,special_rating_type,INVALID_INDEX);
 
    bool bReportPostingAnalysis = false;
 
@@ -229,17 +229,17 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             if ( pMomentArtifact )
             {
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-               pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
-               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+               const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+               const CSegmentKey& segmentKey = poi.GetSegmentKey();
+               Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                
-               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+               (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
             }
             else
             {
                (*table)(row,col+1) << _T("");
                (*table)(row,col+2) << _T("");
             }
- 
             row++;
 
             if ( bNegMoments )
@@ -254,17 +254,17 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                {
                   (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
 
-                  pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
-                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+                  const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
-                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                }
                else
                {
                   (*table)(row,col+1) << _T("");
                   (*table)(row,col+2) << _T("");
                }
-
                row++;
             }
 
@@ -281,10 +281,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                {
                   (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
 
-                  pgsPointOfInterest poi = pShearArtifact->GetPointOfInterest();
-                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+                  const pgsPointOfInterest& poi = pShearArtifact->GetGirderPointOfInterest();
+                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                }
                else
                {
@@ -315,10 +316,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             if ( pMomentArtifact )
             {
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-               pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
-               Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+               const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+               const CSegmentKey& segmentKey = poi.GetSegmentKey();
+               Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                
-               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+               (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
             }
             else
             {
@@ -339,10 +341,11 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                {
                   (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
 
-                  pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
-                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+                  const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
-                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                }
                else
                {
@@ -364,10 +367,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                if ( pShearArtifact )
                {
                   (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
-                  pgsPointOfInterest poi = pShearArtifact->GetPointOfInterest();
-                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                  const pgsPointOfInterest& poi = pShearArtifact->GetGirderPointOfInterest();
+                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                }
                else
                {
@@ -402,10 +407,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                   if ( pYieldStressArtifact )
                   {
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
-                     pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
-                     Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+                     pgsPointOfInterest poi = pYieldStressArtifact->GetGirderPointOfInterest();
+                     const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                     Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                      
-                     (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                   }
                   else
                   {
@@ -423,10 +430,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                   if ( pYieldStressArtifact )
                   {
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
-                     pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
-                     Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+                     pgsPointOfInterest poi = pYieldStressArtifact->GetGirderPointOfInterest();
+                     const CSegmentKey& otherSegmentKey = poi.GetSegmentKey();
+                     Float64 end_size = pBridge->GetSegmentStartEndDistance(otherSegmentKey);
                      
-                     (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                   }
                   else
                   {
@@ -447,10 +456,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                   if ( pYieldStressArtifact )
                   {
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
-                     pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
-                     Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+                     const pgsPointOfInterest& poi = pYieldStressArtifact->GetGirderPointOfInterest();
+                     const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                     Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                      
-                     (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                     (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                   }
                   else
                   {
@@ -506,10 +517,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                if ( pStressArtifact )
                {
                   (*table)(row,col+1) << scalar.SetValue(pStressArtifact->GetLiveLoadFactor());
-                  pgsPointOfInterest poi = pStressArtifact->GetPointOfInterest();
-                  Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+                  const pgsPointOfInterest& poi = pStressArtifact->GetGirderPointOfInterest();
+                  const CSegmentKey& segmentKey = poi.GetSegmentKey();
+                  Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
-                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(POI_GIRDER, poi,end_size);
                }
                else
                {
@@ -627,7 +640,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const
 {
    USES_CONVERSION;
 
@@ -677,7 +690,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
    {
       std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehIdx);
 
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehIdx);
 
       const pgsMomentRatingArtifact* pPositiveMoment;
       const pgsMomentRatingArtifact* pNegativeMoment;
@@ -697,35 +710,35 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
          ATLASSERT(vehIdx == pPositiveMoment->GetVehicleIndex());
          gLL = pPositiveMoment->GetLiveLoadFactor();
          strControlling = _T("Positive Moment");
-         poi = pPositiveMoment->GetPointOfInterest();
+         poi = pPositiveMoment->GetGirderPointOfInterest();
       }
       else if ( pNegativeMoment )
       {
          ATLASSERT(vehIdx == pNegativeMoment->GetVehicleIndex());
          gLL = pNegativeMoment->GetLiveLoadFactor();
          strControlling = _T("Negative Moment");
-         poi = pNegativeMoment->GetPointOfInterest();
+         poi = pNegativeMoment->GetGirderPointOfInterest();
       }
       else if ( pShear )
       {
          ATLASSERT(vehIdx == pShear->GetVehicleIndex());
          gLL = pShear->GetLiveLoadFactor();
          strControlling = _T("Shear");
-         poi = pShear->GetPointOfInterest();
+         poi = pShear->GetGirderPointOfInterest();
       }
       else if ( pStress )
       {
          ATLASSERT(vehIdx == pStress->GetVehicleIndex());
          gLL = pStress->GetLiveLoadFactor();
          strControlling = _T("Stress");
-         poi = pStress->GetPointOfInterest();
+         poi = pStress->GetGirderPointOfInterest();
       }
       else if ( pYieldStressPositiveMoment )
       {
          ATLASSERT(vehIdx == pYieldStressPositiveMoment->GetVehicleIndex());
          gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
          strControlling = _T("Yield Stress Positive Moment");
-         poi = pYieldStressPositiveMoment->GetPointOfInterest();
+         poi = pYieldStressPositiveMoment->GetGirderPointOfInterest();
          bIsStressRatio = true;
       }
       else if ( pYieldStressNegativeMoment )
@@ -733,7 +746,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
          ATLASSERT(vehIdx == pYieldStressNegativeMoment->GetVehicleIndex());
          gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
          strControlling = _T("Yield Stress Negative Moment");
-         poi = pYieldStressNegativeMoment->GetPointOfInterest();
+         poi = pYieldStressNegativeMoment->GetGirderPointOfInterest();
          bIsStressRatio = true;
       }
       else
@@ -742,28 +755,30 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
          strControlling = _T("UNKNOWN");
       }
 
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,0) << strName;
+     const CSegmentKey& segmentKey = poi.GetSegmentKey();
+     Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+     (*pTable)(row,0) << strName;
 
-      if ( bIsStressRatio )
-         (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
+     if ( RF < 1 )
+        (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+     else
+        (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
-      (*pTable)(row,2) << scalar.SetValue(gLL);
-      (*pTable)(row,3) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
-      (*pTable)(row,4) << strControlling;
+     if ( bIsStressRatio )
+        (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
 
-      row++;
+     (*pTable)(row,2) << scalar.SetValue(gLL);
+     (*pTable)(row,3) << location.SetValue( POI_GIRDER, poi,end_size );
+     (*pTable)(row,4) << strControlling;
+
+     row++;
    }
 
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -793,7 +808,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {
       ColumnIndexType col = 0;
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehIdx);
       if ( pRatingArtifact )
       {
          Float64 postingLoad, W, RF;

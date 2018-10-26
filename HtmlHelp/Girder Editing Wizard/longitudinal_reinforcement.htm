@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1888>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1159>
+<meta name=layout-width content=969>
 
 
 <!--(Links)=========================================================-->
@@ -46,10 +46,7 @@
 <p class=Tip><span style="font-weight: bold;">NOTE</span>: Longitudinal 
  reinforcement may be used in moment capacity and shear capacity computations. 
  However, the options to use it must be enabled in the current Project 
- Criteria library entry. Refer to the 
- <!--kadov_tag{{<spaces>}}-->&nbsp;<a href="../Theoretical Manual/Longitudinal_Reinforcement_For_Shear.htm"><!--kadov_tag{{</spaces>}}-->Longitudinal 
- Reinforcement in Girders</a> section in the Theoretical Manual for a discussion 
- on how longitudinal rebars are used in analysis.</p>
+ Criteria library entry.</p>
 
 <h2>Mild Steel Material</h2>
 
@@ -58,66 +55,35 @@
 <h2>Rows of Longitudinal Mild Steel</h2>
 
 <p>PGSuper allows you to describe an unlimited number of horizontal rows 
- of longitudinal reinforcement. Each row can be full-length or a partial-length 
- segment along the girder length. Rows of reinforcement must lie within 
- the girder cross section. The following data is used to describe rows 
- of longitudinal reinforcement.</p>
+ of longitudinal reinforcement. Rows of reinforcement are symmetrical about 
+ the girder centerline and must lie within the girder section. The following 
+ data is used to describe rows of longitudinal reinforcement.</p>
 
-<h3>Measured From</h3>
-
-<p>Input of rebar row segments has five possible measurement modes: 1) 
- Full length , 2) Measured from left end of girder, 3) Measured from right 
- end of girder, 4) Mid-girder measured by length, and 5) Mid-girder measured 
- by distance from ends of girder. The figure below illustrates each measurement 
- option:</p>
-
-<p><img src="../User%27s Guide/LongRebarOptions.gif"
-		x-maintain-ratio=TRUE
-		style="border: none;
-				width: 314px;
-				height: 598px;
-				float: none;
-				border-style: none;"
-		width=314
-		height=598
-		border=0></p>
-
-<ul style="list-style: disc;"
-	type=disc>
-	
-	<li class=kadov-p><p>Segments that extend beyond the end of the girder 
- are truncated at the end of the girder. </p></li>
-	
-	<li class=kadov-p><p>Full Length and Mid-Girder-End segments grow and 
- shrink as the girder length changes</p></li>
-</ul>
-
-<h3>Girder Face</h3>
+<h3><span style="font-weight: bold;">Girder Face</span></h3>
 
 <p>Rebar rows may be measured either from the top or bottom face of the 
  girder.</p>
 
-<h3><span style="font-weight: bold;"><span style="font-weight: bold;">C</span>over</span></h3>
+<h3><span style="font-weight: bold;">Bar Size</span></h3>
 
-<p>Enter the distance between the specified (top or bottom) girder face 
- to the outside nominal diameter for the specified bar.</p>
-
-<h3>Bar Size</h3>
-
-<p>Select from the available standard bar sizes that may be used for longitudinal 
+<p>Lists all available standard bar sizes that may be used for longitudinal 
  rebar.</p>
 
 <h3><span style="font-weight: bold;"># of Bars</span></h3>
 
 <p>Specify the number of bars to be placed in the row.</p>
 
+<h3><span style="font-weight: bold;">Cover</span></h3>
+
+<p>Enter the distance between the specified (top or bottom) girder face 
+ to the outside nominal diameter for the specified bar.</p>
+
 <h3><span style="font-weight: bold;">Spacing</span></h3>
 
 <p>Enter the center-to-center rebar spacing.</p>
 
-<p class=Tip>Note that cover and minimum bar spacing requirements are not 
- checked by the program. It is your responsibility to insure that bars 
- do not overlap or violate pertinent rebar detailing requirements.</p>
+<p>Note that minimum bar spacing requirements are not checked by the program. 
+ It is your responsibility to insure that bars don't overlap.</p>
 
 <h2>Using the Grid Control</h2>
 
@@ -148,9 +114,10 @@
 
 <h2>Restoring Library Defaults</h2>
 
-<p><span>Press the Restore to Library Defaults button to delete the current 
- rebar data and replace it with the data defined in the currently selected 
- Girder Library entry.</span><span style="margin-bottom: 0;">&nbsp; </span></p>
+<p><span style="font-weight: normal;">By pressing the Restore to Library 
+ Defaults button, the current longitudinal reinforcement values are overridden 
+ by those defined in the selected Girder Library entry.</span><span style="margin-bottom: 0; font-weight: normal;">&nbsp;</span><span 
+ style="margin-bottom: 0;"> </span></p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

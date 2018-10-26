@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,65 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+CDesignLosses::CDesignLosses()
+{
+   Invalidate();
+}
+
+void CDesignLosses::Invalidate()
+{
+   m_Losses.clear();
+}
+
+const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config)
+{
+   Losses* pLosses = 0;
+
+   std::map<pgsPointOfInterest,Losses>::iterator iter(m_Losses.begin() );
+   std::map<pgsPointOfInterest,Losses>::iterator end(m_Losses.end() );
+   for ( ; iter != end; iter++ )
+   {
+      const pgsPointOfInterest& p = iter->first;
+      // check equality based only on location, not POI ID... sometimes temporary POIs (ID < 0) are 
+      // used during design
+      if ( p.GetSegmentKey() == poi.GetSegmentKey() && IsEqual(p.GetDistFromStart(),poi.GetDistFromStart()) )
+      {
+         // Found it!
+         pLosses = &(iter->second);
+         break;
+      }
+   }
+
+   if ( pLosses == NULL )
+      return NULL; // not found... we don't have it cached
+
+   // have results for this POI cached, but was it for the same configuration?
+   if ( config.IsFlexuralDataEqual(pLosses->m_Config) )
+   {
+      // yep... return the results
+      return &(pLosses->m_Details);
+   }
+   else
+   {
+      // the one that was found doesn't match for this POI, so remove it because
+      // we have new values for this POI
+      m_Losses.erase(iter);
+      return NULL;
+   }
+
+   ATLASSERT(false); // should never get here
+}
+
+void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses)
+{
+   Losses l;
+   l.m_Config = config;
+   l.m_Details = losses;
+
+   std::pair<std::map<pgsPointOfInterest,Losses>::iterator,bool> result = m_Losses.insert( std::make_pair(poi,l) );
+   ATLASSERT( result.second == true );
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CUBeamPsLossEngineer
 HRESULT CPsBeamLossEngineer::FinalConstruct()
@@ -47,22 +106,55 @@ void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGro
    m_Engineer.Init(m_pBroker,m_StatusGroupID);
 }
 
-LOSSDETAILS CPsBeamLossEngineer::ComputeLosses(const pgsPointOfInterest& poi)
+const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi)
 {
-   return m_Engineer.ComputeLosses((CPsLossEngineer::BeamType)m_BeamType,poi);
+   std::map<PoiIDKey,LOSSDETAILS>::const_iterator found;
+   PoiIDKey key(poi.GetID(),poi);
+   found = m_PsLosses.find( key );
+   if ( found == m_PsLosses.end() )
+   {
+      // losses not found... compute them
+      LOSSDETAILS details = m_Engineer.ComputeLosses((CPsLossEngineer::BeamType)m_BeamType,poi);
+      m_PsLosses.insert(std::make_pair(key,details));
+      found = m_PsLosses.find( key );
+      ATLASSERT(found != m_PsLosses.end());
+   }
+
+   return &(*found).second;
 }
 
-LOSSDETAILS CPsBeamLossEngineer::ComputeLossesForDesign(const pgsPointOfInterest& poi,const GDRCONFIG& config)
+const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
-   return m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
+   const LOSSDETAILS* pLossDetails = m_DesignLosses.GetFromCache(poi,config);
+   if ( pLossDetails == NULL )
+   {
+      LOSSDETAILS details = m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
+      m_DesignLosses.SaveToCache(poi,config,details);
+      pLossDetails = m_DesignLosses.GetFromCache(poi,config);
+   }
+
+   return pLossDetails;
 }
 
-void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CPsBeamLossEngineer::ClearDesignLosses()
 {
-   m_Engineer.BuildReport((CPsLossEngineer::BeamType)m_BeamType,span,gdr,pChapter,pDisplayUnits);
+   m_DesignLosses.Invalidate();
 }
 
-void CPsBeamLossEngineer::ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CPsBeamLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   m_Engineer.ReportFinalLosses((CPsLossEngineer::BeamType)m_BeamType,span,gdr,pChapter,pDisplayUnits);
+   m_Engineer.BuildReport((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
+}
+
+void CPsBeamLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+{
+   m_Engineer.ReportFinalLosses((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
+}
+
+const ANCHORSETDETAILS* CPsBeamLossEngineer::GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   return NULL;
 }

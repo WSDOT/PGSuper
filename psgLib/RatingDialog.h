@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,11 @@ public:
 public:
    bool                m_AllowEditing;
 
+   //unitLength          m_LongLengthUnit;
+   //CString             m_LongLengthUnitString;
+   //unitLength          m_ShortLengthUnit;
+   //CString             m_ShortLengthUnitString;
+
    // work directly on an entry so we don't duplicate data.
    RatingLibraryEntry& m_Entry;
    CString m_Name;
@@ -75,28 +80,24 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
+//// implementation stuff
+//   // exchange dimension dialog data
+//   CString GetLongLengthUnitString() const { return m_LongLengthUnitString; }
+//   unitLength GetLongLengthUnit() const { return m_LongLengthUnit; }
+//   CString GetShortLengthUnitString() const { return m_ShortLengthUnitString; }
+//   unitLength GetShortLengthUnit() const { return m_ShortLengthUnit; }
+
    CRatingDescriptionPage m_RatingDescriptionPage;
-
-   // for LRFR before 2013
-   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage1[4];
-   CLiveLoadFactorsPage*   m_PermitLiveLoadFactorsPage1[4];
-
-   // for LRFR 2013 and later
-   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage2[4];
-   CLiveLoadFactorsPage*   m_PermitLiveLoadFactorsPage2[4];
+   CLiveLoadFactorsPage*   m_LiveLoadFactorsPage[4];
+   CLiveLoadFactorsPage*   m_PermitLiveLoadFactorsPage[4];
 
    void ExchangeDescriptionData(CDataExchange* pDX);
 
    void ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::LoadRatingType ratingType);
    void ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialPermitType permitType);
 
-   void UpdatePageLayout();
-
 private:
    void Init();
 
    void ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel* pModel);
-   void ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel2* pModel);
-
-   void UpdatePageLayout(lrfrVersionMgr::Version version);
 };

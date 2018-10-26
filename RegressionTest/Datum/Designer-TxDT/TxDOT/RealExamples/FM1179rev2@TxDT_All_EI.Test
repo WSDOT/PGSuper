@@ -1,70 +1,70 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   11   8.00 FM 1179 Overpass    1     1     Tx54          14  1/2  270  21.01  21.01   8.00   8.00                                               0   0.0  0.0  4.000  5.000   1.074    -1.194     2714   0.763  0.821   0.715 -0.123 -0.009 -0.009 -0.141  17.65   59.87    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  11  8.00  1     1     Tx54       14   1/2  270 21.01 21.01   0  0.0  4.000  5.000    1.074   -1.194   2714  0.763  0.821  0.06 -0.01 -0.00 -0.00 -0.01  17.65  60.33   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   11   8.00 FM 1179 Overpass    1     2     Tx54          16  1/2  270  20.76  20.76   8.00   8.00                                               0   0.0  0.0  4.000  5.000   1.133    -1.274     2909   0.759  0.821   0.877 -0.149 -0.013 -0.009 -0.172  22.68   73.34    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  11  8.00  1     2     Tx54       16   1/2  270 20.76 20.76   0  0.0  4.000  5.000    1.133   -1.274   2904  0.760  0.821  0.07 -0.01 -0.00 -0.00 -0.01  22.68  74.11   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   11   8.00 FM 1179 Overpass    1     6     Tx54          18  1/2  270  20.56  20.56   8.00   8.00                                               0   0.0  0.0  4.000  5.000   1.288    -1.476     3276   0.747  0.821   1.087 -0.189 -0.017  0.000 -0.206  27.67   85.62    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  11  8.00  1     6     Tx54       18   1/2  270 20.56 20.56   0  0.0  4.000  5.000    1.288   -1.476   3277  0.747  0.821  0.09 -0.02 -0.00  0.00 -0.02  27.67  86.59   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   18   4.82 FM 1179 Overpass    2     1     Tx54          42  0.6  270  19.01  12.72   8.00   8.00                                               6  50.5  6.5  5.700  6.600   4.601    -4.232     7823   0.430  0.595   5.006 -2.402 -0.180 -0.328 -2.910 167.34  465.36    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  18  4.82  2     1     Tx54       44  0.60  270 18.83 11.55   8 48.5  5.700  6.500    4.601   -4.232   7824  0.430  0.595  0.44 -0.20 -0.01 -0.03 -0.24 184.49 518.04   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   18   4.82 FM 1179 Overpass    2     2     Tx54          46  0.6  270  18.66  11.36   8.00   8.00                                               8  50.5  8.5  5.900  6.900   4.697    -4.376     8098   0.430  0.595   5.605 -2.626 -0.281 -0.318 -3.225 199.62  550.27    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  18  4.82  2     2     Tx54       46  0.60  270 18.66 11.36   8 50.5  5.900  6.700    4.697   -4.376   8098  0.430  0.595  0.47 -0.22 -0.02 -0.03 -0.27 199.62 560.33   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   18   4.82 FM 1179 Overpass    2    10     Tx54          48  0.6  270  18.51  12.51   8.00   8.00                                               8  44.5  8.5  6.400  7.100   4.799    -4.580     8484   0.430  0.595   6.069 -2.626 -0.281  0.000 -2.907 211.07  583.89    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  18  4.82  2     10    Tx54       50  0.60  270 18.37 11.65   8 50.5  6.500  6.900    4.799   -4.580   8484  0.430  0.595  0.52 -0.22 -0.02  0.00 -0.24 228.02 644.66   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   11   8.00 FM 1179 Overpass    3     1     Tx54          12  0.6  270  21.01  21.01   8.00   8.00                                               0   0.0  0.0  4.000  5.000   1.401    -1.523     3375   0.733  0.821   1.070 -0.219 -0.016 -0.016 -0.251  24.09   77.09    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  11  8.00  3     1     Tx54       12  0.60  270 21.01 21.01   0  0.0  4.000  5.000    1.401   -1.523   3375  0.733  0.821  0.09 -0.02 -0.00 -0.00 -0.02  24.09  77.84   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   11   8.00 FM 1179 Overpass    3     2     Tx54          12  0.6  270  21.01  21.01   8.00   8.00                                               0   0.0  0.0  4.000  5.000   1.404    -1.550     3423   0.736  0.821   1.064 -0.237 -0.021 -0.015 -0.273  24.31   76.69    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  11  8.00  3     2     Tx54       12  0.60  270 21.01 21.01   0  0.0  4.000  5.000    1.404   -1.550   3423  0.736  0.821  0.09 -0.02 -0.00 -0.00 -0.02  24.31  77.73   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   11   8.00 FM 1179 Overpass    3     6     Tx54          12  0.6  270  21.01  21.01   8.00   8.00                                               0   0.0  0.0  4.000  5.000   1.288    -1.476     3276   0.747  0.821   1.030 -0.189 -0.017  0.000 -0.206  25.14   78.43    1.00    1.00    1.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 84.00  11  8.00  3     6     Tx54       12  0.60  270 21.01 21.01   0  0.0  4.000  5.000    1.288   -1.476   3277  0.747  0.821  0.09 -0.02 -0.00  0.00 -0.02  25.14  79.36   1.00   1.00   1.00
 
 
 The Specification Check was Successful

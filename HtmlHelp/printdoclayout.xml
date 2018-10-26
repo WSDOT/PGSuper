@@ -111,7 +111,7 @@
     <chapter name="Bridge Editing Dialog">
       <page name="Bridge Editing Dialog" topic="Dialogs\Bridge_Editing_Dialog.htm" flags="0" topicid="-1"/>
       <page name="Alignment" topic="Bridge Description\Alignment.htm" flags="0" topicid="-1"/>
-      <page name="Piers" topic="" flags="0" topicid="-1"/>
+      <page name="Piers" topic="Bridge Description\Piers.htm" flags="0" topicid="-1"/>
       <page name="Cross Section" topic="Bridge Description\Cross_Section.htm" flags="0" topicid="-1"/>
       <chapter name="Environment"/>
       <page name="Miscellaneous" topic="" flags="0" topicid="-1"/>

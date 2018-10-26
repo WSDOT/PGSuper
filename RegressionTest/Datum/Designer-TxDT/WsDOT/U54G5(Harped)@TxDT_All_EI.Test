@@ -1,19 +1,18 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                     1     1    U54G5          68  0.6  270  16.72   7.75  12.50  12.50                                              7.000 15.000   7.453    -4.740    13317   1.016  1.016   5.024 -1.608 -0.099 -0.117 -1.824 296.97  523.06    1.75    5.00    5.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                     1     2    U54G5          54  0.6  270  16.92   6.92  11.75  11.75                                              5.000  8.100   6.035    -3.756    10270   0.557  0.773   4.215 -1.685 -0.130 -0.153 -1.969 210.14  411.44    1.75    5.00    5.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   4  8.00  1     1    U54G5  *    66  0.60  270 16.74  7.50  14 50.0  6.300 14.300    7.371   -4.708  12977  1.016  1.016  0.39 -0.14 -0.01 -0.01 -0.15 291.39 497.84   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Hauling checks failed
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   4  8.00  1     2    U54G5  *    52  0.60  270 16.96  6.57  12 50.0  4.800  6.900    5.939   -3.731   9961  0.557  0.773  0.30 -0.15 -0.01 -0.01 -0.18 197.10 358.81   1.75   5.00   5.00
+
+
+The Specification Check was Successful
 
 

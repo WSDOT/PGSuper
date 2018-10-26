@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,16 +105,9 @@ protected:
 
    CComPtr<IBroker>     m_pBroker;
 
-   bool                          m_bUnitsSI;
-   const unitLength*             m_pLengthUnit;
-   const unitForce*              m_pForceUnit;
-   const unitForcePerLength*     m_pForcePerLengthUnit;
-   const unitMoment*             m_pMomentUnit;
-
    bool                 m_IsInitialUpdate;
    bool                 m_FirstSizeEvent;
 
-   void UpdateUnits();
    void UpdatePointLoadItem(int icol, const CPointLoadData& pld);
    void UpdateDistributedLoadItem(int icol, const CDistributedLoadData& pld);
    void UpdateMomentLoadItem(int icol, const CMomentLoadData& pld);
@@ -130,8 +123,8 @@ protected:
    bool m_bSortAscending;
    void Sort(int columnIdx,bool bReverse=true);
 
-   sysNumericFormatTool m_FormatTool;
-   std::_tstring D2S(Float64 val);
+   CString GetEventName(EventIndexType eventIdx);
+
 public:
    afx_msg void OnDestroy();
 };

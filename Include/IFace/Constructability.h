@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,8 +70,8 @@ DEFINE_GUID(IID_IGirderHaunch,
 0x4f3feb86, 0x88b1, 0x11d2, 0x88, 0x82, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IGirderHaunch : IUnknown
 {
-   virtual Float64 GetRequiredSlabOffset(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual void GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,HAUNCHDETAILS* pDetails) = 0;
+   virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey) = 0;
+   virtual void GetHaunchDetails(const CSegmentKey& segmentKey,HAUNCHDETAILS* pDetails) = 0;
 };
 
 
@@ -87,7 +87,7 @@ DEFINE_GUID(IID_IFabricationOptimization,
 0x459f156f, 0xa371, 0x4cfa, 0xb3, 0x25, 0x9e, 0xea, 0x2f, 0xa9, 0xf, 0x61);
 interface IFabricationOptimization : IUnknown
 {
-   virtual void GetFabricationOptimizationDetails(SpanIndexType span,GirderIndexType gdr,FABRICATIONOPTIMIZATIONDETAILS* pDetails) = 0;
+   virtual void GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) = 0;
 };
 
 #endif // INCLUDED_IFACE_CONSTRUCTABILITY_H_

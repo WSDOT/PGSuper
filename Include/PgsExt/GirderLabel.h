@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,16 +25,26 @@
 
 #include <string>
 
+class CPierData2;
+class CTemporarySupportData;
+interface IEAFDisplayUnits;
+
 #include <PsgLib\ConnectionLibraryEntry.h>
 
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
+#define LABEL_GROUP(_g_) (GroupIndexType)(_g_ + 1)
 #define LABEL_SPAN(_s_) (SpanIndexType)(_s_ + 1)
 #define LABEL_PIER(_p_) (PierIndexType)(_p_ + 1)
+#define LABEL_TEMPORARY_SUPPORT(_ts_) (SupportIndexType)(_ts_ + 1)
+#define LABEL_SEGMENT(_s_) (SegmentIndexType)(_s_ + 1)
+#define LABEL_EVENT(_e_) (EventIndexType)(_e_+1)
 #define LABEL_STIRRUP_ZONE(_z_) (ZoneIndexType)(_z_ + 1)
+#define LABEL_DUCT(_d_) (DuctIndexType)(_d_ + 1)
+#define LABEL_INTERVAL(_i_) (IntervalIndexType)(_i_ + 1)
+#define LABEL_ROW(_r_) (RowIndexType)(_r_ + 1)
 
 // Return string describing type of harped strands
-inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adjustable Straight") : _T("Harped"); }
-inline LPCTSTR ABR_LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adj. Straight") : _T("Harped"); }
+inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Straight-Web") : _T("Harped"); }
 
 class PGSEXTCLASS pgsGirderLabel
 {
@@ -60,3 +70,6 @@ private:
 
 std::_tstring PGSEXTFUNC GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment);
 std::_tstring PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment);
+
+CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
+CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);

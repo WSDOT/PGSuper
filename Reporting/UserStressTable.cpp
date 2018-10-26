@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,11 +25,11 @@
 #include <Reporting\UserMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -71,17 +71,17 @@ CUserStressTable& CUserStressTable::operator= (const CUserStressTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
+rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>(_T("User Defined Loads"),false,analysisType,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -92,22 +92,28 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    GET_IFACE2(pBroker,IProductForces2,pForces2);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+   GET_IFACE2(pBroker,IProductForces,pForces);
+   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   // Fill up the table
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
+
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-
-   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      // Get all the tabular poi's for flexure and shear
-      // Merge the two vectors to form one vector to report on.
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx, pgsTypes::BridgeSite1,POI_ALL, POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS)) );
 
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,gdrIdx,0));
 
       std::vector<Float64> dummy;
       std::vector<Float64> fTopMaxDC1, fBotMaxDC1;
@@ -121,47 +127,30 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       std::vector<Float64> fTopMaxLL3, fBotMaxLL3;
       std::vector<Float64> fTopMinLL3, fBotMinLL3;
 
-      if ( analysisType == pgsTypes::Envelope )
-      {
-         pForces2->GetStress(pgsTypes::BridgeSite1, pftUserDC, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxDC1, &fBotMaxDC1);
-         pForces2->GetStress(pgsTypes::BridgeSite1, pftUserDC, vPoi, MinSimpleContinuousEnvelope, &fTopMinDC1, &fBotMinDC1);
-         pForces2->GetStress(pgsTypes::BridgeSite2, pftUserDC, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxDC2, &fBotMaxDC2);
-         pForces2->GetStress(pgsTypes::BridgeSite2, pftUserDC, vPoi, MinSimpleContinuousEnvelope, &fTopMinDC2, &fBotMinDC2);
-      }
-      else
-      {
-         pForces2->GetStress(pgsTypes::BridgeSite1, pftUserDC, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxDC1, &fBotMaxDC1);
-         pForces2->GetStress(pgsTypes::BridgeSite2, pftUserDC, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxDC2, &fBotMaxDC2);
-      }
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC1, &fBotMaxDC1);
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC1, &fBotMinDC1);
+      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC2, &fBotMaxDC2);
+      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC2, &fBotMinDC2);
 
-      if ( analysisType == pgsTypes::Envelope )
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW1, &fBotMaxDW1);
+      pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW1, &fBotMinDW1);
+
+      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW2, &fBotMaxDW2);
+      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW2, &fBotMinDW2);
+
+      pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT, &fTopMaxLL3, &fBotMaxLL3);
+      pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT, &fTopMinLL3, &fBotMinLL3);
+
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      IndexType index = 0;
+      for ( ; i != end; i++, index++ )
       {
-         pForces2->GetStress(pgsTypes::BridgeSite1, pftUserDW, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxDW1, &fBotMaxDW1);
-         pForces2->GetStress(pgsTypes::BridgeSite1, pftUserDW, vPoi, MinSimpleContinuousEnvelope, &fTopMinDW1, &fBotMinDW1);
-
-         pForces2->GetStress(pgsTypes::BridgeSite2, pftUserDW, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxDW2, &fBotMaxDW2);
-         pForces2->GetStress(pgsTypes::BridgeSite2, pftUserDW, vPoi, MinSimpleContinuousEnvelope, &fTopMinDW2, &fBotMinDW2);
-
-         pForces2->GetStress(pgsTypes::BridgeSite3, pftUserLLIM, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxLL3, &fBotMaxLL3);
-         pForces2->GetStress(pgsTypes::BridgeSite3, pftUserLLIM, vPoi, MinSimpleContinuousEnvelope, &fTopMinLL3, &fBotMinLL3);
-      }
-      else
-      {
-         pForces2->GetStress(pgsTypes::BridgeSite1, pftUserDW, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxDW1, &fBotMaxDW1);
-         pForces2->GetStress(pgsTypes::BridgeSite2, pftUserDW, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxDW2, &fBotMaxDW2);
-         pForces2->GetStress(pgsTypes::BridgeSite3, pftUserLLIM, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxLL3, &fBotMaxLL3);
-      }
-
-
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      long index = 0;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
-      {
-         int col = 0;
+         ColumnIndexType col = 0;
 
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_GIRDER, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {

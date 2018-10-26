@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,15 +32,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+IDType UserLoads::ms_NextDistributedLoadID = 0;
+IDType UserLoads::ms_NextPointLoadID = 10000;
+IDType UserLoads::ms_NextMomentLoadID = 20000;
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 CPointLoadData::CPointLoadData():
+m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
-m_Stage(UserLoads::BridgeSite1),
-m_Span(0),
-m_Girder(0),
+m_EventIdx(INVALID_INDEX),
+m_SpanGirderKey(0,0),
 m_Magnitude(0.0),
 m_Location(0.5),
 m_Fractional(true),
@@ -56,16 +60,13 @@ CPointLoadData::~CPointLoadData()
 
 bool CPointLoadData::operator == (const CPointLoadData& rOther) const
 {
-   if (m_Stage != rOther.m_Stage)
+   if (m_EventIdx != rOther.m_EventIdx)
       return false;
 
    if (m_LoadCase != rOther.m_LoadCase)
       return false;
 
-   if (m_Span != rOther.m_Span)
-      return false;
-
-   if (m_Girder != rOther.m_Girder)
+   if (!m_SpanGirderKey.IsEqual(rOther.m_SpanGirderKey))
       return false;
 
    if (m_Location != rOther.m_Location)
@@ -93,27 +94,30 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("PointLoad"),2.0);
+   pSave->BeginUnit(_T("PointLoad"),5.0); // changed to version 4 with PGSplice
+
+   hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
+   if ( FAILED(hr) )
+      return hr;
 
    hr = pSave->put_Property(_T("LoadCase"),CComVariant((long)m_LoadCase));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property(_T("Stage"),CComVariant((long)m_Stage));
+   hr = pSave->put_Property(_T("EventIndex"),CComVariant((long)m_EventIdx));
    if ( FAILED(hr) )
       return hr;
 
-   // In pre Jan, 2011 versions, all spans and all girders were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
+   // In pre Jan, 2011 versions, "all spans" and "all girders" were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
    // Keep backward compatibility by saving the 10k value
-   SpanIndexType ts = (m_Span==ALL_SPANS) ? 10000 : m_Span;
+   SpanIndexType spanIdx  = (m_SpanGirderKey.spanIndex   == ALL_SPANS   ? 10000 : m_SpanGirderKey.spanIndex);
+   GirderIndexType gdrIdx = (m_SpanGirderKey.girderIndex == ALL_GIRDERS ? 10000 : m_SpanGirderKey.girderIndex);
 
-   hr = pSave->put_Property(_T("Span"),CComVariant(ts));
+   hr = pSave->put_Property(_T("Span"),CComVariant(spanIdx));
    if ( FAILED(hr) )
       return hr;
 
-   GirderIndexType tg = (m_Girder==ALL_GIRDERS) ? 10000 : m_Girder;
-
-   hr = pSave->put_Property(_T("Girder"),CComVariant(tg));
+   hr = pSave->put_Property(_T("Girder"),CComVariant(gdrIdx));
    if ( FAILED(hr) )
       return hr;
    
@@ -151,54 +155,94 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    Float64 version;
    pLoad->get_Version(&version);
 
+
    CComVariant var;
+   var.vt = VT_ID;
+   if ( 5.0 <= version )
+   {
+      hr = pLoad->get_Property(_T("ID"),&var);
+      if ( FAILED(hr) )
+         return hr;
+
+      m_ID = VARIANT2ID(var);
+      UserLoads::ms_NextPointLoadID = max(UserLoads::ms_NextPointLoadID,m_ID);
+   }
+   else
+   {
+      m_ID = UserLoads::ms_NextPointLoadID++;
+   }
+
    var.vt = VT_I4;
    hr = pLoad->get_Property(_T("LoadCase"),&var);
    if ( FAILED(hr) )
       return hr;
 
-   if (var.lVal==UserLoads::DC)
+   if (var.lVal == UserLoads::DC)
+   {
       m_LoadCase = UserLoads::DC;
-   else if(var.lVal==UserLoads::DW)
+   }
+   else if(var.lVal == UserLoads::DW)
+   {
       m_LoadCase = UserLoads::DW;
-   else if(var.lVal==UserLoads::LL_IM)
+   }
+   else if(var.lVal == UserLoads::LL_IM)
+   {
       m_LoadCase = UserLoads::LL_IM;
+   }
    else
    {
       ATLASSERT(0);
       return STRLOAD_E_INVALIDFORMAT;
    }
 
-   hr = pLoad->get_Property(_T("Stage"),&var);
+   var.vt = VT_INDEX;
+   if ( version < 4 )
+   {
+      hr = pLoad->get_Property(_T("Stage"),&var);
+   }
+   else
+   {
+      hr = pLoad->get_Property(_T("EventIndex"),&var);
+   }
    if ( FAILED(hr) )
       return hr;
 
-   if (var.lVal==UserLoads::BridgeSite1)
-      m_Stage = UserLoads::BridgeSite1;
-   else if (var.lVal==UserLoads::BridgeSite2)
-      m_Stage = UserLoads::BridgeSite2;
-   else if (var.lVal==UserLoads::BridgeSite3)
-      m_Stage = UserLoads::BridgeSite3;
-   else
+   m_EventIdx = VARIANT2INDEX(var);
+   // prior to version 3, stages were 0=BridgeSite1, 1=BridgeSite2, 2=BridgeSite3
+   // Version 3 and later, stages are pgsTypes::BridgeSite1, pgsTypes::BridgeSite2, pgsTypes::BridgeSite3
+   // adjust the stage value here
+   if ( version < 3 )
    {
-      ATLASSERT(0);
-      return STRLOAD_E_INVALIDFORMAT;
+      switch(m_EventIdx)
+      {
+         // when the generalized stage model was created (PGSplice) the BridgeSiteX constants where removed
+         // use the equivalent value
+      case 0: m_EventIdx = 2;/*pgsTypes::BridgeSite1;*/ break;
+      case 1: m_EventIdx = 3;/*pgsTypes::BridgeSite2;*/ break;
+      case 2: m_EventIdx = 4;/*pgsTypes::BridgeSite3;*/ break;
+      default:
+         ATLASSERT(false);
+      }
    }
 
-
-   var.vt = VT_I4;
+   var.vt = VT_INDEX;
    hr = pLoad->get_Property(_T("Span"),&var);
    if ( FAILED(hr) )
       return hr;
 
-   m_Span = (var.iVal == 10000)? ALL_SPANS : var.iVal; // In pre Jan, 2011 versions all spans was hardcoded to 10000
+   // see note in Save method about span/girder == 10000
+   m_SpanGirderKey.spanIndex = VARIANT2INDEX(var);
+   if ( 10000 == m_SpanGirderKey.spanIndex)
+      m_SpanGirderKey.spanIndex = ALL_SPANS;
 
-   var.vt = VT_I4;
+   var.vt = VT_INDEX;
    hr = pLoad->get_Property(_T("Girder"),&var);
    if ( FAILED(hr) )
       return hr;
 
-   m_Girder = (var.iVal == 10000)? ALL_GIRDERS : var.iVal; // In pre Jan, 2011 versions all girders was hardcoded to 10000
+   m_SpanGirderKey.girderIndex = VARIANT2INDEX(var);
+   if ( 10000 == m_SpanGirderKey.girderIndex )
+      m_SpanGirderKey.girderIndex = ALL_GIRDERS;
    
    var.vt = VT_R8;
    hr = pLoad->get_Property(_T("Location"),&var);

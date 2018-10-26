@@ -1,0 +1,9 @@
+; GraphingAgent.def : Declares the module parameters.
+
+LIBRARY      "PGSuperGraphingAgent.DLL"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer	PRIVATE

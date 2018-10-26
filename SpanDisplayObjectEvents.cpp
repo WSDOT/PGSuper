@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,9 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SpanDisplayObjectEvents.h"
 #include "mfcdual.h"
-#include "pgsuperdoc.h"
+#include "PGSuperDocBase.h"
+
+#include <PgsExt\SpanData2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,6 +45,12 @@ CBridgePlanViewSpanDisplayObjectEvents::CBridgePlanViewSpanDisplayObjectEvents(S
 {
    m_SpanIdx = spanIdx;
    m_pFrame  = pFrame;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CSpanData2* pSpan = pIBridgeDesc->GetSpan(spanIdx);
+   m_TempSupports         = pSpan->GetTemporarySupports();
 }
 
 BEGIN_INTERFACE_MAP(CBridgePlanViewSpanDisplayObjectEvents, CCmdTarget)
@@ -62,7 +70,7 @@ void CBridgePlanViewSpanDisplayObjectEvents::EditSpan(iDisplayObject* pDO)
    CDisplayView* pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDoc*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
+   ((CPGSuperDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
 }
 
 void CBridgePlanViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)
@@ -74,12 +82,33 @@ void CBridgePlanViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)
 
 void CBridgePlanViewSpanDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
 {
-   m_pFrame->SelectPier(m_SpanIdx);
+   if ( m_TempSupports.size() == 0 )
+   {
+      PierIndexType prevPierIdx = (PierIndexType)(m_SpanIdx);
+      m_pFrame->SelectPier(prevPierIdx);
+   }
+   else
+   {
+      // select temporary support in this span
+      const CTemporarySupportData* pTS = m_TempSupports.back();
+      m_pFrame->SelectTemporarySupport(pTS->GetID());
+   }
 }
 
 void CBridgePlanViewSpanDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 {
-   m_pFrame->SelectPier(m_SpanIdx+1);
+   if (m_TempSupports.size() == 0 )
+   {
+      // select pier at end of span
+      PierIndexType nextPierIdx = (PierIndexType)(m_SpanIdx+1);
+      m_pFrame->SelectPier(nextPierIdx);
+   }
+   else
+   {
+      // select temporary support in this span
+      const CTemporarySupportData* pTS = m_TempSupports.front();
+      m_pFrame->SelectTemporarySupport(pTS->GetID());
+   }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -154,12 +183,13 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnKeyDown(i
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder(pThis->m_SpanIdx,0);
+      pThis->m_pFrame->SelectGirder( CSegmentKey(pThis->m_SpanIdx,0,INVALID_INDEX) );
       return true;
    }
    else if ( nChar == VK_DELETE )
    {
-      ::PostMessage(pThis->m_pFrame->GetSafeHwnd(),WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      return true;
    }
 
    return false;
@@ -180,18 +210,17 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMe
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_SPAN_CONTEXT,NULL);
 
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnSpanContextMenu(pThis->m_SpanIdx,pMenu);
+         IBridgePlanViewEventCallback* callback = iter->second;
+         callback->OnSpanContextMenu(pThis->m_SpanIdx,pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
@@ -264,7 +293,7 @@ void CBridgeSectionViewSpanDisplayObjectEvents::EditSpan(iDisplayObject* pDO)
    CDisplayView* pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDoc*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
+   ((CPGSuperDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
 }
 
 void CBridgeSectionViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)
@@ -356,12 +385,13 @@ STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnKeyDow
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder(pThis->m_SpanIdx,0);
+      pThis->m_pFrame->SelectGirder( CSegmentKey(pThis->m_SpanIdx,0,INVALID_INDEX) );
       return true;
    }
    else if ( nChar == VK_DELETE )
    {
-      ::PostMessage(pThis->m_pFrame->GetSafeHwnd(),WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      return true;
    }
 
    return false;

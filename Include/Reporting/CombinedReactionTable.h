@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 #define INCLUDED_COMBINEDREACTIONTABLE_H_
 
 #include <Reporting\ReportingExp.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 interface IEAFDisplayUnits;
 
@@ -51,8 +50,9 @@ LOG
 class REPORTINGCLASS CCombinedReactionTable
 {
 public:
-   // This class serves dual duty. It can report pier reactions or girder bearing reactions.
+   // This class serves double duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
+   enum TableType { PierReactionsTable, BearingReactionsTable};
 
    // GROUP: LIFECYCLE
 
@@ -77,28 +77,28 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the combined results table
-   // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
+   // bDesign and bRating are only considered for intervalIdx = live load interval index
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, 
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
-                      bool bDesign,bool bRating) const;
+                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, TableType tableType,
+                      bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------
    // Builds the live load results table
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
    virtual void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, 
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
-                      bool includeImpact, bool bDesign,bool bRating) const;
+                      pgsTypes::AnalysisType analysisType, TableType tableType,
+                      bool includeImpact, bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------
    // Builds tables for bearing design
    virtual void BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, 
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const;
+                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -109,22 +109,22 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    virtual void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, 
+                      const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, TableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
    virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, bool includeImpact,
+                      const CGirderKey& girderKey,bool includeImpact,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      pgsTypes::AnalysisType analysisType, TableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------
    void MakeCopy(const CCombinedReactionTable& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CCombinedReactionTable& rOther);
+   virtual void MakeAssignment(const CCombinedReactionTable& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

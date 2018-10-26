@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,8 +85,8 @@ public:
    // point is to be moved along
    STDMETHOD(AddRegion)(IShape* shape, Float64 arcSlope);
    // debuggin
-   STDMETHOD(get_NumRegions)(IndexType* pNum);
-   STDMETHOD(GetRegion)(IndexType index, IShape** shape, Float64* arcSlope);
+   STDMETHOD(get_NumRegions)(ZoneIndexType* pNum);
+   STDMETHOD(GetRegion)(ZoneIndexType index, IShape** shape, Float64* arcSlope);
 
 private:
    Float64 m_TopElevation;
@@ -100,7 +100,7 @@ private:
    struct HarpRegion
    {
       CComPtr<IShape> pShape;
-      Float64          dArcSlope;
+      Float64         dArcSlope;
    };
 
    typedef std::vector<HarpRegion>     RegionCollection;

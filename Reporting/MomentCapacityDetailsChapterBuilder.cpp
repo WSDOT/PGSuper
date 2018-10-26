@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,14 +25,14 @@
 #include <Reporting\MomentCapacityDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,41 +47,37 @@ CLASS
 
 void write_moment_data_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
-                             SpanIndexType span,
-                             GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
-                             pgsTypes::Stage stage,
+                             IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 void write_crack_moment_data_table(IBroker* pBroker,
                                    IEAFDisplayUnits* pDisplayUnits,
-                                   SpanIndexType span,
-                                   GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                                    const std::vector<pgsPointOfInterest>& pois,
                                    rptChapter* pChapter,
-                                   pgsTypes::Stage stage,
+                                   IntervalIndexType intervalIdx,
                                    const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 void write_min_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
-                                 SpanIndexType span,
-                                 GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
-                                 pgsTypes::Stage stage,
+                                 IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
-                                 SpanIndexType span,
-                                 GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
-                                 pgsTypes::Stage stage,
+                                 IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
                                  bool bPositiveMoment);
 
@@ -103,96 +99,86 @@ LPCTSTR CMomentCapacityDetailsChapterBuilder::GetName() const
 
 rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec      = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType gdr;
-
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
-      gdr = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      gdr = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      span = ALL_SPANS;
-      gdr  = ALL_GIRDERS;
-   }
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi;
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
 // NOTE
 // No longer designing/checking for ultimate moment in temporary construction state
 // per e-mail from Bijan Khaleghi, dated 4/28/1999.  See project log.
-//   vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite1, span,girder, POI_FLEXURECAPACITY | POI_TABULAR);
+//   vPoi = pIPOI->GetGirderPointsOfInterest(pgsTypes::BridgeSite1, span,girder);
 //   write_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, pgsTypes::BridgeSite1, "Bridge Site Stage 1");
 //   write_crack_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, pgsTypes::BridgeSite1, "Bridge Site Stage 1");
 //   write_min_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, pgsTypes::BridgeSite1, "Bridge Site Stage 1");
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
-      {
-         rptParagraph* pPara;
 
-         if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
-         {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-            *pChapter << pPara;
-            std::_tostringstream os;
-            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
-            pPara->SetName( os.str().c_str() );
-            (*pPara) << pPara->GetName() << rptNewLine;
-         }
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      {
+         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+         rptParagraph* pPara;
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
-         vPoi = pIPOI->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::BridgeSite3, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
 
-         write_moment_data_table(pBroker,pDisplayUnits,spanIdx,gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
+
+         std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+
+         write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),true);
          if ( !m_bCapacityOnly )
          {
-            write_crack_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
-            write_min_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
-            write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),true);
+            write_crack_moment_data_table(          pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),true);
+            write_min_moment_data_table(            pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),true);
+            write_over_reinforced_moment_data_table(pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),true);
          }
 
-         if ( pBridge->ProcessNegativeMoments(span) )
+         SpanIndexType startSpanIdx, endSpanIdx;
+         startSpanIdx = pBridge->GetGirderGroupStartSpan(thisGirderKey.groupIndex);
+         endSpanIdx   = pBridge->GetGirderGroupEndSpan(thisGirderKey.groupIndex);
+         bool bProcessNegativeMoments = false;
+         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+         {
+            if ( pBridge->ProcessNegativeMoments(spanIdx) )
+            {
+               bProcessNegativeMoments = true;
+               break;
+            }
+         }
+
+         if ( bProcessNegativeMoments )
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
             *pChapter << pPara;
             *pPara << _T("Negative Moment Capacity Details") << rptNewLine;
 
-            write_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
+            write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),false);
             if ( !m_bCapacityOnly )
             {
-               write_crack_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
-               write_min_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
-               write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,spanIdx, gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, _T("Final with Live Load (Bridge Site 3)"),false);
+               write_crack_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),false);
+               write_min_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),false);
+               write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, _T("Final with Live Load (Bridge Site 3)"),false);
             }
          }
-      }
-   }
+      } // next girder
+   } // next group
 
    return pChapter;
 }
@@ -223,11 +209,10 @@ CChapterBuilder* CMomentCapacityDetailsChapterBuilder::Clone() const
 
 void write_moment_data_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
-                             SpanIndexType span,
-                             GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
-                             pgsTypes::Stage stage,
+                             IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
@@ -236,10 +221,9 @@ void write_moment_data_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker, IBridge,            pBridge);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-
-   const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);
@@ -278,7 +262,7 @@ void write_moment_data_table(IBroker* pBroker,
    if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
       nColumns++; // for epsilon_t
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str().c_str());
 
    *pPara << table << rptNewLine;
 
@@ -290,7 +274,8 @@ void write_moment_data_table(IBroker* pBroker,
       (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands in tension. See PCI BDM 8.4.1.2") << rptNewLine;
    }
 
-   if ( span == ALL_SPANS )
+
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -298,7 +283,9 @@ void write_moment_data_table(IBroker* pBroker,
 
    ColumnIndexType col = 0;
 
-   if ( stage == pgsTypes::CastingYard )
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   if ( intervalIdx < compositeDeckIntervalIdx )
       (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -337,33 +324,38 @@ void write_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
    rptRcScalar strain;
    strain.SetFormat( sysNumericFormatTool::Fixed );
    strain.SetWidth(6);
    strain.SetPrecision(3);
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
-   if ( stage == pgsTypes::CastingYard )
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
+
+   if ( intervalIdx < compositeDeckIntervalIdx )
       end_size = 0; // don't adjust if CY stage
 
    Int16 count = 0;
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
       MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(stage,poi,bPositiveMoment,&mcd);
+      pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
       (*table)(row,col++) << dim.SetValue( mcd.c );
       (*table)(row,col++) << dim.SetValue( mcd.dc );
       (*table)(row,col++) << dim.SetValue( mcd.de );
@@ -413,7 +405,7 @@ void write_moment_data_table(IBroker* pBroker,
    else
    {
       MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(stage,pois.front(),bPositiveMoment,&mcd);
+      pMomentCap->GetMomentCapacityDetails(intervalIdx,pois.front(),bPositiveMoment,&mcd);
       *pPara << Sub2(symbol(epsilon),_T("cl")) << _T(" = ") << strain.SetValue(mcd.ecl) << rptNewLine;
       *pPara << Sub2(symbol(epsilon),_T("tl")) << _T(" = ") << strain.SetValue(mcd.etl) << rptNewLine;
 
@@ -427,16 +419,16 @@ void write_moment_data_table(IBroker* pBroker,
 
 void write_crack_moment_data_table(IBroker* pBroker,
                                    IEAFDisplayUnits* pDisplayUnits,
-                                   SpanIndexType span,
-                                   GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                                    const std::vector<pgsPointOfInterest>& pois,
                                    rptChapter* pChapter,
-                                   pgsTypes::Stage stage,
+                                   IntervalIndexType intervalIdx,
                                    const std::_tstring& strStageName,
-                                   bool bPositiveMoment)
+                                 bool bPositiveMoment)
 {
    bool bAfter2002  = ( lrfdVersionMgr::SecondEditionWith2002Interims < lrfdVersionMgr::GetVersion()     ? true : false );
    bool bBefore2012 = ( lrfdVersionMgr::GetVersion()                  < lrfdVersionMgr::SixthEdition2012 ? true : false );
+
    // Setup the table
    rptParagraph* pParagraph;
 
@@ -455,7 +447,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T(""));
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -463,7 +455,11 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
-   if ( stage == pgsTypes::CastingYard )
+   *pParagraph << rptNewLine;
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   if ( intervalIdx < compositeDeckIntervalIdx )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -489,22 +485,21 @@ void write_crack_moment_data_table(IBroker* pBroker,
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
-   if ( stage == pgsTypes::CastingYard )
-      end_size = 0; // don't adjust if CY stage
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest &poi = *i;
       CRACKINGMOMENTDETAILS cmd;
-      pMomentCapacity->GetCrackingMomentDetails(stage,poi,bPositiveMoment,&cmd);
+      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
 
       if ( i == pois.begin() )
       {
@@ -518,7 +513,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
          }
       }
 
-      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
       (*table)(row,1) << stress.SetValue( cmd.fr );
       (*table)(row,2) << stress.SetValue( cmd.fcpe);
       (*table)(row,3) << sect_mod.SetValue( cmd.Sb );
@@ -535,6 +530,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
 
+
    if ( bBefore2012 )
    {
       if ( bAfter2002 )
@@ -548,13 +544,21 @@ void write_crack_moment_data_table(IBroker* pBroker,
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcr_2012.png")) << rptNewLine;
    }
 
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
-   *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr));
-   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      *pParagraph << symbol(lambda);
+      CSegmentKey segmentKey(girderKey,segIdx);
+      *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(segmentKey)) << symbol(ROOT) << RPT_FC << rptNewLine;
+
+      if ( segIdx != nSegments-1 )
+      {
+#pragma Reminder("UPDATE: is fr coefficient different for closure pour?")
+         CClosureKey closureKey(segmentKey);
+         *pParagraph << _T("Closure Pour ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(closureKey)) << symbol(ROOT) << RPT_FC << rptNewLine;
+      }
    }
-   *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fcpe.png")) << rptNewLine;
@@ -566,17 +570,16 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
 void write_min_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
-                                 SpanIndexType span,
-                                 GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
-                                 pgsTypes::Stage stage,
+                                 IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
-   // Setup the table
    bool bBefore2012 = ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEdition2012 ? true : false );
 
+   // Setup the table
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -589,7 +592,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(bBefore2012 ? 7 : 6,_T(""));
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -598,7 +601,9 @@ void write_min_moment_data_table(IBroker* pBroker,
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
-   if ( stage == pgsTypes::CastingYard )
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   if ( intervalIdx < compositeDeckIntervalIdx )
       (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -617,26 +622,27 @@ void write_min_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
-   if ( stage == pgsTypes::CastingYard )
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
+   if ( intervalIdx < compositeDeckIntervalIdx )
       end_size = 0; // don't adjust if CY stage
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   for ( ; i != end; i++ )
    {
       col = 0;
       const pgsPointOfInterest& poi = *i;
       MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,&mmcd);
+      pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mmcd);
 
-      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
       if ( bBefore2012 )
       {
          (*table)(row,col++) << moment.SetValue( mmcd.Mcr );
@@ -660,11 +666,10 @@ void write_min_moment_data_table(IBroker* pBroker,
 
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
-                                 SpanIndexType span,
-                                 GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                                  const std::vector<pgsPointOfInterest>& pois,
                                  rptChapter* pChapter,
-                                 pgsTypes::Stage stage,
+                                 IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
                                  bool bPositiveMoment)
 {
@@ -672,12 +677,13 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    // It isn't needed if there aren't any over reinforced sections
    bool bTableNeeded = false;
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = pois.begin(); i != pois.end() && !bTableNeeded; i++)
+   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
       MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(stage,poi,bPositiveMoment,&mcd);
+      pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
       if ( mcd.bOverReinforced )
       {
          bTableNeeded = true;
@@ -707,7 +713,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,_T("Nominal Resistance of Over Reinforced Sections [C5.7.3.3.1]"));
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -715,7 +721,9 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
-   if ( stage == pgsTypes::CastingYard )
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   if ( intervalIdx < compositeDeckIntervalIdx )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -735,27 +743,32 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
-   if ( stage == pgsTypes::CastingYard )
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
+   if ( intervalIdx < compositeDeckIntervalIdx )
       end_size = 0; // don't adjust if CY stage
 
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   i = pois.begin();
+   end = pois.end();
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
       MOMENTCAPACITYDETAILS mcd;
-      pMomentCap->GetMomentCapacityDetails(stage,poi,bPositiveMoment,&mcd);
+      pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
 
       if ( mcd.bOverReinforced )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
          (*table)(row,1) << scalar.SetValue( mcd.Beta1Slab );
          (*table)(row,2) << stress.SetValue( mcd.FcSlab );
          (*table)(row,3) << dim.SetValue( mcd.b );

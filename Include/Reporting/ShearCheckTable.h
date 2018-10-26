@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include <IFace\AnalysisResults.h>
 
 interface IEAFDisplayUnits;
+class pgsGirderArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -68,17 +69,17 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the  table.
-   virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   virtual rptRcTable* Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                              IEAFDisplayUnits* pDisplayUnits,
-                             pgsTypes::Stage stage,
-                             pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const;
-
+                             IntervalIndexType intervalIdx,
+                             pgsTypes::LimitState ls,
+                             bool& bStrutAndTieRequired) const;
    //------------------------------------------------------------------------
    // Builds the notes after the  table.
    void BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                   IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                    IEAFDisplayUnits* pDisplayUnits,
-                   pgsTypes::Stage stage,
+                   IntervalIndexType intervalIdx,
                    pgsTypes::LimitState ls, bool bStrutAndTieRequired) const;
 
    // GROUP: ACCESS

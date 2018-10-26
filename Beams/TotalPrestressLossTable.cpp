@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,50 +53,30 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   std::_tstring strSpecName = pSpec->GetSpecification();
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
-   bool bIgnoreInitialRelaxation = details.pLosses->IgnoreInitialRelaxation();
+   bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
 
-   //bool bIgnoreElasticGain = ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ) ? true : false;
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   bool bUseGrossProperties = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false;
 
-   ColumnIndexType numColumns = 4;
-   if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
-   {
-      if ( bIgnoreInitialRelaxation )
-      {
-         numColumns++;
-      }
-      else
-      {
-         numColumns += 2;
-      }
-   }
-   else
-   {
-      if ( bIgnoreInitialRelaxation )
-      {
-         numColumns += 2;
-      }
-      else
-      {
-         numColumns += 3;
-      }
-   }
+   ColumnIndexType numColumns = 9;
+   if ( !bIgnoreInitialRelaxation )
+      numColumns++; // fpR0
+
+   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+      numColumns++; // fpp
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary);
+   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
    if ( 0 == NtMax  )
-      numColumns--;
-
-
-   // add one column for % Loss
-   numColumns += 1;
+      numColumns--; // omit fptr
 
    // Create and configure the table
    CTotalPrestressLossTable* table = new CTotalPrestressLossTable( numColumns, pDisplayUnits );
@@ -111,42 +91,32 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   // delta fpT
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ");
+   if ( !bIgnoreInitialRelaxation )
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
+
+   if ( pStrands->TempStrandUsage != pgsTypes::ttsPretensioned )
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
+
    if ( 0 < NtMax )
-   {
-      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
-      {
-         if ( bIgnoreInitialRelaxation )
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPS_LRFD.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPS_WSDOT.png")) << rptNewLine;
-         }
-      }
-      else
-      {
-         if ( bIgnoreInitialRelaxation )
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPT_LRFD.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLossWithPT_WSDOT.png")) << rptNewLine;
-         }
-      }
-   }
-   else
-   {
-      if ( bIgnoreInitialRelaxation )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLoss_LRFD.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("TotalPrestressLoss_WSDOT.png")) << rptNewLine;
-      }
-   }
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("ptr")) << _T(" + ");
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << rptNewLine;
+
+   //
+   *pParagraph << _T("% Loss Initial = (");
+   if ( !bIgnoreInitialRelaxation )
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
+
+   //
+   *pParagraph << _T("% Loss Final = (");
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" - ");
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
@@ -159,8 +129,9 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    }
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Initial");
 
-   if ( 0 < NtMax && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < NtMax && pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -171,48 +142,69 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    }
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << _T("% Loss");
+   (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Final");
 
    table->m_NtMax = NtMax;
-   table->m_pGirderData = pgirderData;
+   table->m_pStrands = pStrands;
+   table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
+   table->m_bUseGrossProperties = bUseGrossProperties;
 
    return table;
 }
 
-void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
-   if ( !details.pLosses->IgnoreInitialRelaxation() )
+   if ( !m_bIgnoreInitialRelaxation )
    {
-      (*this)(row,col++) << stress.SetValue(details.pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
+      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
    }
 
-   (*this)(row,col++) << stress.SetValue(details.pLosses->PermanentStrand_ElasticShorteningLosses());
+   Float64 dfpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+   (*this)(row,col++) << stress.SetValue(dfpES);
+
+   Float64 fpj = pDetails->pLosses->GetFpjPermanent();
+   Float64 fpi = pDetails->pLosses->PermanentStrand_AfterTransfer(); 
+
+   if ( !m_bUseGrossProperties )
+      fpi += dfpES;
+
+   Float64 fpe  = fpj - fpi;
+   (*this)(row,col++) << scalar.SetValue( -1*PercentChange(fpj,fpe) );
    
-   if ( 0 < m_NtMax && m_pGirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < m_NtMax && m_pStrands->TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
-      (*this)(row,col++) << stress.SetValue(details.pLosses->GetDeltaFpp());
+      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }
 
 
    if ( 0 < m_NtMax )
    {
-      (*this)(row,col++) << stress.SetValue(details.pLosses->GetDeltaFptr());
+      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFptr());
    }
 
 
-   (*this)(row,col++) << stress.SetValue(details.pLosses->TimeDependentLosses());
+   (*this)(row,col++) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
 
-   Float64 fpj = details.pLosses->GetFpjPermanent();
-   Float64 fpt = details.pLosses->PermanentStrand_Final(); // includes elastic gains due to permanent loads
+   (*this)(row,col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToDeckPlacement());
+   (*this)(row,col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToSIDL());
 
-   // remove gains so we have only losses
-   fpt += details.pLosses->ElasticGainDueToDeckPlacement();
-   fpt += details.pLosses->ElasticGainDueToSIDL();
-   fpt += details.pLosses->ElasticGainDueToDeckShrinkage();
+   Float64 fpt = pDetails->pLosses->PermanentStrand_Final(); 
 
-   Float64 fpe  = fpj - fpt;
+   if ( !m_bUseGrossProperties )
+      fpt += dfpES;
+
+   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
+   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
+   if ( m_bUseGrossProperties )
+   {
+      fpt += fpED+fpSIDL;
+   }
+
+   fpe  = fpj - fpt + fpED + fpSIDL;
 
    (*this)(row,col++) << stress.SetValue(fpt);
    (*this)(row,col++) << scalar.SetValue( -1*PercentChange(fpj,fpe) );

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "EditSpan.h"
+
+#include <IFace\Project.h>
+#include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 
 #ifdef _DEBUG
@@ -34,34 +37,94 @@ txnEditSpanData::txnEditSpanData()
 {
 }
 
-txnEditSpanData::txnEditSpanData(const CSpanData* pSpan)
+txnEditSpanData::txnEditSpanData(const txnEditSpanData& other)
 {
-   bSameNumberOfGirdersInAllSpans = pSpan->GetBridgeDescription()->UseSameNumberOfGirdersInAllSpans();
-   bSameGirderType                = pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge();
+   m_SpanLength = other.m_SpanLength;
 
-   SpanLength = pSpan->GetSpanLength();
-
-   nGirders = pSpan->GetGirderCount();
-   GirderTypes = *pSpan->GetGirderTypes();
-
-   GirderSpacingType              = pSpan->GetBridgeDescription()->GetGirderSpacingType();
-   GirderMeasurementLocation      = pSpan->GetBridgeDescription()->GetMeasurementLocation();
-   GirderSpacing[pgsTypes::Ahead] = *pSpan->GetGirderSpacing(pgsTypes::metStart);
-   GirderSpacing[pgsTypes::Back]  = *pSpan->GetGirderSpacing(pgsTypes::metEnd);
-
-   SlabOffsetType = pSpan->GetBridgeDescription()->GetSlabOffsetType();
-   if ( SlabOffsetType == pgsTypes::sotGirder )
+   for ( int i = 0; i < 2; i++ )
    {
-      // slab offset is by girder... which girder do we use???
-      // use first girder for now
-      SlabOffset[pgsTypes::metStart] = pSpan->GetGirderTypes()->GetSlabOffset(0,pgsTypes::metStart);
-      SlabOffset[pgsTypes::metEnd]   = pSpan->GetGirderTypes()->GetSlabOffset(0,pgsTypes::metEnd);
+      m_ConnectionType[i] = other.m_ConnectionType[i];
+   
+
+      for ( int j = 0; j < 2; j++ )
+      {
+         m_EndDistanceMeasurementType[i][j]   = other.m_EndDistanceMeasurementType[i][j];
+         m_EndDistance[i][j]                  = other.m_EndDistance[i][j];;
+         m_BearingOffsetMeasurementType[i][j] = other.m_BearingOffsetMeasurementType[i][j];
+         m_BearingOffset[i][j]                = other.m_BearingOffset[i][j];
+         m_SupportWidth[i][j]                 = other.m_SupportWidth[i][j];
+      }
+
+      m_DiaphragmHeight[i]       = other.m_DiaphragmHeight[i];
+      m_DiaphragmWidth[i]        = other.m_DiaphragmWidth[i];
+      m_DiaphragmLoadType[i]     = other.m_DiaphragmLoadType[i];
+      m_DiaphragmLoadLocation[i] = other.m_DiaphragmLoadLocation[i];
+
+      m_GirderSpacing[i] = other.m_GirderSpacing[i];
+      m_SlabOffset[i] = other.m_SlabOffset[i];
    }
-   else
-   {
-      SlabOffset[pgsTypes::metStart] = pSpan->GetSlabOffset(pgsTypes::metStart);
-      SlabOffset[pgsTypes::metEnd]   = pSpan->GetSlabOffset(pgsTypes::metEnd);
-   }
+
+   m_nGirders = other.m_nGirders;
+   m_bUseSameNumGirders = other.m_bUseSameNumGirders;
+   m_bUseSameGirderType = other.m_bUseSameGirderType;
+   m_GirderSpacingType  = other.m_GirderSpacingType;
+   m_GirderSpacingMeasurementLocation = other.m_GirderSpacingMeasurementLocation;
+   m_GirderGroup = other.m_GirderGroup;
+
+   m_SlabOffsetType = other.m_SlabOffsetType;
+}
+
+txnEditSpanData::txnEditSpanData(const CSpanData2* pSpan)
+{
+   m_SpanLength = pSpan->GetSpanLength();
+
+   m_ConnectionType[pgsTypes::metStart] = pSpan->GetPrevPier()->GetConnectionType();
+   m_ConnectionType[pgsTypes::metEnd]   = pSpan->GetNextPier()->GetConnectionType();
+
+   pSpan->GetPrevPier()->GetGirderEndDistance(pgsTypes::Back, &m_EndDistance[pgsTypes::metStart][pgsTypes::Back ],&m_EndDistanceMeasurementType[pgsTypes::metStart][pgsTypes::Back]);
+   pSpan->GetPrevPier()->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance[pgsTypes::metStart][pgsTypes::Ahead],&m_EndDistanceMeasurementType[pgsTypes::metStart][pgsTypes::Ahead]);
+
+   pSpan->GetNextPier()->GetGirderEndDistance(pgsTypes::Back, &m_EndDistance[pgsTypes::metEnd][pgsTypes::Back ],&m_EndDistanceMeasurementType[pgsTypes::metEnd][pgsTypes::Back]);
+   pSpan->GetNextPier()->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance[pgsTypes::metEnd][pgsTypes::Ahead],&m_EndDistanceMeasurementType[pgsTypes::metEnd][pgsTypes::Ahead]);
+
+   pSpan->GetPrevPier()->GetBearingOffset(pgsTypes::Back, &m_BearingOffset[pgsTypes::metStart][pgsTypes::Back ],&m_BearingOffsetMeasurementType[pgsTypes::metStart][pgsTypes::Back]);
+   pSpan->GetPrevPier()->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset[pgsTypes::metStart][pgsTypes::Ahead],&m_BearingOffsetMeasurementType[pgsTypes::metStart][pgsTypes::Ahead]);
+
+   pSpan->GetNextPier()->GetBearingOffset(pgsTypes::Back, &m_BearingOffset[pgsTypes::metEnd][pgsTypes::Back ],&m_BearingOffsetMeasurementType[pgsTypes::metEnd][pgsTypes::Back]);
+   pSpan->GetNextPier()->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset[pgsTypes::metEnd][pgsTypes::Ahead],&m_BearingOffsetMeasurementType[pgsTypes::metEnd][pgsTypes::Ahead]);
+
+   m_SupportWidth[pgsTypes::Back ][pgsTypes::metStart] = pSpan->GetPrevPier()->GetSupportWidth(pgsTypes::Back);
+   m_SupportWidth[pgsTypes::Ahead][pgsTypes::metStart] = pSpan->GetPrevPier()->GetSupportWidth(pgsTypes::Ahead);
+
+   m_SupportWidth[pgsTypes::Back ][pgsTypes::metEnd] = pSpan->GetNextPier()->GetSupportWidth(pgsTypes::Back);
+   m_SupportWidth[pgsTypes::Ahead][pgsTypes::metEnd] = pSpan->GetNextPier()->GetSupportWidth(pgsTypes::Ahead);
+
+   m_DiaphragmHeight[pgsTypes::Ahead] = pSpan->GetPrevPier()->GetDiaphragmHeight(pgsTypes::Ahead);
+   m_DiaphragmHeight[pgsTypes::Back]  = pSpan->GetNextPier()->GetDiaphragmHeight(pgsTypes::Back);
+
+   m_DiaphragmWidth[pgsTypes::Ahead] = pSpan->GetPrevPier()->GetDiaphragmWidth(pgsTypes::Ahead);
+   m_DiaphragmWidth[pgsTypes::Back]  = pSpan->GetNextPier()->GetDiaphragmWidth(pgsTypes::Back);
+
+   m_DiaphragmLoadType[pgsTypes::Ahead] = pSpan->GetPrevPier()->GetDiaphragmLoadType(pgsTypes::Ahead);
+   m_DiaphragmLoadType[pgsTypes::Back]  = pSpan->GetNextPier()->GetDiaphragmLoadType(pgsTypes::Back);
+
+   m_DiaphragmLoadLocation[pgsTypes::Ahead] = pSpan->GetPrevPier()->GetDiaphragmLoadLocation(pgsTypes::Ahead);
+   m_DiaphragmLoadLocation[pgsTypes::Back]  = pSpan->GetNextPier()->GetDiaphragmLoadLocation(pgsTypes::Back);
+
+   m_GirderSpacing[pgsTypes::Ahead] = *(pSpan->GetPrevPier()->GetGirderSpacing(pgsTypes::Ahead));
+   m_GirderSpacing[pgsTypes::Back ] = *(pSpan->GetNextPier()->GetGirderSpacing(pgsTypes::Back));
+
+   m_SlabOffset[pgsTypes::metStart] = pSpan->GetBridgeDescription()->GetGirderGroup(pSpan)->GetSlabOffset(0,pgsTypes::metStart);
+   m_SlabOffset[pgsTypes::metEnd  ] = pSpan->GetBridgeDescription()->GetGirderGroup(pSpan)->GetSlabOffset(0,pgsTypes::metEnd);
+
+   m_nGirders = pSpan->GetBridgeDescription()->GetGirderCount();
+   m_bUseSameNumGirders = pSpan->GetBridgeDescription()->UseSameNumberOfGirdersInAllGroups();
+   m_bUseSameGirderType = pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge();
+   m_GirderSpacingType  = pSpan->GetBridgeDescription()->GetGirderSpacingType();
+   m_GirderSpacingMeasurementLocation = pSpan->GetBridgeDescription()->GetMeasurementLocation();
+   m_GirderGroup = *pSpan->GetBridgeDescription()->GetGirderGroup(pSpan);
+
+   m_SlabOffsetType = pSpan->GetBridgeDescription()->GetSlabOffsetType();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,97 +183,97 @@ void txnEditSpan::DoExecute(int i)
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
 
-   pBridgeDesc->UseSameNumberOfGirdersInAllSpans( m_SpanData[i].bSameNumberOfGirdersInAllSpans);
-   pBridgeDesc->UseSameGirderForEntireBridge(m_SpanData[i].bSameGirderType);
+   // General
+   pBridgeDesc->SetSpanLength(m_SpanIdx,m_SpanData[i].m_SpanLength);
 
-   pBridgeDesc->SetSpanLength(m_SpanIdx,m_SpanData[i].SpanLength);
-
-   if ( m_SpanData[i].bSameNumberOfGirdersInAllSpans )
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      // set number of girder for the entire bridge
-      pBridgeDesc->SetGirderCount(m_SpanData[i].nGirders);
-   }
+      // This code is only for PGSuper documents
 
-   pBridgeDesc->SetGirderCount(m_SpanIdx, m_SpanData[i].nGirders);
+      PierIndexType prevPierIdx = (PierIndexType)m_SpanIdx;
+      PierIndexType nextPierIdx = prevPierIdx + 1;
 
-   if ( m_SpanData[i].bSameGirderType )
-   {
-      CGirderTypes girderTypes = m_SpanData[i].GirderTypes;
-      pBridgeDesc->SetGirderName(girderTypes.GetGirderName(0));
-   }
+      // in PGSuper, span and group are the same
+      GroupIndexType grpIdx = (GroupIndexType)m_SpanIdx;
 
-   CGirderTypes girderTypes = m_SpanData[i].GirderTypes;
+      // Girder Spacing (entire bridge)
+      pBridgeDesc->UseSameNumberOfGirdersInAllGroups( m_SpanData[i].m_bUseSameNumGirders);
+      pBridgeDesc->UseSameGirderForEntireBridge(m_SpanData[i].m_bUseSameGirderType);
+      pBridgeDesc->SetGirderSpacingType(   m_SpanData[i].m_GirderSpacingType );
+      pBridgeDesc->SetMeasurementLocation( m_SpanData[i].m_GirderSpacingMeasurementLocation);
 
-   pBridgeDesc->SetGirderSpacingType(   m_SpanData[i].GirderSpacingType );
-   pBridgeDesc->SetMeasurementLocation( m_SpanData[i].GirderMeasurementLocation);
+      pBridgeDesc->SetGirderGroup(grpIdx, m_SpanData[i].m_GirderGroup);
 
-   if ( IsGirderSpacing(m_SpanData[i].GirderSpacingType) )
-   {
-      pBridgeDesc->SetGirderSpacing(       m_SpanData[i].GirderSpacing[pgsTypes::Ahead].GetGirderSpacing(0) );
-      pBridgeDesc->SetMeasurementLocation( m_SpanData[i].GirderSpacing[pgsTypes::Ahead].GetMeasurementLocation() );
-      pBridgeDesc->SetMeasurementType(     m_SpanData[i].GirderSpacing[pgsTypes::Ahead].GetMeasurementType() );
-   }
-
-   CGirderSpacing girderSpacingAhead( m_SpanData[i].GirderSpacing[pgsTypes::Ahead] );
-   pBridgeDesc->SetGirderSpacingAtStartOfSpan( m_SpanIdx,girderSpacingAhead);
-   pBridgeDesc->SetMeasurementLocation(        m_SpanIdx,pgsTypes::Ahead,girderSpacingAhead.GetMeasurementLocation());
-   pBridgeDesc->SetMeasurementType(            m_SpanIdx,pgsTypes::Ahead,girderSpacingAhead.GetMeasurementType());
-
-   CGirderSpacing girderSpacingBack( m_SpanData[i].GirderSpacing[pgsTypes::Back] );
-   pBridgeDesc->SetGirderSpacingAtEndOfSpan(m_SpanIdx,girderSpacingBack);
-   pBridgeDesc->SetMeasurementLocation(     m_SpanIdx+1,pgsTypes::Back,girderSpacingBack.GetMeasurementLocation());
-   pBridgeDesc->SetMeasurementType(         m_SpanIdx+1,pgsTypes::Back,girderSpacingBack.GetMeasurementType());
-
-   // Connections
-   PierIndexType prevPierIdx = (PierIndexType)m_SpanIdx;
-   PierIndexType nextPierIdx = prevPierIdx + 1;
-   for ( int j = 0; j < 2; j++ )
-   {
-      pgsTypes::MemberEndType end = (j == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
-      PierIndexType pierIdx = (j == 0 ? prevPierIdx : nextPierIdx);
-      CPierData pier = *pBridgeDesc->GetPier( pierIdx );
-      pier.SetConnectionType( m_SpanData[i].m_ConnectionType[end] );
-
-      for ( int k = 0; k < 2; k++ )
+      if ( m_SpanData[i].m_bUseSameNumGirders )
       {
-         pgsTypes::PierFaceType face = (k == 0 ? pgsTypes::Ahead : pgsTypes::Back);
+         // set number of girder for the entire bridge
+         pBridgeDesc->SetGirderCount(m_SpanData[i].m_nGirders);
+      }
 
-         pier.SetGirderEndDistance( face,m_SpanData[i].m_EndDistance[end][face],  m_SpanData[i].m_EndDistanceMeasurementType[end][face]);
-         pier.SetBearingOffset(     face,m_SpanData[i].m_BearingOffset[end][face],m_SpanData[i].m_BearingOffsetMeasurementType[end][face]);
-         pier.SetSupportWidth(      face,m_SpanData[i].m_SupportWidth[end][face]);
+      pBridgeDesc->SetGirderCount( grpIdx, m_SpanData[i].m_nGirders);
+
+      if ( m_SpanData[i].m_bUseSameGirderType )
+      {
+         pBridgeDesc->SetGirderName(m_SpanData[i].m_GirderGroup.GetGirderName(0));
+      }
+
+      if ( ::IsBridgeSpacing(m_SpanData[i].m_GirderSpacingType) )
+      {
+         // girder spacing for the entire bridge
+         pBridgeDesc->SetGirderSpacing(       m_SpanData[i].m_GirderSpacing[pgsTypes::metStart].GetGirderSpacing(0) );
+         pBridgeDesc->SetMeasurementLocation( m_SpanData[i].m_GirderSpacing[pgsTypes::metStart].GetMeasurementLocation() );
+         pBridgeDesc->SetMeasurementType(     m_SpanData[i].m_GirderSpacing[pgsTypes::metStart].GetMeasurementType() );
+      }
+      else
+      {
+         pBridgeDesc->SetGirderSpacingAtStartOfGroup( grpIdx, m_SpanData[i].m_GirderSpacing[pgsTypes::metStart] );
+         pBridgeDesc->SetGirderSpacingAtEndOfGroup(   grpIdx, m_SpanData[i].m_GirderSpacing[pgsTypes::metEnd]);
+      }
+
+      // Connections
+      for ( int j = 0; j < 2; j++ )
+      {
+         pgsTypes::MemberEndType end = (j == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
+         PierIndexType pierIdx = (j == 0 ? prevPierIdx : nextPierIdx);
+         CPierData2 pier = *pBridgeDesc->GetPier( pierIdx );
+         pier.SetConnectionType( m_SpanData[i].m_ConnectionType[end] );
 
          // Diaphragm
-         pier.SetDiaphragmHeight(       face, m_SpanData[i].m_DiaphragmHeight[end][face]);
-         pier.SetDiaphragmWidth(        face, m_SpanData[i].m_DiaphragmWidth[end][face]);
-         pier.SetDiaphragmLoadType(     face, m_SpanData[i].m_DiaphragmLoadType[end][face]);
-         pier.SetDiaphragmLoadLocation( face, m_SpanData[i].m_DiaphragmLoadLocation[end][face]);
+         pier.SetDiaphragmHeight(       (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmHeight[end]);
+         pier.SetDiaphragmWidth(        (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmWidth[end]);
+         pier.SetDiaphragmLoadType(     (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmLoadType[end]);
+         pier.SetDiaphragmLoadLocation( (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmLoadLocation[end]);
 
-         pBridgeDesc->SetPier(pierIdx,pier);
+         for ( int k = 0; k < 2; k++ )
+         {
+            pgsTypes::PierFaceType face = (k == 0 ? pgsTypes::Ahead : pgsTypes::Back);
+
+            pier.SetGirderEndDistance( face,m_SpanData[i].m_EndDistance[end][face],  m_SpanData[i].m_EndDistanceMeasurementType[end][face]);
+            pier.SetBearingOffset(     face,m_SpanData[i].m_BearingOffset[end][face],m_SpanData[i].m_BearingOffsetMeasurementType[end][face]);
+            pier.SetSupportWidth(      face,m_SpanData[i].m_SupportWidth[end][face]);
+
+            pBridgeDesc->SetPierByIndex(pierIdx,pier);
+         }
       }
-   }
 
-   if ( m_SpanData[i].SlabOffsetType == pgsTypes::sotBridge )
-   {
-      // changing to whole bridge slab offset
-      pBridgeDesc->SetSlabOffset(m_SpanData[i].SlabOffset[pgsTypes::metStart]);
-   }
-   else if ( m_SpanData[i].SlabOffsetType == pgsTypes::sotSpan )
-   {
-      // changing to span by span slab offset
-      pBridgeDesc->SetSlabOffset(m_SpanIdx,m_SpanData[i].SlabOffset[pgsTypes::metStart],m_SpanData[i].SlabOffset[pgsTypes::metEnd]);
-   }
-   else if ( m_SpanData[i].SlabOffsetType == pgsTypes::sotGirder )
-   {
-      // change to girder by girder slab offset
-      GirderIndexType nGirders = pBridgeDesc->GetSpan(m_SpanIdx)->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      if ( m_SpanData[i].m_SlabOffsetType == pgsTypes::sotBridge )
       {
-         girderTypes.SetSlabOffset(gdrIdx,pgsTypes::metStart,m_SpanData[i].SlabOffset[pgsTypes::metStart]);
-         girderTypes.SetSlabOffset(gdrIdx,pgsTypes::metEnd,  m_SpanData[i].SlabOffset[pgsTypes::metEnd]);
+         pBridgeDesc->SetSlabOffset(m_SpanData[i].m_SlabOffset[pgsTypes::metStart]);
+      }
+      else if ( m_SpanData[i].m_SlabOffsetType == pgsTypes::sotGroup )
+      {
+         pBridgeDesc->SetSlabOffset(grpIdx,m_SpanData[i].m_SlabOffset[pgsTypes::metStart],m_SpanData[i].m_SlabOffset[pgsTypes::metEnd]);
+      }
+      else if ( m_SpanData[i].m_SlabOffsetType == pgsTypes::sotSegment )
+      {
+         // can't handle this case right now
+         // This case occurs when slab offset type was by segment and it was changed to by group
+         // and then undo brings it back to by segment
+         ATLASSERT(false);
+#pragma Reminder("IMPLEMENT: Slab offset")
       }
    }
-
-   pBridgeDesc->SetGirderTypes(m_SpanIdx, girderTypes);
 
    pEvents->FirePendingEvents();
 }

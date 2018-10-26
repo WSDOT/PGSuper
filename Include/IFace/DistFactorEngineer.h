@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ COPYRIGHT
 //
 #include <Reporter\Reporter.h>
 #include <PGSuperTypes.h>
+#include <PgsExt\SegmentKey.h>
 
 // FORWARD DECLARATIONS
 //
@@ -71,57 +72,43 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for moment
-   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for negative moment over a pier
-   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) = 0;
-   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) = 0;
+   virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) = 0;
+   virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for shear
-   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for reaction
-   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Creates a detailed report of the distribution factor computation
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 
    //---------------------------------------------------------------------
    // Creates a string that defines how the distribution factors are to be computed
-   virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype,pgsTypes::AdjacentTransverseConnectivity connect) = 0;
+   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype,pgsTypes::AdjacentTransverseConnectivity connect) = 0;
 
    //---------------------------------------------------------------------
    // Runs NCHRP 12-50 Tests for live load distrubtion factors
-   virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
+   virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
 
    //---------------------------------------------------------------------
    // Get all types of factors
-   virtual bool GetDFResultsEx(SpanIndexType span, GirderIndexType gdr,pgsTypes::LimitState ls,
+   virtual bool GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,     // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
                                Float64* gV,  Float64* gV1,  Float64* gV2,      // shear
                                Float64* gR,  Float64* gR1,  Float64* gR2 ) = 0;// reaction
-
-   virtual Float64 GetSkewCorrectionFactorForMoment(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetSkewCorrectionFactorForShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-};
-
-// {6B0D91AD-A60F-4ce3-8E4A-766E7852E38C}
-DEFINE_GUID(IID_IMultiWebDistFactorEngineer, 
-0x6b0d91ad, 0xa60f, 0x4ce3, 0x8e, 0x4a, 0x76, 0x6e, 0x78, 0x52, 0xe3, 0x8c);
-interface IMultiWebDistFactorEngineer : IUnknown
-{
-   enum BeamType  {btMultiWebTee, btDeckBulbTee, btDeckedSlabBeam};
-
-   virtual void SetBeamType(BeamType bt) = 0;
-   virtual BeamType GetBeamType()  = 0;
 };
 
 #endif // INCLUDED_IFACE_DISTFACTORENGINEER_H_

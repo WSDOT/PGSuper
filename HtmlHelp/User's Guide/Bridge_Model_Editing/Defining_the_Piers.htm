@@ -25,8 +25,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=7043>
-<meta name=layout-width content=1581>
+<meta name=layout-height content=6020>
+<meta name=layout-width content=963>
 
 
 <!--(Links)=========================================================-->
@@ -54,45 +54,42 @@
 <p><img src="piers.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
+				border-style: none;
 				float: none;
-				border-style: none;
-				border-style: none;
-				width: 695px;
-				height: 533px;"
-		width=695
-		height=533
+				width: 685px;
+				height: 527px;"
+		width=685
+		height=527
 		border=0></p>
 
-<h2>Abutment/Pier Layout</h2>
+<h2>Pier Layout</h2>
 
-<p>Abutments and piers are described with a reference line, called an Abutment 
- Line or Pier Line. The Abutment/Pier Line is located at any station along 
- the alignment and has a specified orientation. The Abutment/Pier Line 
- is usually selected such that it represents a meaningful line on the abutment 
- or pier such as the back of pavement seat (BPS), end of wearing surface 
- (EWS), centerline of pier, or centerline of bearing. The orientation of 
- the Abutment/Pier Line is defined with a bearing (e.g. N 34 23 32.1 W), 
- a skew angle (e.g. &quot;-35&quot;, or &quot;12 02 34.5 R&quot;), or the 
- keyword &quot;Normal&quot; to indicate it is perpendicular to the alignment 
- at the specified station.. Skew angles are defined as left (L) or right 
- (R) looking up station. Positive skews are counterclockwise.</p>
+<p>Piers are described by their station and orientation. The orientation 
+ can be a bearing (e.g. N 34 23 32.1 W), a skew angle (e.g. &quot;-35&quot;, 
+ or &quot;12 02 34.5 R&quot;), or the word &quot;Normal&quot;. Skew angles 
+ are defined as left (L) or right (R) looking up station. Positive skews 
+ are counterclockwise.</p>
 
 <p><img src="..\..\Bridge Description\Skew.jpg"
-		style="border-style: none;
-				width: 404px;
-				height: 272px;
+		style="width: 367px;
+				height: 195px;
+				margin-top: 0px;
+				margin-bottom: 0px;
+				margin-left: 0px;
+				margin-right: 0px;
+				border-style: none;
 				border-style: none;"
-		width=404
-		height=272
+		width=367
+		height=195
 		border=0></p>
 
 <p>The buttons below the grid can be used to add spans, remove spans, and 
  to layout the spans by span length.</p>
 
 <p>The Edit Details buttons in the grid open a dialog for further editing 
- the spans and piers as described below.</p>
+ the spans and piers.</p>
 
-<h2>Bridge Line Alignment Offset</h2>
+<h2>Alignment Offset</h2>
 
 <p>The bridge reference line can be offset from the alignment. Typically 
  the bridge reference line is the centerline of the bridge, but it can 
@@ -104,191 +101,143 @@
 		style="border: none;
 				width: 584px;
 				height: 268px;
-				float: none;
-				border-style: none;
-				border-style: none;"
+				float: none;"
 		width=584
 		height=268
 		border=0></p>
 
-<h2>Edit Abutment/Pier Details</h2>
+<h2>Edit Pier Details</h2>
 
-<p>Press the Edit Abutment/Pier Details button is press in the framing 
- grid to define additional details. Details are grouped into three categories; 
- General, Connections, and Girder Spacing.</p>
-
-<p>The general layout of the pier is defined on the General tab. This the 
- same information that is entered into the framing grid. Options are provided 
- for adjusting the bridge geometry when the station of a pier changes. 
- The bridge can be moved or the length of the adjacent spans can be adjusted.</p>
+<p>Pier details are grouped into three categories. The general layout of 
+ the pier is given on the General tab. This the same information that is 
+ entered into the framing grid. Options are provided for adjusting the 
+ bridge geometry when the station of a pier changes. The bridge can be 
+ simply moved or the length of the adjacent spans can be adjusted.</p>
 
 <h3>General</h3>
 
 <p><img src="Pier_General.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
+				border-style: none;
 				float: none;
-				border-style: none;
-				border-style: none;
-				width: 768px;
-				height: 684px;"
-		width=768
-		height=684
+				width: 577px;
+				height: 624px;"
+		width=577
+		height=624
 		border=0></p>
 
 <h3>Connections</h3>
 
-<p>The boundary condition and geometry are described on this tab. </p>
+<p>The connection geometry and boundary conditions on each side of the 
+ pier are described on the Connections tab. The Connection geometry is 
+ a connection object taken from the Connections library. It describes among 
+ other things, the location of the centerline bearing measured from the 
+ centerline of pier and the distance from the centerline of bearing to 
+ the end of the girder.</p>
 
-<p>The boundary conditions describes the connectivity between spans. Customary 
- boundary conditions can be modeled including hinged, roller, and continuous 
- after deck placement.</p>
+<p>The connection boundary conditions describes the connectivity between 
+ spans.</p>
 
-<p class=Tip>NOTE: The boundary conditions at all piers are treated as 
- hinged connections if the analysis mode is set to Simple Span. See <a 
- href="../AnalysisControls/AnalysisControls.htm">Chapter 7</a> for more 
- details.</p>
+<p>The connection geometry and boundary conditions can be constrained to 
+ be the same on both sides of the pier or each side of the pier may have 
+ a different connection configuration.</p>
 
-<p>The Connection Definition describes the geometric relationship between 
- the Abutment/Pier Line defined on the General tab and the location of 
- the centerline of bearing line at the ends of the girder. The geometry 
- of the connection region is defined by two parameters; Bearing Offset 
- and End Distance. The bearing offset defines the distance from the Abutment/Pier 
- Line to the centerline of bearing line. This distance can be measured 
- normal to the Abutment/Pier Line or along the centerline of the girder. 
- </p>
-
-<p class=Tip>NOTE: When measured along the centerline of the girder, and 
- the girders are not parallel, there will be a unique centerline of bearing 
- line for each girder.</p>
-
-<p>The End Distance locates the end of the girder. The span length and 
- overall length of precast prestressed girders are usually different. The 
- bearing points are typically a short distance from the end of the girder 
- thereby making the span length slightly less than the girder length. The 
- end distance describes where the end of the girder is located in relation 
- to either the Abutment/Pier Line or the centerline bearing line. The end 
- distance can be measured along the centerline of the girder or normal 
- to either the Abutment/Pier Line or the centerline bearing.</p>
-
-<p>The Support Width defines the width of the bearing area. This parameter 
- is used to located the face of support (one-half of the support width 
- from the centerline bearing) for computations related to shear.</p>
-
-<p>The size and method of modeling the dead load of diaphragms is also 
- described on this tab. The height and width of the diaphragm cross section 
- is described. The area of this rectangle times the tributary width of 
- the girder is multiplied by the unit weight of the slab concrete to determine 
- the dead load of the diaphragm. The dead load can be ignored, applied 
- directly over the centerline of bearing so that it does not produce any 
- stress in the girder, or applied at specified distance from the Abutment/Pier 
- Line so that it produces moment and shear in the girder. At intermediate 
- piers with continuous connections, when there is a single diaphragm connection 
- the ends of the girders on both sides of the pier, divide the width of 
- the diaphragm at the Pier Line and enter the appropriate amount on the 
- Back and Ahead sides of the pier.</p>
-
-<p class=Tip>NOTE: Standard connection geometry and diaphragm sizes can 
- be defined and stored in the Connections Library. Press the Copy Connection 
- Definition from Library button and select a previously defined connection. 
- The connection data is copied into this tab. The data on this tab is not 
- linked to the library entry so subsequent changes to the library entry 
- are not reflected here.</p>
+<p class=Tip>NOTE: The connection boundary conditions are ignored if the 
+ analysis mode is set to Simple Span. See <a HREF="../AnalysisControls/AnalysisControls.htm">Chapter 
+ 7</a> for more details.</p>
 
 <p><img src="Pier_Connections.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
+				border-style: none;
 				float: none;
-				border-style: none;
-				border-style: none;
-				width: 768px;
-				height: 684px;"
-		width=768
-		height=684
+				width: 577px;
+				height: 548px;
+				border-style: none;"
+		width=577
+		height=548
 		border=0></p>
 
 <h3>Girder Spacing</h3>
 
-<p>The number of girders, slab offset, girder spacing, and transverse position 
- of the girders are described on the Girder Spacing tab.</p>
+<p>The number of girder, girder spacing, and transverse position of the 
+ girders are described on the Girder Spacing tab.</p>
 
-<p>The input for the number of girders, slab offset, and girder spacing 
- disabled when they are constant for the entire bridge. You can go back 
- to the General tab of the Bridge Description dialog and select the options 
- to permit span-by-span definition or you can click on the underlined text 
- (hyperlinks) adjacent to the input controls to activate span-by-span definitions. 
- Similarly, you can input values in this dialog and then click on the hyperlinks 
- to apply them to the entire bridge.</p>
+<p>The input for the number of girders and girder spacing disabled when 
+ they are constant for the entire bridge. You can either go back to the 
+ General tab of the Bridge Description dialog and select the options to 
+ permit span-by-span definition or you can click on the hyperlinks adjacent 
+ to the controls. Likewise, you can change to defining these properties 
+ for the entire bridge by clicking on the hyperlinks.</p>
 
 <p><img src="Pier_GirderSpacing.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
+				border-style: none;
 				float: none;
-				border-style: none;
-				border-style: none;
-				width: 768px;
-				height: 684px;"
-		width=768
-		height=684
+				width: 577px;
+				height: 624px;"
+		width=577
+		height=624
 		border=0></p>
 
 <h2>Edit Span Details</h2>
 
-<p>Span details are grouped into four categories; General, Connection at 
- Start of Span, Connection at End of Span, and Girders.</p>
-
 <h3>General</h3>
 
-<p>The span length between Abutment/Pier Lines, measured along the alignment, 
- is described on the General tab. When you change the span length, only 
- the length of this span is changed. The stations of all piers after this 
- span are adjusted to maintain the other span lengths.</p>
+<p>Span details are grouped into three categories as well. The pier-to-pier 
+ span length is described on the General tab. When you change the span 
+ length, only the length of this span is changed. The stations of all piers 
+ after this span are adjusted to maintain the other span lengths.</p>
 
 <p><img src="Span_General.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
+				width: 623px;
+				height: 506px;
 				float: none;
 				border-style: none;
-				border-style: none;
-				width: 768px;
-				height: 684px;"
-		width=768
-		height=684
+				border-style: none;"
+		width=623
+		height=506
 		border=0></p>
 
 <h3>Connections</h3>
 
-<p>The connections at the start and end of the span are defined on the 
- connections tabs. These is the same connection data found on the Connections 
- tab of the Pier Details dialog.</p>
+<p>Connection geometry and boundary conditions are described on the Connections 
+ tab. These boundary conditions are for the start and end of the span. 
+ If the boundary conditions are the same for both sides of a pier, changing 
+ them here will cause them to change on the other side of the pier as well. 
+ A message will be shown alerting you of changes that occur because of 
+ changes made here.</p>
 
 <p><img src="Span_Connections.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
 				float: none;
 				border-style: none;
-				border-style: none;
-				width: 1542px;
-				height: 684px;"
-		width=1542
-		height=684
+				width: 664px;
+				height: 506px;
+				border-style: none;"
+		width=664
+		height=506
 		border=0></p>
 
 <h3>Girders</h3>
 
-<p>The number of girders, slab offset, girder type, girder spacing, and 
- transverse position of the girders are all defined on the Girders tab.</p>
+<p>The number of girders, girder type, girder spacing, and transverse position 
+ of the girders are all defined on the Girders tab.</p>
 
 <p><img src="Span_Girders.bmp"
 		x-maintain-ratio=TRUE
 		style="border: none;
+				border-style: none;
 				float: none;
-				border-style: none;
-				border-style: none;
-				width: 768px;
-				height: 684px;"
-		width=768
-		height=684
+				width: 664px;
+				height: 566px;"
+		width=664
+		height=566
 		border=0></p>
 
 <p>Girder names and spacing can be grouped as needed. In the example above 

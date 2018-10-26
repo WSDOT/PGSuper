@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -121,7 +121,7 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
-   SetValueRange(CGXRange(row,2),"45 L");
+   SetValueRange(CGXRange(row,2),"N 90 E");
    SetValueRange(CGXRange(row,3),"1000");
    SetValueRange(CGXRange(row,4),"0");
    SetValueRange(CGXRange(row,5),"0");
@@ -172,7 +172,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 			.SetValue(_T("Curve\n#"))
 		);
 
-   CString cv = _T("PI\nStation");
+   CString cv = "PI\nStation";
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

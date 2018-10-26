@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
@@ -132,7 +132,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
    CComPtr<IBoxBeamSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -558,20 +558,20 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
 }
 
 
-Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
+Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids)
 {
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   pgsPointOfInterest poi(spanIdx,gdrIdx,0.00);
-   Float64 perimeter = pSectProp2->GetPerimeter(poi);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   Float64 perimeter = pSectProp->GetPerimeter(pgsPointOfInterest(segmentKey,0.00));
    
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
    Float64 solid_box_surface_area = perimeter*Lg;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
    Float64 W3 = GetDimension(dimensions,_T("W3"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
@@ -584,11 +584,6 @@ Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
       void_surface_area *= 0.50;
 
    Float64 surface_area = solid_box_surface_area + void_surface_area;
-
-   // add area of both ends of the girder
-   Float64 start_area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-   Float64 end_area   = start_area;
-   surface_area += (start_area + end_area);
 
    return surface_area;
 }

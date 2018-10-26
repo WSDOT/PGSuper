@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,13 +57,16 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    // Create and configure the table
    ColumnIndexType numColumns = 7;
@@ -80,59 +83,48 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSD.png")) << rptNewLine;
+   if ( spMode == pgsTypes::spmGross )
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSD_Gross.png")) << rptNewLine;
+   else
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSD_Transformed.png")) << rptNewLine;
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2005.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2005.png")) << rptNewLine;
    }
+#if defined IGNORE_2007_CHANGES
+   else
+   {
+      if ( IS_SI_UNITS(pDisplayUnits) )
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2006.png")) << rptNewLine;
+      else
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2006.png")) << rptNewLine;
+   }
+#else
    else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2006.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2006.png")) << rptNewLine;
    }
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2007.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2007.png")) << rptNewLine;
    }
-
+#endif // IGNORE_2007_CHANGES
    *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
    if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
-   }
    else
-   {
-      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
-      else
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
-   }
+      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
    
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return table;
-   }
-
-   if ( ptl->AdjustShrinkageStrain() )
-   {
-      // LRFD 5.4.2.3.3
-      // If the concrete is exposed to drying before 5 days of curing have elapsed,
-      // the shrinkage as determined in Eq 5.4.2.3.3-1 should be increased by 20%
-      *pParagraph << _T("Girder is exposed to drying before 5 days of curing have elapsed, the shrinkage strain has been increased by 20% (LRFD 5.4.2.3.3)") << rptNewLine;
-   }
 
    // parameters for calculations (two tables to keep the width printable)
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
@@ -143,11 +135,11 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(0,3) << COLHDR(Sub2(_T("t"),_T("i")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
    (*pParamTable)(0,4) << COLHDR(Sub2(_T("t"),_T("f")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
 
-   (*pParamTable)(1,0) << ptl->GetRelHumidity();
-   (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
-   (*pParamTable)(1,2) << table->stress.SetValue(ptl->GetFci());
-   (*pParamTable)(1,3) << table->time.SetValue(ptl->GetAdjustedInitialAge());
-   (*pParamTable)(1,4) << table->time.SetValue(ptl->GetFinalAge());
+   (*pParamTable)(1,0) << pDetails->RefinedLosses2005.GetRelHumidity();
+   (*pParamTable)(1,1) << table->ecc.SetValue(pDetails->RefinedLosses2005.GetVolume()/pDetails->RefinedLosses2005.GetSurfaceArea());
+   (*pParamTable)(1,2) << table->stress.SetValue(pDetails->RefinedLosses2005.GetFci());
+   (*pParamTable)(1,3) << table->time.SetValue(pDetails->RefinedLosses2005.GetAdjustedInitialAge());
+   (*pParamTable)(1,4) << table->time.SetValue(pDetails->RefinedLosses2005.GetFinalAge());
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -177,67 +169,63 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(1,8) << Sub2(_T("K"),_T("2"));
    (*pParamTable)(1,9) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
 
-   (*pParamTable)(2,0) << table->mod_e.SetValue(ptl->GetEp());
-   (*pParamTable)(2,1) << table->mod_e.SetValue(ptl->GetEci());
-   (*pParamTable)(2,2) << ptl->GetGdrK1Shrinkage();
-   (*pParamTable)(2,3) << ptl->GetGdrK2Shrinkage();
-   (*pParamTable)(2,4) << table->strain.SetValue(ptl->Get_ebif() * 1000);
-   (*pParamTable)(2,5) << table->strain.SetValue(ptl->Get_ebid() * 1000);
-   (*pParamTable)(2,6) << table->strain.SetValue(ptl->Get_ebdf() * 1000);
-   (*pParamTable)(2,7) << ptl->GetGdrK1Creep();
-   (*pParamTable)(2,8) << ptl->GetGdrK2Creep();
-   (*pParamTable)(2,9) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,0) << table->mod_e.SetValue(pDetails->RefinedLosses2005.GetEp());
+   (*pParamTable)(2,1) << table->mod_e.SetValue(pDetails->RefinedLosses2005.GetEci());
+   (*pParamTable)(2,2) << pDetails->RefinedLosses2005.GetGdrK1Shrinkage();
+   (*pParamTable)(2,3) << pDetails->RefinedLosses2005.GetGdrK2Shrinkage();
+   (*pParamTable)(2,4) << table->strain.SetValue(pDetails->RefinedLosses2005.Get_ebif() * 1000);
+   (*pParamTable)(2,5) << table->strain.SetValue(pDetails->RefinedLosses2005.Get_ebid() * 1000);
+   (*pParamTable)(2,6) << table->strain.SetValue(pDetails->RefinedLosses2005.Get_ebdf() * 1000);
+   (*pParamTable)(2,7) << pDetails->RefinedLosses2005.GetGdrK1Creep();
+   (*pParamTable)(2,8) << pDetails->RefinedLosses2005.GetGdrK2Creep();
+   (*pParamTable)(2,9) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
 
    // intermediate results
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
-
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-     (*pParamTable)(0,0) << Sub2(_T("k"),_T("s"));
-   else
-     (*pParamTable)(0,0) << Sub2(_T("k"),_T("vs"));
-
+   (*pParamTable)(0,0) << Sub2(_T("k"),_T("vs"));
    (*pParamTable)(0,1) << Sub2(_T("k"),_T("hs"));
    (*pParamTable)(0,2) << Sub2(_T("k"),_T("hc"));
    (*pParamTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
-   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());
-   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
-   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKhc());
-   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKf());
-   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
+   (*pParamTable)(1,0) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKvs());
+   (*pParamTable)(1,1) << table->scalar.SetValue(pDetails->RefinedLosses2005.Getkhs());
+   (*pParamTable)(1,2) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKhc());
+   (*pParamTable)(1,3) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKf());
+   (*pParamTable)(1,4) << table->scalar.SetValue(pDetails->RefinedLosses2005.GetCreepInitialToFinal().GetKtd());
 
    // shrinkage loss   
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,1) << COLHDR(Sub2(_T("A"),_T("ps")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-   (*table)(0,2) << COLHDR(Sub2(_T("A"),_T("c")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-   (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-   (*table)(0,4) << COLHDR(Sub2(_T("e"),_T("pc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   if ( spMode == pgsTypes::spmGross )
+   {
+      (*table)(0,2) << COLHDR(Sub2(_T("A"),_T("c")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+      (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+      (*table)(0,4) << COLHDR(Sub2(_T("e"),_T("pc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+   else
+   {
+      (*table)(0,2) << COLHDR(Sub2(_T("A"),_T("cn")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+      (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("cn")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+      (*table)(0,4) << COLHDR(Sub2(_T("e"),_T("pcn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
    (*table)(0,5) << Sub2(_T("K"),_T("df"));
    (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
 
-void CShrinkageAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CShrinkageAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
-   }
-
-   (*this)(row,1) << area.SetValue(details.pLosses->GetApsPermanent());
-   (*this)(row,2) << area.SetValue(details.pLosses->GetAc());
-   (*this)(row,3) << mom_inertia.SetValue(details.pLosses->GetIc());
-   (*this)(row,4) << ecc.SetValue(details.pLosses->GetEccpc());
-   (*this)(row,5) << scalar.SetValue(ptl->GetKdf());
-   (*this)(row,6) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
+   (*this)(row,1) << area.SetValue(pDetails->pLosses->GetApsPermanent());
+   (*this)(row,2) << area.SetValue(pDetails->pLosses->GetAcn());
+   (*this)(row,3) << mom_inertia.SetValue(pDetails->pLosses->GetIcn());
+   (*this)(row,4) << ecc.SetValue(pDetails->pLosses->GetEccpc());
+   (*this)(row,5) << scalar.SetValue(pDetails->RefinedLosses2005.GetKdf());
+   (*this)(row,6) << stress.SetValue(pDetails->RefinedLosses2005.ShrinkageLossAfterDeckPlacement());
 }

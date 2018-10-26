@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,8 @@
 #include "BridgeDescLiftingPage.h"
 
 #include "GirderDescDlg.h"
-#include <MfcTools\CustomDDX.h>
+#include "PGSuperAppPlugin\GirderSegmentDlg.h"
+
 
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -48,10 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CGirderDescLiftingPage, CPropertyPage)
 
-CGirderDescLiftingPage::CGirderDescLiftingPage() : CPropertyPage(CGirderDescLiftingPage::IDD),
-m_LiftingLocation(0),
-m_LeadingOverhang(0),
-m_TrailingOverhang(0)
+CGirderDescLiftingPage::CGirderDescLiftingPage() : CPropertyPage(CGirderDescLiftingPage::IDD)
 {
 	//{{AFX_DATA_INIT(CGirderDescLiftingPage)
 		// NOTE: the ClassWizard will add member initialization here
@@ -64,7 +62,26 @@ CGirderDescLiftingPage::~CGirderDescLiftingPage()
 
 void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 {
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   CPrecastSegmentData* pSegment = NULL;
+   CWnd* pWnd = GetParent();
+   CSegmentKey segmentKey;
+   if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderDescDlg)) )
+   {
+      CGirderDescDlg* pParent = (CGirderDescDlg*)pWnd;
+      pSegment = &pParent->m_Segment;
+      segmentKey = pParent->m_SegmentKey;
+   }
+   else if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderSegmentDlg)) )
+   {
+      CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)pWnd;
+      pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+      segmentKey = pParent->m_SegmentKey;
+   }
+   else
+   {
+      ATLASSERT(false); // should never get here
+      // is there a new parent dialog???
+   }
 
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGirderDescLiftingPage)
@@ -76,22 +93,30 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, IDC_LIFTING_LOOP_LOCATION, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_STORAGE_LOCATION, IDC_STORAGE_LOCATION_UNITS, pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
+   if ( pDX->m_bSaveAndValidate )
+   {
+      pSegment->HandlingData.RightLiftPoint    = pSegment->HandlingData.LeftLiftPoint;
+      pSegment->HandlingData.RightStoragePoint = pSegment->HandlingData.LeftStoragePoint;
+   }
 
-   DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LIFTING_LOOP_LOCATION, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_STORAGE_LOCATION, pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag( pDX, IDC_TRAILINGOVERHANG, IDC_TRAILINGOVERHANG_UNITS, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, IDC_TRAILINGOVERHANG, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, pSegment->HandlingData.LeadingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, pSegment->HandlingData.LeadingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
+
+   DDX_UnitValueAndTag( pDX, IDC_TRAILINGOVERHANG, IDC_TRAILINGOVERHANG_UNITS, pSegment->HandlingData.TrailingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, IDC_TRAILINGOVERHANG, pSegment->HandlingData.TrailingSupportPoint, pDisplayUnits->GetSpanLengthUnit() );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   Float64 gdrlength = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
+   Float64 gdrlength = pBridge->GetSegmentLength(segmentKey);
    DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, gdrlength, pDisplayUnits->GetSpanLengthUnit() );
 
 #pragma Reminder("IMPLEMENT: Check clear span... make sure it is positive")
-   Float64 clearspan = gdrlength - m_LeadingOverhang - m_TrailingOverhang;
+   Float64 clearspan = gdrlength -pSegment->HandlingData.LeadingSupportPoint - pSegment->HandlingData.TrailingSupportPoint;
 //   DDV_UnitValueZeroOrMore( pDX, clearspan, bUnitsSI, usLength, siLength );
 #pragma Reminder("STATUS ITEM: If leading overhang exceeds max, post status item")
 //    // this should be done in an agent
@@ -115,7 +140,7 @@ BOOL CGirderDescLiftingPage::OnSetActive()
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
 
-   if(!pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
+   if(!pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       int cntrls[] = {IDC_STATIC_LL,IDC_STATIC_LLE,IDC_LIFTING_LOOP_LOCATION,
                       IDC_LIFTING_LOOP_LOCATION_UNITS};
@@ -132,7 +157,7 @@ BOOL CGirderDescLiftingPage::OnSetActive()
       }
    }
    
-   if (!pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
+   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       int cntrls[] = {IDC_HAULINGOVERHANGS,IDC_STATIC_TLSO,IDC_TRAILINGOVERHANG,IDC_TRAILINGOVERHANG_UNITS,
                       IDC_STATIC_SLLO,IDC_LEADINGOVERHANG,IDC_LEADINGOVERHANG_UNITS,IDC_STATICSLGL,

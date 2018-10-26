@@ -16,14 +16,8 @@
 #define IDR_BOXBEAMFACTORY              111
 #define IDR_STRANDMOVERIMPL             112
 #define IDR_TXDOTDOUBLETFACTORY         113
-#define IDR_IBEAMDISTFACTORENGINEER     117
-#define IDR_BOXBEAMDISTFACTORENGINEER   118
-#define IDR_BULBTEEDISTFACTORENGINEER   119
-#define IDR_MULTIWEBDISTFACTORENGINEER  120
-#define IDR_UBEAMDISTFACTORENGINEER     121
-#define IDR_VOIDEDSLABDISTFACTORENGINEER 122
-#define IDR_VOIDEDSLAB2DISTFACTORENGINEER 123
-
+#define IDR_SPLICEDIBEAMFACTORY         114
+#define IDR_SPLICEDUBEAMFACTORY         115
 #define IDI_IBEAM                       201
 #define IDI_NUBEAM                      202
 #define IDI_UBEAM                       203
@@ -36,9 +30,7 @@
 #define IDI_BOXBEAM                     210
 #define IDI_TXDOTDOUBLET                212
 #define IDR_TAPEREDIBEAMFACTORY         213
-#define IDI_ICON1                       215
 #define IDI_VOIDEDSLAB2                 215
-#define IDI_ICON2                       216
 #define IDI_DECKEDSLAB                  216
 #define IDR_METAFILE1                   217
 #define IDR_METAFILE2                   218
@@ -54,7 +46,10 @@
 #define IDR_DECKEDSLABBEAMFACTORY       227
 #define IDR_DECKEDSLABBEAMFAMILY        228
 #define IDR_BOXBEAMFACTORY2             229
+#define IDR_VOIDEDSLAB2DISTFACTORENGINEER 230
 #define IDR_PSBEAMLOSSENGINEER          231
+#define IDR_SPLICEDIBEAMFAMILY          232
+#define IDR_SPLICEDUBEAMFAMILY          233
 
 // Next default values for new objects
 // 

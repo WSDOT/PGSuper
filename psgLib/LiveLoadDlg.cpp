@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 
    m_VariableAxleIndex = FIXED_AXLE_TRUCK;
 
-   m_UsageType = pgsTypes::llaEntireStructure;
+   m_UsageType = LiveLoadLibraryEntry::llaEntireStructure;
 }
 
 void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
@@ -154,13 +154,13 @@ BOOL CLiveLoadDlg::OnInitDialog()
    // Fill Usage combo box
    pCB = (CComboBox*)GetDlgItem(IDC_USAGE);
    idx = pCB->AddString(_T("Use for all actions at all locations"));
-   pCB->SetItemData(idx,pgsTypes::llaEntireStructure);
+   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaEntireStructure);
 
    idx = pCB->AddString(_T("Use only for negative moments between points of contraflexure and interior pier reactions"));
-   pCB->SetItemData(idx,pgsTypes::llaContraflexure);
+   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaContraflexure);
 
    idx = pCB->AddString(_T("Use only for negative moments and interior pier reactions"));
-   pCB->SetItemData(idx,pgsTypes::llaNegMomentAndInteriorPierReaction);
+   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction);
 
 
 	CDialog::OnInitDialog();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,9 +64,9 @@ public:
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Default constructor
-   pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers);
+   pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf,IBridgeDescription* pBridgeDesc, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers);
 
-   void Initialize(SpanIndexType span, pgsTypes::TrafficBarrierDistribution distType, GirderIndexType nMaxDistributed);
+   void Initialize(GroupIndexType grpIdx, SegmentIndexType segIdx, pgsTypes::TrafficBarrierDistribution distType, GirderIndexType nMaxDistributed);
 
    void GetTrafficBarrierLoadFraction(GirderIndexType gdrIdx,
                                       Float64* pFraExtLeft, Float64* pFraIntLeft,
@@ -112,12 +112,15 @@ protected:
 
 private:
    // Local Data
-   SpanIndexType m_Span;
+   GroupIndexType m_GroupIdx;
+   SegmentIndexType m_SegmentIdx;
    pgsTypes::TrafficBarrierDistribution m_DistType;
    GirderIndexType m_nMaxDistributed;
 
    bool m_DidCompute;
 
+   // Weak reference to interface pointers
+   IBridgeDescription* m_pIBridgeDesc;
    IBridge* m_pIBridge;
    IGirder* m_pIGirder;
    IBarriers* m_pIBarriers;
@@ -137,13 +140,13 @@ private:
       }
    };
 
-   struct SpanLoadFractionData
+   struct SegmentLoadFractionData
    {
       IndexType m_TotalGMSWs;     // Total Girder, mating surface, or webs in this span
       IndexType m_GMSWsAppliedTo[BarrSwSize]; // Girder, mating surface, or webs that load is disributed to for this sw/bar
       std::vector<GlfData> m_GirderLoadFractions; // number of GMSW's loaded for indiv girders
 
-      SpanLoadFractionData()
+      SegmentLoadFractionData()
       {
          Init();
       }
@@ -156,17 +159,14 @@ private:
       }
    };
 
-   SpanLoadFractionData m_SpanLoadFractionData;
+   SegmentLoadFractionData m_SegmentLoadFractionData;
 
    /////////////////////////////////////////////////////////////////////////////////////////////
    // The data below defines the geometry model used to find the N nearest girders to GMSW's
-   //
-   // NOTE: Refer to "DeterminationOfRailingSystemNearestGirders.doc" in PGSuper's Supporting documentation for more information.
-   // 
-   CComPtr<ILine2d> m_MidSpanRefLine; // line bisecting through mid-span of our span
-   CComPtr<ILine2d> m_LeftSlabEdgeLine, m_RightSlabEdgeLine; // Lines tangent to slab edges at intersections to m_MidSpanRefLine on left and right side of bridge
+   CComPtr<ILine2d> m_RefLine; // line bisecting through mid-span of our span
+   CComPtr<ILine2d> m_LeftSlabEdgeLine, m_RightSlabEdgeLine; // Lines tangent to slab edges at intersections to m_RefLine on left and right side of bridge
 
-   // List of points where GMSW lines intersect m_MidSpanRefLine
+   // List of points where GMSW lines intersect m_RefLine
    struct GMSWInterSectionPoint
    {
       GirderIndexType m_Gdr; // Girder where intersection occurs

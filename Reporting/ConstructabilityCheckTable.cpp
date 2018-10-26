@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\BridgeDescription.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,9 +73,12 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,const std::vector<SpanGirderHashType>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+#pragma Reminder("UPDATE: assuming precast girder bridge") // this needs to be updated for spliced girders
 
    // Create table - delete it later if we don't need it
    bool IsSingleGirder = girderList.size()==1;
@@ -104,67 +106,72 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
 
    // First thing - check if we can generate the girder schedule table at all.
    bool areAnyRows(false);
-   std::vector<SpanGirderHashType>::const_iterator itsg_end(girderList.end());
-   std::vector<SpanGirderHashType>::const_iterator itsg(girderList.begin());
+   std::vector<CGirderKey>::const_iterator itsg_end(girderList.end());
+   std::vector<CGirderKey>::const_iterator itsg(girderList.begin());
    RowIndexType row=0;
    while(itsg != itsg_end)
    {
-      SpanIndexType span;
-      GirderIndexType girder;
-      UnhashSpanGirder(*itsg,&span,&girder);
+      const CGirderKey& girderKey(*itsg);
 
-      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-      const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
-      
-      if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
+
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         row++;
-         col = 0;
+         CSegmentKey segmentKey(girderKey,segIdx);
 
-         if (!IsSingleGirder)
+         const pgsSegmentArtifact* pSegmentArtifact = pGdrArtifact->GetSegmentArtifact(segIdx);
+         const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
+         
+         if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
          {
-            (*pTable)(row, col++) << LABEL_SPAN(span);
-            (*pTable)(row, col++) << LABEL_GIRDER(girder);
-         }
+            row++;
+            col = 0;
 
-         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
-         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
+            if (!IsSingleGirder)
+            {
+               SpanIndexType span = segmentKey.groupIndex;
+               GirderIndexType girder = segmentKey.girderIndex;
+               (*pTable)(row, col++) << LABEL_SPAN(span);
+               (*pTable)(row, col++) << LABEL_GIRDER(girder);
+            }
 
-         switch( pArtifact->SlabOffsetStatus() )
-         {
-            case pgsConstructabilityArtifact::Passed:
-               (*pTable)(row, col++) << RPT_PASS;
-               break;
+            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
+            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
 
-            case pgsConstructabilityArtifact::Failed:
-               (*pTable)(row, col++) << RPT_FAIL;
-               break;
+            switch( pArtifact->SlabOffsetStatus() )
+            {
+               case pgsConstructabilityArtifact::Passed:
+                  (*pTable)(row, col++) << RPT_PASS;
+                  break;
 
-            case pgsConstructabilityArtifact::Excessive:
-               (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
-               break;
+               case pgsConstructabilityArtifact::Failed:
+                  (*pTable)(row, col++) << RPT_FAIL;
+                  break;
 
-            default:
-               ATLASSERT(0);
-               break;
-         }
+               case pgsConstructabilityArtifact::Excessive:
+                  (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
+                  break;
 
-         if ( pArtifact->CheckStirrupLength() )
-         {
-            GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-            HAUNCHDETAILS haunch_details;
-            pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
+               default:
+                  ATLASSERT(0);
+                  break;
+            }
 
-            if ( 0 < haunch_details.HaunchDiff )
-               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            if ( pArtifact->CheckStirrupLength() )
+            {
+               GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+               HAUNCHDETAILS haunch_details;
+               pGdrHaunch->GetHaunchDetails(segmentKey,&haunch_details);
+
+               (*pTable)(row, col++) << color(Red) << _T("There is a large variation in the slab haunch thickness (") << dim2.SetValue(haunch_details.HaunchDiff) << _T("). Check stirrup length to ensure they engage the deck at all locations.") << color(Black) << rptNewLine;
+            }
             else
-               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            {
+               (*pTable)(row, col++) << _T("");
+            }
          }
-         else
-         {
-            (*pTable)(row, col++) << _T("");
-         }
-      }
+      } // next segment
 
       itsg++;
    }
@@ -181,218 +188,25 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
    }
 }
 
-void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
-   ATLASSERT(pmid.size()==1);
-   pgsPointOfInterest poiMidSpan(pmid.front());
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   GET_IFACE2(pBroker,ICamber,pCamber);
-
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   GET_IFACE2( pBroker, ISpecification, pSpec );
-   std::_tstring spec_name = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
-
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   *pChapter << pTitle;
-   *pTitle << _T("Camber");
-
-   rptParagraph* pBody = new rptParagraph;
-   *pChapter << pBody;
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2);
-
-   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-   *pBody << pTable << rptNewLine;
-
-   (*pTable)(0,0) << _T("");
-   (*pTable)(0,1) << COLHDR(_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-   Float64 C = 0;
-   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bIsApplicable = false;
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      C = pCamber->GetScreedCamber( poiMidSpan ) ;
-      (*pTable)(row,  0) << _T("Screed Camber, C");
-      (*pTable)(row++,1) << dim.SetValue(C);
-   }
-
-   // get # of days for creep
-   Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
-   Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-   Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-   Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-   Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-   
-   Dmin_LowerBound = Cfactor*Dmin_UpperBound;
-   Dmin_Average    = (1+Cfactor)/2*Dmin_UpperBound;
-   
-   Dmax_LowerBound = Cfactor*Dmax_UpperBound;
-   Dmax_Average    = (1+Cfactor)/2*Dmax_UpperBound;
-
-
-   if ( IsEqual(min_days,max_days) )
-   {
-      // Min/Max timing cambers will be the same, only report them once
-      ATLASSERT(IsEqual(Dmin_UpperBound,Dmax_UpperBound));
-      ATLASSERT(IsEqual(Dmin_Average,   Dmax_Average));
-      ATLASSERT(IsEqual(Dmin_LowerBound,Dmax_LowerBound));
-      if ( IsZero(1-Cfactor) )
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
+      
+      if ( pArtifact->IsGlobalGirderStabilityApplicable() )
       {
-         // Upper,average, and lower bound cambers will all be the same... report them once
-         ATLASSERT(IsEqual(Dmin_UpperBound,Dmin_LowerBound));
-         ATLASSERT(IsEqual(Dmin_UpperBound,Dmin_Average));
-
-         (*pTable)(row,0) << _T("Camber at ") << min_days << _T(" days, D") << Sub(min_days);
-         if ( Dmin_UpperBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
-      }
-      else
-      {
-         (*pTable)(row,0) << _T("Lower Bound Camber at ") << min_days << _T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
-         if ( Dmin_LowerBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_LowerBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_LowerBound);
-
-         (*pTable)(row,0) << _T("Average Camber at ") << min_days << _T(" days, ")<<(1+Cfactor)/2*100<<_T("% of D") <<Sub(min_days);
-         if ( Dmin_Average < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_Average) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_Average);
-
-         (*pTable)(row,0) << _T("Upper Bound Camber at ") << min_days << _T(" days, D") << Sub(min_days);
-         if ( Dmin_UpperBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
-      }
-   }
-   else
-   {
-      if ( IsZero(1-Cfactor) )
-      {
-         (*pTable)(row,0) << _T("Camber at ") << min_days << _T(" days, D") << Sub(min_days);
-         if ( Dmin_UpperBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
-
-         (*pTable)(row,0) << _T("Camber at ") << max_days << _T(" days, D") << Sub(max_days);
-         if ( Dmax_UpperBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_UpperBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmax_UpperBound);
-      }
-      else
-      {
-         (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
-         if ( Dmin_LowerBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_LowerBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_LowerBound);
-
-         (*pTable)(row,0) << _T("Average camber at ")<< min_days<<_T(" days, ")<<(1+Cfactor)/2*100<<_T("% of D") <<Sub(min_days);
-         if ( Dmin_Average < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_Average) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_Average);
-
-         (*pTable)(row,0) << _T("Upper bound camber at ")<< min_days<<_T(" days, D") << Sub(min_days);
-         if ( Dmin_UpperBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmin_UpperBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmin_UpperBound);
-
-         (*pTable)(row,0) << _T("Lower bound camber at ")<< max_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(max_days);
-         if ( Dmax_LowerBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_LowerBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmax_LowerBound);
-
-         (*pTable)(row,0) << _T("Average camber at ")<< max_days<<_T(" days, ")<<(1+Cfactor)/2*100<<_T("% of D") <<Sub(max_days);
-         if ( Dmax_Average < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_Average) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmax_Average);
-
-         (*pTable)(row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
-         if ( Dmax_UpperBound < 0 )
-            (*pTable)(row++,1) << color(Red) << dim.SetValue(Dmax_UpperBound) << color(Black);
-         else
-            (*pTable)(row++,1) << dim.SetValue(Dmax_UpperBound);
-      }
-   }
-
-   if ( pSpecEntry->CheckGirderSag() && pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-   {
-      std::_tstring camberType;
-      Float64 D = 0;
-
-      switch(pSpecEntry->GetSagCamberType())
-      {
-      case pgsTypes::LowerBoundCamber:
-         D = Dmin_LowerBound;
-         camberType = _T("lower bound");
-         break;
-      case pgsTypes::AverageCamber:
-         D = Dmin_Average;
-         camberType = _T("average");
-         break;
-      case pgsTypes::UpperBoundCamber:
-         D = Dmin_UpperBound;
-         camberType = _T("upper bound");
+         bIsApplicable = true;
          break;
       }
-
-      if ( D < C )
-      {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
-
-         *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
-      }
-      else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
-      {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
-
-         *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
-      }
-
-      if ( Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber )
-      {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
-
-         *p << _T("Screed Camber (C) is greater than the lower bound camber at time of deck casting (") << Cfactor*100 << _T("% of D") << Sub(min_days) << _T("). The girder may end up with a sag if the deck is placed at day ") << min_days << _T(" and the actual camber is a lower bound value.") << rptNewLine;
-      }
    }
-}
 
-void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits) const
-{
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
-   
-   if ( !pArtifact->IsGlobalGirderStabilityApplicable() )
-   {
+   if ( !bIsApplicable )
       return;
-   }
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -410,71 +224,80 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
-   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
 
-   (*pTable)(0,0) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,1) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,2) << _T("Incline from Vertical (") << Sub2(symbol(theta),_T("max")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,4) << _T("Status");
+      CString strTitle;
+      if ( 1 < nSegments )
+         strTitle.Format(_T("Segment %d"), LABEL_SEGMENT(segIdx));
+      else
+         strTitle = _T("");
 
-   Float64 Wb, Yb, Orientation;
-   pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
-   Float64 maxIncline = pArtifact->GetMaxGirderIncline();
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,strTitle);
+      std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   (*pTable)(1,0) << dim.SetValue(Wb);
-   (*pTable)(1,1) << dim.SetValue(Yb);
-   (*pTable)(1,2) << slope.SetValue(Orientation);
-   (*pTable)(1,3) << slope.SetValue(maxIncline);
+      (*pTable)(0,0) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,1) << COLHDR(Sub2(_T("Y"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,2) << _T("Incline from Vertical (") << Sub2(symbol(theta),_T("max")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable)(0,4) << _T("Status");
 
-   if ( pArtifact->GlobalGirderStabilityPassed() )
-      (*pTable)(1,4) << RPT_PASS;
-   else
-      (*pTable)(1,4) << RPT_FAIL << rptNewLine << _T("Reaction falls outside of middle third of bottom width of girder");
-   
-   *pBody << pTable;
+      Float64 Wb, Yb, Orientation;
+      pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
+      Float64 maxIncline = pArtifact->GetMaxGirderIncline();
+
+      (*pTable)(1,0) << dim.SetValue(Wb);
+      (*pTable)(1,1) << dim.SetValue(Yb);
+      (*pTable)(1,2) << slope.SetValue(Orientation);
+      (*pTable)(1,3) << slope.SetValue(maxIncline);
+
+      if ( pArtifact->GlobalGirderStabilityPassed() )
+         (*pTable)(1,4) << RPT_PASS;
+      else
+         (*pTable)(1,4) << RPT_FAIL << rptNewLine << _T("Reaction falls outside of middle third of bottom width of girder");
+      
+      *pBody << pTable;
+   } // next segment
 }
 
-void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildLongitudinalRebarGeometryCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGdrArtifact,IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
-   
-   if ( !pArtifact->IsBottomFlangeClearnceApplicable() )
+   const CGirderKey& girderKey(pGdrArtifact->GetGirderKey());
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      return;
-   }
+      const pgsSegmentArtifact* pSegmentArtifact = pGdrArtifact->GetSegmentArtifact(segIdx);
+      const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
+      
+      if ( !pArtifact->RebarGeometryCheckPassed() )
+      {
+#pragma Reminder("REVIEW: may need to report group/girder/segment")
+         rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+         *pChapter << pTitle;
+         *pTitle << _T("Longitudinal rebars exist outside of the girder section - ") << RPT_FAIL;
 
-   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-   *pChapter << pTitle;
-   *pTitle << _T("Bottom Flange Clearance");
+         rptParagraph* pBody = new rptParagraph;
+         *pChapter << pBody;
 
-   rptParagraph* pBody = new rptParagraph;
-   *pChapter << pBody;
+         std::vector<RowIndexType> rows = pArtifact->GetRebarRowsOutsideOfSection();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
+         *pBody << _T("Bars are located outside of the section in the following rows: ");
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+         CollectionIndexType nRows = rows.size();
+         for (CollectionIndexType rowIdx = 0; rowIdx < nRows; rowIdx++)
+         {
+            CollectionIndexType row = rows.at(rowIdx);
+            *pBody << row+1;
 
-   (*pTable)(0,0) << COLHDR(_T("Clearance"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*pTable)(0,1) << COLHDR(_T("Min. Clearance"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*pTable)(0,2) << _T("Status");
-
-   Float64 C, Cmin;
-   pArtifact->GetBottomFlangeClearanceParameters(&C,&Cmin);
-
-   (*pTable)(1,0) << dim.SetValue(C);
-   (*pTable)(1,1) << dim.SetValue(Cmin);
-
-   if ( pArtifact->BottomFlangeClearancePassed() )
-      (*pTable)(1,2) << RPT_PASS;
-   else
-      (*pTable)(1,2) << RPT_FAIL;
-   
-   *pBody << pTable;
+            if (rowIdx != nRows-1)
+               *pBody << _T(", ");
+         } // next row
+      } // if
+   } // next segment
 }
 
 //======================== ACCESS     =======================================

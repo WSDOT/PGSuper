@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,19 +25,35 @@
 
 #include <Colors.h>
 
-#define GIRDER_BORDER_COLOR GREY50
-#define GIRDER_FILL_COLOR   GREY70
+#define SEGMENT_BORDER_COLOR GREY50
+#define SEGMENT_FILL_COLOR   GREY70
+#define SEGMENT_FILL_GHOST_COLOR GREY90 // used for girder segments that have not yet been erected
 
-#define GIRDER_FILL_COLOR_ADJACENT   GREY86
-#define GIRDER_BORDER_COLOR_ADJACENT GREY66
+#define SEGMENT_FILL_COLOR_ADJACENT   GREY86
+#define SEGMENT_BORDER_COLOR_ADJACENT GREY66
+
+#define CLOSURE_BORDER_COLOR GREY38
+#define CLOSURE_FILL_COLOR   GREY48
 
 #define ALIGNMENT_COLOR       MEDIUMBLUE
 #define CLBRIDGE_COLOR        BROWN
 
-#define PIER_BORDER_COLOR     POWDERBLUE
-#define PIER_FILL_COLOR       ALICEBLUE
+#define PIER_BORDER_COLOR     SADDLEBROWN
+#define PIER_FILL_COLOR       SIENNA
+#define CONNECTION_LABEL_COLOR SIENNA
 
-#define VOID_BORDER_COLOR     GIRDER_BORDER_COLOR
+#define TS_BORDER_COLOR     DARKGREEN
+#define TS_FILL_COLOR       GREEN
+#define TS_FILL_GHOST_COLOR LIGHTGREEN
+#define TS_LABEL_COLOR      DARKGREEN
+
+#define SB_BORDER_COLOR     ORANGERED
+#define SB_BORDER_GHOST_COLOR     INDIANRED
+#define SB_FILL_COLOR       ORANGERED
+#define SB_FILL_GHOST_COLOR INDIANRED
+#define SB_LABEL_COLOR      ORANGERED
+
+#define VOID_BORDER_COLOR     SEGMENT_BORDER_COLOR
 #define BARRIER_BORDER_COLOR  GREY30
 #define BARRIER_FILL_COLOR    GREY50
 #define DECK_BORDER_COLOR     GREY40
@@ -45,6 +61,11 @@
 #define STRAND_BORDER_COLOR   BLACK
 #define STRAND_FILL_COLOR     BLACK
 #define STRAIGHT_FILL_COLOR   BLACK
+#define DUCT_LINE_COLOR1      GREY30
+#define DUCT_LINE_COLOR2      GREY60
+#define TENDON_LINE_COLOR     DARKGREEN
+#define TENDON_BORDER_COLOR   DECK_BORDER_COLOR
+#define TENDON_FILL_COLOR     DECK_FILL_COLOR
 #define DEBOND_FILL_COLOR     RED
 #define HARPED_FILL_COLOR     GREEN4
 #define TEMPORARY_FILL_COLOR  MEDIUMBLUE
@@ -55,8 +76,8 @@
 #define FUTURE_OVERLAY_COLOR  LIGHTSLATEGRAY
 #define STIRRUP_COLOR         SLATEGRAY2
 
-#define DIAPHRAGM_BORDER_COLOR       GIRDER_BORDER_COLOR
-#define DIAPHRAGM_FILL_COLOR         GIRDER_FILL_COLOR
+#define DIAPHRAGM_BORDER_COLOR       SEGMENT_BORDER_COLOR
+#define DIAPHRAGM_FILL_COLOR         SEGMENT_FILL_COLOR
 
 #define HYPERLINK_COLOR       ::GetSysColor(COLOR_HOTLIGHT)
 
@@ -66,5 +87,8 @@
 
 #define SELECTED_OBJECT_LINE_COLOR RED4
 #define SELECTED_OBJECT_FILL_COLOR BLUE
+
+#define GRAPH_BACKGROUND RGB(220,255,220)
+#define GRID_COLOR       RGB(0,150,0)
 
 #endif // INCLUDED_COLORS_H_

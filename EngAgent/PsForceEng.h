@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,19 +51,9 @@ CLASS
 
    Prestress force engineer.
 
-
 DESCRIPTION
-   Prestress force engineer. Responsible for computing prestressing forces
-   and stresses.
-
-
-COPYRIGHT
-   Copyright © 1997-1998
-   Washington State Department Of Transportation
-   All Rights Reserved
-
-LOG
-   rab : 12.10.1998 : Created file
+   Prestress force engineer. Responsible for computing prestressing forces, 
+   stress, and losses. Also caches loss computation details.
 *****************************************************************************/
 
 class pgsPsForceEng
@@ -88,46 +78,96 @@ public:
    void SetBroker(IBroker* pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi);
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config);
+
+   //------------------------------------------------------------------------
+   // Clears all prestress loss calculations
    void Invalidate();
 
    //------------------------------------------------------------------------
-   void ComputeLosses(const pgsPointOfInterest& poi,LOSSDETAILS* pLosses);
-   void ComputeLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
-   void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   // Clears all prevously computed and stored design losses
+   void ClearDesignLosses();
 
-   Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType,StrandIndexType nStrands);
-   Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands);
+   //------------------------------------------------------------------------
+   // Reports the details of the prestress loss calculations
+   void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
-   Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
+   //------------------------------------------------------------------------
+   // Reports a summary of the final prestress losses
+   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+
+   //------------------------------------------------------------------------
+   // Computes the basic anchor set loss details (basically the anchor set length and
+   // anchor set loss a seating end)
+   const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx);
+
+   //------------------------------------------------------------------------
+   // Returns the maximum jacking force
+   Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands);
+   Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands);
+
+   //------------------------------------------------------------------------
+   // Returns the prestress transfer length
+   Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
    Float64 GetXferLength(const matPsStrand& strand);
+
+   //------------------------------------------------------------------------
+   // Returns the transfer length adjustment factor. The factor is 0 at the
+   // point where bond begins and 1.0 at the end of the transfer length
    Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
 
+   //------------------------------------------------------------------------
+   // Returns the prestress development length
    Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded);
+   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config);
+
+   //------------------------------------------------------------------------
+   // Returns the development length adjustment factor. The factor is 0 at the
+   // point where bond begins and 1.0 at the end of the development length
    Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType);
    Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe);
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded);
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe);
-
-   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config);
    Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config,Float64 fps,Float64 fpe);
+
+   //------------------------------------------------------------------------
+   // Returns the details of the develpment lenght computations
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded);
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe);
    STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config);
    STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG& config,Float64 fps,Float64 fpe);
 
-   Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr);
-   Float64 GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config);
+   //------------------------------------------------------------------------
+   // Returns the prestress hold down force
+   Float64 GetHoldDownForce(const CSegmentKey& segmentKey);
+   Float64 GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG& config);
 
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType type,pgsTypes::LossStage stage,pgsTypes::LimitState limitState);
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType type,pgsTypes::LossStage stage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
+   //------------------------------------------------------------------------
+   // Returns the effective force in prestressing strand at the specified interval
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime);
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config);
 
-   Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,pgsTypes::LimitState limitState);
-   Float64 GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LossStage stage,pgsTypes::LimitState limitState,const GDRCONFIG& config);
+   //------------------------------------------------------------------------
+   // Returns the effective prestress at the specified interval
+   Float64 GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime);
+   Float64 GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig);
+
+   //------------------------------------------------------------------------
+   // Returns the prestress loss at the specified interval
+   Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime);
+   Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig);
+
+   //------------------------------------------------------------------------
+   // Returns the effective prestress force, effective prestress, and prestress losses including
+   // the effect of elastic gains due to live load
+   Float64 GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig);
+   Float64 GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig);
+   Float64 GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig);
 
 protected:
    void MakeCopy(const pgsPsForceEng& rOther);
-   void MakeAssignment(const pgsPsForceEng& rOther);
+   virtual void MakeAssignment(const pgsPsForceEng& rOther);
 
 private:
    IBroker* m_pBroker;
@@ -137,7 +177,17 @@ private:
    // method used to compute prestress transfer length
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 
-   void CreateLossEngineer(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   void CreateLossEngineer(const CGirderKey& girderKey);
+   Float64 GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const LOSSDETAILS* pDetails);
+
+
+   //// Losses are cached for two different cases:
+   //// 1) This data structure caches losses for the current project data
+   //std::map<PoiIDKey,LOSSDETAILS> m_PsLosses;
+
+   //// 2) This data structure is for design cases. It caches the most recently
+   ////    computed losses
+   //CDesignLosses m_DesignLosses;
 };
 
 #endif // INCLUDED_PSFORCEENG_H_

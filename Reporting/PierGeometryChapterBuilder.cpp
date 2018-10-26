@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,10 +26,10 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\Project.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <WBFLCogo.h>
 
@@ -107,7 +107,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    GET_IFACE2(pBroker, IBridge,      pBridge ); 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker, IRoadway, pAlignment);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
@@ -158,11 +158,11 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    (*pTable)(1,5) << _T("North") << rptNewLine << _T("(Y)");
    (*pTable)(1,6) << COLHDR(_T("Elev"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
 
-   const CPierData* pPier = pBridgeDesc->GetPier(0);
+   const CPierData2* pPier = pBridgeDesc->GetPier(0);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    while ( pPier != NULL )
    {
-      PierIndexType pierIdx = pPier->GetPierIndex();
+      PierIndexType pierIdx = pPier->GetIndex();
 
       CComPtr<IDirection> bearing;
       CComPtr<IAngle> skew;
@@ -182,10 +182,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       CComBSTR bstrBearing;
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
-      if ( pPier->GetPrevSpan() == NULL || pPier->GetNextSpan() == NULL )
-         (*pTable)(row,0) << _T("Abutment ") << (Int32)(pierIdx+1);
-      else
-         (*pTable)(row,0) << _T("Pier ") << (Int32)(pierIdx+1);
+      (*pTable)(row,0) << _T("Pier ") << (Int32)(pierIdx+1);
 
       (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pTable)(row,2) << RPT_BEARING(OLE2T(bstrBearing));

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SPANGIRDERREPORT };
 
-   SpanIndexType m_Span;
+   GroupIndexType m_Group;
    GirderIndexType m_Girder;
    std::vector<std::_tstring> m_ChapterList;
 
@@ -54,7 +54,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    virtual void UpdateChapterList();
-   virtual void UpdateGirderComboBox(SpanIndexType spanIdx);
+   virtual void UpdateGirderComboBox(GroupIndexType grpIdx);
 
    virtual void ClearChapterCheckMarks();
    virtual void InitChapterListFromSpec();
@@ -73,7 +73,7 @@ public:
 	//{{AFX_MSG(CReportDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
-	afx_msg void OnSpanChanged();
+	afx_msg void OnGroupChanged();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

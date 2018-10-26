@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #ifndef INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 #define INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 
+#include <PgsExt\SegmentKey.h>
+
 interface iPointDisplayObject;
 
 // pure virtual class for determining cut location along girder
@@ -43,7 +45,7 @@ DEFINE_GUID(IID_iTogaSectionCutDrawStrategy,
 interface iTogaSectionCutDrawStrategy : public IUnknown
 {
    STDMETHOD_(void,SetColor)(COLORREF color) PURE;
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc) PURE;
+	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CSegmentKey& segmentKey, iCutLocation* pCutLoc) PURE;
 };
 
 #endif // INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_

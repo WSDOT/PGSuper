@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
-#include "PGSuperDoc.h"
+#include "PGSuperColors.h"
 #include "SupportDrawStrategyImpl.h"
 #include "mfcdual.h"
 
@@ -32,14 +32,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// make our symbols 3/8" in size
-static const long SSIZE = 1440 * 3/8; // (twips)
+// make our symbols 1/4" in size
+static const long SSIZE = 1440 * 1/4; // (twips)
 
 
-CSupportDrawStrategyImpl::CSupportDrawStrategyImpl(CPGSuperDoc* pDoc)
+CSupportDrawStrategyImpl::CSupportDrawStrategyImpl()
 {
-   m_pDoc = pDoc;
-
    m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
@@ -61,16 +59,23 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::Draw(iPointDis
    CComPtr<iDisplayMgr> pDispMgr;
    pDL->GetDisplayMgr(&pDispMgr);
 
-   COLORREF color;
+   COLORREF pen_color;
+   COLORREF brush_color;
 
    if ( pDO->IsSelected() )
-      color = pDispMgr->GetSelectionLineColor();
+   {
+      pen_color = pDispMgr->GetSelectionLineColor();
+      brush_color = pen_color;
+   }
    else
-      color = RGB(140,70,0);
+   {
+      pen_color = PIER_BORDER_COLOR;
+      brush_color = PIER_FILL_COLOR;
+   }
 
    CComPtr<IPoint2d> pos;
    pDO->GetPosition(&pos);
-   pThis->Draw(pDO,pDC,color,pos);
+   pThis->Draw(pDO,pDC,pen_color,brush_color,pos);
 }
 
 STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
@@ -89,7 +94,7 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::DrawDragImage(
    pThis->m_CachePoint->put_Y(wy);
 
    // Draw the support
-   pThis->Draw(pDO,pDC,RGB(255,0,0),pThis->m_CachePoint);
+   pThis->Draw(pDO,pDC,PIER_BORDER_COLOR,PIER_FILL_COLOR,pThis->m_CachePoint);
 }
 
 STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO,IRect2d** rect)
@@ -188,13 +193,13 @@ void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
       points[3].y = cy;
       pDC->Polygon(points,4);
 
-      // tip circle
-      long es=wid/5;
-      pDC->Ellipse(cx-es, cy-es, cx+es, cy+es);
+      //// tip circle
+      //long es=wid/5;
+      //pDC->Ellipse(cx-es, cy-es, cx+es, cy+es);
 }
 
 
-void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc)
+void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc)
 {
    CComPtr<iDisplayList> pDL;
    pDO->GetDisplayList(&pDL);
@@ -211,10 +216,10 @@ void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF c
    long topx,topy; // location of top
    pMap->WPtoLP(loc,&topx,&topy);
 
-   CPen pen(PS_SOLID,1,color);
+   CPen pen(PS_SOLID,1,outline_color);
    CPen* pOldPen = pDC->SelectObject(&pen);
 
-   CBrush brush(color);
+   CBrush brush(fill_color);
    CBrush* pOldBrush = pDC->SelectObject(&brush);
 
    DrawPinnedSupport( pDC, topx, topy, wid, hgt);

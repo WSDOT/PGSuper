@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,8 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CGirderDropSite::CGirderDropSite(CPGSuperDoc* pDoc, CGirderModelChildFrame* pFrame)
+CGirderDropSite::CGirderDropSite(CPGSuperDocBase* pDoc, const CSpanGirderKey& spanGirderKey, CGirderModelChildFrame* pFrame) :
+m_SpanGirderKey(spanGirderKey)
 {
    m_pDoc   = pDoc;
    m_pFrame = pFrame;
@@ -115,50 +116,57 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
-      SpanIndexType spanIdx;
-      GirderIndexType gdrIdx;
-      pThis->m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-      ATLASSERT( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS );
-
       // Was it the concentrated load tool?
       if ( tool->GetID() == IDC_POINT_LOAD_DRAG )
       {
          // set data to that of view
          CPointLoadData data;
-         data.m_Span   = spanIdx;
-         data.m_Girder = gdrIdx;
+         data.m_SpanGirderKey = pThis->m_SpanGirderKey;
 
-         if (pThis->m_pFrame->GetLoadingStage() != UserLoads::BridgeSite3)
-            data.m_Stage = pThis->m_pFrame->GetLoadingStage();
-         else
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+
+         data.m_EventIdx = pThis->m_pFrame->GetEvent();
+         if (pThis->m_pFrame->GetEvent() == liveLoadEventIdx )
             data.m_LoadCase = UserLoads::LL_IM;
 
-         // estimate where we are at
-         CComPtr<IBroker> pBroker;
-         pThis->m_pDoc->GetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 gdr_length = pBridge->GetGirderLength(data.m_Span, data.m_Girder);
-         Float64  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
-         Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
-         Float64  span_lgth  = gdr_length - start_lgth - end_lgth;
-
-         Float64 wx;
+         CComPtr<IPoint2d> pntStart, pntEnd;
+         CComQIPtr<iLineDisplayObject> doLine(pThis->m_DispObj);
+         doLine->GetEndPoints(&pntStart,&pntEnd);
+         Float64 segX, wx;
+         pntStart->get_X(&segX);
          point->get_X(&wx);
 
-         wx = wx - start_lgth;  // span coordinates
+         Float64 load_loc = wx - segX;
 
-         Float64 load_loc;
-         if (wx < 0.0)
-            load_loc = 0.0;
-         else if (wx > span_lgth)
-            load_loc = span_lgth;
-         else
-            load_loc = wx;
+         //// estimate where we are at
+         //CComPtr<IBroker> pBroker;
+         //pThis->m_pDoc->GetBroker(&pBroker);
+         //GET_IFACE2(pBroker,IBridge,pBridge);
+         //Float64 gdr_length = pBridge->GetSegmentLength(data.m_SegmentKey);
+         //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
+         //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
+         //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
+
+         //Float64 wx;
+         //point->get_X(&wx);
+
+         //wx = wx - start_lgth;  // span coordinates
+
+         //Float64 load_loc;
+         //if (wx < 0.0)
+         //   load_loc = 0.0;
+         //else if (wx > span_lgth)
+         //   load_loc = span_lgth;
+         //else
+         //   load_loc = wx;
 
          data.m_Fractional = false;
          data.m_Location   = load_loc;
 
-	      CEditPointLoadDlg dlg(data,pBroker);
+	      CEditPointLoadDlg dlg(data);
          if (dlg.DoModal() == IDOK)
          {
             txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
@@ -170,36 +178,37 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CDistributedLoadData data;
-         data.m_Span   = spanIdx;
-         data.m_Girder = gdrIdx;
+         data.m_SpanGirderKey = pThis->m_SpanGirderKey;
 
-         if (pThis->m_pFrame->GetLoadingStage() != UserLoads::BridgeSite3)
-            data.m_Stage = pThis->m_pFrame->GetLoadingStage();
-         else
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+
+         data.m_EventIdx = pThis->m_pFrame->GetEvent();
+         if (pThis->m_pFrame->GetEvent() == liveLoadEventIdx )
             data.m_LoadCase = UserLoads::LL_IM;
 
          // estimate where we are at
-         CComPtr<IBroker> pBroker;
-         pThis->m_pDoc->GetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 gdr_length = pBridge->GetGirderLength(data.m_Span, data.m_Girder);
-         Float64  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
-         Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
-         Float64  span_lgth  = gdr_length - start_lgth - end_lgth;
+         Float64 span_length = pBridge->GetSpanLength(data.m_SpanGirderKey.spanIndex,data.m_SpanGirderKey.girderIndex);
+         //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
+         //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
+         //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
 
          // set length of load to 1/10 span length
-         Float64 load_length = span_lgth/10;
+         Float64 load_length = span_length/10;
 
          Float64 wx;
          point->get_X(&wx);
 
-         wx = wx - start_lgth;  // span coordinates
+         wx = wx - span_length;  // span coordinates
 
          Float64 load_loc;
          if (wx < 0.0)
             load_loc = 0.0;
-         else if (wx > span_lgth-load_length)
-            load_loc = span_lgth-load_length;
+         else if (wx > span_length-load_length)
+            load_loc = span_length-load_length;
          else
             load_loc = wx;
 
@@ -208,7 +217,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          data.m_StartLocation = load_loc;
          data.m_EndLocation = load_loc+load_length;
 
-	      CEditDistributedLoadDlg dlg(data,pBroker);
+	      CEditDistributedLoadDlg dlg(data);
          if (dlg.DoModal() == IDOK)
          {
             txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
@@ -219,40 +228,41 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CMomentLoadData data;
-         data.m_Span   = spanIdx;
-         data.m_Girder = gdrIdx;
+         data.m_SpanGirderKey = pThis->m_SpanGirderKey;
 
-         if (pThis->m_pFrame->GetLoadingStage() != UserLoads::BridgeSite3)
-            data.m_Stage = pThis->m_pFrame->GetLoadingStage();
-         else
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+
+         data.m_EventIdx = pThis->m_pFrame->GetEvent();
+         if (pThis->m_pFrame->GetEvent() == liveLoadEventIdx )
             data.m_LoadCase = UserLoads::LL_IM;
 
          // estimate where we are at
-         CComPtr<IBroker> pBroker;
-         pThis->m_pDoc->GetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
-         Float64 gdr_length = pBridge->GetGirderLength(data.m_Span, data.m_Girder);
-         Float64  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
-         Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
-         Float64 span_lgth   = gdr_length - start_lgth - end_lgth;
+         Float64 span_length = pBridge->GetSpanLength(data.m_SpanGirderKey.spanIndex,data.m_SpanGirderKey.girderIndex);
+         //Float64 start_lgth = pBridge->GetSegmentStartEndDistance(data.m_SegmentKey);
+         //Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(data.m_SegmentKey);
+         //Float64 span_lgth  = gdr_length - start_lgth - end_lgth;
 
          Float64 wx;
          point->get_X(&wx);
 
-         wx = wx - start_lgth;  // span coordinates
+         wx = wx - span_length;  // span coordinates
 
          Float64 load_loc;
          if (wx < 0.0)
             load_loc = 0.0;
-         else if (wx > span_lgth)
-            load_loc = span_lgth;
+         else if (wx > span_length)
+            load_loc = span_length;
          else
             load_loc = wx;
 
          data.m_Fractional = false;
          data.m_Location   = load_loc;
 
-	      CEditMomentLoadDlg dlg(data,pBroker);
+	      CEditMomentLoadDlg dlg(data);
          if (dlg.DoModal() == IDOK)
          {
             txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);

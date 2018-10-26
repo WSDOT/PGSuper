@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,10 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderLabel.h>
+
+#include <PgsExt\PierData2.h>
+#include <PgsExt\TemporarySupportData.h>
+#include <EAF\EAFDisplayUnits.h>
 
 bool pgsGirderLabel::ms_bUseAlpha = true;
 
@@ -106,4 +110,23 @@ std::_tstring GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffse
       ATLASSERT(0);
       return _T("");
    }
+}
+
+CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits)
+{
+   CString strLabel;
+   strLabel.Format(_T("Pier %d, %s"),LABEL_PIER(pPier->GetIndex()),
+                                     FormatStation(pDisplayUnits->GetStationFormat(),pPier->GetStation()));
+
+   return strLabel;
+}
+
+CString GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits)
+{
+   CString strLabel;
+   strLabel.Format(_T("TS %d, %s, %s"),LABEL_TEMPORARY_SUPPORT(pTS->GetIndex()),
+                                       pTS->GetSupportType() == pgsTypes::ErectionTower ? _T("Erection Tower") : _T("Strong Back"),
+                                       FormatStation(pDisplayUnits->GetStationFormat(),pTS->GetStation()));
+
+   return strLabel;
 }

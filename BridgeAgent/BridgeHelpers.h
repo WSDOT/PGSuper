@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,39 @@
 #ifndef INCLUDED_BRIDGEHELPERS_H_
 #define INCLUDED_BRIDGEHELPERS_H_
 
-HRESULT GetSuperstructureMember(IGenericBridge* pBridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* *ssmbr);
-HRESULT GetGirder(IGenericBridge* pBridge,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPrecastGirder** girder);
+#include <PgsExt\SegmentKey.h>
+
+HRESULT GetSuperstructureMember(IGenericBridge* pBridge,const CGirderKey& girderKey,ISuperstructureMember* *ssmbr);
+HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISegment** segment);
+HRESULT GetGirder(IGenericBridge* pBridge,const CSegmentKey& segmentKey,IPrecastGirder** girder);
+
+// Returns the ID of a pier layout line in the Bridge Geometry model given a pier index
+PierIDType GetPierLineID(PierIndexType pierIdx);
+PierIndexType GetPierIndex(PierIDType pierLineID);
+
+// Returns the ID of a temporary support layout line in the Bridge Geometry model given a temporary support index
+// (Don't confuse this with the ID of a temporary support object in the CBridgeDescription model)
+SupportIDType GetTempSupportLineID(SupportIndexType tsIdx);
+SupportIndexType GetTempSupportIndex(SupportIDType tsLineID);
+
+// Returns the ID of a superstructure member in the Generic Bridge Model
+GirderIDType GetSuperstructureMemberID(GroupIndexType grpIdx,GirderIndexType gdrIdx);
+
+// Returns a segment key given a girder id. (reverses GetSuperstructureMemberID)
+CSegmentKey GetSegmentKey(GirderIDType gdrID);
+
+// Returns the ID of a segment layout line in the Bridge Geometry model given a girder/segment index pair
+LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx);
+
+// Returns the ID of a girder layout line in the Bridge Geometry model given a span/girder index pair
+LineIDType GetGirderLineID(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+
+// Gets the superstructure member ID for precast girder and for the girder to the left and right of it
+void GetSuperstructureMemberIDs(SpanIndexType spanIdx,GirderIndexType gdrIdx,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID);
+
+// Gets the superstructure member ID for precast girder and for the girder to the left and right of it
+void GetAdjacentSuperstructureMemberIDs(const CSegmentKey& segmentKey,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID);
+
+void GetAdjacentGirderKeys(const CSegmentKey& segmentKey,CSegmentKey* pLeftKey,CSegmentKey* pRightKey);
 
 #endif // INCLUDED_BRIDGEHELPERS_H_

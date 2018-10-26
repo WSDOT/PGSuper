@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,11 +31,12 @@ class CLiveLoadFactorsPage : public CPropertyPage
 	DECLARE_DYNAMIC(CLiveLoadFactorsPage)
 
 public:
-   CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType);
-   CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType,pgsTypes::SpecialPermitType permitType);
+   CLiveLoadFactorsPage(LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType);
+   CLiveLoadFactorsPage(LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType,pgsTypes::SpecialPermitType permitType);
 	virtual ~CLiveLoadFactorsPage();
 
 // Dialog Data
+	enum { IDD = IDD_LIVE_LOAD_FACTORS };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

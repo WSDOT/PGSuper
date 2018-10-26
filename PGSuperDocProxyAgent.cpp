@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,10 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDocProxyAgent.h"
 #include "PGSuperDoc.h"
+#include "PGSpliceDoc.h"
+
 #include "PGSuperAppPlugin.h"
+#include "PGSpliceAppPlugin.h"
 
 #include "PGSuperAppPlugin\Resource.h"
 
@@ -33,7 +36,7 @@
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\EAFStatusItem.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "Hints.h"
@@ -48,14 +51,8 @@
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 
-#include "FactorOfSafetyChildFrame.h"
-#include "FactorOfSafetyView.h"
-
 #include "EditLoadsChildFrm.h"
 #include "EditLoadsView.h"
-
-#include "AnalysisResultsChildFrame.h"
-#include "AnalysisResultsView.h"
 
 #include "GirderModelChildFrame.h"
 #include "GirderModelElevationView.h"
@@ -63,7 +60,8 @@
 #include "ReportViewChildFrame.h"
 #include "ReportView.h"
 
-#include <MfcTools\VersionInfo.h>
+#include "GraphViewChildFrame.h"
+#include "GraphView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -78,9 +76,8 @@ CLASS
 
 CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
 {
-   m_pPGSuperDoc = NULL;
-   m_EventHoldCount = 0;
-   m_bFiringEvents = false;
+   m_pMyDocument = NULL;
+   m_bHoldingEvents = false;
    m_StdToolBarID = -1;
    m_LibToolBarID = -1;
    m_HelpToolBarID = -1;
@@ -90,26 +87,29 @@ CPGSuperDocProxyAgent::~CPGSuperDocProxyAgent()
 {
 }
 
-void CPGSuperDocProxyAgent::SetDocument(CPGSuperDoc* pDoc)
+void CPGSuperDocProxyAgent::SetDocument(CPGSuperDocBase* pDoc)
 {
-   m_pPGSuperDoc = pDoc;
+   m_pMyDocument = pDoc;
 }
 
 void CPGSuperDocProxyAgent::CreateStatusBar()
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CPGSuperStatusBar* pStatusBar = new CPGSuperStatusBar();
    pStatusBar->Create(pFrame);
    pFrame->SetStatusBar(pStatusBar);
 
-   m_pPGSuperDoc->UpdateAnalysisTypeStatusIndicator();
-   m_pPGSuperDoc->SetModifiedFlag(m_pPGSuperDoc->IsModified());
-   m_pPGSuperDoc->EnableAutoCalc(m_pPGSuperDoc->IsAutoCalcEnabled());
+   m_pMyDocument->UpdateAnalysisTypeStatusIndicator();
+   m_pMyDocument->SetModifiedFlag(m_pMyDocument->IsModified());
+   m_pMyDocument->EnableAutoCalc(m_pMyDocument->IsAutoCalcEnabled());
 }
 
 void CPGSuperDocProxyAgent::ResetStatusBar()
 {
-   //EAFGetMainFrame()->ResetStatusBar();
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   pFrame->SetStatusBar(NULL);
 }
 
 void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
@@ -134,32 +134,14 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 
    GET_IFACE(IEAFToolbars,pToolBars);
 
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
-   CEAFToolBar* pToolBar = pToolBars->GetToolBarByID(m_StdToolBarID);
-   pToolBar->LoadToolBar(IDR_STDTOOLBAR,NULL); // don't use a command callback because these commands are handled by 
-                                               // the standard MFC message routing
-
-   // Don't create the Report button drop down toolbar button here. Plug-ins can add reports so
-   // at this point, the list of reports is not complete...
-   //
-   // The drop down menu is created in CPGSuperDoc::PopulateReportMenu()
-
-   m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
-   pToolBar = pToolBars->GetToolBarByID(m_LibToolBarID);
-   pToolBar->LoadToolBar(IDR_LIBTOOLBAR,NULL);
-
-   m_HelpToolBarID = pToolBars->CreateToolBar(_T("Help"));
-   pToolBar = pToolBars->GetToolBarByID(m_HelpToolBarID);
-   pToolBar->LoadToolBar(IDR_HELPTOOLBAR,NULL);
-#else
    m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
    CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
-   pToolBar->LoadToolBar(IDR_STDTOOLBAR,NULL); // don't use a command callback because these commands are handled by 
+   pToolBar->LoadToolBar(m_pMyDocument->GetStandardToolbarResourceID(),NULL); // don't use a command callback because these commands are handled by 
                                                // the standard MFC message routing
 
    // Add a drop-down arrow to the Open and Report buttons
    pToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
+   pToolBar->CreateDropDownButton(ID_VIEW_GRAPHS, NULL,BTNS_WHOLEDROPDOWN);
    pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,NULL,BTNS_WHOLEDROPDOWN);
 
    m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
@@ -169,7 +151,6 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    m_HelpToolBarID = pToolBars->CreateToolBar(_T("Help"));
    pToolBar = pToolBars->GetToolBar(m_HelpToolBarID);
    pToolBar->LoadToolBar(IDR_HELPTOOLBAR,NULL);
-#endif
 
    OnStatusChanged(); // set the status items
 }
@@ -186,7 +167,7 @@ void CPGSuperDocProxyAgent::RegisterViews()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pPGSuperDoc->GetDocTemplate());
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
 
@@ -194,16 +175,15 @@ void CPGSuperDocProxyAgent::RegisterViews()
 
    // Register all secondary views that are associated with our document type
    // TODO: After the menu and command extensions can be made, the agents that are responsble
-   // for the views below will register them. For example, tne analysis results view is the
+   // for the views below will register them. For example, the analysis results view is the
    // responsiblity of the analysis results agent, so that view's implementation will move
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR,NULL,RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
-   m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR,NULL,RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1);
-   m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,    NULL,RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
-   m_AnalysisResultsViewKey   = pViewReg->RegisterView(IDR_ANALYSISRESULTS,  NULL,RUNTIME_CLASS(CAnalysisResultsChildFrame), RUNTIME_CLASS(CAnalysisResultsView),      hMenu, -1);
-   m_ReportViewKey            = pViewReg->RegisterView(IDR_REPORT,           NULL,RUNTIME_CLASS(CReportViewChildFrame),      RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
-   m_FactorOfSafetyViewKey    = pViewReg->RegisterView(IDR_FACTOROFSAFETY,   NULL,RUNTIME_CLASS(CFactorOfSafetyChildFrame),  RUNTIME_CLASS(CFactorOfSafetyView),       hMenu, -1);
-   m_LoadsViewKey             = pViewReg->RegisterView(IDR_EDITLOADS,        NULL,RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
+   m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR, NULL, RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
+   m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR, NULL, RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1); // unlimited number of reports
+   m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,     NULL, RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
+   m_ReportViewKey            = pViewReg->RegisterView(IDR_REPORT,            NULL, RUNTIME_CLASS(CReportViewChildFrame),      RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
+   m_GraphingViewKey          = pViewReg->RegisterView(IDR_GRAPHING,          NULL, RUNTIME_CLASS(CGraphViewChildFrame),        RUNTIME_CLASS(CGraphView),            hMenu, -1); // unlimited number of reports
+   m_LoadsViewKey             = pViewReg->RegisterView(IDR_EDITLOADS,         NULL, RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
 }
 
 void CPGSuperDocProxyAgent::UnregisterViews()
@@ -212,9 +192,8 @@ void CPGSuperDocProxyAgent::UnregisterViews()
    pViewReg->RemoveView(m_BridgeModelEditorViewKey);
    pViewReg->RemoveView(m_GirderModelEditorViewKey);
    pViewReg->RemoveView(m_LibraryEditorViewKey);
-   pViewReg->RemoveView(m_AnalysisResultsViewKey);
    pViewReg->RemoveView(m_ReportViewKey);
-   pViewReg->RemoveView(m_FactorOfSafetyViewKey);
+   pViewReg->RemoveView(m_GraphingViewKey);
    pViewReg->RemoveView(m_LoadsViewKey);
 }
 
@@ -340,7 +319,7 @@ void CPGSuperDocProxyAgent::CreateBridgeModelView()
    pViewReg->CreateView(m_BridgeModelEditorViewKey);
 }
 
-void CPGSuperDocProxyAgent::CreateGirderView(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void CPGSuperDocProxyAgent::CreateGirderView(const CGirderKey& girderKey)
 {
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
@@ -350,50 +329,14 @@ void CPGSuperDocProxyAgent::CreateGirderView(SpanIndexType spanIdx,GirderIndexTy
    else
    {
       GET_IFACE(IEAFViewRegistrar,pViewReg);
-      SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey,(void*)&hash);
-   }
-}
-
-void CPGSuperDocProxyAgent::CreateAnalysisResultsView(SpanIndexType spanIdx,GirderIndexType gdrIdx)
-{
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
-   {
-      AfxMessageBox(_T("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details."),MB_OK);
-   }
-   else
-   {
-      GET_IFACE(IEAFViewRegistrar,pViewReg);
-      SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      pViewReg->CreateView(m_AnalysisResultsViewKey,(void*)&hash);
-   }
-}
-
-void CPGSuperDocProxyAgent::CreateStabilityView(SpanIndexType spanIdx,GirderIndexType gdrIdx)
-{
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
-   {
-      AfxMessageBox(_T("One or more errors is preventing the creation of this view.\r\n\r\nSee the Status Center for details."),MB_OK);
-   }
-   else
-   {
-      GET_IFACE(IEAFViewRegistrar,pViewReg);
-      SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      pViewReg->CreateView(m_FactorOfSafetyViewKey,(void*)&hash);
+      CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey,(void*)&girderKey);
    }
 }
 
 void CPGSuperDocProxyAgent::CreateLoadsView()
 {
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   m_wndLoadsViewAdapter.ShowPane(!m_wndLoadsViewAdapter.IsVisible(),FALSE,TRUE);
-#else
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   CView* pView = pViewReg->CreateView(m_LoadsViewKey);
-#endif
+   pViewReg->CreateView(m_LoadsViewKey);
 }
 
 void CPGSuperDocProxyAgent::CreateLibraryEditorView()
@@ -417,7 +360,23 @@ void CPGSuperDocProxyAgent::CreateReportView(CollectionIndexType rptIdx,bool bPr
 
 void CPGSuperDocProxyAgent::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
 {
-   m_pPGSuperDoc->BuildReportMenu(pMenu,bQuickReport);
+   m_pMyDocument->BuildReportMenu(pMenu,bQuickReport);
+}
+
+void CPGSuperDocProxyAgent::CreateGraphView(CollectionIndexType graphIdx)
+{
+   CEAFGraphViewCreationData data;
+   GET_IFACE(IGraphManager,pGraphMgr);
+   data.m_pIGraphMgr = pGraphMgr;
+   data.m_GraphIndex = graphIdx;
+
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
+   pViewReg->CreateView(m_GraphingViewKey,(LPVOID)&data);
+}
+
+void CPGSuperDocProxyAgent::BuildGraphMenu(CEAFMenu* pMenu)
+{
+   m_pMyDocument->BuildGraphMenu(pMenu);
 }
 
 void CPGSuperDocProxyAgent::OnStatusChanged()
@@ -426,11 +385,7 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFToolbars,pToolBars);
-#if defined _EAF_USING_MFC_FEATURE_PACK
-      CEAFToolBar* pToolBar = pToolBars->GetToolBarByID(GetStdToolBarID());
-#else
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
-#endif
 
       if ( pToolBar == NULL )
          return;
@@ -463,11 +418,6 @@ long CPGSuperDocProxyAgent::GetReportViewKey()
    return m_ReportViewKey;
 }
 
-void CPGSuperDocProxyAgent::OnResetHints()
-{
-   Fire_OnHintsReset();
-}
-
 //////////////////////////////////////////////////////////
 // IAgentEx
 STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)
@@ -489,7 +439,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_IUpdateTemplates,    this );
    pBrokerInit->RegInterface( IID_IVersionInfo,        this );
    pBrokerInit->RegInterface( IID_IRegisterViewEvents, this );
-   pBrokerInit->RegInterface( IID_IExtendUI,           this );
+   pBrokerInit->RegInterface( IID_IDocumentType,       this );
    return S_OK;
 }
 
@@ -541,80 +491,6 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
       CreateToolBars();
       CreateAcceleratorKeys();
       CreateStatusBar();
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-      CEAFMainFrame* pFrame = EAFGetMainFrame();
-      pFrame->CanConvertControlBarToMDIChild(TRUE);
-
-      // Panes can be docked to the main window
-      pFrame->EnableDocking(CBRS_ALIGN_ANY);
-
-      // Main frame supports auto hide panes
-      pFrame->EnableAutoHidePanes(CBRS_ALIGN_ANY);
-   	
-      // enable Visual Studio 2005 style docking window behavior
-	   CDockingManager::SetDockingMode(DT_SMART); // DT_IMMEDIATE, DT_STANDARD, DT_SMART
-
-      // we want tabbed MDI windows.
-      pFrame->EnableMDITabs(TRUE,FALSE,CMFCTabCtrl::LOCATION_TOP,TRUE,CMFCTabCtrl::STYLE_3D_ROUNDED_SCROLL,FALSE,TRUE);
-      CMFCTabCtrl& tabs = pFrame->GetMDITabs();
-      tabs.SetActiveTabBoldFont();
-
-      {
-         // create a task pane with some common tasks on it
-         // use the app module state because the task window will be 
-         // owned by the main frame
-         UINT nID = 1; // need a better ID
-         CRect rDummy(0,0,200,200);
-         AFX_MANAGE_STATE(AfxGetAppModuleState());
-
-         m_wndLoadsViewAdapter.Create(_T("Loads"),pFrame,rDummy,TRUE,0,WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI);
-         GET_IFACE(IEAFViewRegistrar,pViewReg);
-         CView* pView = pViewReg->CreateView(m_LoadsViewKey);
-         m_wndLoadsViewAdapter.SetWrappedWnd(pView);
-         m_wndLoadsViewAdapter.EnableDocking(CBRS_ALIGN_ANY);
-         pFrame->DockPane(&m_wndLoadsViewAdapter);
-
-         m_wndTasks.Create(_T("Tasks"),pFrame,rDummy,TRUE,nID,
-            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | AFX_CBRS_CLOSE | AFX_CBRS_FLOAT);
-
-         m_wndTasks.EnableNavigationToolbar();
-
-         m_wndTasks.EnableDocking(CBRS_ALIGN_ANY);
-         pFrame->DockPane(&m_wndTasks);
-
-         // There can be multiple groups of tasks on a task pane
-
-         // Open a document group
-         int pageIdx = 0;
-         m_wndTasks.SetPageCaption(pageIdx,_T("Common Tasks"));
-         int docGroup = m_wndTasks.AddGroup(pageIdx,_T("Open a document"),FALSE,TRUE);
-         m_wndTasks.AddMRUFilesList(docGroup);
-         m_wndTasks.AddTask(docGroup,_T("More Documents..."),0,ID_FILE_OPEN);
-
-         // Editing tasks
-         int grpIdx = m_wndTasks.AddGroup(pageIdx,_T("Editing"));
-         m_wndTasks.AddTask(grpIdx,_T("Edit Alignment"),-1,ID_PROJECT_ALIGNMENT);
-         m_wndTasks.AddTask(grpIdx,_T("Edit Bridge"),-1,ID_PROJECT_BRIDGEDESC);
-
-         m_wndTasks.AddSeparator(grpIdx);
-         m_wndTasks.AddLabel(grpIdx,_T("Label"));
-
-         // a single group can be put at the bottom of the pane
-         int bottomGrpIdx = m_wndTasks.AddGroup(pageIdx,_T("Stuff"),TRUE);
-         m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 1"));
-         m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 2"));
-         m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 3"));
-
-         // There can also be multiple pages in a task pane
-         pageIdx = m_wndTasks.AddPage(_T("Advanced Tasks"));
-         int idx = m_wndTasks.AddGroup(pageIdx,_T("Group 1"));
-         m_wndTasks.AddTask(idx,_T("Task 1"));
-         m_wndTasks.AddTask(idx,_T("Task 2"));
-         m_wndTasks.AddTask(idx,_T("Task 3"));
-      }
-
-#endif
    }
    else
    {
@@ -622,15 +498,6 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
       RemoveAcceleratorKeys();
       RemoveToolBars();
       UnregisterViews();
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-      CEAFMainFrame* pFrame = EAFGetMainFrame();
-      pFrame->EnableMDITabs(FALSE);
-
-      // done with the task pane
-      m_wndTasks.DestroyWindow();
-      m_wndLoadsViewAdapter.DestroyWindow();
-#endif
    }
 
    return S_OK;
@@ -638,7 +505,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
 
 ////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
-HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
+HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    //
@@ -646,55 +513,53 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
    // selected girder is invalid
    //
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
-   CSelection selection = m_pPGSuperDoc->GetSelection();
+   CSelection selection = m_pMyDocument->GetSelection();
 
    bool bClearSelection = false;
 
-   if ( selection.Type == CSelection::Span || selection.Type == CSelection::Girder )
+   if ( selection.Type == CSelection::Span )
    {
-      SpanIndexType spanIdx = selection.SpanIdx;
-      const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(selection.SpanIdx);
       if ( pSpan == NULL )
+      {
+         // the selected span no longer exists
+         bClearSelection = true;
+      }
+   }
+   else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
+   {
+      if ( selection.GroupIdx == INVALID_INDEX )
       {
          bClearSelection = true;
       }
       else
       {
-         GirderIndexType nGirders = pSpan->GetGirderCount();
-         GirderIndexType gdrIdx   = selection.GirderIdx;
-
-         if ( nGirders < gdrIdx )
+         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(selection.GroupIdx);
+         if ( pGroup == NULL || pGroup->GetGirderCount() < selection.GirderIdx )
+         {
+            // the selected girder no longer exists
             bClearSelection = true;
+         }
       }
    }
    else if ( selection.Type == CSelection::Pier )
    {
       PierIndexType pierIdx = selection.PierIdx;
-      const CPierData* pPier = pBridgeDesc->GetPier(pierIdx);
+      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
       if ( pPier == NULL )
          bClearSelection = true;
    }
 
    if ( bClearSelection )
-      m_pPGSuperDoc->ClearSelection();
+      m_pMyDocument->ClearSelection();
 
-   m_pPGSuperDoc->SetModifiedFlag();
-
-   boost::shared_ptr<CBridgeHint> pBridgeHint;
-   if ( pHint )
-   {
-      pBridgeHint = boost::shared_ptr<CBridgeHint>(new CBridgeHint);
-      pBridgeHint->PierIdx = pHint->PierIdx;
-      pBridgeHint->PierFace = pHint->PierFace;
-      pBridgeHint->bAdded = pHint->bAdded;
-   }
-
-   boost::shared_ptr<CObject> pObjHint = boost::dynamic_pointer_cast<CObject,CBridgeHint>(pBridgeHint);
-   FireEvent( 0, HINT_BRIDGECHANGED, pObjHint );
+   m_pMyDocument->SetModifiedFlag();
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
 
    return S_OK;
 }
@@ -709,15 +574,14 @@ HRESULT CPGSuperDocProxyAgent::OnGirderFamilyChanged()
    return S_OK;
 }
    
-HRESULT CPGSuperDocProxyAgent::OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint)
+HRESULT CPGSuperDocProxyAgent::OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
 
    boost::shared_ptr<CGirderHint> pHint(new CGirderHint());
-   pHint->lHint = lHint;
-   pHint->spanIdx = span;
-   pHint->gdrIdx = gdr;
+   pHint->lHint   = lHint;
+   pHint->girderKey = girderKey;
 
    FireEvent(NULL,HINT_GIRDERCHANGED,pHint);
 
@@ -727,7 +591,7 @@ HRESULT CPGSuperDocProxyAgent::OnGirderChanged(SpanIndexType span,GirderIndexTyp
 HRESULT CPGSuperDocProxyAgent::OnLiveLoadChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_LIVELOADCHANGED, pnull );
    return S_OK;
@@ -736,7 +600,7 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadChanged()
 HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewName)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_LIVELOADCHANGED, pnull );
    return S_OK;
@@ -745,7 +609,7 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR 
 HRESULT CPGSuperDocProxyAgent::OnConstructionLoadChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_BRIDGECHANGED, pnull );
    return S_OK;
@@ -755,7 +619,7 @@ HRESULT CPGSuperDocProxyAgent::OnConstructionLoadChanged()
 HRESULT CPGSuperDocProxyAgent::OnExposureConditionChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_ENVCHANGED, pnull );
    return S_OK;
@@ -764,7 +628,7 @@ HRESULT CPGSuperDocProxyAgent::OnExposureConditionChanged()
 HRESULT CPGSuperDocProxyAgent::OnRelHumidityChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_ENVCHANGED, pnull );
    return S_OK;
@@ -774,7 +638,7 @@ HRESULT CPGSuperDocProxyAgent::OnRelHumidityChanged()
 HRESULT CPGSuperDocProxyAgent::OnProjectPropertiesChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
 
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_PROJECTPROPERTIESCHANGED, pnull );
@@ -785,12 +649,12 @@ HRESULT CPGSuperDocProxyAgent::OnProjectPropertiesChanged()
 HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CComPtr<IDocUnitSystem> pDocUnitSystem;
-   m_pPGSuperDoc->GetDocUnitSystem(&pDocUnitSystem);
+   m_pMyDocument->GetDocUnitSystem(&pDocUnitSystem);
    pDocUnitSystem->put_UnitMode(UnitModeType(pDisplayUnits->GetUnitMode()));
 
    boost::shared_ptr<CObject> pnull;
@@ -802,7 +666,7 @@ HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
 HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_SPECCHANGED, pnull );
    return S_OK;
@@ -811,8 +675,8 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 HRESULT CPGSuperDocProxyAgent::OnAnalysisTypeChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
-   m_pPGSuperDoc->UpdateAnalysisTypeStatusIndicator();
+   m_pMyDocument->SetModifiedFlag();
+   m_pMyDocument->UpdateAnalysisTypeStatusIndicator();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_ANALYSISTYPECHANGED, pnull );
    return S_OK;
@@ -822,7 +686,7 @@ HRESULT CPGSuperDocProxyAgent::OnAnalysisTypeChanged()
 HRESULT CPGSuperDocProxyAgent::OnRatingSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_RATINGSPECCHANGED, pnull );
    return S_OK;
@@ -832,7 +696,7 @@ HRESULT CPGSuperDocProxyAgent::OnRatingSpecificationChanged()
 HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    boost::shared_ptr<CObject> pnull;
    FireEvent( 0, HINT_LOADMODIFIERSCHANGED, pnull );
    return S_OK;
@@ -841,7 +705,7 @@ HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
 HRESULT CPGSuperDocProxyAgent::OnLibraryConflictResolved()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SetModifiedFlag();
+   m_pMyDocument->SetModifiedFlag();
    return S_OK;
 }
 
@@ -850,51 +714,51 @@ HRESULT CPGSuperDocProxyAgent::OnLibraryConflictResolved()
 PierIndexType CPGSuperDocProxyAgent::GetPierIdx()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   CSelection selection = m_pPGSuperDoc->GetSelection();
+   CSelection selection = m_pMyDocument->GetSelection();
    return selection.PierIdx;
 }
 
 SpanIndexType CPGSuperDocProxyAgent::GetSpanIdx()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   CSelection selection = m_pPGSuperDoc->GetSelection();
+   CSelection selection = m_pMyDocument->GetSelection();
    return selection.SpanIdx;
 }
 
 GirderIndexType CPGSuperDocProxyAgent::GetGirderIdx()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   CSelection selection = m_pPGSuperDoc->GetSelection();
+   CSelection selection = m_pMyDocument->GetSelection();
    return selection.GirderIdx;
 }
 
 void CPGSuperDocProxyAgent::SelectPier(PierIndexType pierIdx)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SelectPier(pierIdx);
+   m_pMyDocument->SelectPier(pierIdx);
 }
 
 void CPGSuperDocProxyAgent::SelectSpan(SpanIndexType spanIdx)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SelectSpan(spanIdx);
+   m_pMyDocument->SelectSpan(spanIdx);
 }
 
-void CPGSuperDocProxyAgent::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void CPGSuperDocProxyAgent::SelectGirder(const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pPGSuperDoc->SelectGirder(spanIdx,gdrIdx);
+   m_pMyDocument->SelectGirder(girderKey);
 }
 
 Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
 
-   POSITION pos = m_pPGSuperDoc->GetFirstViewPosition();
+   POSITION pos = m_pMyDocument->GetFirstViewPosition();
    CView* pView;
    while ( pos != NULL )
    {
-      pView = m_pPGSuperDoc->GetNextView(pos);
+      pView = m_pMyDocument->GetNextView(pos);
       if ( pView->IsKindOf( RUNTIME_CLASS(CBridgePlanView) ) )
       {
          CBridgePlanView* pPlanView = (CBridgePlanView*)pView;
@@ -913,34 +777,46 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
 // ISelectionEx
 CSelection CPGSuperDocProxyAgent::GetSelection()
 {
-   return m_pPGSuperDoc->GetSelection();
+   return m_pMyDocument->GetSelection();
 }
 
 void CPGSuperDocProxyAgent::SelectDeck()
 {
-   m_pPGSuperDoc->SelectDeck();
+   m_pMyDocument->SelectDeck();
 }
 
 void CPGSuperDocProxyAgent::SelectAlignment()
 {
-   m_pPGSuperDoc->SelectAlignment();
+   m_pMyDocument->SelectAlignment();
 }
 
 void CPGSuperDocProxyAgent::ClearSelection()
 {
-   m_pPGSuperDoc->ClearSelection();
+   m_pMyDocument->ClearSelection();
+}
+
+void CPGSuperDocProxyAgent::SelectSegment(const CSegmentKey& segmentKey)
+{
+   m_pMyDocument->SelectSegment(segmentKey);
 }
 
 /////////////////////////////////////////////////////////////////////////
 // IUpdateTemplates
 bool CPGSuperDocProxyAgent::UpdatingTemplates()
 {
-   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pPGSuperDoc->GetDocTemplate());
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
 
-   CPGSuperAppPlugin* pPlugin = dynamic_cast<CPGSuperAppPlugin*>(pAppPlugin.p);
-   return pPlugin->UpdatingTemplates();
+   CPGSuperAppPlugin* pPGSuperPlugin = dynamic_cast<CPGSuperAppPlugin*>(pAppPlugin.p);
+   if ( pPGSuperPlugin )
+      return pPGSuperPlugin->UpdatingTemplates();
+
+   CPGSpliceAppPlugin* pPGSplicePlugin = dynamic_cast<CPGSpliceAppPlugin*>(pAppPlugin.p);
+   if ( pPGSplicePlugin )
+      return pPGSplicePlugin->UpdatingTemplates();
+
+   return false;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -948,55 +824,23 @@ bool CPGSuperDocProxyAgent::UpdatingTemplates()
 void CPGSuperDocProxyAgent::HoldEvents(bool bHold)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( bHold )
-      m_EventHoldCount++;
-   else
-      m_EventHoldCount--;
-
-   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
-   {
-      m_EventHoldCount = 0;
+   m_bHoldingEvents = bHold;
+   if ( !m_bHoldingEvents )
       m_UIEvents.clear();
-   }
 }
 
 void CPGSuperDocProxyAgent::FirePendingEvents()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( m_EventHoldCount == 0 )
+   if ( m_bHoldingEvents )
    {
-      return;
-   }
-
-   if ( 1 == m_EventHoldCount )
-   {
-      m_EventHoldCount--;
-
-      m_bFiringEvents = true;
-
-      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
-      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
-      for ( ; iter != iterEnd; iter++ )
+      m_bHoldingEvents = false;
+      std::vector<UIEvent>::iterator iter;
+      for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
       {
          UIEvent event = *iter;
-         m_pPGSuperDoc->UpdateAllViews(event.pSender,event.lHint,event.pHint.get());
+         m_pMyDocument->UpdateAllViews(event.pSender,event.lHint,event.pHint.get());
       }
-
-      m_bFiringEvents = false;
-      m_UIEvents.clear();
-   }
-   else
-   {
-      m_EventHoldCount--;
-   }
-}
-
-void CPGSuperDocProxyAgent::CancelPendingEvents()
-{
-   m_EventHoldCount--;
-   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
-   {
-      m_EventHoldCount = 0;
       m_UIEvents.clear();
    }
 }
@@ -1004,7 +848,7 @@ void CPGSuperDocProxyAgent::CancelPendingEvents()
 void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( 0 < m_EventHoldCount )
+   if ( m_bHoldingEvents )
    {
       UIEvent event;
       event.pSender = pSender;
@@ -1014,9 +858,8 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
       // skip all but one result hint - firing multiple result hints 
       // causes the UI to unnecessarilly update multiple times
       bool skip = false;
-      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
-      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
-      for ( ; iter != iterEnd; iter++ )
+      std::vector<UIEvent>::iterator iter;
+      for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
       {
          UIEvent e = *iter;
          if ( MIN_RESULTS_HINT <= e.lHint && e.lHint <= MAX_RESULTS_HINT )
@@ -1028,13 +871,12 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
 
       if (!skip)
       {
-         ATLASSERT( !m_bFiringEvents ); // don't add to the container while we are iterating through it
          m_UIEvents.push_back(event);
       }
    }
    else
    {
-      m_pPGSuperDoc->UpdateAllViews(pSender,lHint,pHint.get());
+      m_pMyDocument->UpdateAllViews(pSender,lHint,pHint.get());
    }
 }
 
@@ -1042,52 +884,57 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
 // IEditByUI
 void CPGSuperDocProxyAgent::EditBridgeDescription(int nPage)
 {
-   m_pPGSuperDoc->EditBridgeDescription(nPage);
+   m_pMyDocument->EditBridgeDescription(nPage);
 }
 
 void CPGSuperDocProxyAgent::EditAlignmentDescription(int nPage)
 {
-   m_pPGSuperDoc->EditAlignmentDescription(nPage);
+   m_pMyDocument->EditAlignmentDescription(nPage);
 }
 
-bool CPGSuperDocProxyAgent::EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage)
+bool CPGSuperDocProxyAgent::EditSegmentDescription(const CSegmentKey& segmentKey, int nPage)
 {
-   return m_pPGSuperDoc->EditGirderDescription(span,girder,nPage);
+   return m_pMyDocument->EditGirderSegmentDescription(segmentKey,nPage);
+}
+
+bool CPGSuperDocProxyAgent::EditGirderDescription(const CGirderKey& girderKey, int nPage)
+{
+   return m_pMyDocument->EditGirderDescription(girderKey,nPage);
 }
 
 bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
-   return m_pPGSuperDoc->EditSpanDescription(spanIdx,nPage);
+   return m_pMyDocument->EditSpanDescription(spanIdx,nPage);
 }
 
 bool CPGSuperDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
-   return m_pPGSuperDoc->EditPierDescription(pierIdx,nPage);
+   return m_pMyDocument->EditPierDescription(pierIdx,nPage);
 }
 
 void CPGSuperDocProxyAgent::EditLiveLoads()
 {
-   return m_pPGSuperDoc->OnLiveLoads();
+   return m_pMyDocument->OnLiveLoads();
 }
 
 void CPGSuperDocProxyAgent::EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction)
 {
-   return m_pPGSuperDoc->OnLoadsLldf(method,roaAction);
+   return m_pMyDocument->OnLoadsLldf(method,roaAction);
 }
 
 bool CPGSuperDocProxyAgent::EditPointLoad(CollectionIndexType loadIdx)
 {
-   return m_pPGSuperDoc->EditPointLoad(loadIdx);
+   return m_pMyDocument->EditPointLoad(loadIdx);
 }
 
 bool CPGSuperDocProxyAgent::EditDistributedLoad(CollectionIndexType loadIdx)
 {
-   return m_pPGSuperDoc->EditDistributedLoad(loadIdx);
+   return m_pMyDocument->EditDistributedLoad(loadIdx);
 }
 
 bool CPGSuperDocProxyAgent::EditMomentLoad(CollectionIndexType loadIdx)
 {
-   return m_pPGSuperDoc->EditMomentLoad(loadIdx);
+   return m_pMyDocument->EditMomentLoad(loadIdx);
 }
 
 UINT CPGSuperDocProxyAgent::GetStdToolBarID()
@@ -1105,9 +952,9 @@ UINT CPGSuperDocProxyAgent::GetHelpToolBarID()
    return m_HelpToolBarID;
 }
 
-bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType girder)
+bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
 {
-   return m_pPGSuperDoc->EditDirectInputPrestressing(span, girder);
+   return m_pMyDocument->EditDirectInputPrestressing(segmentKey);
 }
 
 
@@ -1115,37 +962,37 @@ bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(SpanIndexType span,Girde
 // IEditByUIEx
 void CPGSuperDocProxyAgent::AddPointLoad(const CPointLoadData& loadData)
 {
-   return m_pPGSuperDoc->AddPointLoad(loadData);
+   return m_pMyDocument->AddPointLoad(loadData);
 }
 
 void CPGSuperDocProxyAgent::DeletePointLoad(CollectionIndexType loadIdx)
 {
-   return m_pPGSuperDoc->DeletePointLoad(loadIdx);
+   return m_pMyDocument->DeletePointLoad(loadIdx);
 }
 
 void CPGSuperDocProxyAgent::AddDistributedLoad(const CDistributedLoadData& loadData)
 {
-   return m_pPGSuperDoc->AddDistributedLoad(loadData);
+   return m_pMyDocument->AddDistributedLoad(loadData);
 }
 
 void CPGSuperDocProxyAgent::DeleteDistributedLoad(CollectionIndexType loadIdx)
 {
-   return m_pPGSuperDoc->DeleteDistributedLoad(loadIdx);
+   return m_pMyDocument->DeleteDistributedLoad(loadIdx);
 }
 
 void CPGSuperDocProxyAgent::AddMomentLoad(const CMomentLoadData& loadData)
 {
-   return m_pPGSuperDoc->AddMomentLoad(loadData);
+   return m_pMyDocument->AddMomentLoad(loadData);
 }
 
 void CPGSuperDocProxyAgent::DeleteMomentLoad(CollectionIndexType loadIdx)
 {
-   return m_pPGSuperDoc->DeleteMomentLoad(loadIdx);
+   return m_pMyDocument->DeleteMomentLoad(loadIdx);
 }
 
 void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
 {
-   m_pPGSuperDoc->OnEffectiveFlangeWidth();
+   m_pMyDocument->OnEffectiveFlangeWidth();
 }
 
 
@@ -1153,7 +1000,7 @@ void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
 // IDesign
 void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   m_pPGSuperDoc->DesignGirder(bPrompt,bDesignSlabOffset,spanIdx,gdrIdx);
+   ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,bDesignSlabOffset,spanIdx,gdrIdx);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1202,80 +1049,50 @@ CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
 // IRegisterViewEvents
 IDType CPGSuperDocProxyAgent::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
-   return m_pPGSuperDoc->RegisterBridgePlanViewCallback(pCallback);
+   return m_pMyDocument->RegisterBridgePlanViewCallback(pCallback);
 }
 
 IDType CPGSuperDocProxyAgent::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
-   return m_pPGSuperDoc->RegisterBridgeSectionViewCallback(pCallback);
+   return m_pMyDocument->RegisterBridgeSectionViewCallback(pCallback);
 }
 
 IDType CPGSuperDocProxyAgent::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
-   return m_pPGSuperDoc->RegisterGirderElevationViewCallback(pCallback);
+   return m_pMyDocument->RegisterGirderElevationViewCallback(pCallback);
 }
 
 IDType CPGSuperDocProxyAgent::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
-   return m_pPGSuperDoc->RegisterGirderSectionViewCallback(pCallback);
+   return m_pMyDocument->RegisterGirderSectionViewCallback(pCallback);
 }
 
 bool CPGSuperDocProxyAgent::UnregisterBridgePlanViewCallback(IDType ID)
 {
-   return m_pPGSuperDoc->UnregisterBridgePlanViewCallback(ID);
+   return m_pMyDocument->UnregisterBridgePlanViewCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::UnregisterBridgeSectionViewCallback(IDType ID)
 {
-   return m_pPGSuperDoc->UnregisterBridgeSectionViewCallback(ID);
+   return m_pMyDocument->UnregisterBridgeSectionViewCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::UnregisterGirderElevationViewCallback(IDType ID)
 {
-   return m_pPGSuperDoc->UnregisterGirderElevationViewCallback(ID);
+   return m_pMyDocument->UnregisterGirderElevationViewCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(IDType ID)
 {
-   return m_pPGSuperDoc->UnregisterGirderSectionViewCallback(ID);
+   return m_pMyDocument->UnregisterGirderSectionViewCallback(ID);
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback)
+bool CPGSuperDocProxyAgent::IsPGSuperDocument()
 {
-   return m_pPGSuperDoc->RegisterEditPierCallback(pCallback);
+   return m_pMyDocument->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? true : false;
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
+bool CPGSuperDocProxyAgent::IsPGSpliceDocument()
 {
-   return m_pPGSuperDoc->RegisterEditSpanCallback(pCallback);
-}
-
-IDType CPGSuperDocProxyAgent::RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback)
-{
-   return m_pPGSuperDoc->RegisterEditGirderCallback(pCallback,pCopyCallback);
-}
-
-IDType CPGSuperDocProxyAgent::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
-{
-   return m_pPGSuperDoc->RegisterEditBridgeCallback(pCallback);
-}
-
-bool CPGSuperDocProxyAgent::UnregisterEditPierCallback(IDType ID)
-{
-   return m_pPGSuperDoc->UnregisterEditPierCallback(ID);
-}
-
-bool CPGSuperDocProxyAgent::UnregisterEditSpanCallback(IDType ID)
-{
-   return m_pPGSuperDoc->UnregisterEditSpanCallback(ID);
-}
-
-bool CPGSuperDocProxyAgent::UnregisterEditGirderCallback(IDType ID)
-{
-   return m_pPGSuperDoc->UnregisterEditGirderCallback(ID);
-}
-
-bool CPGSuperDocProxyAgent::UnregisterEditBridgeCallback(IDType ID)
-{
-   return m_pPGSuperDoc->UnregisterEditBridgeCallback(ID);
+   return m_pMyDocument->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? true : false;
 }

@@ -1,27 +1,30 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     1    WF83G    *     48  0.6  270  36.54  16.36  11.75  11.75                                              14  78.6  6.0  5.800  7.200   4.612    -4.397    14644   0.540  0.671   4.706 -2.118 -0.185 -0.218 -2.521 195.99  347.98    3.75   14.00   14.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   6  6.00  1     1    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.500  7.000    4.475   -4.276  14240  0.537  0.671  0.35 -0.16 -0.02 -0.02 -0.20 182.54 321.03   4.00  14.00  14.00
 
 
 The Specification Check was Not Successful
-Confinement zone check failed.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     2    WF83G    *     48  0.6  270  36.54  16.36  11.75  11.75                                              14  78.6  6.0  5.800  7.200   4.643    -4.424    14644   0.538  0.671   4.590 -2.161 -0.185 -0.218 -2.564 195.99  345.64    3.75   14.00   14.00 
-
-
-The Specification Check was Not Successful
-Confinement zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     4    WF83G    *     48  0.6  270  36.54  16.36  11.75  11.75                                              14  78.6  6.0  5.800  7.200   4.643    -4.424    14644   0.538  0.671   4.590 -2.161 -0.185 -0.218 -2.564 195.99  345.64    3.75   14.00   14.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   6  6.00  1     2    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.800  7.100    4.527   -4.320  14343  0.538  0.671  0.33 -0.17 -0.02 -0.02 -0.20 178.76 306.40   3.75  14.00  14.00
 
 
 The Specification Check was Not Successful
-Confinement zone check failed.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   6  6.00  1     4    WF83G  *    46  0.60  270 36.66 18.23  12 78.6  5.800  7.100    4.527   -4.320  14343  0.538  0.671  0.33 -0.17 -0.02 -0.02 -0.20 178.76 306.40   3.75  14.00  14.00
+
+
+The Specification Check was Not Successful
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
 
 

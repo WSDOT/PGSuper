@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ static ROWCOL GetEntryLoad(const CGirderGlobalStrandGrid::GlobalStrandGridEntry&
    {
       return 2;
    }
-   else if (useHarpedGrid && entry.m_Type==GirderLibraryEntry::stAdjustable && entry.m_Hend_X>0.0)
+   else if (useHarpedGrid && entry.m_Type==GirderLibraryEntry::stHarped && entry.m_Hend_X>0.0)
    {
       return 2;
    }
@@ -182,7 +182,7 @@ BOOL CGirderGlobalStrandGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, U
 	    nRow, nCol, nFlags;
 
 	   CMenu menu;
-	   VERIFY(menu.LoadMenu(IDR_ADD_EDIT_DELETE_POPUP));
+	   VERIFY(menu.LoadMenu(IDR_ADD_DELETE_POPUP));
 
 	   CMenu* pPopup = menu.GetSubMenu( 0 );
 	   ASSERT( pPopup != NULL );
@@ -212,7 +212,7 @@ void CGirderGlobalStrandGrid::EditSelectedRow()
    GlobalStrandGridEntry& entry = m_Entries[idx];
 
    // existing number of rows
-   pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+   bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    ROWCOL old_nrows = GetEntryLoad(entry, use_harped);
@@ -232,7 +232,7 @@ void CGirderGlobalStrandGrid::EditSelectedRow()
 
       COLORREF curr_color  =  GetEntryColor(idx);
 
-      FillRowsWithEntry(row, entry, use_harped, adj_type, curr_color);
+      FillRowsWithEntry(row, entry, use_harped, web_strands_harped, curr_color);
       SelectRow(row);
 
       OnChangeStrandData();
@@ -257,7 +257,7 @@ void CGirderGlobalStrandGrid::InsertSelectedRow()
    GlobalStrandGridEntry entry;
    if (EditEntry(sel_row, entry, true))
    {
-      pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+      bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
       bool use_harped = m_pClient->DoUseHarpedGrid();
 
       // entry selected - we must add some new rows
@@ -273,7 +273,7 @@ void CGirderGlobalStrandGrid::InsertSelectedRow()
       for (CollectionIndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
-         row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
+         row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, web_strands_harped, curr_color);
       }
 
       SetCurrentCell(sel_row, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
@@ -309,7 +309,7 @@ void CGirderGlobalStrandGrid::AppendSelectedRow()
    GlobalStrandGridEntry entry;
    if (EditEntry(nrow, entry, true))
    {
-      pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+      bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
       bool use_harped = m_pClient->DoUseHarpedGrid();
 
       // entry was changed - we must add some new rows
@@ -328,7 +328,7 @@ void CGirderGlobalStrandGrid::AppendSelectedRow()
       COLORREF curr_color  =  GetEntryColor(idx);
 
 
-      FillRowsWithEntry(nrow, entry, use_harped, adj_type, curr_color);
+      FillRowsWithEntry(nrow, entry, use_harped, web_strands_harped, curr_color);
       SelectRow(nrow);
    }
 
@@ -354,7 +354,7 @@ void CGirderGlobalStrandGrid::AppendEntry(CGirderGlobalStrandGrid::GlobalStrandG
 	ROWCOL nrow = 0;
    nrow = GetRowCount()+1;
 
-   pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+   bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    // entry was changed - we must add some new rows
@@ -373,7 +373,7 @@ void CGirderGlobalStrandGrid::AppendEntry(CGirderGlobalStrandGrid::GlobalStrandG
    COLORREF curr_color  =  GetEntryColor(idx);
 
 
-   FillRowsWithEntry(nrow, entry, use_harped, adj_type, curr_color);
+   FillRowsWithEntry(nrow, entry, use_harped, web_strands_harped, curr_color);
    SelectRow(nrow);
 
    nrow = GetRowCount();
@@ -397,7 +397,7 @@ void CGirderGlobalStrandGrid::RemoveSelectedRow()
    ATLASSERT(entry_iter != m_Entries.end());
 
    // get number of rows used by entry and delete 'em
-   pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+   bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
    bool use_harped = m_pClient->DoUseHarpedGrid();
    ROWCOL nrows = GetEntryLoad(*entry_iter, use_harped);
    RemoveRows(sel_row, sel_row+nrows-1);
@@ -412,7 +412,7 @@ void CGirderGlobalStrandGrid::RemoveSelectedRow()
    for (CollectionIndexType cnt=idx; cnt<size; cnt++)
    {
       COLORREF curr_color  =  GetEntryColor(cnt);
-      row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
+      row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, web_strands_harped, curr_color);
    }
 
    if (row>0)
@@ -443,7 +443,7 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
       ATLASSERT(entry_iter!=m_Entries.end());
 
       // find top row using number of rows we have to move up
-      pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+      bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
       bool use_harped = m_pClient->DoUseHarpedGrid();
       EntryIteratorType above_iter = entry_iter-1;
       ROWCOL load = GetEntryLoad(*above_iter, use_harped);
@@ -462,7 +462,7 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
       for (CollectionIndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
-         row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
+         row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, web_strands_harped, curr_color);
       }
 
       SetCurrentCell(top_row, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
@@ -485,7 +485,7 @@ void CGirderGlobalStrandGrid::MoveDownSelectedRow()
    }
    else
    {
-      pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+      bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
       bool use_harped = m_pClient->DoUseHarpedGrid();
 
       // deal with data move
@@ -506,7 +506,7 @@ void CGirderGlobalStrandGrid::MoveDownSelectedRow()
       for (CollectionIndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
-         row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
+         row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, web_strands_harped, curr_color);
       }
 
       SetCurrentCell(top_row, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
@@ -721,7 +721,7 @@ void CGirderGlobalStrandGrid::FillGrid(EntryCollectionType& entries)
 
 void CGirderGlobalStrandGrid::RedrawGrid()
 {
-   pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+   bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    // fill grid
@@ -731,17 +731,17 @@ void CGirderGlobalStrandGrid::RedrawGrid()
    {
       COLORREF curr_color =  GetEntryColor(idx++);
 
-      nRow += FillRowsWithEntry(nRow, *it, use_harped, adj_type, curr_color);
+      nRow += FillRowsWithEntry(nRow, *it, use_harped, web_strands_harped, curr_color);
    }
 }
 
-ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridEntry& entry, bool useHarpedEnd, pgsTypes::AdjustableStrandType asType, COLORREF currColor)
+ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridEntry& entry, bool useHarped, bool webStrandsHarped, COLORREF currColor)
 {
    GetParam()->SetLockReadOnly(FALSE);
 
    ROWCOL nrow_orig = nRow;
-   Float64 x = entry.m_X;
-   Float64 y = entry.m_Y;
+   double x = entry.m_X;
+   double y = entry.m_Y;
 
    CString stype;
    if (entry.m_Type == GirderLibraryEntry::stStraight)
@@ -751,9 +751,9 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
       else
          stype = _T("Straight");
    }
-   else if (entry.m_Type == GirderLibraryEntry::stAdjustable)
+   else if (entry.m_Type == GirderLibraryEntry::stHarped)
    {
-      stype = LOCAL_LABEL_HARP_TYPE(asType);
+      stype =LABEL_HARP_TYPE( !webStrandsHarped );
    }
    else
       ATLASSERT(0);
@@ -770,8 +770,12 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
    SetValueRange(CGXRange(nRow, 2), y);
    SetValueRange(CGXRange(nRow, 3), stype);
 
+   // We never fill harped if web strands are straight
+   if (!webStrandsHarped)
+      useHarped = false;
+
    // fill harped if need be
-   if (useHarpedEnd && entry.m_Type == GirderLibraryEntry::stAdjustable )
+   if (useHarped && entry.m_Type == GirderLibraryEntry::stHarped )
    {
       SetValueRange(CGXRange(nRow, 4), entry.m_Hend_X);
       SetValueRange(CGXRange(nRow, 5), entry.m_Hend_Y);
@@ -786,7 +790,7 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
             .SetInterior(DISABLED_COLOR));
    }
    
-   ROWCOL rows_used = GetEntryLoad(entry, useHarpedEnd);
+   ROWCOL rows_used = GetEntryLoad(entry, useHarped);
    if (rows_used == 2)
    {
       nRow++;
@@ -801,7 +805,7 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
             .SetHorizontalAlignment(DT_RIGHT)
             .SetInterior(currColor));
 
-      if (useHarpedEnd && entry.m_Type == GirderLibraryEntry::stAdjustable )
+      if (useHarped && entry.m_Type == GirderLibraryEntry::stHarped )
       {
          SetValueRange(CGXRange(nRow, 4), -entry.m_Hend_X);
          SetValueRange(CGXRange(nRow, 5), entry.m_Hend_Y);
@@ -815,6 +819,7 @@ ROWCOL CGirderGlobalStrandGrid::FillRowsWithEntry(ROWCOL nRow, GlobalStrandGridE
 			      .SetEnabled(FALSE)
                .SetInterior(DISABLED_COLOR));
       }
+
    }
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -934,7 +939,7 @@ bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
+   bool web_strands_harped = m_pClient->DoUseHarpedWebStrands();
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    CStrandGridLocation dlg;
@@ -944,7 +949,7 @@ bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry
    dlg.m_UnitString.TrimRight(_T(")"));
 
    dlg.m_Row = row;
-   dlg.SetEntry(entry, use_harped, adj_type);
+   dlg.SetEntry(entry, use_harped, web_strands_harped);
 
    INT_PTR st = dlg.DoModal();
    if (st==IDOK)
@@ -985,7 +990,7 @@ void CGirderGlobalStrandGrid::OnChangeStrandData()
                ndb++;
          }
       }
-      else if (entry.m_Type==GirderLibraryEntry::stAdjustable)
+      else if (entry.m_Type==GirderLibraryEntry::stHarped)
       {
          nh++;
 
@@ -1014,7 +1019,7 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
    for ( iter = m_Entries.begin(); iter != m_Entries.end(); iter++ )
    {
       CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = *iter;
-      if ( entry.m_Type == GirderLibraryEntry::stAdjustable )
+      if ( entry.m_Type == GirderLibraryEntry::stHarped )
          harped_strands.push_back(entry);
    }
 
@@ -1026,7 +1031,7 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
    for ( iter = m_Entries.begin(); iter != m_Entries.end(); iter++ )
    {
       CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = *iter;
-      if ( entry.m_Type == GirderLibraryEntry::stAdjustable )
+      if ( entry.m_Type == GirderLibraryEntry::stHarped )
          entry = harped_strands[idx++];
    }
 
@@ -1040,11 +1045,11 @@ void CGirderGlobalStrandGrid::GenerateStrandPositions()
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CStrandGenerationDlg dlg; 
+   CStrandGenerationDlg dlg; // this dialog works in system units
    dlg.m_DoUseHarpedGrid = m_pClient->DoUseHarpedGrid();
-   dlg.m_AdjustableStrandType = m_pClient->GetAdjustableStrandType();
+   dlg.m_DoUseHarpedWebStrands = m_pClient->DoUseHarpedWebStrands();
 
-   dlg.m_Xstart = ::ConvertToSysUnits(1.0,unitMeasure::Inch); // this dialog works in system units
+   dlg.m_Xstart = ::ConvertToSysUnits(1.0,unitMeasure::Inch);
    dlg.m_Ystart = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
    dlg.m_nStrandsX = 8;
    dlg.m_nStrandsY = 1;
@@ -1230,7 +1235,7 @@ void CGirderGlobalStrandGrid::GenerateHarpedStrands(CStrandGenerationDlg& dlg)
       for ( Int16 j = 0; j < Nx1; j++ )
       {
          CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
-         entry.m_Type = GirderLibraryEntry::stAdjustable;
+         entry.m_Type = GirderLibraryEntry::stHarped;
          entry.m_CanDebond = false;
 
          entry.m_X = x1;
@@ -1250,7 +1255,7 @@ void CGirderGlobalStrandGrid::GenerateHarpedStrands(CStrandGenerationDlg& dlg)
       for ( Int16 j = 0; j < Nx2; j++ )
       {
          CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
-         entry.m_Type = GirderLibraryEntry::stAdjustable;
+         entry.m_Type = GirderLibraryEntry::stHarped;
          entry.m_CanDebond = false;
 
          entry.m_X = x1;
@@ -1274,7 +1279,7 @@ bool straight_strand_pred(CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry)
 { return entry.m_Type == GirderLibraryEntry::stStraight; }
 
 bool harped_strand_pred(CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry)
-{ return entry.m_Type == GirderLibraryEntry::stAdjustable; }
+{ return entry.m_Type == GirderLibraryEntry::stHarped; }
 
 void CGirderGlobalStrandGrid::DeleteAllStraightStrands()
 {

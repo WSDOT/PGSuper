@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,24 +31,33 @@
 #include "PGSuperAppPlugin\resource.h"
 #include "LLDFGrid.h"
 #include "LLDFPierGrid.h"
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <LRFD\LRFD.h>
 
-inline GirderIndexType GetPierGirderCount(const CPierData* pPier)
+inline GirderIndexType GetPierGirderCount(const CPierData2* pPier)
 {
    // Number of girders at pier is max in attached spans
-   GirderIndexType prvNgdrs(0), nxtNgdrs(0);
+   GirderIndexType nPrevGirders(0), nNextGirders(0);
 
-   const CSpanData* pPspan = pPier->GetPrevSpan();
-   if (pPspan!=NULL)
-      prvNgdrs = pPspan->GetGirderCount();
+   const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
 
-   const CSpanData* pNspan = pPier->GetNextSpan();
-   if (pNspan!=NULL)
-      nxtNgdrs = pNspan->GetGirderCount();
+   if ( pPrevSpan )
+   {
+      const CBridgeDescription2* pBridgeDesc = pPrevSpan->GetBridgeDescription();
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pPrevSpan);
+      nPrevGirders = pGroup->GetGirderCount();
+   }
 
-   GirderIndexType ngdrs = max(prvNgdrs, nxtNgdrs);
-   return ngdrs;
+   const CSpanData2* pNextSpan = pPier->GetNextSpan();
+   if ( pNextSpan )
+   {
+      const CBridgeDescription2* pBridgeDesc = pNextSpan->GetBridgeDescription();
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pNextSpan);
+      nNextGirders = pGroup->GetGirderCount();
+   }
+
+   GirderIndexType nGirders = max(nPrevGirders, nNextGirders);
+   return nGirders;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,7 +75,7 @@ public:
 	enum { IDD = IDD_LLDF };
 	//}}AFX_DATA
 
-   CBridgeDescription m_BridgeDesc;
+   CBridgeDescription2 m_BridgeDesc;
    LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
    IBroker* m_pBroker;
 

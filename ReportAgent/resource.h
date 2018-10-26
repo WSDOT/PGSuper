@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,11 +25,12 @@
 // Used by ReportAgent.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_REPORTER                    101
-#define IDR_ENUMREPORTS                 102
-#define IDR_REPORT                      103
-#define IDR_REPORTDESC                  104
-#define IDR_REPORTSPEC                  105
+#define IDR_PGSUPER_REPORTER            101
+#define IDR_PGSPLICE_REPORTER           102
+#define IDR_ENUMREPORTS                 103
+#define IDR_REPORT                      104
+#define IDR_REPORTDESC                  105
+#define IDR_REPORTSPEC                  106
 
 // Next default values for new objects
 // 
@@ -38,6 +39,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        201
 #define _APS_NEXT_COMMAND_VALUE         32768
 #define _APS_NEXT_CONTROL_VALUE         201
-#define _APS_NEXT_SYMED_VALUE           106
+#define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

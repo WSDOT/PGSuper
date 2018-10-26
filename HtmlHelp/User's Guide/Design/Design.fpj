@@ -3,16 +3,6 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>Designing_a_Girder.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Design_Capabilities.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Designing_Long_Girders_for_Stability.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -28,7 +18,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Advanced_Flexural_Design_-_Multiple_Prestress_Optimization_Strategies.htm</name>
+			<name>Designing_a_Girder.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Design_Capabilities.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

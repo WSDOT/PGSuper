@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,8 +46,7 @@ public:
 
    bool operator()(const pgsPointOfInterest& other) const
    {
-      if ( m_Poi.GetSpan() == other.GetSpan() &&
-           m_Poi.GetGirder() == other.GetGirder() &&
+      if ( m_Poi.GetSegmentKey() == other.GetSegmentKey() &&
            IsZero( m_Poi.GetDistFromStart() - other.GetDistFromStart(), m_Tol ) )
       {
          return true;
@@ -73,18 +72,9 @@ public:
       if ( m_SamePlace.operator()(other) )
       {
          // poi are at the same place, do they have the same attributes?
-         if ( m_SamePlace.GetPoi().GetStageCount() != other.GetStageCount() )
+         if (!other.HasAttribute(m_SamePlace.GetPoi().GetAttributes()))
             return false;
 
-         std::vector<pgsTypes::Stage> stages = m_SamePlace.GetPoi().GetStages();
-         std::vector<pgsTypes::Stage>::iterator iter(stages.begin());
-         std::vector<pgsTypes::Stage>::iterator iterend(stages.end());
-         for (; iter!=iterend; iter++ )
-         {
-            PoiAttributeType attribute = m_SamePlace.GetPoi().GetAttributes(*iter);
-            if ( !other.HasAttribute(*iter,attribute) )
-               return false;
-         }
          return true;
       }
 
@@ -93,6 +83,25 @@ public:
 
 private:
    SamePlace m_SamePlace;
+};
+
+class SameReference
+{
+public:
+   SameReference(PoiAttributeType reference) : m_Reference(reference) {}
+
+   bool operator()(const pgsPointOfInterest& other) const
+   {
+      if ( other.HasAttribute(m_Reference) )
+      {
+         return true;
+      }
+
+      return false;
+   }
+
+private:
+   PoiAttributeType m_Reference;
 };
 
 class FindByID
@@ -113,14 +122,25 @@ private:
    PoiIDType m_ID;
 };
 
-class NotFindBySpanGirder
+class NotFindPoi
 {
 public:
-   NotFindBySpanGirder(SpanIndexType span,GirderIndexType gdr) : m_Span(span), m_Girder(gdr) {}
+   NotFindPoi(const CSegmentKey& segmentKey) {m_GroupIdx = segmentKey.groupIndex; m_GirderIdx = segmentKey.girderIndex; m_SegmentIdx = segmentKey.segmentIndex;}
    bool operator()(const pgsPointOfInterest& other) const
    {
-      if ( m_Span == other.GetSpan() && m_Girder == other.GetGirder() )
+      // returning true causes the poi to be excluded from the container
+      // return false for those poi that match the search criteria... return false for the poi we want to keep
+
+      const CSegmentKey& segmentKey = other.GetSegmentKey();
+      GroupIndexType grpIdx = segmentKey.groupIndex;
+      GirderIndexType gdrIdx = segmentKey.girderIndex;
+
+      if ( (m_GroupIdx   == INVALID_INDEX || m_GroupIdx   == grpIdx) &&  // group matches -AND-
+           (m_GirderIdx  == INVALID_INDEX || m_GirderIdx  == gdrIdx) &&  // girder matches -AND-
+           (m_SegmentIdx == INVALID_INDEX || m_SegmentIdx == segmentKey.segmentIndex) // segment matches
+         )
       {
+         // we want to keep the POI
          return false;
       }
 
@@ -128,8 +148,9 @@ public:
    }
 
 private:
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   GroupIndexType   m_GroupIdx;
+   GirderIndexType  m_GirderIdx;
+   SegmentIndexType m_SegmentIdx;
 };
 
 PoiIDType pgsPoiMgr::ms_NextID = 0;
@@ -167,23 +188,18 @@ pgsPoiMgr& pgsPoiMgr::operator= (const pgsPoiMgr& rOther)
 //======================== OPERATIONS =======================================
 PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
 {
-   ATLASSERT( poi.GetStageCount() != 0 ); // poi must belong to at least one stage
-
    // first see if we have an existing poi at this location. Just merge attributes into existing if we do
-   std::vector<pgsPointOfInterest>::iterator i(m_Poi.begin());
-   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
-   for (; i!=iend; i++ )
+   if ( poi.CanMerge() )
    {
-      pgsPointOfInterest& curpoi = *i;
-      if ( AtSamePlace( curpoi, poi ) )
+      std::vector<pgsPointOfInterest>::iterator iter(m_Poi.begin());
+      std::vector<pgsPointOfInterest>::iterator end(m_Poi.end());
+      for ( ; iter != end; iter++ )
       {
-         if ( curpoi.MergeStageAttributes(poi) )
+         pgsPointOfInterest& curpoi = *iter;
+         if ( curpoi.AtSamePlace(poi) )
          {
-            return curpoi.m_ID; // no need to re-sort vector
-         }
-         else
-         {
-            break; // poi's can't be merged... just break out of here and continue
+            curpoi.MergeAttributes(poi);
+            return curpoi.m_ID; // no need to resort vector
          }
       }
    }
@@ -192,159 +208,100 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
    if ( id == INVALID_ID )
    {
       // assert if we are about to roll over the id
-      ATLASSERT(ms_NextID != INVALID_ID-1);
+      ATLASSERT(ms_NextID != MAX_ID);
       id = ms_NextID++;
    }
 
    // Don't copy poi and put it in because this is a very highly utilized function and copies don't come cheap
+#if defined _DEBUG
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(),m_Poi.end(), FindByID(id) ) );
+   ATLASSERT(found == m_Poi.end());
+#endif
    m_Poi.push_back(poi);
    m_Poi.back().m_ID = id;
 
    std::sort(m_Poi.begin(),m_Poi.end());
 
+   ASSERTVALID;
+
    return id;
 }
 
-void pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi)
+bool pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsiderAttributes)
 {
-   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
-   std::vector<pgsPointOfInterest>::iterator found( std::find_if(m_Poi.begin(), iend, ExactlySame(poi,m_Tolerance)) );
-   if ( found != iend )
+   std::vector<pgsPointOfInterest>::iterator begin(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(m_Poi.end());
+   std::vector<pgsPointOfInterest>::iterator found;
+   if ( bConsiderAttributes )
+      found = std::find_if(begin, end, ExactlySame(poi,m_Tolerance) );
+   else
+      found = std::find_if(begin, end, SamePlace(poi,m_Tolerance) );
+
+   if ( found != end )
    {
       m_Poi.erase(found);
       std::sort(m_Poi.begin(),m_Poi.end());
+      return true;
    }
+
+   ASSERTVALID;
+
+   return false;
 }
 
-void pgsPoiMgr::RemovePointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart)
+void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType poiReference)
 {
-   ATLASSERT( span != ALL_SPANS );
-   ATLASSERT( gdr  != ALL_GIRDERS );
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::remove_if(m_Poi.begin(),m_Poi.end(),SameReference(poiReference)) );
+   m_Poi.erase(newEnd,m_Poi.end());
 
-   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
-   std::vector<pgsPointOfInterest>::iterator found( std::find_if(m_Poi.begin(), iend, SamePlace(pgsPointOfInterest(span,gdr,distFromStart),m_Tolerance)) );
-   if ( found!=iend )
-   {
-      m_Poi.erase(found);
-      std::sort(m_Poi.begin(),m_Poi.end());
-   }
+   ASSERTVALID;
 }
 
 void pgsPoiMgr::RemoveAll()
 {
    m_Poi.clear();
+
+   ASSERTVALID;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) 
+pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart) 
 {
-   ATLASSERT( span != ALL_SPANS );
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
-   pgsPointOfInterest poi(span,gdr,distFromStart);
-   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(), iend, SamePlace(poi,m_Tolerance)) );
-   if ( found != iend )
-      return (*found);
-
-   return pgsPointOfInterest();
-}
-
-pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) 
-{
-   ATLASSERT( span != ALL_SPANS );
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
-   pgsPointOfInterest poi(stage,span,gdr,distFromStart);
-
-   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(), iend, SamePlace(poi,m_Tolerance)) );
-   if ( found != iend && found->HasStage(stage) )
+   pgsPointOfInterest poi(segmentKey,distFromStart);
+   std::vector<pgsPointOfInterest>::const_iterator begin(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, SamePlace(poi,m_Tolerance) ) );
+   if ( found != end )
       return (*found);
 
    return poi;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) 
+pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart) 
 {
-   ATLASSERT( span != ALL_SPANS );
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
    // get the poi just for this span/girder
    std::vector<pgsPointOfInterest> vPOI;
    std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
-   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
-   for (; iter != iend; iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
-      if ( poi.GetSpan() == span && poi.GetGirder() == gdr )
-         vPOI.push_back(poi);
-   }
-
-   if ( vPOI.size() == 0 )
-      return pgsPointOfInterest();
-
-   std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());
-   std::vector<pgsPointOfInterest>::const_iterator iter2(iter1);
-   iter2++;
-
-   std::vector<pgsPointOfInterest>::const_iterator iterend(m_Poi.end());
-   for ( ; iter2 != iterend; iter1++, iter2++ )
-   {
-      const pgsPointOfInterest& prevPOI = *iter1;
-      const pgsPointOfInterest& nextPOI = *iter2;
-
-      ATLASSERT( prevPOI.GetSpan()   == span );
-      ATLASSERT( prevPOI.GetGirder() == gdr  );
-      ATLASSERT( nextPOI.GetSpan()   == span );
-      ATLASSERT( nextPOI.GetGirder() == gdr  );
-
-      if ( InRange(prevPOI.GetDistFromStart(),distFromStart,nextPOI.GetDistFromStart()) )
-      {
-         Float64 d1 = distFromStart - prevPOI.GetDistFromStart();
-         Float64 d2 = nextPOI.GetDistFromStart() - distFromStart;
-
-         if ( d1 < d2 )
-            return prevPOI;
-         else
-            return nextPOI;
-      }
-   }
-
-   return pgsPointOfInterest();
-}
-
-pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) 
-{
-   ATLASSERT( span != ALL_SPANS );
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
-   // get the poi just for this span/girder and stage
-   std::vector<pgsPointOfInterest> vPOI;
-   std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator iterend(m_Poi.end());
-   for (; iter != iterend; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-      if ( poi.HasStage(stage) && poi.GetSpan() == span && poi.GetGirder() == gdr )
+      if ( poi.GetSegmentKey() == segmentKey)
          vPOI.push_back(poi);
    }
 
    if ( vPOI.empty() )
       return pgsPointOfInterest();
 
-   std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());;
-   std::vector<pgsPointOfInterest>::const_iterator iter2(iter1);
-   iter2++;
-   std::vector<pgsPointOfInterest>::const_iterator viterend(vPOI.end());
-   for ( ; iter2 != viterend; iter1++, iter2++ )
+   std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());
+   std::vector<pgsPointOfInterest>::const_iterator iter2(iter1+1);
+   std::vector<pgsPointOfInterest>::const_iterator end2(vPOI.end());
+   for ( ; iter2 != end2; iter1++, iter2++ )
    {
       const pgsPointOfInterest& prevPOI = *iter1;
       const pgsPointOfInterest& nextPOI = *iter2;
 
-      ATLASSERT( prevPOI.GetSpan()   == span );
-      ATLASSERT( prevPOI.GetGirder() == gdr  );
-      ATLASSERT( nextPOI.GetSpan()   == span );
-      ATLASSERT( nextPOI.GetGirder() == gdr  );
+      ATLASSERT( prevPOI.GetSegmentKey() == segmentKey);
+      ATLASSERT( nextPOI.GetSegmentKey() == segmentKey);
 
       if ( InRange(prevPOI.GetDistFromStart(),distFromStart,nextPOI.GetDistFromStart()) )
       {
@@ -363,47 +320,41 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(pgsTypes::Stage stage,Sp
 
 pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(PoiIDType id) const
 {
-   std::vector<pgsPointOfInterest>::const_iterator itend(m_Poi.end());
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(), itend, FindByID(id)) );
-   if ( found != itend )
+   std::vector<pgsPointOfInterest>::const_iterator begin(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, FindByID(id) ) );
+   if ( found != end )
       return (*found);
 
    return pgsPointOfInterest();
 }
 
-void pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const
 {
    if ( mode == POIMGR_AND )
-      AndFind(span,gdr,stage,attrib,pPois);
+      AndFind(segmentKey,attrib,pPois);
    else
-      OrFind(span,gdr,stage,attrib,pPois);
+      OrFind(segmentKey,attrib,pPois);
 }
 
-void pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const
-{
-   if ( mode == POIMGR_AND )
-      AndFind(span,gdr,stages,attrib,pPois);
-   else
-      OrFind(span,gdr,stages,attrib,pPois);
-}
-
-std::vector<pgsPointOfInterest> pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr) const
+std::vector<pgsPointOfInterest> pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey) const
 {
    std::vector<pgsPointOfInterest> copy_poi;
 
    // This has to be the most poorly named function in the stl. 
    // (which really should be called copy_if_not)
-   std::remove_copy_if(m_Poi.begin(), m_Poi.end(), std::back_inserter(copy_poi), NotFindBySpanGirder(span,gdr));
+
+   std::remove_copy_if(m_Poi.begin(), m_Poi.end(), std::back_inserter(copy_poi), NotFindPoi(segmentKey));
 
    return copy_poi;
 }
 
 bool pgsPoiMgr::ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& poi)
 {
-   std::vector<pgsPointOfInterest>::iterator itend(m_Poi.end());
-
-   std::vector<pgsPointOfInterest>::iterator found( std::find_if(m_Poi.begin(), itend, FindByID(ID) ));
-   if ( found == itend )
+   std::vector<pgsPointOfInterest>::iterator begin(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::iterator end(m_Poi.end());
+   std::vector<pgsPointOfInterest>::iterator found(std::find_if(begin, end, FindByID(ID) ) );
+   if ( found == end )
       return false;
 
 
@@ -441,6 +392,8 @@ void pgsPoiMgr::MakeCopy(const pgsPoiMgr& rOther)
    // Add copy code here...
    m_Poi       = rOther.m_Poi;
    m_Tolerance = rOther.m_Tolerance;
+
+   ASSERTVALID;
 }
 
 void pgsPoiMgr::MakeAssignment(const pgsPoiMgr& rOther)
@@ -456,150 +409,94 @@ void pgsPoiMgr::MakeAssignment(const pgsPoiMgr& rOther)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool pgsPoiMgr::AtSamePlace(const pgsPointOfInterest& a,const pgsPointOfInterest& b)
+void pgsPoiMgr::GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& segmentKey,std::vector<pgsPointOfInterest>* pPois) const
 {
-   if ( a.GetSpan()   == b.GetSpan()   &&
-        a.GetGirder() == b.GetGirder() &&
-        IsZero( a.GetDistFromStart() - b.GetDistFromStart(), m_Tolerance ) )
-   {
-      return true;
-   }
-
-   return false;
-}
-
-pgsPointOfInterest pgsPoiMgr::Merge(const pgsPointOfInterest& a,const pgsPointOfInterest& b)
-{
-   ATLASSERT( AtSamePlace(a,b) );
-   pgsPointOfInterest poi(a);
-
-   std::vector<pgsTypes::Stage> a_stages( a.GetStages() );
-   std::vector<pgsTypes::Stage> b_stages( b.GetStages() );
-   a_stages.insert(a_stages.end(),b_stages.begin(),b_stages.end());
-   std::sort(a_stages.begin(),a_stages.end());
-
-   std::vector<pgsTypes::Stage>::iterator end( std::unique(a_stages.begin(),a_stages.end()) );
-
-   std::vector<pgsTypes::Stage>::iterator iter(a_stages.begin());
-   for (; iter != end; iter++ )
-   {
-      pgsTypes::Stage stage = *iter;
-      poi.SetAttributes( stage, a.GetAttributes(stage) | b.GetAttributes(stage) );
-   }
-
-   return poi;
-}
-
-void pgsPoiMgr::GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,std::vector<pgsPointOfInterest>* pPois) const
-{
-   ATLASSERT( gdr  != ALL_GIRDERS );
    pPois->clear();
-   std::vector<pgsPointOfInterest>::const_iterator i(m_Poi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator iend(m_Poi.end());
-   for (; i != iend; i++ )
+   std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   for ( ; iter != end; iter++ )
    {
-      const pgsPointOfInterest& poi = *i;
-
-      if ( poi.HasStage(stage) && 
-          (poi.GetSpan() == span || span == ALL_SPANS) && 
-          (poi.GetGirder() == gdr) && poi.IsATenthPoint(stage) )
+      const pgsPointOfInterest& poi = *iter;
+      if ( poi.GetSegmentKey() == segmentKey && poi.IsTenthPoint(reference) )
       {
          pPois->push_back( poi );
       }
    }
 }
 
-void pgsPoiMgr::AndFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax,std::vector<pgsPointOfInterest>* pPois) const
 {
-   ATLASSERT( gdr  != ALL_GIRDERS );
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(stage);
-
-   AndFind(span,gdr,stages,attrib,pPois);
-}
-
-void pgsPoiMgr::AndFind(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
-{
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
-   if (!pPois->empty())
-      pPois->clear();
-
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_Poi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_Poi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
+   pPois->clear();
+   std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   for ( ; iter != end; iter++ )
    {
-      const pgsPointOfInterest& poi = *poiIter;
-      bool bKeep = true;
-      std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
-      std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
-      for ( ; stageIter != stageIterEnd; stageIter++)
+      const pgsPointOfInterest& poi = *iter;
+      if ( poi.GetSegmentKey() == segmentKey && ::InRange(xMin,poi.GetDistFromStart(),xMax) )
       {
-         pgsTypes::Stage stage = *stageIter;
-         if ( !poi.HasStage(stage) )
-         {
-            bKeep = false; // poi doesn't exist in this stage... don't keep it
-            break; 
-         }
-
-         if ( !AndFind(poi,span,gdr,stage,attrib) ) 
-         {
-            // poi doesn't have the desired attributes in this stage, don't keep it
-            bKeep = false;
-            break;
-         }
+         pPois->push_back( poi );
       }
-
-      // poi has the desired attributes in all stages that we are interested in.. keep it
-      if ( bKeep )
-         pPois->push_back(poi);
    }
 }
 
-bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib) const
+
+void pgsPoiMgr::AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+{
+   pPois->clear();
+   std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      if ( AndFind(poi,segmentKey,attrib) ) 
+      {
+         // poi has desired attributes - keep it
+         pPois->push_back(poi);
+      }
+   }
+}
+
+bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const
 {
    // TRICKY CODE
-   // This if expression first check to make sure we have the same span and girder, then
-   // it check if each flag in attrib is set, if it is, the corrosponding flag in poi must
-   // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
-   if ( (poi.GetSpan() == span || span == ALL_SPANS) && poi.GetGirder() == gdr &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)              ? poi.IsATenthPoint(stage) == 1   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)              ? poi.IsATenthPoint(stage) == 2   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)              ? poi.IsATenthPoint(stage) == 3   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)              ? poi.IsATenthPoint(stage) == 4   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)              ? poi.IsATenthPoint(stage) == 5   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)              ? poi.IsATenthPoint(stage) == 6   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)              ? poi.IsATenthPoint(stage) == 7   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)              ? poi.IsATenthPoint(stage) == 8   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)              ? poi.IsATenthPoint(stage) == 9   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)              ? poi.IsATenthPoint(stage) == 10  : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L)             ? poi.IsATenthPoint(stage) == 11  : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURECAPACITY) ? poi.IsFlexureCapacity(stage)         : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURESTRESS)   ? poi.IsFlexureStress(stage)           : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SHEAR)           ? poi.IsShear(stage)                   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DISPLACEMENT)    ? poi.IsDisplacement(stage)            : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR1)  ? poi.HasAttribute(stage,POI_CRITSECTSHEAR1) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR2)  ? poi.HasAttribute(stage,POI_CRITSECTSHEAR2) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_HARPINGPOINT)    ? poi.IsHarpingPoint(stage)            : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PICKPOINT)       ? poi.HasAttribute(stage,POI_PICKPOINT) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BUNKPOINT)       ? poi.HasAttribute(stage,POI_BUNKPOINT) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CONCLOAD)        ? poi.IsConcentratedLoad(stage)        : true) &&
-	    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_MIDSPAN)         ? poi.IsMidSpan(stage)                 : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TABULAR)         ? poi.IsTabular(stage)                 : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_GRAPHICAL)       ? poi.IsGraphical(stage)               : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(stage)                     : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(stage)                   : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(stage,POI_PSXFER) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSDEV)           ? poi.HasAttribute(stage,POI_PSDEV) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(stage,POI_DEBOND) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)   ? poi.HasAttribute(stage,POI_DECKBARCUTOFF) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)       ? poi.HasAttribute(stage,POI_BARCUTOFF) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)      ? poi.HasAttribute(stage,POI_BARDEVELOP) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE) ? poi.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE) ? poi.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION) ? poi.HasAttribute(stage,POI_SECTCHANGE_TRANSITION) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(stage,POI_FACEOFSUPPORT) : true)
-       )
+   // This if expression first check to make sure we have the same segment, then
+   // it check if each flag in attrib is set. If it is, the corrosponding flag in poi must
+   // also be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+   PoiAttributeType targetReference = pgsPointOfInterest::GetReference(attrib);
+   PoiAttributeType poiReference = poi.GetReference();
+   bool bPoiReference = (targetReference == 0 ? true : sysFlags<PoiAttributeType>::IsSet(poiReference,targetReference));
+   if ( segmentKey == poi.GetSegmentKey() &&
+        bPoiReference &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)              ? poi.IsTenthPoint(poiReference) == 1   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)              ? poi.IsTenthPoint(poiReference) == 2   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)              ? poi.IsTenthPoint(poiReference) == 3   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)              ? poi.IsTenthPoint(poiReference) == 4   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)              ? poi.IsTenthPoint(poiReference) == 5   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)              ? poi.IsTenthPoint(poiReference) == 6   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)              ? poi.IsTenthPoint(poiReference) == 7   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)              ? poi.IsTenthPoint(poiReference) == 8   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)              ? poi.IsTenthPoint(poiReference) == 9   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)              ? poi.IsTenthPoint(poiReference) == 10  : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L)             ? poi.IsTenthPoint(poiReference) == 11  : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR1)  ? poi.HasAttribute(POI_CRITSECTSHEAR1) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR2)  ? poi.HasAttribute(POI_CRITSECTSHEAR2) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_HARPINGPOINT)    ? poi.IsHarpingPoint()            : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PICKPOINT)       ? poi.HasAttribute(POI_PICKPOINT) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BUNKPOINT)       ? poi.HasAttribute(POI_BUNKPOINT) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CONCLOAD)        ? poi.IsConcentratedLoad()        : true) &&
+	    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_MIDSPAN)         ? poi.IsMidSpan(poiReference)                 : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(poiReference)                     : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(poiReference)                   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(POI_PSXFER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE) ? poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE) ? poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION) ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(POI_FACEOFSUPPORT) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER) ? poi.HasAttribute(POI_INTERMEDIATE_PIER) : true ) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PIER)   ? poi.HasAttribute(POI_PIER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : true)
+      )
    {
       // This poi matches the selection criteria. Add it to the vector
       return true;
@@ -607,105 +504,91 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderI
    return false;
 }
 
-void pgsPoiMgr::OrFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
 {
-   ATLASSERT( gdr  != ALL_GIRDERS );
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(stage);
-   OrFind(span,gdr,stages,attrib,pPois);
-}
-
-void pgsPoiMgr::OrFind(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
-{
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
-   if (!pPois->empty())
-      pPois->clear();
+   pPois->clear();
 
    std::vector<pgsPointOfInterest>::const_iterator poiIter(m_Poi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_Poi.end());
-   for (; poiIter != poiIterEnd; poiIter++ )
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       const pgsPointOfInterest& poi = *poiIter;
-      bool bKeep = true;
-      std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
-      std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
-      for ( ; stageIter != stageIterEnd; stageIter++)
+
+      if ( OrFind(poi,segmentKey,attrib) )
       {
-         pgsTypes::Stage stage = *stageIter;
-         if ( !poi.HasStage(stage) )
-         {
-            // poi isn't defined in this stage, don't keep it
-            bKeep = false;
-            break;
-         }
-
-         if ( !OrFind(poi,span,gdr,stage,attrib) )
-         {
-            // poi doesn't have target attributes in this stage, don't keep it
-            bKeep = false;
-            break;
-         }
-      }
-
-      if ( bKeep )
+         // poi has target attributes - keep it
          pPois->push_back(poi);
+      }
    }
 }
 
-bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib) const
+bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const
 {
-   ATLASSERT( gdr  != ALL_GIRDERS );
-
    // TRICKY CODE
-   // This if expression first check to make sure we have the same span and girder, then
-   // it check if each flag in attrib is set, if it is, the corrosponding flag in poi must
+   // This if expression first check to make sure we have the same segment, then
+   // it check if each flag in attrib is set. If it is, the corrosponding flag in the poi must
    // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
-   if ( (poi.GetSpan() == span || span == ALL_SPANS) && poi.GetGirder() == gdr )
-   {
-      if (
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)              ? poi.IsATenthPoint(stage) == 1   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)              ? poi.IsATenthPoint(stage) == 2   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)              ? poi.IsATenthPoint(stage) == 3   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)              ? poi.IsATenthPoint(stage) == 4   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)              ? poi.IsATenthPoint(stage) == 5   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)              ? poi.IsATenthPoint(stage) == 6   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)              ? poi.IsATenthPoint(stage) == 7   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)              ? poi.IsATenthPoint(stage) == 8   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)              ? poi.IsATenthPoint(stage) == 9   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)              ? poi.IsATenthPoint(stage) == 10  : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L)             ? poi.IsATenthPoint(stage) == 11  : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURECAPACITY) ? poi.IsFlexureCapacity(stage)         : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURESTRESS)   ? poi.IsFlexureStress(stage)           : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SHEAR)           ? poi.IsShear(stage)                   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DISPLACEMENT)    ? poi.IsDisplacement(stage)            : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR1)  ? poi.HasAttribute(stage,POI_CRITSECTSHEAR1) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR2)  ? poi.HasAttribute(stage,POI_CRITSECTSHEAR2) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_HARPINGPOINT)    ? poi.IsHarpingPoint(stage)            : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PICKPOINT)       ? poi.HasAttribute(stage,POI_PICKPOINT) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BUNKPOINT)       ? poi.HasAttribute(stage,POI_BUNKPOINT) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CONCLOAD)        ? poi.IsConcentratedLoad(stage)        : false) ||
-	    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_MIDSPAN)         ? poi.IsMidSpan(stage)                 : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TABULAR)         ? poi.IsTabular(stage)                 : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_GRAPHICAL)       ? poi.IsGraphical(stage)               : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(stage)                     : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(stage)                   : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(stage,POI_PSXFER) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSDEV)          ? poi.HasAttribute(stage,POI_PSDEV) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(stage,POI_DEBOND) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)  ? poi.HasAttribute(stage,POI_DECKBARCUTOFF) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)      ? poi.HasAttribute(stage,POI_BARCUTOFF) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)     ? poi.HasAttribute(stage,POI_BARDEVELOP) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)      ? poi.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)      ? poi.HasAttribute(stage,POI_SECTCHANGE_TRANSITION) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(stage,POI_FACEOFSUPPORT) : false)
-       )
+   if ( segmentKey != poi.GetSegmentKey() )
+      return false;
 
+   if ( attrib == 0 )
+      return true; // always match if we don't care what the attributes are
+
+   PoiAttributeType poiReference = poi.GetReference();
+   PoiAttributeType targetReference = pgsPointOfInterest::GetReference(attrib);
+
+   if ( targetReference != 0 )
+   {
+      // the attribute we are looking for has at least one poi reference...
+      // the poi reference on the subject POI must match on at least one of the target reference types
+      if ( (sysFlags<PoiAttributeType>::IsSet(targetReference,POI_RELEASED_SEGMENT) && !sysFlags<PoiAttributeType>::IsSet(poiReference,POI_RELEASED_SEGMENT)) ||
+           (sysFlags<PoiAttributeType>::IsSet(targetReference,POI_LIFT_SEGMENT)     && !sysFlags<PoiAttributeType>::IsSet(poiReference,POI_LIFT_SEGMENT))     ||
+           (sysFlags<PoiAttributeType>::IsSet(targetReference,POI_STORAGE_SEGMENT)  && !sysFlags<PoiAttributeType>::IsSet(poiReference,POI_STORAGE_SEGMENT))  ||
+           (sysFlags<PoiAttributeType>::IsSet(targetReference,POI_HAUL_SEGMENT)     && !sysFlags<PoiAttributeType>::IsSet(poiReference,POI_HAUL_SEGMENT))     ||
+           (sysFlags<PoiAttributeType>::IsSet(targetReference,POI_ERECTED_SEGMENT)  && !sysFlags<PoiAttributeType>::IsSet(poiReference,POI_ERECTED_SEGMENT))  ||
+           (sysFlags<PoiAttributeType>::IsSet(targetReference,POI_GIRDER)           && !sysFlags<PoiAttributeType>::IsSet(poiReference,POI_GIRDER))
+         )
       {
-         // This poi matches the selection criteria. Add it to the vector
-         return true;
+         // No matches...
+         return false;
       }
+   }
+
+   if (
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)              ? poi.IsTenthPoint(poiReference) == 1   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)              ? poi.IsTenthPoint(poiReference) == 2   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)              ? poi.IsTenthPoint(poiReference) == 3   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)              ? poi.IsTenthPoint(poiReference) == 4   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)              ? poi.IsTenthPoint(poiReference) == 5   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)              ? poi.IsTenthPoint(poiReference) == 6   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)              ? poi.IsTenthPoint(poiReference) == 7   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)              ? poi.IsTenthPoint(poiReference) == 8   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)              ? poi.IsTenthPoint(poiReference) == 9   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)              ? poi.IsTenthPoint(poiReference) == 10  : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L)             ? poi.IsTenthPoint(poiReference) == 11  : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR1)  ? poi.HasAttribute(POI_CRITSECTSHEAR1) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CRITSECTSHEAR2)  ? poi.HasAttribute(POI_CRITSECTSHEAR2) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_HARPINGPOINT)    ? poi.IsHarpingPoint()            : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PICKPOINT)       ? poi.HasAttribute(POI_PICKPOINT) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BUNKPOINT)       ? poi.HasAttribute(POI_BUNKPOINT) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CONCLOAD)        ? poi.IsConcentratedLoad()        : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_MIDSPAN)         ? poi.IsMidSpan(poiReference)                 : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(poiReference)                     : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(poiReference)                   : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(POI_DEBOND) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(POI_PSXFER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)      ? poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)      ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(POI_FACEOFSUPPORT) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER) ? poi.HasAttribute(POI_INTERMEDIATE_PIER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PIER)   ? poi.HasAttribute(POI_PIER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : false)
+   )
+   {
+      // This poi matches the selection criteria. Add it to the vector
+      return true;
    }
 
    return false;
@@ -721,6 +604,15 @@ bool pgsPoiMgr::AssertValid() const
    if ( m_Tolerance < 0 )
       return false;
 
+   std::vector<pgsPointOfInterest>::const_iterator i(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   for ( ; i != end; i++ )
+   {
+      const pgsPointOfInterest& poi = *i;
+      if ( poi.m_ID < 0 )
+         return false;
+   }
+
    return true;
 }
 
@@ -729,57 +621,12 @@ void pgsPoiMgr::Dump(dbgDumpContext& os) const
    os << "Dump for pgsPoiMgr" << endl;
    os << "m_Tolerance = " << m_Tolerance << endl;
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = m_Poi.begin(); i != m_Poi.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator i(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 //      poi.Dump(os);
    }
 }
 #endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsPoiMgr::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsPoiMgr");
-
-   // Create a poi mgr and fill it with some std::vector<pgsPointOfInterest>'s
-   pgsPoiMgr mgr;
-
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,0.00) );
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,1.00) );
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,2.00) );
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,3.00) );
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,4.00) );
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,5.00) );
-
-   TRY_TESTME( mgr.GetPointOfInterestCount() == 6 );
-
-   // Add a std::vector<pgsPointOfInterest> very near poi #6.  The tolerancing should eliminate it.
-   // Use all the non-standard std::vector<pgsPointOfInterest> attributes and verify the attributes merged correctly
-   mgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,0,0,4.99999, POI_CRITSECTSHEAR1 | POI_HARPINGPOINT | POI_CONCLOAD) );
-
-   TRY_TESTME( mgr.GetPointOfInterestCount() == 6 );
-   pgsPointOfInterest poi = mgr.GetPointOfInterest(0,0,5.0001);
-   TRY_TESTME( poi.GetID() != INVALID_ID );
-   TRY_TESTME( poi.IsConcentratedLoad(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsDisplacement(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsFlexureCapacity(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsFlexureStress(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsGraphical(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsHarpingPoint(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsShear(pgsTypes::CastingYard) );
-   TRY_TESTME( poi.IsTabular(pgsTypes::CastingYard) );
-
-   // Try to get a bogus std::vector<pgsPointOfInterest>
-   TRY_TESTME( mgr.GetPointOfInterest(0,0,10000000.0).GetID() == INVALID_ID );
-   
-   // Get a vector of std::vector<pgsPointOfInterest> that meet a certain criteria
-   std::vector<pgsPointOfInterest> pois;
-   mgr.GetPointsOfInterest(0,0,pgsTypes::CastingYard,POI_HARPINGPOINT,POIMGR_AND,&pois);
-   TRY_TESTME( pois.size() == 1 );
-   TRY_TESTME( (*pois.begin()).IsHarpingPoint(pgsTypes::CastingYard) );
-
-   TESTME_EPILOG("PoiMgr");
-}
-#endif // _UNITTEST

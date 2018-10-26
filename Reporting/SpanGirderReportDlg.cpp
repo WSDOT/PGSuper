@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 
 #include <PgsExt\GirderLabel.h>
 
@@ -47,7 +48,7 @@ IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
-   m_Span   = INVALID_INDEX;
+   m_Group  = INVALID_INDEX;
    m_Girder = INVALID_INDEX;
 
    m_pBroker = pBroker;
@@ -66,7 +67,7 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( m_Mode == SpanAndChapters || m_Mode == SpanGirderAndChapters)
    {
-	   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
+	   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Group);
    }
 
    if ( m_Mode == SpanGirderAndChapters || m_Mode == GirderAndChapters )
@@ -105,12 +106,12 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSpanGirderReportDlg, CDialog)
 	ON_COMMAND(IDHELP, OnHelp)
-	ON_CBN_SELCHANGE(IDC_SPAN, OnSpanChanged)
+	ON_CBN_SELCHANGE(IDC_SPAN, OnGroupChanged)
 END_MESSAGE_MAP()
 
 
 // CSpanGirderReportDlg message handlers
-void CSpanGirderReportDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
+void CSpanGirderReportDlg::UpdateGirderComboBox(GroupIndexType grpIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -124,17 +125,17 @@ void CSpanGirderReportDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
    pGdrBox->ResetContent();
 
    GirderIndexType cGirders = 0;
-   if ( spanIdx == ALL_SPANS )
+   if ( grpIdx == ALL_GROUPS )
    {
-      SpanIndexType nSpans = pBridge->GetSpanCount();
-      for ( SpanIndexType i = 0; i < nSpans; i++ )
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      for ( GroupIndexType i = 0; i < nGroups; i++ )
       {
          cGirders = max(cGirders,pBridge->GetGirderCount(i));
       }
    }
    else
    {
-      cGirders = pBridge->GetGirderCount( spanIdx );
+      cGirders = pBridge->GetGirderCount( grpIdx );
    }
 
    for ( GirderIndexType j = 0; j < cGirders; j++ )
@@ -183,23 +184,27 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
    pwndTitle->SetWindowText(m_RptDesc.GetReportName());
 
+   GET_IFACE(IDocumentType,pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
+
    // Fill up the span and girder combo boxes
    GET_IFACE( IBridge, pBridge );
 
    if ( m_Mode == SpanAndChapters || m_Mode == SpanGirderAndChapters )
    {
-      // fill up the span box
-      CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-      SpanIndexType cSpan = pBridge->GetSpanCount();
-      for ( SpanIndexType i = 0; i < cSpan; i++ )
+      // fill up the group list box
+      CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_SPAN );
+      GroupIndexType cGroups = pBridge->GetGirderGroupCount();
+      for ( GroupIndexType i = 0; i < cGroups; i++ )
       {
-         CString strSpan;
-         strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
-         pSpanBox->AddString(strSpan);
+         CString strGroup;
+         strGroup.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(i));
+         pGroupBox->AddString(strGroup);
       }
-      pSpanBox->SetCurSel((int)m_Span);
+      pGroupBox->SetCurSel((int)m_Group);
 
-      UpdateGirderComboBox(m_Span);
+      UpdateGirderComboBox(m_Group);
    }
 
    if ( m_Mode == SpanAndChapters )
@@ -210,12 +215,14 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pGirderBox->EnableWindow( FALSE );
 
       CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-      pGroupBox->SetWindowText(_T("Select a Span"));
+      CString str;
+      str.Format(_T("Select a %s"),strGroupLabel);
+      pGroupBox->SetWindowText(str);
    }
    else if ( m_Mode == GirderAndChapters )
    {
-      m_Span = ALL_SPANS;
-      UpdateGirderComboBox(m_Span);
+      m_Group = ALL_GROUPS;
+      UpdateGirderComboBox(m_Group);
 
       CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
       pGroupBox->SetWindowText(_T("Select a Girder Line"));
@@ -297,12 +304,12 @@ void CSpanGirderReportDlg::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_REPORT );
 }
 
-void CSpanGirderReportDlg::OnSpanChanged() 
+void CSpanGirderReportDlg::OnGroupChanged() 
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SPAN);
-   SpanIndexType spanIdx = SpanIndexType(pCB->GetCurSel());
+   GroupIndexType grpIdx = GroupIndexType(pCB->GetCurSel());
 
-   UpdateGirderComboBox(spanIdx);
+   UpdateGirderComboBox(grpIdx);
 }
 
 void CSpanGirderReportDlg::ClearChapterCheckMarks()
@@ -340,29 +347,30 @@ void CSpanGirderReportDlg::InitFromRptSpec()
 {
    if ( m_Mode == SpanAndChapters )
    {
-      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CSpanReportSpecification>(m_pInitRptSpec);
-      m_Span = pRptSpec->GetSpan();
+      boost::shared_ptr<CSpanReportSpecification> pRptSpec = boost::shared_dynamic_cast<CSpanReportSpecification>(m_pInitRptSpec);
+      m_Group = pRptSpec->GetSpan();
    }
    else if ( m_Mode == SpanGirderAndChapters )
    {
-      boost::shared_ptr<CSpanGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification>(m_pInitRptSpec);
-      m_Span   = pRptSpec->GetSpan();
-      m_Girder = pRptSpec->GetGirder();
+      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderReportSpecification>(m_pInitRptSpec);
+      const CGirderKey& girderKey(pRptSpec->GetGirderKey());
+      m_Group = girderKey.groupIndex;
+      m_Girder = girderKey.girderIndex;
    }
    else if ( m_Mode == GirderAndChapters )
    {
-      boost::shared_ptr<CGirderReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CGirderReportSpecification>(m_pInitRptSpec);
-      m_Girder = pRptSpec->GetGirder();
+      boost::shared_ptr<CGirderLineReportSpecification> pRptSpec = boost::shared_dynamic_cast<CGirderLineReportSpecification>(m_pInitRptSpec);
+      m_Girder = int(pRptSpec->GetGirderIndex());
    }
    else if ( m_Mode == ChaptersOnly )
    {
-      m_Span   = INVALID_INDEX;
+      m_Group  = INVALID_INDEX;
       m_Girder = INVALID_INDEX;
    }
    else
    {
       ATLASSERT(false); // is there a new mode?
-      m_Span = 0;
+      m_Group  = 0;
       m_Girder = 0;
    }
 

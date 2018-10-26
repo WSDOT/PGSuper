@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,14 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadSelectDlg.h"
 #include <..\htmlhelp\helptopics.hh>
-#include <MfcTools\CustomDDX.h>
+
+
+#include <PgsExt\BridgeDescription2.h>
+#include "PGSuperAppPlugin\TimelineEventDlg.h"
+
+#include <EAF\EAFDocument.h>
+#include "PGSuperDoc.h"
+#include "PGSpliceDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,8 +92,17 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_PERMIT_PEDES_COMBO,  m_PermitPedesType);
    DDX_CBItemData(pDX, IDC_DESIGN_PEDES_COMBO,  m_DesignPedesType);
 
+   DDX_CBItemData(pDX,IDC_EVENT, m_LiveLoadEvent);
+
    if (pDX->m_bSaveAndValidate)
    {
+      if ( m_LiveLoadEvent == INVALID_INDEX )
+      {
+         pDX->PrepareCtrl(IDC_EVENT);
+         AfxMessageBox(_T("Select a live load event"));
+         pDX->Fail();
+      }
+
       m_DesignNames.clear(); // reuse vector 
       int cnt = m_ctlDesignLL.GetCount();
       int icnt;
@@ -135,6 +151,8 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CLiveLoadSelectDlg, CDialog)
 	//{{AFX_MSG_MAP(CLiveLoadSelectDlg)
 	ON_BN_CLICKED(IDC_HELPME, OnHelp)
+   ON_CBN_SELCHANGE(IDC_EVENT, OnEventChanged)
+   ON_CBN_DROPDOWN(IDC_EVENT, OnEventChanging)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -152,6 +170,8 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
    SetPedestrianComboText(IDC_DESIGN_PEDES_COMBO, IDC_DESIGN_PEDES_STATIC);
    SetPedestrianComboText(IDC_FATIGUE_PEDES_COMBO,IDC_FATIGUE_PEDES_STATIC);
    SetPedestrianComboText(IDC_PERMIT_PEDES_COMBO, IDC_PERMIT_PEDES_STATIC);
+
+   FillEventList();
 
 	CDialog::OnInitDialog();
 	
@@ -233,4 +253,95 @@ void CLiveLoadSelectDlg::SetPedestrianComboText(int iCombo, int iStatic)
 
    pCombo->EnableWindow(m_bHasPedestrianLoad? TRUE:FALSE);
    pStatic->EnableWindow(m_bHasPedestrianLoad? TRUE:FALSE);
+}
+
+void CLiveLoadSelectDlg::FillEventList()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   CEAFDocument* pDoc = EAFGetDocument();
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      GetDlgItem(IDC_EVENT_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_EVENT)->ShowWindow(SW_HIDE);
+   }
+
+   CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
+
+   int eventIdx = pcbEvent->GetCurSel();
+
+   pcbEvent->ResetContent();
+
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   {
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+
+      CString label;
+      label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+
+      pcbEvent->SetItemData(pcbEvent->AddString(label),eventIdx);
+   }
+
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);
+      pcbEvent->SetItemData(pcbEvent->AddString(strNewEvent),CREATE_TIMELINE_EVENT);
+   }
+
+   if ( eventIdx != CB_ERR )
+      pcbEvent->SetCurSel(eventIdx);
+}
+
+void CLiveLoadSelectDlg::OnEventChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
+   m_PrevEventIdx = pCB->GetCurSel();
+}
+
+void CLiveLoadSelectDlg::OnEventChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EVENT);
+   int curSel = pCB->GetCurSel();
+   EventIndexType idx = (IndexType)pCB->GetItemData(curSel);
+   if ( idx == CREATE_TIMELINE_EVENT )
+   {
+      EventIndexType eventIdx = CreateEvent();
+      if (eventIdx != INVALID_INDEX)
+      {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         pIBridgeDesc->SetLiveLoadEventByIndex(eventIdx);
+
+         FillEventList();
+
+         pCB->SetCurSel((int)idx);
+         m_LiveLoadEvent = eventIdx;
+      }
+      else
+      {
+         pCB->SetCurSel((int)m_PrevEventIdx);
+      }
+   }
+}
+
+EventIndexType CLiveLoadSelectDlg::CreateEvent()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   CTimelineEventDlg dlg(pTimelineMgr,FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      return pIBridgeDesc->AddTimelineEvent(dlg.m_TimelineEvent);
+  }
+
+   return INVALID_INDEX;
 }

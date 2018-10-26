@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 // LiveLoadDistFactorsDlg.h : header file
 //
 #include "PGSuperAppPlugin\resource.h"
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <LRFD\LRFD.h>
 #include "afxwin.h"
 
@@ -78,7 +78,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_LLDF_FILL };
 
-   const CBridgeDescription* m_pBridgeDesc;
+   const CBridgeDescription2* m_pBridgeDesc;
    LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
 
    GirderIndexType m_MaxNumGirders; // max girders in all spans
@@ -101,7 +101,7 @@ public:
    CComboBox m_PierGirderCB;
    afx_msg void OnCbnSelchangeGirderSpan();
    afx_msg void OnCbnSelchangePier();
-   Float64 m_UserInputValue;
+   double m_UserInputValue;
    int m_Method;
    int m_GIRDER_SPAN_INT;
    int m_GIRDER_GIRDER_INT;

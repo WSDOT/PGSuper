@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,6 @@
 #endif // _MSC_VER >= 1000
 // SameNumberOfGirdersHyperLink.h : header file
 //
-
-#include <MfcTools\HyperLink.h>
 
 #define CHANGE_SAMENUMBEROFGIRDERS _T("ChangeSameNumberOfGirders")
 static const UINT MsgChangeSameNumberOfGirders = ::RegisterWindowMessage(CHANGE_SAMENUMBEROFGIRDERS);

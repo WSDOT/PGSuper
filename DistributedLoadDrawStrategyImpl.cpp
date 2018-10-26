@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,8 +68,8 @@ DELEGATE_CUSTOM_INTERFACE(CDistributedLoadDrawStrategyImpl,EditLoad);
 DELEGATE_CUSTOM_INTERFACE(CDistributedLoadDrawStrategyImpl,GravityWellStrategy);
 
 
-void CDistributedLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
-                                                       Float64 loadLength, Float64 spanLength, Float64 girderDepthAtStartOfLoad, Float64 girderDepthAtEndOfLoad, Float64 maxMagnitude, COLORREF color)
+void CDistributedLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, CollectionIndexType loadIndex, 
+                                                       Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, COLORREF color)
 {
    METHOD_PROLOGUE(CDistributedLoadDrawStrategyImpl,Strategy);
 
@@ -78,8 +78,6 @@ void CDistributedLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO,
    pThis->m_pBroker = pBroker;
    pThis->m_Color = color;
    pThis->m_MaxMagnitude = maxMagnitude;
-   pThis->m_GirderDepthAtStartOfLoad  = girderDepthAtStartOfLoad;
-   pThis->m_GirderDepthAtEndOfLoad    = girderDepthAtEndOfLoad;
    pThis->m_SpanLength   = spanLength;
    pThis->m_LoadLength   = loadLength;
 
@@ -146,7 +144,6 @@ STDMETHODIMP_(void) CDistributedLoadDrawStrategyImpl::XDrawPointStrategy::GetBou
    Float64 wystart, wyend;
    pThis->GetWLoadHeight(pMap, &wystart, &wyend);
 
-   Float64 girder_depth = max(pThis->m_GirderDepthAtStartOfLoad,pThis->m_GirderDepthAtEndOfLoad);
    Float64 top = Max3(0.0,wystart, wyend);
    Float64 bot = Min3(0.0,wystart, wyend);
 
@@ -190,12 +187,14 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
 
    Float64 wx_end = wx_start + m_LoadLength;
 
+   Float64 load_end   = (m_Load.m_Fractional ? m_Load.m_EndLocation*m_SpanLength : m_Load.m_EndLocation  );
+
    // pen style
    UINT nWidth = 1;
    UINT nPenStyle = PS_SOLID;
-   if ( (m_Load.m_Type==UserLoads::Uniform && m_Load.m_WStart==0.0) || 
-        (m_Load.m_WStart==0.0 && m_Load.m_WEnd==0.0) ||
-        (wx_end > m_SpanLength))
+   if ( (m_Load.m_Type == UserLoads::Uniform && m_Load.m_WStart == 0.0) || 
+        (m_Load.m_WStart == 0.0 && m_Load.m_WEnd == 0.0) ||
+        (m_SpanLength < load_end))
    {
       nPenStyle = PS_DOT;
    }
@@ -220,7 +219,7 @@ void CDistributedLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,CO
    pDC->LineTo(lx_end,ly_end);
 
    // spacing of verticals
-   Uint32 num_spcs = Uint32(max( Round(m_LoadLength/m_ArrowSpacing), 1.0));
+   Uint32 num_spcs = Uint32(max( Round(m_LoadLength/m_ArrowSpacing), 1));
    Float64 increment = Float64(lx_end-lx_start)/num_spcs; // use Float64 to preserve numerical accuracy
 
    // arrow size
@@ -412,23 +411,6 @@ STDMETHODIMP_(void) CDistributedLoadDrawStrategyImpl::XGravityWellStrategy::GetG
    Float64 wystart, wyend;
    pThis->GetWLoadHeight(pMap, &wystart, &wyend);
 
-   // Have to play some games here because of paint artifacts
-   // Make region slightly bigger than it actually is
-   Float64 tol_start = pThis->m_GirderDepthAtStartOfLoad/10;
-   Float64 tol_end   = pThis->m_GirderDepthAtEndOfLoad/10;
-   wxstart -= tol_start;
-   wxend   += tol_end;
-
-   if (0 <= wystart)
-      wystart += tol_start;
-   else 
-      wystart -= tol_start;
-
-   if (0 <= wyend)
-      wyend += tol_end;
-   else 
-      wyend -= tol_end;
-
    // convert to logical
    long lxstart, lxend, lystart, lyend, lyzero;
    pMap->WPtoLP(wxstart, wystart, &lxstart, &lystart);
@@ -469,7 +451,7 @@ void CDistributedLoadDrawStrategyImpl::GetTLoadHeight(iCoordinateMap* pMap, long
    }
 
    // don't allow loads to shrink out of sight
-   long min_hgt = Round(SSIZE/10.0);
+   long min_hgt = Round(SSIZE/10);
    if (abs(*endHgt) < min_hgt && abs(*startHgt) < min_hgt)
    {
       *startHgt = ::BinarySign(*startHgt)*min_hgt;
@@ -553,14 +535,14 @@ void CDistributedLoadDrawStrategyImpl::EditLoad()
 
    ATLASSERT(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetDistributedLoadCount());
 
-   CDistributedLoadData rld = pUdl->GetDistributedLoad(m_LoadIndex);
+   const CDistributedLoadData& load = pUdl->GetDistributedLoad(m_LoadIndex);
 
-	CEditDistributedLoadDlg dlg(rld,m_pBroker);
+	CEditDistributedLoadDlg dlg(load);
    if (dlg.DoModal() == IDOK)
    {
-      if (rld!=dlg.m_Load)
+      if (load != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,rld,dlg.m_Load);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(m_LoadIndex,load,dlg.m_Load);
          txnTxnManager::GetInstance()->Execute(pTxn);
       }
    }

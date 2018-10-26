@@ -1,20 +1,20 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     1    U54G6          76  0.6  270  15.16   3.85  11.25  11.25                                              5.800 11.300   7.888    -4.350    14320   0.740  1.064   4.332 -2.328 -0.144 -0.125 -2.597 322.97  584.77    1.75    5.00    5.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.25   4 12.00  1     1    U54G6  *    72  0.60  270 15.16  5.83  16 48.0  5.500  9.100    7.601   -4.249  13645  0.740  1.064  0.32 -0.21 -0.01 -0.01 -0.23 293.98 499.49   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Hauling checks failed
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     2    U54G6          76  0.6  270  15.16   3.85  11.25  11.25                                              5.800 11.200   7.840    -4.328    14331   0.740  1.064   4.332 -2.306 -0.144 -0.126 -2.576 322.97  585.81    1.75    5.00    5.00 
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.25   4 12.00  1     2    U54G6  *    72  0.60  270 15.16  5.83  16 48.0  5.500  9.100    7.618   -4.257  13638  0.740  1.064  0.32 -0.21 -0.01 -0.01 -0.23 293.98 498.69   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Hauling checks failed
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
 
 

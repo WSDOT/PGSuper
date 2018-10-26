@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,22 +38,27 @@
 
 class CCopyGirderDlg : public CDialog
 {
-   friend CPGSuperDoc;
 // Construction
 public:
-	CCopyGirderDlg(IBroker* pBroker, CPGSuperDoc* pDoc, CWnd* pParent = NULL);   // standard constructor
+	CCopyGirderDlg(IBroker* pBroker,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
 	enum { IDD = IDD_COPY_GIRDER_PROPERTIES };
+	CButton	m_DoCopyGirder;
+	CButton	m_DoCopyMaterial;
+	CButton	m_DoCopyTransverse;
+	CButton	m_DoCopyLongitudinalRebar;
+	CButton	m_DoCopyPrestressing;
+	CButton	m_DoCopyHandling;
+	CButton	m_DoCopySlabOffset;
+	//CListBox	m_ToList;
+	//CListBox	m_FromList;
    
-   CComboBox m_FromSpan;
+   CComboBox m_FromGroup;
    CComboBox m_FromGirder;
-   CComboBox m_ToSpan;
+   CComboBox m_ToGroup;
    CComboBox m_ToGirder;
-
-   CCheckListBox m_PropertiesList;
-   std::vector<IDType> GetCallbackIDs();
 
 	//}}AFX_DATA
 
@@ -65,42 +70,58 @@ public:
 	//}}AFX_VIRTUAL
 
    // return selected girder to copy properties from
-   SpanGirderHashType GetFromSpanGirder();
+   CGirderKey GetFromGirder();
 
-   // return a list of spans and girders to be copied to
-   std::vector<SpanGirderHashType> GetToSpanGirders();
+public:
 
-   SpanGirderHashType m_FromSpanGirderHashValue;
-   std::vector<SpanGirderHashType> m_ToSpanGirderHashValues;
+   // return a list of girders to be copied to
+   std::vector<CGirderKey> GetToGirders();
+
+   CGirderKey m_FromGirderKey;
+   std::vector<CGirderKey> m_ToGirderKeys;
+
+   BOOL m_bCopyGirder;
+   BOOL m_bCopyTransverse;
+   BOOL m_bCopyPrestressing;
+   BOOL m_bCopyHandling;
+   BOOL m_bCopyMaterial;
+   BOOL m_bCopyLongitudinalRebar;
+   BOOL m_bCopySlabOffset;
 
 // Implementation
 protected:
-   std::vector<IDType> m_CallbackIDs;
 
 	// Generated message map functions
 	//{{AFX_MSG(CCopyGirderDlg)
 	virtual BOOL OnInitDialog();
-   afx_msg void OnFromSpanChanged();
-   afx_msg void OnToSpanChanged();
+   afx_msg void OnFromGroupChanged();
+   afx_msg void OnToGroupChanged();
    afx_msg void OnToGirderChanged();
+	afx_msg void OnCopyPrestressing();
+	afx_msg void OnCopyHandling();
+	afx_msg void OnCopySlabOffset();
+	afx_msg void OnCopyTransverse();
+   afx_msg void OnCopyLongitudinalRebar();
    afx_msg void OnHelp();
+	afx_msg void OnCopyMaterial();
+	afx_msg void OnCopyGirder();
    afx_msg void OnBnClickedRadio();
    afx_msg void OnBnClickedSelectGirders();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    void CopyToSelectionChanged();
-   CPGSuperDoc* m_pDoc;
+   void UpdateApply();
    IBroker* m_pBroker;
 
-   void FillComboBoxes(CComboBox& cbSpan,CComboBox& cbGirder, bool bIncludeAllSpanGirder);
-   void FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanIdx,bool bIncludeAll);
+   void FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders);
+   void FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpIdx,bool bIncludeAllGirders);
 
-   std::map<int,SpanGirderHashType> m_FromListIndicies;
+   std::map<int,CGirderKey> m_FromListIndicies;
 
 private:
    // map from multi-select dialog
-   std::vector<SpanGirderHashType> m_MultiDialogSelections;
+   std::vector<CGirderKey> m_MultiDialogSelections;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,12 @@
 #include "StdAfx.h"
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
+#include <IFace\Intervals.h>
+
+#include <PgsExt\TimelineManager.h>
 
 
 #ifdef _DEBUG
@@ -60,98 +64,63 @@ LPCTSTR CUserDefinedLoadsChapterBuilder::GetName() const
 
 rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType gdr;
-
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridge,pBridge);
-
-      // Don't report loads on adjacent spans unless continuous connection
-      span = pSGRptSpec->GetSpan();
-
-      PierIndexType prevPier = span;
-      bool bContinuousOnLeft, bContinuousOnRight;
-      pBridge->IsContinuousAtPier(prevPier,&bContinuousOnLeft,&bContinuousOnRight);
-      if(bContinuousOnRight)
-      {
-         span = ALL_SPANS;
-      }
-      else
-      {
-         PierIndexType nextPier = span+1;
-         pBridge->IsContinuousAtPier(nextPier,&bContinuousOnLeft,&bContinuousOnRight);
-         if(bContinuousOnLeft)
-         {
-            span = ALL_SPANS;
-         }
-      }
-
-      gdr = pSGRptSpec->GetGirder();
-   }
-   else
-   {
-      CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-      if(pGdrRptSpec)
-      {
-         pGdrRptSpec->GetBroker(&pBroker);
-         span = ALL_SPANS;
-         gdr = pGdrRptSpec->GetGirder();
-      }
-      else
-      {
-         ATLASSERT(0);
-         return NULL; // no hope going further
-      }
-   }
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
 
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
-      
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = min(nGirders,  (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx + 1));
+
+      SpanIndexType firstSpanIdx,lastSpanIdx;
+      pBridge->GetGirderGroupSpans(grpIdx,&firstSpanIdx,&lastSpanIdx);
+
+      for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
       {
-         rptParagraph* pParagraph;
-
-         // Only print span and girder if we are in a multi span or multi girder loop
-         if (lastSpanIdx!=firstSpanIdx+1 || lastGirderIdx!=firstGirderIdx+1)
+         for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
          {
-            pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            rptParagraph* pParagraph;
+
+            CSpanGirderKey spanGirderKey(spanIdx,gdrIdx);
+
+            // Only print span and girder if we are in a multi span or multi girder loop
+            if (lastSpanIdx != firstSpanIdx || lastGirderIdx != firstGirderIdx)
+            {
+               pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+               *pChapter << pParagraph;
+               *pParagraph << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+            }
+
+            pParagraph = new rptParagraph;
             *pChapter << pParagraph;
-            *pParagraph <<_T("Span ")<<LABEL_SPAN(spanIdx)<<_T(" Girder ")<<LABEL_GIRDER(gdrIdx)<<rptNewLine;
-         }
+            *pParagraph << _T("Locations are measured from left support.") << rptNewLine;
 
-         pParagraph = new rptParagraph;
-         *pChapter << pParagraph;
-         *pParagraph <<_T("Locations are measured from left support.")<<rptNewLine;
+            // tables of details - point loads first
+            rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << ppar1;
 
-         // tables of details - point loads first
-         rptParagraph* ppar1 = CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
-         *pChapter <<ppar1;
+            // distributed loads
+            ppar1 = CreateDistributedLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << ppar1;
 
-         // distributed loads
-         ppar1 = CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
-         *pChapter <<ppar1;
-
-         // moments loads
-         ppar1 = CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
-         *pChapter <<ppar1;
-      } // gdrIdx
-   } // spanIdx
+            // moments loads
+            ppar1 = CreateMomentLoadTable(pBroker, spanGirderKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << ppar1;
+         } // gdrIdx
+      } // spanIdx
+   } // groupIdx
 
    return pChapter;
 }
@@ -182,22 +151,29 @@ CChapterBuilder* CUserDefinedLoadsChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBroker,
-                           SpanIndexType span, GirderIndexType girder,
+                           const CSpanGirderKey& spanGirderKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
+   USES_CONVERSION;
    rptParagraph* pParagraph = new rptParagraph();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,   shear,   pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(span,girder);
+   Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    std::_tostringstream os;
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Point Loads"));
 
-   (*table)(0,0)  << _T("Stage");
+   (*table)(0,0)  << _T("Event");
    (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
    (*table)(0,2)  << COLHDR(_T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,3)  << COLHDR(_T("Magnitude"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
@@ -207,49 +183,37 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   for ( int i=0; i<3; i++ )
-   {
-      std::_tstring stagenm;
-      pgsTypes::Stage stage;
-      if (i==0)
-      {
-         stage = pgsTypes::BridgeSite1;
-         stagenm = _T("Bridge Site 1");
-      }
-      else if (i==1)
-      {
-         stage = pgsTypes::BridgeSite2;
-         stagenm = _T("Bridge Site 2");
-      }
-      else
-      {
-         stage = pgsTypes::BridgeSite3;
-         stagenm = _T("Bridge Site 3");
-      }
 
-      const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(stage, span, girder);
-      if (ppl!=0)
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+
+      const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanGirderKey);
+      if ( ppl != 0 )
       {
          IndexType npl = ppl->size();
 
-         for (IndexType ipl=0; ipl<npl; ipl++)
+         for (IndexType ipl = 0; ipl < npl; ipl++)
          {
             loads_exist = true;
 
-            IUserDefinedLoads::UserPointLoad upl = ppl->at(ipl);
+            const IUserDefinedLoads::UserPointLoad& upl = ppl->at(ipl);
 
-             std::_tstring strlcn;
+             std::_tstring strLoadCaseName;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-                strlcn = _T("DC");
+                strLoadCaseName = _T("DC");
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-                strlcn = _T("DW");
+                strLoadCaseName = _T("DW");
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-                strlcn = _T("LL+IM");
+                strLoadCaseName = _T("LL+IM");
              else
                 ATLASSERT(0);
 
-            (*table)(row,0) << stagenm;
-            (*table)(row,1) << strlcn;
+            (*table)(row,0) << strEventName;
+            (*table)(row,1) << strLoadCaseName;
             (*table)(row,2) << dim.SetValue( upl.m_Location );
             (*table)(row,3) << shear.SetValue( upl.m_Magnitude );
             (*table)(row,4) << upl.m_Description;
@@ -275,7 +239,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
 }
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker,
-                           SpanIndexType span, GirderIndexType girder,
+                           const CSpanGirderKey& spanGirderKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
@@ -285,11 +249,17 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue,   fplu,   pDisplayUnits->GetForcePerLengthUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(span,girder);
+   Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T("Distributed Loads"));
 
-   (*table)(0,0)  << _T("Stage");
+   (*table)(0,0)  << _T("Event");
    (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
    (*table)(0,2)  << COLHDR(_T("Start") << rptNewLine << _T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,3)  << COLHDR(_T("End") << rptNewLine << _T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -301,48 +271,35 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   for ( int i=0; i<3; i++ )
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      std::_tstring stagenm;
-      pgsTypes::Stage stage;
-      if (i==0)
-      {
-         stage = pgsTypes::BridgeSite1;
-         stagenm = _T("Bridge Site 1");
-      }
-      else if (i==1)
-      {
-         stage = pgsTypes::BridgeSite2;
-         stagenm = _T("Bridge Site 2");
-      }
-      else
-      {
-         stage = pgsTypes::BridgeSite3;
-         stagenm = _T("Bridge Site 3");
-      }
+      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
-      const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(stage, span, girder);
-      if (ppl!=0)
+      const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanGirderKey);
+      if (ppl !=0 )
       {
          IndexType npl = ppl->size();
-         for (IndexType ipl=0; ipl<npl; ipl++)
+         for (IndexType ipl = 0; ipl < npl; ipl++)
          {
             loads_exist = true;
 
-            IUserDefinedLoads::UserDistributedLoad upl = ppl->at(ipl);
+            const IUserDefinedLoads::UserDistributedLoad& upl = ppl->at(ipl);
 
-             std::_tstring strlcn;
+             std::_tstring strLoadCaseName;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-                strlcn = _T("DC");
+                strLoadCaseName = _T("DC");
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-                strlcn = _T("DW");
+                strLoadCaseName = _T("DW");
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-                strlcn = _T("LL+IM");
+                strLoadCaseName = _T("LL+IM");
              else
                 ATLASSERT(0);
 
-            (*table)(row,0) << stagenm;
-            (*table)(row,1) << strlcn;
+            (*table)(row,0) << strEventName;
+            (*table)(row,1) << strLoadCaseName;
             (*table)(row,2) << dim.SetValue( upl.m_StartLocation );
             (*table)(row,3) << dim.SetValue( upl.m_EndLocation );
             (*table)(row,4) << fplu.SetValue( upl.m_WStart );
@@ -371,7 +328,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker,
-                           SpanIndexType span, GirderIndexType girder,
+                           const CSpanGirderKey& spanGirderKey,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
@@ -381,11 +338,17 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,   pDisplayUnits->GetMomentUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(span,girder);
+   Float64 span_length = pBridge->GetSpanLength(spanGirderKey.spanIndex,spanGirderKey.girderIndex);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("End Moments"));
 
-   (*table)(0,0)  << _T("Stage");
+   (*table)(0,0)  << _T("Event");
    (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
    (*table)(0,2)  << _T("Location");
    (*table)(0,3)  << COLHDR(_T("Magnitude"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -395,49 +358,36 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   for ( int i=0; i<3; i++ )
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      std::_tstring stagenm;
-      pgsTypes::Stage stage;
-      if (i==0)
-      {
-         stage = pgsTypes::BridgeSite1;
-         stagenm = _T("Bridge Site 1");
-      }
-      else if (i==1)
-      {
-         stage = pgsTypes::BridgeSite2;
-         stagenm = _T("Bridge Site 2");
-      }
-      else
-      {
-         stage = pgsTypes::BridgeSite3;
-         stagenm = _T("Bridge Site 3");
-      }
+      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
+      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+      std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
-      const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(stage, span, girder);
-      if (ppl!=0)
+      const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanGirderKey);
+      if (ppl != 0)
       {
          IndexType npl = ppl->size();
 
-         for (IndexType ipl=0; ipl<npl; ipl++)
+         for (IndexType ipl = 0; ipl < npl; ipl++)
          {
             loads_exist = true;
 
             IUserDefinedLoads::UserMomentLoad upl = ppl->at(ipl);
 
-             std::_tstring strlcn;
+             std::_tstring strLoadCaseName;
              if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-                strlcn = _T("DC");
+                strLoadCaseName = _T("DC");
              else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-                strlcn = _T("DW");
+                strLoadCaseName = _T("DW");
              else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-                strlcn = _T("LL+IM");
+                strLoadCaseName = _T("LL+IM");
              else
                 ATLASSERT(0);
 
-            (*table)(row,0) << stagenm;
-            (*table)(row,1) << strlcn;
+            (*table)(row,0) << strEventName;
+            (*table)(row,1) << strLoadCaseName;
 
             if ( IsZero(upl.m_Location) )
                (*table)(row,2) << _T("Start of span");

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,13 +25,12 @@
 
 #include <System\Transaction.h>
 #include <PGSuperTypes.h>
-#include "PGSuperDoc.h"
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 class txnEditBoundaryConditions : public txnTransaction
 {
 public:
-   txnEditBoundaryConditions(PierIndexType pierIdx,CPGSuperDoc* pDoc,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC);
+   txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -42,7 +41,6 @@ public:
 private:
    bool DoExecute(int i);
    PierIndexType m_PierIdx;
-   CPGSuperDoc* m_pPGSuperDoc;
    pgsTypes::PierConnectionType m_ConnectionType[2];
 };
 

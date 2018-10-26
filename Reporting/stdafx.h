@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,28 +26,22 @@
 
 #pragma once
 
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
-#endif
-
 #include <PGSuperAll.h>
-#include <PGSuperUnits.h>
-#include <Reporter\Reporter.h>
 
-#if defined NOGRID
-#include "nogrid.h"
-#else
-#include <grid\gxall.h>
-#endif // NOGRID
-
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 
 #include <IFace\Tools.h>
 
 #include <PgsExt\GirderLabel.h>
-#include <afxwin.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
+
+#include <initguid.h>
+#include <EAF\EAFDisplayUnits.h>
+
+#include <grid\gxall.h>
+#include <afxwin.h>

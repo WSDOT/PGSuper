@@ -1,33 +1,33 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     1    Chain          24  0.6  270   3.33   3.33   6.75   6.75                                              5.100 11.200   3.011    -3.005      940   0.451  0.668   1.753 -0.184 -0.022 -0.032 -0.238  72.54  186.31    0.00    5.00    5.00 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 40.00   8  0.00  1     1   Chain       22  0.60  270  3.45  3.45   0  2.00  16   0  0  0  0  0  0  0  0  0  0  0  5.000 11.400    3.067   -3.075     899 0.451  0.668  0.12 -0.02 -0.00 -0.00 -0.02  62.89 153.76   0.00   5.00   5.00
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone check failed.
-Hauling checks failed
+Splitting zone checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     2    Chain          24  0.6  270   3.33   3.33   6.75   6.75                                              5.100 11.300   2.946    -2.914      884   0.408  0.736   1.752 -0.183 -0.022 -0.032 -0.237  72.54  186.42    0.00    5.00    5.00 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 40.00   8  0.00  1     2   Chain       22  0.60  270  3.45  3.45   0  2.00  16   0  0  0  0  0  0  0  0  0  0  0  4.800 11.400    2.997   -2.981     895 0.408  0.736  0.13 -0.02 -0.00 -0.00 -0.02  63.91 158.06   0.00   5.00   5.00
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone check failed.
-Hauling checks failed
+Splitting zone checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     5    Chain          22  0.6  270   3.45   3.45   6.75   6.75                                              4.800 11.300   2.882    -2.808      847   0.408  0.736   1.687 -0.183 -0.022  0.000 -0.205  63.91  172.44    0.00    5.00    5.00 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 40.00   8  0.00  1     5   Chain       20  0.60  270  3.60  3.60   0  2.00  16   0  0  0  0  0  0  0  0  0  0  0  4.600 11.400    2.933   -2.874     848 0.408  0.736  0.12 -0.02 -0.00  0.00 -0.02  55.11 142.91   0.00   5.00   5.00
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone check failed.
-Hauling checks failed
+Splitting zone checks failed.
 
 

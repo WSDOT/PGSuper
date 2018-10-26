@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,8 +29,9 @@ COPYRIGHT
    All Rights Reserved
 *****************************************************************************/
 
+#include <PgsExt\SegmentKey.h>
+
 #define CAD_SUCCESS  0
-#define CAD_FAIL    -1
 
 enum TxDOTCadExportFormatType {tcxNormal, tcxExtended, tcxTest};
 
@@ -46,7 +47,7 @@ DEFINE_GUID(IID_ITxDOTCadExport,
 0x8d0b5eb4, 0xb255, 0x4fba, 0x8a, 0xdb, 0x4d, 0xb2, 0xe3, 0xa6, 0xb1, 0xd5);
 interface ITxDOTCadExport : IUnknown
 {
-   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded) = 0;
-   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr) = 0;
+   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, TxDOTCadExportFormatType format, bool designSucceeded) = 0;
+   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey) = 0;
 };
 

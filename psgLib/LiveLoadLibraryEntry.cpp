@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,9 +52,9 @@ CLASS
 LiveLoadLibraryEntry::LiveLoadLibraryEntry() :
 m_IsNotional(false),
 m_LiveLoadConfigurationType(lcTruckPlusLane),
-m_LiveLoadApplicabilityType(pgsTypes::llaEntireStructure),
+m_LiveLoadApplicabilityType(llaEntireStructure),
 m_MaxVariableAxleSpacing(0.0),
-m_VariableAxleIndex(INVALID_INDEX)
+m_VariableAxleIndex(-1)
 {
    m_LaneLoadSpanLength = 0; // always use lane load if it is defined
 
@@ -165,8 +165,6 @@ bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("MaxVariableAxleSpacing"), &m_MaxVariableAxleSpacing))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-
-
       if(!pLoad->Property(_T("VariableAxleIndex"), &m_VariableAxleIndex))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -266,12 +264,12 @@ LiveLoadLibraryEntry::LiveLoadConfigurationType LiveLoadLibraryEntry::GetLiveLoa
    return m_LiveLoadConfigurationType;
 }
 
-void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(pgsTypes::LiveLoadApplicabilityType applicability)
+void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(LiveLoadApplicabilityType applicability)
 {
    m_LiveLoadApplicabilityType = applicability;
 }
 
-pgsTypes::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
+LiveLoadLibraryEntry::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
 {
    return m_LiveLoadApplicabilityType;
 }

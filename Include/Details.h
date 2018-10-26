@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 
 #include <PGSuperTypes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
@@ -222,28 +222,69 @@ struct FPCDETAILS
 // data at poi's used to interpolate critical section
 struct CRITSECTIONDETAILSATPOI
 {
+   enum IntersectionType {DvIntersection, ThetaIntersection, NoIntersection};
+   IntersectionType Intersection;
+
    pgsPointOfInterest Poi;
+   Float64            DistFromFOS;
    Float64            Dv;
-   bool               InRange; // false if theta calculation couln't be done
+   bool               InRange; // false if theta calculation couldn't be done
    Float64            Theta;
    Float64            CotanThetaDv05;
+
+   bool operator<(const CRITSECTIONDETAILSATPOI& other)
+   {   return Poi < other.Poi;  }
 };
 
 // Critical Section for shear details
 struct CRITSECTDETAILS
 {
    // if there is an uplift reaction, the critical section is at the face of support
-   bool bAtLeftFaceOfSupport, bAtRightFaceOfSupport;
-   pgsPointOfInterest poiLeftFaceOfSupport, poiRightFaceOfSupport;
+   bool bAtFaceOfSupport;
+   pgsPointOfInterest poiFaceOfSupport;
 
-   // intersection locations
-   CRITSECTIONDETAILSATPOI LeftCsDv;  // section locations from dv calculation
-   CRITSECTIONDETAILSATPOI RightCsDv;
-   CRITSECTIONDETAILSATPOI LeftCsDvt;  // section locations from .5*dv*cot(theta) calculation
-   CRITSECTIONDETAILSATPOI RightCsDvt;
+   PierIndexType PierIdx; // index of the pier this critical section is associated with
+   pgsTypes::PierFaceType PierFace;
+   Float64 Start, End; // start/end of the critical section zone (the zone over which shear
+   // is influenced by direct compression). Measured from start of segment
 
    // data at all pois
-   std::list<CRITSECTIONDETAILSATPOI> PoiData;
+   std::vector<CRITSECTIONDETAILSATPOI> PoiData;
+
+   // intersection locations
+   CRITSECTIONDETAILSATPOI CsDv;   // section locations from dv calculation
+   CRITSECTIONDETAILSATPOI CsDvt;  // section locations from .5*dv*cot(theta) calculation
+   CRITSECTIONDETAILSATPOI* pCriticalSection; // pointer to the actual critical section
+
+   CRITSECTDETAILS()
+   {
+      bAtFaceOfSupport = false;
+      PierIdx = INVALID_INDEX;
+      PierFace = pgsTypes::Ahead;
+      Start = 0;
+      End = 0;
+      pCriticalSection = NULL;
+   }
+
+   CRITSECTDETAILS(const CRITSECTDETAILS& other)
+   {
+      bAtFaceOfSupport = other.bAtFaceOfSupport;
+      poiFaceOfSupport = other.poiFaceOfSupport;
+      PierIdx          = other.PierIdx;
+      PierFace         = other.PierFace;
+      Start            = other.Start;
+      End              = other.End;
+      PoiData          = other.PoiData;
+      CsDv             = other.CsDv;
+      CsDvt            = other.CsDvt;
+
+      if ( &other.CsDv == other.pCriticalSection )
+         pCriticalSection = &CsDv;
+      else if ( &other.CsDvt == other.pCriticalSection )
+         pCriticalSection = &CsDvt;
+      else
+         pCriticalSection = NULL;
+   }
 };
 
 struct CREEPCOEFFICIENTDETAILS
@@ -274,29 +315,423 @@ struct CREEPCOEFFICIENTDETAILS
    Float64 K1, K2; // 2005 and later, from NCHRP Report 496
 };
 
+#define TIMESTEP_CREEP      0
+#define TIMESTEP_SHRINKAGE  1
+#define TIMESTEP_RELAXATION 2
+
+// This struct holds the computation details for a cross section of a concrete part
+// for a specific interval for a time step loss analysis
+// The concrete part could be a girder segment, closure pour, or deck
+struct TIME_STEP_CONCRETE
+{
+   //
+   // TIME STEP ANALYSIS INPUT PARAMETERS
+   //
+
+   // Net Section Properties of concrete part
+   Float64 An;  // Area
+   Float64 Ytn; // Centroid measured from top of girder
+   Float64 Ybn; // Centroid measured from bottom of girder
+   Float64 In;  // Moment of inertia
+
+   // Creep Strains during this interval due to loads applied in previous intervals
+   std::vector<Float64> ec; // = (Change in Creep Strain during interval i (de))*(Yce - Ycs)
+   std::vector<Float64> rc; // = (Change in curvature during interval i (dr))*(Yce - Ycs)
+
+   // Unrestrained deformations due to creep and shrinkage in concrete during this interval
+   Float64 esi; // shrinkage
+   Float64 e; // sum of ec vector
+   Float64 r; // sum of rc vector
+
+   // Restraining force (force required to cause deformations that are
+   // equal and opposite to the unrestrained deformations)
+   Float64 PrCreep; // = -Ea*An*e
+   Float64 MrCreep; // = -Ea*In*r
+   Float64 PrShrinkage; // = -Ea*An*esi
+
+   //
+   // TIME STEP ANALYSIS OUTPUT PARAMETERS
+   //
+
+   // Change in strain and curvature of this concrete part during this interval
+   // due to externally applied loads and restraining forces.
+   // er and rr are the deformation (axial strain and curvature) of the entire
+   // cross section due to extrernally applied loads and restraining forces. er and
+   // rr are found in the parent structure TIME_STEP_DETAILS. Ytr is the centroid
+   // (measured down from the top of the girder) of the transformed section (also found on the TIME_STEP_DETAILS struct)
+   Float64 de; // axial strain = er + rr(Yn-Ytr)
+   Float64 dr; // curvature = rr
+
+   // Force on this concrete part due to deformations during this interval
+   Float64 dP; // = de*Ea*Ag + Pr+Pre
+   Float64 dM; // = dr*Ea*In + Mr+Mre
+
+   // Force on this concrete part at the end of this interval
+   Float64 P; // = (P in previous interval) + dP;
+   Float64 M; // = (M in previous interval) + dM;
+
+   // Change in elastic strains during this interval (used for creep strains in next interval)
+   Float64 dee; // = dP/(Ea*An)
+   Float64 der; // = dM/(Ea*In)
+
+   // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
+   // where y is the depth from the top of the concrete part
+   // ---- alternatively ----
+   // Stress at the end of this interval = stress at end of previous interval + (dee + der*y)*Ea
+   Float64 fTop;
+   Float64 fBot;
+
+   TIME_STEP_CONCRETE()
+   {
+      An = 0;
+      Ytn = 0;
+      Ybn = 0;
+      In = 0;
+
+      esi = 0;
+      e = 0;
+      r = 0;
+
+      PrCreep = 0;
+      MrCreep = 0;
+
+      PrShrinkage = 0;
+
+      de = 0;
+      dr = 0;
+
+      dP = 0;
+      dM = 0;
+
+      P = 0;
+      M = 0;
+
+      dee = 0;
+      der = 0;
+
+      fTop = 0;
+      fBot = 0;
+   }
+};
+
+// This struct holds the computation details for a strand part
+// for a specific interval for a time step loss analysis
+// The strand part could be a pretensioned or posttension strand
+struct TIME_STEP_STRAND
+{
+   //
+   // TIME STEP ANALYSIS INPUT PARAMETERS
+   //
+
+   // Time Parameters of the interval
+   Float64 tEnd; // time since stressing of strand to end of this interval
+
+   // Geometric Properties
+   Float64 As;
+   Float64 Ys; // centroid of strand, measured from top of girder
+
+   // Relaxation
+   Float64 fr; // prestress loss due to relaxation during this interval
+   Float64 er; // apparent deformation due to relaxation (fr/Eps)
+   Float64 Pr; // restraining force (= -Eps*Aps*er)
+
+   Float64 Pj;  // jacking force  (includes deductions for anchors set and friction if PT)
+   Float64 fpj; // jacking stress (includes deductions for anchors set and friction if PT)
+
+   //
+   // TIME STEP ANALYSIS OUTPUT PARAMETERS
+   //
+   Float64 de; // strain at centroid of strand
+   Float64 dP; // change in force in strand due to deformations in this interval
+               // dP = de*Eps*Aps + Pr+Pre
+   
+   Float64 P; // force in strand at end of this interval = (P previous interval + dP)
+
+   // Loss/Gain during this interval
+   Float64 dFps; // = dP/Aps
+
+   // Effective prestress
+   Float64 fpe; // = fpj + Sum(dFps for all intervals up to and including this interval)
+   // also fpe = fpe (previous) + dFps (this interval)
+
+   // sum of losses up to and including this interval
+   Float64 loss; // = loss (previous) + dFps
+
+   // Elastic effect of live load on effective prestress
+   Float64 dFll;
+   Float64 fpeLL; // fpe + dFll;
+   Float64 lossLL; // loss + dFll;
+
+   // This value can be checked by (-Pj+P) = fpe*Aps
+   TIME_STEP_STRAND()
+   {
+      tEnd = 0;
+      As = 0;
+      Ys = 0;
+      fr = 0;
+      er = 0;
+      Pr = 0;
+
+      Pj = 0;
+      fpj = 0;
+
+      de = 0;
+      dP = 0;
+      
+      P = 0;
+
+      dFps = 0;
+      fpe = 0;
+      loss = 0;
+
+      dFll   = 0;
+      fpeLL  = 0;
+      lossLL = 0;
+   }
+};
+
+// This struct holds the computation details for a rebar part
+// for a specific interval for a time step loss analysis
+// The rebar part could be deck or girder segment rebar
+struct TIME_STEP_REBAR
+{
+   //
+   // TIME STEP ANALYSIS INPUT PARAMETERS
+   //
+
+   // Geometric Properties
+   Float64 As;
+   Float64 Ys; // centroid of rebar, measured from top of girder
+
+   //
+   // TIME STEP ANALYSIS OUTPUT PARAMETERS
+   //
+   Float64 de; // change in strain at centroid of rebar
+   Float64 dP; // change in force, dP = de*Eps*Aps
+
+   Float64 P; // force in rebar at end of this interval = (P previous interval + dP)
+
+   TIME_STEP_REBAR()
+   {
+      As = 0;
+      Ys = 0;
+      de = 0;
+      dP = 0;
+      P  = 0;
+   }
+};
+
+// This struct holds the computation details for a specific interval 
+// for a time step loss analysis
+struct TIME_STEP_DETAILS
+{
+   //
+   // TIME STEP ANALYSIS INPUT PARAMETERS
+   //
+   // (not really needed, but will help with debugging)
+   IntervalIndexType intervalIdx;
+   Float64 tStart, tMiddle, tEnd; // time at start, middle, end of interval
+
+   // Transformed Section Properties for this interval (based on age adjusted modulus of the girder)
+   // Ytr is measured from the top of the girder
+   Float64 Atr, Ytr, Itr;
+
+   // Externally applied loads
+   Float64 P, M;
+
+   // Time step parameters for girder and slab
+   TIME_STEP_CONCRETE Girder;
+   TIME_STEP_CONCRETE Slab;
+
+   // Time step parameters for strands and tendons
+   TIME_STEP_STRAND Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
+   std::vector<TIME_STEP_STRAND> Tendons; // one per duct
+
+   // Time step parameters for rebar (access array with pgsTypes::DeckRebarMatType)
+   TIME_STEP_REBAR DeckRebar[2];
+
+   // Time step parameters for girder rebar
+   std::vector<TIME_STEP_REBAR> GirderRebar;
+
+   // Total restraining force in this interval
+   Float64 Pr[3], Mr[3];
+
+   // Initial Strains (access array with pgsTypes::Back and pgsTypes::Ahead for left and right side of POI)
+   Float64 e[3][2];
+   Float64 r[3][2];
+
+   // Section results from analyzing the initial strains
+   Float64 Pre[3];
+   Float64 Mre[3];
+
+   // Deformation due to externally applied loads and restraining forces in this interval
+   Float64 er; // axial strain
+   Float64 rr; // curvature
+
+   // Check equilibrium
+   Float64 dPext, dPint;
+   Float64 dMext, dMint;
+   Float64 Pext, Pint;
+   Float64 Mext, Mint;
+
+   TIME_STEP_DETAILS()
+   {
+      intervalIdx = INVALID_INDEX;
+      tStart  = 0;
+      tMiddle = 0;
+      tEnd    = 0;
+
+      Atr = 0;
+      Ytr = 0;
+      Itr = 0;
+
+      P = 0;
+      M = 0;
+
+      for (int i = 0; i < 3; i++)
+      {
+         Pr[i] = 0;
+         Mr[i] = 0;
+
+         e[i][pgsTypes::Back]  = 0;
+         e[i][pgsTypes::Ahead] = 0;
+         r[i][pgsTypes::Back]  = 0;
+         r[i][pgsTypes::Ahead] = 0;
+
+         Pre[i] = 0;
+         Mre[i] = 0;
+      }
+
+      er = 0;
+      rr = 0;
+
+      dPext = 0;
+      dPint = 0;
+      dMext = 0;
+      dMint = 0;
+      Pext  = 0;
+      Pint  = 0;
+      Mext  = 0;
+      Mint  = 0;
+   }
+};
+
+// This struct holds the computation details for the basic
+// anchor set parameters. The actual anchor set at a POI
+// is stored in FRICTIONLOSSDETAILS. This struct just has
+// the parameters for the seating wedge
+struct ANCHORSETDETAILS
+{
+   ANCHORSETDETAILS()
+   { 
+      girderKey = CGirderKey(INVALID_INDEX,INVALID_INDEX); 
+      ductIdx = INVALID_INDEX;
+      for ( int i = 0; i < 2; i++ )
+      {
+         Lset[i]  = 0;
+         dfpAT[i] = 0;
+         p[i]     = 0;
+      }
+   }
+
+   // Key
+   CGirderKey girderKey;
+   DuctIndexType ductIdx;
+
+   // Value
+   // Array index is pgsTypes::MemberEndType
+   Float64 Lset[2]; // Anchor set zone length
+   Float64 dfpAT[2]; // Loss of effect stress at anchorage due to seating
+   Float64 p[2]; // Friction loss per unit length
+
+   bool operator<(const ANCHORSETDETAILS& other) const
+   {
+      if ( girderKey < other.girderKey )
+         return true;
+
+      if ( other.girderKey < girderKey )
+         return false;
+
+      return ductIdx < other.ductIdx;
+   }
+};
+
+// This struct holds the computation details for friction and anchor set
+// losses at a POI
+struct FRICTIONLOSSDETAILS
+{
+   Float64 alpha; // total angular change from jacking end to this POI
+   Float64 X;     // distance from start of tendon to this POI
+   Float64 dfpF;  // friction loss at this POI
+   Float64 dfpA;  // anchor set loss at this POI
+};
+
+// This struct holds the computation details for prestress losses
+// at a POI
 struct LOSSDETAILS
 {
-   LOSSDETAILS() {;}
-
+   LOSSDETAILS() { pLosses = 0; }
    LOSSDETAILS(const LOSSDETAILS& other)
    { MakeCopy(other); }
-
    LOSSDETAILS& operator=(const LOSSDETAILS& other)
    { return MakeCopy(other); }
-
    LOSSDETAILS& MakeCopy(const LOSSDETAILS& other)
    {
-      Method = other.Method;
-      pLosses = other.pLosses;
+      LossMethod = other.LossMethod;
+
+      RefinedLosses                     = other.RefinedLosses;
+      RefinedLosses2005                 = other.RefinedLosses2005;
+      ApproxLosses                      = other.ApproxLosses;
+      ApproxLosses2005                  = other.ApproxLosses2005;
+      LumpSum                           = other.LumpSum;
+
+      if ( other.pLosses == &other.RefinedLosses2005 )
+         pLosses = &RefinedLosses2005;
+      else if ( other.pLosses == &other.RefinedLosses )
+         pLosses = &RefinedLosses;
+      else if ( other.pLosses == &other.ApproxLosses )
+         pLosses = &ApproxLosses;
+      else if ( other.pLosses == &other.ApproxLosses2005 )
+         pLosses = &ApproxLosses2005;
+      else if ( other.pLosses == &other.LumpSum )
+         pLosses = &LumpSum;
+
+      FrictionLossDetails = other.FrictionLossDetails;
+
+      TimeStepDetails = other.TimeStepDetails;
 
       return *this;
    }
 
-   Uint32 Method; // Loss method (a LOSSES_xxx constant)
+   // Method for computing prestress losses... the value of this parameter
+   // defines which of the loss details given below are applicable
+   pgsTypes::LossMethod LossMethod;
 
-   // LRFD Method Losses
-   // Base class can be casted to derived class to get details. You know who you are!
-   boost::shared_ptr<const lrfdLosses> pLosses;
+   ///////////////////////////////////////////////////////////////////////////////
+   // Losses computed by LRFD Approximate or Refined methods or general lump sum
+   ///////////////////////////////////////////////////////////////////////////////
+
+   // THESE LOSS OBJECTS NOT VALID WITH TIME_STEP METHOD
+
+   // LRFD Method Losses (details can be extracted from these objects)
+   const lrfdLosses* pLosses;                  // pointer to one of the loss objects below
+   lrfdLumpSumLosses LumpSum;                  // general lump sum losses
+   lrfdRefinedLosses RefinedLosses;            // refined before LRFD 2005
+   lrfdApproximateLosses ApproxLosses;         // approximate before LRFD 2005
+   lrfdRefinedLosses2005 RefinedLosses2005;    // refined LRFD 2005 and later
+   lrfdApproximateLosses2005 ApproxLosses2005; // approximate LRFD 2005 and later
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   // Losses computed by Time Step Method
+   ///////////////////////////////////////////////////////////////////////////////
+
+   // Friction and Anchor Set Losses
+   // vector index is the duct index
+   std::vector<FRICTIONLOSSDETAILS> FrictionLossDetails;
+
+   // vector index in an interval index
+   std::vector<TIME_STEP_DETAILS> TimeStepDetails;
 };
 
 struct STRANDDEVLENGTHDETAILS
@@ -317,11 +752,9 @@ struct REBARDEVLENGTHDETAILS
    Float64 fy;
    Float64 fc;
    Float64 db;
-   Float64 lambdaRl;  // Lambda's for location and lightweight concrete (only used for LRFD 2015 and later)
-   Float64 lambdaLw;
-   Float64 factor; // Total Factor applied to equation
+   Float64 factor; // Factor applied if light weight concrete (1.0 if not)
 
-   // Two equations for #11 or smaller (before 2015)
+   // two equations for #11 or smaller
    Float64 ldb1;
    Float64 ldb2;
    Float64 ldb; // controlling value

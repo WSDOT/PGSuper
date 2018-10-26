@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,20 +87,20 @@ private:
    std::_tstring GetBridgeID();
    std::_tstring GetProcessID();
 
-   bool RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunGeometryTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunCombinedLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunPrestressedISectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunHandlingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span);
-   bool RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
-   bool RunDesignTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
-   bool RunCamberTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, SpanIndexType span,GirderIndexType gdr);
-   bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
-   bool RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, GirderIndexType gdr);
+   bool RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunGeometryTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunCombinedLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunPrestressedISectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunHandlingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
+   bool RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
+   bool RunDesignTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
+   bool RunCamberTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
+   bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CGirderKey& girderKey);
 };
 
 #endif //__TESTAGENT_H_

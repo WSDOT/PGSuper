@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,11 +50,11 @@ public:
    bool operator != (const CMomentLoadData& rOther) const;
 
    // properties
-   UserLoads::Stage               m_Stage;
+   IDType                         m_ID;
+   EventIndexType                 m_EventIdx;
    UserLoads::LoadCase            m_LoadCase;
 
-   SpanIndexType   m_Span;      // set to AllSpans if all
-   GirderIndexType m_Girder;    // set to AllGirders if all
+   CSpanGirderKey m_SpanGirderKey;
    Float64  m_Location;   // cannot be negative
    bool     m_Fractional;
    Float64  m_Magnitude;

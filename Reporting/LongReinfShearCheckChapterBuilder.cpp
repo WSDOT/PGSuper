@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <Reporting\LongReinfShearCheckChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 
@@ -37,6 +37,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,50 +52,47 @@ CLASS
 ****************************************************************************/
 
    rptParagraph* create_table1_design(IBroker* pBroker,
-                              pgsTypes::Stage stage,
+                              IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
-                              const std::vector<pgsPointOfInterest>& rPoi,
                               Float64 endSize,
-                              const pgsStirrupCheckArtifact* pstirrupArtifact,
+                              const pgsGirderArtifact* pGirderArtifact,
                               IEAFDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table2_design(IBroker* pBroker,
-                              pgsTypes::Stage stage,
+                              IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
-                              const std::vector<pgsPointOfInterest>& rPoi,
                               Float64 endSize,
-                              const pgsStirrupCheckArtifact* pstirrupArtifact,
+                              const pgsGirderArtifact* pGirderArtifact,
                               IEAFDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table3_design(IBroker* pBroker,
-                              pgsTypes::Stage stage,
+                              IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
-                              const std::vector<pgsPointOfInterest>& rPoi,
                               Float64 endSize,
-                              const pgsStirrupCheckArtifact* pstirrupArtifact,
+                              const pgsGirderArtifact* pGirderArtifact,
                               IEAFDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table1_rating(IBroker* pBroker,
-                              pgsTypes::Stage stage,
+                              IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
-                              const pgsRatingArtifact::ShearRatings shearRatings,
+                              const pgsRatingArtifact::ShearRatings& shearRatings,
                               IEAFDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table2_rating(IBroker* pBroker,
-                              pgsTypes::Stage stage,
+                              IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
-                              const pgsRatingArtifact::ShearRatings shearRatings,
+                              const pgsRatingArtifact::ShearRatings& shearRatings,
                               IEAFDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table3_rating(IBroker* pBroker,
-                              pgsTypes::Stage stage,
+                              IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
-                              const pgsRatingArtifact::ShearRatings shearRatings,
+                              const pgsRatingArtifact::ShearRatings& shearRatings,
                               IEAFDisplayUnits* pDisplayUnits,
                               Uint16 level);
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -159,21 +157,23 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
 void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CReportSpecification* pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
-   
-   pgsTypes::Stage stage = pgsTypes::BridgeSite3;
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
+
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
    pgsTypes::LimitState ls = pgsTypes::StrengthI;
 
+   
    rptParagraph* pParagraph;
-
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -189,34 +189,26 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),         false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(),    false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
-   CHECK(pstirrup_artifact);
+   const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-   if ( stage == pgsTypes::CastingYard )
-      end_size = 0; // don't adjust if CY stage
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   GET_IFACE2(pBroker,IStageMap,pStageMap);
-   *pParagraph << OLE2T(pStageMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
 
    // tables of details
-   rptParagraph* ppar1 = create_table1_design(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
+   rptParagraph* ppar1 = create_table1_design(pBroker, intervalIdx, ls, end_size, pGirderArtifact, pDisplayUnits, level);
    *pChapter <<ppar1;
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
    *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length") << rptNewLine;
 
-   rptParagraph* ppar2 = create_table2_design(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
+   rptParagraph* ppar2 = create_table2_design(pBroker, intervalIdx, ls, end_size, pGirderArtifact, pDisplayUnits, level);
    *pChapter <<ppar2;
 
    if ( lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion()  )
@@ -226,7 +218,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
       *pParagraph << Super(_T("*")) << _T(" ") << Sub2(_T("V"),_T("s")) << _T(" shall not be taken greater than ") << Sub2(_T("V"),_T("u")) << _T("/") << Sub2(symbol(phi),_T("v")) << rptNewLine;
    }
 
-   rptParagraph* ppar3 = create_table3_design(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
+   rptParagraph* ppar3 = create_table3_design(pBroker, intervalIdx, ls, end_size, pGirderArtifact, pDisplayUnits, level);
    *pChapter <<ppar3;
 
    if ( bPermit )
@@ -238,13 +230,13 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
       *pParagraph << _T("Strength II") << rptNewLine;
 
       // tables of details
-      ppar1 = create_table1_design(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
+      ppar1 = create_table1_design(pBroker, intervalIdx, ls, end_size, pGirderArtifact, pDisplayUnits, level);
       *pChapter <<ppar1;
       pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pParagraph;
       *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length") << rptNewLine;
 
-      ppar2 = create_table2_design(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
+      ppar2 = create_table2_design(pBroker, intervalIdx, ls, end_size, pGirderArtifact, pDisplayUnits, level);
       *pChapter <<ppar2;
 
       if ( lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion()  )
@@ -254,7 +246,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
          *pParagraph << Super(_T("*")) << _T(" ") << Sub2(_T("V"),_T("s")) << _T(" shall not be taken greater than ") << Sub2(_T("V"),_T("u")) << _T("/") << Sub2(symbol(phi),_T("v")) << rptNewLine;
       }
 
-      ppar3 = create_table3_design(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
+      ppar3 = create_table3_design(pBroker, intervalIdx, ls, end_size, pGirderArtifact, pDisplayUnits, level);
       *pChapter <<ppar3;
    }
 }
@@ -263,26 +255,17 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
 void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CReportSpecification* pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
+
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CSpanGirderReportSpecification* pSpanGdrRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-
-   GirderIndexType gdrLineIdx;
    CComPtr<IBroker> pBroker;
+   pGdrRptSpec->GetBroker(&pBroker);
 
-   if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      gdrLineIdx = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      pSpanGdrRptSpec->GetBroker(&pBroker);
-      gdrLineIdx = pSpanGdrRptSpec->GetGirder();
-   }
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   
-   pgsTypes::Stage stage = pgsTypes::BridgeSite3;
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<pgsTypes::LimitState> limitStates;
@@ -331,23 +314,23 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
       location.IncludeSpanAndGirder(true);
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
-      const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(gdrLineIdx,ratingType,INVALID_INDEX);
+      const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(girderKey,ratingType,INVALID_INDEX/*all vehicles*/);
       pgsRatingArtifact::ShearRatings shearRatings = pRatingArtifact->GetShearRatings();
 
 
       pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pParagraph;
-      GET_IFACE2(pBroker,IStageMap,pStageMap);
-      *pParagraph << OLE2T(pStageMap->GetLimitStateName(ls)) << rptNewLine;
+      GET_IFACE2(pBroker,IEventMap,pEventMap);
+      *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
 
       // tables of details
-      rptParagraph* ppar1 = create_table1_rating(pBroker, stage, ls, shearRatings, pDisplayUnits, level);
+      rptParagraph* ppar1 = create_table1_rating(pBroker, intervalIdx, ls, shearRatings, pDisplayUnits, level);
       *pChapter <<ppar1;
       pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pParagraph;
       *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length") << rptNewLine;
 
-      rptParagraph* ppar2 = create_table2_rating(pBroker, stage, ls, shearRatings, pDisplayUnits, level);
+      rptParagraph* ppar2 = create_table2_rating(pBroker, intervalIdx, ls, shearRatings, pDisplayUnits, level);
       *pChapter <<ppar2;
 
       if ( lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion()  )
@@ -357,7 +340,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          *pParagraph << Super(_T("*")) << _T(" ") << Sub2(_T("V"),_T("s")) << _T(" shall not be taken greater than ") << Sub2(_T("V"),_T("u")) << _T("/") << Sub2(symbol(phi),_T("v")) << rptNewLine;
       }
 
-      rptParagraph* ppar3 = create_table3_rating(pBroker, stage, ls, shearRatings, pDisplayUnits, level);
+      rptParagraph* ppar3 = create_table3_rating(pBroker, intervalIdx, ls, shearRatings, pDisplayUnits, level);
       *pChapter <<ppar3;
    }
 }
@@ -387,14 +370,15 @@ CChapterBuilder* CLongReinfShearCheckChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 rptParagraph* create_table1_design(IBroker* pBroker,
-                           pgsTypes::Stage stage,
+                           IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
-                           const std::vector<pgsPointOfInterest>& rPoi,
                            Float64 endSize,
-                           const pgsStirrupCheckArtifact* pstirrupArtifact,
+                           const pgsGirderArtifact* pGirderArtifact,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
    rptParagraph* pParagraph = new rptParagraph();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -407,59 +391,67 @@ rptParagraph* create_table1_design(IBroker* pBroker,
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Longitudinal Reinforcement Shear Check Details - Table 1 of 3"));
    *pParagraph << table;
 
-   if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   ColumnIndexType col = 0;
 
-   (*table)(0,1)  << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,2)  << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3)  << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,4)  << COLHDR(_T("f")<<Sub(_T("ps")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5)  << COLHDR(_T("M")<<Sub(_T("u")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,6)  << COLHDR(_T("d")<<Sub(_T("v")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,7)  << _T("Flexure") << rptNewLine << Sub2(symbol(phi),_T("f"));
+   (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++)  << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++)  << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++)  << COLHDR(_T("f")<<Sub(_T("ps")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++)  << COLHDR(_T("M")<<Sub(_T("u")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++)  << COLHDR(_T("d")<<Sub(_T("v")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++)  << _T("Flexure") << rptNewLine << Sub2(symbol(phi),_T("f"));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = rPoi.begin(); i != rPoi.end(); i++ )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsPointOfInterest& poi = *i;
-
-      const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrupArtifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
-      if ( psArtifact == NULL )
-         continue;
-
-      const pgsLongReinfShearArtifact* pArtifact = psArtifact->GetLongReinfShearArtifact();
-
-      if ( pArtifact->IsApplicable() )
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
+      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
-         (*table)(row,1) << area.SetValue( pArtifact->GetAs());
-         (*table)(row,2) << stress.SetValue( pArtifact->GetFy());
-         (*table)(row,3) << area.SetValue( pArtifact->GetAps());
-         (*table)(row,4) << stress.SetValue( pArtifact->GetFps());
-         (*table)(row,5) << moment.SetValue( pArtifact->GetMu());
-         (*table)(row,6) << dim.SetValue( pArtifact->GetDv());
-         (*table)(row,7) << pArtifact->GetFlexuralPhi();
+         const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+         if ( psArtifact == NULL )
+            continue;
 
-         row++;
-      }
-   }
+         const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
+
+         const pgsLongReinfShearArtifact* pArtifact = psArtifact->GetLongReinfShearArtifact();
+
+         if ( pArtifact->IsApplicable() )
+         {
+            col = 0;
+            (*table)(row,col++) << location.SetValue( POI_GIRDER, poi, endSize );
+            (*table)(row,col++) << area.SetValue( pArtifact->GetAs());
+            (*table)(row,col++) << stress.SetValue( pArtifact->GetFy());
+            (*table)(row,col++) << area.SetValue( pArtifact->GetAps());
+            (*table)(row,col++) << stress.SetValue( pArtifact->GetFps());
+            (*table)(row,col++) << moment.SetValue( pArtifact->GetMu());
+            (*table)(row,col++) << dim.SetValue( pArtifact->GetDv());
+            (*table)(row,col++) << pArtifact->GetFlexuralPhi();
+
+            row++;
+         }
+      } // next artifact
+   } // next segment
 
    return pParagraph;
 }
 
 rptParagraph* create_table2_design(IBroker* pBroker,
-                           pgsTypes::Stage stage,
+                           IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
-                           const std::vector<pgsPointOfInterest>& rPoi,
                            Float64 endSize,
-                           const pgsStirrupCheckArtifact* pstirrupArtifact,
+                           const pgsGirderArtifact* pGirderArtifact,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
    rptParagraph* pParagraph = new rptParagraph();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -483,65 +475,74 @@ rptParagraph* create_table2_design(IBroker* pBroker,
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Longitudinal Reinforcement Shear Check Details - Table 2 of 3"));
    *pParagraph << table;
 
-   if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   ColumnIndexType col = 0;
 
-   (*table)(0,1)  << COLHDR(_T("N")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,2)  << _T("Axial") << rptNewLine << Sub2(symbol(phi),_T("a"));
-   (*table)(0,3)  << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,4)  << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
+   (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,col++)  << COLHDR(_T("N")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++)  << _T("Axial") << rptNewLine << Sub2(symbol(phi),_T("a"));
+   (*table)(0,col++)  << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++)  << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
    if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SecondEditionWith2000Interims )
-      (*table)(0,5)  << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*table)(0,col++)  << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    else
-      (*table)(0,5)  << COLHDR(_T("V")<<Sub(_T("s")) << Super(_T("*")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*table)(0,col++)  << COLHDR(_T("V")<<Sub(_T("s")) << Super(_T("*")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
-   (*table)(0,6)  << COLHDR(_T("V")<<Sub(_T("p")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,7)  << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+   (*table)(0,col++)  << COLHDR(_T("V")<<Sub(_T("p")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++)  << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = rPoi.begin(); i != rPoi.end(); i++ )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
+      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
 
-      const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrupArtifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
-      if ( psArtifact == NULL )
-         continue;
-
-      const pgsLongReinfShearArtifact* pArtifact = psArtifact->GetLongReinfShearArtifact();
-
-      if ( pArtifact->IsApplicable() )
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
-         (*table)(row,1) << shear.SetValue( pArtifact->GetNu());
-         (*table)(row,2) << scalar.SetValue( pArtifact->GetAxialPhi());
-         (*table)(row,3) << shear.SetValue( pArtifact->GetVu());
-         (*table)(row,4) << scalar.SetValue( pArtifact->GetShearPhi());
-         (*table)(row,5) << shear.SetValue( pArtifact->GetVs());
-         (*table)(row,6) << shear.SetValue( pArtifact->GetVp());
-         (*table)(row,7) << angle.SetValue( pArtifact->GetTheta());
+         const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+         if ( psArtifact == NULL )
+            continue;
 
-         row++;
-      }
-   }
+         const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
+
+         const pgsLongReinfShearArtifact* pArtifact = psArtifact->GetLongReinfShearArtifact();
+
+         if ( pArtifact->IsApplicable() )
+         {
+            col = 0;
+            (*table)(row,col++) << location.SetValue( POI_GIRDER, poi, endSize );
+            (*table)(row,col++) << shear.SetValue( pArtifact->GetNu());
+            (*table)(row,col++) << scalar.SetValue( pArtifact->GetAxialPhi());
+            (*table)(row,col++) << shear.SetValue( pArtifact->GetVu());
+            (*table)(row,col++) << scalar.SetValue( pArtifact->GetShearPhi());
+            (*table)(row,col++) << shear.SetValue( pArtifact->GetVs());
+            (*table)(row,col++) << shear.SetValue( pArtifact->GetVp());
+            (*table)(row,col++) << angle.SetValue( pArtifact->GetTheta());
+
+            row++;
+         }
+      } // next artifact
+   } // next segment
 
    return pParagraph;
 }
 
 
 rptParagraph* create_table3_design(IBroker* pBroker,
-                           pgsTypes::Stage stage,
+                           IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
-                           const std::vector<pgsPointOfInterest>& rPoi,
                            Float64 endSize,
-                           const pgsStirrupCheckArtifact* pstirrupArtifact,
+                           const pgsGirderArtifact* pGirderArtifact,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
    rptParagraph* pParagraph = new rptParagraph();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -565,51 +566,63 @@ rptParagraph* create_table3_design(IBroker* pBroker,
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Longitudinal Reinforcement Shear Check Details - Table 3 of 3"));
    *pParagraph << table;
 
-   if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   ColumnIndexType col = 0;
 
-   (*table)(0,1)  << COLHDR(_T("Demand"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,2)  << COLHDR(_T("Capacity"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,3)  << _T("Equation");
+   (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,col++)  << COLHDR(_T("Demand"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++)  << COLHDR(_T("Capacity"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++)  << _T("Equation");
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = rPoi.begin(); i != rPoi.end(); i++ )
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
+      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
 
-      const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrupArtifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(stage,ls,poi.GetDistFromStart()) );
-      if ( psArtifact == NULL )
-         continue;
-
-      const pgsLongReinfShearArtifact* pArtifact = psArtifact->GetLongReinfShearArtifact();
-
-      if ( pArtifact->IsApplicable() )
+      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
-         (*table)(row,1) << shear.SetValue( pArtifact->GetDemandForce());
-         (*table)(row,2) << shear.SetValue( pArtifact->GetCapacityForce());
-         (*table)(row,3) << (pArtifact->GetEquation() == 1 ? _T("5.8.3.5-1") : _T("5.8.3.5-2"));
+         const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
+         if ( psArtifact == NULL )
+            continue;
 
-         row++;
-      }
-   }
+         const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
+
+         const pgsLongReinfShearArtifact* pArtifact = psArtifact->GetLongReinfShearArtifact();
+
+         if ( pArtifact->IsApplicable() )
+         {
+            col = 0;
+            (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, endSize );
+            (*table)(row,col++) << shear.SetValue( pArtifact->GetDemandForce());
+            (*table)(row,col++) << shear.SetValue( pArtifact->GetCapacityForce());
+            (*table)(row,col++) << (pArtifact->GetEquation() == 1 ? _T("5.8.3.5-1") : _T("5.8.3.5-2"));
+
+            row++;
+         }
+      } // next artifact
+   } // next segment
 
    return pParagraph;
 }
 
 //////////////////////////////////////////////////////////////////////////
 rptParagraph* create_table1_rating(IBroker* pBroker,
-                           pgsTypes::Stage stage,
+                           IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
-                           const pgsRatingArtifact::ShearRatings shearRatings,
+                           const pgsRatingArtifact::ShearRatings& shearRatings,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(shearRatings.front().first.GetSegmentKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
@@ -627,7 +640,7 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 
    *pParagraph << table;
 
-   if ( stage == pgsTypes::CastingYard )
+   if ( intervalIdx == releaseIntervalIdx )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -644,18 +657,21 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   pgsRatingArtifact::ShearRatings::const_iterator i;
-   for ( i = shearRatings.begin(); i != shearRatings.end(); i++ )
+   pgsRatingArtifact::ShearRatings::const_iterator i(shearRatings.begin());
+   pgsRatingArtifact::ShearRatings::const_iterator end(shearRatings.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = i->first;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
       const pgsShearRatingArtifact& rating = i->second;
       const pgsLongReinfShearArtifact& artifact = rating.GetLongReinfShearArtifact();
 
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
+         (*table)(row,0) << location.SetValue( POI_GIRDER, poi, endSize );
          (*table)(row,1) << area.SetValue( artifact.GetAs());
          (*table)(row,2) << stress.SetValue( artifact.GetFy());
          (*table)(row,3) << area.SetValue( artifact.GetAps());
@@ -672,13 +688,16 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 }
 
 rptParagraph* create_table2_rating(IBroker* pBroker,
-                           pgsTypes::Stage stage,
+                           IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
-                           const pgsRatingArtifact::ShearRatings shearRatings,
+                           const pgsRatingArtifact::ShearRatings& shearRatings,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(shearRatings.front().first.GetSegmentKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
@@ -707,7 +726,7 @@ rptParagraph* create_table2_rating(IBroker* pBroker,
 
    *pParagraph << table;
 
-   if ( stage == pgsTypes::CastingYard )
+   if ( intervalIdx == releaseIntervalIdx )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -729,18 +748,21 @@ rptParagraph* create_table2_rating(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   pgsRatingArtifact::ShearRatings::const_iterator i;
-   for ( i = shearRatings.begin(); i != shearRatings.end(); i++ )
+   pgsRatingArtifact::ShearRatings::const_iterator i(shearRatings.begin());
+   pgsRatingArtifact::ShearRatings::const_iterator end(shearRatings.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = i->first;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
       const pgsShearRatingArtifact& rating = i->second;
       const pgsLongReinfShearArtifact& artifact = rating.GetLongReinfShearArtifact();
 
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
+         (*table)(row,0) << location.SetValue( POI_GIRDER, poi, endSize );
          (*table)(row,1) << shear.SetValue( artifact.GetNu());
          (*table)(row,2) << scalar.SetValue( artifact.GetAxialPhi());
          (*table)(row,3) << shear.SetValue( artifact.GetVu());
@@ -758,13 +780,16 @@ rptParagraph* create_table2_rating(IBroker* pBroker,
 
 
 rptParagraph* create_table3_rating(IBroker* pBroker,
-                           pgsTypes::Stage stage,
+                           IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
-                           const pgsRatingArtifact::ShearRatings shearRatings,
+                           const pgsRatingArtifact::ShearRatings& shearRatings,
                            IEAFDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(shearRatings.front().first.GetSegmentKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
@@ -793,7 +818,7 @@ rptParagraph* create_table3_rating(IBroker* pBroker,
 
    *pParagraph << table;
 
-   if ( stage == pgsTypes::CastingYard )
+   if ( intervalIdx == releaseIntervalIdx )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -806,18 +831,21 @@ rptParagraph* create_table3_rating(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   pgsRatingArtifact::ShearRatings::const_iterator i;
-   for ( i = shearRatings.begin(); i != shearRatings.end(); i++ )
+   pgsRatingArtifact::ShearRatings::const_iterator i(shearRatings.begin());
+   pgsRatingArtifact::ShearRatings::const_iterator end(shearRatings.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = i->first;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
       const pgsShearRatingArtifact& rating = i->second;
       const pgsLongReinfShearArtifact& artifact = rating.GetLongReinfShearArtifact();
 
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
+         (*table)(row,0) << location.SetValue( POI_GIRDER, poi, endSize );
          (*table)(row,1) << shear.SetValue( artifact.GetDemandForce());
          (*table)(row,2) << shear.SetValue( artifact.GetCapacityForce());
          (*table)(row,3) << (artifact.GetEquation() == 1 ? _T("5.8.3.5-1") : _T("5.8.3.5-2"));

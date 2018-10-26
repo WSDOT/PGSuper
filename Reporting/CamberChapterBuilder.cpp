@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,14 +26,14 @@
 
 #include <WBFLTools.h> // not sure why, but this is needed to compile
 
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#include <PgsExt\GirderData.h>
+#include <PgsExt\StrandData.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,39 +67,44 @@ LPCTSTR CCamberChapterBuilder::GetName() const
 
 rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType gdr = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
-   bool bTempStrands = ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping );
-
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   rptChapter* pChapter;
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   switch( deckType )
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeOverlay:
-      pChapter = (bTempStrands ? Build_CIP_TempStrands(pRptSpec,pBroker,span,gdr,pDisplayUnits,level) : Build_CIP(pRptSpec,pBroker,span,gdr,pDisplayUnits,level));
-      break;
+      CSegmentKey segmentKey(girderKey,segIdx);
 
-   case pgsTypes::sdtCompositeSIP:
-      pChapter = (bTempStrands ? Build_SIP_TempStrands(pRptSpec,pBroker,span,gdr,pDisplayUnits,level) : Build_SIP(pRptSpec,pBroker,span,gdr,pDisplayUnits,level));
-      break;
+      const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+      bool bTempStrands = ( 0 < pStrands->Nstrands[pgsTypes::Temporary] && pStrands->TempStrandUsage != pgsTypes::ttsPTBeforeShipping );
 
-   case pgsTypes::sdtNone:
-      pChapter = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec,pBroker,span,gdr,pDisplayUnits,level) : Build_NoDeck(pRptSpec,pBroker,span,gdr,pDisplayUnits,level));
-      break;
+      switch( deckType )
+      {
+      case pgsTypes::sdtCompositeCIP:
+      case pgsTypes::sdtCompositeOverlay:
+         (bTempStrands ? Build_CIP_TempStrands(pChapter,pRptSpec,pBroker,segmentKey,pDisplayUnits,level) : Build_CIP(pChapter,pRptSpec,pBroker,segmentKey,pDisplayUnits,level));
+         break;
 
-   default:
-      ATLASSERT(false);
+      case pgsTypes::sdtCompositeSIP:
+         (bTempStrands ? Build_SIP_TempStrands(pChapter,pRptSpec,pBroker,segmentKey,pDisplayUnits,level) : Build_SIP(pChapter,pRptSpec,pBroker,segmentKey,pDisplayUnits,level));
+         break;
+
+      case pgsTypes::sdtNone:
+         (bTempStrands ? Build_NoDeck_TempStrands(pChapter,pRptSpec,pBroker,segmentKey,pDisplayUnits,level) : Build_NoDeck(pChapter,pRptSpec,pBroker,segmentKey,pDisplayUnits,level));
+         break;
+
+      default:
+         ATLASSERT(false);
+      }
    }
 
    return pChapter;
@@ -110,27 +115,8 @@ CChapterBuilder* CCamberChapterBuilder::Clone() const
    return new CCamberChapterBuilder;
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCamberChapterBuilder::Build_CIP_TempStrands(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -138,13 +124,12 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
    if ( pBridge->IsFutureOverlay() )
       *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Camber_CIP_TempStrands_FutureOverlay.gif")) << rptNewLine;
    else
@@ -161,13 +146,13 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[3];
-      details[0] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
-      details[2] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_CIP_TempStrands(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_CIP_TempStrands(pBroker,segmentKey,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -202,13 +187,10 @@ rptChapter* CCamberChapterBuilder::Build_CIP_TempStrands(CReportSpecification* p
 
       *pPara << rptNewLine;
    }
-
-   return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCamberChapterBuilder::Build_CIP(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -216,7 +198,7 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
@@ -240,12 +222,12 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[2];
-      details[0] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_CIP(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_CIP(pBroker,segmentKey,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -276,13 +258,10 @@ rptChapter* CCamberChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBro
 
       *pPara << rptNewLine;
    }
-
-   return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCamberChapterBuilder::Build_SIP_TempStrands(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -290,7 +269,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
@@ -314,13 +293,13 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[3];
-      details[0] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
-      details[2] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_SIP_TempStrands(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_SIP_TempStrands(pBroker,segmentKey,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -355,13 +334,10 @@ rptChapter* CCamberChapterBuilder::Build_SIP_TempStrands(CReportSpecification* p
 
       *pPara << rptNewLine;
    }
-
-   return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCamberChapterBuilder::Build_SIP(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -369,7 +345,7 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
@@ -392,12 +368,12 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[2];
-      details[0] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_SIP(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_SIP(pBroker,segmentKey,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -427,13 +403,10 @@ rptChapter* CCamberChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBro
 
       *pPara << rptNewLine;
    }
-
-   return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCamberChapterBuilder::Build_NoDeck_TempStrands(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -441,7 +414,7 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time1, pDisplayUnits->GetLongTimeUnit(), false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
@@ -464,16 +437,16 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[6];
-      details[0] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,     i);
-      details[2] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToFinal,    i);
-      details[3] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,   i);
-      details[4] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToFinal,  i);
-      details[5] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDeckToFinal,       i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,     i);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,    i);
+      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,   i);
+      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal,  i);
+      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,       i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_NoDeck_TempStrands(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_NoDeck_TempStrands(pBroker,segmentKey,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -517,13 +490,10 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification
 
       *pPara << rptNewLine;
    }
-
-   return pChapter;
 }
 
-rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -534,7 +504,7 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,gdr);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -555,16 +525,16 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[6];
-      details[0] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDiaphragm,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,     i);
-      details[2] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToFinal,    i);
-      details[3] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,   i);
-      details[4] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToFinal,  i);
-      details[5] = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDeckToFinal,       i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,     i);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,    i);
+      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,   i);
+      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal,  i);
+      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,       i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_NoDeck(pBroker,span,gdr,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
+      tbl.Build_NoDeck(pBroker,segmentKey,pDisplayUnits,i,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
@@ -608,6 +578,4 @@ rptChapter* CCamberChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,I
 
       *pPara << rptNewLine;
    }
-
-   return pChapter;
 }

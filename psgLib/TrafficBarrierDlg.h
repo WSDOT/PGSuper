@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -16,7 +16,7 @@
 // You should have received a copy of the Alternate Route Open Source 
 // License along with this program; if not, write to the Washington 
 // State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
@@ -60,7 +60,7 @@ public:
    CComPtr<IPoint2dCollection> m_BarrierPoints;
 
    bool m_bStructurallyContinuous;
-   Float64 m_CurbOffset;
+   double m_CurbOffset;
 
    bool m_AllowEditing;
 

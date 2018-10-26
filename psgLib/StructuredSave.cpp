@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,14 +67,14 @@ void CStructuredSave::EndUnit()
 
 Float64 CStructuredSave::GetVersion()
 {
-   Float64 version;
+   double version;
    m_pStrSave->get_Version( &version );
    return version;
 }
 
 Float64 CStructuredSave::GetParentVersion()
 {
-   Float64 version;
+   double version;
    m_pStrSave->get_ParentVersion( &version );
    return version;
 }
@@ -89,7 +89,7 @@ std::_tstring CStructuredSave::GetParentUnit()
 
 Float64 CStructuredSave::GetTopVersion()
 {
-   Float64 version;
+   double version;
    m_pStrSave->get_TopVersion( &version );
    return version;
 }
@@ -156,6 +156,22 @@ void CStructuredSave::Property(LPCTSTR name, Uint64 value)
    VARIANT var;
    var.vt = VT_UI8;
    var.ullVal = value;
+   m_pStrSave->put_Property( name, var );
+}
+
+void CStructuredSave::Property(LPCTSTR name, LONG value)
+{
+   VARIANT var;
+   var.vt = VT_I4;
+   var.lVal = value;
+   m_pStrSave->put_Property( name, var );
+}
+
+void CStructuredSave::Property(LPCTSTR name, ULONG value)
+{
+   VARIANT var;
+   var.vt = VT_UI4;
+   var.ulVal = value;
    m_pStrSave->put_Property( name, var );
 }
 

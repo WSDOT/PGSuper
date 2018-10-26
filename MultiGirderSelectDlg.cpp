@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ void CMultiGirderSelectDlg::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      m_SelGdrs = m_pGrid->GetData();
+      m_GirderKeys = m_pGrid->GetData();
    }
 }
 
@@ -69,31 +69,29 @@ BOOL CMultiGirderSelectDlg::OnInitDialog()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,pBridge);
 
-   // need list of girders/spans
-   SpanGirderOnCollection coll;
-   SpanIndexType ns = pBridge->GetSpanCount();
-   for (SpanIndexType is=0; is<ns; is++)
+   // need list of groups/girders
+   GroupGirderOnCollection coll;
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      GirderIndexType ng = pBridge->GetGirderCount(is);
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       std::vector<bool> gdrson;
-      gdrson.assign(ng, false); // set all to false
+      gdrson.assign(nGirders, false); // set all to false
 
       coll.push_back(gdrson);
    }
 
    // set selected girders
-   for(std::vector<SpanGirderHashType>::iterator it = m_SelGdrs.begin(); it != m_SelGdrs.end(); it++)
+   for(std::vector<CGirderKey>::iterator it = m_GirderKeys.begin(); it != m_GirderKeys.end(); it++)
    {
-      SpanIndexType span;
-      GirderIndexType gdr;
-      UnhashSpanGirder(*it, &span, &gdr);
+      const CGirderKey& girderKey(*it);
 
-      if (span<ns)
+      if (girderKey.groupIndex < nGroups)
       {
-         std::vector<bool>& rgdrson = coll[span];
-         if (gdr < (GirderIndexType)rgdrson.size())
+         std::vector<bool>& rgdrson = coll[girderKey.groupIndex];
+         if (girderKey.girderIndex < (GirderIndexType)rgdrson.size())
          {
-            rgdrson[gdr] = true;
+            rgdrson[girderKey.girderIndex] = true;
          }
          else
          {

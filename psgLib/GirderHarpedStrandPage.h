@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -16,7 +16,7 @@
 // You should have received a copy of the Alternate Route Open Source 
 // License along with this program; if not, write to the Washington 
 // State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
@@ -38,28 +38,6 @@
 
 #include "GirderGlobalStrandGrid.h"
 #include <Units\Measure.h>
-
-// Names are slightly different in library than rest of program
-inline LPCTSTR LOCAL_LABEL_HARP_TYPE(pgsTypes::AdjustableStrandType type)
-{
-   if (pgsTypes::asHarped == type)
-   {
-      return _T("Harped");
-   }
-   else  if (pgsTypes::asStraight == type)
-   {
-      return _T("Adj. Straight");
-   }
-   else if (pgsTypes::asStraightOrHarped)
-   {
-      return _T("Adjustable");
-   }
-   else
-   {
-      ATLASSERT(0);
-      return _T("Error");
-   }
-}
 
 class CGirderMainSheet;
 
@@ -105,7 +83,6 @@ protected:
 	afx_msg void OnClickHarpedBox();
 	afx_msg void OnClickHpAdjust();
 	afx_msg void OnClickEndAdjust();
-   afx_msg void OnClickStraightAdjust();
    afx_msg void OnMoveUpGlobalStrand();
    afx_msg void OnMoveDownGlobalStrand();
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
@@ -119,15 +96,13 @@ protected:
 
 public:
    // capture event fired from grid that allows deletion of rows
-   virtual void OnEnableDelete(bool canDelete);
-   virtual bool DoUseHarpedGrid();
-   virtual pgsTypes::AdjustableStrandType GetAdjustableStrandType();
-   virtual void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
+   void OnEnableDelete(bool canDelete);
+   bool DoUseHarpedGrid();
+   bool DoUseHarpedWebStrands();
+   void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
 
 	void UpdateHpAdjust();
 	void UpdateEndAdjust();
-	void UpdateStraightAdjust();
-   void UpdateAdjustCtls(BOOL enableGroup, int checkCtrl, int otherCtrls[]);
 
    afx_msg void OnCbnSelchangeWebStrandTypeCombo();
 };

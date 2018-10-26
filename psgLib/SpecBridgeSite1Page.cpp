@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -71,8 +71,6 @@ BEGIN_MESSAGE_MAP(CSpecBridgeSite1Page, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_NORMAL_MAX_MAX3, OnCheckNormalMaxMax3)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 	//}}AFX_MSG_MAP
-   ON_BN_CLICKED(IDC_TEMP_STRESSES, &CSpecBridgeSite1Page::OnBnClickedEvaluateTemporaryStresses)
-   ON_BN_CLICKED(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE, &CSpecBridgeSite1Page::OnCheckBottomFlangeClearance)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,8 +82,6 @@ BOOL CSpecBridgeSite1Page::OnInitDialog()
 	
 	DoCheckMaxMax();
 	DoCheckMaxMax3();
-   OnBnClickedEvaluateTemporaryStresses();
-   OnCheckBottomFlangeClearance();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -105,77 +101,32 @@ void CSpecBridgeSite1Page::DoCheckMaxMax()
 {
    CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_NORMAL_MAX_MAX2);
    ASSERT(pchk);
-   BOOL bEnable = pchk->GetCheck() == BST_CHECKED;
+   BOOL ischk = pchk->GetCheck();
 
-   if ( IsDlgButtonChecked(IDC_TEMP_STRESSES) != BST_CHECKED )
-   {
-      bEnable = FALSE;
-   }
-
-   GetDlgItem(IDC_NORMAL_MAX_MAX2)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NORMAL_MAX_MAX_UNITS2)->EnableWindow(bEnable);
+   CWnd* pwnd = GetDlgItem(IDC_NORMAL_MAX_MAX2);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_NORMAL_MAX_MAX_UNITS2);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
 }
 
 void CSpecBridgeSite1Page::DoCheckMaxMax3()
 {
    CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_NORMAL_MAX_MAX3);
    ASSERT(pchk);
+   BOOL ischk = pchk->GetCheck();
 
-   BOOL bEnable = pchk->GetCheck() == BST_CHECKED;
-
-   if ( IsDlgButtonChecked(IDC_TEMP_STRESSES) != BST_CHECKED )
-   {
-      bEnable = FALSE;
-   }
-
-   GetDlgItem(IDC_NORMAL_MAX_MAX3)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NORMAL_MAX_MAX_UNITS3)->EnableWindow(bEnable);
+   CWnd* pwnd = GetDlgItem(IDC_NORMAL_MAX_MAX3);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
+   pwnd = GetDlgItem(IDC_NORMAL_MAX_MAX_UNITS3);
+   ASSERT(pchk);
+   pwnd->EnableWindow(ischk);
 }
 
 LRESULT CSpecBridgeSite1Page::OnCommandHelp(WPARAM, LPARAM lParam)
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGESITE_1_TAB );
    return TRUE;
-}
-
-void CSpecBridgeSite1Page::OnBnClickedEvaluateTemporaryStresses()
-{
-   // TODO: Add your control notification handler code here
-   BOOL bEnable = (IsDlgButtonChecked(IDC_TEMP_STRESSES) == BST_CHECKED ? TRUE : FALSE);
-   GetDlgItem(IDC_TEMP_REMOVE_ALLOW_SERVICE_COMP)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NORMAL_MAX_SQRT3)->EnableWindow(bEnable);
-
-   GetDlgItem(IDC_CHECK_NORMAL_MAX_MAX3)->EnableWindow(bEnable);
-   BOOL bEnable3 = bEnable;
-   if ( IsDlgButtonChecked(IDC_CHECK_NORMAL_MAX_MAX3) != BST_CHECKED )
-   {
-      bEnable3 = FALSE;
-   }
-   GetDlgItem(IDC_NORMAL_MAX_MAX3)->EnableWindow(bEnable3);
-   GetDlgItem(IDC_NORMAL_MAX_MAX_UNITS3)->EnableWindow(bEnable3);
-   
-   GetDlgItem(IDC_CY_ALLOW_SERVICE_COMP)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NORMAL_MAX_SQRT2)->EnableWindow(bEnable);
-   
-   GetDlgItem(IDC_NORMAL_MAX_SQRT4)->EnableWindow(bEnable);
-   GetDlgItem(IDC_CYS_TENS_BYLINE3)->EnableWindow(bEnable);
-   
-
-   GetDlgItem(IDC_CHECK_NORMAL_MAX_MAX2)->EnableWindow(bEnable);
-   BOOL bEnable2 = bEnable;
-   if ( IsDlgButtonChecked(IDC_CHECK_NORMAL_MAX_MAX2) != BST_CHECKED )
-   {
-      bEnable2 = FALSE;
-   }
-   GetDlgItem(IDC_NORMAL_MAX_MAX2)->EnableWindow(bEnable2);
-   GetDlgItem(IDC_NORMAL_MAX_MAX_UNITS2)->EnableWindow(bEnable2);
-}
-
-void CSpecBridgeSite1Page::OnCheckBottomFlangeClearance()
-{
-   // TODO: Add your control notification handler code here
-   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE);
-   GetDlgItem(IDC_CLEARANCE_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_CLEARANCE)->EnableWindow(bEnable);
-   GetDlgItem(IDC_CLEARANCE_UNIT)->EnableWindow(bEnable);
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\PGSuperChapterBuilder.h>
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #ifdef _DEBUG
@@ -64,12 +64,12 @@ bool CPGSuperChapterBuilder::Select() const
 
 bool CPGSuperChapterBuilder::NeedsUpdate(CReportHint* pHint,CReportSpecification* pRptSpec,Uint16 level) const
 {
-   int result = CSpanGirderReportHint::IsMyGirder(pHint,pRptSpec);
-   if ( 0 < result ) // this is a SpanGirderReportHint and it is for our span/girder
+   int result = CGirderReportHint::IsMyGirder(pHint,pRptSpec);
+   if ( 0 < result ) // this is a SegmentReportHint and it is for our segment
       return true;
 
    if ( result == 0 )
-      return false;// this is a SpanGirderReportHint and it is not for our span/girder
+      return false;// this is a SegmentReportHint and it is not for our segment
 
    result = CSpanReportHint::IsMySpan(pHint,pRptSpec);
    if ( 0 < result )
@@ -78,7 +78,7 @@ bool CPGSuperChapterBuilder::NeedsUpdate(CReportHint* pHint,CReportSpecification
    if ( result == 0 )
       return false;
 
-   result = CGirderReportHint::IsMyGirder(pHint,pRptSpec);
+   result = CGirderLineReportHint::IsMyGirder(pHint,pRptSpec);
    if ( 0 < result )
       return true;
 

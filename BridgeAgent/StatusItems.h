@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,18 +50,17 @@ private:
 };
 
 // status for Concrete Strength
-class pgsConcreteStrengthStatusItem : public pgsSpanGirderRelatedStatusItem
+class pgsConcreteStrengthStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
-   enum ConcreteType { Slab, Girder, RailingSystem };
+   enum ConcreteType { Slab, RailingSystem, GirderSegment, ClosurePour  };
    enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize, Modulus };
-   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 
    ConcreteType m_ConcreteType;
    ElementType m_ElementType;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
 };
 
 ///////////////////////////
@@ -81,13 +80,11 @@ private:
 class pgsPointLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsPointLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                          SpanIndexType span,GirderIndexType gdr);
+   pgsPointLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey);
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   SpanIndexType   m_Span;
-   GirderIndexType m_Gdr;
+   CSpanGirderKey m_SpanGirderKey;
 };
 
 class pgsPointLoadStatusCallback : public iStatusCallback
@@ -106,13 +103,11 @@ private:
 class pgsDistributedLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsDistributedLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                SpanIndexType span,GirderIndexType gdr);
+   pgsDistributedLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey);
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   SpanIndexType   m_Span;
-   GirderIndexType m_Gdr;
+   CSpanGirderKey m_SpanGirderKey;
 };
 
 ///////////////////////////
@@ -132,13 +127,11 @@ private:
 class pgsMomentLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
-   pgsMomentLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                           SpanIndexType span,GirderIndexType gdr);
+   pgsMomentLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey);
    bool IsEqual(CEAFStatusItem* pOther);
 
    IndexType m_LoadIndex;
-   SpanIndexType   m_Span;
-   GirderIndexType m_Gdr;
+   CSpanGirderKey m_SpanGirderKey;
 };
 
 ///////////////////////////

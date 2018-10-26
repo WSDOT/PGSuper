@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,14 +24,13 @@
 #include <Reporting\FlexuralCapacityCheckTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\FlexuralStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
+#include <PgsExt\ClosurePourData.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
-#include <IFace\Artifact.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
 
@@ -76,13 +75,15 @@ CFlexuralCapacityCheckTable& CFlexuralCapacityCheckTable::operator= (const CFlex
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                                                IEAFDisplayUnits* pDisplayUnits,
-                                               pgsTypes::Stage stage,
+                                               IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
 {
    USES_CONVERSION;
    bool bOverReinforced = false;
+
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -92,28 +93,21 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
 
-
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IStageMap,pStageMap);
-   std::_tstring strLimitState = OLE2T(pStageMap->GetLimitStateName(ls));
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(ls));
+   std::_tstring strDirection  = (bPositiveMoment ? _T("Positive") : _T("Negative"));
 
-   if ( bPositiveMoment )
-      p_table->TableLabel() << _T("Positive Moment Capacity for ") << strLimitState << _T(" Limit State");
-   else
-      p_table->TableLabel() << _T("Negative Moment Capacity for ") << strLimitState << _T(" Limit State");
-
-   if ( stage == pgsTypes::BridgeSite1 )
-      p_table->TableLabel() << _T(" for Deck and Diaphragm Stage (Bridge Site 1) [5.7]");
-   else
-      p_table->TableLabel() << _T(" for Final with Live Load Stage (Bridge Site 3) [5.7]");
+   std::_tostringstream os;
+   os << strDirection << _T(" Moment Capacity for ") << strLimitState << _T(" Limit State [5.7]");
+   p_table->TableLabel() << os.str().c_str();
 
    ColumnIndexType col = 0;
-   CHECK( stage != pgsTypes::CastingYard ); // need to revise location label
 
    p_table->SetNumberOfHeaderRows(2);
 
@@ -158,52 +152,40 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
-   rptCapacityToDemand cap_demand;
+   rptCapacityToDemand cdRatio;
 
    // Fill up the p_table
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-      ///////////////////////////////////////////////////////////////////
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
-      ///////////////////////////////////////////////////////////////////
 
-   const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-   if ( stage == pgsTypes::CastingYard )
-      end_size = 0; // don't adjust if CY stage
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsFlexuralCapacityArtifactKey> keys = gdrArtifact->GetFlexuralCapacityArtifactKeys();
-   std::vector<pgsFlexuralCapacityArtifactKey>::iterator iter;
-   for ( iter = keys.begin(); iter != keys.end(); iter++ )
+   CollectionIndexType nArtifacts = pGirderArtifact->GetFlexuralCapacityArtifactCount(intervalIdx,ls);
+   for (CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
       col = 0;
-      pgsFlexuralCapacityArtifactKey key = *iter;
-
-      if ( key.GetStage() != stage || key.GetLimitState() != ls )
-         continue;
-
-      const pgsPointOfInterest& poi = pIPoi->GetPointOfInterest( key.GetStage(), span, girder, key.GetDistFromStart() );
-
-      // Skip POI at critical section for shear if we are reporting on BridgeSite1
-      if ( stage == pgsTypes::BridgeSite1 && poi.HasAttribute(pgsTypes::BridgeSite3, ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2) )
-         continue;
-
-      (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       const pgsFlexuralCapacityArtifact* pArtifact;
       if ( bPositiveMoment )
-         pArtifact = gdrArtifact->GetPositiveMomentFlexuralCapacityArtifact( key );
+         pArtifact = pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx );
       else
-         pArtifact = gdrArtifact->GetNegativeMomentFlexuralCapacityArtifact( key );
+         pArtifact = pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx );
+
+      const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
+
+      (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+
 
       if ( c_over_de )
       {
@@ -233,7 +215,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
       else
          (*p_table)(row,col) << RPT_FAIL;
 
-      (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(Mr,MrMin,bPassed) << _T(")");
+      (*p_table)(row,col++) << rptNewLine << _T("(") << cdRatio.SetValue(Mr,MrMin,bPassed) << _T(")");
 
       bPassed = pArtifact->CapacityPassed();
       if ( bPassed )
@@ -241,23 +223,192 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
       else
          (*p_table)(row,col) << RPT_FAIL;
 
-      (*p_table)(row,col++) << rptNewLine << _T("(") << cap_demand.SetValue(Mr,Mu,bPassed) << _T(")");
+      (*p_table)(row,col++) << rptNewLine << _T("(") << cdRatio.SetValue(Mr,Mu,bPassed) << _T(")");
 
       if ( c_over_de )
       {
-         if ( pArtifact->GetMaxReinforcementRatio() > pArtifact->GetMaxReinforcementRatioLimit() )
+         if ( pArtifact->GetMaxReinforcementRatioLimit() < pArtifact->GetMaxReinforcementRatio() )
          {
             bOverReinforced = true;
             (*p_table)(row,8) << _T(" *");
 
             // Show limiting capacity of over reinforced section
             MOMENTCAPACITYDETAILS mcd;
-            pMomentCap->GetMomentCapacityDetails(stage,poi,bPositiveMoment,&mcd);
+            pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
             (*p_table)(row,5) << rptNewLine << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
          }
       }
 
       row++;
+   } // next artifact
+
+   *pbOverReinforced = bOverReinforced;
+   return p_table;
+}
+
+rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsClosurePourArtifact* pClosureArtifact,
+                                               IEAFDisplayUnits* pDisplayUnits,
+                                               IntervalIndexType intervalIdx,
+                                               pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
+{
+#pragma Reminder("OBSOLETE: ??? i think closure pours are reported with the other POI") // see code above
+   USES_CONVERSION;
+   bool bOverReinforced = false;
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims );
+   Uint16 nCols = c_over_de ? 9 : 6;
+
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T(""));
+
+   const CSegmentKey& closureKey = pClosureArtifact->GetClosurePourKey();
+   if ( closureKey.groupIndex == ALL_GROUPS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(ls));
+   std::_tstring strDirection  = (bPositiveMoment ? _T("Positive") : _T("Negative"));
+
+   std::_tostringstream os;
+   os << strDirection << _T(" Moment Capacity for") << strLimitState << _T(" Limit State [5.7]");
+   p_table->TableLabel() << os.str().c_str();
+
+   ColumnIndexType col = 0;
+
+   p_table->SetNumberOfHeaderRows(2);
+
+   p_table->SetRowSpan(0,col,2);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
+   (*p_table)(0,col++) << _T("Location");
+
+   if ( c_over_de )
+   {
+      p_table->SetRowSpan(0,col,2);
+      p_table->SetRowSpan(1,col,SKIP_CELL);
+      (*p_table)(0,col++) << Sub2(_T("c/d"),_T("e"));
+
+      p_table->SetRowSpan(0,col,2);
+      p_table->SetRowSpan(1,col,SKIP_CELL);
+      (*p_table)(0,col++) << Sub2(_T("c/d"),_T("e")) << _T(" Max");
+
+      p_table->SetRowSpan(0,col,2);
+      p_table->SetRowSpan(1,col,SKIP_CELL);
+      (*p_table)(0,col++) << _T("Over") << rptNewLine << _T("Reinforced") << rptNewLine << _T("Status");
+   }
+
+   p_table->SetRowSpan(0,col,2);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
+   (*p_table)(0,col++) << COLHDR(Sub2(_T("M"),_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+
+   p_table->SetRowSpan(0,col,2);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
+   (*p_table)(0,col++) << COLHDR(symbol(phi) << Sub2(_T("M"),_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   p_table->SetRowSpan(0,col,2);
+   p_table->SetRowSpan(1,col,SKIP_CELL);
+   (*p_table)(0,col++) << COLHDR(symbol(phi) << _T("M") << Sub(_T("n")) << _T(" Min"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   p_table->SetColumnSpan(0,col,2);
+   p_table->SetColumnSpan(0,col+1,SKIP_CELL);
+   (*p_table)(0,col) << _T("Status");
+
+   (*p_table)(1,col++) << symbol(phi) << Sub2(_T("M"),_T("n")) << _T(" Min ") << symbol(LTE) << _T(" ") << symbol(phi) << Sub2(_T("M"),_T("n")) << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T("/") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T(" Min)");
+   (*p_table)(1,col++) << Sub2(_T("M"),_T("u")) << _T(" ") << symbol(LTE) << _T(" ") << symbol(phi) << Sub2(_T("M"),_T("n")) << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T("/") << Sub2(_T("M"),_T("u")) << _T(")");
+
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
+   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+
+   rptCapacityToDemand cdRatio;
+
+   // Fill up the p_table
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
+
+   RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+   col = 0;
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CClosurePourData* pClosure = pIBridgeDesc->GetClosurePourData(closureKey);
+   if ( pClosure->GetTemporarySupport() )
+   {
+      (*p_table)(row,col++) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(pClosure->GetTemporarySupport()->GetIndex());
+   }
+   else
+   {
+      (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pClosure->GetPier()->GetIndex());
+   }
+
+   const pgsFlexuralCapacityArtifact* pArtifact;
+   if ( bPositiveMoment )
+      pArtifact = pClosureArtifact->GetPositiveMomentFlexuralCapacityArtifact();
+   else
+      pArtifact = pClosureArtifact->GetNegativeMomentFlexuralCapacityArtifact();
+
+   if ( c_over_de )
+   {
+      (*p_table)(row,col++) << scalar.SetValue( pArtifact->GetMaxReinforcementRatio() );
+      (*p_table)(row,col++) << scalar.SetValue( pArtifact->GetMaxReinforcementRatioLimit() );
+      if ( pArtifact->IsOverReinforced() )
+      {
+         (*p_table)(row,col++) << RPT_FAIL;
+      }
+      else
+      {
+         (*p_table)(row,col++) << RPT_PASS;
+      }
+   }
+
+   Float64 Mu    = pArtifact->GetDemand();
+   Float64 Mr    = pArtifact->GetCapacity();
+   Float64 MrMin = pArtifact->GetMinCapacity() ;
+
+   (*p_table)(row,col++) << moment.SetValue( Mu );
+   (*p_table)(row,col++) << moment.SetValue( Mr );
+   (*p_table)(row,col++) << moment.SetValue( MrMin );
+
+   bool bPassed = !pArtifact->IsUnderReinforced();
+   if ( bPassed )
+      (*p_table)(row,col) << RPT_PASS;
+   else
+      (*p_table)(row,col) << RPT_FAIL;
+
+   (*p_table)(row,col++) << rptNewLine << _T("(") << cdRatio.SetValue(Mr,MrMin,bPassed) << _T(")");
+
+   bPassed = pArtifact->CapacityPassed();
+   if ( bPassed )
+      (*p_table)(row,col) << RPT_PASS;
+   else
+      (*p_table)(row,col) << RPT_FAIL;
+
+   (*p_table)(row,col++) << rptNewLine << _T("(") << cdRatio.SetValue(Mr,Mu,bPassed) << _T(")");
+
+   if ( c_over_de )
+   {
+      if ( pArtifact->GetMaxReinforcementRatioLimit() < pArtifact->GetMaxReinforcementRatio() )
+      {
+         bOverReinforced = true;
+         (*p_table)(row,8) << _T(" *");
+
+#pragma Reminder("UPDATE") // commented out during development (dont' have a poi for GetMomentCapacityDetails)
+         //// Show limiting capacity of over reinforced section
+         //MOMENTCAPACITYDETAILS mcd;
+         //pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mcd);
+         //(*p_table)(row,5) << rptNewLine << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
+      }
    }
 
    *pbOverReinforced = bOverReinforced;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 // BridgeDescGirderMaterialsPage.h : header file
 //
 
+#include "PGSuperAppPlugin\resource.h"
 #include "SameGirderTypeHyperLink.h"
 #include "SlabOffsetHyperLink.h"
 
@@ -87,12 +88,16 @@ protected:
 	afx_msg void OnHelp();
 	afx_msg void OnChangeFci();
 	afx_msg void OnChangeGirderFc();
+   afx_msg void OnChangeEc();
+   afx_msg void OnChangeEci();
 	afx_msg void OnMoreConcreteProperties();
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnChangeGirderName();
    afx_msg void OnBeforeChangeGirderName();
-	//}}AFX_MSG
+	afx_msg void OnConcreteStrength();
+   afx_msg void OnConditionFactorTypeChanged();
+   //}}AFX_MSG
    afx_msg LRESULT OnChangeSameGirderType(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
@@ -113,13 +118,17 @@ protected:
 
    void UpdateEci();
    void UpdateEc();
+   void UpdateFci();
+   void UpdateFc();
 
    CString m_strUserEc;
    CString m_strUserEci;
 
+   int m_LossMethod;
+   Float64 m_AgeAtRelease;
+
    int m_GirderNameIdx; // combo box index of current girder name just before it is changed
                         // (needed to revert the combobox if user doesn't want to change)
-
 };
 
 //{{AFX_INSERT_LOCATION}}

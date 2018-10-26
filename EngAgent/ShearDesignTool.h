@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 //
 
 #include <IFace\Artifact.h>
-#include <IFace\GirderHandlingPointOfInterest.h>
+#include <IFace\PointOfInterest.h>
 #include <PgsExt\PoiMgr.h>
 #include <psgLib\GirderLibraryEntry.h>
 
@@ -51,7 +51,7 @@ class LongReinfShearChecker
 {
 public:
    virtual void CheckLongReinfShear( const pgsPointOfInterest& poi, 
-                                     pgsTypes::Stage stage,
+                                     IntervalIndexType intervalIdx,
                                      pgsTypes::LimitState ls,
                                      const SHEARCAPACITYDETAILS& scd,
                                      const GDRCONFIG* pConfig,
@@ -87,8 +87,7 @@ public:
       sdSuccess,
       sdFail,
       sdRestartWithAdditionalLongRebar, // This and next are caused by long reinf for shear failure
-      sdRestartWithAdditionalStrands,
-      sdDesignFailedFromShearStress  // Shear stress exceeded 0.18f'c. Tool will compute required f'c
+      sdRestartWithAdditionalStrands
    };
 
    // GROUP: LIFECYCLE
@@ -112,9 +111,6 @@ public:
    // Note that this can be area of strands, or area of #5 bars adjusted for development
    Float64 GetRequiredAsForLongReinfShear() const;
 
-   // F'c required if shear stress fails - if sdDesignFailedFromShearStress is returned
-   Float64 GetFcRequiredForShearStress() const;
-
    // Pois for spec check and design
    std::vector<pgsPointOfInterest> GetDesignPoi();
 
@@ -128,7 +124,6 @@ private:
    // Design by Modifying existing stirrup layout 
    bool ModifyPreExistingStirrupDesign();
    bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool);
-   void ExpandStirrupZoneLengths(CShearData::ShearZoneVec& ShearZones);
 
    // Design additional horizontal shear bars if needed
    bool DetailHorizontalInterfaceShear();
@@ -147,12 +142,10 @@ private:
    // ACCESS
    //////////
 
-   GDRCONFIG GetGirderConfiguration();
+   GDRCONFIG GetSegmentConfiguration();
 
-   SpanIndexType GetSpan() const      { return m_Span; }
-   GirderIndexType GetGirder() const  { return m_Girder; }
-
-   Float64 GetGirderLength() const;
+   const CSegmentKey& GetSegmentKey() const;
+   Float64 GetSegmentLength() const;
 
    // Design Control Values
    bool DoDesignForConfinement() const;
@@ -201,16 +194,15 @@ private:
    StatusGroupIDType m_StatusGroupID;
 
    pgsDesignArtifact* m_pArtifact;
-   CShearData m_ShearData; // in-progress shear design data'
+   CShearData2 m_ShearData; // in-progress shear design data'
 
    LongReinfShearChecker* m_pLongReinfShearChecker;
 
-   GirderIndexType m_Girder;
-   SpanIndexType m_Span;
+   CSegmentKey m_SegmentKey;
 
    bool m_bIsPermit;
 
-   Float64 m_GirderLength;
+   Float64 m_SegmentLength;
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;
    Float64 m_EndConnectionLength;
@@ -237,9 +229,6 @@ private:
 
    // Area of steel required if longitudinal reinf for shear design kicks in
    Float64 m_LongReinfShearAs;
-
-   // f'c required for shear stress
-   Float64 m_RequiredFcForShearStress;
 
    // Shear design parameters
    struct BarLegCombo
@@ -347,9 +336,9 @@ private:
    // compute and cache pois
    void ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& pois);
 
-   ShearDesignOutcome Validate();
+   void Validate();
    // Compute and cache Av/S demand
-   ShearDesignOutcome ValidateVerticalAvsDemand();
+   void ValidateVerticalAvsDemand();
    void ValidateHorizontalAvsDemand();
 
    void ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations);

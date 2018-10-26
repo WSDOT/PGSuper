@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,15 +25,13 @@
 #include <Reporting\CrackedSectionDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\CrackedSection.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,8 +46,7 @@ CLASS
 
 void write_cracked_section_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
-                             SpanIndexType span,
-                             GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment);
@@ -66,29 +63,10 @@ LPCTSTR CCrackedSectionDetailsChapterBuilder::GetName() const
 
 rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGdrRptSpec    = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   SpanIndexType span;
-   GirderIndexType gdr;
-
-   if ( pSGRptSpec )
-   {
-      pSGRptSpec->GetBroker(&pBroker);
-      span = pSGRptSpec->GetSpan();
-      gdr = pSGRptSpec->GetGirder();
-   }
-   else if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      span = ALL_SPANS;
-      gdr = pGdrRptSpec->GetGirder();
-   }
-   else
-   {
-      span = ALL_SPANS;
-      gdr  = ALL_GIRDERS;
-   }
+   pGdrRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -123,32 +101,32 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi;
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
-
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(grpIdx,&startSpanIdx,&endSpanIdx);
+      bool bProcessNegativeMoments = false;
+      for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
       {
-         rptParagraph* pPara;
-         if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
+         if ( pBridge->ProcessNegativeMoments(spanIdx) )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-            *pChapter << pPara;
-            std::_tostringstream os;
-            os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
-            pPara->SetName( os.str().c_str() );
-            (*pPara) << pPara->GetName() << rptNewLine;
+            bProcessNegativeMoments = true;
+            break;
          }
+      }
 
-         vPoi = pIPOI->GetPointsOfInterest( spanIdx,gdrIdx, pgsTypes::BridgeSite3, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
-         write_cracked_section_table(pBroker,pDisplayUnits, spanIdx,gdrIdx, vPoi, pChapter, pBridge->ProcessNegativeMoments(spanIdx));
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      {
+         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+         std::vector<pgsPointOfInterest> vPoi(pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)));
+         write_cracked_section_table(pBroker,pDisplayUnits, thisGirderKey, vPoi, pChapter, bProcessNegativeMoments);
       }
    }
 
@@ -162,8 +140,7 @@ CChapterBuilder* CCrackedSectionDetailsChapterBuilder::Clone() const
 
 void write_cracked_section_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
-                             SpanIndexType span,
-                             GirderIndexType gdr,
+                             const CGirderKey& girderKey,
                              const std::vector<pgsPointOfInterest>& pois,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment)
@@ -171,10 +148,10 @@ void write_cracked_section_table(IBroker* pBroker,
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IBridge,            pBridge);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Setup the table
    pPara = new rptParagraph;
@@ -186,7 +163,7 @@ void write_cracked_section_table(IBroker* pBroker,
 
    ColumnIndexType col = 0;
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -221,29 +198,30 @@ void write_cracked_section_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_i,    pDisplayUnits->GetMomentOfInertiaUnit(),       false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   std::vector<pgsPointOfInterest>::const_iterator i(pois.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(pois.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
       CRACKEDSECTIONDETAILS csd;
       pCrackedSection->GetCrackedSectionDetails(poi,true,&csd);
 
-      Float64 h = pSectProp->GetHg(pgsTypes::BridgeSite3,poi);
+      Float64 h = pSectProp->GetHg(liveLoadIntervalIdx,poi);
 
       Float64 Yt = csd.c;
       Float64 Yb = h - Yt;
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
       (*table)(row,col++) << dim.SetValue( Yt );
       (*table)(row,col++) << dim.SetValue( Yb );
       (*table)(row,col++) << mom_i.SetValue( csd.Icr );

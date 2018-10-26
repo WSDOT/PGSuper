@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\PrestressLossTable.h>
 #include "TexasPrestressSummaryChapterBuilder.h"
@@ -57,11 +57,13 @@ LPCTSTR CTexasPrestressSummaryChapterBuilder::GetName() const
 
 rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSpec->GetSpan();
-   GirderIndexType girder = pSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+
+   // This is a single segment report
+   CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -69,7 +71,7 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pR
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << CPrestressLossTable().Build(pBroker,span,girder,pDisplayUnits) << rptNewLine;
+   *pPara << CPrestressLossTable().Build(pBroker,segmentKey,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

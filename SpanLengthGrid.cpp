@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -194,11 +194,11 @@ void CSpanLengthGrid::FillGrid(const std::vector<Float64>& vSpanLengths)
    if (rows>=1)
 	   RemoveRows(1, rows);
 
-   CollectionIndexType size = vSpanLengths.size();
+   IndexType size = vSpanLengths.size();
    if (0 < size)
    {
       // size grid
-      for (CollectionIndexType i = 0; i < size; i++)
+      for (IndexType i = 0; i < size; i++)
 	      InsertRow();
 
       // fill grid

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SECTIONCUTDRAWSTRATEGY_H_
-#define INCLUDED_SECTIONCUTDRAWSTRATEGY_H_
+#pragma once
+
+#include <PgsExt\SegmentKey.h>
+#include <PgsExt\PointOfInterest.h>
 
 interface iPointDisplayObject;
 interface IRoadway;
@@ -33,10 +35,12 @@ class CBridgeModelViewChildFrame;
 class iCutLocation
 {
 public:
-
+   // Cut locations are in the Girder Coordinate System
    virtual Float64 GetCurrentCutLocation() = 0;
-   virtual void CutAt(Float64 cut)=0;
-   virtual void ShowCutDlg()=0;
+   virtual void CutAt(Float64 Xg) = 0;
+   virtual void ShowCutDlg() = 0;
+   virtual Float64 GetMinCutLocation() = 0;
+   virtual Float64 GetMaxCutLocation() = 0;
 };
 
 // {C56878AE-5504-4f1a-A060-F2C56991663D}
@@ -46,7 +50,10 @@ DEFINE_GUID(IID_iSectionCutDrawStrategy,
 interface iSectionCutDrawStrategy : public IUnknown
 {
    STDMETHOD_(void,SetColor)(COLORREF color) PURE;
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc) PURE;
+	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) PURE;
+
+   // distFromStartOfGirder is in the GirderCoodinateSystem
+   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 distFromStartOfGirder) PURE;
 };
 
 // {2CDCA9C4-A9A3-4c75-B7B1-ED9E1E308203}
@@ -66,5 +73,3 @@ interface iBridgeSectionCutDrawStrategy : public IUnknown
 //interface iSectionCutEvents : public IUnknown
 //{
 //};
-
-#endif // INCLUDED_SECTIONCUTDRAWSTRATEGY_H_

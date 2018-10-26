@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,12 +30,12 @@
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,30 +66,38 @@ LPCTSTR CBearingDesignParametersChapterBuilder::GetName() const
 
 rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
 
-   ATLASSERT(span!=ALL_SPANS); // This report is not capable if reporting girderline results
+   // we want the final configuration... that would be in the last interval
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-   bool are_user_loads = pUDL->DoUserLoadsExist(span,girder);
+   bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
    GET_IFACE2(pBroker,IBearingDesign,pBearing);
 
-   // Don't create much of report if no simple span ends
+   // Don't create report if no simple span ends
+#pragma Reminder("REVIEW") // what about spliced girders with a pier in the middle of a girder?
    bool doStartPier, doEndPier;
-   pBearing->AreBearingReactionsAvailable(pgsTypes::BridgeSite3,span, girder, &doStartPier, &doEndPier);
-   bool doFinalLoads = doStartPier || doEndPier;
+   pBearing->AreBearingReactionsAvailable(girderKey, &doStartPier, &doEndPier);
+   if( !(doStartPier || doEndPier) )
+   {
+      rptParagraph* p = new rptParagraph;
+      *p << _T("Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
+      *pChapter << p;
+      return pChapter;
+   }
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
@@ -99,26 +107,15 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),CProductReactionTable::BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
+   *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
-   if( doFinalLoads )
-   {
-      *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
-
-      if (bPedestrian)
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-   }
-   else
-   {
-      rptParagraph* p = new rptParagraph;
-      *p << _T("Final Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
-      *pChapter << p;
-      return pChapter;
-   }
+   if (bPedestrian)
+      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
 
    *p << rptNewLine;
 
-   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
+   std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girderKey);
    std::vector<std::_tstring>::iterator iter;
    long j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
@@ -128,7 +125,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( bPermit )
    {
-      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girderKey);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -138,7 +135,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girderKey);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -148,16 +145,16 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),BearingReactionsTable,pDisplayUnits) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
    }
 
    // Combined reactions
-   CCombinedReactionTable().BuildForBearingDesign(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pSpec->GetAnalysisType());
+   CCombinedReactionTable().BuildForBearingDesign(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,pSpec->GetAnalysisType());
 
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
+   *p << CProductRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
    if (bPedestrian)
@@ -165,7 +162,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    *p << rptNewLine;
 
-   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
+   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girderKey);
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
@@ -174,7 +171,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( bPermit )
    {
-      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girderKey);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -184,7 +181,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girderKey);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -195,7 +192,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    if (are_user_loads)
    {
       *p << rptNewLine;
-      *p << CUserRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),pDisplayUnits) << rptNewLine;
+      *p << CUserRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),pDisplayUnits) << rptNewLine;
    }
 
    p = new rptParagraph;
@@ -205,7 +202,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *p << pTable << rptNewLine;
 
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(7);
+   scalar.SetPrecision(4);
+   scalar.SetTolerance(1.0e-6);
 
    (*pTable)(0,0) << _T("");
    (*pTable)(0,1) << _T("Rotation") << rptNewLine << _T("(rad)");
@@ -214,30 +215,24 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
-   PierIndexType startPier = (span == ALL_SPANS ? 0 : span); // Make ALL_SPAN not crash. Assert above should stop this
-   PierIndexType endPier   = startPier+1;
+   PierIndexType startPierIdx,endPierIdx;
+   pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
+
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   GET_IFACE2(pBroker,IGirderSegment,pGdrSegment);
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_SECTCHANGE,POIFIND_OR);
-   ATLASSERT( 2 <= vPoi.size() );
-
-   // TRICKY: use adapter class to get correct reaction interfaces
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, pgsTypes::BridgeSite3, span, girder) );
+   std::vector<pgsPointOfInterest> vPoi1( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND) );
+   std::vector<pgsPointOfInterest> vPoi2( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1),POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND) );
 
    PierIndexType pier = 0;
-   for ( pier = startPier; pier <= endPier; pier++ )
+   for ( pier = startPierIdx; pier < endPierIdx; pier++ )
    {
-      if (!pForces->DoReportAtPier(pier, girder))
-      {
-         // Don't report pier if information is not available
-         continue;
-      }      
-      
       ColumnIndexType col = 0;
 
-      pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
+      pgsTypes::PierFaceType pierFace = (pier == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
@@ -245,13 +240,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
       pgsPointOfInterest poi;
-      if ( pier == startPier )
+      if ( pier == startPierIdx )
       {
-         poi = vPoi.front();
+         poi = vPoi1.front();
       }
       else
       {
-         poi = vPoi.back();
+         poi = vPoi2.front();
       }
 
       Float64 rotation = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
@@ -314,32 +309,32 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       Float64 fdummy;
 
       // reactions and corresponding rotations
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MaxSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
                                            &fdummy, &startRPmax, &fdummy, &startTCmax, &fdummy, &endRPmax, &fdummy, &endTCmax,
                                            NULL, NULL, NULL, NULL);
 
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MinSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
                                            &startRPmin, &fdummy, &startTCmin, &fdummy, &endRPmin, &fdummy, &endTCmin, &fdummy,
                                            NULL, NULL, NULL, NULL);
 
       // rotations and corresponding reactions
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MaxSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, false, true,
                                            &fdummy, &startTPmax, &fdummy, &startRCmax, &fdummy, &endTPmax, &fdummy, &endRCmax,
                                            NULL, NULL, NULL, NULL);
 
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MinSimpleContinuousEnvelope, false, true,
+      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, intervalIdx, girderKey, pgsTypes::MinSimpleContinuousEnvelope, false, true,
                                            &startTPmin, &fdummy, &startRCmin, &fdummy, &endTPmin, &fdummy, &endRCmin, &fdummy,
                                            NULL, NULL, NULL, NULL);
    }
    else
    {
-      BridgeAnalysisType batype = analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan;
+      pgsTypes::BridgeAnalysisType batype = analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan;
 
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, batype, false, true,
+      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, intervalIdx, girderKey, batype, false, true,
                                            &startRPmin, &startRPmax, &startTCmin, &startTCmax, &endRPmin, &endRPmax, &endTCmin, &endTCmax,
                                            NULL, NULL, NULL, NULL);
 
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, batype, false, true,
+      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, intervalIdx, girderKey, batype, false, true,
                                            &startTPmin, &startTPmax, &startRCmin, &startRCmax, &endTPmin, &endTPmax, &endRCmin, &endRCmax,
                                            NULL, NULL, NULL, NULL);
    }
@@ -350,10 +345,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if(doStartPier)
    {
-      if ( startPier == 0 || startPier == nPiers-1 )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(startPier);
+      if ( startPierIdx == 0 || startPierIdx == nPiers-1 )
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(startPierIdx);
       else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(startPier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(startPierIdx);
 
       (*pTable)(row,col++) << reaction.SetValue( startRPmax );
       (*pTable)(row,col++) << rotation.SetValue( startTCmax );
@@ -374,10 +369,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    {
       col = 0;
 
-      if ( endPier == 0 || endPier == nPiers )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPier-1);
+      if ( endPierIdx == 0 || endPierIdx == nPiers )
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPierIdx-1);
       else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPier-1);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPierIdx-1);
 
       (*pTable)(row,col++) << reaction.SetValue( endRPmax );
       (*pTable)(row,col++) << rotation.SetValue( endTCmax );
@@ -417,17 +412,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    row = pTable->GetNumberOfHeaderRows();
 
-   for ( pier = startPier; pier <= endPier; pier++ )
+   for ( pier = startPierIdx; pier < endPierIdx; pier++ )
    {
-      if (!pForces->DoReportAtPier(pier, girder))
-      {
-         // Don't report pier if information is not available
-         continue;
-      }      
-
       ColumnIndexType col = 0;
 
-      pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
+      pgsTypes::PierFaceType pierFace = (pier == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
          (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
@@ -435,18 +424,18 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
 
-      Float64 slope1 = pBridge->GetGirderSlope(span,girder);
+      Float64 slope1 = pBridge->GetSegmentSlope( pier == startPierIdx ? CSegmentKey(girderKey,0) : CSegmentKey(girderKey,nSegments-1) );
       (*pTable)(row,col++) << scalar.SetValue(slope1);
 
       
       pgsPointOfInterest poi;
-      if ( pier == startPier )
+      if ( pier == startPierIdx )
       {
-         poi = vPoi.front();
+         poi = vPoi1.front();
       }
       else
       {
-         poi = vPoi.back();
+         poi = vPoi2.front();
       }
 
       Float64 slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,9 +20,24 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
+#pragma Reminder("UPDATE: barrier distribution should be by span")
+// On the 2.x branch, RDP originally wrote this code to compute the load
+// by span. RAB changed it to be by segment simply because it was easier.
+// The thing that made it difficult was in BuildGeometryModel() when building
+// the construction line. The segment end points are easy to get. However,
+// to build the construction line for spliced girders, the segment/pier
+// intersection points are needed. There is also the issue of curved
+// bridges where there is an angle point between segments in a girder.
+// Using a construction line that goes from pier to pier won't capture
+// the angle point and will violate the original layout rules (N nearest)
+
 #include "StdAfx.h"
+#include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include "BarrierSidewalkLoadDistributionTool.h"
+#include <PgsExt\PrecastSegmentData.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\TemporarySupportData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -76,28 +91,31 @@ CLASS
    pgsBarrierSidewalkLoadDistributionTool
 ****************************************************************************/
 //////////////////////
-pgsBarrierSidewalkLoadDistributionTool::pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers):
+pgsBarrierSidewalkLoadDistributionTool::pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, IBridgeDescription* pIBridgeDesc, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers):
 LOGFILE(lf),
+m_pIBridgeDesc(pIBridgeDesc),
 m_pIBridge(pBridge),
 m_pIGirder(pGirder),
 m_pIBarriers(pBarriers),
-m_Span(INVALID_INDEX),
+m_GroupIdx(INVALID_INDEX),
+m_SegmentIdx(INVALID_INDEX),
 m_DidCompute(false)
 {
    m_GeomUtil.CoCreateInstance(CLSID_GeomUtil);
 
-   m_MidSpanRefLine.CoCreateInstance(CLSID_Line2d);
+   m_RefLine.CoCreateInstance(CLSID_Line2d);
    m_LeftSlabEdgeLine.CoCreateInstance(CLSID_Line2d);
    m_RightSlabEdgeLine.CoCreateInstance(CLSID_Line2d);
 }
 
-void pgsBarrierSidewalkLoadDistributionTool::Initialize(SpanIndexType span, pgsTypes::TrafficBarrierDistribution distType, GirderIndexType nMaxDistributed)
+void pgsBarrierSidewalkLoadDistributionTool::Initialize(GroupIndexType grpIdx, SegmentIndexType segIdx,pgsTypes::TrafficBarrierDistribution distType, GirderIndexType nMaxDistributed)
 {
-   m_Span = span;
+   m_GroupIdx = grpIdx;
+   m_SegmentIdx = segIdx;
    m_DistType = distType;
    m_nMaxDistributed = nMaxDistributed;
 
-   m_SpanLoadFractionData.Init();
+   m_SegmentLoadFractionData.Init();
    m_DidCompute = false;
 }
 
@@ -107,20 +125,20 @@ void pgsBarrierSidewalkLoadDistributionTool::GetTrafficBarrierLoadFraction(Girde
 {
    if (!m_DidCompute)
    {
-      // Fill m_SpanLoadFractionData
+      // Fill m_SegmentLoadFractionData
       Compute();
 
       m_DidCompute = true;
    }
 
-   if (gdrIdx>=0 && gdrIdx<m_SpanLoadFractionData.m_GirderLoadFractions.size())
+   if (0 <= gdrIdx && gdrIdx < m_SegmentLoadFractionData.m_GirderLoadFractions.size())
    {
-      const GlfData& rglf = m_SpanLoadFractionData.m_GirderLoadFractions[gdrIdx];
+      const GlfData& rglf = m_SegmentLoadFractionData.m_GirderLoadFractions[gdrIdx];
 
-      *pFraExtLeft  = rglf.GMSWs[LeftExteriorBarrier]  ==0 ? 0 : (Float64)rglf.GMSWs[LeftExteriorBarrier]  / m_SpanLoadFractionData.m_GMSWsAppliedTo[LeftExteriorBarrier];
-      *pFraIntLeft  = rglf.GMSWs[LeftInteriorBarrier]  ==0 ? 0 : (Float64)rglf.GMSWs[LeftInteriorBarrier]  / m_SpanLoadFractionData.m_GMSWsAppliedTo[LeftInteriorBarrier];
-      *pFraExtRight = rglf.GMSWs[RightExteriorBarrier] ==0 ? 0 : (Float64)rglf.GMSWs[RightExteriorBarrier] / m_SpanLoadFractionData.m_GMSWsAppliedTo[RightExteriorBarrier];
-      *pFraIntRight = rglf.GMSWs[RightInteriorBarrier] ==0 ? 0 : (Float64)rglf.GMSWs[RightInteriorBarrier] / m_SpanLoadFractionData.m_GMSWsAppliedTo[RightInteriorBarrier];
+      *pFraExtLeft  = rglf.GMSWs[LeftExteriorBarrier]  == 0 ? 0 : (Float64)rglf.GMSWs[LeftExteriorBarrier]  / m_SegmentLoadFractionData.m_GMSWsAppliedTo[LeftExteriorBarrier];
+      *pFraIntLeft  = rglf.GMSWs[LeftInteriorBarrier]  == 0 ? 0 : (Float64)rglf.GMSWs[LeftInteriorBarrier]  / m_SegmentLoadFractionData.m_GMSWsAppliedTo[LeftInteriorBarrier];
+      *pFraExtRight = rglf.GMSWs[RightExteriorBarrier] == 0 ? 0 : (Float64)rglf.GMSWs[RightExteriorBarrier] / m_SegmentLoadFractionData.m_GMSWsAppliedTo[RightExteriorBarrier];
+      *pFraIntRight = rglf.GMSWs[RightInteriorBarrier] == 0 ? 0 : (Float64)rglf.GMSWs[RightInteriorBarrier] / m_SegmentLoadFractionData.m_GMSWsAppliedTo[RightInteriorBarrier];
    }
    else
    {
@@ -136,41 +154,41 @@ void pgsBarrierSidewalkLoadDistributionTool::GetSidewalkLoadFraction(GirderIndex
 {
    if (!m_DidCompute)
    {
-      // Fill m_SpanLoadFractionData
+      // Fill m_SegmentLoadFractionData
       Compute();
 
       m_DidCompute = true;
    }
 
-   if (gdrIdx>=0 && gdrIdx<m_SpanLoadFractionData.m_GirderLoadFractions.size())
+   if (0 <= gdrIdx && gdrIdx < m_SegmentLoadFractionData.m_GirderLoadFractions.size())
    {
-      const GlfData& rglf = m_SpanLoadFractionData.m_GirderLoadFractions[gdrIdx];
+      const GlfData& rglf = m_SegmentLoadFractionData.m_GirderLoadFractions[gdrIdx];
 
-      *pFraSwLeft  = rglf.GMSWs[LeftSidewalk]  ==0 ? 0 : (Float64)rglf.GMSWs[LeftSidewalk]  / m_SpanLoadFractionData.m_GMSWsAppliedTo[LeftSidewalk];
-      *pFraSwRight = rglf.GMSWs[RightSidewalk] ==0 ? 0 : (Float64)rglf.GMSWs[RightSidewalk] / m_SpanLoadFractionData.m_GMSWsAppliedTo[RightSidewalk];
+      *pFraSwLeft  = rglf.GMSWs[LeftSidewalk]  == 0 ? 0 : (Float64)rglf.GMSWs[LeftSidewalk]  / m_SegmentLoadFractionData.m_GMSWsAppliedTo[LeftSidewalk];
+      *pFraSwRight = rglf.GMSWs[RightSidewalk] == 0 ? 0 : (Float64)rglf.GMSWs[RightSidewalk] / m_SegmentLoadFractionData.m_GMSWsAppliedTo[RightSidewalk];
    }
    else
    {
       ATLASSERT(0); // girder is out of range, this should never happen.
       *pFraSwLeft  = 0.0;
-      *pFraSwRight  = 0.0;
+      *pFraSwRight = 0.0;
    }
 }
 
 
 void pgsBarrierSidewalkLoadDistributionTool::Compute()
 {
-   ATLASSERT(m_Span!=INVALID_INDEX); // failed to call Initialize?
+   ATLASSERT(m_GroupIdx != INVALID_INDEX); // failed to call Initialize?
 
    // First build geometry model
    BuildGeometryModel();
 
    // Fill GlfData with zeros
-   GirderIndexType nGirders = m_pIBridge->GetGirderCount(m_Span);
-   m_SpanLoadFractionData.m_GirderLoadFractions.assign(nGirders, GlfData());
+   GirderIndexType nGirders = m_pIBridge->GetGirderCount(m_GroupIdx);
+   m_SegmentLoadFractionData.m_GirderLoadFractions.assign(nGirders, GlfData());
 
    // Get total GMSWs From geometry model
-   m_SpanLoadFractionData.m_TotalGMSWs = m_GMSWInterSectionPoints.size();
+   m_SegmentLoadFractionData.m_TotalGMSWs = m_GMSWInterSectionPoints.size();
 
    // Some needed logicals
    bool hasLeftSw   = m_pIBarriers->HasSidewalk(pgsTypes::tboLeft);
@@ -181,7 +199,7 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
    // Compute load fractions for each barrier element
    // Left exterior barrier
    Float64 weight = m_pIBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft);
-   if (weight>0.0)
+   if (0.0 < weight)
    {
       Float64 cgOffset = m_pIBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboLeft);
 
@@ -208,7 +226,7 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
 
    // Right exterior barrier
    weight = m_pIBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight);
-   if (weight>0.0)
+   if (0.0 < weight)
    {
       Float64 cgOffset = m_pIBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight);
 
@@ -270,19 +288,19 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadEvenly(BarrSwType 
       // Special case of no load distribution. Defaults take care of this
       return true;
    }
-   else if ( (oppositeExists && m_SpanLoadFractionData.m_TotalGMSWs/2 < m_nMaxDistributed) || m_SpanLoadFractionData.m_TotalGMSWs < m_nMaxDistributed)
+   else if ( (oppositeExists && m_SegmentLoadFractionData.m_TotalGMSWs/2 < m_nMaxDistributed) || m_SegmentLoadFractionData.m_TotalGMSWs < m_nMaxDistributed)
    {
       // Distribute load evenly to all GMSW's
-      m_SpanLoadFractionData.m_GMSWsAppliedTo[barrswType] = m_SpanLoadFractionData.m_TotalGMSWs;
+      m_SegmentLoadFractionData.m_GMSWsAppliedTo[barrswType] = m_SegmentLoadFractionData.m_TotalGMSWs;
 
       // Intersection points contains element data for each girder, use it to build
       // even distributions for each girder
       GMSWInterSectionIterator it(m_GMSWInterSectionPoints.begin());
       GMSWInterSectionIterator it_end(m_GMSWInterSectionPoints.end());
-      while(it!= it_end)
+      while(it != it_end)
       {
          GirderIndexType igdr = it->m_Gdr; // Girder that GSMS lives on
-         GlfData& rlfData = m_SpanLoadFractionData.m_GirderLoadFractions[igdr];
+         GlfData& rlfData = m_SegmentLoadFractionData.m_GirderLoadFractions[igdr];
 
          rlfData.GMSWs[barrswType]++;
 
@@ -300,7 +318,7 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadEvenly(BarrSwType 
 void pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadToNNearest(pgsTypes::TrafficBarrierOrientation orientation, Float64 bSwOffset, BarrSwType barrswType)
 {
    // Load is distributed to N nearest girders
-   m_SpanLoadFractionData.m_GMSWsAppliedTo[barrswType] = m_nMaxDistributed;
+   m_SegmentLoadFractionData.m_GMSWsAppliedTo[barrswType] = m_nMaxDistributed;
 
    // Compute intersection with line tangent to deck along sidewalk or barrier and mid-span reference line
    CComPtr<ILine2d> barswLine;
@@ -316,7 +334,7 @@ void pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadToNNearest(pgsType
    }
 
    CComPtr<IPoint2d> barswIntersect;
-   m_GeomUtil->LineLineIntersect(m_MidSpanRefLine, barswLine, &barswIntersect);
+   m_GeomUtil->LineLineIntersect(m_RefLine, barswLine, &barswIntersect);
 
    // Compute distances between barrer/sidewalk and all GMSW intersections
    std::vector<SwBDist> distances;
@@ -338,14 +356,14 @@ void pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadToNNearest(pgsType
    std::sort(distances.begin(), distances.end(), comp);
 
    // Finally, add number of participating GMSW's N nearest
-   ATLASSERT(distances.size()>m_nMaxDistributed); // logic break: if this happens, load should have been distributed evenly to all gmsw's
+   ATLASSERT(m_nMaxDistributed < distances.size()); // logic break: if this happens, load should have been distributed evenly to all gmsw's
 
    IndexType nidxs = min(distances.size(), m_nMaxDistributed);
    for (IndexType idx=0; idx<nidxs; idx++)
    {
       GirderIndexType igdr = distances[idx].m_Gdr;
 
-      GlfData& rlfdata = m_SpanLoadFractionData.m_GirderLoadFractions[igdr];
+      GlfData& rlfdata = m_SegmentLoadFractionData.m_GirderLoadFractions[igdr];
 
       rlfdata.GMSWs[barrswType]++;
    }
@@ -382,7 +400,7 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeSidewalkLoadUnderSw(pgsTy
 
       dist *= sign; // compensate for left or right sidewalk
 
-      if (dist >= 0.0)
+      if (0.0 <= dist)
       {
          GMSWs_under_sidewalk.push_back(it->m_Gdr);
       }
@@ -391,16 +409,16 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeSidewalkLoadUnderSw(pgsTy
    }
 
    // If we have more than m_nMaxDistributed GMSW's beneath the sidewalk, distribute the load evenly between them
-   if (GMSWs_under_sidewalk.size() >= m_nMaxDistributed)
+   if (m_nMaxDistributed <= GMSWs_under_sidewalk.size())
    {
-      m_SpanLoadFractionData.m_GMSWsAppliedTo[barrswType] = GMSWs_under_sidewalk.size();
+      m_SegmentLoadFractionData.m_GMSWsAppliedTo[barrswType] = GMSWs_under_sidewalk.size();
 
       std::vector<GirderIndexType>::iterator gsit(GMSWs_under_sidewalk.begin());
       std::vector<GirderIndexType>::iterator gsit_end(GMSWs_under_sidewalk.end());
       while(gsit!= gsit_end)
       {
          GirderIndexType igdr = *gsit;
-         GlfData& rlfdata = m_SpanLoadFractionData.m_GirderLoadFractions[igdr];
+         GlfData& rlfdata = m_SegmentLoadFractionData.m_GirderLoadFractions[igdr];
          rlfdata.GMSWs[barrswType]++;
 
          gsit++;
@@ -422,13 +440,30 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    // Build geometry model data for current span so we can compute distances from sidewalks/barriers to girders
    // First build reference line at mid-span.
    // Use points intersecting the left and right edges of pier at mid-span
-   Float64 startPierStation = m_pIBridge->GetPierStation((PierIndexType)m_Span);
-   Float64 endPierStation   = m_pIBridge->GetPierStation((PierIndexType)m_Span+1);
-   Float64 midSpanStation = (startPierStation + endPierStation)/2.0;
+   const CPrecastSegmentData* pSegment = m_pIBridgeDesc->GetPrecastSegmentData(CSegmentKey(m_GroupIdx,0,m_SegmentIdx));
+   const CPierData2* pStartPier;
+   const CPierData2* pEndPier;
+   const CTemporarySupportData* pStartTS;
+   const CTemporarySupportData* pEndTS;
+   pSegment->GetStartSupport(&pStartPier,&pStartTS);
+   pSegment->GetEndSupport(&pEndPier,&pEndTS);
+
+   Float64 startStation = (pStartPier ? pStartPier->GetStation() : pStartTS->GetStation());
+   Float64 endStation   = (pEndPier   ? pEndPier->GetStation()   : pEndTS->GetStation());
+
+   Float64 midStation = (startStation + endStation)/2.0;
 
    CComPtr<IDirection> startDirection, endDirection; 
-   m_pIBridge->GetPierDirection((PierIndexType)m_Span, &startDirection);
-   m_pIBridge->GetPierDirection((PierIndexType)m_Span+1, &endDirection);
+   if ( pStartPier )
+      m_pIBridge->GetPierDirection(pStartPier->GetIndex(),&startDirection);
+   else
+      m_pIBridge->GetTemporarySupportDirection(pStartTS->GetIndex(),&startDirection);
+
+   if ( pEndPier )
+      m_pIBridge->GetPierDirection(pEndPier->GetIndex(),&endDirection);
+   else
+      m_pIBridge->GetTemporarySupportDirection(pEndTS->GetIndex(),&endDirection);
+
 
    Float64 startDirVal, endDirVal;
    startDirection->get_Value(&startDirVal);
@@ -441,19 +476,19 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    midDirection->put_Value(midDirVal);
 
    CComPtr<IPoint2d> leftSlabEdgePoint, rightSlabEdgePoint;
-   m_pIBridge->GetLeftSlabEdgePoint(midSpanStation, midDirection, &leftSlabEdgePoint);
-   m_pIBridge->GetRightSlabEdgePoint(midSpanStation, midDirection, &rightSlabEdgePoint);
+   m_pIBridge->GetLeftSlabEdgePoint(midStation, midDirection, &leftSlabEdgePoint);
+   m_pIBridge->GetRightSlabEdgePoint(midStation, midDirection, &rightSlabEdgePoint);
 
-   m_MidSpanRefLine->ThroughPoints(rightSlabEdgePoint, leftSlabEdgePoint);
+   m_RefLine->ThroughPoints(rightSlabEdgePoint, leftSlabEdgePoint);
 
    // Create tangent lines to deck by creating points slightly further along deck
-   Float64 nextStation = midSpanStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+   Float64 nextStation = midStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
 
    CComPtr<IPoint2d> leftSlabEdgePoint1, rightSlabEdgePoint1;
    m_pIBridge->GetLeftSlabEdgePoint(nextStation, midDirection, &leftSlabEdgePoint1);
    m_pIBridge->GetRightSlabEdgePoint(nextStation, midDirection, &rightSlabEdgePoint1);
 
-   m_LeftSlabEdgeLine->ThroughPoints(leftSlabEdgePoint, leftSlabEdgePoint1);
+   m_LeftSlabEdgeLine->ThroughPoints( leftSlabEdgePoint,  leftSlabEdgePoint1);
    m_RightSlabEdgeLine->ThroughPoints(rightSlabEdgePoint, rightSlabEdgePoint1);
 
    // Next store intersection points between mid-span reference line and
@@ -461,41 +496,42 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    CComPtr<ILine2d> constrLine; // a reusable construction line
    constrLine.CoCreateInstance(CLSID_Line2d);
 
-   GirderIndexType nGirders = m_pIBridge->GetGirderCount(m_Span);
-   for (GirderIndexType igdr=0; igdr<nGirders; igdr++)
+   GirderIndexType nGirders = m_pIBridge->GetGirderCount(m_GroupIdx);
+   for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
+      CSegmentKey segmentKey(m_GroupIdx,gdrIdx,m_SegmentIdx);
       // Create line along girder CL
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-      m_pIGirder->GetGirderEndPoints(m_Span, igdr, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+      m_pIGirder->GetSegmentEndPoints(segmentKey, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
 
       constrLine->ThroughPoints(pntPier1, pntPier2);
 
       if ( m_DistType == pgsTypes::tbdGirder )
       {
          CComPtr<IPoint2d> inters;
-         m_GeomUtil->LineLineIntersect(m_MidSpanRefLine, constrLine, &inters);
+         m_GeomUtil->LineLineIntersect(m_RefLine, constrLine, &inters);
 
-         m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(igdr, 0, inters) );
+         m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(gdrIdx, 0, inters) );
       }
       else 
       {
          // need poi at mid girder
-         Float64 gl = m_pIBridge->GetGirderLength(m_Span, igdr);
-         const pgsPointOfInterest mid_poi(m_Span, igdr, gl/2.0);
+         Float64 gl = m_pIBridge->GetSegmentLength(segmentKey);
+         const pgsPointOfInterest mid_poi(segmentKey, gl/2);
 
          if ( m_DistType == pgsTypes::tbdMatingSurface )
          {
             // get intersections for each mating surface
-            MatingSurfaceIndexType nMs = m_pIGirder->GetNumberOfMatingSurfaces(m_Span,igdr); 
-            for (MatingSurfaceIndexType ims=0; ims<nMs; ims++)
+            MatingSurfaceIndexType nMatingSurfaces = m_pIGirder->GetNumberOfMatingSurfaces(segmentKey); 
+            for (MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++)
             {
-               Float64 offset = -1.0 * m_pIGirder->GetMatingSurfaceLocation(mid_poi, ims);
+               Float64 offset = -1.0 * m_pIGirder->GetMatingSurfaceLocation(mid_poi, msIdx);
 
                constrLine->Offset(offset); // move from cl of gider to ms location
 
                CComPtr<IPoint2d> inters;
-               m_GeomUtil->LineLineIntersect(m_MidSpanRefLine, constrLine, &inters);
-               m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(igdr, 0, inters) );
+               m_GeomUtil->LineLineIntersect(m_RefLine, constrLine, &inters);
+               m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(gdrIdx, 0, inters) );
 
                constrLine->Offset(-offset); // move back to original location
             }
@@ -503,16 +539,16 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
          else if ( m_DistType == pgsTypes::tbdWebs )
          {
             // get intersections for each web
-            WebIndexType nWb = m_pIGirder->GetNumberOfWebs(m_Span,igdr);
-            for (MatingSurfaceIndexType iwb=0; iwb<nWb; iwb++)
+            WebIndexType nWebs = m_pIGirder->GetWebCount(segmentKey);
+            for (MatingSurfaceIndexType webIdx = 0; webIdx < nWebs; webIdx++)
             {
-               Float64 offset = -1.0 * m_pIGirder->GetWebLocation(mid_poi, iwb);
+               Float64 offset = -1.0 * m_pIGirder->GetWebLocation(mid_poi, webIdx);
 
                constrLine->Offset(offset); // move from cl of gider to ms location
 
                CComPtr<IPoint2d> inters;
-               m_GeomUtil->LineLineIntersect(m_MidSpanRefLine, constrLine, &inters);
-               m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(igdr, 0, inters) );
+               m_GeomUtil->LineLineIntersect(m_RefLine, constrLine, &inters);
+               m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(gdrIdx, 0, inters) );
 
                constrLine->Offset(-offset); // move back to original location
             }

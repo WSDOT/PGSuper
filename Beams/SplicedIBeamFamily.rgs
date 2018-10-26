@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSpliceBeamFamily.SplicedIBeam.1 = s 'Spliced I-Beam'
+	{
+		CLSID = s '{137DE1EA-B3A8-4cfb-8CAC-762991ACBCCE}'
+	}
+	PGSpliceBeamFamily.SplicedIBeam = s 'Spliced I-Beam'
+	{
+		CLSID = s '{137DE1EA-B3A8-4cfb-8CAC-762991ACBCCE}'
+		CurVer = s 'PGSpliceBeamFamily.SplicedIBeam.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {137DE1EA-B3A8-4cfb-8CAC-762991ACBCCE} = s 'Spliced I-Beam'
+		{
+			ProgID = s 'PGSpliceBeamFamily.SplicedIBeam.1'
+			VersionIndependentProgID = s 'PGSpliceBeamFamily.SplicedIBeam'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

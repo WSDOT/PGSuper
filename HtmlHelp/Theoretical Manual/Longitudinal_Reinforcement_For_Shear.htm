@@ -8,7 +8,7 @@
 
 <head>
 
-<title>Longitudinal Reinforcement in Girders</title>
+<title>Longitudinal Reinforcement For Shear</title>
 
 <!--(Meta)==========================================================-->
 
@@ -19,18 +19,17 @@
 <meta name=topic-time-estimate content=0>
 <meta name=topic-comment content>
 <meta name=topic-id content>
-<meta name=topic-check-list content="Ran Smart Index">
 <meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
 <meta name=generator-major-version content=0.1>
 <meta name=generator-minor-version content=1>
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=2115>
-<meta name=layout-width content=883>
+<meta name=layout-height content=761>
+<meta name=layout-width content=905>
 
 
-<!--(Links)=========================================================-->
+ <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
 
 <link REL="StyleSheet" HREF="..\default.css">
 
@@ -43,53 +42,7 @@
 
 <body>
 
-<h1>Longitudinal Reinforcement in Girders</h1>
-
-<p>PGSuper allows you to define longitudinal reinforcement at sections 
- along a girder, or along the entire girder. Longitudinal reinforcement 
- is used in the analysis of several limit state conditions in the program 
- including:</p>
-
-<ul style="list-style: disc;"
-	type=disc>
-	
-	<li class=kadov-p><p>Ultimate moment capacity (option must be enabled 
- in Project Criteria library - Moment Capacity tab)</p></li>
-	
-	<li class=kadov-p><p>Longitudinal reinforcement for shear capacity 
- (option must be enabled in Project Criteria library - Shear Capacity tab)</p></li>
-	
-	<li class=kadov-p><p>To increase allowable tensile stress for the following 
- temporary conditions: release in the casting yard, girder lifting, and 
- girder hauling</p></li>
-</ul>
-
-<p>Each of these conditions is described in more detail in the sections 
- below.</p>
-
-<h2>Ultimate Moment Capacity</h2>
-
-<p>PGSuper computes ultimate moment capacity using a strain compatibility 
- method as described <a href="Ultimate_Moment_Capacity_Analysis.htm">here</a>. 
- If longitudinal rebar exists in a section, and the option to use girder 
- longitudinal rebar for moment capacity is enabled, PGSuper will utilize 
- it when computing the ultimate capacity at sections along the girder for 
- positive moment capacity only. The area of partially developed rebar used 
- in the analysis is reduced per LRFD 5.11.2.1.</p>
-
-<p class=Tip>Note: The value of shear depth, d<span style="vertical-align: Sub;">v</span>, 
- which is used extensively in shear capacity computations, is computed 
- as part of the ultimate moment capacity analysis. Hence, shear capacity 
- can be affected indirectly by the existence of longitudinal reinforcement. 
- We have noted several cases where longitudinal steel reduces d<span style="vertical-align: Sub;">v</span>, 
- which will result in a reduction of vertical shear capacity and may reduce 
- longitudinal reinforcement for shear capacity. This behavior can be quite 
- unexpected.</p>
-
-<p class=Tip>Tip: The option to use longitudinal reinforcement must be 
- enabled on the Project Criteria library - Moment Capacity tab</p>
-
-<h2>Longitudinal Reinforcement for Shear</h2>
+<h1>Longitudinal Reinforcement For Shear</h1>
 
 <p>Provision 5.8.3.5 of the AASHTO LRFD Specifications states that, for 
  sections not subject to torsion, longitudinal reinforcement shall be proportioned 
@@ -545,62 +498,7 @@
  stresses</td></tr>
 </table>
 
-<p class=Tip>Tip: The option to use longitudinal reinforcement must be 
- enabled on the Project Criteria library - Shear Capacity tab</p>
-
-<h2>Increased Tensile Allowable for Temporary Conditions</h2>
-
-<p>LRFD Section 5.9.4.1.2-1 “Temporary Tensile Stress Limits in Prestressed 
- Concrete before Losses, Fully Prestressed Components” <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->allows 
- tensile stress limits for temporary conditions to be increased if sufficient 
- bonded reinforcing bars and/or prestressing steel are provided to resist 
- the tensile force in the concrete computed assuming an uncracked section. 
- In PGSuper, higher allowable limits may be specified for the following 
- cases: release in the casting yard, girder lifting, and girder hauling. 
- The stress parameters are defined in the Project Criteria library on the 
- appropriate tabs.</p>
-
-<p>AASHTO suggests that the required tensile steel can be computed per 
- the figure below:</p>
-
-<p style="text-align: center;"
-	align=center><img src="IncreasedAllowableTension.gif"
-						x-maintain-ratio=TRUE
-						style="border: none;
-								width: 383px;
-								height: 442px;
-								float: none;
-								border-style: none;
-								border-style: none;"
-						width=383
-						height=442
-						border=0></p>
-
-<p>PGSuper employs the same basic approach, but also makes the following 
- assumptions:</p>
-
-<ol style="list-style: decimal;"
-	type=1>
-	
-	<li class=kadov-p><p>The actual area of the tension zone is computed 
- based on the location of the neutral (bending) axis and the geometry of 
- the girder cross section.</p></li>
-	
-	<li class=kadov-p><p>All girder longitudinal reinforcement is considered 
- (i.e., there is no option to disable the use of longitudinal reinforcement 
- to increase allowables).</p></li>
-	
-	<li class=kadov-p><p>However, rebars will only be utilized if they 
- lie on the tension region of the neutral axis of the section as shown 
- in the above figure. The areas of Partially developed bars are reduced 
- linearly by development. Bars on the compression side are not considered.</p></li>
-	
-	<li class=kadov-p><p>The area of prestressing strands will not be considered. 
- It is assumed that the stress capacity of prestressing steel is already 
- fully utilized after jacking and losses at release. Hence, only mild steel 
- rebar is considered when computing <span style="font-style: italic;">A</span><span 
- style="vertical-align: Sub; font-style: italic;">s</span> for this requirement.</p></li>
-</ol>
+<p>&nbsp;</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

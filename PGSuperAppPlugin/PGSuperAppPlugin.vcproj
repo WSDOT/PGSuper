@@ -56,9 +56,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200"
+				AdditionalOptions="-Zm111"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -66,8 +66,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -100,7 +98,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -154,9 +151,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200"
+				AdditionalOptions="-Zm111"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -164,8 +161,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -198,7 +193,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -259,14 +253,12 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="0"
 			/>
@@ -302,7 +294,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -362,14 +353,12 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="0"
 			/>
@@ -405,7 +394,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -466,15 +454,11 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
-				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -510,7 +494,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -570,15 +553,11 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
-				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -614,7 +593,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -642,6 +620,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\AASHTOConcretePage.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ACIConcretePage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ActivityGrid.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\AlignmentDescriptionDlg.cpp"
 				>
 			</File>
@@ -650,15 +640,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\AnalysisResultsChildFrame.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\AnalysisResultsGraphDefinition.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\AnalysisResultsView.cpp"
+				RelativePath=".\ApplyLoadsDlg.cpp"
 				>
 			</File>
 			<File
@@ -722,10 +704,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\BridgeDescRatingPage.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\BridgeEditorPlanSettingsPage.cpp"
 				>
 			</File>
@@ -758,6 +736,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CastClosurePourDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CastDeckDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CatalogServerDlg.cpp"
 				>
 			</File>
@@ -766,7 +752,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ClosurePourDisplayObjectEvents.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourGeneralPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourLongitudinalReinforcementPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourStirrupsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ConcreteDetailsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ConcreteGeneralPage.cpp"
 				>
 			</File>
 			<File
@@ -782,6 +792,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ConstructSegmentsDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\convert.cpp"
 				>
 			</File>
@@ -791,10 +805,6 @@
 			</File>
 			<File
 				RelativePath="..\CopyGirderDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CopyGirderPropertiesCallbacks.cpp"
 				>
 			</File>
 			<File
@@ -892,7 +902,27 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DrawPrecastSegmentControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DrawTendonsControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DuctGrid.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\EditDistributedLoadDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\EditGirderlineDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\EditLoadsChildFrm.cpp"
 				>
 			</File>
 			<File
@@ -908,15 +938,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EditTimelineDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\EnvironmentDlg.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\FactorOfSafetyChildFrame.cpp"
+				RelativePath=".\ErectPiersDlg.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\FactorOfSafetyView.cpp"
+				RelativePath=".\ErectSegmentsDlg.cpp"
 				>
 			</File>
 			<File
@@ -925,10 +959,6 @@
 			</File>
 			<File
 				RelativePath="..\GirderDescDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\GirderDescRatingPage.cpp"
 				>
 			</File>
 			<File
@@ -949,6 +979,10 @@
 			</File>
 			<File
 				RelativePath="..\GirderEditorSettingsSheet.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderGrid.cpp"
 				>
 			</File>
 			<File
@@ -976,6 +1010,30 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderSegmentDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentGeneralPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentLongitudinalRebarPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentSpacingPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentStirrupsPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentStrandsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\GirderSelectStrandsDlg.cpp"
 				>
 			</File>
@@ -989,6 +1047,14 @@
 			</File>
 			<File
 				RelativePath="..\GMDisplayMgrEventsImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GraphView.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GraphViewChildFrame.cpp"
 				>
 			</File>
 			<File
@@ -1012,7 +1078,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InplaceTemporarySupportStationEditEvents.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InsertSpanDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\LegalRatingPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LinearDuctDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LinearDuctGrid.cpp"
 				>
 			</File>
 			<File
@@ -1040,6 +1122,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LossParametersDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\mfcdual.cpp"
 				>
 			</File>
@@ -1057,6 +1143,70 @@
 			</File>
 			<File
 				RelativePath="..\SharedCtrls\MultiGirderSelectGrid.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\OffsetDuctDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OffsetDuctGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ParabolicDuctDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ParabolicDuctGrid.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1114,6 +1264,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PGSpliceAppPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSpliceComponentInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceDoc.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceDocTemplate.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PGSuperAppPlugin.cpp"
 				>
 			</File>
@@ -1146,7 +1312,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PgsuperCommandLineInfo.cpp"
+				RelativePath="..\PGSuperCommandLineInfo.cpp"
 				>
 			</File>
 			<File
@@ -1155,6 +1321,10 @@
 			</File>
 			<File
 				RelativePath="..\PGSuperDoc.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSuperDocBase.cpp"
 				>
 			</File>
 			<File
@@ -1226,6 +1396,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PostTensioningPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PretensioningPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ProfileGrid.cpp"
 				>
 			</File>
@@ -1239,6 +1417,10 @@
 			</File>
 			<File
 				RelativePath="..\RatingOptionsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RemoveTempSupportsDlg.cpp"
 				>
 			</File>
 			<File
@@ -1282,7 +1464,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SegmentSpacingGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectClosurePourDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\SelectGirderDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectGirderSegmentDlg.cpp"
 				>
 			</File>
 			<File
@@ -1394,11 +1588,43 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StressTendonDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\StructuralAnalysisMethodDlg.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\SupportDrawStrategyImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportDisplayObjectEvents.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportDrawStrategyImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportGeometryPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportLayoutPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimelineEventDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimelineGrid.cpp"
 				>
 			</File>
 			<File
@@ -1412,6 +1638,18 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\AASHTOConcretePage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ACIConcretePage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ActivityGrid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\AlignmentDescriptionDlg.h"
 				>
 			</File>
@@ -1420,15 +1658,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\AnalysisResultsChildFrame.h"
-				>
-			</File>
-			<File
-				RelativePath="..\AnalysisResultsGraphDefinition.h"
-				>
-			</File>
-			<File
-				RelativePath="..\AnalysisResultsView.h"
+				RelativePath=".\ApplyLoadsDlg.h"
 				>
 			</File>
 			<File
@@ -1492,10 +1722,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\BridgeDescRatingPage.h"
-				>
-			</File>
-			<File
 				RelativePath="..\BridgeEditorPlanSettingsPage.h"
 				>
 			</File>
@@ -1528,6 +1754,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CastClosurePourDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CastDeckDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CatalogServerDlg.h"
 				>
 			</File>
@@ -1536,7 +1770,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ClosurePourDisplayObjectEvents.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourGeneralPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourLongitudinalReinforcementPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourStirrupsPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ConcreteDetailsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ConcreteGeneralPage.h"
 				>
 			</File>
 			<File
@@ -1552,6 +1810,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ConstructSegmentsDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\convert.h"
 				>
 			</File>
@@ -1561,14 +1823,6 @@
 			</File>
 			<File
 				RelativePath="..\CopyGirderDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CopyGirderPropertiesCallbacks.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CPPGSuperDocProxyAgent.h"
 				>
 			</File>
 			<File
@@ -1620,7 +1874,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DrawPrecastSegmentControl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DrawTendonsControl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DuctGrid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\EditDistributedLoadDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EditGirderlineDlg.h"
 				>
 			</File>
 			<File
@@ -1640,15 +1910,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EditTimelineDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\EnvironmentDlg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\FactorOfSafetyChildFrame.h"
+				RelativePath=".\ErectPiersActivity.h"
 				>
 			</File>
 			<File
-				RelativePath="..\FactorOfSafetyView.h"
+				RelativePath=".\ErectPiersDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ErectSegmentsDlg.h"
 				>
 			</File>
 			<File
@@ -1661,10 +1939,6 @@
 			</File>
 			<File
 				RelativePath="..\GirderDescDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\GirderDescRatingPage.h"
 				>
 			</File>
 			<File
@@ -1685,6 +1959,10 @@
 			</File>
 			<File
 				RelativePath="..\GirderEditorSettingsSheet.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderGrid.h"
 				>
 			</File>
 			<File
@@ -1712,6 +1990,30 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderSegmentDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentGeneralPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentLongitudinalRebarPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentSpacingPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentStirrupsPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderSegmentStrandsPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\GirderSelectStrandsDlg.h"
 				>
 			</File>
@@ -1725,6 +2027,14 @@
 			</File>
 			<File
 				RelativePath="..\GMDisplayMgrEventsImpl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\GraphView.h"
+				>
+			</File>
+			<File
+				RelativePath="..\GraphViewChildFrame.h"
 				>
 			</File>
 			<File
@@ -1756,7 +2066,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InplaceTemporarySupportStationEditEvents.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InsertSpanDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\LegalRatingPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LinearDuctDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LinearDuctGrid.h"
 				>
 			</File>
 			<File
@@ -1784,6 +2110,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LossParametersDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\MomentLoadDrawStrategy.h"
 				>
 			</File>
@@ -1800,7 +2130,43 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\SharedCtrls\MultiGirderSelectGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OffsetDuctDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OffsetDuctGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ParabolicDuctDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ParabolicDuctGrid.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PermitRatingPage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSpliceComponentInfo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceDoc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PGSpliceDocTemplate.h"
 				>
 			</File>
 			<File
@@ -1844,7 +2210,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PgsuperCommandLineInfo.h"
+				RelativePath="..\PGSuperCommandLineInfo.h"
 				>
 			</File>
 			<File
@@ -1860,6 +2226,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PGSuperDocBase.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PGSuperDocProxyAgent.h"
 				>
 			</File>
@@ -1868,7 +2238,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PgsuperException.h"
+				RelativePath="..\PGSuperException.h"
 				>
 			</File>
 			<File
@@ -1944,6 +2314,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PostTensioningPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PretensioningPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ProfileGrid.h"
 				>
 			</File>
@@ -1960,6 +2338,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RemoveTempSupportsDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ReportView.h"
 				>
 			</File>
@@ -1973,10 +2355,6 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
-				>
-			</File>
-			<File
-				RelativePath="..\resource.h"
 				>
 			</File>
 			<File
@@ -2012,7 +2390,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SegmentSpacingGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectClosurePourDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\SelectGirderDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectGirderSegmentDlg.h"
 				>
 			</File>
 			<File
@@ -2076,6 +2466,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StressTendonDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\StructuralAnalysisMethodDlg.h"
 				>
 			</File>
@@ -2088,7 +2482,31 @@
 				>
 			</File>
 			<File
-				RelativePath=".\targetver.h"
+				RelativePath=".\TemporarySupportDisplayObjectEvents.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportDrawStrategyImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportGeometryPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TemporarySupportLayoutPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TimelineEventDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TimelineGrid.h"
 				>
 			</File>
 			<File
@@ -2119,6 +2537,38 @@
 			</File>
 			<File
 				RelativePath="..\res\bss.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongGdr_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongGdr_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongNormal_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Closure_BrgAlongNormal_EndAlongNormalFromPier.emf"
 				>
 			</File>
 			<File
@@ -2158,7 +2608,43 @@
 				>
 			</File>
 			<File
+				RelativePath="..\res\Connection_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongGdr_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongGdr_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongNormal_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Connection_BrgAlongNormal_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
 				RelativePath="..\res\Continuous.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\ContinuousSegment.emf"
 				>
 			</File>
 			<File
@@ -2278,6 +2764,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\MatchCast_BrgAlongGdr.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\MatchCast_BrgAlongNormal.emf"
+				>
+			</File>
+			<File
 				RelativePath="..\res\moment.ico"
 				>
 			</File>
@@ -2291,6 +2785,22 @@
 			</File>
 			<File
 				RelativePath="..\res\pgs_template.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\PGSpliceAppPluginImpl.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\res\PGSpliceComponentInfo.rgs"
+				>
+			</File>
+			<File
+				RelativePath="..\res\PGSpliceTemplate.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\PGSpliceToolbar.bmp"
 				>
 			</File>
 			<File
@@ -2323,6 +2833,18 @@
 			</File>
 			<File
 				RelativePath=".\res\PGSuperProjectImporterAppPlugin.rgs"
+				>
+			</File>
+			<File
+				RelativePath="..\res\PGSuperTemplate.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\PGSuperToolbar.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\PierContinuousSegment.emf"
 				>
 			</File>
 			<File
@@ -2375,6 +2897,10 @@
 			</File>
 			<File
 				RelativePath="..\res\Stable.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\TempSupportContinuousSegment.emf"
 				>
 			</File>
 			<File
@@ -2468,6 +2994,10 @@
 				Name="Header Files"
 				>
 				<File
+					RelativePath="..\CopyGirder.h"
+					>
+				</File>
+				<File
 					RelativePath="..\DesignGirder.h"
 					>
 				</File>
@@ -2480,7 +3010,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\EditBridge.h"
+					RelativePath=".\EditClosurePour.h"
 					>
 				</File>
 				<File
@@ -2500,6 +3030,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EditGirderline.h"
+					>
+				</File>
+				<File
 					RelativePath="..\EditLiveLoad.h"
 					>
 				</File>
@@ -2516,11 +3050,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EditLossParameters.h"
+					>
+				</File>
+				<File
 					RelativePath="..\EditPier.h"
 					>
 				</File>
 				<File
 					RelativePath="..\EditPierStation.h"
+					>
+				</File>
+				<File
+					RelativePath=".\EditPrecastSegment.h"
 					>
 				</File>
 				<File
@@ -2540,13 +3082,33 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EditTemporarySupport.h"
+					>
+				</File>
+				<File
+					RelativePath=".\EditTemporarySupportStation.h"
+					>
+				</File>
+				<File
+					RelativePath=".\EditTimeline.h"
+					>
+				</File>
+				<File
 					RelativePath="..\InsertDeleteSpan.h"
+					>
+				</File>
+				<File
+					RelativePath=".\InsertDeleteTemporarySupport.h"
 					>
 				</File>
 			</Filter>
 			<Filter
 				Name="Source Files"
 				>
+				<File
+					RelativePath="..\CopyGirder.cpp"
+					>
+				</File>
 				<File
 					RelativePath="..\DesignGirder.cpp"
 					>
@@ -2564,7 +3126,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\EditBridge.cpp"
+					RelativePath=".\EditClosurePour.cpp"
 					>
 				</File>
 				<File
@@ -2584,6 +3146,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EditGirderline.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\EditLiveLoad.cpp"
 					>
 				</File>
@@ -2600,7 +3166,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\EditLoadsChildFrm.cpp"
+					RelativePath=".\EditLossParameters.cpp"
 					>
 				</File>
 				<File
@@ -2609,6 +3175,10 @@
 				</File>
 				<File
 					RelativePath="..\EditPierStation.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\EditPrecastSegment.cpp"
 					>
 				</File>
 				<File
@@ -2628,7 +3198,23 @@
 					>
 				</File>
 				<File
+					RelativePath=".\EditTemporarySupport.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\EditTemporarySupportStation.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\EditTimeline.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\InsertDeleteSpan.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\InsertDeleteTemporarySupport.cpp"
 					>
 				</File>
 			</Filter>
@@ -2641,15 +3227,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\IFace\DocumentType.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\IFace\DrawBridgeSettings.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\IFace\EditByUI.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\ExtendUI.h"
 				>
 			</File>
 			<File

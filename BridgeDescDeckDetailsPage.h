@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -80,6 +80,11 @@ protected:
 	afx_msg void OnMoreConcreteProperties();
    afx_msg void OnAddDeckEdgePoint();
    afx_msg void OnRemoveDeckEdgePoint();
+   afx_msg void OnConditionFactorTypeChanged();
+   afx_msg void OnDeckEventChanged();
+   afx_msg void OnDeckEventChanging();
+   afx_msg void OnOverlayEventChanged();
+   afx_msg void OnOverlayEventChanging();
 	//}}AFX_MSG
    BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
@@ -102,6 +107,12 @@ protected:
    Float64 m_SlabOffset;
    bool m_bSlabOffsetWholeBridge;
    CString m_strSlabOffsetCache;
+
+   int m_PrevDeckEventIdx;
+   int m_PrevOverlayEventIdx;
+
+   void FillEventList();
+   EventIndexType CreateEvent();
 
 public:
    afx_msg void OnStnClickedOlayDensityUnit();

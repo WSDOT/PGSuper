@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,14 @@
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
 #include <IFace\StatusCenter.h>
+#include <EAF\EAFTransactions.h>
 
 #include "StatusMessageDialog.h"
 #include "RefinedAnalysisOptionsDlg.h"
+#include "BoundaryConditionDlg.h"
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\EditBridge.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -77,7 +80,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       GET_IFACE(ILiveLoads,pLiveLoads);
       GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       pgsTypes::DistributionFactorMethod method;
       LldfRangeOfApplicabilityAction roaAction;
@@ -148,11 +151,12 @@ eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
 
 void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsInstallationErrorStatusItem* pItem = dynamic_cast<pgsInstallationErrorStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format(_T("PGSuper was not successfully installed or has become damaged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
+   msg.Format(_T("PGSuper was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
@@ -266,8 +270,8 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), m_Span(span), m_Girder(gdr), m_Page(page)
+pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey), m_SegmentKey(segmentKey), m_Page(page)
 {
 }
 
@@ -280,10 +284,7 @@ bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( this->GetDescription() != other->GetDescription() )
       return false;
 
-   if ( m_Span != other->m_Span )
-      return false;
-
-   if ( m_Girder != other->m_Girder )
+   if ( m_SegmentKey != other->m_SegmentKey )
       return false;
 
    if ( m_Page != other->m_Page )
@@ -305,6 +306,8 @@ eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
 
 void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
@@ -316,7 +319,7 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       GET_IFACE(IEditByUI,pEdit);
 
-      if (pEdit->EditGirderDescription(pItem->m_Span,pItem->m_Girder,pItem->m_Page))
+      if (pEdit->EditSegmentDescription(pItem->m_SegmentKey,pItem->m_Page))
       {
          // assume that edit took care of status
          StatusItemIDType id = pItem->GetID();
@@ -355,11 +358,12 @@ eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverit
 
 void pgsStructuralAnalysisTypeStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    AfxMessageBox(pStatusItem->GetDescription().c_str(),MB_OK);
 }
 
-pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
+pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,pgsBridgeDescriptionStatusItem::IssueType issueType,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_IssueType(issueType)
 {
 }
 
@@ -372,7 +376,7 @@ bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( this->GetDescription() != other->GetDescription() )
       return false;
 
-   if ( m_DlgPage != other->m_DlgPage )
+   if ( m_IssueType != other->m_IssueType )
       return false;
 
    return true;
@@ -391,11 +395,64 @@ eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
 
 void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsBridgeDescriptionStatusItem* pItem = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
-   GET_IFACE(IEditByUI,pEdit);
-   pEdit->EditBridgeDescription(pItem->m_DlgPage);
+   long dlgPage;
+   switch(pItem->m_IssueType)
+   {
+   case pgsBridgeDescriptionStatusItem::General:
+      dlgPage = 0;
+      break;
+
+   case pgsBridgeDescriptionStatusItem::Framing:
+      dlgPage = 1;
+      break;
+
+   case pgsBridgeDescriptionStatusItem::Railing:
+      dlgPage = 2;
+      break;
+
+   case pgsBridgeDescriptionStatusItem::Deck:
+      dlgPage = 3;
+      break;
+
+   default:
+      dlgPage = -1;
+   }
+
+   if (0 <= dlgPage)
+   {
+      GET_IFACE(IEditByUI,pEdit);
+      pEdit->EditBridgeDescription(dlgPage);
+   }
+   else
+   {
+      if ( pItem->m_IssueType == pgsBridgeDescriptionStatusItem::BoundaryConditions )
+      {
+         CBoundaryConditionDlg dlg;
+         dlg.m_PierIdx = 1;
+         if ( dlg.DoModal() == IDOK )
+         {
+            GET_IFACE(IBridgeDescription,pBridgeDesc);
+            CBridgeDescription2 bridge = *pBridgeDesc->GetBridgeDescription();
+            CPierData2* pPier = bridge.GetPier(dlg.m_PierIdx);
+            CSpanData2* pNextSpan = pPier->GetNextSpan();
+            while ( pNextSpan )
+            {
+               pPier->SetConnectionType(dlg.m_BoundaryCondition);
+               pPier = pNextSpan->GetNextPier();
+               pNextSpan = pPier->GetNextSpan();
+            }
+
+            txnEditBridge* pTxn = new txnEditBridge(*pBridgeDesc->GetBridgeDescription(), bridge);
+
+            GET_IFACE(IEAFTransactions,pTransactions);
+            pTransactions->Execute(pTxn);
+         }
+      }
+   }
 }
 
 //////////////////////////////////////////////////////////
@@ -426,13 +483,14 @@ eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity()
 
 void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsLldfWarningStatusItem* pItem = dynamic_cast<pgsLldfWarningStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
    // Just go straight to main lldf  editing dialog
    GET_IFACE(ILiveLoads,pLiveLoads);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
    LldfRangeOfApplicabilityAction roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
@@ -450,6 +508,8 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    // we only want one of these in the status center
+   SetID(-1);
+
    pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
    if ( !other )
       return false;
@@ -471,6 +531,7 @@ eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity(
 
 void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsEffectiveFlangeWidthStatusItem* pItem = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 

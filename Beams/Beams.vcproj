@@ -54,7 +54,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,9 +63,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -158,7 +155,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -167,9 +164,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -266,16 +260,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -375,16 +366,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -483,16 +471,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
+				PrecompiledHeaderFile=".\Release/Beams.pch"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -532,7 +517,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -593,16 +578,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
+				PrecompiledHeaderFile=".\Release/Beams.pch"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -642,7 +624,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -847,10 +829,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Iface\PsLossEngineer.h"
-				>
-			</File>
-			<File
 				RelativePath="PsLossEngineer.h"
 				>
 			</File>
@@ -887,6 +865,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SplicedIBeamFactoryImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedUBeamFactory.h"
+				>
+			</File>
+			<File
 				RelativePath="StdAfx.h"
 				>
 			</File>
@@ -919,23 +905,11 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TimeStepLossEngineer.h"
+				>
+			</File>
+			<File
 				RelativePath="TotalPrestressLossTable.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013ChangeOfConcreteStressTable.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013CreepAndShrinkageTable.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013RelaxationAftertransferTable.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013TimeDependentLossesTable.h"
 				>
 			</File>
 			<File
@@ -952,6 +926,10 @@
 			</File>
 			<File
 				RelativePath="UBeamFactory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UBeamHelpers.h"
 				>
 			</File>
 			<File
@@ -992,10 +970,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\BoxBeamDistFactorEngineer.rgs"
-				>
-			</File>
-			<File
 				RelativePath="BoxBeamFactory.rgs"
 				>
 			</File>
@@ -1013,10 +987,6 @@
 			</File>
 			<File
 				RelativePath="Res\BulbTee.emf"
-				>
-			</File>
-			<File
-				RelativePath=".\BulbTeeDistFactorEngineer.rgs"
 				>
 			</File>
 			<File
@@ -1060,10 +1030,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IBeamDistFactorEngineer.rgs"
-				>
-			</File>
-			<File
 				RelativePath="IBeamFactory.rgs"
 				>
 			</File>
@@ -1084,10 +1050,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MultiWebDistFactorEngineer.rgs"
-				>
-			</File>
-			<File
 				RelativePath="MultiWebfactory.rgs"
 				>
 			</File>
@@ -1105,6 +1067,22 @@
 			</File>
 			<File
 				RelativePath=".\PsBeamLossEngineer.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedIBeamFactory.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedIBeamFamily.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedUBeamFactory.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedUBeamFamily.rgs"
 				>
 			</File>
 			<File
@@ -1148,10 +1126,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\UBeamDistFactorEngineer.rgs"
-				>
-			</File>
-			<File
 				RelativePath="UBeamFactory.rgs"
 				>
 			</File>
@@ -1177,10 +1151,6 @@
 			</File>
 			<File
 				RelativePath=".\VoidedSlab2DistFactorEngineer.rgs"
-				>
-			</File>
-			<File
-				RelativePath=".\VoidedSlabDistFactorEngineer.rgs"
 				>
 			</File>
 			<File
@@ -3315,6 +3285,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\SplicedIBeamFactoryImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SplicedUBeamFactory.cpp"
+				>
+			</File>
+			<File
 				RelativePath="StdAfx.cpp"
 				>
 				<FileConfiguration
@@ -3731,6 +3709,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\TimeStepLossEngineer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="TotalPrestressLossTable.cpp"
 				>
 				<FileConfiguration
@@ -3787,22 +3769,6 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013ChangeOfConcreteStressTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013CreepAndShrinkageTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013RelaxationAftertransferTable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TxDOT2013TimeDependentLossesTable.cpp"
-				>
 			</File>
 			<File
 				RelativePath="TxDotDoubleTFactory.cpp"
@@ -4037,6 +4003,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\UBeamHelpers.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\VoidedSlab2DistFactorEngineer.cpp"
 				>
 			</File>
@@ -4158,6 +4128,14 @@
 			</File>
 			<File
 				RelativePath=".\VoidedSlabFactory2.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\PsLossEngineer.h"
 				>
 			</File>
 		</Filter>

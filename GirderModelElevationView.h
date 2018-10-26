@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,9 @@
 #endif // _MSC_VER >= 1000
 // GirderModelElevationView.h : header file
 //
+
 class CGirderModelChildFrame;
-class CPGSuperDoc;
+class CPGSuperDocBase;
 
 #include <DManip\DManip.h>
 #include <DManipTools\DManipTools.h>
@@ -42,6 +43,7 @@ interface IBroker;
 class CGirderModelElevationView : public CDisplayView
 {
    friend CGirderModelChildFrame;
+
 protected:
 	CGirderModelElevationView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CGirderModelElevationView)
@@ -52,6 +54,7 @@ public:
    virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
    virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
 
+   pgsPointOfInterest GetCutLocation();
 
 // Operations
 public:
@@ -89,7 +92,6 @@ protected:
 	afx_msg void OnUserCut();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnEditPrestressing();
-	afx_msg void OnEditGirder();
 	afx_msg void OnViewSettings();
 	afx_msg void OnEditStirrups();
 	afx_msg void OnGevCtxEditLoad();
@@ -101,29 +103,35 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   CGirderModelChildFrame* m_pFrame;
-   bool                    m_First;
-   long                    m_CurrID;
+   CGirderModelChildFrame* m_pFrame; // pointer to parent frame object
+   bool                    m_bOnIntialUpdateComplete; // false until the call to OnInitialUpdate is complete
+                                                      // some update/initialiazation can't be called until OnInitialUpdate runs
+   long                    m_DisplayObjectID; // use to generate display object IDs
 
    CComPtr<iLegendDisplayObject> m_Legend;
 
    bool m_DoBlockUpdate;
 
-   void BuildGirderDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
-   void BuildSupportDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
-   void BuildStrandDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker,SpanIndexType span,GirderIndexType girder, iDisplayMgr* dispMgr);
-   void BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
-   void BuildRebarDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
-   void BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr, bool* casesExist);
-   void BuildDistributedLoadDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr, bool* casesExist);
-   void BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr, bool* casesExist);
-   void BuildLegendDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr, bool* casesExist);
-   void BuildDimensionDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
-   void BuildSectionCutDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker, SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
-   void BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* dispMgr);
+   //void BuildGirderDisplayObjects(CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr);
+   void BuildSupportDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildDropTargetDisplayObjects(      CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildStrandDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildStrandCGDisplayObjects(        CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildSegmentDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildClosurePourDisplayObjects(     CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildTendonDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildRebarDisplayObjects(           CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildPointLoadDisplayObjects(       CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr, bool* casesExist);
+   void BuildDistributedLoadDisplayObjects( CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr, bool* casesExist);
+   void BuildMomentLoadDisplayObjects(      CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr, bool* casesExist);
+   void BuildLegendDisplayObjects(          CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr, bool* casesExist);
+   void BuildDimensionDisplayObjects(       CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildSectionCutDisplayObjects(      CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildStirrupDisplayObjects(         CPGSuperDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    
    iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension);
-   void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color, UINT nWidth=1);
+   void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color,iDisplayObject** ppDO = NULL);
+   void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color1, COLORREF color2,iDisplayObject** ppDO = NULL);
    void BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color);
    void UpdateDisplayObjects();
 
@@ -133,8 +141,19 @@ private:
    // Store our current girder so we can ask frame if the selection has changed
    bool DidGirderSelectionChange();
 
-   SpanIndexType m_CurrentSpanIdx;
-   GirderIndexType m_CurrentGirderIdx;
+   CGirderKey m_GirderKey;
+
+   CGirderKey GetGirderKey();
+
+   void CreateSegmentEndSupportDisplayObject(Float64 firstStation,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
+   void CreateIntermediatePierDisplayObject(Float64 firstStation,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
+   void CreateIntermediateTemporarySupportDisplayObject(Float64 firstStation,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL);
+
+   // Returns the X location at the start of a segment
+   Float64 GetSegmentStartLocation(const CSegmentKey& segmentKey);
+
+   // Returns the X location at the start of a span
+   Float64 GetSpanStartLocation(const CSpanGirderKey& spanGirderKey);
 };
 
 /////////////////////////////////////////////////////////////////////////////

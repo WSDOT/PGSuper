@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,27 +24,31 @@
 #define INCLUDED_EDITGIRDER_H_
 
 #include <System\Transaction.h>
+#include <PgsExt\SplicedGirderData.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\GirderData.h>
 #include <PgsExt\LongitudinalRebarData.h>
+#include <PgsExt\SegmentKey.h>
 #include <IFace\Project.h>
+
+struct txnEditGirderData
+{
+   // for sorting and lookup by girder key
+   bool operator<(const txnEditGirderData& rOther) const { return m_GirderKey < rOther.m_GirderKey; }
+
+   CGirderKey m_GirderKey;
+   bool m_bUseSameGirder;
+   std::_tstring m_strGirderName;
+   CSplicedGirderData m_Girder;
+
+   pgsTypes::SlabOffsetType m_SlabOffsetType;
+   Float64 m_SlabOffset[2]; // index is pgsTypes::MemberEndType
+   // if slab offset is whole bridge then m_SlabOffset[pgsTypes::metStart] contains the value
+};
 
 class txnEditGirder : public txnTransaction
 {
 public:
-   txnEditGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,
-                 bool bOldUseSameGirder, bool bNewUseSameGirder,
-                 const std::_tstring& strOldGirderName, const std::_tstring& newGirderName,
-                 const CGirderData& oldGirderData,const CGirderData& newGirderData,
-                 const CShearData& oldShearData,const CShearData& newShearData,
-                 const CLongitudinalRebarData& oldRebarData,const CLongitudinalRebarData& newRebarData,
-                 Float64 oldLiftingLocation,  Float64 newLiftingLocation,
-                 Float64 oldTrailingOverhang, Float64 newTrailingOverhang,
-                 Float64 oldLeadingOverhang,  Float64 newLeadingOverhang,
-                 pgsTypes::SlabOffsetType oldSlabOffsetType,pgsTypes::SlabOffsetType newSlabOffsetType,
-                 Float64 oldSlabOffsetStart,Float64 newSlabOffsetStart,
-                 Float64 oldSlabOffsetEnd, Float64 newSlabOffsetEnd
-                 );
+   txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData& newGirderData);
 
    ~txnEditGirder();
 
@@ -56,21 +60,11 @@ public:
    virtual bool IsRepeatable();
 
 private:
-   void DoExecute(int i);
-   SpanIndexType m_SpanIdx;
-   GirderIndexType m_GirderIdx;
-   bool m_bUseSameGirder[2];
-   std::_tstring m_strGirderName[2];
-   CGirderData m_GirderData[2];
-   CShearData m_ShearData[2];
-   CLongitudinalRebarData m_RebarData[2];
-   Float64 m_LiftingLocation[2];
-   Float64 m_TrailingOverhang[2];
-   Float64 m_LeadingOverhang[2];
+   void SetGirderData(const CGirderKey& girderKey,const txnEditGirderData& gdrData,bool bUndo);
 
-   pgsTypes::SlabOffsetType m_SlabOffsetType[2];
-   Float64 m_SlabOffset[2][2]; // first index is new/old, second index is pgsTypes::MemberEndType
-   // if slab offset is whole bridge then m_SlabOffset[i][pgsTypes::metStart] contains the value
+   CGirderKey m_GirderKey; // indicates the girder or girders to be edited
+   txnEditGirderData m_NewGirderData;
+   std::set<txnEditGirderData> m_OldGirderData; // data saved for undo
 };
 
 #endif // INCLUDED_EDITGIRDER_H_

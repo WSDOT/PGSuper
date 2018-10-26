@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,11 +25,11 @@
 #include <Reporting\MVRChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,19 +72,15 @@ CConcurrentShearTable& CConcurrentShearTable::operator= (const CConcurrentShearT
 
 //======================== OPERATIONS =======================================
 void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
-                                       SpanIndexType span,GirderIndexType girder,
+                                       const CGirderKey& girderKey,
                                        IEAFDisplayUnits* pDisplayUnits,
-                                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
+                                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType) const
 {
-   if ( stage == pgsTypes::CastingYard )
-      return;
-
-   // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -93,29 +89,15 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
    rptRcTable* p_table = 0;
 
-   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
  
-   pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
-   SpanIndexType spanIdx;
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
-   {
-      pgsTypes::Stage left_stage, right_stage;
-      pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-      continuity_stage = _cpp_min(continuity_stage,left_stage);
-      continuity_stage = _cpp_min(continuity_stage,right_stage);
-   }
-   // last pier
-   pgsTypes::Stage left_stage, right_stage;
-   pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-   continuity_stage = _cpp_min(continuity_stage,left_stage);
-   continuity_stage = _cpp_min(continuity_stage,right_stage);
-
    ColumnIndexType col = 0;
 
    p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Concurrent Shears"));
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -132,29 +114,30 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+   pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    // Fill up the table
    sysSectionValue Vmin, Vmax;
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,girder);
-      if ( stage == pgsTypes::CastingYard )
-         end_size = 0; // don't adjust if CY stage
+      CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR );
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(thisGirderKey,0));
+
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      for ( ; i != end; i++ )
       {
          const pgsPointOfInterest& poi = *i;
 
          col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
 
          Float64 Vi, Mmax;
-         pLsForces->GetViMmax(pgsTypes::StrengthI,stage,poi,bat,&Vi,&Mmax);
+         pLsForces->GetViMmax(pgsTypes::StrengthI,intervalIdx,poi,bat,&Vi,&Mmax);
 
          (*p_table)(row,col++) << moment.SetValue( Mmax );
          (*p_table)(row,col++) << shear.SetValue(  Vi );

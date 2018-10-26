@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -82,8 +82,8 @@ void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 ////////////////
 
-pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
+pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey), m_ConcreteType(concType),m_ElementType(elemType),m_SegmentKey(segmentKey)
 {
 }
 
@@ -93,7 +93,7 @@ bool pgsConcreteStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_ConcreteType == m_ConcreteType && other->m_ElementType == m_ElementType && other->m_Span == m_Span && other->m_Girder == m_Girder);
+   return (other->m_ConcreteType == m_ConcreteType && other->m_ElementType == m_ElementType && other->m_SegmentKey == m_SegmentKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -119,9 +119,9 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       pEdit->EditBridgeDescription(EBD_DECK);
    }
-   else if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::Girder )
+   else if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::GirderSegment )
    {
-      pEdit->EditGirderDescription(pItem->m_Span,pItem->m_Girder,EGD_CONCRETE);
+      pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_CONCRETE);
    }
    else
    {
@@ -131,10 +131,9 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                               SpanIndexType span,GirderIndexType gdr) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
-m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
+pgsPointLoadStatusItem::pgsPointLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey) :
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanGirderKey), 
+m_LoadIndex(value), m_SpanGirderKey(spanGirderKey)
 {
 }
 
@@ -144,7 +143,7 @@ bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_LoadIndex==m_LoadIndex && other->m_Span==m_Span && other->m_Gdr==m_Gdr);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanGirderKey == m_SpanGirderKey);
 }
 
 ///////////////////////////////
@@ -199,10 +198,9 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                                           SpanIndexType span,GirderIndexType gdr) :
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
-m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
+pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey) :
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanGirderKey), 
+m_LoadIndex(value), m_SpanGirderKey(spanGirderKey)
 {
 }
 
@@ -212,7 +210,7 @@ bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_LoadIndex==m_LoadIndex && other->m_Span==m_Span && other->m_Gdr==m_Gdr);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanGirderKey == m_SpanGirderKey);
 }
 
 //////////////////////////////////////////////////////////
@@ -267,10 +265,9 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////
 
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
-                                                 SpanIndexType span,GirderIndexType gdr):
-pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
-m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
+pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(IndexType value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanGirderKey& spanGirderKey):
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,spanGirderKey), 
+m_LoadIndex(value), m_SpanGirderKey(spanGirderKey)
 {
 }
 
@@ -280,7 +277,7 @@ bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_LoadIndex==m_LoadIndex && other->m_Span==m_Span && other->m_Gdr==m_Gdr);
+   return (other->m_LoadIndex == m_LoadIndex && other->m_SpanGirderKey == m_SpanGirderKey);
 }
 ///////////////////////////
 

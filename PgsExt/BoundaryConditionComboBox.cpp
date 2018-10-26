@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
 #include <PgsExt\BoundaryConditionComboBox.h>
-#include <PgsExt\PierData.h>
+#include <PgsExt\PierData2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,7 +46,7 @@ void CBoundaryConditionComboBox::SetPierType(int pierType)
 
 int CBoundaryConditionComboBox::AddBoundaryCondition(pgsTypes::PierConnectionType type)
 {
-   int idx = AddString( CPierData::AsString(type) );
+   int idx = AddString( CPierData2::AsString(type) );
    SetItemData(idx,(DWORD)type);
    return idx;
 }
@@ -70,7 +70,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    pgsTypes::PierConnectionType connectionType = (pgsTypes::PierConnectionType)(lpDrawItemStruct->itemData);
-   CString strText = CPierData::AsString(connectionType);
+   CString strText = CPierData2::AsString(connectionType);
 
    CDC dc;
    dc.Attach(lpDrawItemStruct->hDC);
@@ -107,7 +107,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    int xSrc, ySrc;
    ySrc = 0;
    
-   if ( connectionType == pgsTypes::Hinged )
+   if ( connectionType == pgsTypes::Hinge )
    {
       bmpHinges.LoadBitmap(IDB_HINGES);
       dcMemory.SelectObject(&bmpHinges);
@@ -193,6 +193,11 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
          ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 4*bmWidth;
       }
+      else if ( connectionType == pgsTypes::ContinuousSegment )
+      {
+         ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
+         xSrc = 6*bmWidth;
+      }
       else
       {
          ASSERT(0); // ??? should never get here
@@ -203,7 +208,10 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    int xDest = rcItem.left + 2;
    int yDest = rcItem.top  + 2;
 
-   dc.BitBlt(xDest,yDest,bmpInfo.bmHeight,bmpInfo.bmHeight,&dcMemory,xSrc,ySrc,dwRop);
+   if ( connectionType != pgsTypes::ContinuousSegment )
+   {
+      dc.BitBlt(xDest,yDest,bmpInfo.bmHeight,bmpInfo.bmHeight,&dcMemory,xSrc,ySrc,dwRop);
+   }
 
    int xText = xDest + bmpInfo.bmHeight + 5;
    int yText = yDest;

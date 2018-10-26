@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,12 +27,12 @@ DEFINE_GUID(IID_IViews,
 0x40e55658, 0x360f, 0x47d8, 0x86, 0xdb, 0xa, 0xf2, 0x19, 0x74, 0xba, 0x30);
 interface IViews : public IUnknown
 {
-   virtual void CreateGirderView(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual void CreateGirderView(const CGirderKey& girderKey) = 0;
    virtual void CreateBridgeModelView() = 0;
-   virtual void CreateAnalysisResultsView(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
-   virtual void CreateStabilityView(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
    virtual void CreateLoadsView() = 0;
    virtual void CreateLibraryEditorView() = 0;
    virtual void CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec=true) = 0;
    virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport) = 0;
+   virtual void CreateGraphView(CollectionIndexType graphIdx) = 0;
+   virtual void BuildGraphMenu(CEAFMenu* pMenu) = 0;
 };

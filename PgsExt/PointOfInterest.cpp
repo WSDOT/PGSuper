@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#if defined _DEBUG
+#define UPDATE_ATTRIBUTES UpdateAttributeString()
+#else
+#define UPDATE_ATTRIBUTES
+#endif
+
 Float64 pgsPointOfInterest::ms_Tol = 1.0e-06;
 
 /****************************************************************************
@@ -41,68 +47,64 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsPointOfInterest::pgsPointOfInterest()
+pgsPointOfInterest::pgsPointOfInterest():
+m_ID(INVALID_ID),
+m_DistFromStart(-1),
+m_bHasSegmentCoordinate(false),
+m_Xs(-1),
+m_bHasGirderCoordinate(false),
+m_Xg(-1),
+m_bHasGirderPathCoordinate(false),
+m_Xgp(-1),
+m_bCanMerge(true),
+m_Attributes(0)
 {
-   m_ID     = INVALID_ID;
-   m_Span   = INVALID_INDEX;
-   m_Girder = INVALID_INDEX;
-   m_DistFromStart = 0;
+   UPDATE_ATTRIBUTES;
 }
 
-pgsPointOfInterest::pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) :
+pgsPointOfInterest::pgsPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart,PoiAttributeType attrib) :
 m_ID(INVALID_ID),
-m_Span(span),
-m_Girder(gdr),
-m_DistFromStart(distFromStart)
+m_SegmentKey(segmentKey),
+m_DistFromStart(distFromStart),
+m_bHasSegmentCoordinate(false),
+m_Xs(-1),
+m_bHasGirderCoordinate(false),
+m_Xg(-1),
+m_bHasGirderPathCoordinate(false),
+m_Xgp(-1),
+m_bCanMerge(true),
+m_Attributes(attrib)
 {
-   ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
-
+   UPDATE_ATTRIBUTES;
    ASSERTVALID;
 }
-pgsPointOfInterest::pgsPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
+
+pgsPointOfInterest::pgsPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart,Float64 Xs,Float64 Xg,Float64 Xgp,PoiAttributeType attrib) :
 m_ID(INVALID_ID),
-m_Span(span),
-m_Girder(gdr),
-m_DistFromStart(distFromStart)
+m_SegmentKey(segmentKey),
+m_DistFromStart(distFromStart),
+m_bHasSegmentCoordinate(true),
+m_Xs(Xs),
+m_bHasGirderCoordinate(true),
+m_Xg(Xg),
+m_bHasGirderPathCoordinate(true),
+m_Xgp(Xgp),
+m_bCanMerge(true),
+m_Attributes(attrib)
 {
-   ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
-
-   m_Stages[stage].SetVal(true, attrib);
-
-   ASSERTVALID;
-}
-
-pgsPointOfInterest::pgsPointOfInterest(const std::vector<pgsTypes::Stage>& stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
-m_ID(INVALID_ID),
-m_Span(span),
-m_Girder(gdr),
-m_DistFromStart(distFromStart)
-{
-   ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
-
-   memset(m_Stages,0,pgsTypes::MaxStages*sizeof(PoiAttributeType));
-
-   std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
-   std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
-   for ( ; stageIter != stageIterEnd; stageIter++ )
-   {
-      m_Stages[*stageIter].SetVal(true, attrib);
-   }
-
+   UPDATE_ATTRIBUTES;
    ASSERTVALID;
 }
 
 pgsPointOfInterest::pgsPointOfInterest(const pgsPointOfInterest& rOther)
 {
    MakeCopy(rOther);
-   ASSERTVALID;
 }
 
 pgsPointOfInterest::~pgsPointOfInterest()
 {
 }
 
-//======================== OPERATORS  =======================================
 pgsPointOfInterest& pgsPointOfInterest::operator= (const pgsPointOfInterest& rOther)
 {
    if( this != &rOther )
@@ -116,173 +118,196 @@ pgsPointOfInterest& pgsPointOfInterest::operator= (const pgsPointOfInterest& rOt
 
 bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 {
-   if ( GetSpan() < rOther.GetSpan() )
-      return true;
-   
-   if ( GetSpan() > rOther.GetSpan() )
-      return false;
-
-   if ( GetGirder() < rOther.GetGirder() )
+   if ( m_SegmentKey < rOther.m_SegmentKey )
       return true;
 
-   if ( GetGirder() > rOther.GetGirder() )
+   if ( rOther.m_SegmentKey < m_SegmentKey )
       return false;
 
-   Float64 my_dist = GetDistFromStart();
-   Float64 ot_dist = rOther.GetDistFromStart();
-
-   bool is_eq = IsZero(my_dist - ot_dist);
-   if (is_eq)
+   if (IsZero(m_DistFromStart-rOther.m_DistFromStart))
       return false;
 
-   if ( my_dist < ot_dist )
+   if ( m_DistFromStart < rOther.m_DistFromStart )
       return true;
 
-   if ( my_dist > ot_dist  )
+   if ( rOther.m_DistFromStart < m_DistFromStart )
       return false;
-
-   //// if everything else is equal, compare ID's
-   //if ( IsEqual( GetDistFromStart(), rOther.GetDistFromStart() ) )
-   //   return GetID() < rOther.GetID();
 
    return false;
 }
 
 bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
 {
-   if ( GetID() == rOther.GetID() && GetSpan() == rOther.GetSpan() && GetGirder() == rOther.GetGirder() && IsEqual(GetDistFromStart(),rOther.GetDistFromStart()) )
+   if ( m_ID         == rOther.m_ID         && 
+        m_SegmentKey == rOther.m_SegmentKey        &&
+        IsEqual(m_DistFromStart,rOther.m_DistFromStart) )
+   {
       return true;
+   }
    else
+   {
       return false;
+   }
 }
 
-bool pgsPointOfInterest::operator!=(const pgsPointOfInterest& rOther) const
+void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 distFromStart,Float64 Xs,Float64 Xg,Float64 Xgp)
 {
-   return !(*this == rOther);
+   m_SegmentKey = segmentKey;
+   m_DistFromStart = distFromStart;
+   m_bHasSegmentCoordinate = true;
+   m_Xs = Xs;
+   m_bHasGirderCoordinate = true;
+   m_Xg = Xg;
+   m_bHasGirderPathCoordinate = true;
+   m_Xgp = Xgp;
 }
 
-//======================== OPERATIONS =======================================
-void pgsPointOfInterest::SetLocation(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart)
+void pgsPointOfInterest::Offset(Float64 delta)
 {
-   SetSpan(span);
-   SetGirder(gdr);
-   SetDistFromStart(distFromStart);
+   m_DistFromStart += delta;
+
+   if ( m_bHasSegmentCoordinate )
+      m_Xs += delta;
+
+   if ( m_bHasGirderCoordinate )
+      m_Xg += delta;
+
+   if ( m_bHasGirderPathCoordinate )
+      m_Xgp += delta;
 }
 
-//======================== ACCESS     =======================================
-
-void pgsPointOfInterest::SetAttributes(pgsTypes::Stage stage,PoiAttributeType attrib)
+void pgsPointOfInterest::SetDistFromStart(Float64 distFromStart)
 {
-   m_Stages[stage].SetVal(true, attrib);
+   if ( !IsEqual(m_DistFromStart,distFromStart) )
+   {
+      // once the POI is moved, the other points are no longer
+      // valid
+      m_DistFromStart = distFromStart;
+      m_bHasSegmentCoordinate = false;
+      m_Xs = -1;
+      m_bHasGirderCoordinate = false;
+      m_Xg = -1;
+      m_bHasGirderPathCoordinate = false;
+      m_Xgp = -1;
+   }
+}
 
+void pgsPointOfInterest::SetSegmentCoordinate(Float64 Xs)
+{
+   ATLASSERT(0 <= Xs);
+   m_bHasSegmentCoordinate = true;
+   m_Xs = Xs;
+}
+
+Float64 pgsPointOfInterest::GetSegmentCoordinate() const
+{
+   ATLASSERT(m_bHasSegmentCoordinate); // if this fires, segment coordinate was never set
+   return m_Xs;
+}
+
+bool pgsPointOfInterest::HasSegmentCoordinate() const
+{
+   return m_bHasSegmentCoordinate;
+}
+
+void pgsPointOfInterest::SetGirderCoordinate(Float64 Xg)
+{
+   ATLASSERT(0 <= Xg);
+   m_bHasGirderCoordinate = true;
+   m_Xg = Xg;
+}
+
+Float64 pgsPointOfInterest::GetGirderCoordinate() const
+{
+   ATLASSERT(m_bHasGirderCoordinate); // if this fires, girder coordinate was never set
+   return m_Xg;
+}
+
+bool pgsPointOfInterest::HasGirderCoordinate() const
+{
+   return m_bHasGirderCoordinate;
+}
+
+void pgsPointOfInterest::SetGirderPathCoordinate(Float64 Xgp)
+{
+   ATLASSERT(0 <= Xgp);
+   m_bHasGirderPathCoordinate = true;
+   m_Xgp = Xgp;
+}
+
+Float64 pgsPointOfInterest::GetGirderPathCoordinate() const
+{
+   ATLASSERT(m_bHasGirderPathCoordinate); // if this fires, girder path coordinate was never set
+   return m_Xgp;
+}
+
+bool pgsPointOfInterest::HasGirderPathCoordinate() const
+{
+   return m_bHasGirderPathCoordinate;
+}
+
+void pgsPointOfInterest::SetAttributes(PoiAttributeType attrib)
+{
+   m_Attributes = attrib;
+
+   UPDATE_ATTRIBUTES;
    ASSERTVALID;
 }
 
-void pgsPointOfInterest::SetAttributes(const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib)
+PoiAttributeType pgsPointOfInterest::GetAttributes() const
 {
-   std::vector<pgsTypes::Stage>::const_iterator iter;
-   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   return m_Attributes;
+}
+
+PoiAttributeType pgsPointOfInterest::GetReference() const
+{
+   return GetReference(m_Attributes);
+}
+
+PoiAttributeType pgsPointOfInterest::GetReference(PoiAttributeType attrib)
+{
+   PoiAttributeType poiRef = 0;
+   if ( sysFlags<PoiAttributeType>::IsSet(attrib,POI_RELEASED_SEGMENT) )
+      poiRef |= POI_RELEASED_SEGMENT;
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(attrib,POI_LIFT_SEGMENT) )
+      poiRef |= POI_LIFT_SEGMENT;
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(attrib,POI_STORAGE_SEGMENT) )
+      poiRef |= POI_STORAGE_SEGMENT;
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(attrib,POI_HAUL_SEGMENT) )
+      poiRef |= POI_HAUL_SEGMENT;
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(attrib,POI_ERECTED_SEGMENT) )
+      poiRef |= POI_ERECTED_SEGMENT;
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(attrib,POI_GIRDER) )
+      poiRef |= POI_GIRDER;
+
+   return poiRef;
+}
+
+void pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
+{
+   m_Attributes |= rOther.GetAttributes();
+   UPDATE_ATTRIBUTES;
+}
+
+bool pgsPointOfInterest::HasAttribute(PoiAttributeType attribute) const
+{
+   return sysFlags<PoiAttributeType>::IsSet(m_Attributes,attribute);
+}
+
+bool pgsPointOfInterest::AtSamePlace(const pgsPointOfInterest& other) const
+{
+   if ( m_SegmentKey == other.m_SegmentKey &&
+        IsZero( m_DistFromStart - other.m_DistFromStart, ms_Tol ) )
    {
-      SetAttributes(*iter,attrib);
-   }
-}
-
-PoiAttributeType pgsPointOfInterest::GetAttributes(pgsTypes::Stage stage) const
-{
-   if (m_Stages[stage].isSet)
-      return m_Stages[stage].Attribute;
-   else
-      return 0;
-}
-
-bool pgsPointOfInterest::MergeStageAttributes(const pgsPointOfInterest& rOther)
-{
-   // work on a copy of the attribute information in case merging fails
-   StageData stages[pgsTypes::MaxStages];
-   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
-   {
-      stages[i] = m_Stages[i];
-   }
-
-   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
-   {
-      pgsTypes::Stage stage = (pgsTypes::Stage)i;
-      StageData& rmydata = stages[i];
-      const StageData& rotdata = rOther.m_Stages[i];
-
-      if ( (rOther.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) || rOther.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE)) && m_DistFromStart != rOther.m_DistFromStart )
-      {
-         // can only merge a poi with section change attribute into this poi if they are at the exact same location
-         return false;
-      }
-
-      rmydata.isSet = rmydata.isSet || rotdata.isSet;
-      rmydata.Attribute = rmydata.Attribute | rotdata.Attribute;
-   }
-
-   // merging was successful, update the real data
-   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
-   {
-      m_Stages[i] = stages[i];
-   }
-
-   return true;
-}
-
-
-bool pgsPointOfInterest::HasAttribute(pgsTypes::Stage stage,PoiAttributeType attribute) const
-{
-   return sysFlags<PoiAttributeType>::IsSet(GetAttributes(stage),attribute);
-}
-
-void pgsPointOfInterest::AddStage(pgsTypes::Stage stage,PoiAttributeType attribute)
-{
-   m_Stages[stage].SetVal(true,attribute);
-}
-
-void pgsPointOfInterest::AddStages(const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attribute)
-{
-   std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
-   std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
-   for ( ; stageIter != stageIterEnd; stageIter++ )
-   {
-      AddStage(*stageIter, attribute);
-   }
-}
-
-void pgsPointOfInterest::RemoveStage(pgsTypes::Stage stage)
-{
-   m_Stages[stage].SetVal(false,0);
-}
-
-bool pgsPointOfInterest::HasStage(pgsTypes::Stage stage) const
-{
-   return m_Stages[stage].isSet;
-}
-
-std::vector<pgsTypes::Stage> pgsPointOfInterest::GetStages() const
-{
-   std::vector<pgsTypes::Stage> stages;
-   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
-   {
-      if(m_Stages[i].isSet)
-         stages.push_back( (pgsTypes::Stage)i );
+      return true;
    }
 
-   return stages;
-}
-
-Uint32 pgsPointOfInterest::GetStageCount() const
-{
-   Uint32 cnt(0);
-
-   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
-   {
-      if(m_Stages[i].isSet)
-         cnt++;
-   }
-
-   return cnt;
+   return false;
 }
 
 void pgsPointOfInterest::SetTolerance(Float64 tol)
@@ -295,99 +320,73 @@ Float64 pgsPointOfInterest::GetTolerance()
    return ms_Tol;
 }
 
-//======================== INQUIRY    =======================================
-
-bool pgsPointOfInterest::IsFlexureStress(pgsTypes::Stage stage) const
+bool pgsPointOfInterest::IsHarpingPoint() const
 {
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_FLEXURESTRESS );
+   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_HARPINGPOINT );
 }
 
-bool pgsPointOfInterest::IsFlexureCapacity(pgsTypes::Stage stage) const
+bool pgsPointOfInterest::IsConcentratedLoad() const
 {
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_FLEXURECAPACITY );
+   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_CONCLOAD );
 }
 
-bool pgsPointOfInterest::IsShear(pgsTypes::Stage stage) const
+bool pgsPointOfInterest::IsMidSpan(PoiAttributeType reference) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_SHEAR );
+   ATLASSERT(IsValidReference(reference));
+   if ( !sysFlags<PoiAttributeType>::IsSet(m_Attributes,reference) )
+      return false;
+
+   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_MIDSPAN );
 }
 
-bool pgsPointOfInterest::IsDisplacement(pgsTypes::Stage stage) const
+bool pgsPointOfInterest::IsAtH(PoiAttributeType reference) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_DISPLACEMENT );
+   ATLASSERT(IsValidReference(reference));
+   if ( !sysFlags<PoiAttributeType>::IsSet(m_Attributes,reference) )
+      return false;
+
+   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_H );
 }
 
-bool pgsPointOfInterest::IsHarpingPoint(pgsTypes::Stage stage) const
+bool pgsPointOfInterest::IsAt15H(PoiAttributeType reference) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_HARPINGPOINT );
+   ATLASSERT(IsValidReference(reference));
+   if ( !sysFlags<PoiAttributeType>::IsSet(m_Attributes,reference) )
+      return false;
+
+   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_15H );
 }
 
-bool pgsPointOfInterest::IsConcentratedLoad(pgsTypes::Stage stage) const
+Uint16 pgsPointOfInterest::IsTenthPoint(PoiAttributeType reference) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_CONCLOAD );
+   ATLASSERT(IsValidReference(reference));
+   if ( !sysFlags<PoiAttributeType>::IsSet(m_Attributes,reference) )
+      return 0;
+   
+   return GetAttributeTenthPoint(m_Attributes);
 }
 
-bool pgsPointOfInterest::IsMidSpan(pgsTypes::Stage stage) const
-{
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_MIDSPAN );
-}
-
-bool pgsPointOfInterest::IsTabular(pgsTypes::Stage stage) const
-{
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_TABULAR );
-}
-
-bool pgsPointOfInterest::IsGraphical(pgsTypes::Stage stage) const
-{
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_GRAPHICAL );
-}
-
-bool pgsPointOfInterest::IsAtH(pgsTypes::Stage stage) const
-{
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_H );
-}
-
-bool pgsPointOfInterest::IsAt15H(pgsTypes::Stage stage) const
-{
-   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_15H );
-}
-
-Uint16 pgsPointOfInterest::IsATenthPoint(pgsTypes::Stage stage) const
-{
-   return GetAttributeTenthPoint(GetAttributes(stage));
-}
-
-void pgsPointOfInterest::MakeTenthPoint(pgsTypes::Stage stage,Uint16 tenthPoint)
+void pgsPointOfInterest::MakeTenthPoint(PoiAttributeType reference,Uint16 tenthPoint)
 {
    ATLASSERT(tenthPoint <= 11);
-   PoiAttributeType attribute = GetAttributes(stage);
-   SetAttributeTenthPoint(tenthPoint,&attribute);
-   SetAttributes(stage,attribute);
+   SetAttributeTenthPoint(tenthPoint,&m_Attributes);
+   sysFlags<PoiAttributeType>::Set(&m_Attributes,reference);
 }
 
-void pgsPointOfInterest::MakeTenthPoint(const std::vector<pgsTypes::Stage>& stages,Uint16 tenthPoint)
-{
-   std::vector<pgsTypes::Stage>::const_iterator iter;
-   for ( iter = stages.begin(); iter != stages.end(); iter++ )
-   {
-      MakeTenthPoint(*iter,tenthPoint);
-   }
-}
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
 {
-   // Add copy code here...
-   m_ID            = rOther.m_ID;
-   m_Span          = rOther.m_Span;
-   m_Girder        = rOther.m_Girder;
-   m_DistFromStart = rOther.m_DistFromStart;
-   memcpy(m_Stages, rOther.m_Stages, sizeof(m_Stages));
+   m_ID                       = rOther.m_ID;
+   m_SegmentKey               = rOther.m_SegmentKey;
+   m_DistFromStart            = rOther.m_DistFromStart;
+   m_bHasSegmentCoordinate    = rOther.m_bHasSegmentCoordinate;
+   m_Xs                       = rOther.m_Xs;
+   m_bHasGirderCoordinate     = rOther.m_bHasGirderCoordinate;
+   m_Xg                       = rOther.m_Xg;
+   m_bHasGirderPathCoordinate = rOther.m_bHasGirderPathCoordinate;
+   m_Xgp                      = rOther.m_Xgp;
+   m_Attributes               = rOther.m_Attributes;
 
+   UPDATE_ATTRIBUTES;
    ASSERTVALID;
 }
 
@@ -396,303 +395,242 @@ void pgsPointOfInterest::MakeAssignment(const pgsPointOfInterest& rOther)
    MakeCopy( rOther );
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
 void pgsPointOfInterest::SetAttributeTenthPoint(Uint16 tenthPoint, PoiAttributeType* pattribute)
 {
    ATLASSERT(tenthPoint <= 11);
-   *pattribute |= PoiAttributeType(tenthPoint);
+   PoiAttributeType tenthPointAttribute = 0;
+   switch( tenthPoint )
+   {
+   case 1:  tenthPointAttribute = POI_0L; break;
+   case 2:  tenthPointAttribute = POI_1L; break;
+   case 3:  tenthPointAttribute = POI_2L; break;
+   case 4:  tenthPointAttribute = POI_3L; break;
+   case 5:  tenthPointAttribute = POI_4L; break;
+   case 6:  tenthPointAttribute = POI_5L; break;
+   case 7:  tenthPointAttribute = POI_6L; break;
+   case 8:  tenthPointAttribute = POI_7L; break;
+   case 9:  tenthPointAttribute = POI_8L; break;
+   case 10: tenthPointAttribute = POI_9L; break;
+   case 11: tenthPointAttribute = POI_10L; break;
+   default:
+      ATLASSERT(false);
+   }
+   *pattribute |= PoiAttributeType(tenthPointAttribute);
 }
 
 Uint16 pgsPointOfInterest::GetAttributeTenthPoint(PoiAttributeType attribute)
 {
-   Uint32 low32 = low_Uint32(attribute);
-   Uint16 tenth_point = low_Uint16(low32);
-   sysFlags<Uint16>::Clear(&tenth_point,POI_SECTCHANGE); // sect change use the upper 3 bits of the lower 16
-   ATLASSERT(tenth_point <= 11);
-   return tenth_point;
+   if ( sysFlags<PoiAttributeType>::IsSet(attribute,POI_0L) )
+      return 1;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_1L) )
+      return 2;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_2L) )
+      return 3;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_3L) )
+      return 4;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_4L) )
+      return 5;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_5L) )
+      return 6;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_6L) )
+      return 7;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_7L) )
+      return 8;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_8L) )
+      return 9;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_9L) )
+      return 10;
+   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_10L) )
+      return 11;
+
+   return 0;
 }
 
-////////////////////////// PRIVATE    ///////////////////////////////////////
+bool pgsPointOfInterest::IsValidReference(PoiAttributeType reference) const
+{
+   if (sysFlags<PoiAttributeType>::IsSet(reference,POI_RELEASED_SEGMENT) || 
+       sysFlags<PoiAttributeType>::IsSet(reference,POI_LIFT_SEGMENT)     || 
+       sysFlags<PoiAttributeType>::IsSet(reference,POI_STORAGE_SEGMENT)  || 
+       sysFlags<PoiAttributeType>::IsSet(reference,POI_HAUL_SEGMENT)     || 
+       sysFlags<PoiAttributeType>::IsSet(reference,POI_ERECTED_SEGMENT)  || 
+       sysFlags<PoiAttributeType>::IsSet(reference,POI_GIRDER)           ||
+       reference == 0
+      )
+   {
+      return true;
+   }
 
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
+   return false;
+}
 
-//======================== DEBUG      =======================================
 #if defined _DEBUG
 bool pgsPointOfInterest::AssertValid() const
 {
-   if ( m_DistFromStart < 0 )
-      return false;
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_H) ||
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_15H) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_MIDSPAN) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_0L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_1L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_2L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_3L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_4L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_5L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_6L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_7L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_8L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_9L) || 
+        sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_10L) 
+      )
+   {
+      // must have a valid frame of reference for all of the above attributes
+      if ( GetReference() == 0 )
+      {
+         ATLASSERT(false); // You probably wanted to know that the attributes aren't correct
+         return false;
+      }
+   }
 
    return true;
 }
+
+void pgsPointOfInterest::UpdateAttributeString()
+{
+   m_strAttributes.clear();
+   std::_tostringstream os;
+
+   // figure out POI reference frame
+   PoiAttributeType poiReference = GetReference();
+
+   std::_tstring strReference(_T(""));
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_RELEASED_SEGMENT) )
+      strReference += _T("POI_RELEASED_SEGMENT | ");
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_LIFT_SEGMENT) )
+      strReference += _T("POI_LIFT_SEGMENT | ");
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_STORAGE_SEGMENT) )
+      strReference += _T("POI_STORAGE_SEGMENT | ");
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_HAUL_SEGMENT) )
+      strReference += _T("POI_HAUL_SEGMENT | ");
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_ERECTED_SEGMENT) )
+      strReference += _T("POI_ERECTED_SEGMENT | ");
+   
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_GIRDER) )
+      strReference += _T("POI_GIRDER | ");
+
+   if ( poiReference != 0 )
+   {
+      if ( IsAtH(poiReference) )
+         os << _T("(POI_H | ") << strReference << _T(") | ");
+
+      if ( IsAt15H(poiReference) )
+         os << _T("(POI_15H | ") << strReference << _T(") | ");
+
+      if ( IsMidSpan(poiReference) )
+         os << _T("POI_MIDSPAN | ");
+
+      if ( IsTenthPoint(poiReference) == 1 )
+         os << _T("(POI_0L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 2 )
+         os << _T("(POI_1L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 3 )
+         os << _T("(POI_2L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 4 )
+         os << _T("(POI_3L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 5 )
+         os << _T("(POI_4L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 6 )
+         os << _T("(POI_5L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 7 )
+         os << _T("(POI_6L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 8 )
+         os << _T("(POI_7L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 9 )
+         os << _T("(POI_8L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 10 )
+         os << _T("(POI_9L | ") << strReference << _T(") | ");
+
+      if ( IsTenthPoint(poiReference) == 11 )
+         os << _T("(POI_10L | ") << strReference << _T(") | ");
+   }
+
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PICKPOINT) )
+      os << _T("(POI_PICKPOINT | ") << strReference << _T(") | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_BUNKPOINT) )
+      os << _T("(POI_BUNKPOINT | ") << strReference << _T(") | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_CRITSECTSHEAR1) )
+      os << _T("POI_CRITSECTSHEAR1 | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_CRITSECTSHEAR2) )
+      os << _T("POI_CRITSECTSHEAR2 | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_HARPINGPOINT) )
+      os << _T("POI_HARPINGPOINT | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_CONCLOAD) )
+      os << _T("POI_CONCLOAD | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PSXFER) )
+      os << _T("POI_PSXFER | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PSDEV) )
+      os << _T("POI_PSDEV | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_DEBOND) )
+      os << _T("POI_DEBOND | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_DECKBARCUTOFF) )
+      os << _T("POI_DECKBARCUTOFF | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_BARCUTOFF) )
+      os << _T("POI_BARCUTOFF | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_BARDEVELOP) )
+      os << _T("POI_BARDEVELOP | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_FACEOFSUPPORT) )
+      os << _T("POI_FACEOFSUPPORT | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_CLOSURE) )
+      os << _T("POI_CLOSURE | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_SECTCHANGE_TRANSITION) )
+      os << _T("POI_SECTCHANGE_TRANSITION | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_SECTCHANGE_RIGHTFACE) )
+      os << _T("POI_SECTCHANGE_RIGHTFACE | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_SECTCHANGE_LEFTFACE) )
+      os << _T("POI_SECTCHANGE_LEFTFACE | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_TEMPSUPPORT) )
+      os << _T("POI_TEMPSUPPORT | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_INTERMEDIATE_PIER) )
+      os << _T("POI_INTERMEDIATE_PIER | ");
+
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PIER) )
+      os << _T("POI_PIER | ");
+
+   os << std::endl;
+
+   m_strAttributes = os.str();
+}
+
 #endif // _DEBUG
 
-rptPointOfInterest::rptPointOfInterest(const unitLength* pUnitOfMeasure,
-                                       Float64 zeroTolerance,
-                                       bool bShowUnitTag) :
-rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
-{
-}
-
-rptPointOfInterest::rptPointOfInterest(const rptPointOfInterest& rOther) :
-rptLengthUnitValue( rOther )
-{
-   MakeCopy( rOther );
-}
-
-rptPointOfInterest& rptPointOfInterest::operator = (const rptPointOfInterest& rOther)
-{
-   if ( this != &rOther )
-      MakeAssignment( rOther );
-
-   return *this;
-}
-
-rptReportContent* rptPointOfInterest::CreateClone() const
-{
-   return new rptPointOfInterest( *this );
-}
-
-void rptPointOfInterest::IncludeSpanAndGirder(bool bIncludeSpanAndGirder)
-{
-   m_bIncludeSpanAndGirder = bIncludeSpanAndGirder;
-}
-
-bool rptPointOfInterest::IncludeSpanAndGirder() const
-{
-   return m_bIncludeSpanAndGirder;
-}
-
-rptReportContent& rptPointOfInterest::SetValue(pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endOffset)
-{
-   m_POI = poi;
-   m_Stage = stage;
-   return rptLengthUnitValue::SetValue( poi.GetDistFromStart() - endOffset );
-}
-
-std::_tstring rptPointOfInterest::AsString() const
-{
-   std::_tstring strAttrib;
-   Uint16 nAttributes = 0;
-   PoiAttributeType attributes = m_POI.GetAttributes(m_Stage);
-
-   strAttrib = _T("(");
-
-   if ( m_POI.IsHarpingPoint(m_Stage) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("HP");
-      nAttributes++;
-   }
-
-   if ( m_POI.IsAtH(m_Stage) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("H");
-      nAttributes++;
-   }
-
-   if ( m_POI.IsAt15H(m_Stage) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("1.5H");
-      nAttributes++;
-   }
-   
-   if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
-   {
-      if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR1) || m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR2) )
-      {
-         if ( 0 < nAttributes )
-            strAttrib += _T(", ");
-
-         strAttrib += _T("CS");
-         nAttributes++;
-      }
-   }
-   else
-   {
-      if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR1) )
-      {
-         if ( 0 < nAttributes )
-            strAttrib += _T(", ");
-
-         strAttrib += _T("DCS");
-         nAttributes++;
-      }
-      
-      if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR2) )
-      {
-         if ( 0 < nAttributes )
-            strAttrib += _T(", ");
-
-         strAttrib += _T("PCS");
-         nAttributes++;
-      }
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_PSXFER) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("PSXFR");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_PSDEV) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Ld");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_DEBOND) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Debond");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_DECKBARCUTOFF) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bar Cutoff");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_BARCUTOFF) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bar Cutoff");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_BARDEVELOP) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bar Develop.");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_PICKPOINT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Pick Point");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_BUNKPOINT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("Bunk Point");
-      nAttributes++;
-   }
-
-   if ( m_POI.HasAttribute(m_Stage,POI_FACEOFSUPPORT) )
-   {
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      strAttrib += _T("FoS");
-      nAttributes++;
-   }
-
-   Uint16 tenpt = m_POI.IsATenthPoint(m_Stage);
-   if (0 < tenpt)
-   {
-      CHECK(tenpt<12);
-      // for the sake of efficiency, dont use a stringstream
-      LPCTSTR span_label[]={_T("err"),_T("0.0L<sub>s</sub>"),_T("0.1L<sub>s</sub>"),_T("0.2L<sub>s</sub>"),_T("0.3L<sub>s</sub>"),_T("0.4L<sub>s</sub>"),
-         _T("0.5L<sub>s</sub>"),_T("0.6L<sub>s</sub>"),_T("0.7L<sub>s</sub>"),_T("0.8L<sub>s</sub>"),_T("0.9L<sub>s</sub>"),_T("1.0L<sub>s</sub>")};
-
-      LPCTSTR girder_label[]={_T("err"),_T("0.0L<sub>g</sub>"),_T("0.1L<sub>g</sub>"),_T("0.2L<sub>g</sub>"),_T("0.3L<sub>g</sub>"),_T("0.4L<sub>g</sub>"),
-         _T("0.5L<sub>g</sub>"),_T("0.6L<sub>g</sub>"),_T("0.7L<sub>g</sub>"),_T("0.8L<sub>g</sub>"),_T("0.9L<sub>g</sub>"),_T("1.0L<sub>g</sub>")};
-
-
-      if ( 0 < nAttributes )
-         strAttrib += _T(", ");
-
-      if ( m_Stage == pgsTypes::CastingYard )
-         strAttrib += std::_tstring(girder_label[tenpt]);
-      else
-         strAttrib += std::_tstring(span_label[tenpt]);
-
-      nAttributes++;
-   }
-   strAttrib += _T(")");
-
-   std::_tstring strValue = rptLengthUnitValue::AsString();
-
-   std::_tstring str;
-
-   if ( m_bIncludeSpanAndGirder )
-   {
-      CString str1;
-      str1.Format(_T("Span %d Girder %s, "),LABEL_SPAN(m_POI.GetSpan()),LABEL_GIRDER(m_POI.GetGirder()));
-      str = str1;
-   }
-
-   if ( nAttributes == 0 )
-   {
-      str += strValue;
-   }
-   else
-   {
-      if ( m_bPrefixAttributes )
-         str += strAttrib + _T(" ") + strValue;
-      else
-         str += strValue + _T(" ") + strAttrib;
-   }
-
-   return str;
-}
-
-void rptPointOfInterest::MakeCopy(const rptPointOfInterest& rOther)
-{
-   m_POI                   = rOther.m_POI;
-   m_Stage                 = rOther.m_Stage;
-   m_bPrefixAttributes     = rOther.m_bPrefixAttributes;
-   m_bIncludeSpanAndGirder = rOther.m_bIncludeSpanAndGirder;
-}
-
-void rptPointOfInterest::MakeAssignment(const rptPointOfInterest& rOther)
-{
-   rptLengthUnitValue::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
-void rptPointOfInterest::PrefixAttributes(bool bPrefixAttributes)
-{
-   m_bPrefixAttributes = bPrefixAttributes;
-}
-
-bool rptPointOfInterest::PrefixAttributes() const
-{
-   return m_bPrefixAttributes;
-}

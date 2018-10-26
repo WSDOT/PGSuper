@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
@@ -60,8 +59,8 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
 
-   GET_IFACE2(pBroker, IGirderData,      pGirderData );
-   const matPsStrand* pstrand = pGirderData->GetStrandMaterial(span,gdr,pgsTypes::Permanent);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData );
+   const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
    CHECK(pstrand);
    
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -101,18 +100,10 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    return table;
 }
 
-void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-  // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
-   }
-
-   (*this)(row,1) << stress.SetValue( details.pLosses->PermanentStrand_ElasticShorteningLosses() );
-   (*this)(row,2) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row,3) << stress.SetValue( ptl->CreepLosses() );
-   (*this)(row,4) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
+   (*this)(row,1) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
+   (*this)(row,2) << stress.SetValue( pDetails->RefinedLosses.ShrinkageLosses() );
+   (*this)(row,3) << stress.SetValue( pDetails->RefinedLosses.CreepLosses() );
+   (*this)(row,4) << stress.SetValue( pDetails->RefinedLosses.RelaxationLossesAfterXfer() );
 }

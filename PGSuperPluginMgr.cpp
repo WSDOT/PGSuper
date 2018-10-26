@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,12 +31,16 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CPGSuperPluginMgr::CPGSuperPluginMgr()
+CPGSuperPluginMgrBase::CPGSuperPluginMgrBase()
 {
 }
 
-bool CPGSuperPluginMgr::LoadPlugins()
+bool CPGSuperPluginMgrBase::LoadPlugins()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+
+
    USES_CONVERSION;
 
    CWaitCursor cursor;
@@ -55,10 +59,8 @@ bool CPGSuperPluginMgr::LoadPlugins()
    const int nID = 1;
    CATID ID[nID];
 
-   ID[0] = CATID_PGSuperDataImporter;
+   ID[0] = GetImporterCATID();
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
-
-   CEAFApp* pApp = EAFGetApp();
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 
@@ -116,7 +118,7 @@ bool CPGSuperPluginMgr::LoadPlugins()
    }
 
    // Load Exporters
-   ID[0] = CATID_PGSuperDataExporter;
+   ID[0] = GetExporterCATID();
    pIEnumCLSID.Release();
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
    UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
@@ -172,23 +174,23 @@ bool CPGSuperPluginMgr::LoadPlugins()
    return true;
 }
 
-void CPGSuperPluginMgr::UnloadPlugins()
+void CPGSuperPluginMgrBase::UnloadPlugins()
 {
    m_ImporterPlugins.clear();
    m_ExporterPlugins.clear();
 }
 
-CollectionIndexType CPGSuperPluginMgr::GetImporterCount()
+CollectionIndexType CPGSuperPluginMgrBase::GetImporterCount()
 {
    return m_ImporterPlugins.size();
 }
 
-CollectionIndexType CPGSuperPluginMgr::GetExporterCount()
+CollectionIndexType CPGSuperPluginMgrBase::GetExporterCount()
 {
    return m_ExporterPlugins.size();
 }
 
-void CPGSuperPluginMgr::GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSuperDataImporter** ppImporter)
+void CPGSuperPluginMgrBase::GetPGSuperImporter(CollectionIndexType key,bool bByIndex,IPGSuperDataImporter** ppImporter)
 {
    if ( bByIndex )
    {
@@ -210,7 +212,7 @@ void CPGSuperPluginMgr::GetPGSuperImporter(CollectionIndexType key,bool bByIndex
    }
 }
 
-void CPGSuperPluginMgr::GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSuperDataExporter** ppExporter)
+void CPGSuperPluginMgrBase::GetPGSuperExporter(CollectionIndexType key,bool bByIndex,IPGSuperDataExporter** ppExporter)
 {
    if ( bByIndex )
    {
@@ -232,22 +234,22 @@ void CPGSuperPluginMgr::GetPGSuperExporter(CollectionIndexType key,bool bByIndex
    }
 }
 
-UINT CPGSuperPluginMgr::GetPGSuperImporterCommand(CollectionIndexType idx)
+UINT CPGSuperPluginMgrBase::GetPGSuperImporterCommand(CollectionIndexType idx)
 {
    return m_ImporterPlugins[idx].commandID;
 }
 
-UINT CPGSuperPluginMgr::GetPGSuperExporterCommand(CollectionIndexType idx)
+UINT CPGSuperPluginMgrBase::GetPGSuperExporterCommand(CollectionIndexType idx)
 {
    return m_ExporterPlugins[idx].commandID;
 }
 
-const CBitmap* CPGSuperPluginMgr::GetPGSuperImporterBitmap(CollectionIndexType idx)
+const CBitmap* CPGSuperPluginMgrBase::GetPGSuperImporterBitmap(CollectionIndexType idx)
 {
    return &m_ImporterPlugins[idx].Bitmap;
 }
 
-const CBitmap* CPGSuperPluginMgr::GetPGSuperExporterBitmap(CollectionIndexType idx)
+const CBitmap* CPGSuperPluginMgrBase::GetPGSuperExporterBitmap(CollectionIndexType idx)
 {
    return &m_ExporterPlugins[idx].Bitmap;
 }

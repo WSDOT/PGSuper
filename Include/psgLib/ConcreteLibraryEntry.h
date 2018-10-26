@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -194,6 +194,7 @@ public:
    Float64 GetAggregateSize()const;
 
    //------------------------------------------------------------------------
+   // Parameters for the AASHTO material model (as defined in NCHRP Report 496)
    void SetModEK1(Float64 k1);
    Float64 GetModEK1() const;
    void SetModEK2(Float64 k2);
@@ -217,6 +218,19 @@ public:
    Float64 GetAggSplittingStrength() const;
 
    //------------------------------------------------------------------------
+   // Parameters for the ACI 209R-92 model
+   bool UserACIParameters() const;
+   void UserACIParameters(bool bUser);
+   Float64 GetAlpha() const;
+   void SetAlpha(Float64 a);
+   Float64 GetBeta() const;
+   void SetBeta(Float64 b);
+   pgsTypes::CureMethod GetCureMethod() const;
+   void SetCureMethod(pgsTypes::CureMethod cureMethod);
+   pgsTypes::CementType GetCementType() const;
+   void SetCementType(pgsTypes::CementType cementType);
+
+   //------------------------------------------------------------------------
    // Equality - test if two entries are equal. Ignore names by default
    bool IsEqual(const ConcreteLibraryEntry& rOther, bool considerName=false) const;
 
@@ -230,7 +244,7 @@ protected:
    void MakeCopy(const ConcreteLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const ConcreteLibraryEntry& rOther);
+   virtual void MakeAssignment(const ConcreteLibraryEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 
@@ -240,17 +254,25 @@ private:
    Float64 m_Ds;
    Float64 m_Dw;
    Float64 m_AggSize;
+   bool m_bUserEc;
+   Float64 m_Ec;
+   pgsTypes::ConcreteType m_Type;
+
+   // AASHTO Model Parameters
    Float64 m_EccK1;
    Float64 m_EccK2;
    Float64 m_CreepK1;
    Float64 m_CreepK2;
    Float64 m_ShrinkageK1;
    Float64 m_ShrinkageK2;
-   bool m_bUserEc;
-   Float64 m_Ec;
-   pgsTypes::ConcreteType m_Type;
    bool m_bHasFct;
    Float64 m_Fct;
+
+   // ACI Model Parameters
+   bool m_bUserACIParameters;
+   Float64 m_A, m_B;
+   pgsTypes::CureMethod m_CureMethod;
+   pgsTypes::CementType m_CementType;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

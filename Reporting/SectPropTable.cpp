@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,10 @@
 #include "StdAfx.h"
 #include <Reporting\SectPropTable.h>
 
+#include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace\Intervals.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,19 +68,29 @@ CSectionPropertiesTable& CSectionPropertiesTable::operator= (const CSectionPrope
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,bool bComposite,
+rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,bool bComposite,
                                            IEAFDisplayUnits* pDisplayUnits) const
 {
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType constructionIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType compositeIntervalIdx    = pIntervals->GetCompositeDeckInterval();
+
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   ATLASSERT( pGirder->IsPrismatic(pgsTypes::CastingYard,span,girder) == true );
-   if ( bComposite )
    {
-      ATLASSERT( pGirder->IsPrismatic(pgsTypes::BridgeSite3,span,girder) == true );
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+      GET_IFACE2(pBroker,IGirder,pGirder);
+      ATLASSERT( pGirder->IsPrismatic(erectSegmentIntervalIdx,segmentKey) == true );
+      if ( bComposite )
+      {
+         ATLASSERT( pGirder->IsPrismatic(compositeDeckIntervalIdx,segmentKey) == true );
+      }
    }
 #endif // _DEBUG
 
-   GET_IFACE2(pBroker,ISectProp2,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    rptRcScalar scalar;
@@ -147,21 +159,21 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, force_per_length, pDisplayUnits->GetForcePerLengthUnit(), false );
 
    // DUMMY POI, but the section is prismatic so it is as good as any other
-   pgsPointOfInterest poi(span,girder,0.00);
+   pgsPointOfInterest poi(segmentKey,0.00);
 
     // Write non-composite properties
    row = xs_table->GetNumberOfHeaderRows();
 
    Float64 Yt, Yb;
-   Yt = pSectProp->GetYt(pgsTypes::CastingYard,poi);
-   Yb = fabs(pSectProp->GetYb(pgsTypes::CastingYard,poi));
+   Yt = pSectProp->GetYt(constructionIntervalIdx,poi);
+   Yb = fabs(pSectProp->GetYb(constructionIntervalIdx,poi));
    Float64 depth = Yt + Yb;
 
-   Float64 span_length = pBridge->GetSpanLength(span,girder);
+   Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
 
-   (*xs_table)(row++,1) << l2.SetValue( pSectProp->GetAg(pgsTypes::CastingYard,poi) );
-   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIx(pgsTypes::CastingYard,poi) );
-   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIy(pgsTypes::CastingYard,poi) );
+   (*xs_table)(row++,1) << l2.SetValue( pSectProp->GetAg(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIx(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIy(constructionIntervalIdx,poi) );
    (*xs_table)(row++,1) << l1.SetValue( depth );
    (*xs_table)(row++,1) << l1.SetValue( Yt );
 
@@ -172,11 +184,11 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    (*xs_table)(row++,1) << l1.SetValue( Yb );
 
-   (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKt(poi)) );
-   (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKb(poi)) );
+   (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKt(constructionIntervalIdx,poi)) );
+   (*xs_table)(row++,1) << l1.SetValue( fabs(pSectProp->GetKb(constructionIntervalIdx,poi)) );
 
-   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetSt(pgsTypes::CastingYard,poi)) );
-   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetSb(pgsTypes::CastingYard,poi) );
+   (*xs_table)(row++,1) << l3.SetValue( fabs(pSectProp->GetSt(constructionIntervalIdx,poi)) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetSb(constructionIntervalIdx,poi) );
 
    if ( bComposite )
    {
@@ -188,30 +200,30 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetPerimeter(poi) );
    (*xs_table)(row++,1) << scalar.SetValue( span_length/depth );
 
-   (*xs_table)(row++,1) << force_per_length.SetValue(pSectProp->GetGirderWeightPerLength(span,girder) );
-   (*xs_table)(row++,1) << force.SetValue(pSectProp->GetGirderWeight(span,girder) );
+   (*xs_table)(row++,1) << force_per_length.SetValue(pSectProp->GetSegmentWeightPerLength(segmentKey) );
+   (*xs_table)(row++,1) << force.SetValue(pSectProp->GetSegmentWeight(segmentKey) );
 
    if ( bComposite )
    {
       // Write composite properties
       row = xs_table->GetNumberOfHeaderRows();
 
-      Yt = pSectProp->GetYt(pgsTypes::BridgeSite3,poi);
-      Yb = fabs(pSectProp->GetYb(pgsTypes::BridgeSite3,poi));
+      Yt = pSectProp->GetYt(compositeIntervalIdx,poi);
+      Yb = fabs(pSectProp->GetYb(compositeIntervalIdx,poi));
       depth = Yt + Yb;
 
-      (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(pgsTypes::BridgeSite3,poi) );
-      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIx(pgsTypes::BridgeSite3,poi) );
-      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIy(pgsTypes::BridgeSite3,poi) );
+      (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(compositeIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIx(compositeIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIy(compositeIntervalIdx,poi) );
       (*xs_table)(row++,2) << l1.SetValue( depth );
-      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetYtGirder(pgsTypes::BridgeSite3,poi) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetYtGirder(compositeIntervalIdx,poi) );
       (*xs_table)(row++,2) << l1.SetValue( Yt );
       (*xs_table)(row++,2) << l1.SetValue( Yb );
       (*xs_table)(row++,2) << _T("-");
       (*xs_table)(row++,2) << _T("-");
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetStGirder(pgsTypes::BridgeSite3,poi)) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetSb(pgsTypes::BridgeSite3,poi) );
-      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetSt(pgsTypes::BridgeSite3,poi)) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetStGirder(compositeIntervalIdx,poi)) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetSb(compositeIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l3.SetValue( fabs(pSectProp->GetSt(compositeIntervalIdx,poi)) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetQSlab(poi) );
       (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetEffectiveFlangeWidth(poi) );
       (*xs_table)(row++,2) << _T("-");

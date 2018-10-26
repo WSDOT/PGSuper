@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
+#include <PgsExt\SegmentKey.h>
+
 #define EVT_PROJECTPROPERTIES 0x0001
 //#define EVT_UNITS             0x0002
 #define EVT_EXPOSURECONDITION 0x0004
@@ -36,8 +38,6 @@
 #define EVT_CONSTRUCTIONLOAD     0x2000
 
 
-
-
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
@@ -51,7 +51,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_PROJECTPROPERTIES);
          return S_OK;
@@ -87,7 +87,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_EXPOSURECONDITION);
          return S_OK;
@@ -112,7 +112,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RELHUMIDITY);
          return S_OK;
@@ -144,14 +144,13 @@ class CProxyIBridgeDescriptionEventSink : public IConnectionPointImpl<T, &IID_IB
 public:
 
 public:
-	HRESULT Fire_BridgeChanged(CBridgeChangedHint* pHint = NULL)
+	HRESULT Fire_BridgeChanged()
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
-         pT->m_PendingBridgeChangedHints.push_back(pHint);
          return S_OK;
       }
 
@@ -163,16 +162,10 @@ public:
 			if (*pp != NULL)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnBridgeChanged(pHint);
+				ret = pEventSink->OnBridgeChanged();
 			}
 			pp++;
 		}
-      if ( pHint )
-      {
-         delete pHint;
-         pHint = NULL;
-      }
-
 		pT->Unlock();
 		return ret;
 	}
@@ -181,7 +174,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_GIRDERFAMILY);
          return S_OK;
@@ -203,25 +196,24 @@ public:
 		return ret;
 	}
 
-   HRESULT Fire_GirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint)
+   HRESULT Fire_GirderChanged(const CGirderKey& girderKey,Uint32 lHint)
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
-         SpanGirderHashType hash = HashSpanGirder(span,gdr);
-         std::map<SpanGirderHashType,Uint32>::iterator found = pT->m_PendingEventsHash.find(hash);
+         std::map<CGirderKey,Uint32>::iterator found( pT->m_PendingEventsHash.find(girderKey) );
          if ( found != pT->m_PendingEventsHash.end() )
          {
             // there is already an event pending for this girder... add the new hints to it
-            std::pair<SpanGirderHashType,Uint32> value = *found;
+            std::pair<CGirderKey,Uint32> value = *found;
             value.second |= lHint;
             pT->m_PendingEventsHash.erase(found);
             pT->m_PendingEventsHash.insert( std::make_pair( value.first, value.second ) );
          }
          else
          {
-            pT->m_PendingEventsHash.insert( std::make_pair(hash,lHint) );
+            pT->m_PendingEventsHash.insert( std::make_pair(girderKey,lHint) );
          }
          return S_OK;
       }
@@ -234,7 +226,7 @@ public:
 			if (*pp != NULL)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnGirderChanged(span,gdr,lHint);
+				ret = pEventSink->OnGirderChanged(girderKey,lHint);
 			}
 			pp++;
 		}
@@ -246,7 +238,7 @@ public:
    {
 		T* pT = (T*)this;
       
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_CONSTRUCTIONLOAD);
          return S_OK;
@@ -272,7 +264,7 @@ public:
 	{
 		T* pT = (T*)this;
       
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOAD);
          return S_OK;
@@ -299,7 +291,7 @@ public:
 	{
 		T* pT = (T*)this;
       
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOADNAME);
          return S_OK;
@@ -336,11 +328,14 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_SPECIFICATION);
          return S_OK;
       }
+
+      if ( pT->m_bHoldingEvents )
+         return S_OK;
 
 		pT->Lock();
 		HRESULT ret;
@@ -362,7 +357,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_ANALYSISTYPE);
          return S_OK;
@@ -400,11 +395,14 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RATING_SPECIFICATION);
          return S_OK;
       }
+
+      if ( pT->m_bHoldingEvents )
+         return S_OK;
 
 		pT->Lock();
 		HRESULT ret;
@@ -436,7 +434,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIBRARYCONFLICT);
          return S_OK;
@@ -472,7 +470,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( 0 < pT->m_EventHoldCount )
+      if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOADMODIFIER);
          return S_OK;
@@ -487,76 +485,6 @@ public:
 			{
 				ILoadModifiersEventSink* pEventSink = reinterpret_cast<ILoadModifiersEventSink*>(*pp);
 				ret = pEventSink->OnLoadModifiersChanged();
-			}
-			pp++;
-		}
-		pT->Unlock();
-		return ret;
-	}
-};
-
-//////////////////////////////////////////////////////////////////////////////
-// CProxyIEventsEventSink
-template <class T>
-class CProxyIEventsEventSink : public IConnectionPointImpl<T, &IID_IEventsSink, CComDynamicUnkArray>
-{
-public:
-
-//IEventsSink : IUnknown
-public:
-	HRESULT Fire_OnHoldEvents()
-	{
-		T* pT = (T*)this;
-
-      pT->Lock();
-		HRESULT ret;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
-		{
-			if (*pp != NULL)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnHoldEvents();
-			}
-			pp++;
-		}
-		pT->Unlock();
-		return ret;
-	}
-
-	HRESULT Fire_OnFirePendingEvents()
-	{
-		T* pT = (T*)this;
-
-      pT->Lock();
-		HRESULT ret;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
-		{
-			if (*pp != NULL)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnFirePendingEvents();
-			}
-			pp++;
-		}
-		pT->Unlock();
-		return ret;
-	}
-
-	HRESULT Fire_OnCancelPendingEvents()
-	{
-		T* pT = (T*)this;
-
-      pT->Lock();
-		HRESULT ret;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
-		{
-			if (*pp != NULL)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnCancelPendingEvents();
 			}
 			pp++;
 		}

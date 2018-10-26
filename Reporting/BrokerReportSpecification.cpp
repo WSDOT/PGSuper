@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,33 +35,27 @@ CReportSpecification(strReportName)
    SetBroker(pBroker);
 }
 
-CBrokerReportSpecification::CBrokerReportSpecification(const CBrokerReportSpecification& other) :
-CReportSpecification(other)
-{
-   SetBroker(other.m_Broker);
-}
-
 CBrokerReportSpecification::~CBrokerReportSpecification(void)
 {
 }
 
 void CBrokerReportSpecification::SetBroker(IBroker* pBroker)
 {
-   m_Broker = pBroker;
+   m_pBroker = pBroker;
 }
 
 HRESULT CBrokerReportSpecification::GetBroker(IBroker** ppBroker)
 {
-   ATLASSERT( m_Broker ); // did you forget to set the broker???
+   ATLASSERT( m_pBroker ); // did you forget to set the broker???
    //return m_Broker.CopyTo(ppBroker);
-   (*ppBroker) = m_Broker;
+   (*ppBroker) = m_pBroker;
    (*ppBroker)->AddRef();
    return S_OK;
 }
 
 HRESULT CBrokerReportSpecification::Validate() const
 {
-   if ( !m_Broker )
+   if ( !m_pBroker )
       return E_FAIL;
 
    return CReportSpecification::Validate();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
-#include <Plugins\Beams.h>
 
 struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 {
@@ -37,6 +36,10 @@ struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
    Float64 leftDe;
    Float64 rightDe;
 };
+
+// {41AB468B-C89F-4153-96FC-A37E18A33C68}
+DEFINE_GUID(CLSID_UBeamDistFactorEngineer, 
+0x41ab468b, 0xc89f, 0x4153, 0x96, 0xfc, 0xa3, 0x7e, 0x18, 0xa3, 0x3c, 0x68);
 
 /////////////////////////////////////////////////////////////////////////////
 // CUBeamDistFactorEngineer
@@ -54,8 +57,6 @@ public:
 
    HRESULT FinalConstruct();
 
-DECLARE_REGISTRY_RESOURCEID(IDR_UBEAMDISTFACTORENGINEER)
-
 BEGIN_COM_MAP(CUBeamDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)
 END_COM_MAP()
@@ -69,14 +70,14 @@ public:
 //   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
 //   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr);
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
 
 private:
-   lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf);
+   lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf);
 
-   void ReportMoment(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
-   void ReportShear(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportMoment(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
 
    bool m_bTypeB; // true if type b, otherwise type c section
    bool m_bIsSpreadSlab; // We need to model spread slabs, and aashto has no guidance

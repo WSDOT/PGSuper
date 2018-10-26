@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <Reporting\ContinuityCheck.h>
 
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -69,7 +68,7 @@ CContinuityCheck& CContinuityCheck::operator= (const CContinuityCheck& rOther)
 
 //======================== OPERATIONS =======================================
 void CContinuityCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                              IBroker* pBroker,const CGirderKey& girderKey,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IContinuity,pContinuity);
@@ -93,7 +92,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4);
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    *pPara << pTable;
@@ -107,30 +106,38 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    RowIndexType row = 1;
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      Float64 fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
-
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
-         (*pTable)(row,0) << _T("Abutment ") << (long)(pierIdx+1);
+         (*pTable)(row,0) << _T("Abut ") << LABEL_PIER(pierIdx);
       else
-         (*pTable)(row,0) << _T("Pier ") << (long)(pierIdx+1);
+         (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
 
-      (*pTable)(row,1) << stress.SetValue(fBottom);
-
-      bool bContinuousLeft, bContinuousRight;
-      pBridge->IsContinuousAtPier(pierIdx,&bContinuousLeft,&bContinuousRight);
-      
-      bool bIntegralLeft, bIntegralRight;
-      pBridge->IsIntegralAtPier(pierIdx,&bIntegralLeft,&bIntegralRight);
-
-      if ( bContinuousLeft || bContinuousRight )
-         (*pTable)(row,2) << _T("Continuous");
-      else if ( bIntegralLeft || bIntegralRight )
-         (*pTable)(row,2) << _T("Integral");
+      if ( pBridge->GetPierConnectionType(pierIdx) == pgsTypes::ContinuousSegment )
+      {
+         (*pTable)(row,1) << _T("");
+         (*pTable)(row,2) << _T("");
+         (*pTable)(row,3) << _T("");
+      }
       else
-         (*pTable)(row,2) << _T("Hinged");
+      {
+         Float64 fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girderKey);
+         (*pTable)(row,1) << stress.SetValue(fBottom);
 
-      fBottom = IsZero(fBottom) ? 0 : fBottom;
-      (*pTable)(row,3) << (fBottom < 0 ? _T("Yes") : _T("No"));
+         bool bContinuousLeft, bContinuousRight;
+         pBridge->IsContinuousAtPier(pierIdx,&bContinuousLeft,&bContinuousRight);
+         
+         bool bIntegralLeft, bIntegralRight;
+         pBridge->IsIntegralAtPier(pierIdx,&bIntegralLeft,&bIntegralRight);
+
+         if ( bContinuousLeft || bContinuousRight )
+            (*pTable)(row,2) << _T("Continuous");
+         else if ( bIntegralLeft || bIntegralRight )
+            (*pTable)(row,2) << _T("Integral");
+         else
+            (*pTable)(row,2) << _T("Hinged");
+
+         fBottom = IsZero(fBottom) ? 0 : fBottom;
+         (*pTable)(row,3) << (fBottom < 0 ? _T("Yes") : _T("No"));
+      }
 
       row++;
    }
@@ -139,7 +146,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    *pPara << RPT_FBOT << _T(" is the calcuated stress at the bottom of the continuity diaphragm for the combination of superimposed permanent loads and 50% live load") << rptNewLine;
    *pChapter << pPara;
 
-   bool bEffective = pContinuity->IsContinuityFullyEffective(girder);
+   bool bEffective = pContinuity->IsContinuityFullyEffective(girderKey);
    if ( bEffective )
    {
       *pPara << _T("Continuous connections are fully effective.") << rptNewLine;

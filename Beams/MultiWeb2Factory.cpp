@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,9 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription.h>
+#include <IFace\Intervals.h>
+
+#include <PgsExt\BridgeDescription2.h>
 
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
@@ -112,7 +114,7 @@ HRESULT CMultiWeb2Factory::FinalConstruct()
    return S_OK;
 }
 
-void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
 {
    CComPtr<IMultiWebSection2> gdrsection;
    gdrsection.CoCreateInstance(CLSID_MultiWebSection2);
@@ -143,7 +145,7 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
 
    // figure out the web spacing, w2, based on the girder spacing
    Float64 w1;
-   if ( pBroker == NULL || spanIdx == INVALID_INDEX || gdrIdx == INVALID_INDEX )
+   if ( pBroker == NULL )
    {
       // just use the max
       w1 = wmax;
@@ -156,7 +158,7 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
       // use raw input here because requesting it from the bridge will cause an infite loop.
       // bridge agent calls this during validation
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
       Float64 spacing = pBridgeDesc->GetGirderSpacing();;
 
@@ -174,10 +176,10 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    gdrsection.QueryInterface(ppSection);
 }
 
-void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   Float64 length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 c1,c2;
    Float64 h1,h2,h3;
@@ -202,81 +204,64 @@ void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
    rect->QueryInterface(ppShape);
 }
 
-void CMultiWeb2Factory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CMultiWeb2Factory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
 
-   // Length of the segments will be measured fractionally
-   ssmbr->put_AreSegmentLengthsFractional(VARIANT_TRUE);
-   segment->put_Length(-1.0);
-
    // Build up the beam shape
    GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,IGirderData, pGirderData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
-   CComQIPtr<IShape> shape(gdrsection);
-   segment->putref_Shape(shape);
+   CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrsection);
 
    // Beam materials
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
-   material->put_E(pMaterial->GetEcGdr(spanIdx,gdrIdx));
-   material->put_Density(pMaterial->GetStrDensityGdr(spanIdx,gdrIdx));
-   segment->putref_Material(material);
+
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      Float64 E = pMaterial->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
+      Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
+
+      material->put_E(intervalIdx,E);
+      material->put_Density(intervalIdx,D);
+   }
+
+   CComQIPtr<IShape> shape(gdrsection);
+   ATLASSERT(shape);
+   segment->AddShape(shape,material,NULL);
 
    ssmbr->AddSegment(segment);
 }
 
-void CMultiWeb2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsPoiMgr* pPoiMgr)
+void CMultiWeb2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr)
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
+   Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
-   pgsPointOfInterest poiStart(span,gdr,0.00);
-   poiStart.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiStart.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiStart.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-
-   pgsPointOfInterest poiEnd(span,gdr,gdrLength);
-   poiEnd.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiEnd.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
-   poiEnd.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
+   pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
+   pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
    // move bridge site poi to the start/end bearing
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::GirderPlacement);
-   stages.push_back(pgsTypes::TemporaryStrandRemoval);
-   stages.push_back(pgsTypes::BridgeSite1);
-   stages.push_back(pgsTypes::BridgeSite2);
-   stages.push_back(pgsTypes::BridgeSite3);
-   
-   Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
-   Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
+   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
    poiStart.SetDistFromStart(start_length);
    poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiStart.RemoveStage(pgsTypes::Lifting);
-   poiStart.RemoveStage(pgsTypes::Hauling);
-   poiStart.AddStages(stages,POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL);
-
-   poiEnd.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.RemoveStage(pgsTypes::Lifting);
-   poiEnd.RemoveStage(pgsTypes::Hauling);
-   poiEnd.AddStages(stages,POI_SECTCHANGE_LEFTFACE | POI_TABULAR | POI_GRAPHICAL);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
@@ -296,7 +281,7 @@ void CMultiWeb2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDT
    (*ppEng)->AddRef();
 }
 
-void CMultiWeb2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CMultiWeb2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
@@ -600,41 +585,102 @@ IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(sysIStructured
    return dimensions;
 }
 
-bool CMultiWeb2Factory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+bool CMultiWeb2Factory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    return true;
 }
 
-Float64 CMultiWeb2Factory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
+Float64 CMultiWeb2Factory::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   Float64 area = pSectProp2->GetAg(pgsTypes::CastingYard,pgsPointOfInterest(spanIdx,gdrIdx,0.00));
-   
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   Float64 volume = area*Lg;
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   return volume;
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   ATLASSERT( 2 <= vPOI.size() );
+   Float64 V = 0;
+   std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
+   pgsPointOfInterest prev_poi = *iter;
+   Float64 prev_area;
+   if ( spMode == pgsTypes::spmGross )
+      prev_area = pSectProp->GetAg(releaseIntervalIdx,prev_poi);
+   else
+      prev_area = pSectProp->GetNetAg(releaseIntervalIdx,prev_poi);
+
+   iter++;
+
+   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
+   for ( ; iter != end; iter++ )
+   {
+      pgsPointOfInterest poi = *iter;
+      Float64 area;
+      if ( spMode == pgsTypes::spmGross )
+         area = pSectProp->GetAg(releaseIntervalIdx,poi);
+      else
+         area = pSectProp->GetNetAg(releaseIntervalIdx,poi);
+
+      Float64 avg_area = (prev_area + area)/2;
+      V += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
+
+      prev_poi = poi;
+      prev_area = area;
+   }
+
+   return V;
 }
 
-Float64 CMultiWeb2Factory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
+Float64 CMultiWeb2Factory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids)
 {
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   pgsPointOfInterest poi(spanIdx,gdrIdx,0.00);
-   Float64 perimeter = pSectProp2->GetPerimeter(poi);
-   
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   // compute surface area along length of member
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   Float64 surface_area = perimeter*Lg;
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR) );
+   ATLASSERT( 2 <= vPOI.size() );
+   Float64 S = 0;
+   std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
+   pgsPointOfInterest prev_poi = *iter;
+   Float64 prev_perimeter = pSectProp->GetPerimeter(prev_poi);
+   iter++;
 
-   // add area of both ends of the girder
-   Float64 start_area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-   Float64 end_area   = start_area;
-   surface_area += (start_area + end_area);
+   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
+   for ( ; iter != end; iter++ )
+   {
+      pgsPointOfInterest poi = *iter;
+      Float64 perimeter = pSectProp->GetPerimeter(poi);
 
-   return surface_area;
+      Float64 avg_perimeter = (prev_perimeter + perimeter)/2;
+      S += avg_perimeter*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
+
+      prev_poi = poi;
+      prev_perimeter = perimeter;
+   }
+
+   // Add area for both ends
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   Float64 start_area;
+   if ( spMode == pgsTypes::spmGross )
+      start_area = pSectProp->GetAg(releaseIntervalIdx,vPOI.front());
+   else
+      start_area = pSectProp->GetNetAg(releaseIntervalIdx,vPOI.front());
+
+   Float64 end_area;
+   if ( spMode == pgsTypes::spmGross )
+      end_area = pSectProp->GetAg(releaseIntervalIdx,vPOI.back());
+   else
+      end_area = pSectProp->GetNetAg(releaseIntervalIdx,vPOI.back());
+
+   S += (start_area + end_area);
+
+   return S;
 }
 
 std::_tstring CMultiWeb2Factory::GetImage()
@@ -765,14 +811,6 @@ CLSID CMultiWeb2Factory::GetCLSID()
    return CLSID_MultiWeb2Factory;
 }
 
-std::_tstring CMultiWeb2Factory::GetName()
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID CMultiWeb2Factory::GetFamilyCLSID()
 {
    return CLSID_RibbedBeamFamily;
@@ -789,11 +827,6 @@ std::_tstring CMultiWeb2Factory::GetGirderFamilyName()
 std::_tstring CMultiWeb2Factory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
-}
-
-std::_tstring CMultiWeb2Factory::GetPublisherContactInformation()
-{
-   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CMultiWeb2Factory::GetResourceInstance()
@@ -907,7 +940,7 @@ void CMultiWeb2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions&
    }
 }
 
-WebIndexType CMultiWeb2Factory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CMultiWeb2Factory::GetWebCount(const IBeamFactory::Dimensions& dimensions)
 {
    return 2;
 }
@@ -943,9 +976,4 @@ void CMultiWeb2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensi
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
-}
-
-GirderIndexType CMultiWeb2Factory::GetMinimumBeamCount()
-{
-   return 1;
 }

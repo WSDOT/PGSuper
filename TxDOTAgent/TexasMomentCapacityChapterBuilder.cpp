@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 #include <Reporting\FlexuralCapacityCheckTable.h>
@@ -30,6 +30,8 @@
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
+#include <IFace\Artifact.h>
+#include <IFace\Intervals.h>
 
 
 #ifdef _DEBUG
@@ -61,11 +63,17 @@ LPCTSTR CTexasMomentCapacityChapterBuilder::GetName() const
 
 rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
+
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -73,13 +81,25 @@ rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRpt
 
    rptParagraph* p = new rptParagraph;
    bool bOverReinforced;
-   *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
+   *p << CFlexuralCapacityCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
    
    GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->ProcessNegativeMoments(span) )
+   SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
+   SpanIndexType endSpanIdx   = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
+   bool bProcessNegativeMoments = false;
+   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   {
+      if ( pBridge->ProcessNegativeMoments(spanIdx) )
+      {
+         bProcessNegativeMoments = true;
+         break;
+      }
+   }
+
+   if ( bProcessNegativeMoments )
    {
       *p << rptNewLine;
-      *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;
+      *p << CFlexuralCapacityCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;
    }
 
    *pChapter << p;

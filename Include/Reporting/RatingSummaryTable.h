@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,14 +49,14 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the rating summary table with results listed by limit state and structural action
-   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,GirderIndexType gdrLineIdx,RatingTableType ratingTableType) const;
+   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,const CGirderKey& girderKey,RatingTableType ratingTableType) const;
 
    //------------------------------------------------------------------------
    // Builds the rating summary table with results listed by rating vehicle
-   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const;
+   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
 
    //------------------------------------------------------------------------
    // Builds the load posting table for a limit state
-   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const;
+   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
 };
 

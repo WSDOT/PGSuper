@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSpliceBeamFactory.SplicedIBeamFactory.1 = s 'Spliced I-Beam'
+	{
+		CLSID = s '{94272D8A-4914-44bb-A0D2-937A6A8BD7B0}'
+	}
+	PGSpliceBeamFactory.SplicedIBeamFactory = s 'Spliced I-Beam'
+	{
+		CLSID = s '{94272D8A-4914-44bb-A0D2-937A6A8BD7B0}'
+		CurVer = s 'PGSpliceBeamFactory.SplicedIBeamFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {94272D8A-4914-44bb-A0D2-937A6A8BD7B0} = s 'Spliced I-Beam'
+		{
+			ProgID = s 'PGSpliceBeamFactory.SplicedIBeamFactory.1'
+			VersionIndependentProgID = s 'PGSpliceBeamFactory.SplicedIBeamFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '94272D8A-4914-44bb-A0D2-937A6A8BD7B0'
+		}
+	}
+}

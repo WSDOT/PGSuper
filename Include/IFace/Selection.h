@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,28 +22,8 @@
 
 #pragma once
 
-/*****************************************************************************
-COPYRIGHT
-   Copyright © 1997-2004
-   Washington State Department Of Transportation
-   All Rights Reserved
-*****************************************************************************/
-
-// SYSTEM INCLUDES
-//
 #include <WbflTypes.h>
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
+#include <PgsExt\SegmentKey.h>
 
 /*****************************************************************************
 INTERFACE
@@ -64,7 +44,7 @@ interface ISelection : IUnknown
    virtual GirderIndexType GetGirderIdx() = 0;
    virtual void SelectPier(PierIndexType pierIdx) = 0;
    virtual void SelectSpan(SpanIndexType spanIdx) = 0;
-   virtual void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual void SelectGirder(const CGirderKey& girderKey) = 0;
    virtual Float64 GetSectionCutStation() = 0; // bridge model view section cut station
 };
 
@@ -72,10 +52,14 @@ interface ISelection : IUnknown
 struct CSelection
 {
 public:
-   enum Type { None, Pier, Span, Girder, Deck, Alignment } Type;
+   enum Type { None, Pier, Span, Girder, Segment, ClosurePour, TemporarySupport, Deck, Alignment } Type;
    SpanIndexType SpanIdx;
    PierIndexType PierIdx;
+   GroupIndexType GroupIdx;
    GirderIndexType GirderIdx;
+   SegmentIndexType SegmentIdx;
+   
+   SupportIDType tsID; // ID of the selected temporary support
 };
 
 
@@ -101,4 +85,6 @@ interface ISelectionEx : ISelection
    virtual void SelectDeck() = 0;
    virtual void SelectAlignment() = 0;
    virtual void ClearSelection() = 0;
+
+   virtual void SelectSegment(const CSegmentKey& segmentKey) = 0;
 };

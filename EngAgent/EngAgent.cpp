@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,7 @@
 #include "EngAgentImp.h"
 
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
 #include <IFace\PrecastIGirderDetailsSpec.h>
@@ -48,7 +49,9 @@
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\ResistanceFactors.h>
-#include <IFace\InterfaceShearRequirements.h>
+#include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>
@@ -109,6 +112,19 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
+HRESULT RegisterAgent(bool bRegister)
+{
+   HRESULT hr = S_OK;
+   hr = sysComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSuperAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSpliceAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
 
 STDAPI DllRegisterServer(void)
 {
@@ -117,7 +133,7 @@ STDAPI DllRegisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   return sysComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSuperAgent,true);
+   return RegisterAgent(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -125,9 +141,7 @@ STDAPI DllRegisterServer(void)
 
 STDAPI DllUnregisterServer(void)
 {
-   sysComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSuperAgent,false);
+   RegisterAgent(false);
 	_Module.UnregisterServer();
 	return S_OK;
 }
-
-

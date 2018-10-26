@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -83,16 +83,15 @@ DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DragData);
  
 
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc)
+STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker,const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
 {
    METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,Strategy);
 
    pThis->m_pBroker = pBroker;
-   pThis->m_SpanIdx = spanIdx;
-   pThis->m_GirderIdx = gdrIdx;
+   pThis->m_SegmentKey = segmentKey;
 
    GET_IFACE2(pThis->m_pBroker,IBridge,pBridge);
-   pThis->m_gdrLength = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   pThis->m_gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pThis->m_pCutLocation = pCutLoc;
 
@@ -271,8 +270,8 @@ Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirde
    GET_IFACE(IGirder,pGirder);
    GET_IFACE(IPointOfInterest,pPOI);
 
-   pgsPointOfInterest poi = pPOI->GetPointOfInterest(pgsTypes::CastingYard,m_SpanIdx,m_GirderIdx,distFromStartOfGirder);
-   if ( poi.GetID() == INVALID_ID )
+   pgsPointOfInterest poi( pPOI->GetPointOfInterest(m_SegmentKey,distFromStartOfGirder) );
+   if ( poi.GetID() < 0 )
       poi.SetDistFromStart(distFromStartOfGirder);
 
    Float64 gdrHeight = pGirder->GetHeight(poi);
@@ -490,8 +489,7 @@ STDMETHODIMP_(BOOL) CTogaSectionCutDisplayImpl::XDragData::PrepareForDrag(iDispl
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&pThis->m_Color,sizeof(COLORREF));
    pSink->Write(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSink->Write(ms_Format,&pThis->m_SpanIdx,sizeof(SpanIndexType));
-   pSink->Write(ms_Format,&pThis->m_GirderIdx,sizeof(GirderIndexType));
+   pSink->Write(ms_Format,&pThis->m_SegmentKey,sizeof(CSegmentKey));
    pSink->Write(ms_Format,&pThis->m_gdrLength,sizeof(Float64));
    pSink->Write(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
 
@@ -515,10 +513,8 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject
 
    pSource->Read(ms_Format,&pThis->m_Color,sizeof(COLORREF));
    pSource->Read(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSource->Read(ms_Format,&pThis->m_SpanIdx,sizeof(SpanIndexType));
-   pSource->Read(ms_Format,&pThis->m_GirderIdx,sizeof(GirderIndexType));
+   pSource->Read(ms_Format,&pThis->m_SegmentKey,sizeof(CSegmentKey));
    pSource->Read(ms_Format,&pThis->m_gdrLength,sizeof(Float64));
    pSource->Read(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
-
 }
 

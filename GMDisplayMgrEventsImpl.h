@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 // GMDisplayMgrEventsImpl.h : header file
 //
 #include <DManip\DManip.h>
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 #include "GirderModelChildFrame.h"
 
 class CPGSuperDoc;
@@ -40,7 +40,7 @@ class CPGSuperDoc;
 class CGMDisplayMgrEventsImpl : public CCmdTarget
 {
 public:
-   CGMDisplayMgrEventsImpl(CPGSuperDoc* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation);
+   CGMDisplayMgrEventsImpl(CPGSuperDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation);
    ~CGMDisplayMgrEventsImpl();
 
    DECLARE_INTERFACE_MAP()
@@ -59,7 +59,7 @@ public:
    END_INTERFACE_PART(Events)
 
 public:
-   CPGSuperDoc*            m_pDoc;
+   CPGSuperDocBase*        m_pDoc;
    CGirderModelChildFrame* m_pFrame;
    CWnd*                   m_pParent;
    bool                    m_bGirderElevation;

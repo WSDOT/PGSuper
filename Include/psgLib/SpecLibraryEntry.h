@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,6 +53,16 @@ class SpecLibraryEntryObserver;
 #pragma warning(disable:4231)
 PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 
+#define LOSSES_AASHTO_REFINED       0
+#define LOSSES_AASHTO_LUMPSUM       1
+#define LOSSES_WSDOT_LUMPSUM        4 // same as PPR = 1.0 in aashto eqn's
+#define LOSSES_AASHTO_LUMPSUM_2005  5 // 2005 AASHTO code
+#define LOSSES_AASHTO_REFINED_2005  6 // 2005 AASHTO code
+#define LOSSES_WSDOT_LUMPSUM_2005   7 // 2005 AASHTO, WSDOT (includes initial relaxation loss)
+#define LOSSES_WSDOT_REFINED_2005   8 // 2005 AASHTO, WSDOT (includes initial relaxation loss)
+#define LOSSES_WSDOT_REFINED        9
+#define LOSSES_TXDOT_REFINED_2004   10 // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
+#define LOSSES_TIME_STEP            11 // Losses are computed with a time-step method
 
 #define AT_JACKING       0
 #define BEFORE_TRANSFER  1
@@ -63,9 +73,14 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define LOW_RELAX  1
 
 // constants for relaxation loss method for LRFD 2005, refined method
-#define RLM_SIMPLLIFIED 0
+#define RLM_SIMPLIFIED  0
 #define RLM_REFINED     1
 #define RLM_LUMPSUM     2
+
+// constants for time dependent models
+//#define TDM_AASHTO    0
+#define TDM_ACI209    1
+//#define TDM_CEBFIP    2
 
 // MISCELLANEOUS
 //
@@ -196,6 +211,9 @@ public:
    // Get string to describe specification
    std::_tstring GetDescription() const;
 
+   void SetSectionPropertyMode(pgsTypes::SectionPropertyMode mode);
+   pgsTypes::SectionPropertyMode GetSectionPropertyMode() const;
+
    //------------------------------------------------------------------------
    // Get Max strand slope for 0.5 and 0.6" strands. If bool value is false,
    // then slope values do not need to be checked and slope values are 
@@ -236,20 +254,16 @@ public:
 
    //------------------------------------------------------------------------
    // Get Max allowable stirrup spacing for girder.
-   // Stirrup spacing limitations are given in LRFD 5.8.2.7 in the form of
-   // Smax = k*dv <= s (5.8.2.7-1 Smax = 0.8dv <= 48")
-   // K1 and S1 are for equation 5.8.2.7-1
-   // K2 and S2 are for equation 5.8.2.7-2
-   void GetMaxStirrupSpacing(Float64* pK1,Float64* pS1,Float64* pK2,Float64* pS2) const;
+   Float64 GetMaxStirrupSpacing() const;
 
    //------------------------------------------------------------------------
    // Set Max allowable stirrup spacing for girder.
-   void SetMaxStirrupSpacing(Float64 K1,Float64 S1,Float64 K2,Float64 S2);
+   void SetMaxStirrupSpacing(Float64 space);
 
    //------------------------------------------------------------------------
    // Enable check and design for lifting in casting yard
    void EnableLiftingCheck(bool enable);
-   bool IsLiftingCheckEnabled() const;
+   bool IsLiftingAnalysisEnabled() const;
 
    void EnableLiftingDesign(bool enable);
    bool IsLiftingDesignEnabled() const;
@@ -292,13 +306,10 @@ public:
    //------------------------------------------------------------------------
    // Enable check and design for hauling in casting yard
    void EnableHaulingCheck(bool enable);
-   bool IsHaulingCheckEnabled() const;
+   bool IsHaulingAnalysisEnabled() const;
 
    void EnableHaulingDesign(bool enable);
    bool IsHaulingDesignEnabled() const;
-
-   void SetHaulingAnalysisMethod(pgsTypes::HaulingAnalysisMethod method);
-   pgsTypes::HaulingAnalysisMethod GetHaulingAnalysisMethod() const;
 
    //------------------------------------------------------------------------
    // Get upward impact for hauling
@@ -631,21 +642,6 @@ public:
    // If the bool is false, this check is not made and the stress value is undefined.
    void SetTempStrandRemovalAbsMaxConcreteTens(bool doCheck, Float64 stress);
 
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // at the temporary strand removal
-   Float64 GetTempStrandRemovalMaxConcreteTensWithRebar() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete at the temporary strand removal
-   void SetTempStrandRemovalMaxConcreteTensWithRebar(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Set/Get flag that indicates if stresses during temporary loading conditions
-   // are to be checked (basically, Bridge Site 1 stresses)
-   void CheckTemporaryStresses(bool bCheck);
-   bool CheckTemporaryStresses() const;
 
    //------------------------------------------------------------------------
    // Get the max allowable compressive concrete stress for service loading
@@ -689,33 +685,6 @@ public:
    // Set the max allowable compressive concrete stress for  loading
    // at bridge site 2 as a factor times f'c
    void SetBs2CompStress(Float64 stress);
-
-   //------------------------------------------------------------------------
-   void CheckBs2Tension(bool bCheck);
-   bool CheckBs2Tension() const;
-
-   //------------------------------------------------------------------------
-   // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
-   // at the bridge site stage 2
-   Float64 GetBs2MaxConcreteTens() const;
-
-   //------------------------------------------------------------------------
-   // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
-   // concrete at the bridge site stage 2
-   void SetBs2MaxConcreteTens(Float64 stress);
-
-   //------------------------------------------------------------------------
-   // Get the absolute maximum allowable tensile stress in concrete
-   // at the bridge site stage 2
-   // If the bool is false, this check is not made and the stress value is 
-   // undefined.
-   void GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
-
-   //------------------------------------------------------------------------
-   // Set the absolute maximum allowable tensile stress in 
-   // concrete at the bridge site stage 2
-   // If the bool is false, this check is not made and the stress value is undefined.
-   void SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress);
 
    //------------------------------------------------------------------------
    // Get the max allowable compressive concrete stress for service loading
@@ -848,17 +817,6 @@ public:
    Float64 GetTotalCreepDuration() const;
 
    //------------------------------------------------------------------------
-   //  Variability between upper and lower bound camber, stored in decimal percent
-   void SetCamberVariability(Float64 var);
-   Float64 GetCamberVariability() const;
-
-   void CheckGirderSag(bool bCheck);
-   bool CheckGirderSag() const;
-
-   pgsTypes::SagCamberType GetSagCamberType() const;
-   void SetSagCamberType(pgsTypes::SagCamberType type);
-
-   //------------------------------------------------------------------------
    // Returns the method for computing losses. The return value will be
    // one of the LOSSES_XXX constants
    int GetLossMethod() const;
@@ -867,18 +825,9 @@ public:
    // Sets the method for computing losses
    void SetLossMethod(int method);
 
-   //------------------------------------------------------------------------
-   // Returns the losses before prestress xfer for a lump sum method
-   Float64 GetBeforeXferLosses() const;
-   void SetBeforeXferLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   // Returns the losses after prestress xfer for a lump sum method
-   Float64 GetAfterXferLosses() const;
-   void SetAfterXferLosses(Float64 loss);
-
-   Float64 GetLiftingLosses() const;
-   void SetLiftingLosses(Float64 loss);
+   // Set/Get the time-dependent model type
+   int GetTimeDependentModel() const;
+   void SetTimeDependentModel(int model);
 
    //------------------------------------------------------------------------
    // Returns the shipping losses for a lump sum method or for a method
@@ -893,38 +842,6 @@ public:
    Float64 GetShippingTime() const;
 
    //------------------------------------------------------------------------
-   Float64 GetBeforeTempStrandRemovalLosses() const;
-   void SetBeforeTempStrandRemovalLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   Float64 GetAfterTempStrandRemovalLosses() const;
-   void SetAfterTempStrandRemovalLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   Float64 GetAfterDeckPlacementLosses() const;
-   void SetAfterDeckPlacementLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   Float64 GetAfterSIDLLosses() const;
-   void SetAfterSIDLLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   // Returns the final losses for a lump sum method
-   Float64 GetFinalLosses() const;
-   void SetFinalLosses(Float64 loss);
-
-   //------------------------------------------------------------------------
-   // Returns the anchor set
-   Float64 GetAnchorSet() const;
-   void SetAnchorSet(Float64 dset);
-
-   Float64 GetWobbleFrictionCoefficient() const;
-   void SetWobbleFrictionCoefficient(Float64 K);
-
-   Float64 GetFrictionCoefficient() const;
-   void SetFrictionCoefficient(Float64 u);
-
-   //------------------------------------------------------------------------
    // Set/Get load effectiveness for elastic gains
    Float64 GetSlabElasticGain() const;
    void SetSlabElasticGain(Float64 f);
@@ -935,11 +852,17 @@ public:
    Float64 GetDiaphragmElasticGain() const;
    void SetDiaphragmElasticGain(Float64 f);
 
-   Float64 GetUserDCElasticGain(pgsTypes::Stage stage) const;
-   void SetUserDCElasticGain(pgsTypes::Stage stage,Float64 f);
+   Float64 GetUserLoadBeforeDeckDCElasticGain() const;
+   void SetUserLoadBeforeDeckDCElasticGain(Float64 f);
 
-   Float64 GetUserDWElasticGain(pgsTypes::Stage stage) const;
-   void SetUserDWElasticGain(pgsTypes::Stage stage,Float64 f);
+   Float64 GetUserLoadAfterDeckDCElasticGain() const;
+   void SetUserLoadAfterDeckDCElasticGain(Float64 f);
+
+   Float64 GetUserLoadBeforeDeckDWElasticGain() const;
+   void SetUserLoadBeforeDeckDWElasticGain(Float64 f);
+
+   Float64 GetUserLoadAfterDeckDWElasticGain() const;
+   void SetUserLoadAfterDeckDWElasticGain(Float64 f);
 
    Float64 GetRailingSystemElasticGain() const;
    void SetRailingSystemElasticGain(Float64 f);
@@ -955,13 +878,6 @@ public:
 
    void SetRelaxationLossMethod(Int16 method);
    Int16 GetRelaxationLossMethod() const;
-
-
-   //------------------------------------------------------------------------
-   // Get/Set a FCGP_XXXX constant to determine the method used to compute fcgp
-   // for losses. This option is only used for the TxDOT 2013 losses method
-   void SetFcgpComputationMethod(Int16 method);
-   Int16 GetFcgpComputationMethod() const;
 
    //------------------------------------------------------------------------
    // Returns a LLDF_XXXX constant for the live load distribution factor
@@ -1029,17 +945,14 @@ public:
    
    void SetMaxSlabFc(pgsTypes::ConcreteType type,Float64 fc);
    Float64 GetMaxSlabFc(pgsTypes::ConcreteType type) const;
-   void SetMaxGirderFc(pgsTypes::ConcreteType type,Float64 fc);
-   Float64 GetMaxGirderFc(pgsTypes::ConcreteType type) const;
-   void SetMaxGirderFci(pgsTypes::ConcreteType type,Float64 fci);
-   Float64 GetMaxGirderFci(pgsTypes::ConcreteType type) const;
+   void SetMaxSegmentFc(pgsTypes::ConcreteType type,Float64 fc);
+   Float64 GetMaxSegmentFc(pgsTypes::ConcreteType type) const;
+   void SetMaxSegmentFci(pgsTypes::ConcreteType type,Float64 fci);
+   Float64 GetMaxSegmentFci(pgsTypes::ConcreteType type) const;
    void SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc);
    Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType type) const;
    void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
    Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
-
-   void SetDoCheckStirrupSpacingCompatibility(bool doCheck);
-   bool GetDoCheckStirrupSpacingCompatibility() const;
 
    //------------------------------------------------------------------------
    // Enable check and design for "A" dimension (Slab Offset
@@ -1058,9 +971,6 @@ public:
    void SetShearFlowMethod(ShearFlowMethod method);
    ShearFlowMethod GetShearFlowMethod() const;
 
-   void SetMaxInterfaceShearConnectionSpacing(Float64 sMax);
-   Float64 GetMaxInterfaceShearConnectorSpacing() const;
-
    void SetShearCapacityMethod(ShearCapacityMethod method);
    ShearCapacityMethod GetShearCapacityMethod() const;
 
@@ -1071,17 +981,6 @@ public:
    Float64 GetMininumTruckSupportLocation() const;
    void SetTruckSupportLocationAccuracy(Float64 x);
    Float64 GetTruckSupportLocationAccuracy() const;
-
-   // Values used for KDOT method only
-   void SetUseMinTruckSupportLocationFactor(bool factor);
-   bool GetUseMinTruckSupportLocationFactor() const;
-   void SetMinTruckSupportLocationFactor(Float64 factor);
-   Float64 GetMinTruckSupportLocationFactor() const;
-
-   void SetOverhangGFactor(Float64 factor);
-   Float64 GetOverhangGFactor() const;
-   void SetInteriorGFactor(Float64 factor);
-   Float64 GetInteriorGFactor() const;
 
    void SetMininumLiftingPointLocation(Float64 x); // < 0 means use Hg
    Float64 GetMininumLiftingPointLocation() const;
@@ -1119,12 +1018,6 @@ public:
    void AllowStraightStrandExtensions(bool bAllow);
    bool AllowStraightStrandExtensions() const;
 
-   void CheckBottomFlangeClearance(bool bCheck);
-   bool CheckBottomFlangeClearance() const;
-   void SetMinBottomFlangeClearance(Float64 Cmin);
-   Float64 GetMinBottomFlangeClearance() const;
-
-
    // GROUP: INQUIRY
 
 protected:
@@ -1136,7 +1029,7 @@ protected:
    void MakeCopy(const SpecLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const SpecLibraryEntry& rOther);
+   virtual void MakeAssignment(const SpecLibraryEntry& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -1148,6 +1041,7 @@ private:
    lrfdVersionMgr::Version m_SpecificationType;
    lrfdVersionMgr::Units m_SpecificationUnits;
    std::_tstring m_Description;
+   pgsTypes::SectionPropertyMode m_SectionPropertyMode;
 
    // casting yard
    bool    m_DoCheckStrandSlope;
@@ -1159,6 +1053,7 @@ private:
    bool    m_DoCheckHoldDown;
    bool    m_DoDesignHoldDown;
    Float64 m_HoldDownForce;
+   Float64 m_MaxStirrupSpacing;
 
    bool    m_DoCheckSplitting; // 5.10.10
    bool    m_DoCheckConfinement; // 5.10.10
@@ -1197,8 +1092,6 @@ private:
    // hauling
    bool    m_EnableHaulingCheck;
    bool    m_EnableHaulingDesign;
-   pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
-
    Float64 m_HeHaulingCrackFs;
    Float64 m_HeHaulingRollFs;
    
@@ -1237,21 +1130,14 @@ private:
    Float64 m_MinHaulPoint;
    Float64 m_HaulPointAccuracy;
 
-   // Used for KDOT only
-   bool    m_UseMinTruckSupportLocationFactor;
-   Float64 m_MinTruckSupportLocationFactor;
-   Float64 m_OverhangGFactor;
-   Float64 m_InteriorGFactor;
 
    // temporary strand removal
    Float64 m_TempStrandRemovalCompStress;
    Float64 m_TempStrandRemovalTensStress;
    bool    m_TempStrandRemovalDoTensStressMax;
    Float64 m_TempStrandRemovalTensStressMax;
-   Float64 m_TempStrandRemovalTensStressWithRebar;
 
    // bridge site 1
-   bool m_bCheckTemporaryStresses; // indicates if limit state stresses are checked for temporary loading conditions
    Float64 m_Bs1CompStress;
    Float64 m_Bs1TensStress;
    bool    m_Bs1DoTensStressMax;
@@ -1259,10 +1145,6 @@ private:
 
    // bridge site 2
    Float64 m_Bs2CompStress;
-   bool    m_bCheckBs2Tension;
-   Float64 m_Bs2TensStress;
-   bool    m_Bs2DoTensStressMax;
-   Float64 m_Bs2TensStressMax;
    pgsTypes::TrafficBarrierDistribution m_TrafficBarrierDistributionType;
    GirderIndexType  m_Bs2MaxGirdersTrafficBarrier;
    GirderIndexType  m_Bs2MaxGirdersUtility;
@@ -1293,26 +1175,11 @@ private:
    Float64 m_CreepDuration2Max;
    Float64 m_TotalCreepDuration;
 
-   Float64 m_CamberVariability; // Variability between upper and lower bound camber, stored in decimal percent
-   bool m_bCheckSag; // evaluate girder camber and dead load deflections and check for sag potential
-   pgsTypes::SagCamberType m_SagCamberType; // indicates the camber used to detect girder sag potential
-
    // Losses
-   int    m_LossMethod;
-   Float64 m_FinalLosses;
-   Float64 m_LiftingLosses;
+   int     m_LossMethod;
+   int     m_TimeDependentModel;
    Float64 m_ShippingLosses;  // if between -1.0 and 0, shipping loss is fraction of final loss. Fraction is abs(m_ShippingLoss)
-   Float64 m_BeforeXferLosses;
-   Float64 m_AfterXferLosses;
    Float64 m_ShippingTime;
-   Float64 m_BeforeTempStrandRemovalLosses;
-   Float64 m_AfterTempStrandRemovalLosses;
-   Float64 m_AfterDeckPlacementLosses;
-   Float64 m_AfterSIDLLosses;
-
-   Float64 m_Dset; // anchor set
-   Float64 m_WobbleFriction; // wobble friction, K
-   Float64 m_FrictionCoefficient; // mu
 
    Float64 m_SlabElasticGain;
    Float64 m_SlabPadElasticGain;
@@ -1343,15 +1210,11 @@ private:
 
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
-   // Concrete limits
    Float64 m_MaxSlabFc[3];
-   Float64 m_MaxGirderFci[3];
-   Float64 m_MaxGirderFc[3];
+   Float64 m_MaxSegmentFci[3];
+   Float64 m_MaxSegmentFc[3];
    Float64 m_MaxConcreteUnitWeight[3];
    Float64 m_MaxConcreteAggSize[3];
-   
-   // Warning checks
-   bool m_DoCheckStirrupSpacingCompatibility;
    
    bool m_EnableSlabOffsetCheck;
    bool m_EnableSlabOffsetDesign;
@@ -1360,10 +1223,6 @@ private:
    pgsTypes::EffectiveFlangeWidthMethod m_EffFlangeWidthMethod;
 
    ShearFlowMethod m_ShearFlowMethod;
-   Float64 m_MaxInterfaceShearConnectorSpacing;
-
-   Float64 m_StirrupSpacingCoefficient[2];
-   Float64 m_MaxStirrupSpacing[2];
 
    ShearCapacityMethod m_ShearCapacityMethod;
 
@@ -1387,14 +1246,10 @@ private:
    Float64 m_PhiFlexureCompression[3];
    Float64 m_PhiShear[3];
 
-   Int16 m_RelaxationLossMethod;  // method for computing relaxation losses for LRFD 2005 and later, refined method
-   Int16 m_FcgpComputationMethod; // method for computing fcgp for losses. only used for txdot 2013
+   Int16 m_RelaxationLossMethod; // method for computing relaxation losses for LRFD 2005 and later, refined method
    bool m_bIncludeForNegMoment;
 
    bool m_bAllowStraightStrandExtensions;
-
-   bool m_bCheckBottomFlangeClearance;
-   Float64 m_Cmin;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

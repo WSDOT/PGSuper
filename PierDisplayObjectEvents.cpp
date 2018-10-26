@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,12 +41,11 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPierDisplayObjectEvents
 
-CPierDisplayObjectEvents::CPierDisplayObjectEvents(PierIndexType pierIdx,PierIndexType nPiers,bool bHasDeck,CBridgeModelViewChildFrame* pFrame)
+CPierDisplayObjectEvents::CPierDisplayObjectEvents(PierIndexType pierIdx,const CBridgeDescription2* pBridgeDesc,CBridgeModelViewChildFrame* pFrame)
 {
-   m_PierIdx = pierIdx;
-   m_nPiers = nPiers;
-   m_bHasDeck = bHasDeck;
-   m_pFrame  = pFrame;
+   m_PierIdx     = pierIdx;
+   m_pBridgeDesc = pBridgeDesc;
+   m_pFrame      = pFrame;
 }
 
 BEGIN_INTERFACE_MAP(CPierDisplayObjectEvents, CCmdTarget)
@@ -81,10 +80,10 @@ void CPierDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
    if ( m_PierIdx == 0 )
    {
       // this is the first pier
-      if ( m_bHasDeck )
-         m_pFrame->SelectDeck();  // select deck if there is one
+      if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         m_pFrame->SelectPier(m_pBridgeDesc->GetPierCount()-1); // no deck, select last pier
       else
-         m_pFrame->SelectPier(m_nPiers-1); // otherwise, select last pier
+         m_pFrame->SelectDeck();  // select deck if there is one
    }
    else
    {
@@ -94,13 +93,13 @@ void CPierDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
 
 void CPierDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 {
-   if ( m_PierIdx == m_nPiers-1 )
+   if ( m_PierIdx == m_pBridgeDesc->GetPierCount()-1 )
    {
       // this is the last pier
-      if ( m_bHasDeck )
-         m_pFrame->SelectDeck(); // select deck if there is one 
+      if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         m_pFrame->SelectPier(0); // no deck, select first pier
       else
-         m_pFrame->SelectPier(0); // otherwise, select first pier
+         m_pFrame->SelectDeck(); // select deck if there is one 
    }
    else
    {
@@ -180,13 +179,21 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject*
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      SpanIndexType spanIdx = (pThis->m_PierIdx == pThis->m_nPiers-1 ? pThis->m_nPiers-2 : pThis->m_PierIdx);
-      pThis->m_pFrame->SelectGirder(spanIdx,0);
+      const CPierData2* pPier = pThis->m_pBridgeDesc->GetPier(pThis->m_PierIdx);
+      const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
+      const CSpanData2* pNextSpan = pPier->GetNextSpan();
+      const CGirderGroupData* pPrevGroup = pThis->m_pBridgeDesc->GetGirderGroup(pPrevSpan);
+      const CGirderGroupData* pNextGroup = pThis->m_pBridgeDesc->GetGirderGroup(pNextSpan);
+      const CGirderGroupData* pGroup = (pNextGroup ? pNextGroup : pPrevGroup);
+
+      CGirderKey girderKey(pGroup->GetIndex(),0);
+      pThis->m_pFrame->SelectGirder( girderKey );
       return true;
    }
    else if ( nChar == VK_DELETE )
    {
-      ::PostMessage(pThis->m_pFrame->GetSafeHwnd(),WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      return true;
    }
 
    return false;
@@ -215,38 +222,43 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       CComPtr<IBroker> pBroker;
       pDoc->GetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      const CPierData* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      // get all valid connect types for the pier represented by this display object
+      std::vector<pgsTypes::PierConnectionType> validConnectionTypes( pBridgeDesc->GetConnectionTypes(pThis->m_PierIdx) );
+
+      // Mapping between connection type and menu id
+      std::map<pgsTypes::PierConnectionType,UINT> menuIDs;
+      menuIDs.insert(std::make_pair(pgsTypes::Hinge,IDM_HINGE));
+      menuIDs.insert(std::make_pair(pgsTypes::Roller,IDM_ROLLER));
+      menuIDs.insert(std::make_pair(pgsTypes::ContinuousAfterDeck,IDM_CONTINUOUS_AFTERDECK));
+      menuIDs.insert(std::make_pair(pgsTypes::ContinuousBeforeDeck,IDM_CONTINUOUS_BEFOREDECK));
+      menuIDs.insert(std::make_pair(pgsTypes::ContinuousSegment,IDM_CONTINUOUS_SEGMENT));
+      menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeck,IDM_INTEGRAL_AFTERDECK));
+      menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeck,IDM_INTEGRAL_BEFOREDECK));
+      menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeBack,IDM_INTEGRAL_AFTERDECK_HINGEBACK));
+      menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeBack,IDM_INTEGRAL_BEFOREDECK_HINGEBACK));
+      menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeAhead,IDM_INTEGRAL_AFTERDECK_HINGEAHEAD));
+      menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeAhead,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD));
 
 
       pMenu->AppendSeparator();
-      pMenu->AppendMenu(IDM_HINGED,CPierData::AsString(pgsTypes::Hinged),NULL);
-      pMenu->AppendMenu(IDM_ROLLER,CPierData::AsString(pgsTypes::Roller),NULL);
 
-      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+      // Populate the menu
+      std::vector<pgsTypes::PierConnectionType>::iterator iter(validConnectionTypes.begin());
+      std::vector<pgsTypes::PierConnectionType>::iterator iterEnd(validConnectionTypes.end());
+      for ( ; iter != iterEnd; iter++ )
       {
-         pMenu->AppendMenu(IDM_CONTINUOUS_AFTERDECK, CPierData::AsString(pgsTypes::ContinuousAfterDeck),NULL);
-         pMenu->AppendMenu(IDM_CONTINUOUS_BEFOREDECK,CPierData::AsString(pgsTypes::ContinuousBeforeDeck),NULL);
+         UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type
+         pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),NULL); // add it to the menu
       }
 
-      pMenu->AppendMenu(IDM_INTEGRAL_AFTERDECK, CPierData::AsString(pgsTypes::IntegralAfterDeck),NULL);
-      pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK,CPierData::AsString(pgsTypes::IntegralBeforeDeck),NULL);
-
-      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+      std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::map<IDType,IBridgePlanViewEventCallback*>::iterator cbiter;
+      for ( cbiter = callbacks.begin(); cbiter != callbacks.end(); cbiter++ )
       {
-         pMenu->AppendMenu(IDM_INTEGRAL_AFTERDECK_HINGEBACK,  CPierData::AsString(pgsTypes::IntegralAfterDeckHingeBack),NULL);
-         pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK_HINGEBACK, CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeBack),NULL);
-         pMenu->AppendMenu(IDM_INTEGRAL_AFTERDECK_HINGEAHEAD, CPierData::AsString(pgsTypes::IntegralAfterDeckHingeAhead),NULL);
-         pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeAhead),NULL);
-      }
-
-      const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-      std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-      for ( ; callbackIter != callbackIterEnd; callbackIter++ )
-      {
-         IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnPierContextMenu(pThis->m_PierIdx,pMenu);
+         IBridgePlanViewEventCallback* callback = cbiter->second;
+         callback->OnPierContextMenu(pThis->m_PierIdx,pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

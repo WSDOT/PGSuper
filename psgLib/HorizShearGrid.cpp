@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 //
 #include "stdafx.h"
 
-#include "HorizShearGrid.h"
+#include <psgLib\HorizShearGrid.h>
 #include <psgLib\ShearSteelPage.h>
 #include <Units\Measure.h>
 #include <EAF\EAFApp.h>
@@ -39,7 +39,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
- GRID_IMPLEMENT_REGISTER(CHorizShearGrid, CS_DBLCLKS, 0, 0, 0);
+ //GRID_IMPLEMENT_REGISTER(CHorizShearGrid, CS_DBLCLKS, 0, 0, 0);
 
 /////////////////////////////////////////////////////////////////////////////
 // CHorizShearGrid
@@ -403,25 +403,14 @@ matRebar::Size CHorizShearGrid::GetBarSize(ROWCOL row,ROWCOL col)
    return matRebar::bsNone;
 }
 
-bool CHorizShearGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CHorizontalInterfaceZoneData* pszi)
+bool CHorizShearGrid::GetRowData(ROWCOL nRow, CHorizontalInterfaceZoneData* pszi)
 {
    CString s = GetCellValue(nRow, 1);
    Float64 d = _tstof(s);
    if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
-   {
-      if (nRow == numRows)
-      {
-         pszi->ZoneLength = Float64_Max;
-      }
-      else
-      {
-         pszi->ZoneLength = 0; // caller will catch error
-      }
-   }
+      pszi->ZoneLength = 0;
    else
-   {
       pszi->ZoneLength = d;
-   }
 
    pszi->BarSize = GetBarSize(nRow,2);
 
@@ -438,7 +427,7 @@ bool CHorizShearGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CHorizontalInterfa
    return true;
 }
 
-void CHorizShearGrid::FillGrid(const CShearData::HorizontalInterfaceZoneVec& rvec, bool isSymmetrical)
+void CHorizShearGrid::FillGrid(const CShearData2::HorizontalInterfaceZoneVec& rvec, bool isSymmetrical)
 {
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -461,7 +450,7 @@ void CHorizShearGrid::FillGrid(const CShearData::HorizontalInterfaceZoneVec& rve
 
       // fill grid
       ROWCOL nRow=1;
-      for (CShearData::HorizontalInterfaceZoneConstIterator it = rvec.begin(); it!=rvec.end(); it++)
+      for (CShearData2::HorizontalInterfaceZoneConstIterator it = rvec.begin(); it!=rvec.end(); it++)
       {
          if (nRow<size)
          {

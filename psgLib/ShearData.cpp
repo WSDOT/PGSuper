@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CShearData::CShearData():
+CShearData2::CShearData2():
 ShearBarType(matRebar::A615),
 ShearBarGrade(matRebar::Grade60),
 bIsRoughenedSurface(true),
@@ -60,28 +60,28 @@ ConfinementBarSpacing(0),
 ConfinementZoneLength(0)
 {
    // make sure we have at least one primary and horiz inter zone
-   CShearZoneData tmp;
-   tmp.ZoneNum = 0;
+   CShearZoneData2 tmp;
+   tmp.ZoneNum = 1;
    tmp.ZoneLength = Float64_Max;
    ShearZones.push_back(tmp);
 
    CHorizontalInterfaceZoneData htmp;
-   htmp.ZoneNum = 0;
+   htmp.ZoneNum = 1;
    htmp.ZoneLength = Float64_Max;
    HorizontalInterfaceZones.push_back(htmp);
 }
 
-CShearData::CShearData(const CShearData& rOther)
+CShearData2::CShearData2(const CShearData2& rOther)
 {
    MakeCopy(rOther);
 }
 
-CShearData::~CShearData()
+CShearData2::~CShearData2()
 {
 }
 
 //======================== OPERATORS  =======================================
-CShearData& CShearData::operator= (const CShearData& rOther)
+CShearData2& CShearData2::operator= (const CShearData2& rOther)
 {
    if( this != &rOther )
    {
@@ -91,7 +91,7 @@ CShearData& CShearData::operator= (const CShearData& rOther)
    return *this;
 }
 
-bool CShearData::operator == (const CShearData& rOther) const
+bool CShearData2::operator == (const CShearData2& rOther) const
 {
    if ( ShearZones != rOther.ShearZones )
       return false;
@@ -138,20 +138,20 @@ bool CShearData::operator == (const CShearData& rOther) const
    return true;
 }
 
-bool CShearData::operator != (const CShearData& rOther) const
+bool CShearData2::operator != (const CShearData2& rOther) const
 {
    return !operator==( rOther );
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
+HRESULT CShearData2::Load(sysIStructuredLoad* pStrLoad)
 {
    USES_CONVERSION;
 
    HRESULT hr = S_OK;
 
    pStrLoad->BeginUnit(_T("ShearData"));  // named this for historical reasons
-   Float64 version = pStrLoad->GetVersion();
+   double version = pStrLoad->GetVersion();
 
    if ( 5.0 <= version && version < 7)
    {
@@ -245,7 +245,7 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
 
    for ( int i = 0; i < zcnt; i++ )
    {
-      CShearZoneData zd;
+      CShearZoneData2 zd;
       hr = zd.Load(pStrLoad, bConvertToVersion9, legacy_ConfinementBarSize, NumConfinementZones, bDoStirrupsEngageDeck);
       if ( FAILED(hr) )
          return hr;
@@ -253,31 +253,7 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
       ShearZones.push_back( zd );
    }
    
-   std::sort( ShearZones.begin(), ShearZones.end(), ShearZoneDataLess() );
-
-   // there was a bug in the grid control that made the length of the last zone 0 when it should be Float64_Max
-   // to represent "to mid-span" or "to end girder")
-   if ( 0 < ShearZones.size() )
-   {
-      if ( IsEqual(ShearZones.back().ZoneLength,0.0) )
-      {
-         ShearZones.back().ZoneLength = Float64_Max;
-      }
-
-      // there was a bug that sometimes made the first zone begin at zone index 1
-      // make sure the zone indexes are correct
-      if ( ShearZones.front().ZoneNum != 0 )
-      {
-         Uint32 zoneIdx = 0;
-         std::vector<CShearZoneData>::iterator iter(ShearZones.begin());
-         std::vector<CShearZoneData>::iterator end(ShearZones.end());
-         for ( ; iter != end; iter++ )
-         {
-            CShearZoneData& sd(*iter);
-            sd.ZoneNum = zoneIdx++;
-         }
-      }
-   }
+   std::sort( ShearZones.begin(), ShearZones.end(), ShearZoneData2Less() );
 
    if (bConvertToVersion9)
    {
@@ -311,31 +287,6 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
       }
       
       std::sort( HorizontalInterfaceZones.begin(), HorizontalInterfaceZones.end(), HorizontalInterfaceZoneDataLess() );
-      
-      // there was a bug in the grid control that made the length of the last zone 0 when it should be Float64_Max
-      // to represent "to mid-span" or "to end girder")
-      if ( 0 < HorizontalInterfaceZones.size() )
-      {
-         if ( IsEqual(HorizontalInterfaceZones.back().ZoneLength,0.0) )
-         {
-            HorizontalInterfaceZones.back().ZoneLength = Float64_Max;
-         }
-
-         // there was a bug that sometimes made the first zone begin at zone index 1
-         // make sure the zone indexes are correct
-         if ( HorizontalInterfaceZones.front().ZoneNum != 0 )
-         {
-            Uint32 zoneIdx = 0;
-            std::vector<CHorizontalInterfaceZoneData>::iterator iter(HorizontalInterfaceZones.begin());
-            std::vector<CHorizontalInterfaceZoneData>::iterator end(HorizontalInterfaceZones.end());
-            for ( ; iter != end; iter++ )
-            {
-               CHorizontalInterfaceZoneData& zd(*iter);
-               zd.ZoneNum = zoneIdx++;
-            }
-         }
-      }
-
 
       Int32 key;
       pStrLoad->Property(_T("SplittingBarSize"), &key );
@@ -357,7 +308,7 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
    return hr;
 }
 
-HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
+HRESULT CShearData2::Save(sysIStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 
@@ -374,15 +325,10 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
 
    pStrSave->Property(_T("ZoneCount"), (Int32)ShearZones.size() );
 
-#if defined _DEBUG
-   ZoneIndexType zoneIdx = 0;
-#endif
-
    ShearZoneIterator i;
    for ( i = ShearZones.begin(); i != ShearZones.end(); i++ )
    {
-      CShearZoneData& pd = *i;
-      ATLASSERT(pd.ZoneNum == zoneIdx++);
+      CShearZoneData2& pd = *i;
       hr = pd.Save( pStrSave);
       if ( FAILED(hr) )
          return hr;
@@ -390,14 +336,10 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
 
    pStrSave->Property(_T("HorizZoneCount"), (Int32)HorizontalInterfaceZones.size() );
 
-#if defined _DEBUG
-   zoneIdx = 0;
-#endif
    HorizontalInterfaceZoneIterator ih;
    for ( ih = HorizontalInterfaceZones.begin(); ih != HorizontalInterfaceZones.end(); ih++ )
    {
       CHorizontalInterfaceZoneData& rd = *ih;
-      ATLASSERT(rd.ZoneNum == zoneIdx++);
       hr = rd.Save( pStrSave);
       if ( FAILED(hr) )
          return hr;
@@ -417,7 +359,7 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
    return hr;
 }
 
-void CShearData::CopyGirderEntryData(const GirderLibraryEntry& rGird)
+void CShearData2::CopyGirderEntryData(const GirderLibraryEntry& rGird)
 {
    *this = rGird.GetShearData();
 }
@@ -430,7 +372,7 @@ void CShearData::CopyGirderEntryData(const GirderLibraryEntry& rGird)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void CShearData::MakeCopy(const CShearData& rOther)
+void CShearData2::MakeCopy(const CShearData2& rOther)
 {
    ShearBarType            = rOther.ShearBarType;
    ShearBarGrade           = rOther.ShearBarGrade;
@@ -451,7 +393,7 @@ void CShearData::MakeCopy(const CShearData& rOther)
    ConfinementZoneLength = rOther.ConfinementZoneLength;
 }
 
-void CShearData::MakeAssignment(const CShearData& rOther)
+void CShearData2::MakeAssignment(const CShearData2& rOther)
 {
    MakeCopy( rOther );
 }
@@ -465,7 +407,7 @@ void CShearData::MakeAssignment(const CShearData& rOther)
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 /*
-HRESULT CShearData::ShearProc(IStructuredSave* pSave,
+HRESULT CShearData2::ShearProc(IStructuredSave* pSave,
                               IStructuredLoad* pLoad,
                               IProgress* pProgress,
                               CShearData* pObj)
@@ -508,7 +450,7 @@ HRESULT CShearData::ShearProc(IStructuredSave* pSave,
          pObj->ShearZones.push_back( zd );
       }
       
-      std::sort( pObj->ShearZones.begin(), pObj->ShearZones.end(), ShearZoneDataLess() );
+      std::sort( pObj->ShearZones.begin(), pObj->ShearZones.end(), ShearZoneData2Less() );
    }
    return hr;
 }

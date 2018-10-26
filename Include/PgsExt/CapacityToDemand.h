@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,8 @@ COPYRIGHT
 LOG
    rdp : 12.18.2009 : Created file
 *****************************************************************************/
+
+#pragma Reminder("UPDATE: remove inline functions") // make regular free functions
 
 ///////////////////////////////////////////////////////////////////////////////
 // But first, an inline function from comparing two pairs of capacity/demands
@@ -214,7 +216,7 @@ public:
 
 protected:
    void MakeCopy(const rptCapacityToDemand& rOther);
-   void MakeAssignment(const rptCapacityToDemand& rOther);
+   virtual void MakeAssignment(const rptCapacityToDemand& rOther);
 
 private:
    void Init();

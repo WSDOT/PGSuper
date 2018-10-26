@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,17 +35,13 @@ CLASS
 ****************************************************************************/
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact(bool bPositiveMoment)
+pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact()
 {
-   m_bPositiveMoment = bPositiveMoment;
-   m_cde = 0;
+   m_cde    = 0;
    m_cdeMax = 0.42;
-   m_Mu = 0;
-   m_Mr = 0;
-   m_MrMin = 0;
+   m_Mu     = 0;
+   m_Mr     = 0;
+   m_MrMin  = 0;
 }
 
 pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifact& rOther)
@@ -68,7 +64,16 @@ pgsFlexuralCapacityArtifact& pgsFlexuralCapacityArtifact::operator=(const pgsFle
    return *this;
 }
 
-//======================== OPERATIONS =======================================
+void pgsFlexuralCapacityArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
+{
+   m_Poi = poi;
+}
+
+const pgsPointOfInterest& pgsFlexuralCapacityArtifact::GetPointOfInterest() const
+{
+   return m_Poi;
+}
+
 void pgsFlexuralCapacityArtifact::SetMaxReinforcementRatio(Float64 cde)
 {
    m_cde = cde;
@@ -126,26 +131,55 @@ bool pgsFlexuralCapacityArtifact::IsOverReinforced() const
 
 bool pgsFlexuralCapacityArtifact::IsUnderReinforced() const
 {
-   if ( m_bPositiveMoment )
+   int demand_sign   = BinarySign( m_Mu );
+   int capacity_sign = BinarySign( m_Mr );
+   if ( !IsZero(m_Mr) && (demand_sign != capacity_sign) )
+      return false;
+
+   if ( 0 < m_Mr && !IsZero(m_Mr) )
    {
-      return IsLT(m_Mr,m_MrMin) ? true : false;
+      // positive moment
+      if ( m_Mr < m_MrMin && !IsEqual(m_Mr,m_MrMin) )
+         return true;
+   }
+   else if ( m_Mr < 0 && !IsZero(m_Mr) )
+   {
+      // negative moment
+      if ( m_MrMin < m_Mr && !IsEqual(m_Mr,m_MrMin) )
+         return true;
    }
    else
    {
-      return IsGT(m_MrMin,m_Mr) ? true : false;
+	   // Mr is zero... if MrMin is not zero, then the section is under reinforced
+	   if ( !IsZero(m_MrMin) )
+		   return true;
    }
+
+   return false;
 }
 
 bool pgsFlexuralCapacityArtifact::CapacityPassed() const
 {
-   if ( m_bPositiveMoment )
+   if ( 0 < m_Mr && !IsZero(m_Mr) )
    {
-      return IsLE(m_Mu,m_Mr) ? true : false;
+      // positive moment
+      if ( m_Mr < m_Mu )
+         return false;
+   }
+   else if ( m_Mr < 0 && !IsZero(m_Mr) )
+   {
+      // negative moment
+      if ( m_Mu < m_Mr )
+         return false;
    }
    else
    {
-      return IsGE(m_Mr,m_Mu) ? true : false;
+	   // m_Mr, capacity is zero...
+	   if ( !IsZero(m_Mu) )
+		   return false;
    }
+
+   return true;
 }
 
 bool pgsFlexuralCapacityArtifact::Passed() const
@@ -162,21 +196,14 @@ bool pgsFlexuralCapacityArtifact::Passed() const
    return true;
 }
 
- //======================== ACCESS     =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void pgsFlexuralCapacityArtifact::MakeCopy(const pgsFlexuralCapacityArtifact& rOther)
 {
+   m_Poi    = rOther.m_Poi;
    m_cde    = rOther.m_cde;
    m_cdeMax = rOther.m_cdeMax;
    m_MrMin  = rOther.m_MrMin;
    m_Mu     = rOther.m_Mu;
    m_Mr     = rOther.m_Mr;
-   m_bPositiveMoment = rOther.m_bPositiveMoment;
 }
 
 void pgsFlexuralCapacityArtifact::MakeAssignment(const pgsFlexuralCapacityArtifact& rOther)
@@ -184,18 +211,6 @@ void pgsFlexuralCapacityArtifact::MakeAssignment(const pgsFlexuralCapacityArtifa
    MakeCopy( rOther );
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
 #if defined _DEBUG
 bool pgsFlexuralCapacityArtifact::AssertValid() const
 {

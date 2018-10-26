@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,9 +39,11 @@
 #include <IReportManager.h>
 #include <IFace\StatusCenter.h>
 
-#include "ReporterImp.h"
+#include "PGSuperReporterImp.h"
+#include "PGSpliceReporterImp.h"
 
 #include "PGSuperCatCom.h"
+#include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
 
@@ -53,8 +55,16 @@ static char THIS_FILE[] = __FILE__;
 
 CComModule _Module;
 
+///////////////////////////////////////////////////////////////////////
+// NOTE: This single DLL contains two agents. Both are report agents,
+// one for PGSuper and one for PGSplice.
+//
+// This allows the reporting for each application to be different
+// while sharing a common code base.
+
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_ReportAgent, CReporterImp)
+	OBJECT_ENTRY(CLSID_PGSuperReportAgent, CPGSuperReporterImp)
+	OBJECT_ENTRY(CLSID_PGSpliceReportAgent, CPGSpliceReporterImp)
 END_OBJECT_MAP()
 
 class CReportAgentApp : public CWinApp
@@ -101,14 +111,32 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
 
-STDAPI DllRegisterServer(void)
+HRESULT RegisterAgent(bool bRegister)
 {
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr =  _Module.RegisterServer(TRUE);
+   // This DLL implements two agents (PGSuperReportAgent and PGSpliceReportAgent)
+
+   // Register the PGSuper Report Agent with the PGSuper Agent category
+   HRESULT hr = S_OK;
+   hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperReportAgent,CATID_PGSuperAgent,bRegister);
    if ( FAILED(hr) )
       return hr;
 
-   return sysComCatMgr::RegWithCategory(CLSID_ReportAgent,CATID_PGSuperAgent,true);
+   // Register the PGSplice Report Agent with the PGSplice Agent category
+   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceReportAgent,CATID_PGSpliceAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
+
+STDAPI DllRegisterServer(void)
+{
+	// registers object, typelib and all interfaces in typelib
+	HRESULT hr = _Module.RegisterServer(FALSE);
+   if ( FAILED(hr) )
+      return hr;
+
+   return RegisterAgent(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,9 +144,8 @@ STDAPI DllRegisterServer(void)
 
 STDAPI DllUnregisterServer(void)
 {
-   sysComCatMgr::RegWithCategory(CLSID_ReportAgent,CATID_PGSuperAgent,false);
+   RegisterAgent(false);
+
 	_Module.UnregisterServer();
 	return S_OK;
 }
-
-

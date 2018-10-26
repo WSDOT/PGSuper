@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -65,10 +65,17 @@ protected:
 	//{{AFX_MSG(CLiveLoadSelectDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
+   afx_msg void OnEventChanged();
+   afx_msg void OnEventChanging();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    void SetPedestrianComboText(int iCombo, int iStatic);
+
+   void FillEventList();
+   EventIndexType CreateEvent();
+
+   int m_PrevEventIdx;
 
 public:
    std::vector< std::_tstring>& m_AllNames;
@@ -87,6 +94,8 @@ public:
    ILiveLoads::PedestrianLoadApplicationType m_PermitPedesType;
 
    bool m_bHasPedestrianLoad;
+
+   EventIndexType m_LiveLoadEvent;
 };
 
 //{{AFX_INSERT_LOCATION}}

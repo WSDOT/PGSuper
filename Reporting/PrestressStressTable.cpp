@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,13 @@
 #include <Reporting\PrestressStressTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
+#include <PgsExt\TimelineEvent.h>
 
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Project.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,7 +72,7 @@ CPrestressStressTable& CPrestressStressTable::operator= (const CPrestressStressT
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
                                             bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -78,30 +80,60 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    INIT_UV_PROTOTYPE( rptPointOfInterest, spanpoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-   spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
+   //gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
+   //spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   bool bTempStrands = false;
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
-      if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
-      {
-         bTempStrands = true;
-         break;
-      }
-   }
 
-   int nColumns = (bDesign ? (bTempStrands ? 7 : 6) : 2);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   //// Determine if there are temporary strands
+   //bool bTempStrands = false;
+   //GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   //GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
+   //GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   //for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   //{
+   //   GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+   //   GirderIndexType firstGdrIdx = (segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex);
+   //   GirderIndexType lastGdrIdx  = (segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGdrIdx);
+   //   for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+   //   {
+   //      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+   //      SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
+   //      SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
+   //      for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
+   //      {
+   //         CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
+   //         if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
+   //         {
+   //            bTempStrands = true;
+   //            break;
+   //         }
+   //      }
+   //   }
+   //}
+
+   ColumnIndexType nColumns;
+   if ( bDesign )
+   {
+      nColumns = 2 // two location columns
+               + nIntervals-1 // one for each interval
+               ;//+ (bTempStrands ? 1 : 0); // one for temporary strand removal
+   }
+   else
+   {
+      // Load Rating
+      nColumns = 2; // location column and column for live load stage
+   }
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Prestress Stresses"));
 
-   if ( span == ALL_SPANS )
+   if ( segmentKey.groupIndex == ALL_GROUPS )
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -114,64 +146,50 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    }
 
    // Set up table headings
-   int col = 0;
+   ColumnIndexType col = 0;
    if ( bDesign )
    {
       (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR(_T("Casting Yard"),       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      
-      if ( bTempStrands )
-         (*p_table)(0,col++) << COLHDR(_T("Temporary") << rptNewLine << _T("Strand") << rptNewLine << _T("Removal"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 1"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 2"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 3"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+      {
+         (*p_table)(0,col++) << COLHDR(pIntervals->GetDescription(intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
+
+      //if ( bTempStrands )
+      //   (*p_table)(0,col++) << COLHDR(_T("Temporary") << rptNewLine << _T("Strand") << rptNewLine << _T("Removal"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
    }
    else
    {
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR(_T("Bridge Site 3"),      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(pIntervals->GetDescription(liveLoadIntervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi1;
-   if ( bDesign )
-      vPoi1 = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
-   
-   std::vector<pgsPointOfInterest> vPoi2 = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite1, POI_FLEXURESTRESS | POI_TABULAR );
-   
-   std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > pois; // use a set to eliminate duplicates
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+   pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+   pIPoi->RemovePointsOfInterest(vPoi,POI_PIER);
 
-   std::vector<pgsPointOfInterest>::iterator k;
-   for ( k = vPoi1.begin(); k != vPoi1.end(); k++ )
-   {
-      const pgsPointOfInterest& poi = *k;
-      pois.insert( std::make_pair(poi,pgsTypes::CastingYard) );
-   }
-   for ( k = vPoi2.begin(); k != vPoi2.end(); k++ )
-   {
-      const pgsPointOfInterest& poi = *k;
-      pois.insert( std::make_pair(poi,pgsTypes::BridgeSite1) );
-   }
-
-   GET_IFACE2(pBroker,IPrestressStresses,pPrestress);
+   GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
 
    // Fill up the table
-   pgsPointOfInterest prev_poi(0,0,0);
+   pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> >::const_iterator i;
-   for ( i = pois.begin(); i != pois.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for ( ; iter != end; iter++ )
    {
       bSkipToNextRow = false;
       col = 0;
 
-      pgsTypes::Stage stage = (*i).second;
-      const pgsPointOfInterest& poi = (*i).first;
+      const pgsPointOfInterest& poi = *iter;
+      const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
       if ( row != 1 && IsEqual(poi.GetDistFromStart(),prev_poi.GetDistFromStart()) )
       {
@@ -179,60 +197,42 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          row--;
       }
 
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      if ( stage == pgsTypes::CastingYard )
-      {
-         (*p_table)(row,col++) << gdrpoi.SetValue( stage, poi );
-
-         if ( bDesign )
-            (*p_table)(row,col++) << _T("");
-      }
-      else
-      {
-         if ( bDesign )
-            (*p_table)(row,col++) << _T("");
-
-         (*p_table)(row,col++) << spanpoi.SetValue( stage, poi, end_size  );
-      }
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+      (*p_table)(row,col++) << gdrpoi.SetValue( POI_RELEASED_SEGMENT, poi );
+      (*p_table)(row,col++) << spanpoi.SetValue( POI_GIRDER, poi, end_size  );
 
       if ( !bSkipToNextRow )
       {
          Float64 fTop, fBot;
          if ( bDesign )
          {
-            fTop = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::BottomGirder);
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
-            col++;
-
-            if ( bTempStrands )
+            for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
             {
-               fTop = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::TopGirder);
-               fBot = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::BottomGirder);
+               fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder);
+               fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder);
                (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
                (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
                col++;
             }
 
-            fTop = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::BottomGirder);
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
-            col++;
-
-            fTop = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::BottomGirder);
+            //if ( bTempStrands )
+            //{
+            //   fTop = pPrestress->GetStress(tsRemovalIntervalIdx,poi,pgsTypes::TopGirder);
+            //   fBot = pPrestress->GetStress(tsRemovalIntervalIdx,poi,pgsTypes::BottomGirder);
+            //   (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
+            //   (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
+            //   col++;
+            //}
+         }
+         else
+         {
+            // Rating
+            fTop = pPrestress->GetStress(liveLoadIntervalIdx,poi,pgsTypes::TopGirder);
+            fBot = pPrestress->GetStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder);
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
          }
-
-         fTop = pPrestress->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::TopGirder);
-         fBot = pPrestress->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder);
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
-         col++;
       }
 
       row++;

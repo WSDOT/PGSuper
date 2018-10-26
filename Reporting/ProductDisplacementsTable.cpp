@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,11 +25,11 @@
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
@@ -73,97 +73,83 @@ CProductDisplacementsTable& CProductDisplacementsTable::operator= (const CProduc
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
+rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                               bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bFutureOverlay = pBridge->IsFutureOverlay();
-   pgsTypes::Stage overlay_stage = pgsTypes::BridgeSite2;
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   SpanIndexType startSpan, nSpans;
-   pgsTypes::Stage continuity_stage;
+   GroupIndexType startGroup, nGroups;
+   IntervalIndexType continuityIntervalIdx;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
+   GET_IFACE2(pBroker, IProductForces, pProdForces);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Displacements"));
 
-   if ( span == ALL_SPANS )
+   if ( girderKey.groupIndex == ALL_GROUPS )
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+
+   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   for ( GroupIndexType grpIdx = startGroup; grpIdx < nGroups; grpIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, gdr, pgsTypes::BridgeSite3, POI_ALL, POIFIND_OR );
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
 
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = min(gdr,nGirders-1);
+      CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey) );
 
-      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<Float64> girder = pForces2->GetDisplacement(girderLoadStage,pftGirder,vPoi,SimpleSpan);
-      std::vector<Float64> diaphragm = pForces2->GetDisplacement(pgsTypes::BridgeSite1,pftDiaphragm,vPoi,SimpleSpan);
+      std::vector<Float64> girder    = pForces2->GetDisplacement(erectSegmentIntervalIdx,pftGirder,vPoi,maxBAT);
+      std::vector<Float64> diaphragm = pForces2->GetDisplacement(castDeckIntervalIdx,pftDiaphragm,vPoi,maxBAT);
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      {
-         maxSlab = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, vPoi, MaxSimpleContinuousEnvelope );
-         minSlab = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, vPoi, MinSimpleContinuousEnvelope );
+      maxSlab = pForces2->GetDisplacement( castDeckIntervalIdx, pftSlab, vPoi, maxBAT );
+      minSlab = pForces2->GetDisplacement( castDeckIntervalIdx, pftSlab, vPoi, minBAT );
 
-         maxSlabPad = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MaxSimpleContinuousEnvelope );
-         minSlabPad = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MinSimpleContinuousEnvelope );
-      }
-      else
-      {
-         maxSlab = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         
-         maxSlabPad = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-      }
+      maxSlabPad = pForces2->GetDisplacement( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT );
+      minSlabPad = pForces2->GetDisplacement( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT );
 
       std::vector<Float64> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-         {
-            maxConstruction = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftConstruction, vPoi, MaxSimpleContinuousEnvelope );
-            minConstruction = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftConstruction, vPoi, MinSimpleContinuousEnvelope );
-         }
-         else
-         {
-            maxConstruction = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftConstruction, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         }
+         maxConstruction = pForces2->GetDisplacement( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT);
+         minConstruction = pForces2->GetDisplacement( castDeckIntervalIdx, pftConstruction, vPoi, minBAT);
       }
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-         {
-            maxDeckPanel = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPanel, vPoi, MaxSimpleContinuousEnvelope );
-            minDeckPanel = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPanel, vPoi, MinSimpleContinuousEnvelope );
-         }
-         else
-         {
-            maxDeckPanel = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPanel, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         }
+         maxDeckPanel = pForces2->GetDisplacement( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT );
+         minDeckPanel = pForces2->GetDisplacement( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT );
       }
 
       std::vector<Float64> dummy;
@@ -196,159 +182,95 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       std::vector<VehicleIndexType> minPermitSpecialLLtruck;
       std::vector<VehicleIndexType> maxPermitSpecialLLtruck;
 
-      if (analysisType == pgsTypes::Envelope)
+      if ( bSidewalk )
       {
-         if ( bSidewalk )
+         maxSidewalk = pForces2->GetDisplacement( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT );
+         minSidewalk = pForces2->GetDisplacement( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT );
+      }
+
+      if ( bShearKey )
+      {
+         maxShearKey = pForces2->GetDisplacement( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT );
+         minShearKey = pForces2->GetDisplacement( castDeckIntervalIdx, pftShearKey, vPoi, minBAT );
+      }
+
+      maxTrafficBarrier = pForces2->GetDisplacement( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT );
+      minTrafficBarrier = pForces2->GetDisplacement( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT );
+      maxOverlay = pForces2->GetDisplacement( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT );
+      minOverlay = pForces2->GetDisplacement( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT );
+
+      if ( bDesign )
+      {
+         if ( bPedLoading )
          {
-            maxSidewalk = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MaxSimpleContinuousEnvelope );
-            minSidewalk = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MinSimpleContinuousEnvelope );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, liveLoadIntervalIdx, vPoi, minBAT, true, true, &minPedestrian, &dummy );
          }
 
-         if ( bShearKey )
+         pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+         pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            maxShearKey = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, vPoi, MaxSimpleContinuousEnvelope );
-            minShearKey = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, vPoi, MinSimpleContinuousEnvelope );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltFatigue, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
          }
 
-         maxTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
-         minTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope );
-         maxOverlay = pForces2->GetDisplacement( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
-         minOverlay = pForces2->GetDisplacement( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
-
-         if ( bDesign )
+         if ( bPermit )
          {
-            if ( bPedLoading )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
-            }
-
-            pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-            pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
-            }
-
-            if ( bPermit )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
-            }
-         }
-
-         if ( bRating )
-         {
-            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
-            }
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermit, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
          }
       }
-      else
+
+      if ( bRating )
       {
-         if ( bSidewalk )
+         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {
-            maxSidewalk = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
          }
 
-         if ( bShearKey )
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            maxShearKey = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
          }
 
-         maxTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxOverlay = pForces2->GetDisplacement( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-
-         if ( bDesign )
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
          {
-            if ( bPedLoading )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
-            }
-
-            pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
-
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minFatigueLL, &maxFatigueLL, &minFatigueLLtruck, &maxFatigueLLtruck );
-            }
-
-            if ( bPermit )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitLL, &maxPermitLL, &minPermitLLtruck, &maxPermitLLtruck );
-            }
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
          }
 
-         if ( bRating )
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
          {
-            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
-            }
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
+         }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalRoutineLL, &maxLegalRoutineLL, &minLegalRoutineLLtruck, &maxLegalRoutineLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalSpecialLL, &maxLegalSpecialLL, &minLegalSpecialLLtruck, &maxLegalSpecialLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitRoutineLL, &maxPermitRoutineLL, &minPermitRoutineLLtruck, &maxPermitRoutineLLtruck );
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitSpecialLL, &maxPermitSpecialLL, &minPermitSpecialLLtruck, &maxPermitSpecialLLtruck );
-            }
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         {
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
+            pForces2->GetLiveLoadDisplacement( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
          }
       }
 
 
       // write out the results
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      long index = 0;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      CollectionIndexType index = 0;
+      for ( ; i != end; i++, index++ )
       {
          const pgsPointOfInterest& poi = *i;
+         const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
-         int col = 0;
+         ColumnIndexType col = 0;
 
-         Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+         Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
          (*p_table)(row,col++) << displacement.SetValue( girder[index] );
          (*p_table)(row,col++) << displacement.SetValue( diaphragm[index] );
 
@@ -367,7 +289,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          if ( bConstruction )
          {
-            if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
             {
                (*p_table)(row,col++) << displacement.SetValue( maxConstruction[index] );
                (*p_table)(row,col++) << displacement.SetValue( minConstruction[index] );
@@ -378,7 +300,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
             }
          }
 
-         if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+         if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
          {
             (*p_table)(row,col++) << displacement.SetValue( maxSlab[index] );
             (*p_table)(row,col++) << displacement.SetValue( minSlab[index] );
@@ -395,7 +317,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          if ( bDeckPanels )
          {
-            if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
+            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
             {
                (*p_table)(row,col++) << displacement.SetValue( maxDeckPanel[index] );
                (*p_table)(row,col++) << displacement.SetValue( minDeckPanel[index] );
@@ -578,54 +500,60 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
    return p_table;
 }
 
-rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,const CGirderKey& girderKey,
                                                            IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Displacements for the LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Displacements For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
 
-   if ( span == ALL_SPANS )
+   if (girderKey.groupIndex == ALL_GROUPS)
    {
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    // Set up table headings
-   (*p_table)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,        rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR(_T("D1"),          rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*p_table)(0,2) << COLHDR(_T("D2"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*p_table)(0,3) << COLHDR(_T("D") << rptNewLine << _T("Controlling"),            rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR(_T("D1"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,2) << COLHDR(_T("D2"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,3) << COLHDR(_T("D") << rptNewLine << _T("Controlling"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS) ) );
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   pgsTypes::BridgeAnalysisType bat = (pSpec->GetAnalysisType() == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for ( ; i != end; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
-      (*p_table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*p_table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
 
       Float64 min, max;
-      pForces->GetDeflLiveLoadDisplacement( IProductForces::DesignTruckAlone, poi, &min, &max );
+      pForces->GetDeflLiveLoadDisplacement( IProductForces::DesignTruckAlone, poi, bat, &min, &max );
       (*p_table)(row,1) << displacement.SetValue( min );
-      pForces->GetDeflLiveLoadDisplacement( IProductForces::Design25PlusLane, poi, &min, &max );
+
+      pForces->GetDeflLiveLoadDisplacement( IProductForces::Design25PlusLane, poi, bat, &min, &max );
       (*p_table)(row,2) << displacement.SetValue( min );
-      pForces->GetDeflLiveLoadDisplacement( IProductForces::DeflectionLiveLoadEnvelope, poi, &min, &max );
+
+      pForces->GetDeflLiveLoadDisplacement( IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &min, &max );
       (*p_table)(row,3) << displacement.SetValue( min );
 
       row++;

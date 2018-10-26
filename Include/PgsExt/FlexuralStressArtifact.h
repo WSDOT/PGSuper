@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
-#include <PgsExt\PoiArtifactKey.h>
+#include <PgsExt\PointOfInterest.h>
 
 // LOCAL INCLUDES
 //
@@ -67,11 +67,10 @@ LOG
 class PGSEXTCLASS pgsFlexuralStressArtifact
 {
 public:
-   // GROUP: LIFECYCLE
-
    //------------------------------------------------------------------------
    // Default constructor
    pgsFlexuralStressArtifact();
+   pgsFlexuralStressArtifact(const pgsPointOfInterest& poi);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -85,21 +84,34 @@ public:
    //------------------------------------------------------------------------
    // Assignment operator
    pgsFlexuralStressArtifact& operator = (const pgsFlexuralStressArtifact& rOther);
+   bool operator<(const pgsFlexuralStressArtifact& rOther) const;
 
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
+   void SetPointOfInterest(const pgsPointOfInterest& poi);
+   const pgsPointOfInterest& GetPointOfInterest() const;
 
    //------------------------------------------------------------------------
-   void SetPrestressEffects(Float64 fTop,Float64 fBot);
-   void GetPrestressEffects(Float64* pfTop,Float64* pfBot) const;
+   // Set/Get the top/bottom girder stresses due to pre-tensioning
+   void SetPretensionEffects(Float64 fTop,Float64 fBot);
+   void GetPretensionEffects(Float64* pfTop,Float64* pfBot) const;
+
+   // Set/Get the top/bottom girder stresses due to post-tensioning
+   void SetPosttensionEffects(Float64 fTop,Float64 fBot);
+   void GetPosttensionEffects(Float64* pfTop,Float64* pfBot) const;
+
+   // Set/Get the top/bottom girder stresses due to externally applied loads
    void SetExternalEffects(Float64 fTop,Float64 fBot);
    void GetExternalEffects(Float64* pfTop,Float64* pfBot) const;
+
+   // Set/Get the top/bottom girder stresses demand (external loads + pre-tension + post-tension)
    void SetDemand(Float64 fTop,Float64 fBot);
    void GetDemand(Float64* pfTop,Float64* pfBot) const;
-   void SetCapacity(Float64 fAllowable,pgsTypes::StressType stressType);
+
+   // Set/Get the allowable stress "capacity"
+   void SetCapacity(Float64 fAllowable,pgsTypes::LimitState ls,pgsTypes::StressType stressType);
    Float64 GetCapacity() const;
+   pgsTypes::LimitState GetLimitState() const;
    pgsTypes::StressType GetStressType() const;
+
    void SetRequiredConcreteStrength(Float64 fcReqd);
    Float64 GetRequiredConcreteStrength() const;
 
@@ -111,30 +123,21 @@ public:
    bool BottomPassed() const;
    bool Passed() const;
 
-   void SetKey(const pgsFlexuralStressArtifactKey& key){m_Key = key;}
-
-   // GROUP: INQUIRY
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const pgsFlexuralStressArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsFlexuralStressArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual void MakeAssignment(const pgsFlexuralStressArtifact& rOther);
 
 private:
-   // GROUP: DATA MEMBERS
+   pgsPointOfInterest m_Poi;
 
-   // Stresses caused by prestressing
-   Float64 m_fTopPrestress;
-   Float64 m_fBotPrestress;
+   // Stresses caused by pre-tensioning
+   Float64 m_fTopPretension;
+   Float64 m_fBotPretension;
+
+   // Stresses caused by post-tensioning
+   Float64 m_fTopPosttension;
+   Float64 m_fBotPosttension;
 
    // Stresses caused by externally applied loads
    Float64 m_fTopExternal;
@@ -146,6 +149,7 @@ private:
 
    // Allowable stresses
    Float64 m_fAllowableStress;
+   pgsTypes::LimitState m_LimitState;
    pgsTypes::StressType m_StressType;
 
    // Alternative tensile stress parameters
@@ -160,23 +164,10 @@ private:
    // Other
    Float64 m_FcReqd; // concrete strenght required to satisfy allowable for this section
                     // No concrete strength work if < 0
-   pgsFlexuralStressArtifactKey m_Key;
 
    bool StressedPassed(Float64 fStress) const;
    bool TensionPassedWithRebar(Float64 fTens) const;
    bool TensionPassedWithoutRebar(Float64 fTens) const;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 #endif // INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_

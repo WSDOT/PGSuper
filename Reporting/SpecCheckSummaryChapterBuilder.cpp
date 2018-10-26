@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,9 @@ CLASS
 
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\BridgeDescription.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -50,9 +49,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSpecCheckSummaryChapterBuilder::CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect):
 CPGSuperChapterBuilder(bSelect),
 m_ReferToDetailsReport(referToDetailsReport)
@@ -69,64 +65,64 @@ LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
 rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    // Report for a single girder
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   if (pSGRptSpec != NULL)
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   if (pGirderRptSpec != NULL)
    {
-      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pSGRptSpec,level);
+      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec,level);
 
       CComPtr<IBroker> pBroker;
-      pSGRptSpec->GetBroker(&pBroker);
-      SpanIndexType span = pSGRptSpec->GetSpan();
-      GirderIndexType gdr = pSGRptSpec->GetGirder();
+      pGirderRptSpec->GetBroker(&pBroker);
+      const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
-      const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,gdr);
+      const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-      CreateContent(pChapter, pBroker, span, gdr, pArtifact);
+      CreateContent(pChapter, pBroker, pGirderArtifact);
 
       return pChapter;
    }
 
    // Report multiple girders
-   CMultiGirderReportSpecification* pMGRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
-   if (pMGRptSpec != NULL)
+   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   if (pMultiGirderRptSpec != NULL)
    {
-      std::vector<SpanGirderHashType> list = pMGRptSpec->GetGirderList();
+      const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );
 
       // Give progress window a progress meter
-      bool multi = list.size()>1;
+      bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
 
       CComPtr<IBroker> pBroker;
-      pMGRptSpec->GetBroker(&pBroker);
+      pMultiGirderRptSpec->GetBroker(&pBroker);
+
       GET_IFACE2(pBroker,IProgress,pProgress);
-      DWORD mask = multi ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
+      DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
       CEAFAutoProgress ap(pProgress,0,mask); 
 
-      if (multi)
-         pProgress->Init(0,(short)list.size(),1);  // and for multi-girders, a gauge.
+      if (bMultiGirderReport)
+         pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
 
       // Build chapter and fill it
-      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMGRptSpec,level);
+      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMultiGirderRptSpec,level);
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      GET_IFACE2(pBroker,IBridge,pBridge);
 
-      for (std::vector<SpanGirderHashType>::iterator it=list.begin(); it!=list.end(); it++)
+      for (std::vector<CGirderKey>::const_iterator it=girderKeys.begin(); it!=girderKeys.end(); it++)
       {
-         SpanIndexType span;
-         GirderIndexType gdr;
-         UnhashSpanGirder(*it,&span,&gdr);
+         const CGirderKey& girderKey(*it);
 
-         const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,gdr);
+         const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
          rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
          *pChapter << pParagraph;
 
-         *pParagraph << _T("Results for Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(gdr);
+#pragma Reminder("UPDATE: update label")
+         *pParagraph << _T("Results for Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
 
-         CreateContent(pChapter, pBroker, span, gdr, pArtifact);
+         CreateContent(pChapter, pBroker, pGirderArtifact);
 
-         if (multi)
+         if (bMultiGirderReport)
             pProgress->Increment();
       }
 
@@ -138,65 +134,67 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    return NULL;
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CSpanGirderReportSpecification* pSGRptSpec,Uint16 level,
-                    SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const
+rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptSpec,Uint16 level,
+                    const pgsGirderArtifact* pGirderArtifact) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pSGRptSpec,level);
-
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   CreateContent(pChapter, pBroker, span, gdr, pArtifact);
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+   CreateContent(pChapter, pBroker, pGirderArtifact);
 
    return pChapter;
 }
 
 void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroker* pBroker,
-                   SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const
+                                                    const pgsGirderArtifact* pGirderArtifact) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   if( pArtifact->Passed() )
+   if( pGirderArtifact->Passed() )
    {
       *pPara << color(Green)<< _T("The Specification Check was Successful") << color(Black) << rptNewLine;
    }
    else
    {
+      const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+
       *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black) << rptNewLine;
      
       GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
+      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
       // Build a list of our failures
       FailureList failures;
 
       // Allowable stress checks
-      list_stress_failures(pBroker,failures,span,gdr,pArtifact,m_ReferToDetailsReport);
+      list_stress_failures(pBroker,failures,pGirderArtifact,m_ReferToDetailsReport);
 
       // Moment Capacity Checks
-      list_momcap_failures(pBroker,failures,span,gdr,pgsTypes::StrengthI,pArtifact);
+      list_momcap_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_momcap_failures(pBroker,failures,span,gdr,pgsTypes::StrengthII,pArtifact);
+         list_momcap_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
       //Stirrup Checks
-      list_vertical_shear_failures(pBroker,failures,span,gdr,pgsTypes::StrengthI,pArtifact);
+      list_vertical_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_vertical_shear_failures(pBroker,failures,span,gdr,pgsTypes::StrengthII,pArtifact);
+         list_vertical_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
-      list_horizontal_shear_failures(pBroker,failures,span,gdr,pgsTypes::StrengthI,pArtifact);
+      list_horizontal_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_horizontal_shear_failures(pBroker,failures,span,gdr,pgsTypes::StrengthII,pArtifact);
+         list_horizontal_shear_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
-      list_stirrup_detailing_failures(pBroker,failures,span,gdr,pgsTypes::StrengthI,pArtifact);
+      list_stirrup_detailing_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthI);
       if ( bPermit )
-         list_stirrup_detailing_failures(pBroker,failures,span,gdr,pgsTypes::StrengthII,pArtifact);
+         list_stirrup_detailing_failures(pBroker,failures,pGirderArtifact,pgsTypes::StrengthII);
 
-      list_debonding_failures(pBroker,failures,span,gdr,pArtifact);
-      list_splitting_zone_failures(pBroker,failures,span,gdr,pArtifact);
-      list_confinement_zone_failures(pBroker,failures,span,gdr,pArtifact);
-
-      list_various_failures(pBroker,failures,span,gdr,pArtifact,m_ReferToDetailsReport);
+      list_debonding_failures(pBroker,failures,pGirderArtifact);
+      list_splitting_zone_failures(pBroker,failures,pGirderArtifact);
+      list_confinement_zone_failures(pBroker,failures,pGirderArtifact);
+      list_various_failures(pBroker,failures,pGirderArtifact,m_ReferToDetailsReport);
 
       // Put failures into report
       for (FailureListIterator it=failures.begin(); it!=failures.end(); it++)
@@ -207,94 +205,21 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       }
    }
 
-   // Stirrup lengths is not technically a spec check, but a warning
-   const pgsConstructabilityArtifact* pConstrArtifact = pArtifact->GetConstructabilityArtifact();
-   if ( pConstrArtifact->CheckStirrupLength() )
-   {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << Bold(_T("WARNING: The length of stirrups that engage the bridge deck may need special attention. Refer to the Specification Check Details for more information.")) << color(Black) << rptNewLine;
-   }
+   // Negative camber is not technically a spec check, but a warning
+#pragma Reminder("UPDATE") // get this working... need to check camber at mid-span of the final girder configuration
+   //GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   //std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_MIDSPAN,POIFIND_AND) );
+   //CHECK(vPoi.size()==1);
+   //pgsPointOfInterest poi( *vPoi.begin() );
 
-   // Only report stirrup length/zone incompatibility if user requests it
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   std::_tstring strSpecName = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-
-   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
-   if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() && !pStirrupGeom->AreStirrupZoneLengthsCombatible(span,gdr) )
-   {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << Bold(_T("WARNING: Stirrup zone lengths are not compatible with stirrup spacings. Refer to the Stirrup Layout Geometry Check for more information.")) << color(Black) << rptNewLine;
-   }
-
-   if ( pSpecEntry->CheckGirderSag() )
-   {
-      // Negative camber is not technically a spec check, but a warning
-      GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-      std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_MIDSPAN);
-      ATLASSERT(pmid.size()==1);
-      pgsPointOfInterest poiMidSpan(pmid.front());
-
-
-      GET_IFACE2(pBroker,ICamber,pCamber);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-      Float64 C = 0;
-      if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
-      {
-         C = pCamber->GetScreedCamber( poiMidSpan ) ;
-      }
-
-      Float64 D = 999;
-      std::_tstring camberType;
-      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-      D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME); // upper bound camber
-      Float64 Dlower = D*Cfactor;
-
-      switch(pSpecEntry->GetSagCamberType())
-      {
-      case pgsTypes::LowerBoundCamber:
-         D = Dlower;
-         camberType = _T("lower bound");
-         break;
-
-      case pgsTypes::AverageCamber:
-         D *= (1+Cfactor)/2;
-         camberType = _T("average");
-         break;
-
-      case pgsTypes::UpperBoundCamber:
-         camberType = _T("upper bound");
-         break;
-      }
-
-      if ( D < C )
-      {
-         pPara = new rptParagraph;
-         *pChapter << pPara;
-
-         *pPara << color(Red) << _T("WARNING: Screed Camber is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
-      }
-      else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
-      {
-         pPara = new rptParagraph;
-         *pChapter << pPara;
-
-         *pPara << color(Red) << _T("WARNING: Screed Camber is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
-      }
-
-      Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
-      if ( excess_camber < 0.0 )
-      {
-         rptParagraph* pPara = new rptParagraph;
-         *pChapter << pPara;
-         *pPara << color(Red) << Bold(_T("WARNING:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.")) << color(Black) << rptNewLine;
-      }
-   }
+   //GET_IFACE2(pBroker,ICamber,pCamber);
+   //Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+   //if ( excess_camber < 0 )
+   //{
+   //   rptParagraph* pPara = new rptParagraph;
+   //   *pChapter << pPara;
+   //   *pPara << _T("Warning:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.") << rptNewLine;
+   //}
 }
 
 CChapterBuilder* CSpecCheckSummaryChapterBuilder::Clone() const

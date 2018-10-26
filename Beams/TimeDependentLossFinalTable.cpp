@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -86,22 +86,15 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,5) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
+
    return table;
 }
 
-void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   // Typecast to our known type (eating own doggy food)
-   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
-   if (!ptl)
-   {
-      ATLASSERT(0); // made a bad cast? Bail...
-      return;
-   }
-
-   (*this)(row,1) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
-   (*this)(row,2) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
-   (*this)(row,3) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
-   (*this)(row,4) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
-   (*this)(row,5) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
+   (*this)(row,1) << stress.SetValue(pDetails->RefinedLosses2005.ShrinkageLossAfterDeckPlacement());
+   (*this)(row,2) << stress.SetValue(pDetails->RefinedLosses2005.CreepLossAfterDeckPlacement());
+   (*this)(row,3) << stress.SetValue(pDetails->RefinedLosses2005.RelaxationLossAfterDeckPlacement());
+   (*this)(row,4) << stress.SetValue(pDetails->RefinedLosses2005.ElasticGainDueToDeckShrinkage());
+   (*this)(row,5) << stress.SetValue(pDetails->RefinedLosses2005.TimeDependentLossesAfterDeck());
 }

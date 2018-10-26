@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,19 +23,20 @@
 #include "StdAfx.h"
 #include <Reporting\MomentCapacityParagraphBuilder.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,28 +52,24 @@ CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 //======================== OPERATIONS =======================================
 
 /*--------------------------------------------------------------------*/
+#pragma Reminder("UPDATE: this is weak code")
+// pass in the chapter that you want this builder to write into rather than
+// returning a paragraph... it may be useful to use multiple paragraphs
 rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
+   // Interfaces
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
-   rptParagraph* p = new rptParagraph;
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Moment Capacity at Midspan"));
-   *p << pTable << rptNewLine;
-
-   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-
-   // Setup the table
-
-   (*pTable)(0,0) << _T("");
-   (*pTable)(0,1) << _T("Composite Girder");
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true );
@@ -82,109 +79,134 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 
-   // Interfaces
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-   // Get Midspan std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
-   pgsPointOfInterest poi = *vPoi.begin();
+   rptParagraph* p = new rptParagraph;
 
-   const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,girder);
-//   Removed bare girder capacity calc due to request of WSDOT staff - rdp 5/99
-//   const pgsFlexuralCapacityArtifact* pGirderCap = pArtifact->GetFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite1,pgsTypes::StrengthI,poi.GetDistFromStart()));
-   const pgsFlexuralCapacityArtifact* pCompositeCap = pArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
-
-   Float64 Mu = pCompositeCap->GetDemand();
-   Float64 Mr = pCompositeCap->GetCapacity();
-
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-
-   (*pTable)(row,0) << _T("Factored Moment, Strength I, ") << Sub2(_T("M"),_T("u"));
-   (*pTable)(row,1) << moment.SetValue( Mu );
-
-   // strength II if permit truck is defined
-   bool str2_passed(true);
-
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
-   if (bPermit)
+#pragma Reminder("UPDATE") // commented out during development... get it working again
+/*
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsFlexuralCapacityArtifact* pStr2CompositeCap = pArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthII,poi.GetDistFromStart()));
-
-      (*pTable)(++row,0) << _T("Factored Moment, Strength II, ") << Sub2(_T("M"),_T("u"));
-      (*pTable)(  row,1) << moment.SetValue( pStr2CompositeCap->GetDemand() );
-
-      str2_passed = pStr2CompositeCap->Passed();
-   }
-
-   row++;
-   (*pTable)(row,0) << _T("Moment Capacity, ") << symbol(phi) << Sub2(_T("M"),_T("n"));
-   (*pTable)(row,1) << moment.SetValue( Mr );
-
-   GET_IFACE2(pBroker,ISpecification, pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   MOMENTCAPACITYDETAILS mcd;
-   pMomentCap->GetMomentCapacityDetails(pgsTypes::BridgeSite3,poi,true,&mcd);
-
-   if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-   {
-      // over/under reinforced sections where part of AASHTO through the 2005 edition
-      if ( pCompositeCap->IsOverReinforced() )
+      if ( 1 < nSegments )
       {
-         // Show limiting capacity of over reinforced section along with Mr
-         (*pTable)(row,1) << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
+         *p << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
       }
-      row++;
 
-      (*pTable)(row,0) << _T("Under Reinforced");
-      (*pTable)(row,1) << (pCompositeCap->IsUnderReinforced() ? _T("Yes") : _T("No"));
-      row++;
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Moment Capacity at Midspan"));
+      *p << pTable << rptNewLine;
 
-      (*pTable)(row,0) << _T("Over Reinforced");
-      (*pTable)(row,1) << (pCompositeCap->IsOverReinforced() ? _T("Yes") : _T("No"));
-      row++;
-   }
-   else
-   {
-      //if method is WSDOT or 2006 LRFD and later there is no over/under reinforced
-      row++; // to finish the Mr row
-      (*pTable)(row,0) << symbol(phi);
-      (*pTable)(row,1) << mcd.Phi;
-      row++;
-   }
+      pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+
+      // Setup the table
+      (*pTable)(0,0) << _T("");
+      (*pTable)(0,1) << _T("Composite Girder");
 
 
-   (*pTable)(row,0) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T("/") << Sub2(_T("M"),_T("u")) << _T(")");
-   if ( pCompositeCap->Passed() )
-      (*pTable)(row,1) << RPT_PASS;
-   else
-      (*pTable)(row,1) << RPT_FAIL;
+      // Get Midspan points of interest
+      std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_ERECTED_SEGMENT | POI_MIDSPAN, POIFIND_AND) );
+      ATLASSERT(vPoi.size() == 1);
+      pgsPointOfInterest& poi(vPoi.front());
 
-   if ( IsZero( Mu ) )
-   {
-      (*pTable)(row,1) << rptNewLine << _T("(") << symbol(INFINITY) << _T(")");
-   }
-   else
-   {
-      (*pTable)(row,1) << rptNewLine << _T("(") << scalar.SetValue(Mr/Mu) << _T(")");
-   }
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
+
+      const CSegmentKey& segmentKey(poi.GetSegmentKey());
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segmentKey.segmentIndex);
+      //   Removed bare girder capacity calc due to request of WSDOT staff - rdp 5/99
+      //   const pgsFlexuralCapacityArtifact* pGirderCap = pArtifact->GetFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite1,pgsTypes::StrengthI,poi.GetDistFromStart()));
+      const pgsFlexuralCapacityArtifact* pCompositeCap = pSegmentArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(liveLoadIntervalIdx,pgsTypes::StrengthI,poi.GetDistFromStart()));
+
+      Float64 Mu = pCompositeCap->GetDemand();
+      Float64 Mr = pCompositeCap->GetCapacity();
 
 
-   if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2005Interims )
-   {
-      if ( pCompositeCap->IsOverReinforced() )
+      (*pTable)(row,0) << _T("Factored Moment, Strength I, ") << Sub2(_T("M"),_T("u"));
+      (*pTable)(row,1) << moment.SetValue( Mu );
+
+      // strength II if permit truck is defined
+      bool str2_passed(true);
+
+      GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(segmentKey);
+      if (bPermit)
       {
-         (*pTable)(row,1) << _T(" *");
-         *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
-         *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
-         *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
-      }
-   }
+         const pgsFlexuralCapacityArtifact* pStr2CompositeCap = pSegmentArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(liveLoadIntervalIdx,pgsTypes::StrengthII,poi.GetDistFromStart()));
 
+         (*pTable)(++row,0) << _T("Factored Moment, Strength II, ") << Sub2(_T("M"),_T("u"));
+         (*pTable)(  row,1) << moment.SetValue( pStr2CompositeCap->GetDemand() );
+
+         str2_passed = pStr2CompositeCap->Passed();
+      }
+
+      row++;
+      (*pTable)(row,0) << _T("Moment Capacity, ") << symbol(phi) << Sub2(_T("M"),_T("n"));
+      (*pTable)(row,1) << moment.SetValue( Mr );
+
+      GET_IFACE2(pBroker,ISpecification, pSpec);
+      GET_IFACE2(pBroker,ILibrary,pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+      MOMENTCAPACITYDETAILS mcd;
+      pMomentCap->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,true,&mcd);
+
+      if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+      {
+         // over/under reinforced sections where part of AASHTO through the 2005 edition
+         if ( pCompositeCap->IsOverReinforced() )
+         {
+            // Show limiting capacity of over reinforced section along with Mr
+            (*pTable)(row,1) << _T("(") << moment.SetValue( mcd.Phi * mcd.MnMin ) << _T(")");
+         }
+         row++;
+
+         (*pTable)(row,0) << _T("Under Reinforced");
+         (*pTable)(row,1) << (pCompositeCap->IsUnderReinforced() ? _T("Yes") : _T("No"));
+         row++;
+
+         (*pTable)(row,0) << _T("Over Reinforced");
+         (*pTable)(row,1) << (pCompositeCap->IsOverReinforced() ? _T("Yes") : _T("No"));
+         row++;
+      }
+      else
+      {
+         //if method is WSDOT or 2006 LRFD and later there is no over/under reinforced
+         row++; // to finish the Mr row
+         (*pTable)(row,0) << symbol(phi);
+         (*pTable)(row,1) << mcd.Phi;
+         row++;
+      }
+
+
+      (*pTable)(row,0) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("M"),_T("n")) << _T("/") << Sub2(_T("M"),_T("u")) << _T(")");
+      if ( pCompositeCap->Passed() )
+         (*pTable)(row,1) << RPT_PASS;
+      else
+         (*pTable)(row,1) << RPT_FAIL;
+
+      if ( IsZero( Mu ) )
+      {
+         (*pTable)(row,1) << rptNewLine << _T("(") << symbol(INFINITY) << _T(")");
+      }
+      else
+      {
+         (*pTable)(row,1) << rptNewLine << _T("(") << scalar.SetValue(Mr/Mu) << _T(")");
+      }
+
+
+      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+      {
+         if ( pCompositeCap->IsOverReinforced() )
+         {
+            (*pTable)(row,1) << _T(" *");
+            *p << _T("* Over reinforced sections may be adequate if M") << Sub(_T("u")) << _T(" does not exceed the minimum resistance specified in LRFD C5.7.3.3.1") << rptNewLine;
+            *p << _T("  Limiting capacity of over reinforced sections are shown in parentheses") << rptNewLine;
+            *p << _T("  See Moment Capacity Details chapter for additional information") << rptNewLine;
+         }
+      }
+   } // next Segment
+*/
    return p;
 }
 

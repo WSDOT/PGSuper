@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "SpecLossPage.h"
 #include "SpecMainSheet.h"
 #include "..\htmlhelp\HelpTopics.hh"
+
 #include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
@@ -79,31 +80,31 @@ void CSpecLossPage::OnLossMethodChanged()
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
    int method = pBox->GetCurSel();
 
-   if ( 0 <= method && method < 6 )
+   if ( 0 <= method && method < 5 )
    {
-      EnableShippingLosses(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 || method == 3 ? TRUE : FALSE);
+      EnableShippingLosses(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 ? TRUE : FALSE);
       EnableRefinedShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
-      EnableApproximateShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 4 || method == 6) ? TRUE : FALSE);
-      EnableGeneralLumpSum(FALSE);
-      EnableTxDOT2013(method==3);
-      
-      BOOL enElas = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
-      BOOL enDeckShr = (enElas && method != 4) ? TRUE : FALSE;
-      EnableElasticGains(enElas, enDeckShr);
+      EnableApproximateShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 3 || method == 4) ? TRUE : FALSE);
+      EnableTimeDependentModel(FALSE);
+
+      BOOL bEnable = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 3 || method == 4) ? TRUE : FALSE;
+      CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
+      bEnable = pParent->m_Entry.GetSectionPropertyMode() == pgsTypes::spmTransformed ? FALSE : bEnable;
+
+      EnableElasticGains(bEnable);
    }
    else
    {
+      // time step
       EnableShippingLosses(FALSE);
       EnableRefinedShippingTime(FALSE);
       EnableApproximateShippingTime(FALSE);
-      EnableGeneralLumpSum(TRUE);
-      EnableTxDOT2013(FALSE);
-      EnableElasticGains(FALSE, FALSE);
+      EnableTimeDependentModel(TRUE);
+      EnableElasticGains(FALSE);
    }
 }
 
 #define ENABLE_WINDOW(x) pWnd = GetDlgItem(x); pWnd->EnableWindow(bEnable); pWnd->ShowWindow(bEnable ? SW_SHOW : SW_HIDE)
-#define ENABLE_WINDOW_EX(x, y) pWnd = GetDlgItem(x); pWnd->EnableWindow(y); pWnd->ShowWindow(y ? SW_SHOW : SW_HIDE)
 void CSpecLossPage::EnableShippingLosses(BOOL bEnable)
 {
    CWnd* pWnd;
@@ -115,45 +116,11 @@ void CSpecLossPage::EnableShippingLosses(BOOL bEnable)
    ENABLE_WINDOW(IDC_SHIPPING_LOSS_METHOD);
 }
 
-void CSpecLossPage::EnableGeneralLumpSum(BOOL bEnable)
+void CSpecLossPage::EnableTimeDependentModel(BOOL bEnable)
 {
    CWnd* pWnd;
 
-   ENABLE_WINDOW(IDC_BEFORE_XFER_LABEL);
-   ENABLE_WINDOW(IDC_BEFORE_XFER);
-   ENABLE_WINDOW(IDC_BEFORE_XFER_TAG);
-
-   ENABLE_WINDOW(IDC_AFTER_XFER_LABEL);
-   ENABLE_WINDOW(IDC_AFTER_XFER);
-   ENABLE_WINDOW(IDC_AFTER_XFER_TAG);
-
-   ENABLE_WINDOW(IDC_LIFTING_LABEL);
-   ENABLE_WINDOW(IDC_LIFTING);
-   ENABLE_WINDOW(IDC_LIFTING_TAG);
-
-   ENABLE_WINDOW(IDC_SHIPPING2_LABEL);
-   ENABLE_WINDOW(IDC_SHIPPING2);
-   ENABLE_WINDOW(IDC_SHIPPING2_TAG);
-
-   ENABLE_WINDOW(IDC_BEFORE_TEMP_STRAND_REMOVAL_LABEL);
-   ENABLE_WINDOW(IDC_BEFORE_TEMP_STRAND_REMOVAL);
-   ENABLE_WINDOW(IDC_BEFORE_TEMP_STRAND_REMOVAL_TAG);
-
-   ENABLE_WINDOW(IDC_AFTER_TEMP_STRAND_REMOVAL_LABEL);
-   ENABLE_WINDOW(IDC_AFTER_TEMP_STRAND_REMOVAL);
-   ENABLE_WINDOW(IDC_AFTER_TEMP_STRAND_REMOVAL_TAG);
-
-   ENABLE_WINDOW(IDC_AFTER_DECK_PLACEMENT_LABEL);
-   ENABLE_WINDOW(IDC_AFTER_DECK_PLACEMENT);
-   ENABLE_WINDOW(IDC_AFTER_DECK_PLACEMENT_TAG);
-
-   ENABLE_WINDOW(IDC_AFTER_SIDL_LABEL);
-   ENABLE_WINDOW(IDC_AFTER_SIDL);
-   ENABLE_WINDOW(IDC_AFTER_SIDL_TAG);
-
-   ENABLE_WINDOW(IDC_FINAL_LABEL);
-   ENABLE_WINDOW(IDC_FINAL);
-   ENABLE_WINDOW(IDC_FINAL_TAG);
+   ENABLE_WINDOW(IDC_TIME_DEPENDENT_MODEL);
 }
 
 void CSpecLossPage::EnableRefinedShippingTime(BOOL bEnable)
@@ -170,18 +137,9 @@ void CSpecLossPage::EnableApproximateShippingTime(BOOL bEnable)
    ENABLE_WINDOW(IDC_APPROXIMATE_SHIPPING_TIME_NOTE);
 }
 
-void CSpecLossPage::EnableTxDOT2013(BOOL bEnable)
+void CSpecLossPage::EnableElasticGains(BOOL bEnable)
 {
    CWnd* pWnd;
-   ENABLE_WINDOW(IDC_FCPG_STATIC);
-   ENABLE_WINDOW(IDC_FCPG_COMBO);
-}
-
-void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL enDeckShr)
-{
-   CWnd* pWnd;
-   ENABLE_WINDOW(IDC_ELASTIC_GAINS_GROUP);
-
    ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD_LABEL);
    ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD);
 
@@ -223,9 +181,9 @@ void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL enDeckShr)
    ENABLE_WINDOW(IDC_EG_OVERLAY_UNIT);
    ENABLE_WINDOW(IDC_EG_OVERLAY_LABEL);
 
-   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE,enDeckShr);
-   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE_UNIT,enDeckShr);
-   ENABLE_WINDOW_EX(IDC_EG_SHRINKAGE_LABEL,enDeckShr);
+   ENABLE_WINDOW(IDC_EG_SHRINKAGE);
+   ENABLE_WINDOW(IDC_EG_SHRINKAGE_UNIT);
+   ENABLE_WINDOW(IDC_EG_SHRINKAGE_LABEL);
 
    ENABLE_WINDOW(IDC_EG_LIVELOAD);
    ENABLE_WINDOW(IDC_EG_LIVELOAD_UNIT);
@@ -239,10 +197,9 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->AddString(_T("Refined Estimate per LRFD 5.9.5.4"));
    pBox->AddString(_T("Refined Estimate per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Bridge Design Manual"));
-   pBox->AddString(_T("Refined Estimate per TxDOT Research Report 0-6374-2"));
    pBox->AddString(_T("Approximate Lump Sum per LRFD 5.9.5.3"));
    pBox->AddString(_T("Approximate Lump Sum per WSDOT Bridge Design Manual"));
-   pBox->AddString(_T("General Lump Sum"));
+   pBox->AddString(_T("Time-Step Method"));
    pBox->SetCurSel(0);
 
    pBox = (CComboBox*)GetDlgItem(IDC_SHIPPING_LOSS_METHOD);
@@ -255,10 +212,10 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->AddString(_T("LRFD Equation C5.9.5.4.2c-1")); // refined
    pBox->AddString(_T("1.2 KSI (LRFD 5.9.5.4.2c)"));   // lump sum
 
-   pBox = (CComboBox*)GetDlgItem(IDC_FCPG_COMBO);
-   pBox->AddString(_T("Assumption that strand stress at release is 0.7 fpu"));
-   pBox->AddString(_T("Iterative method described in LRFD C5.9.5.2.3a"));
-   pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
+   pBox = (CComboBox*)GetDlgItem(IDC_TIME_DEPENDENT_MODEL);
+   //pBox->AddString(_T("AASHTO"));
+   pBox->AddString(_T("ACI 209R-92"));
+   //pBox->AddString(_T("CEB-FIP 1990"));
 
    CPropertyPage::OnInitDialog();
 
@@ -302,7 +259,6 @@ void CSpecLossPage::OnShippingLossMethodChanged()
 
 BOOL CSpecLossPage::OnSetActive() 
 {
-
    // if this is third edition or earlier, enable the shipping loss controls
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    m_SpecVersion = pDad->m_Entry.GetSpecificationType();

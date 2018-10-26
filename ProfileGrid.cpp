@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,10 +87,10 @@ void CProfileGrid::InitRowData(ROWCOL row)
 {
 	GetParam()->EnableUndo(FALSE);
 
-   SetValueRange(CGXRange(row,1),"0+00");
-   SetValueRange(CGXRange(row,2),"0.00");
-   SetValueRange(CGXRange(row,3),"0.00");
-   SetValueRange(CGXRange(row,4),"0.00");
+   SetValueRange(CGXRange(row,1),_T("0+00"));
+   SetValueRange(CGXRange(row,2),_T("0.00"));
+   SetValueRange(CGXRange(row,3),_T("0.00"));
+   SetValueRange(CGXRange(row,4),_T("0.00"));
 
    GetParam()->EnableUndo(TRUE);
 }
@@ -138,7 +138,7 @@ void CProfileGrid::CustomInit()
 			.SetValue(_T("Curve\n#"))
 		);
 
-   CString cv = "PVI\nStation";
+   CString cv = _T("PVI\nStation");
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

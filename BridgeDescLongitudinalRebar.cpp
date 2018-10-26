@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"
 #include <IFace\Project.h>
-#include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"
@@ -75,6 +74,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    {
       CLongitudinalRebarData rebarData;
 
+#pragma Reminder("UPDATE: rebar grid should be doing the unit conversions")
       ROWCOL nrows = m_Grid.GetRowCount();
       for (ROWCOL i=1; i<=nrows; i++)
       {
@@ -86,7 +86,6 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
             row.DistFromEnd  = ::ConvertToSysUnits(row.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
             row.Cover        = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
             row.BarSpacing   = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
             rebarData.RebarRows.push_back(row);
          }
          else
@@ -95,90 +94,22 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          }
       }
 
-      // Validate geometry of the bars
-      GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-      pgsPointOfInterest poi(pPOI->GetPointOfInterest(pgsTypes::CastingYard,pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,0.0));
-      GET_IFACE2(pBroker,ISectProp2,pSectProp);
-      Float64 height = pSectProp->GetHg(pgsTypes::CastingYard,poi);
-      CComPtr<IShape> shape;
-      pSectProp->GetGirderShape(poi,pgsTypes::CastingYard,false,&shape); // get shape
-      CComQIPtr<IXYPosition> position(shape);
-      CComPtr<IPoint2d> origin;
-      origin.CoCreateInstance(CLSID_Point2d);
-      origin->Move(0,0);
-      position->put_LocatorPoint(lpBottomCenter,origin); // move bottom center to (0,0) so it matches rebar coordinates
-
-      CString strMsg;
-      CComPtr<IPoint2d> point;
-      point.CoCreateInstance(CLSID_Point2d);
-      int rowIdx = 1;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(rebarData.RebarRows.begin());
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator end(rebarData.RebarRows.end());
-      for ( ; iter != end; iter++, rowIdx++ )
-      {
-         CLongitudinalRebarData::RebarRow& row = *iter;
-         if (row.Cover < 0)
-         {
-            strMsg.Format(_T("The cover for row %d must be greater than zero."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-
-         if (row.NumberOfBars == INVALID_INDEX)
-         {
-            strMsg.Format(_T("The number of bars in row %d must be greater than zero."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-
-         if ( 1 < row.NumberOfBars && row.BarSpacing < 0)
-         {
-            strMsg.Format(_T("The bar spacing in row %d must be greater than zero."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-
-         // make sure bars are inside of girder - use shape symmetry
-         gpPoint2d testpnt;
-         testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
-         if (row.Face==pgsTypes::GirderBottom)
-            testpnt.Y() = row.Cover;
-         else
-            testpnt.Y() = height-row.Cover;
-
-         point->Move(testpnt.X(),testpnt.Y());
-         VARIANT_BOOL bPointInShape;
-         shape->PointInShape( point,&bPointInShape );
-         if ( bPointInShape == VARIANT_FALSE )
-         {
-            strMsg.Format(_T("One or more of the bars in row %d are outside of the girder section."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-      }
-
-      m_RebarData = rebarData;
-
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         m_RebarData.BarType = matRebar::A615;
-         m_RebarData.BarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
-      }
+      GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
+
+      pParent->m_Segment.LongitudinalRebarData = rebarData;
    }
    else
    {
-      int idx = GetStirrupMaterialIndex(m_RebarData.BarType,m_RebarData.BarGrade);
+      int idx = GetStirrupMaterialIndex(pParent->m_Segment.LongitudinalRebarData.BarType,
+                                        pParent->m_Segment.LongitudinalRebarData.BarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
+#pragma Reminder("UPDATE: rebar grid should be doing the unit conversions")
       CLongitudinalRebarData rebardata;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(m_RebarData.RebarRows.begin());
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(m_RebarData.RebarRows.end());
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(pParent->m_Segment.LongitudinalRebarData.RebarRows.begin());
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(pParent->m_Segment.LongitudinalRebarData.RebarRows.end());
       for ( ; iter != iterEnd; iter++ )
       {
          CLongitudinalRebarData::RebarRow row = *iter;
@@ -213,11 +144,12 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGird = pLib->GetGirderEntry( m_CurGrdName.c_str());
-   ASSERT(pGird!=0);
+   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
+   ASSERT(pGirderEntry != 0);
 
    // update data member
-   m_RebarData.CopyGirderEntryData(*pGird);
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   pParent->m_Segment.LongitudinalRebarData.CopyGirderEntryData(*pGirderEntry);
 }
 
 void CGirderDescLongitudinalRebar::OnRestoreDefaults() 
@@ -241,7 +173,7 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc);
+   FillMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

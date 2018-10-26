@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include "GirderDimensionsPage.h"
 #include "GirderMainSheet.h"
 #include <system\tokenizer.h>
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -182,7 +183,7 @@ BOOL CBeamDimensionGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==4 || nCol==5)  && !s.IsEmpty( ))
 	{
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

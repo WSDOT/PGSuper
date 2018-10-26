@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
+// Copyright (C) 1999  Washington State Department of Transportation
+//                     Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -16,7 +16,7 @@
 // You should have received a copy of the Alternate Route Open Source 
 // License along with this program; if not, write to the Washington 
 // State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// 4500 3rd AVE SE - P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
@@ -41,15 +41,6 @@
 #endif // NOGRID
 
 #include "BeamDimensionGrid.h"
-
-// Want to be able to update the girder image as the user scrolls
-// over the list of girders... the only way to do this is with
-// an owner draw combo box.
-class CGirderComboBox : public CComboBox
-{
-public:
-   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
-};
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDimensionsPage dialog
@@ -97,13 +88,9 @@ protected:
 private:
    CMetaFileStatic m_GirderPicture;
    CBeamDimensionGrid m_Grid;
-   CGirderComboBox m_cbGirder;
    int m_LastBeamType;
 
-   void UpdateGirderImage(const CLSID& factoryCLSID);
-
    friend CGirderMainSheet;
-   friend CGirderComboBox;
 };
 
 //{{AFX_INSERT_LOCATION}}

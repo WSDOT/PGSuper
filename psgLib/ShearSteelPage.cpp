@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,16 +26,15 @@
 #include <PsgLib\ShearData.h>
 #include <PsgLib\ShearSteelPage.h>
 #include <PsgLib\RebarUIUtils.h>
-#include <psglib\LibraryEditorDoc.h>
 
+#include <IFace\Project.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\Tools.h>
 #include <MfcTools\CustomDDX.h>
 
 #include <Lrfd\RebarPool.h>
-#include "ShearSteelGrid.h"
-#include "HorizShearGrid.h"
 
 #include "..\htmlhelp\HelpTopics.hh"
 
@@ -151,40 +150,29 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    {
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         m_ShearData.ShearBarType = matRebar::A615;
-         m_ShearData.ShearBarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
-      }
+      GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
 
       // zone info from grid
       m_ShearData.ShearZones.clear();
 
-      CShearZoneData lsi;
+      CShearZoneData2 lsi;
       ROWCOL nrows = m_pGrid->GetRowCount();
-      Uint32 zn = 0;
+      Uint32 zn = 1;
       for (ROWCOL i=1; i<=nrows; i++)
       {
-         if (m_pGrid->GetRowData(i,nrows,&lsi))
+         if (m_pGrid->GetRowData(i,&lsi))
          {
             lsi.ZoneNum = zn;
-            if ( !IsEqual(lsi.ZoneLength,Float64_Max) )
-            {
-               lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
-            }
+            lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
             lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             // make sure stirrup spacing is greater than zone length
-            if (zn+1 < nrows)
+            if (zn < nrows)
             {
                if (lsi.ZoneLength<=0.00001)
                {
                   CString msg;
-                  msg.Format(_T("Zone length must be greater than zero in Shear Zone %d"),zn+1);
+                  msg.Format(_T("Zone length must be greater than zero in Shear Zone %d"),zn);
                   AfxMessageBox(msg);
                   pDX->Fail();
                }
@@ -195,7 +183,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
                if (lsi.ZoneLength<lsi.BarSpacing)
                {
                   CString msg;
-                  msg.Format(_T("Bar spacing must be less than zone length in Shear Zone %d"),zn+1);
+                  msg.Format(_T("Bar spacing must be less than zone length in Shear Zone %d"),zn);
                   AfxMessageBox(msg);
                   pDX->Fail();
                }
@@ -205,7 +193,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             if ( (matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && lsi.BarSpacing<=0.0)
             {
                CString msg;
-               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn+1);
+               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn);
                AfxMessageBox(msg);
                pDX->Fail();
             }
@@ -222,15 +210,12 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
       // grid
-      CShearData::ShearZoneVec vec;
-      for (CShearData::ShearZoneConstIterator it = m_ShearData.ShearZones.begin(); it!=m_ShearData.ShearZones.end(); it++)
+      CShearData2::ShearZoneVec vec;
+      for (CShearData2::ShearZoneConstIterator it = m_ShearData.ShearZones.begin(); it!=m_ShearData.ShearZones.end(); it++)
       {
          // Copy all data then convert length values
-         CShearZoneData inf(*it);
-         if ( !IsEqual(inf.ZoneLength,Float64_Max) )
-         {
-            inf.ZoneLength = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
-         }
+         CShearZoneData2 inf(*it);
+         inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
          inf.BarSpacing     = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
          vec.push_back(inf);
       }
@@ -253,25 +238,21 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
       CHorizontalInterfaceZoneData lsi;
       ROWCOL nrows = m_pHorizGrid->GetRowCount();
-      Uint32 zn = 0;
+      Uint32 zn = 1;
       for (ROWCOL i=1; i<=nrows; i++)
       {
-         if (m_pHorizGrid->GetRowData(i,nrows,&lsi))
+         if (m_pHorizGrid->GetRowData(i,&lsi))
          {
-            lsi.ZoneNum = zn;
-            if ( !IsEqual(lsi.ZoneLength,Float64_Max) )
-            {
-               lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
-            }
+            lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
             lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             // make sure stirrup spacing is greater than zone length
-            if (zn+1 < nrows)
+            if (zn < nrows)
             {
                if (lsi.ZoneLength<=0.00001)
                {
                   CString msg;
-                  msg.Format(_T("Zone length must be greater than zero in Horiz Interface Shear Zone %d"),zn+1);
+                  msg.Format(_T("Zone length must be greater than zero in Horiz Interface Shear Zone %d"),zn);
                   AfxMessageBox(msg);
                   pDX->Fail();
                }
@@ -282,7 +263,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
                if (lsi.ZoneLength<lsi.BarSpacing)
                {
                   CString msg;
-                  msg.Format(_T("Bar spacing must be less than zone length in Horiz Interface Shear Zone %d"),zn+1);
+                  msg.Format(_T("Bar spacing must be less than zone length in Horiz Interface Shear Zone %d"),zn);
                   AfxMessageBox(msg);
                   pDX->Fail();
                }
@@ -292,7 +273,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             if ( (matRebar::bsNone != lsi.BarSize) && lsi.BarSpacing<=0.0)
             {
                CString msg;
-               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Horiz Interface Shear Zone %d"),zn+1);
+               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Horiz Interface Shear Zone %d"),zn);
                AfxMessageBox(msg);
                pDX->Fail();
             }
@@ -304,16 +285,12 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
   }
    else
    {
-      CShearData::HorizontalInterfaceZoneVec vec;
-      for (CShearData::HorizontalInterfaceZoneConstIterator it = m_ShearData.HorizontalInterfaceZones.begin(); it!=m_ShearData.HorizontalInterfaceZones.end(); it++)
+      CShearData2::HorizontalInterfaceZoneVec vec;
+      for (CShearData2::HorizontalInterfaceZoneConstIterator it = m_ShearData.HorizontalInterfaceZones.begin(); it!=m_ShearData.HorizontalInterfaceZones.end(); it++)
       {
          // Copy all data then convert length values
          CHorizontalInterfaceZoneData inf(*it);
-         if ( !IsEqual(inf.ZoneLength,Float64_Max) )
-         {
-            inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
-         }
-
+         inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
          inf.BarSpacing     = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
          vec.push_back(inf);
       }
@@ -364,13 +341,8 @@ BOOL CShearSteelPage::OnInitDialog()
 	m_pHorizGrid->SubclassDlgItem(IDC_HORIZ_GRID, this);
    m_pHorizGrid->CustomInit();
 
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   bool bFilterBySpec = true;
-   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
-      bFilterBySpec = false;
-
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc,bFilterBySpec);
+   FillMaterialComboBox(pc);
 
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));

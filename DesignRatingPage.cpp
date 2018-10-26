@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "DesignRatingPage.h"
 #include "RatingOptionsDlg.h"
-#include <MFCTools\CustomDDX.h>
+
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -150,53 +150,33 @@ BOOL CDesignRatingPage::OnSetActive()
    GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
-   bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      const CLiveLoadFactorModel& inventory = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
-      bAllowUserOverride = inventory.AllowUserOverride();
-   }
-   else
-   {
-      const CLiveLoadFactorModel2& inventory = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Inventory);
-      bAllowUserOverride = inventory.AllowUserOverride();
-   }
+   const CLiveLoadFactorModel& inventory = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
 
    CDataExchange dx(this,false);
    Float64 gLL = -1;
-   if ( bAllowUserOverride )
-   {
-      GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(TRUE);
-   }
-   else
+   if ( !inventory.AllowUserOverride() )
    {
       DDX_Keyword(&dx,IDC_STRENGTH_I_LL_INVENTORY,_T("Compute"),gLL);
       DDX_Keyword(&dx,IDC_SERVICE_III_LL,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(FALSE);
    }
-
-
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      const CLiveLoadFactorModel& operating = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
-      bAllowUserOverride = operating.AllowUserOverride();
-   }
    else
    {
-      const CLiveLoadFactorModel2& operating = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Operating);
-      bAllowUserOverride = operating.AllowUserOverride();
+      GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(TRUE);
    }
 
-   if ( bAllowUserOverride )
-   {
-      GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(TRUE);
-   }
-   else
+
+   const CLiveLoadFactorModel& operating = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
+   if ( !operating.AllowUserOverride() )
    {
       DDX_Keyword(&dx,IDC_STRENGTH_I_LL_OPERATING,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(FALSE);
+   }
+   else
+   {
+      GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(TRUE);
    }
 
    return TRUE;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,20 +34,19 @@
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
 #include "BridgeDescGirderMaterialsPage.h"
-#include "GirderDescRatingPage.h"
 
-#include <IFace\ExtendUI.h>
+#include <PgsExt\PrecastSegmentData.h>
 
 // handy functions
 
 // Changes in girder fill can make debonding invalid. This algorithm gets rid of any
 // debonding of strands that don't exist
-inline bool ReconcileDebonding(const ConfigStrandFillVector& fillvec, std::vector<CDebondInfo>& rDebond)
+inline bool ReconcileDebonding(const ConfigStrandFillVector& fillvec, std::vector<CDebondData>& rDebond)
 {
    bool didErase = false;
    StrandIndexType strsize = fillvec.size();
 
-   std::vector<CDebondInfo>::iterator it=rDebond.begin();
+   std::vector<CDebondData>::iterator it=rDebond.begin();
    while ( it!=rDebond.end() )
    {
       if (it->strandTypeGridIdx > strsize || fillvec[it->strandTypeGridIdx]==0)
@@ -90,22 +89,17 @@ inline bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std:
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 
-class CGirderDescDlg : public CPropertySheet, public IEditGirderData
+class CGirderDescDlg : public CPropertySheet
 {
 	DECLARE_DYNAMIC(CGirderDescDlg)
 
 // Construction
 public:
-	CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCTSTR strGirderName,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-
-   // IEditGirderData
-   virtual SpanIndexType GetSpan() { return m_CurrentSpanIdx; }
-   virtual GirderIndexType GetGirder() { return m_CurrentGirderIdx; }
+	CGirderDescDlg(const CSegmentKey& segmentKey,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
 // Attributes
 public:
-   SpanIndexType   m_CurrentSpanIdx;
-   GirderIndexType m_CurrentGirderIdx;
+   CSegmentKey m_SegmentKey;
 
    CGirderDescGeneralPage       m_General;
    CGirderDescPrestressPage     m_Prestress;
@@ -113,10 +107,17 @@ public:
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
    CGirderDescDebondPage        m_Debond;
-   CGirderDescRatingPage        m_Rating;
 
    std::_tstring m_strGirderName;
-   CGirderData m_GirderData;
+   void SetSegment(const CPrecastSegmentData& segment);
+   const CPrecastSegmentData& GetSegment();
+
+   void SetConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor);
+   pgsTypes::ConditionFactorType GetConditionFactorType();
+   Float64 GetConditionFactor();
+
+
+   bool m_bApplyToAll;
 
 // Operations
 public:
@@ -126,18 +127,12 @@ public:
 	//{{AFX_VIRTUAL(CGirderDescDlg)
 	public:
 	virtual BOOL OnInitDialog();
+   virtual void DoDataExchange(CDataExchange* pDX);
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	virtual ~CGirderDescDlg();
-
-   virtual INT_PTR DoModal();
-
-   // Returns a macro transaction object that contains editing transactions
-   // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
-
    void DoUpdate();
 
    void OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding);
@@ -145,9 +140,6 @@ public:
 
 protected:
    void Init();
-   void CreateExtensionPages();
-   void DestroyExtensionPages();
-
    StrandIndexType GetStraightStrandCount();
    StrandIndexType GetHarpedStrandCount();
    void SetDebondTabName();
@@ -156,24 +148,25 @@ protected:
    void AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool bIsDebonding);
 
 
-   txnMacroTxn m_Macro;
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> m_ExtensionPages;
-   void NotifyExtensionPages();
-
    friend CGirderDescGeneralPage;
    friend CGirderDescLiftingPage;
    friend CGirderDescPrestressPage;
    friend CGirderDescDebondPage;
    friend CGirderDescDebondGrid;
    friend CGirderDescLongitudinalRebar;
-   friend CGirderDescRatingPage;
 
 	// Generated message map functions
 	//{{AFX_MSG(CGirderDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
+   afx_msg BOOL OnOK();
 	//}}AFX_MSG
-	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
+
+   CPrecastSegmentData m_Segment;
+   pgsTypes::ConditionFactorType m_ConditionFactorType;
+   Float64 m_ConditionFactor;
+
+   CButton m_CheckBox;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 #include <DManip\DManip.h>
 #include "TogaSectionCutDrawStrategy.h" 
+#include <PgsExt\SegmentKey.h>
 
 class CTogaSectionCutDisplayImpl : public CCmdTarget
 {
@@ -36,7 +37,7 @@ public:
 
    BEGIN_INTERFACE_PART(Strategy,iTogaSectionCutDrawStrategy)
    STDMETHOD_(void,SetColor)(COLORREF color);
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc);
+	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CSegmentKey& segmentKey, iCutLocation* pCutLoc);
    END_INTERFACE_PART(Strategy)
 
 //   BEGIN_INTERFACE_PART(Events,iSectionCutEvents)
@@ -93,15 +94,14 @@ private:
    Float64 GetGirderHeight(Float64 distFromStartOfGirder);
 
    COLORREF           m_Color;
-   SpanIndexType      m_SpanIdx;
-   GirderIndexType    m_GirderIdx;
+   CSegmentKey        m_SegmentKey;
    IBroker*           m_pBroker;
    Float64            m_gdrLength;
    iCutLocation*      m_pCutLocation;
    
    CComPtr<IPoint2d> m_CachePoint;
 
-   void PutPosition(Float64 pos);
+   void PutPosition(double pos);
 };
 
 

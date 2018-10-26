@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,10 +64,6 @@ CLASS
    CLiveLoadDetailsChapterBuilder
 ****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLiveLoadDetailsChapterBuilder::CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -75,8 +71,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
 {
    return TEXT("Live Load Details");
@@ -452,16 +446,16 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
       ATLASSERT(false);
    }
 
-   pgsTypes::LiveLoadApplicabilityType ll_applicability = ll_entry->GetLiveLoadApplicabilityType();
-   if ( ll_applicability == pgsTypes::llaEntireStructure )
+   LiveLoadLibraryEntry::LiveLoadApplicabilityType ll_applicability = ll_entry->GetLiveLoadApplicabilityType();
+   if ( ll_applicability == LiveLoadLibraryEntry::llaEntireStructure )
    {
       *pPara << _T("Usage: Use for all actions at all locations") << rptNewLine;
    }
-   else if ( ll_applicability == pgsTypes::llaNegMomentAndInteriorPierReaction  )
+   else if ( ll_applicability == LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction  )
    {
       *pPara << _T("Usage: Use only for negative moments and interior pier reactions") << rptNewLine;
    }
-   else if ( ll_applicability == pgsTypes::llaContraflexure  )
+   else if ( ll_applicability == LiveLoadLibraryEntry::llaContraflexure  )
    {
       *pPara << _T("Usage: Use only for negative moments between points of contraflexure and interior pier reactions") << rptNewLine;
    }
@@ -529,22 +523,3 @@ CChapterBuilder* CLiveLoadDetailsChapterBuilder::Clone() const
 {
    return new CLiveLoadDetailsChapterBuilder(m_bDesign,m_bRating);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
