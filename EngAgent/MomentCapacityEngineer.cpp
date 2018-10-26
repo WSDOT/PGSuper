@@ -1093,15 +1093,15 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    // girder rebar
    CComPtr<IRebarModel> matGirderRebar;
    matGirderRebar.CoCreateInstance(CLSID_RebarModel);
-   Float64 E, Fy;
-   pMaterial->GetLongitudinalRebarProperties(span,gdr,&E,&Fy);
+   Float64 E, Fy, Fu;
+   pMaterial->GetLongitudinalRebarProperties(span,gdr,&E,&Fy,&Fu);
    matGirderRebar->Init( Fy, E, 1.00 );
    CComQIPtr<IStressStrain> ssGirderRebar(matGirderRebar);
 
    // slab rebar
    CComPtr<IRebarModel> matSlabRebar;
    matSlabRebar.CoCreateInstance(CLSID_RebarModel);
-   pMaterial->GetDeckRebarProperties(&E,&Fy);
+   pMaterial->GetDeckRebarProperties(&E,&Fy,&Fu);
    matSlabRebar->Init( Fy, E, 1.00 );
    CComQIPtr<IStressStrain> ssSlabRebar(matSlabRebar);
 

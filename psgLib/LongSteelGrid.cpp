@@ -30,6 +30,7 @@
 #include <system\tokenizer.h>
 
 #include <EAF\EAFApp.h>
+#include <Lrfd\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -326,14 +327,7 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
    else
       plsi->Face = GirderLibraryEntry::GirderBottom;
 
-   s = GetCellValue(nRow, 2);
-   s.TrimLeft();
-   int l = s.GetLength();
-   CString s2 = s.Right(l-1);
-   i = _tstoi(s2);
-   if (s.IsEmpty() || (i==0))
-      return false;
-   plsi->BarSize = i;
+   plsi->BarSize = GetBarSize(nRow,2);
 
    s = GetCellValue(nRow, 3);
    i = _tstoi(s);
@@ -386,8 +380,7 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
             
          VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
 
-         Int32 size = (*it).BarSize;
-         tmp.Format(_T("#%d"), size);
+         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 3), (*it).NumberOfBars));
@@ -429,4 +422,33 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 
 	return CGXGridWnd::OnValidateCell(nRow, nCol);
+}
+
+matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
+{
+   CString s = GetCellValue(row, col);
+   s.TrimLeft();
+   int l = s.GetLength();
+   CString s2 = s.Right(l-1);
+   int i = _tstoi(s2);
+   if (s.IsEmpty() || (i==0))
+      return matRebar::bsNone;
+
+   switch(i)
+   {
+   case 3:  return matRebar::bs3;
+   case 4:  return matRebar::bs4;
+   case 5:  return matRebar::bs5;
+   case 6:  return matRebar::bs6;
+   case 7:  return matRebar::bs7;
+   case 8:  return matRebar::bs8;
+   case 9:  return matRebar::bs9;
+   case 10: return matRebar::bs10;
+   case 11: return matRebar::bs11;
+   case 14: return matRebar::bs14;
+   case 18: return matRebar::bs18;
+   default: ATLASSERT(false);
+   }
+
+   return matRebar::bsNone;
 }

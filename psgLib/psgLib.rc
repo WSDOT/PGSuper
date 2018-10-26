@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,0,0
- PRODUCTVERSION 2,5,0,0
+ FILEVERSION 2,5,0,1
+ PRODUCTVERSION 2,5,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.5.0.0"
+            VALUE "FileVersion", "2.5.0.1"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.5.0.0"
+            VALUE "ProductVersion", "2.5.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -330,7 +330,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Reinforcement Material",IDC_STATIC,10,10,74,8
-    COMBOBOX        IDC_MILD_STEEL_SELECTOR,95,7,147,43,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MILD_STEEL_SELECTOR,95,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Transverse Reinforcement Zones",IDC_STATIC,7,25,348,134,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_SHEAR_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,40,330,74
     PUSHBUTTON      "Insert Row",IDC_INSERTROW,113,122,63,14
@@ -357,7 +357,7 @@ IDD_LONG_STEEL DIALOGEX 0, 0, 374, 214
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select Mild Steel Material",IDC_STATIC,10,10,84,8
     GROUPBOX        "Rows of Longitudinal Mild Reinforcement",IDC_STATIC,7,31,360,176,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_LONG_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,45,340,135
@@ -1760,39 +1760,6 @@ END
 //
 // Dialog Info
 //
-
-IDD_EDIT_SHEAR_STEEL DLGINIT
-BEGIN
-    IDC_TF_BAR_SIZE, 0x403, 5, 0
-0x6f6e, 0x656e, "\000" 
-    IDC_TF_BAR_SIZE, 0x403, 3, 0
-0x3323, "\000" 
-    IDC_TF_BAR_SIZE, 0x403, 3, 0
-0x3423, "\000" 
-    IDC_TF_BAR_SIZE, 0x403, 3, 0
-0x3523, "\000" 
-    IDC_TF_BAR_SIZE, 0x403, 3, 0
-0x3623, "\000" 
-    IDC_BAR_SIZE, 0x403, 5, 0
-0x6f6e, 0x656e, "\000" 
-    IDC_BAR_SIZE, 0x403, 3, 0
-0x3323, "\000" 
-    IDC_BAR_SIZE, 0x403, 3, 0
-0x3423, "\000" 
-    IDC_BAR_SIZE, 0x403, 3, 0
-0x3523, "\000" 
-    IDC_BAR_SIZE, 0x403, 3, 0
-0x3623, "\000" 
-    0
-END
-
-IDD_LONG_STEEL DLGINIT
-BEGIN
-    IDC_MILD_STEEL_SELECTOR, 0x403, 29, 0
-0x4141, 0x4853, 0x4f54, 0x4d20, 0x3133, 0x2820, 0x3641, 0x3531, 0x2029, 
-0x202d, 0x7247, 0x6461, 0x2065, 0x3036, "\000" 
-    0
-END
 
 IDD_SPEC_BRIDGE_SITE DLGINIT
 BEGIN

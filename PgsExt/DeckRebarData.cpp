@@ -38,14 +38,18 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CDeckRebarData::CDeckRebarData() :
-strRebarMaterial(_T("AASHTO M31 (615) - Grade 60"))
+CDeckRebarData::CDeckRebarData()
 {
    TopCover    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
    BottomCover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
 
-   TopRebarKey    = INVALID_BAR_SIZE;
-   BottomRebarKey = INVALID_BAR_SIZE;
+   TopRebarType = matRebar::A615;
+   TopRebarGrade = matRebar::Grade60;
+   TopRebarSize = matRebar::bsNone;
+
+   BottomRebarType = matRebar::A615;
+   BottomRebarGrade = matRebar::Grade60;
+   BottomRebarSize = matRebar::bsNone;
 
    TopSpacing    = ::ConvertToSysUnits(18.0,unitMeasure::Inch);
    BottomSpacing = ::ConvertToSysUnits(18.0,unitMeasure::Inch);
@@ -80,18 +84,20 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("DeckRebar"),2.0);
-
-   pStrSave->put_Property(_T("RebarType"),CComVariant(strRebarMaterial.c_str()));
+   pStrSave->BeginUnit(_T("DeckRebar"),3.0);
 
    pStrSave->put_Property(_T("TopCover"),CComVariant(TopCover));
    pStrSave->put_Property(_T("TopLumpSumArea"),CComVariant(TopLumpSum));
-   pStrSave->put_Property(_T("TopRebarKey"),CComVariant(TopRebarKey));
+   pStrSave->put_Property(_T("TopRebarType"),CComVariant(TopRebarType));
+   pStrSave->put_Property(_T("TopRebarGrade"),CComVariant(TopRebarGrade));
+   pStrSave->put_Property(_T("TopRebarSize"),CComVariant(TopRebarSize));
    pStrSave->put_Property(_T("TopSpacing"),CComVariant(TopSpacing));
 
    pStrSave->put_Property(_T("BottomCover"),CComVariant(BottomCover));
    pStrSave->put_Property(_T("BottomLumpSumArea"),CComVariant(BottomLumpSum));
-   pStrSave->put_Property(_T("BottomRebarKey"),CComVariant(BottomRebarKey));
+   pStrSave->put_Property(_T("BottomRebarType"),CComVariant(BottomRebarType));
+   pStrSave->put_Property(_T("BottomRebarGrade"),CComVariant(BottomRebarGrade));
+   pStrSave->put_Property(_T("BottomRebarSize"),CComVariant(BottomRebarSize));
    pStrSave->put_Property(_T("BottomSpacing"),CComVariant(BottomSpacing));
 
    pStrSave->put_Property(_T("NegMomentCount"),CComVariant((long)NegMomentRebar.size()));
@@ -104,7 +110,9 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("Pier"),CComVariant(rebar.PierIdx));
       pStrSave->put_Property(_T("Mat"),CComVariant(rebar.Mat));
       pStrSave->put_Property(_T("LumpSumArea"),CComVariant(rebar.LumpSum));
-      pStrSave->put_Property(_T("RebarKey"),CComVariant(rebar.RebarKey));
+      pStrSave->put_Property(_T("RebarType"),CComVariant(rebar.RebarType));
+      pStrSave->put_Property(_T("RebarGrade"),CComVariant(rebar.RebarGrade));
+      pStrSave->put_Property(_T("RebarSize"),CComVariant(rebar.RebarSize));
       pStrSave->put_Property(_T("Spacing"),CComVariant(rebar.Spacing));
       pStrSave->put_Property(_T("LeftCutoff"),CComVariant(rebar.LeftCutoff));
       pStrSave->put_Property(_T("RightCutoff"),CComVariant(rebar.RightCutoff));
@@ -129,11 +137,11 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    double version;
    pStrLoad->get_Version(&version);
 
-   if ( 2.0 <= version )
+   if ( 2.0 == version )
    {
       var.vt = VT_BSTR;
       pStrLoad->get_Property(_T("RebarType"),&var);
-      strRebarMaterial = OLE2T(var.bstrVal);
+      std::_tstring strRebarMaterial = OLE2T(var.bstrVal);
    }
 
    var.vt = VT_R8;
@@ -143,9 +151,25 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("TopLumpSumArea"),&var);
    TopLumpSum = var.dblVal;
 
-   var.vt = VT_I4;
-   pStrLoad->get_Property(_T("TopRebarKey"),&var);
-   TopRebarKey = BarSizeType(var.lVal);
+   if ( version < 3 )
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("TopRebarKey"),&var);
+      BarSizeType TopRebarKey = BarSizeType(var.lVal);
+      lrfdRebarPool::MapOldRebarKey(TopRebarKey,TopRebarGrade,TopRebarType,TopRebarSize);
+   }
+   else
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("TopRebarType"),&var);
+      TopRebarType = matRebar::Type(var.lVal);
+
+      pStrLoad->get_Property(_T("TopRebarGrade"),&var);
+      TopRebarGrade = matRebar::Grade(var.lVal);
+
+      pStrLoad->get_Property(_T("TopRebarSize"),&var);
+      TopRebarSize = matRebar::Size(var.lVal);
+   }
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("TopSpacing"),&var);
@@ -157,9 +181,26 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("BottomLumpSumArea"),&var);
    BottomLumpSum = var.dblVal;
 
-   var.vt = VT_I4;
-   pStrLoad->get_Property(_T("BottomRebarKey"),&var);
-   BottomRebarKey = BarSizeType(var.lVal);
+
+   if ( version < 3 )
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("BottomRebarKey"),&var);
+      BarSizeType BottomRebarKey = BarSizeType(var.lVal);
+      lrfdRebarPool::MapOldRebarKey(BottomRebarKey,BottomRebarGrade,BottomRebarType,BottomRebarSize);
+   }
+   else
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("BottomRebarType"),&var);
+      BottomRebarType = matRebar::Type(var.lVal);
+
+      pStrLoad->get_Property(_T("BottomRebarGrade"),&var);
+      BottomRebarGrade = matRebar::Grade(var.lVal);
+
+      pStrLoad->get_Property(_T("BottomRebarSize"),&var);
+      BottomRebarSize = matRebar::Size(var.lVal);
+   }
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("BottomSpacing"),&var);
@@ -186,9 +227,25 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       pStrLoad->get_Property(_T("LumpSumArea"),&var);
       rebar.LumpSum = var.dblVal;
 
-      var.vt = VT_I4;
-      pStrLoad->get_Property(_T("RebarKey"),&var);
-      rebar.RebarKey = BarSizeType(var.lVal);
+      if ( version < 3 )
+      {
+         var.vt = VT_I4;
+         pStrLoad->get_Property(_T("RebarKey"),&var);
+         BarSizeType RebarKey = BarSizeType(var.lVal);
+         lrfdRebarPool::MapOldRebarKey(RebarKey,rebar.RebarGrade,rebar.RebarType,rebar.RebarSize);
+      }
+      else
+      {
+         var.vt = VT_I4;
+         pStrLoad->get_Property(_T("BottomRebarType"),&var);
+         rebar.RebarType = matRebar::Type(var.lVal);
+
+         pStrLoad->get_Property(_T("BottomRebarGrade"),&var);
+         rebar.RebarGrade = matRebar::Grade(var.lVal);
+
+         pStrLoad->get_Property(_T("BottomRebarSize"),&var);
+         rebar.RebarSize = matRebar::Size(var.lVal);
+      }
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Spacing"),&var);
@@ -223,8 +280,13 @@ void CDeckRebarData::MakeCopy(const CDeckRebarData& rOther)
    TopCover    = rOther.TopCover;
    BottomCover = rOther.BottomCover;
 
-   TopRebarKey    = rOther.TopRebarKey;
-   BottomRebarKey = rOther.BottomRebarKey;
+   TopRebarType = rOther.TopRebarType;
+   TopRebarGrade = rOther.TopRebarGrade;
+   TopRebarSize = rOther.TopRebarSize;
+
+   BottomRebarType = rOther.BottomRebarType;
+   BottomRebarGrade = rOther.BottomRebarGrade;
+   BottomRebarSize = rOther.BottomRebarSize;
 
    TopSpacing    = rOther.TopSpacing;
    BottomSpacing = rOther.BottomSpacing;
@@ -233,8 +295,6 @@ void CDeckRebarData::MakeCopy(const CDeckRebarData& rOther)
    BottomLumpSum = rOther.BottomLumpSum;
 
    NegMomentRebar = rOther.NegMomentRebar;
-
-   strRebarMaterial = rOther.strRebarMaterial;
 }
 
 void CDeckRebarData::MakeAssignment(const CDeckRebarData& rOther)
@@ -255,12 +315,25 @@ bool CDeckRebarData::operator==(const CDeckRebarData& rOther) const
    if ( BottomCover != rOther.BottomCover )
       return false;
 
-   if ( TopRebarKey != rOther.TopRebarKey )
+   if ( TopRebarType != rOther.TopRebarType )
       return false;
 
-   if ( BottomRebarKey != rOther.BottomRebarKey )
+   if ( TopRebarGrade != rOther.TopRebarGrade )
       return false;
 
+   if ( TopRebarSize != rOther.TopRebarSize )
+      return false;
+
+
+   if ( BottomRebarType != rOther.BottomRebarType )
+      return false;
+
+   if ( BottomRebarGrade != rOther.BottomRebarGrade )
+      return false;
+
+   if ( BottomRebarSize != rOther.BottomRebarSize )
+      return false;
+ 
    if ( TopSpacing != rOther.TopSpacing )
       return false;
 
@@ -274,9 +347,6 @@ bool CDeckRebarData::operator==(const CDeckRebarData& rOther) const
       return false;
 
    if ( NegMomentRebar != rOther.NegMomentRebar )
-      return false;
-
-   if ( strRebarMaterial != rOther.strRebarMaterial )
       return false;
 
    return true;
@@ -307,7 +377,13 @@ bool CDeckRebarData::NegMomentRebarData::operator==(const CDeckRebarData::NegMom
    if ( LumpSum != rOther.LumpSum )
       return false;
 
-   if ( RebarKey != rOther.RebarKey )
+   if ( RebarType != rOther.RebarType )
+      return false;
+
+   if ( RebarGrade != rOther.RebarGrade )
+      return false;
+
+   if ( RebarSize != rOther.RebarSize )
       return false;
 
    if ( Spacing != rOther.Spacing )

@@ -408,7 +408,8 @@ DEFINE_GUID(IID_IShear,
 interface IShear : IUnknown
 {
    virtual std::_tstring GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
-   virtual void SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)=0;
+   virtual void GetStirrupMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,matRebar::Type type,matRebar::Grade grade) = 0;
    virtual CShearData GetShearData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetShearData(const CShearData& data,SpanIndexType span,GirderIndexType gdr) = 0;
 };
@@ -428,7 +429,8 @@ DEFINE_GUID(IID_ILongitudinalRebar,
 interface ILongitudinalRebar : IUnknown
 {
    virtual std::_tstring GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
-   virtual void SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)=0;
+   virtual void GetLongitudinalRebarMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade) = 0;
+   virtual void SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,matRebar::Type type,matRebar::Grade grade) = 0;
    virtual CLongitudinalRebarData GetLongitudinalRebarData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetLongitudinalRebarData(const CLongitudinalRebarData& data,SpanIndexType span,GirderIndexType gdr) = 0;
 };

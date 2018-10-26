@@ -75,8 +75,6 @@ public:
       m_Level        = 0;
       m_pBroker      = 0;
 
-      m_pRebar       = 0;
-
       m_AlignmentID = -1;
 
       m_bUserLoadsValidated  = false;
@@ -274,12 +272,15 @@ public:
    virtual Float64 GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetEcRailing(pgsTypes::TrafficBarrierOrientation orientation);
    virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
-   virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy);
+   virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr);
-   virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy);
+   virtual void GetLongitudinalRebarMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetTransverseRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetTransverseRebarName(SpanIndexType span,GirderIndexType gdr);
-   virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy);
+   virtual void GetTransverseRebarMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade);
+   virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetDeckRebarName();
+   virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade);
    virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1);
    virtual Float64 GetFlexureModRupture(Float64 fc);
    virtual Float64 GetShearModRupture(Float64 fc);
@@ -347,8 +348,8 @@ public:
 
 // IStirrupGeometry
 public:
-   virtual BarSizeType GetVertStirrupBarSize(const pgsPointOfInterest& poi);
-   virtual BarSizeType GetHorzStirrupBarSize(const pgsPointOfInterest& poi);
+   virtual matRebar::Size GetVertStirrupBarSize(const pgsPointOfInterest& poi);
+   virtual matRebar::Size GetHorzStirrupBarSize(const pgsPointOfInterest& poi);
    virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi);
    virtual Float64 GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi);
    virtual Float64 GetVertStirrupBarArea(const pgsPointOfInterest& poi);
@@ -358,12 +359,12 @@ public:
    virtual Float64 GetS(const pgsPointOfInterest& poi);
    virtual Float64 GetAlpha(const pgsPointOfInterest& poi);
 
-   virtual BarSizeType GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr);
+   virtual matRebar::Size GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetLengthOfConfinementZone(SpanIndexType span,GirderIndexType gdr);
 
    virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr);
 
-   virtual BarSizeType GetTopFlangeBarSize(const pgsPointOfInterest& poi);
+   virtual matRebar::Size GetTopFlangeBarSize(const pgsPointOfInterest& poi);
    virtual Float64 GetTopFlangeBarArea(const pgsPointOfInterest& poi);
    virtual Float64 GetTopFlangeS(const pgsPointOfInterest& poi);
 
@@ -372,8 +373,8 @@ public:
    virtual Float64 GetZoneStart(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone); // dist from start of girder
    virtual Float64 GetZoneEnd(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) ; // dist from start of girder
 
-   virtual BarSizeType GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual BarSizeType GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+   virtual matRebar::Size GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+   virtual matRebar::Size GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual Uint32 GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual Uint32 GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
    virtual Float64 GetS(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
@@ -671,8 +672,6 @@ private:
 
    std::auto_ptr<matConcreteEx> m_pRailingConc[2]; // index is pgsTypes::TrafficBarrierOrientation
 
-   const matRebar*    m_pRebar;
-
    // containers to cache shapes cut at various stations
    typedef std::map<double,CComPtr<IShape> > ShapeContainer;
    ShapeContainer m_DeckShapes;
@@ -827,7 +826,7 @@ private:
    StrandIndexType GetPrevNumTempStrands(SpanIndexType span,GirderIndexType gdr,StrandIndexType curNum);
 
    void GetGirderShapeDirect(const pgsPointOfInterest& poi,IShape** ppShape);
-   BarSize GetBarSize(Int32 size);
+   BarSize GetBarSize(matRebar::Size size);
    REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar,double fc);
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop);

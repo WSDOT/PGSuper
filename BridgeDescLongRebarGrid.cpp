@@ -30,6 +30,8 @@
 #include "BridgeDescLongitudinalRebar.h"
 #include <system\tokenizer.h>
 
+#include <LRFD\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -276,6 +278,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
+#pragma Reminder("UPDATE: need to get bar sizes from rebar pool")
 	SetStyleRange(CGXRange(nRow,2), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#8\n#9\n#10\n#11\n#14\n#18"))
@@ -313,6 +316,35 @@ CString CGirderDescLongRebarGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         return GetValueRowCol(nRow, nCol);
 }
 
+matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
+{
+   CString s = GetCellValue(row, 2);
+   s.TrimLeft();
+   int l = s.GetLength();
+   CString s2 = s.Right(l-1);
+   int i = _tstoi(s2);
+   if (s.IsEmpty() || (i==0))
+      return matRebar::bsNone;
+
+   switch(i)
+   {
+   case 3:  return matRebar::bs3;
+   case 4:  return matRebar::bs4;
+   case 5:  return matRebar::bs5;
+   case 6:  return matRebar::bs6;
+   case 7:  return matRebar::bs7;
+   case 8:  return matRebar::bs8;
+   case 9:  return matRebar::bs9;
+   case 10: return matRebar::bs10;
+   case 11: return matRebar::bs11;
+   case 14: return matRebar::bs14;
+   case 18: return matRebar::bs18;
+   default: ATLASSERT(false);
+   }
+
+   return matRebar::bsNone;
+}
+
 bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi)
 {
    double d;
@@ -324,14 +356,9 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
    else
       plsi->Face = CLongitudinalRebarData::GirderBottom;
 
-   s = GetCellValue(nRow, 2);
-   s.TrimLeft();
-   int l = s.GetLength();
-   CString s2 = s.Right(l-1);
-   i = _tstoi(s2);
-   if (s.IsEmpty() || (i==0))
-      return false;
-   plsi->BarSize = i;
+
+   plsi->BarSize = GetBarSize(nRow);
+
 
    s = GetCellValue(nRow, 3);
    i = _tstoi(s);
@@ -339,6 +366,7 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
       i=0;
    else if (i==0 && s[0]!=_T('0'))
       return false;
+
    plsi->NumberOfBars = i;
 
    s = GetCellValue(nRow, 4);
@@ -389,8 +417,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
             
          VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
 
-         Int32 size = (*it).BarSize;
-         tmp.Format(_T("#%d"), size);
+         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 3), (*it).NumberOfBars));

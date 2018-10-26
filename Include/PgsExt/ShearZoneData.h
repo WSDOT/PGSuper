@@ -38,6 +38,7 @@
 #endif
 
 #include <StrData.h>
+#include <Material\Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -72,7 +73,7 @@ class PGSEXTCLASS CShearZoneData
 {
 public:
    Uint32  ZoneNum;
-   BarSizeType  VertBarSize, HorzBarSize;
+   matRebar::Size VertBarSize, HorzBarSize;
    Float64 BarSpacing;
    Float64 ZoneLength;
    Uint32 nVertBars, nHorzBars;
@@ -85,7 +86,7 @@ public:
 
    //------------------------------------------------------------------------
    // Constructor
-   CShearZoneData(Uint32 zoneNum,BarSizeType barSize,Float64 barSpacing,Float64 zoneLength,Uint32 nbrLegs);
+   CShearZoneData(Uint32 zoneNum,matRebar::Size barSize,Float64 barSpacing,Float64 zoneLength,Uint32 nbrLegs);
 
    //------------------------------------------------------------------------
    // Copy constructor

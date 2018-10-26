@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     1  Tx34       46   1/2  270 10.58  7.10   8 28.5  6.300  7.200    3.783   -4.342   4282  0.618  0.814  0.37 -0.18  0.00 -0.01 -0.19 122.23 301.63   1.00   1.00   1.00
+ 44.00   6  8.00     1     1  Tx34       44   1/2  270 10.74  6.74   8 30.5  5.800  6.800    3.783   -4.342   4282  0.618  0.814  0.37 -0.18  0.00 -0.01 -0.19 116.34 250.06   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -11,20 +11,22 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     2  Tx34       48   1/2  270 10.43  6.76   8 30.5  6.400  7.400    3.954   -4.522   4403  0.618  0.814  0.38 -0.20  0.00 -0.01 -0.21 131.78 313.93   1.00   1.00   1.00
+ 44.00   6  8.00     1     2  Tx34       46   1/2  270 10.58  7.10   8 28.5  6.300  7.200    3.954   -4.522   4403  0.618  0.814  0.37 -0.20  0.00 -0.01 -0.21 122.23 249.25   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     4  Tx34       48   1/2  270 10.43  6.76   8 30.5  6.400  7.400    3.954   -4.522   4403  0.618  0.814  0.38 -0.20  0.00 -0.01 -0.21 131.78 313.93   1.00   1.00   1.00
+ 44.00   6  8.00     1     4  Tx34       46   1/2  270 10.58  7.10   8 28.5  6.300  7.200    3.954   -4.522   4403  0.618  0.814  0.37 -0.20  0.00 -0.01 -0.21 122.23 249.25   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 

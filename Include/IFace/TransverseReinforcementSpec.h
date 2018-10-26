@@ -83,8 +83,7 @@ interface ITransverseReinforcementSpec : IUnknown
 
    //------------------------------------------------------------------------
    // Returns the minimum bar size in the confinment zone per 5.10.10.2
-   // Bar size correlates to lrfdRebarPool
-   virtual BarSizeType GetMinConfinmentBarSize()=0;
+   virtual matRebar::Size GetMinConfinmentBarSize()=0;
 
    //------------------------------------------------------------------------
    // Returns the minimum bar area in the confinment zone per 5.10.10.2

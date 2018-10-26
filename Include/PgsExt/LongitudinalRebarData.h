@@ -38,6 +38,7 @@
 #endif
 
 #include <StrData.h>
+#include <Material\Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -76,7 +77,7 @@ public:
    struct RebarRow 
    {
       GirderFace  Face;
-      Int32       BarSize;
+      matRebar::Size BarSize;
       Int32       NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
@@ -91,8 +92,9 @@ public:
       };
    };
 
+   matRebar::Type BarType;
+   matRebar::Grade BarGrade;
    std::vector<RebarRow> RebarRows;
-   std::_tstring strRebarMaterial;
 
 
    // GROUP: LIFECYCLE

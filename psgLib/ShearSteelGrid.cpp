@@ -30,6 +30,8 @@
 #include <system\tokenizer.h>
 #include <EAF\EAFApp.h>
 
+#include <LRFD\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -310,8 +312,8 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
 
 	this->SetStyleRange(CGXRange(nRow,3), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("none\n#3\n#4\n#5\n#6\n"))
-			.SetValue(_T("none"))
+			.SetChoiceList(_T("None\n#3\n#4\n#5\n#6\n"))
+			.SetValue(_T("None"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
@@ -324,8 +326,8 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
 
 	this->SetStyleRange(CGXRange(nRow,5), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("none\n#3\n#4\n#5\n#6\n"))
-			.SetValue(_T("none"))
+			.SetChoiceList(_T("None\n#3\n#4\n#5\n#6\n"))
+			.SetValue(_T("None"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
@@ -368,39 +370,12 @@ bool CShearSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::ShearZoneInfo*
    else
       pszi->StirrupSpacing = d;
 
-   s = GetCellValue(nRow, 3);
-   s.TrimLeft();
-   if (s==_T("none"))
-      pszi->VertBarSize = 0;
-   else
-   {
-      int l = s.GetLength();
-      CString s2 = s.Right(l-1);
-      int i = _tstoi(s2);
-      if (s.IsEmpty() || (i==0&&s[0]!=_T('0')))
-         pszi->VertBarSize = 0;
-      else
-         pszi->VertBarSize = i;
-   }
+   pszi->VertBarSize = GetBarSize(nRow,3);
 
    s = GetCellValue(nRow,4);
    pszi->nVertBars = _tstoi(s);
 
-
-   s = GetCellValue(nRow, 5);
-   s.TrimLeft();
-   if (s==_T("none"))
-      pszi->HorzBarSize = 0;
-   else
-   {
-      int l = s.GetLength();
-      CString s2 = s.Right(l-1);
-      int i = _tstoi(s2);
-      if (s.IsEmpty() || (i==0&&s[0]!=_T('0')))
-         pszi->HorzBarSize = 0;
-      else
-         pszi->HorzBarSize = i;
-   }
+   pszi->HorzBarSize = GetBarSize(nRow,5);
 
    s = GetCellValue(nRow,6);
    pszi->nHorzBars = _tstoi(s);
@@ -430,24 +405,15 @@ void CShearSteelGrid::FillGrid(const GirderLibraryEntry::ShearZoneInfoVec& rvec)
 
          SetValueRange(CGXRange(nRow, 2), (*it).StirrupSpacing);
 
-         Int32 barSize = (*it).VertBarSize;
          CString tmp;
-         if (barSize == 0)
-            tmp = _T("none");
-         else
-            tmp.Format(_T("#%d"),barSize);
-
+         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).VertBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 3), tmp));
 
          tmp.Format(_T("%d"),(*it).nVertBars);
          VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
 
-         barSize = (*it).HorzBarSize;
-         if (barSize == 0)
-            tmp = _T("none");
-         else
-            tmp.Format(_T("#%d"),barSize);
 
+         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).HorzBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 5), tmp));
 
          tmp.Format(_T("%d"),(*it).nHorzBars);
@@ -486,4 +452,33 @@ if ((nCol==1 || nCol==2)  && !s.IsEmpty( ))
 	}
 
 	return CGXGridWnd::OnValidateCell(nRow, nCol);
+}
+
+matRebar::Size CShearSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
+{
+   CString s = GetCellValue(row, col);
+   s.TrimLeft();
+   int l = s.GetLength();
+   CString s2 = s.Right(l-1);
+   int i = _tstoi(s2);
+   if (s.IsEmpty() || (i==0))
+      return matRebar::bsNone;
+
+   switch(i)
+   {
+   case 3:  return matRebar::bs3;
+   case 4:  return matRebar::bs4;
+   case 5:  return matRebar::bs5;
+   case 6:  return matRebar::bs6;
+   case 7:  return matRebar::bs7;
+   case 8:  return matRebar::bs8;
+   case 9:  return matRebar::bs9;
+   case 10: return matRebar::bs10;
+   case 11: return matRebar::bs11;
+   case 14: return matRebar::bs14;
+   case 18: return matRebar::bs18;
+   default: ATLASSERT(false);
+   }
+
+   return matRebar::bsNone;
 }

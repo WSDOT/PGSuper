@@ -643,7 +643,7 @@ Float64 CSpecAgentImp::GetSplittingZoneLength( Float64 girderHeight )
    return girderHeight / GetSplittingZoneLengthFactor();
 }
 
-BarSizeType CSpecAgentImp::GetMinConfinmentBarSize()
+matRebar::Size CSpecAgentImp::GetMinConfinmentBarSize()
 {
    return lrfdRebar::GetMinConfinmentBarSize();
 }

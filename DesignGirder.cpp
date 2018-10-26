@@ -89,10 +89,18 @@ txnTransaction* txnDesignGirder::CreateClone() const
 std::_tstring txnDesignGirder::Name() const
 {
    std::_tostringstream os;
-   os << "Design for (Span, Girder) =";
-   for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
+   if ( m_DesignDataColl.size() == 1 )
    {
-      os <<" (" << LABEL_SPAN(iter->m_DesignArtifact.GetSpan()) << ", " << LABEL_GIRDER(iter->m_DesignArtifact.GetGirder())<<")";
+      DesignDataConstIter iter = m_DesignDataColl.begin();
+      os << _T("Design for Span ") << LABEL_SPAN(iter->m_DesignArtifact.GetSpan()) << _T(", Girder ") << LABEL_GIRDER(iter->m_DesignArtifact.GetGirder());
+   }
+   else
+   {
+      os << _T("Design for (Span, Girder) =");
+      for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
+      {
+         os << _T(" (") << LABEL_SPAN(iter->m_DesignArtifact.GetSpan()) << _T(", ") << LABEL_GIRDER(iter->m_DesignArtifact.GetGirder())<< _T(")");
+      }
    }
 
    return os.str();
@@ -369,7 +377,7 @@ void txnDesignGirder::CacheShearDesignResults(DesignData& rdata)
       // create a single zone with no stirrups in it.
       CShearZoneData dat;
       rdata.m_ShearData[1].ShearZones.push_back(dat);
-      rdata.m_ShearData[1].ConfinementBarSize = 0;
+      rdata.m_ShearData[1].ConfinementBarSize = matRebar::bsNone;
       rdata.m_ShearData[1].NumConfinementZones = 0;
    }
 }

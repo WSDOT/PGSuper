@@ -304,8 +304,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
-      pForces2->GetStress( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxOverlay, &fBotMaxOverlay);
-      pForces2->GetStress( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope, &fTopMinOverlay, &fBotMinOverlay);
+      pForces2->GetStress( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxOverlay, &fBotMaxOverlay);
+      pForces2->GetStress( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope, &fTopMinOverlay, &fBotMinOverlay);
 
       if ( bDesign )
       {
@@ -373,7 +373,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          pForces2->GetStress( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxShearKey, &fBotMaxShearKey);
 
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
-      pForces2->GetStress( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
+      pForces2->GetStress( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
 
       if ( bDesign )
       {

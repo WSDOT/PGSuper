@@ -205,8 +205,8 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          maxTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
          minTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope );
-         maxOverlay = pForces2->GetDisplacement( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
-         minOverlay = pForces2->GetDisplacement( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
+         maxOverlay = pForces2->GetDisplacement( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
+         minOverlay = pForces2->GetDisplacement( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, MinSimpleContinuousEnvelope );
 
          if ( bDesign )
          {
@@ -278,7 +278,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          }
 
          maxTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         maxOverlay = pForces2->GetDisplacement( overlay_stage, bRating ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+         maxOverlay = pForces2->GetDisplacement( overlay_stage, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
 
          if ( bDesign )
          {

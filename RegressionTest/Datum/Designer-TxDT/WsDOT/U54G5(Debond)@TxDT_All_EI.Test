@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- ---                               ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     1 (Debo  *    58   5/8  270 16.39 16.12  14  0.00   0   0                               15.000 15.000    6.180   -4.354  12369  1.016  1.016  0.17 -0.13 -0.01 -0.01 -0.15 155.07 250.99   0.00   0.00   0.00
+ 34.25   4  8.00     1     1 (Debo  *    56   5/8  270 16.48 16.23  14  0.00   0   0                               15.000 15.000    6.180   -4.354  12265  1.016  1.016  0.16 -0.13 -0.01 -0.01 -0.15 144.62 190.70   0.00   0.00   0.00
                                                                         4.00  25   4  0  0  0  0  0  0  0  0  0  2 
 Warning: The number of debonded sections exceeds ten for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
 
@@ -17,7 +17,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     2 (Debo  *    58   5/8  270 16.39 16.39   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000 14.900    5.314   -3.537  10273  0.557  0.773  0.53 -0.10 -0.01 -0.01 -0.12 261.14 679.93   1.75  17.00  17.00
+ 34.25   4  8.00     1     2 (Debo  *    54   5/8  270 16.58 16.58   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000 14.900    5.314   -3.537  10275  0.557  0.773  0.48 -0.10 -0.01 -0.01 -0.12 225.90 515.30   1.75  17.00  17.00
 
 
 Girder design was Not Successful

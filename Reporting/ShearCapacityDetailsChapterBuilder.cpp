@@ -2380,9 +2380,9 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    lrfdRebarPool* pRebarPool = lrfdRebarPool::GetInstance();
 
-   double Ab3 = pRebarPool->GetRebar(3)->GetNominalArea();
-   double Ab4 = pRebarPool->GetRebar(4)->GetNominalArea();
-   double Ab5 = pRebarPool->GetRebar(5)->GetNominalArea();
+   double Ab3 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs3)->GetNominalArea();
+   double Ab4 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs4)->GetNominalArea();
+   double Ab5 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs5)->GetNominalArea();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);

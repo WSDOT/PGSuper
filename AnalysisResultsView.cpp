@@ -1266,11 +1266,13 @@ void CAnalysisResultsView::Update()
  	CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    if ( pDoc->IsAutoCalcEnabled() )
    {
+      // AutoCalc is on so update the contents of the view now
       UpdateNow();
    }
    else
    {
-      // this will force the hint text to be displayed in the window
+      // AutoCalc is off. Invalid the view and force it to redraw.
+      // OnDraw will display the hint message for updating the view.
       Invalidate();
       UpdateWindow();
    }

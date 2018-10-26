@@ -46,13 +46,14 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 CShearData::CShearData():
-ConfinementBarSize(0),
+ShearBarType(matRebar::A615),
+ShearBarGrade(matRebar::Grade60),
+ConfinementBarSize(matRebar::bs3),
 NumConfinementZones(0),
-TopFlangeBarSize(0),
+TopFlangeBarSize(matRebar::bs3),
 TopFlangeBarSpacing(0.0),
 bDoStirrupsEngageDeck(true),
-bIsRoughenedSurface(true),
-strRebarMaterial(_T("AASHTO M31 (A615) - Grade 60"))
+bIsRoughenedSurface(true)
 {
    // make sure we have at least one zone
    CShearZoneData tmp;
@@ -104,7 +105,10 @@ bool CShearData::operator == (const CShearData& rOther) const
    if ( TopFlangeBarSpacing != rOther.TopFlangeBarSpacing)
       return false;
 
-   if ( strRebarMaterial != rOther.strRebarMaterial )
+   if ( ShearBarGrade != rOther.ShearBarGrade )
+      return false;
+
+   if ( ShearBarType != rOther.ShearBarType )
       return false;
 
    return true;
@@ -128,18 +132,30 @@ HRESULT CShearData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    CComVariant var;
 
-   if ( 5.0 <= version )
+   if ( 5.0 <= version && version < 7)
    {
       var.Clear();
       var.vt = VT_BSTR;
       pStrLoad->get_Property(_T("RebarType"),&var);
-      strRebarMaterial = OLE2T(var.bstrVal);
+      std::_tstring strRebarMaterial = OLE2T(var.bstrVal);
    }
 
    var.Clear();
    var.vt = VT_UI4;
-   pStrLoad->get_Property(_T("ConfinementBarSize"), &var );
-   ConfinementBarSize = var.uiVal;
+   if ( version < 7 )
+   {
+      pStrLoad->get_Property(_T("ConfinementBarSize"), &var );
+      BarSizeType key = var.uiVal;
+      matRebar::Grade grade;
+      matRebar::Type type;
+      lrfdRebarPool::MapOldRebarKey(key,grade,type,ConfinementBarSize);
+   }
+   else
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("ConfinementBarSize"), &var );
+      ConfinementBarSize = matRebar::Size(var.lVal);
+   }
 
    var.Clear();
    var.vt = VT_UI4;
@@ -164,13 +180,35 @@ HRESULT CShearData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    var.Clear();
    var.vt = VT_UI4;
-   pStrLoad->get_Property(_T("TopFlangeBarSize"), &var );
-   TopFlangeBarSize = var.uiVal;
+   if ( version < 7 )
+   {
+      pStrLoad->get_Property(_T("TopFlangeBarSize"), &var );
+      BarSizeType key = var.uiVal;
+      matRebar::Grade grade;
+      matRebar::Type type;
+      lrfdRebarPool::MapOldRebarKey(key,grade,type,TopFlangeBarSize);
+   }
+   else
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("TopFlangeBarSize"), &var );
+      TopFlangeBarSize = matRebar::Size(var.lVal);
+   }
 
    var.Clear();
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("TopFlangeBarSpacing"), &var );
    TopFlangeBarSpacing = var.dblVal;
+
+   if ( 6 < version )
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("ShearBarType"), &var );
+      ShearBarType = matRebar::Type(var.lVal);
+
+      pStrLoad->get_Property(_T("ShearBarGrade"), &var );
+      ShearBarGrade = matRebar::Grade(var.lVal);
+   }
 
    ShearZones.clear();
 
@@ -201,15 +239,17 @@ HRESULT CShearData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    HRESULT hr = S_OK;
 
 
-   pStrSave->BeginUnit(_T("ShearData"),6.0);
+   pStrSave->BeginUnit(_T("ShearData"),7.0);
 
-   pStrSave->put_Property(_T("RebarType"),CComVariant(strRebarMaterial.c_str()));
    pStrSave->put_Property(_T("ConfinementBarSize"), CComVariant(ConfinementBarSize));
    pStrSave->put_Property(_T("ConfinementZone"),    CComVariant(NumConfinementZones));
    pStrSave->put_Property(_T("DoStirrupsEngageDeck"),CComVariant(bDoStirrupsEngageDeck));
    pStrSave->put_Property(_T("IsRoughenedSurface"),CComVariant(bIsRoughenedSurface));
    pStrSave->put_Property(_T("TopFlangeBarSize"),   CComVariant(TopFlangeBarSize));
    pStrSave->put_Property(_T("TopFlangeBarSpacing"),CComVariant(TopFlangeBarSpacing));
+
+   pStrSave->put_Property(_T("ShearBarType"), CComVariant(ShearBarType));
+   pStrSave->put_Property(_T("ShearBarGrade"), CComVariant(ShearBarGrade));
 
    CComVariant var( (Int32)ShearZones.size() );
    hr = pStrSave->put_Property(_T("ZoneCount"), var );
@@ -232,13 +272,15 @@ HRESULT CShearData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CShearData::CopyGirderEntryData(const GirderLibraryEntry& rGird)
 {
-   ConfinementBarSize  = rGird.GetShearSteelBarSize();
+   ConfinementBarSize  = rGird.GetConfinementBarSize();
    NumConfinementZones = rGird.GetNumConfinementZones();
 
    TopFlangeBarSize      = rGird.GetTopFlangeShearBarSize();
    TopFlangeBarSpacing   = rGird.GetTopFlangeShearBarSpacing();
    bDoStirrupsEngageDeck = rGird.DoStirrupsEngageDeck();
    bIsRoughenedSurface   = rGird.IsRoughenedSurface();
+
+   rGird.GetShearSteelMaterial(ShearBarType,ShearBarGrade);
 
    ShearZones.clear();
    GirderLibraryEntry::ShearZoneInfoVec libvec = rGird.GetShearZoneInfo();
@@ -267,16 +309,12 @@ void CShearData::CopyGirderEntryData(const GirderLibraryEntry& rGird)
       // make sure we always have at least one empty zone
       CShearZoneData zd;
       zd.ZoneNum     = 1;
-      zd.VertBarSize = 0;
-      zd.HorzBarSize = 0;
       zd.BarSpacing  = 0.0;
       zd.ZoneLength  = 0.0;
       zd.nVertBars   = 2;
       zd.nHorzBars   = 2;
       ShearZones.push_back(zd);
    }
-
-   strRebarMaterial = rGird.GetShearSteelMaterial();
 }
 
 //======================== ACCESS     =======================================
@@ -296,7 +334,8 @@ void CShearData::MakeCopy(const CShearData& rOther)
    TopFlangeBarSpacing   = rOther.TopFlangeBarSpacing;
    bDoStirrupsEngageDeck = rOther.bDoStirrupsEngageDeck;
    bIsRoughenedSurface   = rOther.bIsRoughenedSurface;
-   strRebarMaterial      = rOther.strRebarMaterial;
+   ShearBarType          = rOther.ShearBarType;
+   ShearBarGrade         = rOther.ShearBarGrade;
 }
 
 void CShearData::MakeAssignment(const CShearData& rOther)

@@ -380,12 +380,12 @@ void pgsDesignArtifact::SetShearZoneData(ZoneIndexType zoneNum, const CShearZone
    m_ShearZoneData[zoneNum] = rdata;
 }
 
-BarSizeType pgsDesignArtifact::GetConfinementBarSize() const
+matRebar::Size pgsDesignArtifact::GetConfinementBarSize() const
 {
    return m_ConfinementBarSize;
 }
 
-void pgsDesignArtifact::SetConfinementBarSize(BarSizeType barSize)
+void pgsDesignArtifact::SetConfinementBarSize(matRebar::Size barSize)
 {
    m_ConfinementBarSize = barSize;
 }
@@ -700,7 +700,7 @@ void pgsDesignArtifact::Init()
    m_SlabOffset[pgsTypes::metEnd] = 0;
    m_NumShearZones       = 0;
    m_LastConfinementZone = 0;
-   m_ConfinementBarSize  = 0;
+   m_ConfinementBarSize  = matRebar::bsNone;
    m_LiftLocLeft         = 0.0;
    m_LiftLocRight        = 0.0;
    m_ShipLocLeft         = 0.0;

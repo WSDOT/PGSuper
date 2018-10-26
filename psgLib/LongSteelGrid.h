@@ -89,6 +89,7 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
 
+   matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
 
 };
 

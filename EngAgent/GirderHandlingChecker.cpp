@@ -1580,8 +1580,8 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-    Float64 Es, fs;
-    pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fs);
+    Float64 Es, fs, fu;
+    pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fs,&fu);
     fs *= 0.5;
 
     Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );

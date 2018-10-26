@@ -40,6 +40,7 @@
 #include <PgsExt\PoiArtifactKey.h>
 #endif
 
+#include <Material\Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -605,8 +606,8 @@ public:
    Float64 GetSMax() const {return m_SMax;}
    void SetSMin(Float64 s) {m_SMin = s;}
    Float64 GetSMin() const {return m_SMin;}
-   void SetBarSize(BarSizeType s) {m_BarSize = s;}
-   BarSizeType GetBarSize() const {return m_BarSize;}
+   void SetBarSize(matRebar::Size s) {m_BarSize = s;}
+   matRebar::Size GetBarSize() const {return m_BarSize;}
    void SetS(Float64 s) {m_S = s;}
    Float64 GetS() const {return m_S;}
    void SetBv(Float64 bv) {m_Bv = bv;}
@@ -655,7 +656,7 @@ private:
    Float64 m_Avs;
    Float64 m_SMax;
    Float64 m_SMin;
-   BarSizeType m_BarSize;
+   matRebar::Size m_BarSize;
    Float64 m_S;
    Float64 m_Bv;
    Float64 m_Dv;

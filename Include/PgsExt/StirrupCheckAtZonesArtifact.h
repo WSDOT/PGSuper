@@ -305,22 +305,22 @@ public:
 
    // GROUP: OPERATIONS
    // if not applicable, the rest of the values are undefined
-   bool IsApplicable() const {return m_IsApplicable;}
-   void SetApplicability(bool isAp){ m_IsApplicable=isAp;}
-   Float64 GetApplicableZoneLength() const {return m_ApplicableZoneLength;}
-   void SetApplicableZoneLength(Float64 zl){m_ApplicableZoneLength=zl;}
-   Float64 GetZoneEnd() const {return m_ZoneEnd;}
-   void SetZoneEnd(Float64 zl){m_ZoneEnd=zl;}
-   BarSizeType GetBarSize() const {return m_BarSize;}
-   void SetBarSize(BarSizeType bs) {m_BarSize = bs;}
-   Float64 GetS() const {return m_S;}
-   void SetS(Float64 s) {m_S = s;}
-   BarSizeType GetMinBarSize() const {return m_MinBarSize;}
-   void SetMinBarSize(BarSizeType bs) {m_MinBarSize = bs;}
-   Float64 GetSMax() const {return m_SMax;}
-   void SetSMax(Float64 smax) {m_SMax = smax;}
+   bool IsApplicable() const;
+   void SetApplicability(bool isAp);
+   Float64 GetApplicableZoneLength() const;
+   void SetApplicableZoneLength(Float64 zl);
+   Float64 GetZoneEnd() const;
+   void SetZoneEnd(Float64 zl);
+   const matRebar* GetBar() const;
+   void SetBar(const matRebar* pRebar);
+   Float64 GetS() const;
+   void SetS(Float64 s);
+   const matRebar* GetMinBar() const;
+   void SetMinBar(const matRebar* pBar);
+   Float64 GetSMax() const;
+   void SetSMax(Float64 smax);
 
-   bool   Passed() const;
+   bool Passed() const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -355,9 +355,9 @@ private:
    bool m_IsApplicable;
    Float64 m_ApplicableZoneLength;
    Float64 m_ZoneEnd;
-   BarSizeType m_BarSize;
+   const matRebar* m_pRebar;
    Float64 m_S;
-   BarSizeType m_MinBarSize;
+   const matRebar* m_pMinRebar;
    Float64 m_SMax;
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

@@ -34,6 +34,8 @@
 
 #include "HtmlHelp\HelpTopics.hh"
 
+#include <Lrfd\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -63,7 +65,18 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   DDX_CBStringExactCase(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.strRebarMaterial);
+   if (pDX->m_bSaveAndValidate)
+   {
+      int idx;
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      GetStirrupMaterial(idx,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+      GetStirrupMaterial(idx,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
+   }
+   else
+   {
+      int idx = GetStirrupMaterialIndex(m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+   }
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -72,8 +85,8 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TOP_COVER,    IDC_TOP_COVER_UNIT,    m_RebarData.TopCover,    pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_COVER, IDC_BOTTOM_COVER_UNIT, m_RebarData.BottomCover, pDisplayUnits->GetComponentDimUnit() );
 
-   DDX_CBItemData(pDX,IDC_TOP_MAT_BAR,    m_RebarData.TopRebarKey);
-   DDX_CBItemData(pDX,IDC_BOTTOM_MAT_BAR, m_RebarData.BottomRebarKey);
+   DDX_CBItemData(pDX,IDC_TOP_MAT_BAR,    m_RebarData.TopRebarSize);
+   DDX_CBItemData(pDX,IDC_BOTTOM_MAT_BAR, m_RebarData.BottomRebarSize);
 
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_BAR_SPACING,    IDC_TOP_MAT_BAR_SPACING_UNIT,    m_RebarData.TopSpacing,    pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_BAR_SPACING, IDC_BOTTOM_MAT_BAR_SPACING_UNIT, m_RebarData.BottomSpacing, pDisplayUnits->GetComponentDimUnit() );
@@ -120,13 +133,10 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
    FillRebarComboBox(pcbTopRebar);
    FillRebarComboBox(pcbBottomRebar);
 
+   CComboBox* pcbMaterial = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
+   FillMaterialComboBox(pcbMaterial);
+
    CPropertyPage::OnInitDialog();
-
-
-   // select the one and only material
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   ASSERT(pc);
-   pc->SetCurSel(0);
    
    EnableToolTips(TRUE);
    
@@ -140,25 +150,28 @@ void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
 {
    // Item data is the rebar key for the lrfdRebarPool object
    int idx = pcbRebar->AddString(_T("None"));
-   pcbRebar->SetItemData(idx,-1);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
 
+#pragma Reminder("BUG: get the available bar sizes from the rebar pool")
+   // using hard coded list... use a rebar pool iter
+   // also, the name can come from the rebar pool as well
    idx = pcbRebar->AddString(_T("#4"));
-   pcbRebar->SetItemData(idx,4);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs4);
 
    idx = pcbRebar->AddString(_T("#5"));
-   pcbRebar->SetItemData(idx,5);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs5);
 
    idx = pcbRebar->AddString(_T("#6"));
-   pcbRebar->SetItemData(idx,6);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
 
    idx = pcbRebar->AddString(_T("#7"));
-   pcbRebar->SetItemData(idx,7);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs7);
 
    idx = pcbRebar->AddString(_T("#8"));
-   pcbRebar->SetItemData(idx,8);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs8);
 
    idx = pcbRebar->AddString(_T("#9"));
-   pcbRebar->SetItemData(idx,9);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
 }
 
 void CBridgeDescDeckReinforcementPage::EnableRemoveBtn(bool bEnable)
@@ -261,4 +274,54 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
       return TRUE;
    }
    return FALSE;
+}
+
+void CBridgeDescDeckReinforcementPage::FillMaterialComboBox(CComboBox* pCB)
+{
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
+}
+
+void CBridgeDescDeckReinforcementPage::GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
+{
+   switch(idx)
+   {
+   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
+   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
+   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
+   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
+   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
+   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
+   default:
+      ATLASSERT(false); // should never get here
+   }
+}
+
+int CBridgeDescDeckReinforcementPage::GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
+{
+   if ( type == matRebar::A615 )
+   {
+      if ( grade == matRebar::Grade40 )
+         return 0;
+      else if ( grade == matRebar::Grade60 )
+         return 1;
+      else if ( grade == matRebar::Grade75 )
+         return 2;
+      else if ( grade == matRebar::Grade80 )
+         return 3;
+   }
+   else
+   {
+      if ( grade == matRebar::Grade60 )
+         return 4;
+      else if ( grade == matRebar::Grade80 )
+         return 5;
+   }
+
+   ATLASSERT(false); // should never get here
+   return -1;
 }

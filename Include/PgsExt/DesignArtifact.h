@@ -254,8 +254,8 @@ public:
    // DoDesignShear - If this is false, all shear values are bogus.
    bool GetDoDesignShear() const;
 
-   BarSizeType GetConfinementBarSize() const;
-   void SetConfinementBarSize(BarSizeType barSize);
+   matRebar::Size GetConfinementBarSize() const;
+   void SetConfinementBarSize(matRebar::Size barSize);
    ZoneIndexType GetLastConfinementZone() const;
    void SetLastConfinementZone(ZoneIndexType zone);
 
@@ -325,7 +325,7 @@ private:
    CShearZoneData m_ShearZoneData[MAXSHEARZONES];
 
    ZoneIndexType m_LastConfinementZone;
-   BarSizeType m_ConfinementBarSize;
+   matRebar::Size m_ConfinementBarSize;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

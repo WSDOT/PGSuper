@@ -46,15 +46,15 @@ CShearZoneData::CShearZoneData():
 ZoneNum(0),
 BarSpacing(0),
 ZoneLength(),
-VertBarSize(0),
+VertBarSize(matRebar::bs3),
+HorzBarSize(matRebar::bs3),
 nVertBars(2),
-HorzBarSize(0),
 nHorzBars(2)
 {
 
 }
 
-CShearZoneData::CShearZoneData(Uint32 zoneNum,BarSizeType barSize,Float64 barSpacing,Float64 zoneLength,Uint32 nbrLegs):
+CShearZoneData::CShearZoneData(Uint32 zoneNum,matRebar::Size barSize,Float64 barSpacing,Float64 zoneLength,Uint32 nbrLegs):
 ZoneNum(zoneNum),
 VertBarSize(barSize),
 HorzBarSize(barSize),
@@ -126,7 +126,7 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       Float64 version;
       pStrLoad->get_Version(&version);
-      if ( 2.0 < version )
+      if ( 3.0 < version )
          return STRLOAD_E_BADVERSION;
 
       _variant_t var;
@@ -139,10 +139,15 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             ZoneNum = var.lVal;
 
          var.vt = VT_I2;
+         BarSizeType key;
          if ( FAILED(pStrLoad->get_Property(_T("BarSize"),&var)) )
             return STRLOAD_E_INVALIDFORMAT;
          else
-            VertBarSize = var.iVal;
+            key = var.iVal;
+
+         matRebar::Grade grade;
+         matRebar::Type type;
+         lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
 
          var.vt = VT_R8;
          if ( FAILED(pStrLoad->get_Property(_T("BarSpacing"),&var)) )
@@ -169,7 +174,7 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             nVertBars = 2;
          }
 
-         HorzBarSize = 0;
+         HorzBarSize = matRebar::bsNone;
          nHorzBars   = 2;
       }
       else
@@ -192,11 +197,27 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          else
             BarSpacing = var.dblVal;
 
-         var.vt = VT_I2;
-         if ( FAILED(pStrLoad->get_Property(_T("VertBarSize"),&var)) )
-            return STRLOAD_E_INVALIDFORMAT;
+         if ( version < 3 )
+         {
+            var.vt = VT_I2;
+            BarSizeType key;
+            if ( FAILED(pStrLoad->get_Property(_T("VertBarSize"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               key = var.iVal;
+         
+            matRebar::Grade grade;
+            matRebar::Type type;
+            lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
+         }
          else
-            VertBarSize = var.iVal;
+         {
+            var.vt = VT_I4;
+            if ( FAILED(pStrLoad->get_Property(_T("VertBarSize"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               VertBarSize = matRebar::Size(var.lVal);
+         }
 
          var.vt = VT_I4;
          if ( FAILED(pStrLoad->get_Property(_T("VertBars"),&var)) )
@@ -204,11 +225,26 @@ HRESULT CShearZoneData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          else
             nVertBars = var.lVal;
 
-         var.vt = VT_I2;
-         if ( FAILED(pStrLoad->get_Property(_T("HorzBarSize"),&var)) )
-            return STRLOAD_E_INVALIDFORMAT;
+         if ( version < 3 )
+         {
+            var.vt = VT_I2;
+            Int32 key;
+            if ( FAILED(pStrLoad->get_Property(_T("HorzBarSize"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               key = var.iVal;
+         
+            matRebar::Grade grade;
+            matRebar::Type type;
+            lrfdRebarPool::MapOldRebarKey(key,grade,type,HorzBarSize);
+         }
          else
-            HorzBarSize = var.iVal;
+         {
+            if ( FAILED(pStrLoad->get_Property(_T("HorzBarSize"),&var)) )
+               return STRLOAD_E_INVALIDFORMAT;
+            else
+               HorzBarSize = matRebar::Size(var.lVal);
+         }
 
          var.vt = VT_I4;
          if ( FAILED(pStrLoad->get_Property(_T("HorzBars"),&var)) )
@@ -233,13 +269,13 @@ HRESULT CShearZoneData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("ShearZoneData"),2.0);
+   pStrSave->BeginUnit(_T("ShearZoneData"),3.0);
    pStrSave->put_Property(_T("ZoneNum"),    _variant_t(ZoneNum) );
    pStrSave->put_Property(_T("ZoneLength"), _variant_t(ZoneLength) );
    pStrSave->put_Property(_T("BarSpacing"), _variant_t(BarSpacing) );
-   pStrSave->put_Property(_T("VertBarSize"),_variant_t(VertBarSize) );
+   pStrSave->put_Property(_T("VertBarSize"),_variant_t((long)VertBarSize) );
    pStrSave->put_Property(_T("VertBars"),   _variant_t(nVertBars) );
-   pStrSave->put_Property(_T("HorzBarSize"),_variant_t(HorzBarSize) );
+   pStrSave->put_Property(_T("HorzBarSize"),_variant_t((long)HorzBarSize) );
    pStrSave->put_Property(_T("HorzBars"),   _variant_t(nHorzBars) );
    pStrSave->EndUnit();
 

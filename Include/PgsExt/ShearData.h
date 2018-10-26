@@ -43,6 +43,8 @@
 //
 #include <PgsExt\ShearZoneData.h>
 
+#include <Material\Rebar.h>
+
 // FORWARD DECLARATIONS
 //
 class GirderLibraryEntry;
@@ -73,17 +75,20 @@ LOG
 class PGSEXTCLASS CShearData
 {
 public:
-   BarSizeType ConfinementBarSize;
+   matRebar::Type ShearBarType;
+   matRebar::Grade ShearBarGrade;
+   matRebar::Size ConfinementBarSize;
    Uint32      NumConfinementZones;
    bool        bDoStirrupsEngageDeck;
    bool        bIsRoughenedSurface;
-   BarSizeType TopFlangeBarSize;
+
+   matRebar::Size TopFlangeBarSize;
    Float64     TopFlangeBarSpacing;
+
    typedef std::vector<CShearZoneData> ShearZoneVec;
    typedef ShearZoneVec::iterator ShearZoneIterator;
    typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
    ShearZoneVec ShearZones;
-   std::_tstring strRebarMaterial;
 
    // GROUP: LIFECYCLE
 

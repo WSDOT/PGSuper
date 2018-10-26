@@ -119,7 +119,7 @@ public:
    virtual Float64 GetMaxSplittingStress(Float64 fyRebar);
    virtual Float64 GetSplittingZoneLength( Float64 girderHeight );
    virtual Float64 CSpecAgentImp::GetSplittingZoneLengthFactor();
-   virtual BarSizeType GetMinConfinmentBarSize();
+   virtual matRebar::Size GetMinConfinmentBarSize();
    virtual Float64 GetMaxConfinmentBarSpacing();
    virtual Float64 GetMinConfinmentAvS();
    virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy); // obsolete

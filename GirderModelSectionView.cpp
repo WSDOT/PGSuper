@@ -166,6 +166,12 @@ void CGirderModelSectionView::OnInitialUpdate()
    CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, false);
    unk = events->GetInterface(&IID_iDisplayMgrEvents);
    dispMgr->RegisterEventSink((iDisplayMgrEvents*)unk);
+
+   CSelection selection = pDoc->GetSelection();
+   if ( selection.Type != CSelection::Girder )
+   {
+      pDoc->SelectGirder(m_CurrentSpanIdx,m_CurrentGirderIdx);
+   }
 }
 
 void CGirderModelSectionView::CreateDisplayLists()

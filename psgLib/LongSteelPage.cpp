@@ -62,6 +62,24 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
 	DDV_GXGridWnd(pDX, &m_Grid);
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   if ( pDX->m_bSaveAndValidate )
+   {
+      int idx;
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      matRebar::Type type;
+      matRebar::Grade grade;
+      pDad->GetStirrupMaterial(idx,type,grade);
+      pDad->m_Entry.SetLongSteelMaterial(type,grade);
+   }
+   else
+   {
+      matRebar::Type type;
+      matRebar::Grade grade;
+      pDad->m_Entry.GetLongSteelMaterial(type,grade);
+      int idx = pDad->GetStirrupMaterialIndex(type,grade);
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+   }
+
    // dad is a friend of the entry. use him to transfer data.
    pDad->ExchangeLongitudinalData(pDX);
 }
@@ -92,6 +110,9 @@ BOOL CLongSteelPage::OnInitDialog()
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
 
+   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
+   pDad->FillMaterialComboBox(pc);
+
 	CPropertyPage::OnInitDialog();
 	
 	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
@@ -101,11 +122,6 @@ BOOL CLongSteelPage::OnInitDialog()
    CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
    ASSERT(pdel);
    pdel->EnableWindow(FALSE);
-
-   // select the one and only material
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   ASSERT(pc);
-   pc->SetCurSel(0);
 
    // set data in grids - would be nice to be able to do this in DoDataExchange,
    // but mfc sucks.

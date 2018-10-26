@@ -46,6 +46,8 @@
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 
+#include <LRFD\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -69,7 +71,9 @@ static char THIS_FILE[] = __FILE__;
 // from 13.0 to 14.0 added SectionDimensions data block
 // from 14.0 to 15.0 added strand grids for each end of the girder
 // from 15.0 to 16.0 added input for post-tensioning
-#define CURRENT_VERSION 17.0
+// from 16.0 to 17.0 removed the post-tensioning input
+// from 17.0 to 18.0 changed class for new rebar object
+#define CURRENT_VERSION 18.0
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -86,22 +90,21 @@ GirderLibraryEntry::ClassFactoryCollection GirderLibraryEntry::ms_ClassFactories
 CLASS
    GirderLibraryEntry
 ****************************************************************************/
-static LPCTSTR SMaterialName={_T("AASHTO M31 (A615) - Grade 60")};
-
-
 //======================== LIFECYCLE  =======================================
 GirderLibraryEntry::GirderLibraryEntry() :
 m_bUseDifferentHarpedGridAtEnds(true),
-m_ShearSteelBarSize(0),
+m_StirrupBarType(matRebar::A615),
+m_StirrupBarGrade(matRebar::Grade60),
+m_ConfinementBarSize(matRebar::bsNone),
 m_LastConfinementZone(0),
 m_HarpingPointLocation(0.25),
 m_HarpPointMeasure(mtFractionOfGirderLength),
 m_bMinHarpingPointLocation(false),
 m_MinHarpingPointLocation(::ConvertToSysUnits(5.0,unitMeasure::Feet)),
 m_HarpPointReference(mlBearing),
-m_ShearSteelMaterial(SMaterialName),
-m_LongSteelMaterial(SMaterialName),
-m_TopFlangeShearBarSize(0),
+m_LongitudinalBarType(matRebar::A615),
+m_LongitudinalBarGrade(matRebar::Grade60),
+m_TopFlangeShearBarSize(matRebar::bsNone),
 m_TopFlangeShearBarSpacing(0.0),
 m_bStirrupsEngageDeck(true),
 m_bIsRoughenedSurface(true),
@@ -198,7 +201,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("HPTopFace"),               (long)m_HPAdjustment.m_TopFace);
    pSave->Property(_T("HPTopLimit"),              m_HPAdjustment.m_TopLimit);
 
-   pSave->Property(_T("ShearSteelBarSize"),        m_ShearSteelBarSize);
+   pSave->Property(_T("ConfinementBarSize"),        (long)m_ConfinementBarSize); // data type and property name changed in version 18
    pSave->Property(_T("LastConfinementZone"),      m_LastConfinementZone);
    pSave->Property(_T("HarpingPointLocation"),     m_HarpingPointLocation);
    pSave->Property(_T("UseMinHarpingPointLocation"),m_bMinHarpingPointLocation);
@@ -208,11 +211,11 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    pSave->Property(_T("HarpingPointReference"),    (long)m_HarpPointReference);
    pSave->Property(_T("HarpingPointMeasure"),      (long)m_HarpPointMeasure); // added in version 4
-   pSave->Property(_T("ShearSteelMaterial"),       m_ShearSteelMaterial.c_str());
-   pSave->Property(_T("LongSteelMaterial"),        m_LongSteelMaterial.c_str());
+   //pSave->Property(_T("ShearSteelMaterial"),       m_ShearSteelMaterial.c_str()); // removed in version 18
+   //pSave->Property(_T("LongSteelMaterial"),        m_LongSteelMaterial.c_str()); // removed in version 18
    pSave->Property(_T("DoStirrupsEngageDeck"),     m_bStirrupsEngageDeck);
    pSave->Property(_T("IsRoughenedSurface"),       m_bIsRoughenedSurface); // added in version 17
-   pSave->Property(_T("TopFlangeShearBarSize"),    m_TopFlangeShearBarSize);
+   pSave->Property(_T("TopFlangeShearBarSize"),    (long)m_TopFlangeShearBarSize); // data type changed in version 18
    pSave->Property(_T("TopFlangeShearBarSpacing"), m_TopFlangeShearBarSpacing);
 
    // debond criteria - added in version 13
@@ -318,24 +321,28 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    }
 
    // shear zones
+   pSave->Property(_T("ShearSteelBarType"),        (long)m_StirrupBarType); // added in version 18
+   pSave->Property(_T("ShearSteelBarGrade"),       (long)m_StirrupBarGrade); // added in version 18
    for (ShearZoneInfoVec::const_iterator its = m_ShearZoneInfo.begin(); its!=m_ShearZoneInfo.end(); its++)
    {
-      pSave->BeginUnit(_T("ShearZones"), 2.0);
+      pSave->BeginUnit(_T("ShearZones"), 3.0); // changed to version 3.0 because VertBarSize and HorzBarSize have changed
 
       pSave->Property(_T("ZoneLength"),  (*its).ZoneLength);
       pSave->Property(_T("Spacing"),     (*its).StirrupSpacing);
-      pSave->Property(_T("VertBarSize"), (*its).VertBarSize);
+      pSave->Property(_T("VertBarSize"), (Int32)(*its).VertBarSize);
       pSave->Property(_T("VertBars"),    (*its).nVertBars);
-      pSave->Property(_T("HorzBarSize"), (*its).HorzBarSize);
+      pSave->Property(_T("HorzBarSize"), (Int32)(*its).HorzBarSize);
       pSave->Property(_T("HorzBars"),    (*its).nHorzBars);
 
       pSave->EndUnit();
    }
    
    // Longitudinal Steel rows
+   pSave->Property(_T("LongitudinalBarType"),    (long)m_LongitudinalBarType); // added in version 18
+   pSave->Property(_T("LongitudinalBarGrade"),   (long)m_LongitudinalBarGrade); // added in version 18
    for (LongSteelInfoVec::const_iterator itl = m_LongSteelInfo.begin(); itl!=m_LongSteelInfo.end(); itl++)
    {
-      pSave->BeginUnit(_T("LongSteelInfo"), 1.0);
+      pSave->BeginUnit(_T("LongSteelInfo"), 2.0);
 
       if (itl->Face==GirderLibraryEntry::GirderBottom)
          pSave->Property(_T("Face"), _T("Bottom"));
@@ -343,7 +350,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
          pSave->Property(_T("Face"), _T("Top"));
 
       pSave->Property(_T("NumberOfBars"), (*itl).NumberOfBars);
-      pSave->Property(_T("BarSize"),  (*itl).BarSize);
+      pSave->Property(_T("BarSize"),  (Int32)(*itl).BarSize);
       pSave->Property(_T("BarCover"), (*itl).Cover);
       pSave->Property(_T("BarSpacing"), (*itl).BarSpacing);
 
@@ -574,8 +581,24 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("ShearSteelBarSize"), &m_ShearSteelBarSize))
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      if ( version < 18 )
+      {
+         Int32 size;
+         if(!pLoad->Property(_T("ShearSteelBarSize"), &size))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         lrfdRebarPool::MapOldRebarKey(size,m_StirrupBarGrade,m_StirrupBarType,m_ConfinementBarSize);
+      }
+      else
+      {
+         // rename in version 18
+         Int32 value;
+         if ( !pLoad->Property(_T("ConfinementBarSize"), &value) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_ConfinementBarSize = matRebar::Size(value);
+      }
+
 
       if(!pLoad->Property(_T("LastConfinementZone"), &m_LastConfinementZone))
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -712,16 +735,25 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          bOldIntermediateDiaphragms = true;
       }
 
-      if(!pLoad->Property(_T("ShearSteelMaterial"), &m_ShearSteelMaterial))
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      // Removed in version 18
+      if ( version < 18 )
+      {
+         // just load the string, but it doesn't need to be translated into any current data
+         // the current data is stirrup and longitudinal bar type and grade. THe defaults are A615, Grade 60
+         std::_tstring strMat;
 
-      if(!pLoad->Property(_T("LongSteelMaterial"),  &m_LongSteelMaterial))
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         if(!pLoad->Property(_T("ShearSteelMaterial"), &strMat))
+            THROW_LOAD(InvalidFileFormat,pLoad);
 
-      // Bug fix: There was an error saving m_LongSteelMaterial that caused it to be blank. This
-      //          caused no harm until we needed the value. Reset it to correct value if blank
-      if (m_LongSteelMaterial.empty())
-         m_LongSteelMaterial = SMaterialName;
+         if(!pLoad->Property(_T("LongSteelMaterial"),  &strMat))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      // No longer needed in vesrion 18
+      //// Bug fix: There was an error saving m_LongSteelMaterial that caused it to be blank. This
+      ////          caused no harm until we needed the value. Reset it to correct value if blank
+      //if (m_LongSteelMaterial.empty())
+      //   m_LongSteelMaterial = SMaterialName;
 
       // top flange shear steel
       if ( version >= 1.8 )
@@ -736,18 +768,30 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if (version>=1.1)
+      if (1.1 <= version )
       {
-         if(!pLoad->Property(_T("TopFlangeShearBarSize"),  &m_TopFlangeShearBarSize))
+         Int32 size;
+         if(!pLoad->Property(_T("TopFlangeShearBarSize"),  &size))
             THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( version < 18 )
+         {
+            matRebar::Grade grade;
+            matRebar::Type type;
+            lrfdRebarPool::MapOldRebarKey(size,grade,type,m_TopFlangeShearBarSize);
+         }
+         else
+         {
+            m_TopFlangeShearBarSize = matRebar::Size(size);
+         }
 
          if(!pLoad->Property(_T("TopFlangeShearBarSpacing"),  &m_TopFlangeShearBarSpacing))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
       else
       {
-          m_TopFlangeShearBarSize = 0;
-          m_TopFlangeShearBarSpacing = 0.0;
+         m_TopFlangeShearBarSize = matRebar::bsNone;
+         m_TopFlangeShearBarSpacing = 0.0;
       }
 
       // debond criteria - added in version 13
@@ -1257,13 +1301,27 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       // shear zones
+      if ( 17 < version )
+      {
+         Int32 value;
+         if ( !pLoad->Property(_T("ShearSteelBarType"), &value) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_StirrupBarType = matRebar::Type(value);
+
+         if ( !pLoad->Property(_T("ShearSteelBarGrade"), &value) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_StirrupBarGrade = matRebar::Grade(value);
+      }
+
       ShearZoneInfo zi;
       m_ShearZoneInfo.clear();
       while(pLoad->BeginUnit(_T("ShearZones")))
       {
          double shear_zone_version = pLoad->GetVersion();
 
-         if(2 < shear_zone_version )
+         if(3 < shear_zone_version )
             THROW_LOAD(BadVersion,pLoad);
 
          if ( shear_zone_version < 2 )
@@ -1271,8 +1329,13 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("ZoneLength"),&zi.ZoneLength))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property(_T("BarSize"), &zi.VertBarSize))
+            Int32 size;
+            if(!pLoad->Property(_T("BarSize"), &size))
                THROW_LOAD(InvalidFileFormat,pLoad);
+
+            matRebar::Grade grade;
+            matRebar::Type type;
+            lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
 
 
             if ( version < 11.0 )
@@ -1298,7 +1361,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                zi.nVertBars = 2;
             }
 
-            zi.HorzBarSize = 0;
+            zi.HorzBarSize = matRebar::bsNone;
             zi.nHorzBars   = 2;
          }
          else
@@ -1309,14 +1372,46 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if(!pLoad->Property(_T("Spacing"), &zi.StirrupSpacing))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property(_T("VertBarSize"), &zi.VertBarSize))
-               THROW_LOAD(InvalidFileFormat,pLoad);
+            if ( shear_zone_version < 3 )
+            {
+               Int32 size;
+               if(!pLoad->Property(_T("VertBarSize"), &size))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               matRebar::Grade grade;
+               matRebar::Type type;
+               lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
+            }
+            else
+            {
+               Int32 value;
+               if(!pLoad->Property(_T("VertBarSize"), &value))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               zi.VertBarSize = matRebar::Size(value);
+            }
 
             if(!pLoad->Property(_T("VertBars"), &zi.nVertBars))
                THROW_LOAD(InvalidFileFormat,pLoad);
 
-            if(!pLoad->Property(_T("HorzBarSize"), &zi.HorzBarSize))
-               THROW_LOAD(InvalidFileFormat,pLoad);
+            if ( shear_zone_version < 3 )
+            {
+               Int32 size;
+               if(!pLoad->Property(_T("HorzBarSize"), &size))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               matRebar::Grade grade;
+               matRebar::Type type;
+               lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.HorzBarSize);
+            }
+            else
+            {
+               Int32 value;
+               if(!pLoad->Property(_T("HorzBarSize"), &value))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               zi.HorzBarSize = matRebar::Size(value);
+            }
 
             if(!pLoad->Property(_T("HorzBars"), &zi.nHorzBars))
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1330,6 +1425,21 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       // Longitudinal Steel rows
+      if ( 17 < version )
+      {
+         long value;
+
+         if(!pLoad->Property(_T("LongitudinalBarType"), &value))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_LongitudinalBarType = matRebar::Type(value);
+
+         if(!pLoad->Property(_T("LongitudinalBarGrade"), &value))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_LongitudinalBarGrade = matRebar::Grade(value);
+      }
+
       LongSteelInfo li;
       std::_tstring tmp;
       m_LongSteelInfo.clear();
@@ -1351,8 +1461,24 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("NumberOfBars"), &li.NumberOfBars))
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if(!pLoad->Property(_T("BarSize"),  &li.BarSize))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( pLoad->GetVersion() < 2.0 )
+         {
+            Int32 barSize;
+            if(!pLoad->Property(_T("BarSize"),  &barSize))
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            matRebar::Grade grade;
+            matRebar::Type type;
+            lrfdRebarPool::MapOldRebarKey(barSize,grade,type,li.BarSize);
+         }
+         else
+         {
+            Int32 value;
+            if(!pLoad->Property(_T("BarSize"),  &value))
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            li.BarSize = matRebar::Size(value);
+         }
 
          if(!pLoad->Property(_T("BarCover"), &li.Cover))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1581,7 +1707,8 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
 
    test &= (m_HPAdjustment             == rOther.m_HPAdjustment);
    test &= (m_EndAdjustment            == rOther.m_EndAdjustment);
-   test &= (m_ShearSteelBarSize        == rOther.m_ShearSteelBarSize);
+   test &= (m_StirrupBarType           == rOther.m_StirrupBarType);
+   test &= (m_StirrupBarGrade          == rOther.m_StirrupBarGrade);
    test &= (m_LastConfinementZone      == rOther.m_LastConfinementZone);
    test &= (m_HarpingPointLocation     == rOther.m_HarpingPointLocation);
    test &= (m_bMinHarpingPointLocation == rOther.m_bMinHarpingPointLocation);
@@ -1601,6 +1728,7 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= (m_ShearZoneInfo == rOther.m_ShearZoneInfo);
    test &= (m_LongSteelInfo == rOther.m_LongSteelInfo);
 
+   test &= (m_ConfinementBarSize       == rOther.m_ConfinementBarSize);
    test &= (m_TopFlangeShearBarSize    == rOther.m_TopFlangeShearBarSize);
    test &= (m_TopFlangeShearBarSpacing == rOther.m_TopFlangeShearBarSpacing);
 
@@ -1614,8 +1742,8 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= (m_MaxDebondLengthBySpanFraction == rOther.m_MaxDebondLengthBySpanFraction);
    test &= (m_MaxDebondLengthByHardDistance == rOther.m_MaxDebondLengthByHardDistance);
 
-   test &= (m_ShearSteelMaterial == rOther.m_ShearSteelMaterial);
-   test &= (m_LongSteelMaterial == rOther.m_LongSteelMaterial);
+   test &= (m_LongitudinalBarType  == rOther.m_LongitudinalBarType);
+   test &= (m_LongitudinalBarGrade == rOther.m_LongitudinalBarGrade);
 
    test &= (m_Dimensions == rOther.m_Dimensions);
 
@@ -1915,7 +2043,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          _T("Upward adjustment increment value at end of girder cannot be greater than half of the girder depth")));
    }
 
-   if (m_TopFlangeShearBarSize!=0 && m_TopFlangeShearBarSpacing <=0.0)
+   if (m_TopFlangeShearBarSize != matRebar::bsNone && m_TopFlangeShearBarSpacing <=0.0)
    {
       std::_tostringstream os;
       os << _T("The top flange shear steel bar spacing must be greater than zero.");
@@ -1938,7 +2066,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          }
       }
 
-      if(IsZero((*its).StirrupSpacing) && ((*its).VertBarSize!=0 || (*its).HorzBarSize!=0))
+      if(IsZero((*its).StirrupSpacing) && ((*its).VertBarSize != matRebar::bsNone || (*its).HorzBarSize != matRebar::bsNone))
       {
          std::_tostringstream os;
          os << _T("The stirrup spacing in shear zone #")<<num<<_T(" must be greater than zero because stirrups exist.");
@@ -2563,14 +2691,16 @@ void GirderLibraryEntry::GetHPAdjustmentLimits(GirderFace* topFace, Float64* top
    *bottomLimit = m_HPAdjustment.m_BottomLimit;
 }
 
-void GirderLibraryEntry::SetShearSteelMaterial(const std::_tstring& name)
+void GirderLibraryEntry::SetShearSteelMaterial(matRebar::Type type,matRebar::Grade grade)
 {
-   m_ShearSteelMaterial = name;
+   m_StirrupBarType = type;
+   m_StirrupBarGrade = grade;
 }
 
-std::_tstring GirderLibraryEntry::GetShearSteelMaterial() const
+void GirderLibraryEntry::GetShearSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const
 {
-   return m_ShearSteelMaterial;
+   type = m_StirrupBarType;
+   grade = m_StirrupBarGrade;
 }
 
 void GirderLibraryEntry::SetShearZoneInfo(const GirderLibraryEntry::ShearZoneInfoVec& vec)
@@ -2583,14 +2713,14 @@ GirderLibraryEntry::ShearZoneInfoVec GirderLibraryEntry::GetShearZoneInfo() cons
    return m_ShearZoneInfo;
 }
 
-void GirderLibraryEntry::SetShearSteelBarSize(BarSizeType size)
+void GirderLibraryEntry::SetConfinementBarSize(matRebar::Size size)
 {
-   m_ShearSteelBarSize = size;
+   m_ConfinementBarSize = size;
 }
 
-BarSizeType GirderLibraryEntry::GetShearSteelBarSize() const
+matRebar::Size GirderLibraryEntry::GetConfinementBarSize() const
 {
-   return m_ShearSteelBarSize;
+   return m_ConfinementBarSize;
 }
 
 void GirderLibraryEntry::SetLastConfinementZone(Uint16 zone)
@@ -2623,13 +2753,13 @@ bool GirderLibraryEntry::IsRoughenedSurface() const
    return m_bIsRoughenedSurface;
 }
 
-void GirderLibraryEntry::SetTopFlangeShearBarSize(BarSizeType size)
+void GirderLibraryEntry::SetTopFlangeShearBarSize(matRebar::Size size)
 {
    CHECK(size>=0);
    m_TopFlangeShearBarSize = size;
 }
 
-BarSizeType GirderLibraryEntry::GetTopFlangeShearBarSize() const
+matRebar::Size GirderLibraryEntry::GetTopFlangeShearBarSize() const
 {
    return m_TopFlangeShearBarSize;
 }
@@ -2655,14 +2785,16 @@ GirderLibraryEntry::LongSteelInfoVec GirderLibraryEntry::GetLongSteelInfo() cons
    return m_LongSteelInfo;
 }
 
-void GirderLibraryEntry::SetLongSteelMaterial(const std::_tstring& name)
+void GirderLibraryEntry::SetLongSteelMaterial(matRebar::Type type,matRebar::Grade grade)
 {
-   m_LongSteelMaterial = name;
+   m_LongitudinalBarType = type;
+   m_LongitudinalBarGrade = grade;
 }
 
-std::_tstring GirderLibraryEntry::GetLongSteelMaterial() const
+void GirderLibraryEntry::GetLongSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const
 {
-   return m_LongSteelMaterial;
+   type = m_LongitudinalBarType;
+   grade = m_LongitudinalBarGrade;
 }
 
 void GirderLibraryEntry::SetHarpingPointLocation(Float64 d)
@@ -2768,16 +2900,17 @@ bool GirderLibraryEntry::Edit(bool allowEditing)
 
 void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
 {
-
-   m_ShearSteelBarSize        = rOther.m_ShearSteelBarSize;
+   m_StirrupBarType           = rOther.m_StirrupBarType;
+   m_StirrupBarGrade          = rOther.m_StirrupBarGrade;
+   m_LongitudinalBarType      = rOther.m_LongitudinalBarType;
+   m_LongitudinalBarGrade     = rOther.m_LongitudinalBarGrade;
+   m_ConfinementBarSize       = rOther.m_ConfinementBarSize;
    m_LastConfinementZone      = rOther.m_LastConfinementZone;
    m_HarpingPointLocation     = rOther.m_HarpingPointLocation;
    m_bMinHarpingPointLocation = rOther.m_bMinHarpingPointLocation;
    m_MinHarpingPointLocation  = rOther.m_MinHarpingPointLocation;
    m_HarpPointReference       = rOther.m_HarpPointReference;
    m_HarpPointMeasure         = rOther.m_HarpPointMeasure;
-   m_ShearSteelMaterial       = rOther.m_ShearSteelMaterial;
-   m_LongSteelMaterial        = rOther.m_LongSteelMaterial;
 
    m_HPAdjustment             = rOther.m_HPAdjustment;
    m_EndAdjustment            = rOther.m_EndAdjustment;

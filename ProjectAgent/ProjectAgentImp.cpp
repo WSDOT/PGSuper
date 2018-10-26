@@ -4846,16 +4846,26 @@ int CProjectAgentImp::DoSetGirderData(const CGirderData& const_data,SpanIndexTyp
 //
 std::_tstring CProjectAgentImp::GetStirrupMaterial(SpanIndexType span,GirderIndexType gdr) const
 {
+   // All shear bars have the same type (limited by the PGSuper interface)
+   // so just use the confinement bar
    CShearData shearData = GetShearData(span,gdr);
-   return shearData.strRebarMaterial;
+   return lrfdRebarPool::GetMaterialName(shearData.ShearBarType,shearData.ShearBarGrade);
 }
 
-void CProjectAgentImp::SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)
+void CProjectAgentImp::GetStirrupMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade)
+{
+   CShearData shearData = GetShearData(spanIdx,gdrIdx);
+   type = shearData.ShearBarType;
+   grade = shearData.ShearBarGrade;
+}
+
+void CProjectAgentImp::SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr,matRebar::Type type,matRebar::Grade grade)
 {
    CShearData shearData = GetShearData(span,gdr);
-   if ( shearData.strRebarMaterial != matName )
+   if (  shearData.ShearBarType != type || shearData.ShearBarGrade != grade )
    {
-      shearData.strRebarMaterial = matName;
+      shearData.ShearBarType = type;
+      shearData.ShearBarGrade = grade;
       DoSetShearData(shearData,span,gdr);
       Fire_GirderChanged(span,gdr,GCH_STIRRUPS);
    }
@@ -4891,15 +4901,23 @@ bool CProjectAgentImp::DoSetShearData(const CShearData& data,SpanIndexType span,
 std::_tstring CProjectAgentImp::GetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr) const
 {
    CLongitudinalRebarData lrd = GetLongitudinalRebarData(span,gdr);
-   return lrd.strRebarMaterial;
+   return lrfdRebarPool::GetMaterialName(lrd.BarType,lrd.BarGrade);
 }
 
-void CProjectAgentImp::SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,LPCTSTR matName)
+void CProjectAgentImp::GetLongitudinalRebarMaterial(SpanIndexType spanIdx,GirderIndexType gdrIdx,matRebar::Type& type,matRebar::Grade& grade)
+{
+   CLongitudinalRebarData lrd = GetLongitudinalRebarData(spanIdx,gdrIdx);
+   grade = lrd.BarGrade;
+   type = lrd.BarType;
+}
+
+void CProjectAgentImp::SetLongitudinalRebarMaterial(SpanIndexType span,GirderIndexType gdr,matRebar::Type type,matRebar::Grade grade)
 {
    CLongitudinalRebarData lrd = GetLongitudinalRebarData(span,gdr);
-   if ( lrd.strRebarMaterial != matName )
+   if ( lrd.BarGrade != grade || lrd.BarType != type )
    {
-      lrd.strRebarMaterial = matName;
+      lrd.BarGrade = grade;
+      lrd.BarType = type;
       DoSetLongitudinalRebarData(lrd,span,gdr);
       Fire_GirderChanged(span,gdr,GCH_LONGITUDINAL_REBAR);
    }

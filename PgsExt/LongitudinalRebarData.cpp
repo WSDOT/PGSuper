@@ -46,7 +46,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 CLongitudinalRebarData::CLongitudinalRebarData() :
-strRebarMaterial(_T("AASHTO M31 (A615) - Grade 60"))
+BarType(matRebar::A615),
+BarGrade(matRebar::Grade60)
 {
 }
 
@@ -72,7 +73,7 @@ CLongitudinalRebarData& CLongitudinalRebarData::operator= (const CLongitudinalRe
 
 bool CLongitudinalRebarData::operator == (const CLongitudinalRebarData& rOther) const
 {
-   return (RebarRows == rOther.RebarRows) && (strRebarMaterial == rOther.strRebarMaterial);
+   return (RebarRows == rOther.RebarRows);
 }
 
 bool CLongitudinalRebarData::operator != (const CLongitudinalRebarData& rOther) const
@@ -93,13 +94,25 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
    CComVariant var;
 
-   if ( 2.0 <= version )
+   if ( 2.0 == version )
    {
       var.Clear();
       var.vt = VT_BSTR;
       pStrLoad->get_Property(_T("RebarType"),&var);
-      strRebarMaterial = OLE2T(var.bstrVal);
+      std::_tstring strRebarMaterial = OLE2T(var.bstrVal);
    }
+
+   if ( 2 < version )
+   {
+      var.vt = VT_I4;
+
+      pStrLoad->get_Property(_T("BarGrade"), &var );
+      BarGrade = matRebar::Grade(var.lVal);
+
+      pStrLoad->get_Property(_T("BarType"), &var );
+      BarType = matRebar::Type(var.lVal);
+   }
+
 
    var.Clear();
    var.vt = VT_I4;
@@ -110,6 +123,9 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
    for ( long row = 0; row < count; row++ )
    {
       pStrLoad->BeginUnit(_T("RebarRow"));
+
+      Float64 bar_version;
+      pStrLoad->get_Version(&bar_version);
 
       RebarRow rebar_row;
 
@@ -125,8 +141,22 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
       pStrLoad->get_Property(_T("NumberOfBars"), &var);
       rebar_row.NumberOfBars = var.lVal;
 
-      pStrLoad->get_Property(_T("BarSize"), &var);
-      rebar_row.BarSize = var.lVal;
+      if ( bar_version < 2 )
+      {
+         var.vt = VT_I4;
+         pStrLoad->get_Property(_T("BarSize"), &var);
+         BarSizeType key = var.lVal;
+
+         matRebar::Grade grade;
+         matRebar::Type type;
+         lrfdRebarPool::MapOldRebarKey(key,grade,type,rebar_row.BarSize);
+      }
+      else
+      {
+         var.vt = VT_I4;
+         pStrLoad->get_Property(_T("BarSize"), &var );
+         rebar_row.BarSize = matRebar::Size(var.lVal);
+      }
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("BarSpacing"), &var);
@@ -147,16 +177,17 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    HRESULT hr = S_OK;
 
 
-   pStrSave->BeginUnit(_T("LongitudinalRebar"),2.0);
+   pStrSave->BeginUnit(_T("LongitudinalRebar"),3.0);
 
-   pStrSave->put_Property(_T("RebarType"),CComVariant(strRebarMaterial.c_str()));
+   pStrSave->put_Property(_T("BarGrade"),     CComVariant(BarGrade));
+   pStrSave->put_Property(_T("BarType"),      CComVariant(BarType));
 
    long count = RebarRows.size();
    pStrSave->put_Property(_T("RebarRowCount"),CComVariant(count));
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )
    {
-      pStrSave->BeginUnit(_T("RebarRow"),1.0);
+      pStrSave->BeginUnit(_T("RebarRow"),2.0);
       const RebarRow& rebar_row = *iter;
       pStrSave->put_Property(_T("Face"),         CComVariant(rebar_row.Face));
       pStrSave->put_Property(_T("Cover"),        CComVariant(rebar_row.Cover));
@@ -177,6 +208,8 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
    GirderLibraryEntry::LongSteelInfoVec lsiv = rGird.GetLongSteelInfo();
    GirderLibraryEntry::LongSteelInfoVec::iterator iter;
 
+   rGird.GetLongSteelMaterial(BarType,BarGrade);
+
    RebarRows.clear();
    for ( iter = lsiv.begin(); iter != lsiv.end(); iter++ )
    {
@@ -192,7 +225,7 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
       RebarRows.push_back(rebar_row);
    }
 
-   strRebarMaterial = rGird.GetLongSteelMaterial();
+   //strRebarMaterial = rGird.GetLongSteelMaterial();
 }
 
 //======================== ACCESS     =======================================
@@ -205,8 +238,9 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
 //======================== OPERATIONS =======================================
 void CLongitudinalRebarData::MakeCopy(const CLongitudinalRebarData& rOther)
 {
+   BarType   = rOther.BarType;
+   BarGrade  = rOther.BarGrade;
    RebarRows = rOther.RebarRows;
-   strRebarMaterial = rOther.strRebarMaterial;
 }
 
 void CLongitudinalRebarData::MakeAssignment(const CLongitudinalRebarData& rOther)

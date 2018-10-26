@@ -82,6 +82,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   void FillBarComboBox(CComboBox* pCB);
+
 public:
 	void RestoreToLibraryDefaults();
    void OnEnableDelete(bool canDelete);

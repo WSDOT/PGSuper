@@ -33,6 +33,8 @@
 
 #include "HtmlHelp\HelpTopics.hh"
 
+#include <Lrfd\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -63,7 +65,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LAST_ZONE, m_LastZone);
 	//}}AFX_DATA_MAP
 
-   DDX_CBStringExactCase(pDX,IDC_MILD_STEEL_SELECTOR,m_ShearData.strRebarMaterial);
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -75,27 +77,15 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
 
 	DDV_GXGridWnd(pDX, &m_Grid);
 
+   DDX_CBItemData(pDX,IDC_TF_BAR_SIZE,m_ShearData.TopFlangeBarSize);
+   DDX_CBItemData(pDX,IDC_BAR_SIZE,m_ShearData.ConfinementBarSize);
+
    if (pDX->m_bSaveAndValidate)
    {
-      // bar size in confinement zone.
-      CString bs;
-      m_BarSize.GetWindowText(bs);
-      bs.TrimLeft();
-      if (bs=="none")
-         m_ShearData.ConfinementBarSize=0;
-      else
-      {
-         int l = bs.GetLength();
-         CString s2 = bs.Right(l-1);
-         int i = _tstoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
-         {
-            ASSERT(0);
-            m_ShearData.ConfinementBarSize=0;
-         }
-         else
-            m_ShearData.ConfinementBarSize=i;
-      }
+      int idx;
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+      pParent->GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
+
 
       // last confinement zone
       int iz = m_LastZone.GetCurSel();
@@ -104,29 +94,9 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       else
          m_ShearData.NumConfinementZones = iz;
 
-      // top flange bar size
-      m_TfBarSize.GetWindowText(bs);
-      bs.TrimLeft();
-      if (bs=="none")
-         m_ShearData.TopFlangeBarSize=0;
-      else
-      {
-         int l = bs.GetLength();
-         CString s2 = bs.Right(l-1);
-         int i = _tstoi(s2);
-         if (bs.IsEmpty() || (i==0&&bs[0]!=_T('0')))
-         {
-            ASSERT(0);
-            m_ShearData.TopFlangeBarSize=0;
-         }
-         else
-         {
-            m_ShearData.TopFlangeBarSize=i;
-         }
-      }
 
       // check spacing
-      if (m_ShearData.TopFlangeBarSize>0 && m_ShearData.TopFlangeBarSpacing<=0.0)
+      if (m_ShearData.TopFlangeBarSize != matRebar::bsNone && m_ShearData.TopFlangeBarSpacing<=0.0)
       {
          CString msg("Top Flange Bar Spacing must be greater than zero");
          AfxMessageBox(msg);
@@ -197,6 +167,9 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
    else
    {
       // fill er up
+      int idx = pParent->GetStirrupMaterialIndex(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
+      DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
+
       // grid
       GirderLibraryEntry::ShearZoneInfoVec vec;
       for (CShearData::ShearZoneConstIterator it = m_ShearData.ShearZones.begin(); it!=m_ShearData.ShearZones.end(); it++)
@@ -212,45 +185,17 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       }
       m_Grid.FillGrid(vec);
 
-      // bar size in confinement zone.
-      Int32 siz = m_ShearData.ConfinementBarSize;
-      if (siz>0)
-      {
-         CString tmp;
-         tmp.Format(_T("#%d"),siz);
-         int idx = m_BarSize.SelectString(0,tmp);
-         if (idx==CB_ERR)
-            m_BarSize.SetCurSel(0);
-      }
-      else
-         m_BarSize.SetCurSel(0);
-
-
       // last confinement zone
-      siz = vec.size();
-      FillLastZone(siz);
+      FillLastZone(vec.size());
       Int32 sel = m_ShearData.NumConfinementZones;
-      if (sel <= siz)
+      if (sel <= vec.size())
+      {
          m_LastZone.SetCurSel(sel);
+      }
       else
       {
          ASSERT(0); // Shear zone from data file out of range
          m_LastZone.SetCurSel(0);
-      }
-
-      // bar size in top flange
-      siz = m_ShearData.TopFlangeBarSize;
-      if (siz>0)
-      {
-         CString tmp;
-         tmp.Format(_T("#%d"),siz);
-         int idx = m_TfBarSize.SelectString(0,tmp);
-         if (idx==CB_ERR)
-            m_TfBarSize.SetCurSel(0);
-      }
-      else
-      {
-         m_TfBarSize.SetCurSel(0);
       }
 
       // can't delete strands at start
@@ -289,12 +234,14 @@ BOOL CGirderDescShearPage::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_SHEAR_GRID, this);
    m_Grid.CustomInit();
 
-	CPropertyPage::OnInitDialog();
-
-   // select the one and only material
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   ASSERT(pc);
-   pc->SetCurSel(0);
+   pParent->FillMaterialComboBox(pc);
+
+   FillBarComboBox((CComboBox*)GetDlgItem(IDC_TF_BAR_SIZE));
+   FillBarComboBox((CComboBox*)GetDlgItem(IDC_BAR_SIZE));
+
+	CPropertyPage::OnInitDialog();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -349,7 +296,7 @@ void CGirderDescShearPage::FillLastZone(int siz)
 {
    CString tmp;
    m_LastZone.ResetContent();
-   m_LastZone.AddString(_T("none"));
+   m_LastZone.AddString(_T("None"));
    for (int i=1; i<=siz; i++)
    {
       tmp.Format(_T("Zone %d"),i);
@@ -391,4 +338,22 @@ BOOL CGirderDescShearPage::OnSetActive()
 void CGirderDescShearPage::OnHelp() 
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_SHEARDESC );
+}
+
+void CGirderDescShearPage::FillBarComboBox(CComboBox* pCB)
+{
+   int idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bsNone).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs3).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs3);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs4);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs5).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs5);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs6).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
 }
