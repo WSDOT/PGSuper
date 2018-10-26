@@ -40,20 +40,23 @@ struct TxDOTStrandType
    CString            Name;
    matPsStrand::Type  Type;
    matPsStrand::Grade Grade;
+   matPsStrand::Coating Coating;
 };
 
-static TxDOTStrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1725},
-                                                {_T("Grade 250, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1725},
-                                                {_T("Grade 270, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1860},
-                                                {_T("Grade 270, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1860} };
+static TxDOTStrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1725,matPsStrand::None},
+                                                {_T("Grade 250, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1725,matPsStrand::None},
+                                                {_T("Grade 270, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1860,matPsStrand::None},
+                                                {_T("Grade 270, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1860,matPsStrand::None} };
 
-static int GetStrandTypeIndex(matPsStrand::Type type, matPsStrand::Grade grade)
+static int GetStrandTypeIndex(matPsStrand::Type type, matPsStrand::Grade grade,matPsStrand::Coating coating)
 {
    for(int i=0; i<NUM_TYPES; i++)
    {
       TxDOTStrandType& st = StrandTypeList[i];
-      if (type==st.Type && grade==st.Grade)
+      if (type==st.Type && grade==st.Grade && coating==st.Coating)
+      {
          return i;
+      }
    }
    
    ASSERT(0);
@@ -321,7 +324,7 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    DWORD_PTR key = pList->GetItemData( sel );
    const matPsStrand* pmat = pPool->GetStrand( (Int32)key );
 
-   pOptGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetSize());
+   pOptGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetCoating(), pmat->GetSize());
 
    pOptGirderData->SetFc(m_OptFc);
    pOptGirderData->SetFci(m_OptFci);
@@ -337,7 +340,7 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    key = pList->GetItemData( sel );
    pmat = pPool->GetStrand( (Int32)key );
 
-   pOrigGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetSize());
+   pOrigGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetCoating(), pmat->GetSize());
 
    pOrigGirderData->SetFc(m_OrigFc);
    pOrigGirderData->SetFci(m_OrigFci);
@@ -377,18 +380,19 @@ void CTxDOTOptionalDesignGirderInputPage::InitOptStrandSizeTypeCtrls()
    // strand type, grade, size
    matPsStrand::Type type;
    matPsStrand::Grade grade;
+   matPsStrand::Coating coating;
    matPsStrand::Size size;
-   pOptionalGirderData->GetStrandData(&grade,&type,&size);
+   pOptionalGirderData->GetStrandData(&grade,&type,&coating,&size);
 
    // set type control
    InitStrandTypeCtrl(IDC_OPT_STRAND_TYPE); // fill with grade/type
 
-   int strandTypeIdx = GetStrandTypeIndex(type, grade);
+   int strandTypeIdx = GetStrandTypeIndex(type, grade, coating);
    CComboBox* pTypeList = (CComboBox*)GetDlgItem( IDC_OPT_STRAND_TYPE );
    pTypeList->SetCurSel(strandTypeIdx);
 
    // Set strand size
-   UpdateStrandSizeList( IDC_OPT_STRAND_SIZE, grade, type, size);	
+   UpdateStrandSizeList( IDC_OPT_STRAND_SIZE, grade, type, coating, size);	
 }
 
 void CTxDOTOptionalDesignGirderInputPage::InitOrigStrandSizeTypeCtrls()
@@ -399,18 +403,19 @@ void CTxDOTOptionalDesignGirderInputPage::InitOrigStrandSizeTypeCtrls()
    // strand type, grade, size
    matPsStrand::Type type;
    matPsStrand::Grade grade;
+   matPsStrand::Coating coating;
    matPsStrand::Size size;
-   pOriginalGirderData->GetStrandData(&grade,&type,&size);
+   pOriginalGirderData->GetStrandData(&grade,&type,&coating,&size);
 
    // set type control
    InitStrandTypeCtrl(IDC_ORIG_STRAND_TYPE); // fill with grade/type
 
-   int strandTypeIdx = GetStrandTypeIndex(type, grade);
+   int strandTypeIdx = GetStrandTypeIndex(type, grade, coating);
    CComboBox* pTypeList = (CComboBox*)GetDlgItem( IDC_ORIG_STRAND_TYPE );
    pTypeList->SetCurSel(strandTypeIdx);
 
    // Set strand size
-   UpdateStrandSizeList( IDC_ORIG_STRAND_SIZE, grade, type, size);	
+   UpdateStrandSizeList( IDC_ORIG_STRAND_SIZE, grade, type, coating, size);	
 }
 
 void CTxDOTOptionalDesignGirderInputPage::InitFillTypeCtrls()
@@ -476,7 +481,7 @@ void CTxDOTOptionalDesignGirderInputPage::InitFillTypeCtrls()
    }
 }
 
-void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeListCtrlID, matPsStrand::Grade grade,matPsStrand::Type type, matPsStrand::Size size)
+void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeListCtrlID, matPsStrand::Grade grade,matPsStrand::Type type,matPsStrand::Coating coating, matPsStrand::Size size)
 {
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
@@ -494,7 +499,7 @@ void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeLi
    }
 
    pList->ResetContent();
-   lrfdStrandIter iter( grade, type );
+   lrfdStrandIter iter( grade, type, coating );
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    int new_cur_sel = -1; // This will be in index of the string we want to select.
    for ( iter.Begin(); iter; iter.Next() )
@@ -545,8 +550,9 @@ void CTxDOTOptionalDesignGirderInputPage::OnStrandTypeChanged(long SizeCtrlID, l
 
    matPsStrand::Grade grade = StrandTypeList[idx].Grade;
    matPsStrand::Type  type  = StrandTypeList[idx].Type;
+   matPsStrand::Coating coating = StrandTypeList[idx].Coating;
 
-   UpdateStrandSizeList( SizeCtrlID, grade, type, matPsStrand::D635);	
+   UpdateStrandSizeList( SizeCtrlID, grade, type, coating, matPsStrand::D635);	
 }
 
 BOOL CTxDOTOptionalDesignGirderInputPage::OnSetActive()

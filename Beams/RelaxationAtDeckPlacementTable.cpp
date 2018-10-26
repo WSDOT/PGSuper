@@ -26,6 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <Reporting\ReportNotes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,17 +37,8 @@ static char THIS_FILE[] = __FILE__;
 CRelaxationAtDeckPlacementTable::CRelaxationAtDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( offset,      pDisplayUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),       false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
@@ -72,9 +64,13 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    // Create and configure the table
    ColumnIndexType numColumns = 2;
    if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   {
       numColumns++;
+   }
    else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   {
       numColumns += 4;
+   }
 
    CRelaxationAtDeckPlacementTable* table = new CRelaxationAtDeckPlacementTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
@@ -94,14 +90,14 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    {
    case lrfdRefinedLosses2005::Simplified:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1_Simplified.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())              << rptNewLine;
-      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetKL()                        << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyPermanent())              << rptNewLine;
+      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetPermanentStrandKL()                        << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::Refined:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())                              << rptNewLine;
-      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetKL()                                       << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyPermanent())                              << rptNewLine;
+      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetPermanentStrandKL()                                       << rptNewLine;
       *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetInitialAge())         << rptNewLine;
       *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtDeckPlacement()) << rptNewLine;
       break;
@@ -114,6 +110,11 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
       break;
    }
 
+
+   if ( ptl->GetPermanentStrandCoating() != matPsStrand::None )
+   {
+      *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
+   }
 
    table->stress.ShowUnitTag(false);
    table->time.ShowUnitTag(false);

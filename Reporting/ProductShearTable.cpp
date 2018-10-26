@@ -85,14 +85,15 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
-   bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bSegments, bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Shears"));
 
@@ -105,7 +106,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IProductForces,pForces);
@@ -133,7 +134,17 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<sysSectionValue> girder    = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
+      std::vector<sysSectionValue> segment;
+      std::vector<sysSectionValue> girder;
+      if ( bSegments )
+      {
+         segment = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
+         girder  = pForces2->GetShear(lastIntervalIdx,         pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
+      }
+      else
+      {
+         girder = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
+      }
       std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative);
 
       std::vector<sysSectionValue> minSlab, maxSlab;
@@ -274,6 +285,12 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
          ColumnIndexType col = 0;
 
          (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+
+         if ( bSegments )
+         {
+            (*p_table)(row,col++) << shear.SetValue( segment[index] );
+         }
+
          (*p_table)(row,col++) << shear.SetValue( girder[index] );
          (*p_table)(row,col++) << shear.SetValue( diaphragm[index] );
 

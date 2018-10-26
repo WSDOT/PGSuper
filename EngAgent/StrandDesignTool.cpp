@@ -3140,10 +3140,10 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
          }
 
          PoiAttributeType attributes = poi.GetReferencedAttributes(poiReference);
-         if ( attributes != supportAttribute )
+         if ( attributes != supportAttribute || poi.GetNonReferencedAttributes() != 0 )
          {
             // if the only flag that is set is support point attribute, remove it
-            // otherwise, clear the support point attribute bit and add it back
+            // otherwise, clear the support point attribute bit and add the poi back
             sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
             poi.SetReferencedAttributes(attributes);
             m_PoiMgr.AddPointOfInterest(poi);
@@ -3202,16 +3202,11 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
    std::vector<pgsPointOfInterest> vPoi2;
    m_PoiMgr.GetPointsOfInterest(segmentKey, poiReference, mode, &vPoi2);
 
-   // get the harping points
+   // get the ps xfer, debond, and harping point locations
    std::vector<pgsPointOfInterest> vPoi3;
-   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, POIMGR_AND, &vPoi3);
-
-   // also want prestress xfer locations
-   std::vector<pgsPointOfInterest> vPoi4;
-   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_PSXFER, POIMGR_AND, &vPoi4);
+   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_PSXFER | POI_BARDEVELOP | POI_DEBOND | POI_SECTCHANGE | POI_HARPINGPOINT, POIMGR_OR, &vPoi3);
 
    vPoi2.insert(vPoi2.end(),vPoi3.begin(),vPoi3.end());
-   vPoi2.insert(vPoi2.end(),vPoi4.begin(),vPoi4.end());
    std::sort(vPoi2.begin(),vPoi2.end());
 
    // eliminate duplicates

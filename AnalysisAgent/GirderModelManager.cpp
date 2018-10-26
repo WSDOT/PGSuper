@@ -1557,6 +1557,8 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
          }
          else
          {
+            // when i > 0, we are dealing with strands so we are adding up the moment
+            // due to each strand type to get the total response for pftPretension
             results[idx] += Mz;
          }
       }
@@ -4675,6 +4677,97 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
       vMoment.push_back( MzMin );
    }
 
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      GET_IFACE(ICombinedForces2,pForces);
+      GET_IFACE(ILoadFactors,pILoadFactors);
+      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+      Float64 gCRMax = pLoadFactors->CRmax[limitState];
+      Float64 gSHMax = pLoadFactors->SHmax[limitState];
+      Float64 gREMax = pLoadFactors->REmax[limitState];
+
+      std::vector<Float64> vMcr = pForces->GetMoment(lastIntervalIdx,lcCR,vPoi,bat,rtCumulative);
+      std::vector<Float64> vMsh = pForces->GetMoment(lastIntervalIdx,lcSH,vPoi,bat,rtCumulative);
+      std::vector<Float64> vMre = pForces->GetMoment(lastIntervalIdx,lcRE,vPoi,bat,rtCumulative);
+
+      if ( !IsEqual(gCRMax,1.0) )
+      {
+         std::vector<Float64> vMcrMax;
+         std::transform(vMcr.begin(),vMcr.end(),std::back_inserter(vMcrMax),std::bind1st(std::multiplies<Float64>(),gCRMax));
+         std::transform(vMoment.begin(),vMoment.end(),vMcrMax.begin(),vMoment.begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(vMoment.begin(),vMoment.end(),vMcr.begin(),vMoment.begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMax,1.0) )
+      {
+         std::vector<Float64> vMshMax;
+         std::transform(vMsh.begin(),vMsh.end(),std::back_inserter(vMshMax),std::bind1st(std::multiplies<Float64>(),gSHMax));
+         std::transform(vMoment.begin(),vMoment.end(),vMshMax.begin(),vMoment.begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(vMoment.begin(),vMoment.end(),vMsh.begin(),vMoment.begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMax,1.0) )
+      {
+         std::vector<Float64> vMreMax;
+         std::transform(vMre.begin(),vMre.end(),std::back_inserter(vMreMax),std::bind1st(std::multiplies<Float64>(),gREMax));
+         std::transform(vMoment.begin(),vMoment.end(),vMreMax.begin(),vMoment.begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(vMoment.begin(),vMoment.end(),vMre.begin(),vMoment.begin(),std::plus<Float64>());
+      }
+
+      if ( bExcludeNoncompositeMoments )
+      {
+         // we've added in all the CR/SH/RE moments... now remove the cummulative CR/SH/RE moments
+         // that occur from the start to the time the deck is components... what will remain is the
+         // moments from composite deck to final
+         std::vector<Float64> vMcr = pForces->GetMoment(compositeDeckIntervalIdx,lcCR,vPoi,bat,rtCumulative);
+         std::vector<Float64> vMsh = pForces->GetMoment(compositeDeckIntervalIdx,lcSH,vPoi,bat,rtCumulative);
+         std::vector<Float64> vMre = pForces->GetMoment(compositeDeckIntervalIdx,lcRE,vPoi,bat,rtCumulative);
+
+         if ( !IsEqual(gCRMax,1.0) )
+         {
+            std::vector<Float64> vMcrMax;
+            std::transform(vMcr.begin(),vMcr.end(),std::back_inserter(vMcrMax),std::bind1st(std::multiplies<Float64>(),gCRMax));
+            std::transform(vMoment.begin(),vMoment.end(),vMcrMax.begin(),vMoment.begin(),std::minus<Float64>());
+         }
+         else
+         {
+            std::transform(vMoment.begin(),vMoment.end(),vMcr.begin(),vMoment.begin(),std::minus<Float64>());
+         }
+
+         if ( !IsEqual(gSHMax,1.0) )
+         {
+            std::vector<Float64> vMshMax;
+            std::transform(vMsh.begin(),vMsh.end(),std::back_inserter(vMshMax),std::bind1st(std::multiplies<Float64>(),gSHMax));
+            std::transform(vMoment.begin(),vMoment.end(),vMshMax.begin(),vMoment.begin(),std::minus<Float64>());
+         }
+         else
+         {
+            std::transform(vMoment.begin(),vMoment.end(),vMsh.begin(),vMoment.begin(),std::minus<Float64>());
+         }
+
+         if ( !IsEqual(gREMax,1.0) )
+         {
+            std::vector<Float64> vMreMax;
+            std::transform(vMre.begin(),vMre.end(),std::back_inserter(vMreMax),std::bind1st(std::multiplies<Float64>(),gREMax));
+            std::transform(vMoment.begin(),vMoment.end(),vMreMax.begin(),vMoment.begin(),std::minus<Float64>());
+         }
+         else
+         {
+            std::transform(vMoment.begin(),vMoment.end(),vMre.begin(),vMoment.begin(),std::minus<Float64>());
+         }
+      }
+   }
+
+
    return vMoment;
 }
 
@@ -4863,14 +4956,6 @@ bool CGirderModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,
    return true;
 }
 
-Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   ATLASSERT(false);
-#pragma Reminder("IMPLEMENT")
-   // not really using this right now.... implement when this feature is fleshed out
-   return 0;
-}
-
 std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<Float64> results;
@@ -4930,11 +5015,51 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
 
 std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-#pragma Reminder("IMPLEMENT")
-   ATLASSERT(false); // does this ever get called?
-   std::vector<sysSectionValue> vResults;
-   vResults.resize(vPoi.size(),sysSectionValue(0,0));
-   return vResults;
+   std::vector<sysSectionValue> results;
+   results.reserve(vPoi.size());
+
+   CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
+
+   CComBSTR bstrLoadGroup( strLoadingName );
+   CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+   ResultsSummationType resultsSummation = (resultsType == rtCumulative ? rsCumulative : rsIncremental);
+
+   CComPtr<ISectionResult3Ds> section_results;
+   if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
+   {
+      pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+   }
+   else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+   {
+      pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+   }
+   else
+   {
+      pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+   }
+
+   IndexType idx = 0;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for ( ; iter != end; iter++, idx++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+
+      CComPtr<ISectionResult3D> result;
+      section_results->get_Item(idx,&result);
+
+      Float64 FyLeft, FyRight;
+      result->get_YLeft(&FyLeft);
+      result->get_YRight(&FyRight);
+
+      sysSectionValue V(-FyLeft,FyRight);
+      results.push_back(V);
+   }
+
+   return results;
 }
 
 std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
@@ -4997,29 +5122,263 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
 
 std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-#pragma Reminder("IMPLEMENT")
-   ATLASSERT(false); // does this get called
    std::vector<Float64> results;
-   results.resize(vPoi.size(),0.0);
+
+   CComBSTR bstrLoadGroup( strLoadingName );
+   CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+   CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
+
+   ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
+
+   CComPtr<ISectionResult3Ds> section_results;
+   if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
+   {
+      pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+   }
+   else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+   {
+      pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+   }
+   else
+   {
+      pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+   }
+
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   IndexType idx = 0;
+   for ( ; iter != end; iter++, idx++ )
+   {
+      CComPtr<ISectionResult3D> result;
+      section_results->get_Item(idx,&result);
+
+      Float64 Dy, Dyr;
+      result->get_YLeft(&Dy);
+      result->get_YRight(&Dyr);
+
+      ATLASSERT(IsEqual(Dy,Dyr));
+      results.push_back(Dy);
+   }
+
    return results;
 }
 
 std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-#pragma Reminder("IMPLEMENT")
-   ATLASSERT(false); // does this get called
    std::vector<Float64> results;
-   results.resize(vPoi.size(),0.0);
+
+   CComBSTR bstrLoadGroup( strLoadingName );
+   CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+   CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
+
+
+   ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
+
+   CComPtr<ISectionResult3Ds> section_results;
+   if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
+   {
+      pModelData->pMinLoadGroupResponseEnvelope[fetRz][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+   }
+   else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+   {
+      pModelData->pMaxLoadGroupResponseEnvelope[fetRz][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+   }
+   else
+   {
+      pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+   }
+
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   IndexType idx = 0;
+   for ( ; iter != end; iter++, idx++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      CComPtr<ISectionResult3D> result;
+      section_results->get_Item(idx,&result);
+
+      Float64 Rz, Rzr;
+      result->get_ZLeft(&Rz);
+      result->get_ZRight(&Rzr);
+
+      ATLASSERT(IsEqual(Rz,Rzr));
+      results.push_back(Rz);
+   }
+
    return results;
 }
 
 void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
 {
-#pragma Reminder("IMPLEMENT")
-   ATLASSERT(false); // does this get called
-   std::vector<Float64> results;
-   pfTop->resize(vPoi.size(),0.0);
-   pfBot->resize(vPoi.size(),0.0);
+   pfTop->reserve(vPoi.size());
+   pfBot->reserve(vPoi.size());
+
+   CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
+
+   CComBSTR bstrLoadGroup( strLoadingName );
+   CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+   ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
+
+   CComPtr<ISectionStressResults> min_results, max_results, results;
+   if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
+   {
+      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
+      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
+   }
+   else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+   {
+      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
+      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
+   }
+   else
+   {
+      pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
+   }
+
+   CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
+   CollectionIndexType stress_point_index_bot = GetStressPointIndex(botLocation);
+
+   GET_IFACE(IPointOfInterest,pPoi);
+
+   IndexType idx = 0;
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for ( ; iter != end; iter++, idx++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
+
+      Float64 fTop, fBot;
+
+      if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
+      {
+         CComPtr<ISectionStressResult> top_stresses;
+         max_results->get_Item(idx,&top_stresses);
+
+         CComPtr<ISectionStressResult> bot_stresses;
+         min_results->get_Item(idx,&bot_stresses);
+
+         if ( IsZero(Xg) )
+         {
+            top_stresses->GetRightResult(stress_point_index_top,&fTop);
+            bot_stresses->GetRightResult(stress_point_index_bot,&fBot);
+         }
+         else
+         {
+            top_stresses->GetLeftResult(stress_point_index_top,&fTop);
+            bot_stresses->GetLeftResult(stress_point_index_bot,&fBot);
+         }
+      }
+      else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+      {
+         CComPtr<ISectionStressResult> top_stresses;
+         min_results->get_Item(idx,&top_stresses);
+
+         CComPtr<ISectionStressResult> bot_stresses;
+         max_results->get_Item(idx,&bot_stresses);
+
+         if ( IsZero(Xg) )
+         {
+            top_stresses->GetRightResult(stress_point_index_top,&fTop);
+            bot_stresses->GetRightResult(stress_point_index_bot,&fBot);
+         }
+         else
+         {
+            top_stresses->GetLeftResult(stress_point_index_top,&fTop);
+            bot_stresses->GetLeftResult(stress_point_index_bot,&fBot);
+         }
+      }
+      else
+      {
+         CComPtr<ISectionStressResult> stresses;
+         results->get_Item(idx,&stresses);
+
+         if ( IsZero(Xg) )
+         {
+            stresses->GetRightResult(stress_point_index_top,&fTop);
+            stresses->GetRightResult(stress_point_index_bot,&fBot);
+         }
+         else
+         {
+            stresses->GetLeftResult(stress_point_index_top,&fTop);
+            stresses->GetLeftResult(stress_point_index_bot,&fBot);
+         }
+      }
+
+      pfTop->push_back(fTop);
+      pfBot->push_back(fBot);
+   }
+}
+
+std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
+{
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+   if ( intervalIdx < firstSegmentErectionIntervalIdx )
+   {
+      // nothing is erected onto the supports yet
+      return std::vector<Float64>(vSupports.size(),0.0);
+   }
+
+   // Start by checking if the model exists
+   CGirderModelData* pModelData = 0;
+   pModelData = GetGirderModel(GetGirderLineIndex(girderKey));
+
+   std::vector<Float64> reactions;
+
+   CComBSTR bstrLoadGroup( strLoadingName );
+   CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
+
+   std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>::const_iterator supportIter(vSupports.begin());
+   std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>::const_iterator supportIterEnd(vSupports.end());
+   for ( ; supportIter != supportIterEnd; supportIter++ )
+   {
+      SupportIndexType supportIdx = supportIter->first;
+      pgsTypes::SupportType supportType = supportIter->second;
+      ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType,intervalIdx,bat,false);
+
+      CComPtr<IResult3Ds> results;
+
+      ResultsSummationType resultsSummation = (resultsType == rtCumulative ? rsCumulative : rsIncremental);
+
+      if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
+      {
+         pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+      }
+      else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
+      {
+         pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+      }
+      else
+      {
+         pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+      }
+
+      Float64 Fy = 0;
+      CollectionIndexType nResults;
+      results->get_Count(&nResults);
+      for ( CollectionIndexType i = 0; i < nResults; i++ )
+      {
+         CComPtr<IResult3D> result;
+         results->get_Item(i,&result);
+
+         Float64 fy;
+         result->get_Y(&fy);
+
+         Fy += fy;
+      }
+      reactions.push_back(Fy);
+   }
+
+   return reactions;
 }
 
 ////////////////////////////////////
@@ -10708,7 +11067,7 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
    const CDuctData*           pDuctData   = pPTData->GetDuct(ductIdx/nWebs);
 
    // NOTE: If something other than Pj - Avg Friction - Avg Anchor Set is used for equivalent tendon forces, 
-   // make the corrosponding changes in the TimeStepLossEngineer
+   // make the corresponding changes in the TimeStepLossEngineer
    IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
    Float64 Apt = pTendonGeometry->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
    Float64 Pj = pTendonGeometry->GetPjack(girderKey,ductIdx);

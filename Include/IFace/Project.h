@@ -720,6 +720,10 @@ DEFINE_GUID(IID_IUserDefinedLoadData,
 0x24b25c88, 0x1551, 0x4025, 0xad, 0xad, 0xdf, 0x69, 0xcb, 0x18, 0xad, 0xca);
 interface IUserDefinedLoadData : IUnknown
 {
+   virtual bool HasUserDC(const CGirderKey& girderKey) = 0;
+   virtual bool HasUserDW(const CGirderKey& girderKey) = 0;
+   virtual bool HasUserLLIM(const CGirderKey& girderKey) = 0;
+
    // point loads
    virtual CollectionIndexType GetPointLoadCount() const = 0;
    // add point load and return current count

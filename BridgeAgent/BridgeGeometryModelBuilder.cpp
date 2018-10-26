@@ -279,6 +279,9 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
          pBridgeDesc->GetSegmentsAtTemporarySupport(pTS->GetIndex(),&segmentKey,&rightSegmentKey);
          ATLASSERT(segmentKey == rightSegmentKey);
 
+         // we need a specific segment key... this segment key is for all girders
+         ATLASSERT(segmentKey.girderIndex == ALL_GIRDERS);
+         segmentKey.girderIndex = 0;
          const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
 
          const CPierData2* pStartPier = pSegment->GetStartClosure()->GetPier();

@@ -1425,14 +1425,15 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    // Prestress material
    matPsStrand::Grade grade;
    matPsStrand::Type  type;
+   matPsStrand::Coating coating;
    matPsStrand::Size  size;
-   pOdGirderData->GetStrandData(&grade, &type,&size);
+   pOdGirderData->GetStrandData(&grade,&type,&coating,&size);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    for ( int i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-      strands.SetStrandMaterial(strandType, pPool->GetStrand(grade,type,size));
+      strands.SetStrandMaterial(strandType, pPool->GetStrand(grade,type,coating,size));
       ASSERT(strands.GetStrandMaterial(strandType) != NULL);
    }
 

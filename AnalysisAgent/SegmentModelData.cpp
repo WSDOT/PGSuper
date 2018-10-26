@@ -29,7 +29,9 @@ CSegmentModelData::CSegmentModelData()
 
 CSegmentModelData& CSegmentModelData::operator=(const CSegmentModelData& other)
 {
-   Interval        = other.Interval;
+   SegmentKey      = other.SegmentKey;
+   IntervalIdx     = other.IntervalIdx;
+   Ec              = other.Ec;
    Model           = other.Model;
    PoiMap          = other.PoiMap;
    ExternalLoadMap = other.ExternalLoadMap;

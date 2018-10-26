@@ -180,11 +180,12 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          // no debonded strands, just write one row
          row++;
 
-         std::vector<StrandIndexType> vss  = m_pStrandGeometry->GetStrandsInRow(m_SegmentKey,0,pgsTypes::Straight);
+         pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
+
+         std::vector<StrandIndexType> vss  = m_pStrandGeometry->GetStrandsInRow(poi,0,pgsTypes::Straight);
          ATLASSERT(vss.size()>0);
 
          // get y of any strand in row
-         pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
          CComPtr<IPoint2dCollection> coords;
          m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
@@ -220,7 +221,8 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
 
                (*p_table)(row,0) << ucomp.SetValue(rowdata.m_Elevation);
 
-               StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(m_SegmentKey,nrow,pgsTypes::Straight);
+               pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
+               StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(poi,nrow,pgsTypes::Straight);
                (*p_table)(row,1) << nsrow;
 
                Int16 ndbr = CountDebondsInRow(rowdata);

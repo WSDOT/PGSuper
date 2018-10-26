@@ -63,6 +63,8 @@ protected:
 	afx_msg void OnUpdateStraightStrandPjEdit();
 	afx_msg void OnHelp();
    afx_msg void OnStrandTypeChanged();
+   afx_msg void OnTempStrandTypeChanged();
+   afx_msg void OnEpoxyChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -75,7 +77,8 @@ protected:
    void InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType);
 
    CStrandGrid m_Grid;
-	int	m_StrandSizeIdx;
+	Int32 m_StrandKey;
+   Int32 m_TempStrandKey;
 
    CPrecastSegmentData* m_pSegment;
 

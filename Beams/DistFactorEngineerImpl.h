@@ -730,6 +730,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    Float64 Xs;
    pPoi->ConvertSpanPointToSegmentCoordiante(spanKey,ctrl_loc_from_gdr,&segmentKey,&Xs);
 
+   pDetails->ControllingLocation = Xs;
+
    pgsPointOfInterest ctrl_poi(segmentKey,Xs);
 
    // station of controlling loc
@@ -839,8 +841,6 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
 
    skew1->get_Value(&(pDetails->skew1));
    skew2->get_Value(&(pDetails->skew2));
-
-   pDetails->ControllingLocation = ctrl_loc_from_gdr;
 }
 
 template <class T>

@@ -30,6 +30,8 @@ public:
    void SetBroker(IBroker* pBroker);
    HRESULT InitCommonReportBuilders();
 
+   HRESULT CReporterBase::OnSpecificationChanged();
+
 protected:
    IBroker* m_pBroker; // weak reference
 

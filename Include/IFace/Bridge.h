@@ -143,6 +143,11 @@ interface IBridge : IUnknown
    // Returns number of girders in a girder group
    virtual GirderIndexType GetGirderCount(GroupIndexType grpIdx) = 0;
 
+   // Returns the number of girder lines in the bridge model
+   // The number of girder lines is equal to the greatest number of
+   // girders in each of the girder groups
+   virtual GirderIndexType GetGirderlineCount() = 0;
+
    // Returns the number of girders in a span
    virtual GirderIndexType GetGirderCountBySpan(SpanIndexType spanIdx) = 0;
 
@@ -1018,17 +1023,17 @@ interface IStrandGeometry : IUnknown
    virtual bool IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config,Float64* pStart,Float64* pEnd) = 0;
    virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
    virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
-   virtual RowIndexType GetNumRowsWithStrand(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType ) = 0;
-   virtual StrandIndexType GetNumStrandInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
-   virtual std::vector<StrandIndexType> GetStrandsInRow(const CSegmentKey& segmentKey, RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType ) = 0;
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
    virtual StrandIndexType GetNumDebondedStrandsInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
    virtual bool IsExteriorStrandDebondedInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
    virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) = 0;
 
    // these functions return the data for the number of strands given (used during design)
-   virtual RowIndexType GetNumRowsWithStrand(const CSegmentKey& segmentKey,StrandIndexType nStrands,pgsTypes::StrandType strandType ) = 0;
-   virtual StrandIndexType GetNumStrandInRow(const CSegmentKey& segmentKey,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
-   virtual std::vector<StrandIndexType> GetStrandsInRow(const CSegmentKey& segmentKey,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,StrandIndexType nStrands,pgsTypes::StrandType strandType ) = 0;
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType ) = 0;
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType ) = 0;
 
    // Section locations measured from left end to right
    virtual Float64 GetDebondSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) = 0;
@@ -1194,9 +1199,9 @@ DEFINE_GUID(IID_IShapes,
 interface IShapes : public IUnknown
 {
    virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) = 0;
-   virtual void GetSlabShape(Float64 station,IShape** ppShape) = 0;
-   virtual void GetLeftTrafficBarrierShape(Float64 station,IShape** ppShape) = 0;
-   virtual void GetRightTrafficBarrierShape(Float64 station,IShape** ppShape) = 0;
+   virtual void GetSlabShape(Float64 station,IDirection* pDirection,IShape** ppShape) = 0;
+   virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) = 0;
+   virtual void GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) = 0;
 };
 
 /*****************************************************************************

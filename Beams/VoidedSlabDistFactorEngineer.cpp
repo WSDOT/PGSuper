@@ -55,7 +55,6 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILiveLoads,pLiveLoads);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -733,8 +732,6 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   GET_IFACE(IBridge,pBridge);
 
    if ( lldf.bExteriorGirder )
    {

@@ -793,6 +793,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
          }
 
+         *pNotesParagraph << rptNewLine;
          *pNotesParagraph << _T("Concrete release strength was controlled by ") << pArtifact->GetReleaseDesignState().AsString() << rptNewLine;
          *pNotesParagraph << _T("Concrete final strength was controlled by ") << pArtifact->GetFinalDesignState().AsString() << rptNewLine;
          *pNotesParagraph << rptNewLine;
@@ -846,7 +847,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
       rptParagraph* pParagraph = new rptParagraph( );
       *pChapter << pParagraph;
       *pParagraph << color(OrangeRed) 
-                  << _T("But, you may be able to create a successful design by adding longitudinal rebar to increase temporary tensile stress limits");
+                  << _T("You may be able to create a successful design by adding longitudinal reinforcement to increase temporary tensile stress limits");
 
       if (outcome == pgsSegmentDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionCy)
       {

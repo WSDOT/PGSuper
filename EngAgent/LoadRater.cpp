@@ -401,14 +401,14 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
       Float64 PLmin   = Min(vPLmin[i].Left(),  vPLmin[i].Right());
       Float64 PLmax   = Max(vPLmax[i].Left(),  vPLmax[i].Right());
 
-      Float64 DC   = Max(fabs(DCmin),fabs(DCmax));
-      Float64 DW   = Max(fabs(DWmin),fabs(DWmax));
-      Float64 CR   = Max(fabs(CRmin),fabs(CRmax));
-      Float64 SH   = Max(fabs(SHmin),fabs(SHmax));
-      Float64 RE   = Max(fabs(REmin),fabs(REmax));
-      Float64 PS   = Max(fabs(PSmin),fabs(PSmax));
-      Float64 LLIM = Max(fabs(LLIMmin),fabs(LLIMmax));
-      Float64 PL   = (bIncludePL ? Max(fabs(PLmin),fabs(PLmax)) : 0);
+      Float64 DC   = MaxMagnitude(DCmin,DCmax);
+      Float64 DW   = MaxMagnitude(DWmin,DWmax);
+      Float64 CR   = MaxMagnitude(CRmin,CRmax);
+      Float64 SH   = MaxMagnitude(SHmin,SHmax);
+      Float64 RE   = MaxMagnitude(REmin,REmax);
+      Float64 PS   = MaxMagnitude(PSmin,PSmax);
+      Float64 LLIM = MaxMagnitude(LLIMmin,LLIMmax);
+      Float64 PL   = (bIncludePL ? MaxMagnitude(PLmin,PLmax) : 0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
       {

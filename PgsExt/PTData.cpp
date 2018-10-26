@@ -1148,7 +1148,7 @@ CPTData::CPTData()
    DuctType = pgsTypes::dtMetal;
    InstallationType = pgsTypes::sitPush;
 
-   pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::D1524);
+   pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::None,matPsStrand::D1524);
 }  
 
 CPTData::CPTData(const CPTData& rOther)
@@ -1407,6 +1407,10 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       Int32 key = var.lVal;
+      if ( version < 4 )
+      {
+         key |= matPsStrand::None; // add default encoding for stand coating type... added in version 4
+      }
       pStrand = pPool->GetStrand(key);
    }
 
@@ -1498,10 +1502,10 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PTData"),3.0);
+   pStrSave->BeginUnit(_T("PTData"),4.0);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(pStrand);
+   Int32 key = pPool->GetStrandKey(pStrand); // beginning with version 4, the strand key includes an including for strand coating type
    pStrSave->put_Property(_T("TendonMaterialKey"),CComVariant(key));
 
    DuctIndexType ductCount = m_Ducts.size();

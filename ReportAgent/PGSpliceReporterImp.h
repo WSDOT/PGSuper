@@ -27,6 +27,8 @@
 
 #include <EAF\EAFInterfaceCache.h>
 
+#include <IFace\Project.h>
+
 #include <boost\shared_ptr.hpp>
 
 #include <map>
@@ -42,7 +44,8 @@ class ATL_NO_VTABLE CPGSpliceReporterImp :
 	public CComCoClass<CPGSpliceReporterImp, &CLSID_PGSpliceReportAgent>,
    public CReporterBase,
 	public IConnectionPointContainerImpl<CPGSpliceReporterImp>,
-   public IAgentEx
+   public IAgentEx,
+   public ISpecificationEventSink
 {
 public:
 	CPGSpliceReporterImp()
@@ -55,6 +58,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICE_REPORTER)
 BEGIN_COM_MAP(CPGSpliceReporterImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
+   COM_INTERFACE_ENTRY(ISpecificationEventSink)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -72,12 +76,19 @@ public:
    STDMETHOD(Init2)();
    STDMETHOD(GetClassID)(CLSID* pCLSID);
 
+// ISpecificationEventSink
+public:
+   virtual HRESULT OnSpecificationChanged();
+   virtual HRESULT OnAnalysisTypeChanged();
+
 protected:
    // CReporterBase implementation
    virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true);
 
 private:
    DECLARE_EAF_AGENT_DATA;
+
+   DWORD m_dwSpecCookie;
 
    HRESULT InitReportBuilders();
 };

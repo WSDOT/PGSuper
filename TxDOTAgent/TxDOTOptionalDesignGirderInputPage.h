@@ -65,7 +65,7 @@ private:
    void SaveDialogData();
 
    void OnStrandTypeChanged(long SizeCtrlID, long TypeCtrlID);
-   void UpdateStrandSizeList(long StrandSizeListCtrlID, matPsStrand::Grade grade,matPsStrand::Type type, matPsStrand::Size size);
+   void UpdateStrandSizeList(long StrandSizeListCtrlID, matPsStrand::Grade grade,matPsStrand::Type type, matPsStrand::Coating coating,matPsStrand::Size size);
    void InitStrandTypeCtrl(long TypeCtrlID);
    void InitStrandSizeTypeCtrls();
    void InitOptStrandSizeTypeCtrls();

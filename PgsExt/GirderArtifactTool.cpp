@@ -114,13 +114,31 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
       const pgsStrandSlopeArtifact* pStrandSlope = pArtifact->GetStrandSlopeArtifact();
       if ( !pStrandSlope->Passed() )
       {
-         rFailures.push_back(_T("Strand slope is too high."));
+         if ( 1 < nSegments )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Strand slope exceeds maximum for Segment %d"),LABEL_SEGMENT(segIdx));
+            rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+         }
+         else
+         {
+            rFailures.push_back(_T("Strand slope exceeds maximum"));
+         }
       }
 
       const pgsHoldDownForceArtifact* pHoldDownForce = pArtifact->GetHoldDownForceArtifact();
       if ( !pHoldDownForce->Passed() )
       {
-         rFailures.push_back(_T("Hold Down Force is excessive."));
+         if ( 1 < nSegments )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Hold down force exceeds maximum for Segment %d"),LABEL_SEGMENT(segIdx));
+            rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+         }
+         else
+         {
+            rFailures.push_back(_T("Hold down force exceeds maximum"));
+         }
       }
 
       for ( int i = 0; i < 2; i++ )
@@ -362,6 +380,9 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
    std::_tstring strDescription(pIntervals->GetDescription(intervalIdx));
    std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
+   bool bContinue1 = true; // prevents duplicate failure messages
+   bool bContinue2 = true;
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -369,9 +390,6 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
       CSegmentKey segmentKey(girderKey,segIdx);
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-
-      bool bContinue1 = true;
-      bool bContinue2 = true;
 
       CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
       for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
@@ -386,7 +404,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          if ( bContinue1 && !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Ultimate vertical shear capacity check failed for ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+            os << _T("Ultimate vertical shear capacity check failed for ") << strLimitState << _T(" Limit State") << std::ends;
             rFailures.push_back(os.str());
 
             bContinue1 = false;
@@ -395,7 +413,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          if ( bContinue2 && /*pLongReinf->IsApplicable() &&*/ !pLongReinf->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Longitudinal Reinforcement for Shear check failed for ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+            os << _T("Longitudinal Reinforcement for Shear check failed for ") << strLimitState << _T(" Limit State") << std::ends;
             rFailures.push_back(os.str());
 
             bContinue2 = false;
@@ -438,7 +456,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Horizontal Interface Shears/Length [5.8.4] check failed for ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+            os << _T("Horizontal Interface Shears/Length [5.8.4] check failed for ") << strLimitState << _T(" Limit State") << std::ends;
             rFailures.push_back(os.str());
 
             return;

@@ -99,10 +99,12 @@ public:
 
    void SetStrandData(matPsStrand::Grade grade,
                       matPsStrand::Type type,
+                      matPsStrand::Coating coating,
                       matPsStrand::Size size);
 
    void GetStrandData(matPsStrand::Grade* pgrade,
                       matPsStrand::Type* ptype,
+                      matPsStrand::Coating* pcoating,
                       matPsStrand::Size* psize);
 
    void SetFci(Float64 val);
@@ -303,6 +305,7 @@ private:
    matPsStrand::Grade m_Grade;
    matPsStrand::Type  m_Type;
    matPsStrand::Size  m_Size;
+   matPsStrand::Coating m_Coating;
 
    Float64 m_Fci;
    Float64 m_Fc;

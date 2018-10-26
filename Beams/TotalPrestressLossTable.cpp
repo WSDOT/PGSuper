@@ -66,9 +66,6 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
-   GET_IFACE2(pBroker,ILosses, pLosses);
-   bool bDeckShrinkage = pLosses->IsDeckShrinkageApplicable();
-
    ColumnIndexType numColumns = 9;
    if ( !bIgnoreInitialRelaxation )
    {
@@ -151,7 +148,6 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    table->m_NtMax = NtMax;
    table->m_pStrands = pStrands;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
-   table->m_bIsDeckShinkageApplied = bDeckShrinkage;
 
    return table;
 }
@@ -199,12 +195,8 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
-   Float64 dfpSS = 0;
-   if ( m_bIsDeckShinkageApplied )
-   {
-      dfpSS = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
-   }
-   fpT += dfpES + fpp + fptr - dfpED - dfpSIDL - dfpSS;
+
+   fpT += dfpES + fpp + fptr - dfpED - dfpSIDL;
    (*this)(row,col++) << stress.SetValue(fpT);
 
    Float64 fpe = fpj - fpT;

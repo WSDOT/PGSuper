@@ -676,7 +676,8 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
    else
    {
       // A little checking
-      RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(m_SegmentKey,pgsTypes::Straight);
+      pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
+      RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
       ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
       // Where the rubber hits the road - Write first row

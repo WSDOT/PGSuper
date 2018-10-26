@@ -104,7 +104,9 @@ BOOL CEquilibriumCheckDlg::OnInitDialog()
    UpdateSliderLabel();
 
    if ( m_pRptSpec )
+   {
       InitFromRptSpec();
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -173,7 +175,7 @@ void CEquilibriumCheckDlg::UpdateSliderLabel()
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   rptPoi.SetValue(POI_ERECTED_SEGMENT,poi);
+   rptPoi.SetValue(POI_SPAN,poi);
    rptPoi.PrefixAttributes(false); // put the attributes after the location
    rptPoi.IncludeSpanAndGirder(true);
 

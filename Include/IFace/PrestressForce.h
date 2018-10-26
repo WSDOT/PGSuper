@@ -175,6 +175,10 @@ interface ILosses : IUnknown
    // INVALID_INDEX means that losses are computed through all intervals
    virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
 
+   // Returns the name of the load case use to analyze creep, shrinkage, and creep restraining forces
+   // use one of the TIMESTEP_XXX constants
+   virtual CString GetRestrainingLoadName(IntervalIndexType intervalIdx,int loadType) = 0;
+
    // losses based on current input
    virtual Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
 

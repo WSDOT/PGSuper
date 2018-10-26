@@ -81,12 +81,16 @@
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
+#include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\PointOfInterestChapterBuilder.h>
 
 #include <Reporting\DistributionFactorSummaryChapterBuilder.h>
 
+#include <Reporting\InternalForceChapterBuilder.h>
+
 #include <IReportManager.h>
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -110,15 +114,14 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateLiftingReport();
    CreateSpecChecReport();
    CreateDistributionFactorSummaryReport();
+   CreateTimeStepDetailsReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
-   CreateDistributionFactorsReport();
-#endif
-
    // these are just some testing/debugging reports
+   CreateDistributionFactorsReport();
    CreateStageByStageDetailsReport();
    CreatePointOfInterestReport();
-   CreateTimeStepDetailsReport();
+#endif
 
    return S_OK;
 }
@@ -354,7 +357,7 @@ void CReporterBase::CreateDistributionFactorsReport()
 
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Report"));
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("(DEBUG) Live Load Distribution Factors Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -371,7 +374,7 @@ void CReporterBase::CreateStageByStageDetailsReport()
    GET_IFACE(IReportManager,pRptMgr);
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
 
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Stage by Stage Details Report"));
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("(DEBUG) Stage by Stage Details Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -386,7 +389,7 @@ void CReporterBase::CreateStageByStageDetailsReport()
 void CReporterBase::CreateTimeStepDetailsReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
-   boost::shared_ptr<CReportSpecificationBuilder> pPoiRptSpecBuilder(  new CPointOfInterestReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pPoiRptSpecBuilder(  new CTimeStepDetailsReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Time Step Details Report"));
 #if defined _DEBUG || defined _BETA_VERSION
@@ -403,7 +406,7 @@ void CReporterBase::CreatePointOfInterestReport()
    GET_IFACE(IReportManager,pRptMgr);
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderLineReportSpecificationBuilder(m_pBroker) );
 
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Points of Interest Report"));
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("(DEBUG) Points of Interest Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -411,4 +414,25 @@ void CReporterBase::CreatePointOfInterestReport()
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPointOfInterestChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+HRESULT CReporterBase::OnSpecificationChanged()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+   boost::shared_ptr<CReportBuilder> detailsRptBuilder  = pRptMgr->GetReportBuilder(_T("Details Report"));
+   boost::shared_ptr<CReportBuilder> loadRatingRptBuilder = pRptMgr->GetReportBuilder(_T("Load Rating Report"));
+
+   GET_IFACE( ILossParameters, pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      detailsRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CInternalForceChapterBuilder()), _T("Moments, Shears, and Reactions"));
+      loadRatingRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CInternalForceChapterBuilder(false)), _T("Moments, Shears, and Reactions"));
+   }
+   else
+   {
+      detailsRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
+      loadRatingRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
+   }
+
+   return S_OK;
 }

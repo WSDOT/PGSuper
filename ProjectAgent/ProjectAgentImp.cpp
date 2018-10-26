@@ -4301,17 +4301,17 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                   CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Straight) == NULL )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
                   }
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Harped) == NULL )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
                   }
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)== NULL )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
                   }
                }// segment loop
             }// girder loop
@@ -7974,6 +7974,21 @@ void CProjectAgentImp::RatingSpecificationChanged(bool bFireEvent)
 
 /////////////////////////////////////////////////////////////////////////////
 // IUserDefinedLoadData
+bool CProjectAgentImp::HasUserDC(const CGirderKey& girderKey)
+{
+   return HasUserLoad(girderKey,UserLoads::DC);
+}
+
+bool CProjectAgentImp::HasUserDW(const CGirderKey& girderKey)
+{
+   return HasUserLoad(girderKey,UserLoads::DW);
+}
+
+bool CProjectAgentImp::HasUserLLIM(const CGirderKey& girderKey)
+{
+   return HasUserLoad(girderKey,UserLoads::LL_IM);
+}
+
 CollectionIndexType CProjectAgentImp::GetPointLoadCount() const
 {
    return m_PointLoads.size();
@@ -9958,4 +9973,33 @@ bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const 
     }
 
     return true;
+}
+
+bool CProjectAgentImp::HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType)
+{
+   BOOST_FOREACH(CPointLoadData& pntLd,m_PointLoads)
+   {
+      if ( pntLd.m_LoadCase == lcType )
+      {
+         return true;
+      }
+   }
+
+   BOOST_FOREACH(CDistributedLoadData& distLd,m_DistributedLoads)
+   {
+      if ( distLd.m_LoadCase == lcType )
+      {
+         return true;
+      }
+   }
+
+   BOOST_FOREACH(CMomentLoadData& momLd,m_MomentLoads)
+   {
+      if ( momLd.m_LoadCase == lcType )
+      {
+         return true;
+      }
+   }
+
+   return false;
 }

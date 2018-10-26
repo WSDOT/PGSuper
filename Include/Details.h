@@ -677,11 +677,16 @@ struct TIME_STEP_DETAILS
    // upto and including pgsTypes::pftRelaxation
    Float64 dPi[19], dMi[19];
 
+   // total change in loading on the section (summation of dPi and dMi)
+   Float64 dP, dM;
 
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
    Float64 Pi[19], Mi[19];
+
+   // total change in loading on the section (summation of Pi and Mi)
+   Float64 P, M;
 
    // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
@@ -763,6 +768,9 @@ struct TIME_STEP_DETAILS
          r[i][pgsTypes::Back]  = 0;
          r[i][pgsTypes::Ahead] = 0;
       }
+
+      dP = 0;
+      dM = 0;
 
       dPext = 0;
       dPint = 0;
@@ -874,6 +882,15 @@ struct LOSSDETAILS
 #endif
 };
 
+struct XFERLENGTHDETAILS
+{
+   bool bMinuteValue; // if true, the transfer length was set to a very small value
+   Float64 db; // strand diameter
+   Int16 ndb; // number of strand diameters used for xfer length
+   bool bEpoxy; // is strand grit epoxy coated
+   Float64 lt; // transfer length
+};
+
 struct STRANDDEVLENGTHDETAILS
 {
     // details of bonded and debonded strand development and transfer
@@ -883,7 +900,7 @@ struct STRANDDEVLENGTHDETAILS
     Float64 fps;
     Float64 k;
     Float64 ld; // development length
-    Float64 lt; // transfer length
+    XFERLENGTHDETAILS ltDetails; // transfer length
 };
 
 #define NO_TTS          0 // lifting without TTS

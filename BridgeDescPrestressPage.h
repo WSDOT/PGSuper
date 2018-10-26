@@ -62,8 +62,8 @@ public:
 	//{{AFX_DATA(CGirderDescPrestressPage)
 	enum { IDD = IDD_GIRDERDESC_PRESTRESS };
 
-	StrandIndexType m_StrandSizeIdx;
-	StrandIndexType m_TempStrandSizeIdx;
+   Int32 m_StrandKey;
+   Int32 m_TempStrandKey;
 	//}}AFX_DATA
 
 // Overrides
@@ -158,6 +158,7 @@ public:
    ConfigStrandFillVector ComputeStraightStrandFillVector(StrandIndexType Ns);
    ConfigStrandFillVector ComputeHarpedStrandFillVector();
    afx_msg void OnCbnSelchangeAdjustableCombo();
+   afx_msg void OnEpoxyChanged();
 };
 
 //{{AFX_INSERT_LOCATION}}

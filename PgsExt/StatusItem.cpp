@@ -273,7 +273,7 @@ bool pgsProjectCriteriaStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   if ( GetDescription() != other->GetDescription())
+   if ( CString(GetDescription()) != CString(other->GetDescription()) )
    {
       return false;
    }
@@ -337,7 +337,7 @@ bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   if ( this->GetDescription() != other->GetDescription() )
+   if ( CString(this->GetDescription()) != CString(other->GetDescription()) )
    {
       return false;
    }
@@ -436,7 +436,7 @@ bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   if ( this->GetDescription() != other->GetDescription() )
+   if ( CString(this->GetDescription()) != CString(other->GetDescription()) )
    {
       return false;
    }

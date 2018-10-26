@@ -428,8 +428,16 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,0) << _T("\"A\" Dimension at End");
    (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
 
-   (*pTable)(row,0) << _T("Overlay");
-   (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   if ( pDeck->WearingSurface == pgsTypes::wstOverlay )
+   {
+      (*pTable)(row,0) << _T("Overlay");
+      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   }
+   else if ( pDeck->WearingSurface == pgsTypes::wstFutureOverlay )
+   {
+      (*pTable)(row,0) << _T("Future Overlay");
+      (*pTable)(row++,1) << olay.SetValue(pDeck->OverlayWeight);
+   }
 
    (*pTable)(row,0) << _T("Left Traffic Barrier");
    (*pTable)(row++,1) << pBridgeDesc->GetLeftRailingSystem()->strExteriorRailing;

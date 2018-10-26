@@ -69,8 +69,8 @@ CGirderDescPrestressPage::CGirderDescPrestressPage() :
 CPropertyPage(CGirderDescPrestressPage::IDD)
 {
 	//{{AFX_DATA_INIT(CGirderDescPrestressPage)
-	m_StrandSizeIdx = INVALID_INDEX;
-	m_TempStrandSizeIdx = INVALID_INDEX;
+	m_StrandKey = -1;
+	m_TempStrandKey = -1;
 	//}}AFX_DATA_INIT
 }
 
@@ -518,21 +518,17 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-	DDX_CBIndex(pDX, IDC_STRAND_SIZE, (int&)m_StrandSizeIdx);
-	DDX_CBIndex(pDX, IDC_TEMP_STRAND_SIZE, (int&)m_TempStrandSizeIdx);
+	DDX_CBItemData(pDX, IDC_STRAND_SIZE, m_StrandKey);
+	DDX_CBItemData(pDX, IDC_TEMP_STRAND_SIZE, m_TempStrandKey);
 
    if (pDX->m_bSaveAndValidate)
    {
       // strand material
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-      CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
-      Int32 key = (Int32)pList->GetItemData( (int)m_StrandSizeIdx );
-      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( key ));
-      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( key ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( m_StrandKey ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( m_StrandKey ));
 
-      pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
-      key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
-      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( m_TempStrandKey ));
    }
 }
 
@@ -557,6 +553,7 @@ BEGIN_MESSAGE_MAP(CGirderDescPrestressPage, CPropertyPage)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_EDIT_STRAND_FILL, &CGirderDescPrestressPage::OnBnClickedEditStrandFill)
    ON_CBN_SELCHANGE(IDC_ADJUSTABLE_COMBO, &CGirderDescPrestressPage::OnCbnSelchangeAdjustableCombo)
+   ON_BN_CLICKED(IDC_EPOXY,&CGirderDescPrestressPage::OnEpoxyChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -609,37 +606,18 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
    m_LibraryAdjustableStrandType = pGdrEntry->GetAdjustableStrandType();
 
-   // Fill the strand size combo box.
-   UpdateStrandList(IDC_STRAND_SIZE);
-   UpdateStrandList(IDC_TEMP_STRAND_SIZE);
-
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 target_key = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
-   CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
-   int cStrands = pList->GetCount();
-   for ( int i = 0; i < cStrands; i++ )
+   m_StrandKey     = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight)); // straight and harped use the same strand type
+   m_TempStrandKey = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
+
+   if ( sysFlags<Int32>::IsSet(m_StrandKey,matPsStrand::GritEpoxy) )
    {
-      Int32 key = (Int32)pList->GetItemData( i );
-      if ( key == target_key )
-      {
-         m_StrandSizeIdx = i;
-         break;
-      }
+      CheckDlgButton(IDC_EPOXY,BST_CHECKED);
    }
 
-   target_key = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
-   pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
-   cStrands = pList->GetCount();
-   for ( int i = 0; i < cStrands; i++ )
-   {
-      Int32 key = (Int32)pList->GetItemData( i );
-      if ( key == target_key )
-      {
-         m_TempStrandSizeIdx = i;
-         break;
-      }
-   }
+   UpdateStrandList(IDC_STRAND_SIZE);
+   UpdateStrandList(IDC_TEMP_STRAND_SIZE);
 
    // All this work has to be done before CPropertyPage::OnInitDialog().
    // This code sets up the "current" selections which must be done prior to
@@ -2346,6 +2324,16 @@ void CGirderDescPrestressPage::OnDropdownHpComboEnd()
    m_OldEndMeasureType = (HarpedStrandOffsetType)box->GetItemData(cursel);
 }
 
+void CGirderDescPrestressPage::OnEpoxyChanged()
+{
+   sysFlags<Int32>::Clear(&m_StrandKey,matPsStrand::None);
+   sysFlags<Int32>::Clear(&m_StrandKey,matPsStrand::GritEpoxy);
+   sysFlags<Int32>::Set(&m_StrandKey,IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+
+   UpdateStrandList(IDC_STRAND_SIZE);
+
+}
+
 void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
@@ -2353,13 +2341,18 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
-   matPsStrand::Size cur_size = matPsStrand::D1270;
-   if ( cur_sel != CB_ERR )
+   Int32 cur_key = (Int32)pList->GetItemData( cur_sel );
+   // remove the coating flag from the current key
+   sysFlags<Int32>::Clear(&cur_key,matPsStrand::None);
+   sysFlags<Int32>::Clear(&cur_key,matPsStrand::GritEpoxy);
+
+   BOOL bIsEpoxy = FALSE;
+   if ( nIDC == IDC_STRAND_SIZE )
    {
-      Int32 cur_key = (Int32)pList->GetItemData( cur_sel );
-      const matPsStrand* pCurStrand = pPool->GetStrand( cur_key );
-      cur_size = pCurStrand->GetSize();
+      bIsEpoxy = IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? TRUE : FALSE;
    }
+   matPsStrand::Coating coating = (bIsEpoxy ? matPsStrand::GritEpoxy : matPsStrand::None);
+   sysFlags<Int32>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 
@@ -2372,34 +2365,19 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
       {
          matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
 
-         lrfdStrandIter iter(grade,type);
+         lrfdStrandIter iter(grade,type,coating);
 
          for ( iter.Begin(); iter; iter.Next() )
          {
             const matPsStrand* pStrand = iter.GetCurrentStrand();
             int idx = pList->AddString( pStrand->GetName().c_str() );
+               
+            Int32 key = pPool->GetStrandKey( pStrand );
+            pList->SetItemData( idx, key );
 
-            if ( idx != CB_ERR )
-            { 
-               // if there wasn't an error adding the size, add a data item
-               Int32 key;
-               key = pPool->GetStrandKey( pStrand );
-
-               if ( pList->SetItemData( idx, key ) == CB_ERR )
-               {
-                  // if there was an error adding the data item, remove the size
-                  idx = pList->DeleteString( idx );
-                  ASSERT( idx != CB_ERR ); // make sure it got removed.
-               }
-               else
-               {
-                  // data item added successfully.
-                  if ( pStrand->GetSize() == cur_size )
-                  {
-                     // We just found the one we want to select.
-                     new_cur_sel = sel_count;
-                  }
-               }
+            if ( key == cur_key )
+            {
+               new_cur_sel = sel_count;
             }
 
             sel_count++;
@@ -2422,15 +2400,14 @@ void CGirderDescPrestressPage::OnStrandTypeChanged()
 {
    // Very tricky code here - Update the strand material in order to compute new jacking forces
    // Strand material comes out of the strand pool
-   CDataExchange DX(this,true);
-	DDX_CBIndex(&DX, IDC_STRAND_SIZE, (int&)m_StrandSizeIdx);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
-   Int32 key = (Int32)pList->GetItemData( (int)m_StrandSizeIdx );
+   int curSel = pList->GetCurSel();
+   m_StrandKey = (Int32)pList->GetItemData(curSel);
 
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( key ));
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( key ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( m_StrandKey ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( m_StrandKey ));
 
    // Now we can update pjack values in dialog
    UpdatePjackEdits();
@@ -2440,14 +2417,14 @@ void CGirderDescPrestressPage::OnTempStrandTypeChanged()
 {
    // Very tricky code here - Update the strand material in order to compute new jacking forces
    // Strand material comes out of the strand pool
-   CDataExchange DX(this,true);
-	DDX_CBIndex(&DX, IDC_TEMP_STRAND_SIZE, (int&)m_TempStrandSizeIdx);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
-   Int32 key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
+   int curSel = pList->GetCurSel();
+   m_TempStrandKey = (Int32)pList->GetItemData(curSel);
+
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( key ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( m_TempStrandKey ));
 
    // Now we can update pjack values in dialog
    UpdatePjackEdits();
@@ -2565,6 +2542,11 @@ void CGirderDescPrestressPage::EditDirectSelect()
 void CGirderDescPrestressPage::EditDirectInput()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,pPool->GetStrand(m_StrandKey));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,pPool->GetStrand(m_StrandKey));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,pPool->GetStrand(m_TempStrandKey));
 
    CPropertySheet dlg(_T("Define Strands"),this);
    dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
@@ -2573,6 +2555,13 @@ void CGirderDescPrestressPage::EditDirectInput()
    dlg.AddPage(&page);
    if ( dlg.DoModal() == IDOK )
    {
+      m_StrandKey     = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
+      m_TempStrandKey = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
+
+      CheckDlgButton(IDC_EPOXY,sysFlags<Int32>::IsSet(m_StrandKey,matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
+
+      UpdateStrandList(IDC_STRAND_SIZE);
+
       UpdateData(FALSE);
       ShowHideNumStrandControls(m_CurrStrandDefinitionType);
       UpdatePjackEdits();

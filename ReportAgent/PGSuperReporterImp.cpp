@@ -208,26 +208,31 @@ STDMETHODIMP CPGSuperReporterImp::ShutDown()
 //
 HRESULT CPGSuperReporterImp::OnSpecificationChanged()
 {
-#pragma Reminder("REVIEW: do we need to do this in the final release build?")
-#if defined _DEBUG || defined _BETA_VERSION
+   HRESULT hr = CReporterBase::OnSpecificationChanged();
+   if ( FAILED(hr) )
+      return hr;
+
    // Show/Hide time-step analysis reports based on the loss method
    std::vector<std::_tstring> strReportNames;
-   strReportNames.push_back(_T("Stage by Stage Details Report"));
    strReportNames.push_back(_T("Time Step Details Report"));
+
+#if defined _DEBUG || defined _BETA_VERSION
+   strReportNames.push_back(_T("(DEBUG) Stage by Stage Details Report"));
+#endif // _DEBUG || _BETA_VERSION
 
    GET_IFACE(IReportManager,pRptMgr);
    GET_IFACE( ILossParameters, pLossParams);
+
+   bool bHidden = true;
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      bHidden = false;
+   }
 
    BOOST_FOREACH(const std::_tstring strReportName,strReportNames)
    {
       std::vector<boost::shared_ptr<CReportBuilder>> vRptBuilders;
       vRptBuilders.push_back( pRptMgr->GetReportBuilder(strReportName.c_str()) );
-
-      bool bHidden = true;
-      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-      {
-         bHidden = false;
-      }
 
       std::vector<boost::shared_ptr<CReportBuilder>>::iterator iter(vRptBuilders.begin());
       std::vector<boost::shared_ptr<CReportBuilder>>::iterator end(vRptBuilders.end());
@@ -237,7 +242,6 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
          pRptBuilder->Hidden(bHidden);
       }
    }
-#endif // _DEBUG || _BETA_VERSION
 
    return S_OK;
 }

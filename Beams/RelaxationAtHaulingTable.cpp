@@ -26,6 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <Reporting\ReportNotes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,17 +37,8 @@ static char THIS_FILE[] = __FILE__;
 CRelaxationAtHaulingTable::CRelaxationAtHaulingTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( offset,      pDisplayUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),       false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
@@ -72,22 +64,32 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    // Create and configure the table
    ColumnIndexType numColumns = 3;
    if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   {
       numColumns++;
+   }
    else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   {
       numColumns += 4;
+   }
 
    if ( bTemporaryStrands )
    {
       numColumns++;
 
       if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      {
          numColumns++;
+      }
       else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      {
          numColumns += 4;
+      }
    }
 
    CRelaxationAtHaulingTable* table = new CRelaxationAtHaulingTable( numColumns, pDisplayUnits );
    table->m_bTemporaryStrands = bTemporaryStrands;
+   table->stress.ShowUnitTag(true);
+   table->time.ShowUnitTag(true);
 
    pgsReportStyleHolder::ConfigureTable(table);
 
@@ -97,26 +99,25 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.2c] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
 
+   pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   *pChapter << pParagraph;
+   *pParagraph << _T("Permanent Strands") << rptNewLine;
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-
-   table->stress.ShowUnitTag(true);
-   table->time.ShowUnitTag(true);
-
    switch(ptl->GetRelaxationLossMethod() )
    {
    case lrfdRefinedLosses2005::Simplified:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H_Simplified.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())              << rptNewLine;
-      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetKL()                        << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyPermanent())              << rptNewLine;
+      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetPermanentStrandKL()                        << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::Refined:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())                              << rptNewLine;
-      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetKL()                                       << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyPermanent())                              << rptNewLine;
+      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetPermanentStrandKL()                                       << rptNewLine;
       *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetInitialAge())         << rptNewLine;
-      *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::LumpSum:
@@ -126,6 +127,49 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       ATLASSERT(false); // should never get here
       break;
    }
+
+   if ( ptl->GetPermanentStrandCoating() != matPsStrand::None )
+   {
+      *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
+   }
+
+   if ( bTemporaryStrands )
+   {
+      pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      *pChapter << pParagraph;
+      *pParagraph << _T("Temporary Strands") << rptNewLine;
+      pParagraph = new rptParagraph;
+      *pChapter << pParagraph;
+      switch(ptl->GetRelaxationLossMethod() )
+      {
+      case lrfdRefinedLosses2005::Simplified:
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H_Simplified.png")) << rptNewLine;
+         *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyTemporary())              << rptNewLine;
+         *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetTemporaryStrandKL()                        << rptNewLine;
+         break;
+
+      case lrfdRefinedLosses2005::Refined:
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H.png")) << rptNewLine;
+         *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyTemporary())                              << rptNewLine;
+         *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetTemporaryStrandKL()                                       << rptNewLine;
+         *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetInitialAge())         << rptNewLine;
+         *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
+         break;
+
+      case lrfdRefinedLosses2005::LumpSum:
+         break;
+
+      default:
+         ATLASSERT(false); // should never get here
+         break;
+      }
+
+      if ( ptl->GetTemporaryStrandCoating() != matPsStrand::None )
+      {
+         *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
+      }
+   }
+
 
    table->stress.ShowUnitTag(false);
    table->time.ShowUnitTag(false);

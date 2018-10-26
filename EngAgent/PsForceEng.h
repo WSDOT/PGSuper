@@ -121,8 +121,8 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the prestress transfer length
+   XFERLENGTHDETAILS GetXferLengthDetails(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
    Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
-   Float64 GetXferLength(const matPsStrand& strand);
 
    //------------------------------------------------------------------------
    // Returns the transfer length adjustment factor. The factor is 0 at the

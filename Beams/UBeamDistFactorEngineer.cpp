@@ -64,7 +64,6 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILiveLoads,pLiveLoads);
 
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);

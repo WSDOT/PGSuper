@@ -75,6 +75,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERAPPPLUGINIMPL)
 
    virtual CString GetAppName() const { return CString("PGSuper"); }
    virtual CString GetTemplateFileExtension();
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
+
    virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
 
 

@@ -58,6 +58,7 @@ public:
 
    virtual CString GetAppName() const { return CString("PGSuper"); }
    virtual CString GetTemplateFileExtension();
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
 
    virtual void SaveReportOptions();
 

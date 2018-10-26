@@ -241,7 +241,7 @@ void CColumnLayoutGrid::RemoveSelectedColumns()
    ROWCOL nRows = GetRowCount();
    if ( 0 < nRows )
    {
-      SetStyleRange(CGXRange(nRows,4), CGXStyle()
+      SetStyleRange(CGXRange(nRows,6), CGXStyle()
          .SetEnabled(FALSE)
          .SetReadOnly(TRUE)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))

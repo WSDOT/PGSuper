@@ -362,8 +362,8 @@ Float64 pgsShearRatingArtifact::GetRatingFactor() const
       }
 
       Float64 C = p * m_CapacityRedutionFactor * m_Vn;
-      Float64 RFtop = C - m_gDC*m_Vdc - m_gDW*m_Vdw - m_gCR*m_Vcr - m_gSH*m_Vsh - m_gRE*m_Vre - m_gPS*m_Vps;
-      Float64 RFbot = m_gLL*m_Vllim;
+      Float64 RFtop = C - fabs(m_gDC*m_Vdc + m_gDW*m_Vdw + m_gCR*m_Vcr + m_gSH*m_Vsh + m_gRE*m_Vre + m_gPS*m_Vps);
+      Float64 RFbot = fabs(m_gLL*m_Vllim);
 
       if ( RFtop < 0 )
       {

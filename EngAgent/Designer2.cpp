@@ -1893,6 +1893,11 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
    // This refers to the PGSuper-only tension checks at temp strand removal and deck casting
    DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
    bool bCheckTemporaryStresses = (nDucts == 0 ? pAllowable->CheckTemporaryStresses() : false);
+   if ( task.intervalIdx != tsRemovalIntervalIdx && task.intervalIdx != castDeckIntervalIdx )
+   {
+      // if this is not one of the temporary condition intervals, don't check temporary stresses
+      bCheckTemporaryStresses = false;
+   }
 
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
@@ -4062,7 +4067,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
       std::vector<pgsPointOfInterest> csPoi( pPoi->GetPointsOfInterest(segmentKey, limitState == pgsTypes::StrengthII ? POI_CRITSECTSHEAR2 : POI_CRITSECTSHEAR1) );
       pois.insert(pois.end(),csPoi.begin(),csPoi.end());
-      std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM, POIFIND_OR) );
+      std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP, POIFIND_OR) );
       pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
 
       // if closures can take any load, add it to the list of poi
@@ -4791,10 +4796,11 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::Strand
    pArtifact->SetNumDebondedStrands(nDebonded);
 
    // Number of debonded strands in row
-   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(segmentKey,strandType);
+   pgsPointOfInterest poi(segmentKey,0); // we can use a dummy poi here because we are getting rows for straight strands
+   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,strandType);
    for ( RowIndexType row = 0; row < nRows; row++ )
    {
-      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(segmentKey,row,strandType);
+      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,strandType);
       StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(segmentKey,row,strandType);
       fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow/(Float64)nStrandsInRow);
       bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(segmentKey,row,strandType);
@@ -6880,6 +6886,7 @@ bool pgsDesigner2::CheckLiftingStressDesign(const CSegmentKey& segmentKey,const 
    pgsLiftingAnalysisArtifact artifact;
 
    HANDLINGCONFIG lift_config;
+   lift_config.bIgnoreGirderConfig = false;
    lift_config.GdrConfig = config;
    lift_config.LeftOverhang = m_StrandDesignTool.GetLeftLiftingLocation();
    lift_config.RightOverhang = m_StrandDesignTool.GetRightLiftingLocation();
@@ -7732,6 +7739,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
       // Now that we have an established concrete strength, we can use it to design our debond layout
 
       HANDLINGCONFIG lift_config;
+      lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = m_StrandDesignTool.GetSegmentConfiguration();
 
       lift_config.GdrConfig.Fci = fci_reqd;
@@ -8072,6 +8080,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
 bool pgsDesigner2::CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config)
 {
    HANDLINGCONFIG ship_config;
+   ship_config.bIgnoreGirderConfig = false;
    ship_config.GdrConfig = config;
    ship_config.LeftOverhang = m_StrandDesignTool.GetLeadingOverhang();
    ship_config.RightOverhang = m_StrandDesignTool.GetTrailingOverhang();
@@ -8632,10 +8641,10 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    const Float64 one_inch = ::ConvertToSysUnits(1.0, unitMeasure::Inch); // Very US bias here
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    // Initialize shear design tool using flexure design pois
-   m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(liveLoadIntervalIdx,POI_ERECTED_SEGMENT) );
+   m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(intervalIdx,POI_ERECTED_SEGMENT) );
 
    // First step here is to perform a shear spec check. We will use the results later for
    // design if needed
@@ -8665,12 +8674,12 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    pgsStirrupCheckArtifact* pstirrup_check_artif = m_ShearDesignTool.GetStirrupCheckArtifact();
 
    // Do the Check
-   CheckShear(true, segmentKey, liveLoadIntervalIdx, pgsTypes::StrengthI, &config, pstirrup_check_artif);
+   CheckShear(true, segmentKey, intervalIdx, pgsTypes::StrengthI, &config, pstirrup_check_artif);
 
    GET_IFACE(ILiveLoads,pLiveLoads);
    if (pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit))
    {
-      CheckShear(true, segmentKey, liveLoadIntervalIdx, pgsTypes::StrengthII, &config, pstirrup_check_artif);
+      CheckShear(true, segmentKey, intervalIdx, pgsTypes::StrengthII, &config, pstirrup_check_artif);
    }
 
    if (!bDoStartFromScratch && pstirrup_check_artif->Passed())
@@ -8834,7 +8843,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
 
          if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
          {
-            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, liveLoadIntervalIdx, pgsTypes::StrengthI);
+            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, intervalIdx, pgsTypes::StrengthI);
          }
          else
          {

@@ -238,7 +238,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
             SpacingIndexType rightSpaceIdx = segmentKey.girderIndex;
 
             Float64 leftJointStart, leftJointEnd, rightJointStart, rightJointEnd;
-            if ( leftSpaceIdx < 0 )
+            if ( leftSpaceIdx == INVALID_INDEX )
             {
                leftJointStart = 0;
                leftJointEnd   = 0;
@@ -474,7 +474,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             leftSegmentKey.girderIndex = 0;
             rightSegmentKey.girderIndex = nGirders-1;
 
-            // get the corrosponding POI in the girder to the left and right of this girder
+            // get the corresponding POI in the girder to the left and right of this girder
             // making sure that we don't go off the end of the segment
             Float64 left_segment_length  = pBridge->GetSegmentLength(leftSegmentKey);
             Float64 right_segment_length = pBridge->GetSegmentLength(rightSegmentKey);

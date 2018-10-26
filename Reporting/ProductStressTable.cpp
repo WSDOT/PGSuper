@@ -102,6 +102,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    bool bPedLoading = pLoads->HasPedestrianLoad(girderKey);
@@ -143,8 +144,13 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
    IntervalIndexType continuityIntervalIdx    = pIntervals->GetInterval(continuityEventIdx);
 
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bSegments = (pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
    bool bContinuousBeforeDeckCasting;
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,bSlabShrinkage,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,bSlabShrinkage,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
@@ -155,7 +161,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
@@ -178,6 +184,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
 
+      std::vector<Float64> fTopSegment, fBotSegment;
       std::vector<Float64> fTopGirder, fBotGirder;
       std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
       std::vector<Float64> fTopMaxConstruction, fTopMinConstruction, fBotMaxConstruction, fBotMinConstruction;
@@ -206,7 +213,15 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       std::vector<Float64> fTopMinPermitSpecialLL, fBotMinPermitSpecialLL;
       std::vector<Float64> dummy1, dummy2;
 
-      pForces2->GetStress( erectSegmentIntervalIdx, pgsTypes::pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
+      if ( bSegments )
+      {
+         pForces2->GetStress( erectSegmentIntervalIdx, pgsTypes::pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopSegment, &fBotSegment);
+         pForces2->GetStress( lastIntervalIdx,         pgsTypes::pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
+      }
+      else
+      {
+         pForces2->GetStress( erectSegmentIntervalIdx, pgsTypes::pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
+      }
       pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
 
       pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
@@ -316,6 +331,13 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
          ColumnIndexType col = 0;
 
          (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+
+         if ( bSegments )
+         {
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSegment[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSegment[index]);
+            col++;
+         }
 
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder[index]) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder[index]);

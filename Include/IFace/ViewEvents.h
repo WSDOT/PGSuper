@@ -25,7 +25,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // View event callback interfaces are defined in this header file. Extension agents
-// should implement these interfaces, and attached them to their corrosponding views,
+// should implement these interfaces, and attached them to their corresponding views,
 // to receive event notifications.
 //
 // These are prototype interfaces. That means they are subject to change. It is unclear

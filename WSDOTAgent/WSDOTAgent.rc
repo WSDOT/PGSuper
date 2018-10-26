@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,38
- PRODUCTVERSION 3,0,0,38
+ FILEVERSION 0,0,0,0
+ PRODUCTVERSION 3,0,0,39
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "WSDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.38"
+            VALUE "FileVersion", "3.0.0.39"
             VALUE "InternalName", "WSDOTAgent"
-            VALUE "OriginalFilename", "PGSuperWSDOTAgent.DLL"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "OriginalFilename", "PGSuperWSDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.38"
+            VALUE "ProductVersion", "3.0.0.39"
         END
     END
     BLOCK "VarFileInfo"
@@ -100,8 +100,8 @@ END
 
 IDR_WSDOTAGENT          REGISTRY                "WSDOTAgent.rgs"
 IDR_WSDOTAGENTIMP       REGISTRY                "WSDOTAgentImp.rgs"
-IDR_PGSUPERCOMPONENTINFO  REGISTRY              "PGSuperComponentInfo.rgs"
-IDR_PGSPLICECOMPONENTINFO  REGISTRY             "PGSpliceComponentInfo.rgs"
+IDR_PGSUPERCOMPONENTINFO REGISTRY                "PGSuperComponentInfo.rgs"
+IDR_PGSPLICECOMPONENTINFO REGISTRY                "PGSpliceComponentInfo.rgs"
 IDR_CURVELEXPORTER      REGISTRY                "CurvelExporter.rgs"
 IDR_CURVELIMPORTER      REGISTRY                "CurvelImporter.rgs"
 IDR_GENCOMPEXPORTER     REGISTRY                "GenCompExporter.rgs"
@@ -119,9 +119,9 @@ IDI_WSDOT               ICON                    "res\\Wsdot.ico"
 //
 // Bitmap
 //
+
 IDB_CURVEL              BITMAP                  "res\\Curvel.bmp"
 IDB_GENCOMP             BITMAP                  "res\\GenComp.bmp"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

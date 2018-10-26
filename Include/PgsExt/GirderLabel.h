@@ -33,17 +33,18 @@ interface IEAFDisplayUnits;
 #include <PgsExt\ConcreteMaterial.h>
 
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
-#define LABEL_GROUP(_g_) (GroupIndexType)(_g_ + 1)
-#define LABEL_SPAN(_s_) (SpanIndexType)(_s_ + 1)
-#define LABEL_PIER(_p_) (PierIndexType)(_p_ + 1)
-#define LABEL_TEMPORARY_SUPPORT(_ts_) (SupportIndexType)(_ts_ + 1)
-#define LABEL_SEGMENT(_s_) (SegmentIndexType)(_s_ + 1)
-#define LABEL_EVENT(_e_) (EventIndexType)(_e_+1)
-#define LABEL_STIRRUP_ZONE(_z_) (ZoneIndexType)(_z_ + 1)
-#define LABEL_DUCT(_d_) (DuctIndexType)(_d_ + 1)
-#define LABEL_INTERVAL(_i_) (IntervalIndexType)(_i_ + 1)
-#define LABEL_ROW(_r_) (RowIndexType)(_r_ + 1)
-#define LABEL_COLUMN(_c_) (ColumnIndexType)(_c_ + 1)
+#define LABEL_INDEX(_i_) (IndexType)(_i_+1)
+#define LABEL_GROUP(_g_) (GroupIndexType)LABEL_INDEX(_g_)
+#define LABEL_SPAN(_s_) (SpanIndexType)LABEL_INDEX(_s_)
+#define LABEL_PIER(_p_) (PierIndexType)LABEL_INDEX(_p_)
+#define LABEL_TEMPORARY_SUPPORT(_ts_) (SupportIndexType)LABEL_INDEX(_ts_ )
+#define LABEL_SEGMENT(_s_) (SegmentIndexType)LABEL_INDEX(_s_)
+#define LABEL_EVENT(_e_) (EventIndexType)LABEL_INDEX(_e_)
+#define LABEL_STIRRUP_ZONE(_z_) (ZoneIndexType)LABEL_INDEX(_z_)
+#define LABEL_DUCT(_d_) (DuctIndexType)LABEL_INDEX(_d_)
+#define LABEL_INTERVAL(_i_) (IntervalIndexType)LABEL_INDEX(_i_)
+#define LABEL_ROW(_r_) (RowIndexType)LABEL_INDEX(_r_)
+#define LABEL_COLUMN(_c_) (ColumnIndexType)LABEL_INDEX(_c_)
 
 // Return string describing type of harped strands
 inline LPCTSTR LABEL_HARP_TYPE(bool bAreHarpedStraight) { return bAreHarpedStraight ? _T("Adjustable Straight") : _T("Harped"); }

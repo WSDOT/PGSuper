@@ -31,13 +31,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
-				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
-				Outputs="\ARP\BridgeLink\PGSuper.tip"
+				Description=""
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -117,6 +118,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
 			/>
 		</Configuration>
 		<Configuration
@@ -131,13 +134,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
-				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
-				Outputs="\ARP\BridgeLink\PGSuper.tip"
+				Description=""
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -216,6 +220,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
 			/>
 		</Configuration>
 		<Configuration
@@ -231,13 +237,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
-				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
-				Outputs="\ARP\BridgeLink\PGSuper.tip"
+				Description=""
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -321,6 +328,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
 			/>
 		</Configuration>
 		<Configuration
@@ -336,13 +345,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
-				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
-				Outputs="\ARP\BridgeLink\PGSuper.tip"
+				Description=""
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -425,6 +435,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
 			/>
 		</Configuration>
 		<Configuration
@@ -440,13 +452,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
-				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
-				Outputs="\ARP\BridgeLink\PGSuper.tip"
+				Description=""
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -529,6 +542,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
 			/>
 		</Configuration>
 		<Configuration
@@ -544,13 +559,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;"
-				AdditionalDependencies="\ARP\PGSuper\PGSuper.tip"
-				Outputs="\ARP\BridgeLink\PGSuper.tip"
+				Description=""
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -632,6 +648,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying files to BridgeLink"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
 			/>
 		</Configuration>
 	</Configurations>
@@ -2346,11 +2364,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2704,11 +2722,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2884,11 +2902,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3092,11 +3110,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3104,11 +3122,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

@@ -19,6 +19,12 @@ void CProjectImportersCmdTarget::OnConfigureProjectImporters()
    m_pMyAppPlugin->ConfigureProjectImporters();
 }
 
+const CRuntimeClass* CPGSuperProjectImporterAppPlugin::GetDocTemplateRuntimeClass()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return RUNTIME_CLASS(CPGSuperImportPluginDocTemplate);
+}
+
 CString CPGSuperProjectImporterAppPlugin::GetTemplateFileExtension()
 { 
    CString strTemplateSuffix;

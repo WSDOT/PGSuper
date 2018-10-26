@@ -790,7 +790,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    bool bThirdEdition = ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    // Determine how many critical sections the girder will have.
    // Number of critical sections is equal to the number of face of supports
@@ -859,7 +859,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
       // get reactions at the pier
       Float64 Rmin,Rmax;
-      pLSForces->GetReaction(liveLoadIntervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
+      pLSForces->GetReaction(intervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
 
       if ( Rmin <= 0 )
       {
@@ -933,11 +933,11 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          SHEARCAPACITYDETAILS scd;
          if ( bUseConfig )
          {
-            GetRawShearCapacityDetails(limitState,liveLoadIntervalIdx,poi,config,&scd);
+            GetRawShearCapacityDetails(limitState,intervalIdx,poi,config,&scd);
          }
          else
          {
-            GetRawShearCapacityDetails(limitState,liveLoadIntervalIdx,poi,&scd);
+            GetRawShearCapacityDetails(limitState,intervalIdx,poi,&scd);
          }
 
          // dv
@@ -1387,6 +1387,25 @@ Float64 CEngAgentImp::GetElasticShortening(const pgsPointOfInterest& poi,pgsType
 const LOSSDETAILS* CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
    return FindLosses(poi,intervalIdx);
+}
+
+CString CEngAgentImp::GetRestrainingLoadName(IntervalIndexType intervalIdx,int loadType)
+{
+   CString strLoadName;
+   if ( loadType == TIMESTEP_CR )
+   {
+      strLoadName.Format(_T("Restrained_Creep_%d"),LABEL_INTERVAL(intervalIdx));
+   }
+   else if ( loadType == TIMESTEP_SH )
+   {
+      strLoadName.Format(_T("Restrained_Shrinkage_%d"),LABEL_INTERVAL(intervalIdx));
+   }
+   else if ( loadType == TIMESTEP_RE )
+   {
+      strLoadName.Format(_T("Restrained_Relaxation_%d"),LABEL_INTERVAL(intervalIdx));
+   }
+
+   return strLoadName;
 }
 
 void CEngAgentImp::ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -3875,6 +3894,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, rfillvec);
 
       HANDLINGCONFIG lift_config;
+      lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = config;
       lift_config.LeftOverhang = pDetails->L[NO_TTS];
       lift_config.RightOverhang = pDetails->L[NO_TTS];
@@ -4046,6 +4066,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       L += inc;
 
       HANDLINGCONFIG hauling_config;
+      hauling_config.bIgnoreGirderConfig = false;
       hauling_config.GdrConfig = config;
       hauling_config.LeftOverhang = L;
       hauling_config.RightOverhang = L;
@@ -4099,6 +4120,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       trailing_overhang = overhang_sum - leading_overhang;
 
       HANDLINGCONFIG hauling_config;
+      hauling_config.bIgnoreGirderConfig = false;
       hauling_config.GdrConfig = config;
       hauling_config.LeftOverhang = trailing_overhang;
       hauling_config.RightOverhang = leading_overhang;

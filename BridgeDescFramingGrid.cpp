@@ -1457,6 +1457,11 @@ SupportIndexType CBridgeDescFramingGrid::GetTemporarySupportIndex(ROWCOL nRow)
 
 void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,txnTransaction* pTxn)
 {
+   if ( pTxn == NULL )
+   {
+      return;
+   }
+
    std::map<PierIndexType,std::vector<txnTransaction*>>::iterator found(m_PierTransactions.find(pierIdx));
    if ( found == m_PierTransactions.end())
    {
@@ -1468,6 +1473,11 @@ void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,txnTransa
 
 void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx,txnTransaction* pTxn)
 {
+   if ( pTxn == NULL )
+   {
+      return;
+   }
+
    std::map<SpanIndexType,std::vector<txnTransaction*>>::iterator found(m_SpanTransactions.find(spanIdx));
    if ( found == m_SpanTransactions.end())
    {
@@ -1479,6 +1489,11 @@ void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx,txnTransa
 
 void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx,txnTransaction* pTxn)
 {
+   if ( pTxn == NULL )
+   {
+      return;
+   }
+
    std::map<SupportIndexType,std::vector<txnTransaction*>>::iterator found(m_TempSupportTransactions.find(tsIdx));
    if ( found == m_TempSupportTransactions.end())
    {

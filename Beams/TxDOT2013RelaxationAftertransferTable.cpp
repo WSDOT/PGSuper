@@ -27,6 +27,7 @@
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\GirderData.h>
+#include <Reporting\ReportNotes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,12 +64,18 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
    }
 
    *pParagraph << Sub2(_T("K"),_T("L"))<<_T(" = ")<<pLosses->GetKL() << rptNewLine;
-   *pParagraph << Sub2(_T("f"),_T("py"))<<_T(" = ")<< stress.SetValue(pLosses->GetFpy()) << rptNewLine;
+   *pParagraph << Sub2(_T("f"),_T("py"))<<_T(" = ")<< stress.SetValue(pLosses->GetFpyPermanent()) << rptNewLine;
 
    if (pLosses->ElasticShortening().GetFcgpComputationMethod() == lrfdElasticShortening::fcgp07Fpu)
    {
       // fpt is the same along girder - we don't need a table
       *pParagraph << Sub2(_T("f"),_T("pt"))<<_T(" = 0.7 ")<<Sub2(_T("f"),_T("pu"))<<_T(" = ")<< stress.SetValue(pLosses->Getfpt()) << rptNewLine << rptNewLine;
+
+      if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
+      {
+         *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
+      }
+
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("fpr1"))<<_T(" = ")<< symbol(DELTA) << Sub2(_T("f"),_T("fpr2"))<<_T(" = ")<<stress.SetValue(pLosses->RelaxationLossBeforeDeckPlacement()) << rptNewLine;
 
       return NULL;
@@ -80,6 +87,12 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
 
       CTxDOT2013RelaxationAfterTransferTable* table = new CTxDOT2013RelaxationAfterTransferTable( numColumns, pDisplayUnits );
       pgsReportStyleHolder::ConfigureTable(table);
+
+
+      if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
+      {
+         *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
+      }
 
       *pParagraph << table << rptNewLine;
 

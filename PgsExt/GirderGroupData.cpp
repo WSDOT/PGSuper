@@ -408,7 +408,7 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
 
       CSplicedGirderData* pGirder = new CSplicedGirderData;
       pGirder->SetIndex(0);
-      pGirder->SetID( m_pBridge->GetNextGirderID() );
+      pGirder->SetID( m_pBridge ? m_pBridge->GetNextGirderID() : INVALID_ID );
       pGirder->SetGirderGroup(this);
       m_Girders.push_back(pGirder);
 
@@ -1465,8 +1465,6 @@ HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnly)
 {
-   Clear();
-
    if ( !bCopyDataOnly )
    {
       m_GroupIdx = rOther.m_GroupIdx;
@@ -1481,23 +1479,43 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
 
    m_SlabOffsets = rOther.m_SlabOffsets;
 
-   std::vector<CSplicedGirderData*>::const_iterator iter(rOther.m_Girders.begin());
-   std::vector<CSplicedGirderData*>::const_iterator end(rOther.m_Girders.end());
-   for ( ; iter != end; iter++ )
+   if ( m_Girders.size() == 0 )
    {
-      const CSplicedGirderData* pGirder = *iter;
+      m_Girders.resize(rOther.m_Girders.size());
+   }
+   else
+   {
+      SetGirderCount(rOther.m_Girders.size());
+   }
+   ATLASSERT(m_Girders.size() == rOther.m_Girders.size());
+   std::vector<CSplicedGirderData*>::iterator myGirderIter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator myGirderIterEnd(m_Girders.end());
+   std::vector<CSplicedGirderData*>::const_iterator otherGirderIter(rOther.m_Girders.begin());
+   std::vector<CSplicedGirderData*>::const_iterator otherGirderIterEnd(rOther.m_Girders.end());
+   for ( ; myGirderIter != myGirderIterEnd; myGirderIter++, otherGirderIter++ )
+   {
+      CSplicedGirderData* pMyGirder = *myGirderIter; // this is my girder... we are replacing it with a copy of the other girder
+      if ( pMyGirder )
+      {
+         pMyGirder->SetGirderGroup(NULL); // this removes the girder from its group which removes it from the bridge. it does not alter the timeline events
+         delete pMyGirder; // done with this girder
+      }
+      pMyGirder = NULL;
+      *myGirderIter = NULL;
+
+      const CSplicedGirderData* pOtherGirder = *otherGirderIter;
       CSplicedGirderData* pNewGirder = new CSplicedGirderData(this);
       if ( bCopyDataOnly )
       {
          // copies only the data
-         pNewGirder->CopySplicedGirderData(pGirder);
+         pNewGirder->CopySplicedGirderData(pOtherGirder);
       }
       else
       {
          // assignment copies everything (ID, Index, etc)
-         *pNewGirder = *pGirder;
+         *pNewGirder = *pOtherGirder;
       }
-      m_Girders.push_back(pNewGirder);
+      *myGirderIter = pNewGirder;
    }
 
    m_GirderTypeGroups.clear();

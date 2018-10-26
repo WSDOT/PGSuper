@@ -1608,9 +1608,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    CClosureKey closureKey;
-   bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
-   bool bIsOnSegment = pPoi->IsOnSegment(poi);
-   bool bIsOnGirder  = pPoi->IsOnGirder(poi);
+   bool bIsInClosure   = pPoi->IsInClosureJoint(poi,&closureKey);
+   bool bIsOnSegment   = pPoi->IsOnSegment(poi);
+   bool bIsOnGirder    = pPoi->IsOnGirder(poi);
+   bool bIsInDiaphragm = pPoi->IsInIntermediateDiaphragm(poi);
 
    GET_IFACE(ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
@@ -1623,8 +1624,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
    StrandIndexType Ns(0), Nh(0);
-   if ( bIsOnSegment )
-   {
+   //if ( bIsOnSegment )
+   //{
       if ( pConfig )
       {
          Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
@@ -1636,7 +1637,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
          Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
       }
-   }
+   //}
 
    //
    // Create Materials
@@ -1670,6 +1671,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       }
       else
       {
+         ATLASSERT(bIsInDiaphragm);
          // poi is not in the segment and isn't in a closure joint
          // this means the POI is in a cast-in-place diaphragm between girder groups
          // assume cast in place diaphragms between groups is the same material as the deck
@@ -1699,6 +1701,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    }
    else
    {
+      ATLASSERT(bIsInDiaphragm);
       pMaterial->GetDeckRebarProperties(&E,&Fy,&Fu);
    }
 
@@ -1744,8 +1747,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CComPtr<IPoint2d> cgBeam;
    props->get_Centroid(&cgBeam);
    Float64 dx,dy;
-   cgBeam->get_X(&dx);
-   cgBeam->get_Y(&dy);
+   cgBeam->Location(&dx,&dy);
 
    // need to return the offset for use later
    CComPtr<ISize2d> size;
@@ -1813,7 +1815,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    if ( bPositiveMoment || 0 < nDucts ) // only model strands for positive moment or if there are tendons in the model
    {
       // strands
-      if ( bIsOnSegment )
+      if ( bIsOnSegment || bIsInDiaphragm )
       {
          const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
          Float64 aps = pStrand->GetNominalArea();
@@ -1836,16 +1838,34 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             /////////////////////////////////////////////
             // We know that we have symmetric section and that strands are generally in rows.
             // Create a single "lump of strand" for each row instead of modeling each strand 
-            // individually. This will speed up the solver by quite a bit
+            // individually. This will speed up the solver by quite a bit.
 
-            RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(segmentKey,nStrands,strandType);
+            //////////////////////////////////////////////////////////////////////////
+            // NOTE: PGSuper 2.9 and earlier based the number of rows of harped strands
+            // using the harped strand positions at the harping points. For harped strand 
+            // configurations that use different strand grids at the ends and the harp 
+            // points, and at locations not between the harp points, this was incorrect. 
+            //
+            // Consider a WSDOT WF-girder. Harped strands are in rows of 2 at a 2" spacing at the
+            // end of the girder, and bundled into two rows at the harp points. For sections between
+            // the ends of the girder and the harp point, the correct number of rows is
+            // (Number Harped Strands)/(Two Strands Per Row). For a girder with 10 harped strands
+            // the number of rows would be 5 at the ends and 1 between harp points. The moment
+            // capacity model would use 1 row at all locations.
+            //
+            // In Version 3.0, the problem with the harped strand rows was corrected. Expect to
+            // see some differences in moment capacity results due to the change in location of 
+            // the harped strands in the moment capacity model.
+            //////////////////////////////////////////////////////////////////////////
+
+            RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(poi,nStrands,strandType);
             for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
             {
                Float64 rowArea = 0;
-               std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(segmentKey,nStrands,rowIdx,strandType);
+               std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(poi,nStrands,rowIdx,strandType);
 
    #if defined _DEBUG
-               StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(segmentKey,nStrands,rowIdx,strandType);
+               StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(poi,nStrands,rowIdx,strandType);
                ATLASSERT( nStrandsInRow == strandIdxs.size() );
    #endif
 
@@ -1857,7 +1877,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                   bool bDebonded = bondTool.IsDebonded(strandIdx,strandType);
                   if ( bDebonded )
                   {
-                     // strand is debonded... don't add it... go to the next strand
+                     // strand is debonded at this location... don't add it... go to the next strand
                      continue;
                   }
       
@@ -1870,43 +1890,46 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                }
 
                // create a single equivalent rectangle for the area of reinforcement in this row
-               Float64 h = dps; // height is diamter of strand
-               Float64 w = rowArea/dps;
+               if ( 0 < rowArea )
+               {
+                  Float64 h = dps; // height is diamter of strand
+                  Float64 w = rowArea/dps;
 
-               CComPtr<IRectangle> bar_shape;
-               bar_shape.CoCreateInstance(CLSID_Rect);
-               bar_shape->put_Width(w);
-               bar_shape->put_Height(h);
+                  CComPtr<IRectangle> bar_shape;
+                  bar_shape.CoCreateInstance(CLSID_Rect);
+                  bar_shape->put_Width(w);
+                  bar_shape->put_Height(h);
 
-               // get one strand from the row and get it's Y value
-               CComPtr<IPoint2d> point;
-               points->get_Item(strandIdxs[0],&point);
-               Float64 rowY;
-               point->get_Y(&rowY);
-               point.Release();
+                  // get one strand from the row and get it's Y value
+                  CComPtr<IPoint2d> point;
+                  points->get_Item(strandIdxs[0],&point);
+                  Float64 rowY;
+                  point->get_Y(&rowY);
+                  point.Release();
 
-               // position the "strand" rectangle
-               CComQIPtr<IXYPosition> position(bar_shape);
-               CComPtr<IPoint2d> hp;
-               position->get_LocatorPoint(lpHookPoint,&hp);
-               hp->Move(0,rowY);
-               hp->Offset(-dx,-dy);
+                  // position the "strand" rectangle
+                  CComQIPtr<IXYPosition> position(bar_shape);
+                  CComPtr<IPoint2d> hp;
+                  position->get_LocatorPoint(lpHookPoint,&hp);
+                  hp->Move(0,rowY);
+                  hp->Offset(-dx,-dy);
 
-               // determine depth to lowest layer of strand
-               Float64 cy;
-               hp->get_Y(&cy);
-               dt = Max(dt,fabs(Yc-cy));
+                  // determine depth to lowest layer of strand
+                  Float64 cy;
+                  hp->get_Y(&cy);
+                  dt = Max(dt,fabs(Yc-cy));
 
-               CComQIPtr<IShape> shape(bar_shape);
-               AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial);
+                  CComQIPtr<IShape> shape(bar_shape);
+                  AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial);
 
-   #if defined _DEBUG
-               CComPtr<IShapeProperties> props;
-               shape->get_ShapeProperties(&props);
-               Float64 area;
-               props->get_Area(&area);
-               ATLASSERT( IsEqual(area,rowArea) );
-   #endif // _DEBUG
+      #if defined _DEBUG
+                  CComPtr<IShapeProperties> props;
+                  shape->get_ShapeProperties(&props);
+                  Float64 area;
+                  props->get_Area(&area);
+                  ATLASSERT( IsEqual(area,rowArea) );
+      #endif // _DEBUG
+               }
             }
          } // next strand type
       } // bIsOnSegment

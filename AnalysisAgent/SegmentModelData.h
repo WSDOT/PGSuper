@@ -31,11 +31,13 @@ public:
 
    CSegmentModelData& operator=(const CSegmentModelData& other);
 
-   IntervalIndexType Interval;
+   CSegmentKey SegmentKey;
+   IntervalIndexType IntervalIdx;
+   Float64 Ec;
    CComPtr<IFem2dModel> Model;
    pgsPoiMap PoiMap;
-   std::map<PoiIDType,LoadCaseIDType> UnitLoadIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corrosponding poi in the Fem2d Model
-   std::map<PoiIDType,LoadCaseIDType> UnitMomentIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corrosponding poi in the Fem2d Model
+   std::map<PoiIDType,LoadCaseIDType> UnitLoadIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corresponding poi in the Fem2d Model
+   std::map<PoiIDType,LoadCaseIDType> UnitMomentIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corresponding poi in the Fem2d Model
    std::set<LoadCaseIDType> Loads; // keeps the ID of loads that have been applied to the model (except unit loads)
    std::map<std::_tstring,LoadCaseIDType> ExternalLoadMap; // maps externally created loads to FEM2D load case ID
 };

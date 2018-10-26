@@ -465,7 +465,6 @@ void CConfigurePGSuperDlg::OnMethod()
    GetDlgItem(IDC_SERVERS_STATIC)->EnableWindow(bEnable);
    GetDlgItem(IDC_SERVERS_STATIC2)->EnableWindow(bEnable);
    GetDlgItem(IDC_PUBLISHERS)->EnableWindow(bEnable);
-   GetDlgItem(IDC_UPDATENOW)->EnableWindow( bEnable);
    GetDlgItem(IDC_UPDATE_FREQUENCY)->EnableWindow( bEnable);
    GetDlgItem(IDC_UPDATES_STATIC)->EnableWindow( bEnable);
    GetDlgItem(IDC_STATIC_EARTH)->EnableWindow( bEnable);

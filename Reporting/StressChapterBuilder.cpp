@@ -93,11 +93,16 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    rptParagraph* p = 0;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    bool bDesign = m_bDesign;
    bool bRating;
@@ -246,11 +251,20 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       // Load Combinations (DC, DW, etc) & Limit States
 
       std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
-      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-      for ( ; iter != end; iter++ )
+      // if we are doing a time-step analysis, we need to report for all intervals from
+      // the first prestress release to the end to report all time-dependent effects
+      bool bTimeDependentNote = false;
+      if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         IntervalIndexType intervalIdx = *iter;
+         bTimeDependentNote = true;
+         IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(thisGirderKey);
+         vIntervals.clear();
+         vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
+         std::generate(vIntervals.begin(),vIntervals.end(),IncGenerator<IntervalIndexType>(firstReleaseIntervalIdx));
+         // when we go to C++ 11, use the std::itoa algorithm
+      }
+      BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+      {
 
          IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
          IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -268,6 +282,16 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
             p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
             *pChapter << p;
             *p << LIVELOAD_PER_GIRDER << rptNewLine;
+            p = new rptParagraph;
+            *pChapter << p;
+         }
+         if ( bTimeDependentNote )
+         {
+            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+            *pChapter << p;
+            *p << TIME_DEPENDENT_STRESS_NOTE << rptNewLine;
+            p = new rptParagraph;
+            *pChapter << p;
          }
 
          if ( compositeDeckIntervalIdx <= intervalIdx )
@@ -278,6 +302,16 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
                p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
                *pChapter << p;
                *p << LIVELOAD_PER_GIRDER << rptNewLine;
+               p = new rptParagraph;
+               *pChapter << p;
+            }
+            if ( bTimeDependentNote )
+            {
+               p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+               *pChapter << p;
+               *p << TIME_DEPENDENT_STRESS_NOTE << rptNewLine;
+               p = new rptParagraph;
+               *pChapter << p;
             }
          }
       } // next interval

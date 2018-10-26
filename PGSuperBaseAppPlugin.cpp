@@ -649,6 +649,8 @@ void CPGSuperBaseAppPlugin::RestoreLibraryAndTemplatesToDefault()
    m_WorkgroupTemplateFolderCache = GetDefaultWorkgroupTemplateFolder();
 
    m_MasterLibraryFileURL = m_MasterLibraryFileCache;
+
+   DoCacheUpdate();
 }
 
 void CPGSuperBaseAppPlugin::DeleteCache(LPCTSTR pstrCache)
@@ -845,7 +847,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    {
       m_MasterLibraryFileCache = GetDefaultMasterLibraryFile();
       m_WorkgroupTemplateFolderCache = GetDefaultWorkgroupTemplateFolder();
-      return true;
+      bSuccessful = true;
    }
    else if ( m_SharedResourceType == srtInternetFtp ||
              m_SharedResourceType == srtInternetHttp ||
@@ -919,7 +921,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
       {
          POSITION templatePos = pos;
          CDocTemplate* pDocTemplate = pDocMgr->GetNextDocTemplate(pos);
-         if ( pDocTemplate->IsKindOf(RUNTIME_CLASS(CPGSuperDocTemplateBase)) )
+         if ( pDocTemplate->IsKindOf(GetDocTemplateRuntimeClass()) )
          {
             pDocMgr->RemoveDocTemplate(templatePos);
 
@@ -927,6 +929,7 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
             pTemplate->LoadTemplateInformation();
 
             pDocMgr->AddDocTemplate(pDocTemplate);
+
             break;
          }
       }
@@ -961,7 +964,24 @@ CString CPGSuperBaseAppPlugin::GetDefaultMasterLibraryFile()
    CEAFApp* pApp = EAFGetApp();
 
    CString strAppPath = pApp->GetAppLocation();
-   return strAppPath + CString(_T("WSDOT.lbr"));
+
+#if defined _DEBUG
+#if defined _WIN64
+   strAppPath.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+#else
+   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+#endif
+#else
+   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
+   // ok... the replace will fail and the string wont be altered.
+#if defined _WIN64
+   strAppPath.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+#else
+   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+#endif
+#endif
+
+   return strAppPath + CString(_T("Configurations\\WSDOT.lbr"));
 }
 
 CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
@@ -969,7 +989,24 @@ CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
    CEAFApp* pApp = EAFGetApp();
 
    CString strAppPath = pApp->GetAppLocation();
-   return strAppPath + CString(_T("Templates"));
+
+#if defined _DEBUG
+#if defined _WIN64
+   strAppPath.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+#else
+   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+#endif
+#else
+   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
+   // ok... the replace will fail and the string wont be altered.
+#if defined _WIN64
+   strAppPath.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+#else
+   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+#endif
+#endif
+
+   return strAppPath + CString(_T("Configurations\\")) + GetAppName();
 }
 
 CString CPGSuperBaseAppPlugin::GetCacheFolder()

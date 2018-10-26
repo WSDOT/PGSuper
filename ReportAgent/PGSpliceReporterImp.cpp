@@ -121,11 +121,32 @@ STDMETHODIMP CPGSpliceReporterImp::Init()
    /* Gets done at project load time */
    EAF_AGENT_INIT;
 
-   return InitReportBuilders();
+   HRESULT hr = InitReportBuilders();
+   ATLASSERT(SUCCEEDED(hr));
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
+   return AGENT_S_SECONDPASSINIT;
 }
 
 STDMETHODIMP CPGSpliceReporterImp::Init2()
 {
+   //
+   // Attach to connection points
+   //
+   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   CComPtr<IConnectionPoint> pCP;
+   HRESULT hr = S_OK;
+
+   // Connection point for the specification
+   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Advise( GetUnknown(), &m_dwSpecCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
    return S_OK;
 }
 
@@ -144,7 +165,33 @@ STDMETHODIMP CPGSpliceReporterImp::Reset()
 /*--------------------------------------------------------------------*/
 STDMETHODIMP CPGSpliceReporterImp::ShutDown()
 {
+   //
+   // Detach to connection points
+   //
+   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   CComPtr<IConnectionPoint> pCP;
+   HRESULT hr = S_OK;
+
+   hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Unadvise( m_dwSpecCookie );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
    EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// ISpecificationEventSink
+//
+HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
+{
+   return CReporterBase::OnSpecificationChanged();
+}
+
+HRESULT CPGSpliceReporterImp::OnAnalysisTypeChanged()
+{
    return S_OK;
 }
 

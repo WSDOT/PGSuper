@@ -49,7 +49,7 @@ bool pgsAlignmentDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   if ( this->GetDescription() != other->GetDescription() )
+   if ( CString(this->GetDescription()) != CString(other->GetDescription()) )
    {
       return false;
    }

@@ -68,6 +68,12 @@ CString CPGSuperAppPlugin::GetTemplateFileExtension()
    return strTemplateSuffix;
 }
 
+const CRuntimeClass* CPGSuperAppPlugin::GetDocTemplateRuntimeClass()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return RUNTIME_CLASS(CPGSuperDocTemplate);
+}
+
 BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());

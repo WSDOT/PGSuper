@@ -1100,7 +1100,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> shape;
-   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(),&shape);
+   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(),NULL,&shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
@@ -1216,7 +1216,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    CComPtr<IPoint2dCollection> surfacePoints;
-   pRoadway->GetRoadwaySurface(station,&surfacePoints);
+   pRoadway->GetRoadwaySurface(station,NULL,&surfacePoints);
 
    CComPtr<IPoint2d> pos;
    surfacePoints->get_Item(0,&pos);
@@ -1307,25 +1307,25 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    pAlignment->GetBearingNormal(cut_station,&normal);
 
    CComPtr<IShape> left_shape;
-   pShapes->GetLeftTrafficBarrierShape(cut_station,&left_shape);
+   pShapes->GetLeftTrafficBarrierShape(cut_station,NULL,&left_shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    if ( left_shape )
    {
-      // rotate the shape to match the crown slope
-      Float64 slope = pAlignment->GetSlope(cut_station,left_curb_offset);
-      Float64 angle = atan(slope);
+      //// rotate the shape to match the crown slope
+      //Float64 slope = pAlignment->GetSlope(cut_station,left_curb_offset);
+      //Float64 angle = atan(slope);
 
-      // Rotate shape around edge of deck - this is where barrier origin is placed
-      Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(cut_dist_from_start);
-      Float64 left_elev   = pAlignment->GetElevation(cut_station,left_offset);
+      //// Rotate shape around edge of deck - this is where barrier origin is placed
+      //Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(cut_dist_from_start);
+      //Float64 left_elev   = pAlignment->GetElevation(cut_station,left_offset);
 
-      CComPtr<IPoint2d> de_point;
-      de_point.CoCreateInstance(CLSID_Point2d);
-      de_point->Move(left_offset,left_elev);
+      //CComPtr<IPoint2d> de_point;
+      //de_point.CoCreateInstance(CLSID_Point2d);
+      //de_point->Move(left_offset,left_elev);
 
-      CComQIPtr<IXYPosition> position(left_shape);
-      position->RotateEx(de_point,angle);
+      //CComQIPtr<IXYPosition> position(left_shape);
+      //position->RotateEx(de_point,angle);
 
       strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
 
@@ -1348,17 +1348,17 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    right_dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> right_shape;
-   pShapes->GetRightTrafficBarrierShape(cut_station,&right_shape);
+   pShapes->GetRightTrafficBarrierShape(cut_station,NULL,&right_shape);
 
    if ( right_shape )
    {
-      // rotate the shape to match the crown slope
-      Float64 slope = pAlignment->GetSlope(cut_station,right_curb_offset);
-      Float64 angle = atan(slope);
-      CComQIPtr<IXYPosition> position(right_shape);
-      CComPtr<IPoint2d> hook_point;
-      position->get_LocatorPoint(lpHookPoint,&hook_point);
-      position->RotateEx(hook_point,angle);
+      //// rotate the shape to match the crown slope
+      //Float64 slope = pAlignment->GetSlope(cut_station,right_curb_offset);
+      //Float64 angle = atan(slope);
+      //CComQIPtr<IXYPosition> position(right_shape);
+      //CComPtr<IPoint2d> hook_point;
+      //position->get_LocatorPoint(lpHookPoint,&hook_point);
+      //position->RotateEx(hook_point,angle);
 
       strategy.Release();
       strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);

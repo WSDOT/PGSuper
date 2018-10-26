@@ -121,6 +121,7 @@ private:
    CComPtr<ICombinedForces>    m_pCombinedForces;
    CComPtr<IExternalLoading>   m_pExternalLoading;
    CComPtr<IEAFDisplayUnits>   m_pDisplayUnits;
+   CComPtr<ILosses>            m_pLosses;
 
 
    // keeps track of the strand types we are analyzing
@@ -162,6 +163,8 @@ private:
    std::vector<pgsTypes::ProductForceType> GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly=false);
 
    int GetProductForceCount();
+
+   std::vector<pgsPointOfInterest> GetAnalysisLocations(const CGirderKey& girderKey);
 
    CSegmentKey m_SegmentKey; // segment for which we are currently computing deflections
 };

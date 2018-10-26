@@ -2033,7 +2033,14 @@ bool CPierData2::IsInteriorPier() const
    // If the girder group on both sides of the pier is the same, then this pier
    // is interior to the group.
    ATLASSERT(m_pBridgeDesc != NULL); // pier data must be part of a bridge model
-   return (GetPrevGirderGroup() == GetNextGirderGroup() ? true : false);
+   const CGirderGroupData* pPrevGroup = GetPrevGirderGroup();
+   const CGirderGroupData* pNextGroup = GetNextGirderGroup();
+   if ( pPrevGroup == NULL && pNextGroup == NULL )
+   {
+      return false;
+   }
+
+   return (pPrevGroup == pNextGroup ? true : false);
 }
 
 bool CPierData2::IsBoundaryPier() const

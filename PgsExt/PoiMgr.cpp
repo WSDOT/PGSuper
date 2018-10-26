@@ -732,7 +732,7 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
 {
    // TRICKY CODE
    // This if expression first check to make sure we have the same segment, then
-   // it checks if each flag in attrib is set. If it is, the corrosponding flag in poi must
+   // it checks if each flag in attrib is set. If it is, the corresponding flag in poi must
    // also be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
    //
    // segmentKey can match exactly or match with ALL_XXX constants (kind of like a wildcard)
@@ -755,7 +755,7 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
 bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const
 {
    // TRICKY CODE
-   // This if expression checks if each flag in attrib is set. If it is, the corrosponding flag in poi must
+   // This if expression checks if each flag in attrib is set. If it is, the corresponding flag in poi must
    // also be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
 
    // If the search attribute has referenced attributes, get the reference type
@@ -849,7 +849,7 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
 {
    // TRICKY CODE
    // This if expression first check to make sure we have the same segment, then
-   // it checks if each flag in attrib is set. If it is, the corrosponding flag in the poi must
+   // it checks if each flag in attrib is set. If it is, the corresponding flag in the poi must
    // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
 
    // segmentKey can match exactly or match with ALL_XXX constants (kind of like a wildcard)
@@ -865,7 +865,7 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
 bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const
 {
    // TRICKY CODE
-   // This if expression checks if each flag in attrib is set. If it is, the corrosponding flag in the poi must
+   // This if expression checks if each flag in attrib is set. If it is, the corresponding flag in the poi must
    // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
 
    if ( attrib == 0 )

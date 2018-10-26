@@ -146,10 +146,10 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
 
    const CSegmentKey& segmentKey = midPoi.GetSegmentKey();
 
-   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(segmentKey,pgsTypes::Straight);
+   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Straight);
    for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
    {
-      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(segmentKey, rowIdx, pgsTypes::Straight);
+      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Straight);
       for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
       {
          StrandIndexType idx = *sit;
@@ -175,10 +175,10 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
    CComPtr<IPoint2dCollection> hs_points;
    pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
 
-   nrows = pStrandGeometry->GetNumRowsWithStrand(segmentKey,pgsTypes::Harped);
+   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Harped);
    for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
    {
-      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(segmentKey, rowIdx, pgsTypes::Harped);
+      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Harped);
       for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
       {
          StrandIndexType idx = *sit;

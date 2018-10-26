@@ -164,27 +164,30 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true);  // debonded
 
          // Transfer Length
-         GET_IFACE2(pBroker,ISpecification, pSpec );
-         std::_tstring spec_name = pSpec->GetSpecification();
-         GET_IFACE2(pBroker,ILibrary, pLib );
-         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
          rptParagraph* pParagraph_h = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pParagraph_h;
          rptParagraph* pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         if (pSpecEntry->GetPrestressTransferComputationType()!=pgsTypes::ptMinuteValue)
+         if ( bonded_details.ltDetails.bMinuteValue )
          {
-            *pParagraph_h << _T("Transfer Length [5.11.4.1]") << rptNewLine;
-            *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TransferLength.png")) << rptNewLine;
-            *pParagraph << Sub2(_T("d"),_T("b")) << _T(" = ") << length.SetValue(bonded_details.db) << rptNewLine;
-            *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.lt) << rptNewLine;
+            *pParagraph_h << _T("Zero Transfer Length Selected in Project Criteria") << rptNewLine;
+            *pParagraph << _T("Actual length used ")<< Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.lt) << rptNewLine;
          }
          else
          {
-            *pParagraph_h << _T("Zero Transfer Length Selected in Project Criteria") << rptNewLine;
-            *pParagraph << _T("Actual length used ")<< Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.lt) << rptNewLine;
+            if ( bonded_details.ltDetails.bEpoxy )
+            {
+               *pParagraph_h << _T("Transfer Length") << rptNewLine;
+               *pParagraph << _T("See \"Guidelines for the use of Epoxy-Coated Strand\", Section 5.5.2, PCI Journal, July-August 1993") << rptNewLine;
+            }
+            else
+            {
+               *pParagraph_h << _T("Transfer Length [5.11.4.1]") << rptNewLine;
+            }
+            *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << bonded_details.ltDetails.ndb << Sub2(_T("d"),_T("b")) << rptNewLine;
+            *pParagraph << Sub2(_T("d"),_T("b")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.db) << rptNewLine;
+            *pParagraph << Sub2(_T("l"),_T("t")) << _T(" = ") << length.SetValue(bonded_details.ltDetails.lt) << rptNewLine;
          }
 
          // Development Length
@@ -276,13 +279,13 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             }
 
             Float64 bond_factor;
-            if ( lpx < bonded_details.lt )
+            if ( lpx < bonded_details.ltDetails.lt )
             {
-               bond_factor = bonded_details.fpe*lpx/(bonded_details.fps*bonded_details.lt);
+               bond_factor = bonded_details.fpe*lpx/(bonded_details.fps*bonded_details.ltDetails.lt);
             }
             else if ( lpx < bonded_details.ld )
             {
-               bond_factor = (bonded_details.fpe + ((lpx - bonded_details.lt)/(bonded_details.ld - bonded_details.lt))*(bonded_details.fps - bonded_details.fpe))/bonded_details.fps;
+               bond_factor = (bonded_details.fpe + ((lpx - bonded_details.ltDetails.lt)/(bonded_details.ld - bonded_details.ltDetails.lt))*(bonded_details.fps - bonded_details.fpe))/bonded_details.fps;
             }
             else
             {
@@ -299,13 +302,13 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             (*pTable)(row,5) << length.SetValue(lpx);
             (*pTable)(row,6) << scalar.SetValue(bond_factor);
 
-            if ( lpx < debonded_details.lt )
+            if ( lpx < debonded_details.ltDetails.lt )
             {
-               bond_factor = debonded_details.fpe*lpx/(debonded_details.fps*debonded_details.lt);
+               bond_factor = debonded_details.fpe*lpx/(debonded_details.fps*debonded_details.ltDetails.lt);
             }
             else if ( lpx < debonded_details.ld )
             {
-               bond_factor = (debonded_details.fpe + ((lpx - debonded_details.lt)/(debonded_details.ld - debonded_details.lt))*(debonded_details.fps - debonded_details.fpe))/debonded_details.fps;
+               bond_factor = (debonded_details.fpe + ((lpx - debonded_details.ltDetails.lt)/(debonded_details.ld - debonded_details.ltDetails.lt))*(debonded_details.fps - debonded_details.fpe))/debonded_details.fps;
             }
             else
             {

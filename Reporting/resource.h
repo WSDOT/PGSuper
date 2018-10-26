@@ -26,6 +26,7 @@
 #define IDD_DIALOG1                     3008
 #define IDD_INITIAL_STRAIN_ANALYSIS     3008
 #define IDC_RADIO1                      3009
+#define IDD_TIMESTEP_DETAILS            3009
 #define IDC_RADIO2                      3010
 #define IDC_SELECT_MULTIPLE_BUTTON      3011
 #define IDC_INTERVAL                    3012
@@ -33,6 +34,9 @@
 #define IDC_POI                         3013
 #define IDC_SLIDER                      3013
 #define IDC_LOCATION                    3014
+#define IDC_ALL_LOCATIONS               3015
+#define IDC_COMBO1                      3016
+#define IDC_GIRDERLINE                  3016
 
 // Next default values for new objects
 // 
@@ -40,7 +44,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3009
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         3015
+#define _APS_NEXT_CONTROL_VALUE         3017
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

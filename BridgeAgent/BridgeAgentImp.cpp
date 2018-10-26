@@ -2088,6 +2088,8 @@ bool CBridgeAgentImp::BuildCogoModel()
    surface.CoCreateInstance(CLSID_Surface);
    surfaces->Add(surface);
 
+   surface->put_ID(COGO_FINISHED_SURFACE_ID);
+
    CComPtr<ISurfaceTemplateCollection> templates;
    surface->get_SurfaceTemplates(&templates);
 
@@ -2139,6 +2141,8 @@ bool CBridgeAgentImp::BuildCogoModel()
       templates->Add(startSurfaceTemplate);
    }
 
+   // NOTE: Should be using the Cogo Model Superelevation objects, but
+   // this is easier....
    std::vector<CrownData2>::iterator iter(section_data.Superelevations.begin());
    std::vector<CrownData2>::iterator iterEnd(section_data.Superelevations.end());
    for ( ; iter != iterEnd; iter++ )
@@ -5492,6 +5496,7 @@ STDMETHODIMP CBridgeAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
    pBrokerInit->RegInterface( IID_IRoadway,                       this );
+   pBrokerInit->RegInterface( IID_IGeometry,                      this );
    pBrokerInit->RegInterface( IID_IBridge,                        this );
    pBrokerInit->RegInterface( IID_IMaterials,                     this );
    pBrokerInit->RegInterface( IID_IStrandGeometry,                this );
@@ -5903,12 +5908,8 @@ void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve)
    ATLASSERT(SUCCEEDED(hr));
 }
 
-void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IPoint2dCollection** ppPoints)
+void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints)
 {
-   Float64 Xb = ConvertRouteToBridgeLineCoordinate(station);
-   Float64 leftEdgeOffset  = GetLeftSlabEdgeOffset(Xb);
-   Float64 rightEdgeOffset = GetRightSlabEdgeOffset(Xb);
-
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
 
@@ -5921,39 +5922,69 @@ void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IPoint2dCollection** ppP
    alignment->get_Profile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(varStation,&surface);
-
-   IndexType alignmentRidgePointIdx;
-   surface->get_AlignmentPoint(&alignmentRidgePointIdx);
-
-   CComPtr<ISurfaceTemplate> surfaceTemplate;
-   surface->CreateSurfaceTemplate(varStation,VARIANT_TRUE,&surfaceTemplate);
+   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
 
    CComPtr<IPoint2dCollection> points;
    points.CoCreateInstance(CLSID_Point2dCollection);
-   SegmentIndexType nSegments;
-   surfaceTemplate->get_Count(&nSegments);
-   IndexType nRidgePoints = nSegments+1;
-   for ( IndexType ridgePointIdx = 0; ridgePointIdx < nRidgePoints; ridgePointIdx++ )
+   if ( pDirection == NULL )
    {
-      Float64 x,y;
-      profile->RidgePointElevation(varStation,ridgePointIdx,alignmentRidgePointIdx,&x,&y);
+      // direction == NULL means the cut is normal to the alignment
+      // using surface templates is faster but only works for normal cuts
+      Float64 Xb = ConvertRouteToBridgeLineCoordinate(station);
+      Float64 leftEdgeOffset  = GetLeftSlabEdgeOffset(Xb);
+      Float64 rightEdgeOffset = GetRightSlabEdgeOffset(Xb);
 
-      if ( x < leftEdgeOffset )
-      {
-         x = leftEdgeOffset;
-         profile->Elevation(varStation,x,&y);
-      }
-      else if ( rightEdgeOffset < x )
-      {
-         x = rightEdgeOffset;
-         profile->Elevation(varStation,x,&y);
-      }
+      IndexType alignmentRidgePointIdx;
+      surface->get_AlignmentPoint(&alignmentRidgePointIdx);
 
-      CComPtr<IPoint2d> point;
-      point.CoCreateInstance(CLSID_Point2d);
-      point->Move(x,y);
-      points->Add(point);
+      CComPtr<ISurfaceTemplate> surfaceTemplate;
+      surface->CreateSurfaceTemplate(varStation,VARIANT_TRUE,&surfaceTemplate);
+
+      SegmentIndexType nSegments;
+      surfaceTemplate->get_Count(&nSegments);
+      IndexType nRidgePoints = nSegments+1;
+      for ( IndexType ridgePointIdx = 0; ridgePointIdx < nRidgePoints; ridgePointIdx++ )
+      {
+         Float64 x,y;
+         profile->RidgePointElevation(COGO_FINISHED_SURFACE_ID,varStation,ridgePointIdx,alignmentRidgePointIdx,&x,&y);
+
+         if ( x < leftEdgeOffset )
+         {
+            x = leftEdgeOffset;
+            profile->Elevation(varStation,x,&y);
+         }
+         else if ( rightEdgeOffset < x )
+         {
+            x = rightEdgeOffset;
+            profile->Elevation(varStation,x,&y);
+         }
+
+         CComPtr<IPoint2d> point;
+         point.CoCreateInstance(CLSID_Point2d);
+         point->Move(x,y);
+         points->Add(point);
+      }
+   }
+   else
+   {
+      CComPtr<ISurfaceProfile> surfaceProfile;
+      surface->CreateSurfaceProfile(varStation,CComVariant(pDirection),VARIANT_TRUE,&surfaceProfile);
+
+      IndexType nRidgePoints;
+      surfaceProfile->get_Count(&nRidgePoints);
+      for ( IndexType ridgePointIdx = 0; ridgePointIdx < nRidgePoints; ridgePointIdx++ )
+      {
+         CComPtr<ISurfacePoint> surfacePoint;
+         surfaceProfile->get_Item(ridgePointIdx,&surfacePoint);
+         Float64 x,y;
+         surfacePoint->get_CutLineOffset(&x);
+         surfacePoint->get_Elevation(&y);
+
+         CComPtr<IPoint2d> point;
+         point.CoCreateInstance(CLSID_Point2d);
+         point->Move(x,y);
+         points->Add(point);
+      }
    }
 
    points.CopyTo(ppPoints);
@@ -5999,7 +6030,7 @@ Float64 CBridgeAgentImp::GetCrownPointOffset(Float64 station)
    alignment->get_Profile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(varStation,&surface);
+   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
 
    IndexType alignmentRidgePointIdx;
    surface->get_AlignmentPoint(&alignmentRidgePointIdx);
@@ -6011,6 +6042,211 @@ Float64 CBridgeAgentImp::GetCrownPointOffset(Float64 station)
    surfaceTemplate->GetRidgePointOffset(2,alignmentRidgePointIdx,&offset);
 
    return offset;
+}
+
+/////////////////////////////////////////////////////////
+// IGeometry
+HRESULT CBridgeAgentImp::Angle(IPoint2d* from,IPoint2d* vertex,IPoint2d* to,IAngle** angle)
+{
+   CComPtr<IMeasure2> measure;
+   m_CogoEngine->get_Measure(&measure);
+   return measure->Angle(from,vertex,to,angle);
+}
+
+HRESULT CBridgeAgentImp::Area(IPoint2dCollection* points,Float64* area)
+{
+   CComPtr<IMeasure2> measure;
+   m_CogoEngine->get_Measure(&measure);
+   return measure->Area(points,area);
+}
+
+HRESULT CBridgeAgentImp::Distance(IPoint2d* from,IPoint2d* to,Float64* dist)
+{
+   CComPtr<IMeasure2> measure;
+   m_CogoEngine->get_Measure(&measure);
+   return measure->Distance(from,to,dist);
+}
+
+HRESULT CBridgeAgentImp::Direction(IPoint2d* from,IPoint2d* to,IDirection** dir)
+{
+   CComPtr<IMeasure2> measure;
+   m_CogoEngine->get_Measure(&measure);
+   return measure->Direction(from,to,dir);
+}
+
+HRESULT CBridgeAgentImp::Inverse(IPoint2d* from,IPoint2d* to,Float64* dist,IDirection** dir)
+{
+   CComPtr<IMeasure2> measure;
+   m_CogoEngine->get_Measure(&measure);
+   return measure->Inverse(from,to,dist,dir);
+}
+
+HRESULT CBridgeAgentImp::ByDistAngle(IPoint2d* from,IPoint2d* to,Float64 dist,VARIANT varAngle,Float64 offset,IPoint2d** point)
+{
+   CComPtr<ILocate2> locate;
+   m_CogoEngine->get_Locate(&locate);
+   return locate->ByDistAngle(from,to,dist,varAngle,offset,point);
+}
+
+HRESULT CBridgeAgentImp::ByDistDefAngle(IPoint2d* from,IPoint2d* to,Float64 dist,VARIANT varDefAngle,Float64 offset,IPoint2d** point)
+{
+   CComPtr<ILocate2> locate;
+   m_CogoEngine->get_Locate(&locate);
+   return locate->ByDistDefAngle(from,to,dist,varDefAngle,offset,point);
+}
+
+HRESULT CBridgeAgentImp::ByDistDir(IPoint2d* from,Float64 dist,VARIANT varDir,Float64 offset,IPoint2d** point)
+{
+   CComPtr<ILocate2> locate;
+   m_CogoEngine->get_Locate(&locate);
+   return locate->ByDistDir(from,dist,varDir,offset,point);
+}
+
+HRESULT CBridgeAgentImp::PointOnLine(IPoint2d* from,IPoint2d* to,Float64 dist,Float64 offset,IPoint2d** point)
+{
+   CComPtr<ILocate2> locate;
+   m_CogoEngine->get_Locate(&locate);
+   return locate->PointOnLine(from,to,dist,offset,point);
+}
+
+HRESULT CBridgeAgentImp::ParallelLineByPoints(IPoint2d* from,IPoint2d* to,Float64 offset,IPoint2d** p1,IPoint2d** p2)
+{
+   CComPtr<ILocate2> locate;
+   m_CogoEngine->get_Locate(&locate);
+   return locate->ParallelLineByPoints(from,to,offset,p1,p2);
+}
+
+HRESULT CBridgeAgentImp::ParallelLineSegment(ILineSegment2d* ls,Float64 offset,ILineSegment2d** linesegment)
+{
+   CComPtr<ILocate2> locate;
+   m_CogoEngine->get_Locate(&locate);
+   return locate->ParallelLineSegment(ls,offset,linesegment);
+}
+
+HRESULT CBridgeAgentImp::Bearings(IPoint2d* p1,VARIANT varDir1,Float64 offset1,IPoint2d* p2,VARIANT varDir2,Float64 offset2,IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->Bearings(p1,varDir1,offset1,p2,varDir2,offset2,point);
+}
+
+HRESULT CBridgeAgentImp::BearingCircle(IPoint2d* p1,VARIANT varDir,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest,IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->BearingCircle(p1,varDir,offset,center,radius,nearest,point);
+}
+
+HRESULT CBridgeAgentImp::Circles(IPoint2d* p1,Float64 r1,IPoint2d* p2,Float64 r2,IPoint2d* nearest,IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->Circles(p1,r1,p2,r2,nearest,point);
+}
+
+HRESULT CBridgeAgentImp::LineByPointsCircle(IPoint2d* p1,IPoint2d* p2,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest,IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->LineByPointsCircle(p1,p2,offset,center,radius,nearest,point);
+}
+
+HRESULT CBridgeAgentImp::LinesByPoints(IPoint2d* p11,IPoint2d* p12,Float64 offset1,IPoint2d* p21,IPoint2d* p22,Float64 offset2,IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->LinesByPoints(p11,p12,offset1,p21,p22,offset2,point);
+}
+
+HRESULT CBridgeAgentImp::Lines(ILineSegment2d* l1,Float64 offset1,ILineSegment2d* l2,Float64 offset2,IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->Lines(l1,offset1,l2,offset2,point);
+}
+
+HRESULT CBridgeAgentImp::LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point)
+{
+   CComPtr<IIntersect2> intersect;
+   m_CogoEngine->get_Intersect(&intersect);
+   return intersect->LineSegmentCircle(pSeg,offset,center,radius,nearest,point);
+}
+
+HRESULT CBridgeAgentImp::PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point)
+{
+   CComPtr<IProject2> project;
+   m_CogoEngine->get_Project(&project);
+   return project->PointOnLineByPoints(pnt,start,end,offset,point);
+}
+
+HRESULT CBridgeAgentImp::PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point)
+{
+   CComPtr<IProject2> project;
+   m_CogoEngine->get_Project(&project);
+   return project->PointOnLineSegment(from,seg,offset,point);
+}
+
+HRESULT CBridgeAgentImp::PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point)
+{
+   CComPtr<IProject2> project;
+   m_CogoEngine->get_Project(&project);
+   return project->PointOnCurve(pnt,curve,point);
+}
+
+HRESULT CBridgeAgentImp::Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points)
+{
+   CComPtr<IDivide2> divide;
+   m_CogoEngine->get_Divide(&divide);
+   return divide->Arc(from,vertex,to,nParts,points);
+}
+
+HRESULT CBridgeAgentImp::BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points)
+{
+   CComPtr<IDivide2> divide;
+   m_CogoEngine->get_Divide(&divide);
+   return divide->BetweenPoints(from,to,nParts,points);
+}
+
+HRESULT CBridgeAgentImp::LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points)
+{
+   CComPtr<IDivide2> divide;
+   m_CogoEngine->get_Divide(&divide);
+   return divide->LineSegment(seg,nParts,points);
+}
+
+HRESULT CBridgeAgentImp::HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points)
+{
+   CComPtr<IDivide2> divide;
+   m_CogoEngine->get_Divide(&divide);
+   return divide->HorzCurve(curve,nParts,points);
+}
+
+HRESULT CBridgeAgentImp::Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points)
+{
+   CComPtr<IDivide2> divide;
+   m_CogoEngine->get_Divide(&divide);
+   return divide->Path(pPath,nParts,start,end,points);
+}
+
+HRESULT CBridgeAgentImp::External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2)
+{
+   CComPtr<ITangent2> tangent;
+   m_CogoEngine->get_Tangent(&tangent);
+   return tangent->External(center1,radius1,center2,radius2,sign,t1,t2);
+}
+
+HRESULT CBridgeAgentImp::Cross(IPoint2d* center1, Float64 radius1,IPoint2d* center2, Float64 radius2, TangentSignType sign, IPoint2d** t1,IPoint2d** t2)
+{
+   CComPtr<ITangent2> tangent;
+   m_CogoEngine->get_Tangent(&tangent);
+   return tangent->Cross(center1,radius1,center2,radius2,sign,t1,t2);
+}
+
+HRESULT CBridgeAgentImp::Point(IPoint2d* center, Float64 radius,IPoint2d* point, TangentSignType sign, IPoint2d** tangentPoint)
+{
+   CComPtr<ITangent2> tangent;
+   m_CogoEngine->get_Tangent(&tangent);
+   return tangent->Point(center,radius,point,sign,tangentPoint);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -6147,6 +6383,20 @@ GirderIndexType CBridgeAgentImp::GetGirderCount(GroupIndexType grpIdx)
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
    return pGroup->GetGirderCount();
+}
+
+GirderIndexType CBridgeAgentImp::GetGirderlineCount()
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GirderIndexType nGirderLines = 0;
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      nGirderLines += pGroup->GetGirderCount();
+   }
+   return nGirderLines;
 }
 
 GirderIndexType CBridgeAgentImp::GetGirderCountBySpan(SpanIndexType spanIdx)
@@ -8825,8 +9075,9 @@ Float64 CBridgeAgentImp::GetLeftSlabEdgeOffset(Float64 Xb)
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += Xb;
+   CComPtr<IStation> offsetStation;
    Float64 offset;
-   m_BridgeGeometryTool->DeckOffset(m_Bridge,station,NULL,qcbLeft,&offset);
+   m_BridgeGeometryTool->DeckOffset(m_Bridge,station,NULL,qcbLeft,&offsetStation,&offset);
 
    m_LeftSlabEdgeOffset.insert(std::make_pair(Xb,offset));
 
@@ -8844,8 +9095,9 @@ Float64 CBridgeAgentImp::GetRightSlabEdgeOffset(Float64 Xb)
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += Xb;
+   CComPtr<IStation> offsetStation;
    Float64 offset;
-   m_BridgeGeometryTool->DeckOffset(m_Bridge,station,NULL,qcbRight,&offset);
+   m_BridgeGeometryTool->DeckOffset(m_Bridge,station,NULL,qcbRight,&offsetStation,&offset);
 
    m_RightSlabEdgeOffset.insert(std::make_pair(Xb,offset));
 
@@ -8857,8 +9109,9 @@ Float64 CBridgeAgentImp::GetLeftCurbOffset(Float64 Xb)
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += Xb;
+   CComPtr<IStation> offsetStation;
    Float64 offset;
-   m_BridgeGeometryTool->CurbOffset(m_Bridge,station,NULL,qcbLeft,&offset);
+   m_BridgeGeometryTool->CurbOffset(m_Bridge,station,NULL,qcbLeft,&offsetStation,&offset);
    return offset;
 }
 
@@ -8867,8 +9120,9 @@ Float64 CBridgeAgentImp::GetRightCurbOffset(Float64 Xb)
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += Xb;
+   CComPtr<IStation> offsetStation;
    Float64 offset;
-   m_BridgeGeometryTool->CurbOffset(m_Bridge,station,NULL,qcbRight,&offset);
+   m_BridgeGeometryTool->CurbOffset(m_Bridge,station,NULL,qcbRight,&offsetStation,&offset);
    return offset;
 }
 
@@ -8928,8 +9182,9 @@ Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(Float64 Xb)
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += Xb;
+   CComPtr<IStation> offsetStation;
    Float64 offset;
-   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbLeft,&offset);
+   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbLeft,&offsetStation,&offset);
    return offset;
 }
 
@@ -8938,8 +9193,9 @@ Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(Float64 Xb)
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += Xb;
+   CComPtr<IStation> offsetStation;
    Float64 offset;
-   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbRight,&offset);
+   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbRight,&offsetStation,&offset);
    return offset;
 }
 
@@ -14944,25 +15200,28 @@ StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(const CSegmentKey& segmen
 }
 
 //-----------------------------------------------------------------------------
-RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType )
+RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType )
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
    StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
-   return GetNumRowsWithStrand(segmentKey,nStrands,strandType);
+   return GetNumRowsWithStrand(poi,nStrands,strandType);
 }
 
 //-----------------------------------------------------------------------------
-StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const CSegmentKey& segmentKey,
+StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const pgsPointOfInterest& poi,
                                                    RowIndexType rowIdx,
                                                    pgsTypes::StrandType strandType )
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
    StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
-   return GetNumStrandInRow(segmentKey,nStrands,rowIdx,strandType);
+   return GetNumStrandInRow(poi,nStrands,rowIdx,strandType);
 }
 
-std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const CSegmentKey& segmentKey, RowIndexType rowIdx, pgsTypes::StrandType strandType )
+std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
    StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
-   return GetStrandsInRow(segmentKey,nStrands,rowIdx,strandType);
+   return GetStrandsInRow(poi,nStrands,rowIdx,strandType);
 }
 
 //-----------------------------------------------------------------------------
@@ -15431,9 +15690,12 @@ bool CBridgeAgentImp::IsDebondingSymmetric(const CSegmentKey& segmentKey)
    return true;
 }
 
-RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const CSegmentKey& segmentKey,StrandIndexType nStrands,pgsTypes::StrandType strandType )
+RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const pgsPointOfInterest& poi,StrandIndexType nStrands,pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   Float64 Xpoi = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
@@ -15457,7 +15719,7 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const CSegmentKey& segmentKey
       m_StrandFillers[segmentKey].ComputeHarpedStrandFill(girder, nStrands, &fill);
       girder->get_HarpedStrandFill(&oldFill);
       girder->putref_HarpedStrandFill(fill);
-      hr = girder->get_HarpedStrandRowsWithStrand(&nRows);
+      hr = girder->get_HarpedStrandRowsWithStrand(Xpoi,&nRows);
       girder->putref_HarpedStrandFill(oldFill);
       break;
 
@@ -15474,9 +15736,12 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(const CSegmentKey& segmentKey
    return nRows;
 }
 
-StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const CSegmentKey& segmentKey,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType )
+StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   Float64 Xpoi = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
@@ -15500,7 +15765,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const CSegmentKey& segmentKey
       m_StrandFillers[segmentKey].ComputeHarpedStrandFill(girder, nStrands, &fill);
       girder->get_HarpedStrandFill(&oldFill);
       girder->putref_HarpedStrandFill(fill);
-      hr = girder->get_NumHarpedStrandsInRow(rowIdx,&cStrands);
+      hr = girder->get_NumHarpedStrandsInRow(Xpoi,rowIdx,&cStrands);
       girder->putref_HarpedStrandFill(oldFill);
       break;
 
@@ -15517,7 +15782,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(const CSegmentKey& segmentKey
    return cStrands;
 }
 
-std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const CSegmentKey& segmentKey,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType )
+std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
    std::vector<StrandIndexType> strandIdxs;
    if ( strandType == pgsTypes::Temporary )
@@ -15527,6 +15792,9 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const CSegmentKey&
    }
 
    VALIDATE( GIRDER );
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   Float64 Xpoi = poi.GetDistFromStart();
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
@@ -15548,7 +15816,7 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const CSegmentKey&
       m_StrandFillers[segmentKey].ComputeHarpedStrandFill(girder, nStrands, &fill);
       girder->get_HarpedStrandFill(&oldFill);
       girder->putref_HarpedStrandFill(fill);
-      girder->get_HarpedStrandsInRow(rowIdx,&array);
+      girder->get_HarpedStrandsInRow(Xpoi,rowIdx,&array);
       girder->putref_HarpedStrandFill(oldFill);
    }
 
@@ -17688,6 +17956,17 @@ bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsT
    ATLASSERT(IsStrengthLimitState(limitState));
    PoiAttributeType csAttribute = (IsStrengthILimitState(limitState) ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
 
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
+   // so critical section is not a function of the limit state. We will work with the Strength I limit state
+   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   {
+      csAttribute = POI_CRITSECTSHEAR1;
+   }
+
    if ( poi.HasAttribute(csAttribute) )
    {
       // this may seem backwards... may seem like true should be returned, but false is correct.
@@ -18677,10 +18956,20 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
    }
 }
 
-void CBridgeAgentImp::GetSlabShape(Float64 station,IShape** ppShape)
+void CBridgeAgentImp::GetSlabShape(Float64 station,IDirection* pDirection,IShape** ppShape)
 {
    VALIDATE(BRIDGE);
-   ShapeContainer::iterator found = m_DeckShapes.find(station);
+   SectionCutKey key;
+   key.station = station;
+   if ( pDirection )
+   {
+      pDirection->get_Value(&key.direction);
+   }
+   else
+   {
+      key.direction = 0;
+   }
+   ShapeContainer::iterator found = m_DeckShapes.find(key);
 
    if ( found != m_DeckShapes.end() )
    {
@@ -18689,20 +18978,30 @@ void CBridgeAgentImp::GetSlabShape(Float64 station,IShape** ppShape)
    }
    else
    {
-      HRESULT hr = m_SectCutTool->CreateSlabShape(m_Bridge,station,ppShape);
+      HRESULT hr = m_SectCutTool->CreateSlabShape(m_Bridge,station,pDirection,ppShape);
       ATLASSERT(SUCCEEDED(hr));
 
       if ( *ppShape )
       {
-         m_DeckShapes.insert(std::make_pair(station,CComPtr<IShape>(*ppShape)));
+         m_DeckShapes.insert(std::make_pair(key,CComPtr<IShape>(*ppShape)));
       }
    }
 }
 
-void CBridgeAgentImp::GetLeftTrafficBarrierShape(Float64 station,IShape** ppShape)
+void CBridgeAgentImp::GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape)
 {
    VALIDATE(BRIDGE);
-   ShapeContainer::iterator found = m_LeftBarrierShapes.find(station);
+   SectionCutKey key;
+   key.station = station;
+   if ( pDirection )
+   {
+      pDirection->get_Value(&key.direction);
+   }
+   else
+   {
+      key.direction = 0;
+   }
+   ShapeContainer::iterator found = m_LeftBarrierShapes.find(key);
    if ( found != m_LeftBarrierShapes.end() )
    {
       found->second->Clone(ppShape);
@@ -18710,20 +19009,30 @@ void CBridgeAgentImp::GetLeftTrafficBarrierShape(Float64 station,IShape** ppShap
    else
    {
       CComPtr<IShape> shape;
-      HRESULT hr = m_SectCutTool->CreateLeftBarrierShape(m_Bridge,station,&shape);
+      HRESULT hr = m_SectCutTool->CreateLeftBarrierShape(m_Bridge,station,pDirection,&shape);
 
       if ( SUCCEEDED(hr) )
       {
-         m_LeftBarrierShapes.insert(std::make_pair(station,CComPtr<IShape>(shape)));
+         m_LeftBarrierShapes.insert(std::make_pair(key,CComPtr<IShape>(shape)));
          shape->Clone(ppShape);
       }
    }
 }
 
-void CBridgeAgentImp::GetRightTrafficBarrierShape(Float64 station,IShape** ppShape)
+void CBridgeAgentImp::GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape)
 {
    VALIDATE(BRIDGE);
-   ShapeContainer::iterator found = m_RightBarrierShapes.find(station);
+   SectionCutKey key;
+   key.station = station;
+   if ( pDirection )
+   {
+      pDirection->get_Value(&key.direction);
+   }
+   else
+   {
+      key.direction = 0;
+   }
+   ShapeContainer::iterator found = m_RightBarrierShapes.find(key);
    if ( found != m_RightBarrierShapes.end() )
    {
       found->second->Clone(ppShape);
@@ -18731,11 +19040,11 @@ void CBridgeAgentImp::GetRightTrafficBarrierShape(Float64 station,IShape** ppSha
    else
    {
       CComPtr<IShape> shape;
-      HRESULT hr = m_SectCutTool->CreateRightBarrierShape(m_Bridge,station,&shape);
+      HRESULT hr = m_SectCutTool->CreateRightBarrierShape(m_Bridge,station,pDirection,&shape);
 
       if ( SUCCEEDED(hr) )
       {
-         m_RightBarrierShapes.insert(std::make_pair(station,CComPtr<IShape>(shape)));
+         m_RightBarrierShapes.insert(std::make_pair(key,CComPtr<IShape>(shape)));
          shape->Clone(ppShape);
       }
    }
@@ -25322,7 +25631,7 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
 
             Float64 bonded_length = Min(left_bonded_length, right_bonded_length);
 
-            debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.lt, dla_det.fps, dla_det.fpe);
+            debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.ltDetails.lt, dla_det.fps, dla_det.fpe);
          }
          else
          {
@@ -26749,6 +27058,13 @@ Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,const matPsStrand* pStrand,Fl
       ATLASSERT(false); // is there a new type?
    }
 
+   if ( pStrand->GetCoating() != matPsStrand::None )
+   {
+      // strand is epoxy coated... double the relaxation
+      // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993
+      fr *= 2;
+   }
+
    return fr;
 }
 
@@ -26960,42 +27276,75 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsType
    GroupIndexType grpIdx = (pierFace == pgsTypes::Back ? backGrpIdx : aheadGrpIdx);
    ATLASSERT(grpIdx != INVALID_INDEX);
 
+   Float64 Wsupport; // support width measured along CL girder... need to measure it normal
+   // to CL Pier. See below for adjusting bearing offset. The same logic is used for adjusting the bearing offset
+   // and the support width.
+   if ( pPier->IsBoundaryPier() )
+   {
+      Wsupport = pPier->GetSupportWidth(pierFace);
+   }
+   else
+   {
+      ATLASSERT(pPier->IsInteriorPier());
+      Wsupport = pPier->GetSupportWidth(pgsTypes::Ahead);
+   }
+
    Float64 maxBrgOffset = 0;
+   Float64 maxSupportWidth = 0;
    GirderIndexType nGirders = GetGirderCount(grpIdx);
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       // get segment bearing offset
       CSegmentKey segmentKey = GetSegmentAtPier(pierIdx,CGirderKey(grpIdx, gdrIdx));
       Float64 brgOffset;
+
+
+      // segment bearing offset is measured along the CL girder.
+      // we need it to be measured normal to the CL pier
+      // get the angle between the pier and the girder, then deduct 90 degrees
+      // so that it is the angle between the pier normal and the girder.
+      // multiple the bearing offset by this angle to get the bearing offset
+      // normal to the pier.
+      // Since the girders need not be parallel, each girder can have a different intersection
+      // angle with the pier. For this reason, we have to compute the bearing offset and
+      // support width normal to the pier uniquely for each girder.
+      CComPtr<IAngle> objSegAngle;
+      Float64 segAngle;
       if ( pierFace == pgsTypes::Back)
       {
          brgOffset = GetSegmentEndBearingOffset(segmentKey);
+         GetSegmentAngle(segmentKey,pgsTypes::metEnd,&objSegAngle);
+         objSegAngle->get_Value(&segAngle);
+         segAngle -= PI_OVER_2;
       }
       else
       {
          brgOffset = GetSegmentStartBearingOffset(segmentKey);
+         GetSegmentAngle(segmentKey,pgsTypes::metStart,&objSegAngle);
+         objSegAngle->get_Value(&segAngle);
+         segAngle -= PI_OVER_2;
       }
 
+      brgOffset *= cos(segAngle);
       maxBrgOffset = Max(maxBrgOffset,brgOffset);
+      maxSupportWidth = Max(maxSupportWidth,Wsupport*cos(segAngle));
    }
 
    Float64 W = 0;
    if ( pPier->IsBoundaryPier() )
    {
-      Float64 Wsupport  = pPier->GetSupportWidth(pierFace);
-
       pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
       if ( bcType == pgsTypes::bctHinge || bcType == pgsTypes::bctRoller )
       {
-         W = Wsupport;
+         W = maxSupportWidth;
       }
       else if ( bcType == pgsTypes::bctContinuousBeforeDeck || bcType == pgsTypes::bctContinuousAfterDeck )
       {
-         W = maxBrgOffset - Wsupport/2;
+         W = maxBrgOffset - maxSupportWidth/2;
       }
       else if ( bcType == pgsTypes::bctIntegralBeforeDeck || bcType == pgsTypes::bctIntegralAfterDeck )
       {
-         W = maxBrgOffset + Wsupport/2;
+         W = maxBrgOffset + maxSupportWidth/2;
 
          if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
          {
@@ -27008,11 +27357,11 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsType
       {
          if ( pierFace == pgsTypes::Back )
          {
-            W = Wsupport;
+            W = maxSupportWidth;
          }
          else
          {
-            W = maxBrgOffset + Wsupport/2;
+            W = maxBrgOffset + maxSupportWidth/2;
             if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
             {
                W = Max(W,pPier->GetXBeamWidth()/2);
@@ -27023,7 +27372,7 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsType
       {
          if ( pierFace == pgsTypes::Back )
          {
-            W = maxBrgOffset + Wsupport/2;
+            W = maxBrgOffset + maxSupportWidth/2;
             if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
             {
                W = Max(W,pPier->GetXBeamWidth()/2);
@@ -27031,7 +27380,7 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsType
          }
          else
          {
-            W = Wsupport;
+            W = maxSupportWidth;
          }
       }
       else
@@ -27044,23 +27393,22 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsType
    {
       ATLASSERT(pPier->IsInteriorPier());
       pgsTypes::PierSegmentConnectionType connectionType = pPier->GetSegmentConnectionType();
-      Float64 Wsupport = pPier->GetSupportWidth(pgsTypes::Ahead);
 
       if ( connectionType == pgsTypes::psctContinousClosureJoint )
       {
-         W = 2*(maxBrgOffset - Wsupport/2);
+         W = 2*(maxBrgOffset - maxSupportWidth/2);
       }
       else if ( connectionType == pgsTypes::psctIntegralClosureJoint )
       {
-         W = 2*(maxBrgOffset + Wsupport/2);
+         W = 2*(maxBrgOffset + maxSupportWidth/2);
       }
       else if ( connectionType == pgsTypes::psctContinuousSegment )
       {
-         W = Wsupport;
+         W = maxSupportWidth;
       }
       else if ( connectionType == pgsTypes::psctIntegralSegment )
       {
-         W = Wsupport;
+         W = maxSupportWidth;
          if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
          {
             // The segment/pier connection is integral and there is a physical model of the pier.

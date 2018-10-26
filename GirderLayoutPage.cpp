@@ -215,6 +215,7 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    // set up the girder name grid
 	m_GirderNameGrid.SubclassDlgItem(IDC_GIRDERGRID, this);
    m_GirderNameGrid.CustomInit(pParent->m_pGirderGroup);
+   m_GirderGroupCache.SetPiers(pParent->m_pGirderGroup->GetPier(pgsTypes::metStart),pParent->m_pGirderGroup->GetPier(pgsTypes::metEnd));
    m_GirderGroupCache = *(pParent->m_pGirderGroup);
 
 

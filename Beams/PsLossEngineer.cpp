@@ -46,6 +46,8 @@
 
 #include <Material\PsStrand.h>
 
+#include <Reporting\ReportNotes.h>
+
 #include "ElasticShorteningTable.h"
 #include "FrictionLossTable.h"
 #include "PostTensionInteractionTable.h"
@@ -296,8 +298,9 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 {
    pLosses->LossMethod = pgsTypes::AASHTO_REFINED;
 
-   matPsStrand::Grade grade;
-   matPsStrand::Type type;
+   matPsStrand::Grade gradePerm, gradeTemp;
+   matPsStrand::Type typePerm, typeTemp;
+   matPsStrand::Coating coatingPerm, coatingTemp;
    lrfdLosses::SectionPropertiesType spType;
    Float64 fpjPerm;
    Float64 fpjTTS;
@@ -351,7 +354,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
    GetLossParameters(poi,config,
                      &spType,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
+                     &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -375,8 +378,12 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
    boost::shared_ptr<lrfdRefinedLosses> pLoss(new lrfdRefinedLosses(poi.GetDistFromStart(),
                                 girder_length, spType,
-                                grade,
-                                type,
+                                gradePerm,
+                                typePerm,
+                                coatingPerm,
+                                gradeTemp,
+                                typeTemp,
+                                coatingTemp,
                                 fpjPerm,
                                 fpjTTS,
                                 ApsPerm,
@@ -473,8 +480,9 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    assert(lossAgency!=laTxDOT); // Did TxDOT change their mind about using the 05 revisions?
 
    lrfdLosses::SectionPropertiesType spType;
-   matPsStrand::Grade grade;
-   matPsStrand::Type type;
+   matPsStrand::Grade gradePerm, gradeTemp;
+   matPsStrand::Type typePerm, typeTemp;
+   matPsStrand::Coating coatingPerm, coatingTemp;
    Float64 fpjPerm;
    Float64 fpjTTS;
    Float64 perimeter;
@@ -526,7 +534,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
    GetLossParameters(poi,config,&spType,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
+                     &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -558,8 +566,12 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    boost::shared_ptr<lrfdRefinedLosses2005> pLoss(new lrfdRefinedLosses2005(poi.GetDistFromStart(),
                                 girder_length,
                                 spType,
-                                grade,
-                                type,
+                                gradePerm,
+                                typePerm,
+                                coatingPerm,
+                                gradeTemp,
+                                typeTemp,
+                                coatingTemp,
                                 fpjPerm,
                                 fpjTTS,
                                 ApsPerm,
@@ -693,8 +705,9 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    pLosses->LossMethod = pgsTypes::TXDOT_REFINED_2013;
 
    lrfdLosses::SectionPropertiesType spType;
-   matPsStrand::Grade grade;
-   matPsStrand::Type type;
+   matPsStrand::Grade gradePerm, gradeTemp;
+   matPsStrand::Type typePerm, typeTemp;
+   matPsStrand::Coating coatingPerm, coatingTemp;
    Float64 fpjPerm;
    Float64 fpjTTS;
    Float64 perimeter;
@@ -746,7 +759,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
    GetLossParameters(poi,config,&spType,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
+                     &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -788,7 +801,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
       method = lrfdElasticShortening::fcgpIterative;
       if ( 0.0 <= ApsPerm && IsEqual(ApsTTS, 0.0) )
       {
-         Float64 Fpu = lrfdPsStrand::GetUltimateStrength( grade );
+         Float64 Fpu = lrfdPsStrand::GetUltimateStrength( gradePerm );
 
          if (ApsPerm==0.0 || IsEqual(Fpu*0.75, fpjPerm, 1000.0)) // Pa's are very small
          {
@@ -809,8 +822,12 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    boost::shared_ptr<lrfdRefinedLossesTxDOT2013> pLoss(new lrfdRefinedLossesTxDOT2013( poi.GetDistFromStart(),
                                                   girder_length,
                                                   spType,
-                                                  grade,
-                                                  type,
+                                                  gradePerm,
+                                                  typePerm,
+                                                  coatingPerm,
+                                                  gradeTemp,
+                                                  typeTemp,
+                                                  coatingTemp,
                                                   fpjPerm,
                                                   fpjTTS,
                                                   ApsPerm,
@@ -915,8 +932,9 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    PRECONDITION(pLosses != 0 );
 
    lrfdLosses::SectionPropertiesType spType;
-   matPsStrand::Grade grade;
-   matPsStrand::Type type;
+   matPsStrand::Grade gradePerm, gradeTemp;
+   matPsStrand::Type typePerm, typeTemp;
+   matPsStrand::Coating coatingPerm, coatingTemp;
    Float64 fpjPerm;
    Float64 fpjTTS;
    Float64 perimeter;
@@ -983,7 +1001,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    }
 
    GetLossParameters(poi,config,&spType,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
+                     &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -1030,8 +1048,12 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                             poi.GetDistFromStart(), // location along girder where losses are computed
                             girder_length,    // girder length
                             spType,
-                            grade,
-                            type,
+                            gradePerm,
+                            typePerm,
+                            coatingPerm,
+                            gradeTemp,
+                            typeTemp,
+                            coatingTemp,
                             fpjPerm,
                             fpjTTS,
                             ApsPerm,  // area of permanent strand
@@ -1106,8 +1128,12 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          boost::shared_ptr<lrfdApproximateLosses2005> pLoss(new lrfdApproximateLosses2005(poi.GetDistFromStart(), // location along girder where losses are computed
                             girder_length,    // girder length
                             spType,
-                            grade,
-                            type,
+                            gradePerm,
+                            typePerm,
+                            coatingPerm,
+                            gradeTemp,
+                            typeTemp,
+                            coatingTemp,
                             fpjPerm,
                             fpjTTS,
                             ApsPerm,  // area of permanent strand
@@ -1215,8 +1241,9 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    // to create yet another function to get just those parameters we need.
    PRECONDITION(pLosses != 0 );
    lrfdLosses::SectionPropertiesType spType;
-   matPsStrand::Grade grade;
-   matPsStrand::Type type;
+   matPsStrand::Grade gradePerm, gradeTemp;
+   matPsStrand::Type typePerm, typeTemp;
+   matPsStrand::Coating coatingPerm, coatingTemp;
    Float64 fpjPerm;
    Float64 fpjTTS;
    Float64 perimeter;
@@ -1269,7 +1296,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    GetLossParameters(poi,config,
                      &spType,
-                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
+                     &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
@@ -2186,7 +2213,15 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    *pChapter << pParagraph;
    *pParagraph << _T("Prestress loss due to relaxation before transfer") << rptNewLine;
 
-   if ( pLosses->GetStrandType() == matPsStrand::LowRelaxation )
+   rptRcTable* table;
+
+   pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   *pChapter << pParagraph;
+   *pParagraph << _T("Permanent Strands") << rptNewLine;
+   pParagraph = new rptParagraph;
+   *pChapter << pParagraph;
+
+   if ( pLosses->GetPermanentStrandType() == matPsStrand::LowRelaxation )
    {
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR0_LR.png")) << rptNewLine;
    }
@@ -2195,25 +2230,12 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR0_SR.png")) <<rptNewLine;
    }
 
-   rptRcTable* table;
-
-   if ( bTemporaryStrands )
+   if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
    {
-      table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Temporary Strands"));
-      *pParagraph << table << rptNewLine;
-
-      (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
-      (*table)(0,1) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-      (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
-      (*table)(1,1) << stress.SetValue( pLosses->GetFpjTemporary() );
-      (*table)(1,2) << stress.SetValue( pLosses->GetFpy() );
-      (*table)(1,3) << stress.SetValue( pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer() );
+      *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
    }
 
-   table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Permanent Strands"));
+   table = pgsReportStyleHolder::CreateDefaultTable(4);
    *pParagraph << table << rptNewLine;
 
    (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
@@ -2223,8 +2245,44 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
 
    (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
    (*table)(1,1) << stress.SetValue( pLosses->GetFpjPermanent() );
-   (*table)(1,2) << stress.SetValue( pLosses->GetFpy() );
+   (*table)(1,2) << stress.SetValue( pLosses->GetFpyPermanent() );
    (*table)(1,3) << stress.SetValue( pLosses->PermanentStrand_RelaxationLossesBeforeTransfer() );
+
+   if ( bTemporaryStrands )
+   {
+      pParagraph = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      *pChapter << pParagraph;
+      *pParagraph << _T("Temporary Strands") << rptNewLine;
+      pParagraph = new rptParagraph;
+      *pChapter << pParagraph;
+
+      if ( pLosses->GetTemporaryStrandType() == matPsStrand::LowRelaxation )
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR0_LR.png")) << rptNewLine;
+      }
+      else 
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR0_SR.png")) <<rptNewLine;
+      }
+
+      if ( pLosses->GetTemporaryStrandCoating() != matPsStrand::None )
+      {
+         *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
+      }
+
+      table = pgsReportStyleHolder::CreateDefaultTable(4);
+      *pParagraph << table << rptNewLine;
+
+      (*table)(0,0) << _T("t") << rptNewLine << _T("(Days)");
+      (*table)(0,1) << COLHDR(RPT_FPJ, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+      (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
+      (*table)(1,1) << stress.SetValue( pLosses->GetFpjTemporary() );
+      (*table)(1,2) << stress.SetValue( pLosses->GetFpyTemporary() );
+      (*table)(1,3) << stress.SetValue( pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer() );
+   }
 }
 
 void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits)
@@ -2410,7 +2468,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       }
 
       int beam = (int)ptl->GetBeamType();
-      int strand = pDetails->pLosses->GetStrandType() == matPsStrand::LowRelaxation ? 0 : 1;
+      int strand = pDetails->pLosses->GetPermanentStrandType() == matPsStrand::LowRelaxation ? 0 : 1;
       int units = IS_SI_UNITS(pDisplayUnits);
 
       
@@ -2477,8 +2535,12 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
 
 void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRCONFIG& config,
                                         lrfdLosses::SectionPropertiesType* pSectionProperties,
-   matPsStrand::Grade* pGrade,
-   matPsStrand::Type* pType,
+   matPsStrand::Grade* pGradePerm,
+   matPsStrand::Type* pTypePerm,
+   matPsStrand::Coating* pCoatingPerm,
+   matPsStrand::Grade* pGradeTemp,
+   matPsStrand::Type* pTypeTemp,
+   matPsStrand::Coating* pCoatingTemp,
    Float64* pFpjPerm,
    Float64* pFpjTTS,
    Float64* pPerimeter,
@@ -2575,13 +2637,22 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pPjT = config.PrestressConfig.Pjack[pgsTypes::Temporary];
    *pNt  = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
 
-   const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
-   ATLASSERT(pstrand);
-   *pGrade = pstrand->GetGrade();
-   *pType  = pstrand->GetType();
-   *paps   = pstrand->GetNominalArea();
+   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   ATLASSERT(pPermStrand);
+   *pGradePerm = pPermStrand->GetGrade();
+   *pTypePerm  = pPermStrand->GetType();
+   *pCoatingPerm = pPermStrand->GetCoating();
+   *paps   = pPermStrand->GetNominalArea();
+
+   const matPsStrand* pTempStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+   ATLASSERT(pTempStrand);
+   *pGradeTemp = pTempStrand->GetGrade();
+   *pTypeTemp  = pTempStrand->GetType();
+   *pCoatingTemp = pTempStrand->GetCoating();
+
+
    Float64 Aps[3];
-   Aps[pgsTypes::Straight] = *paps;
+   Aps[pgsTypes::Straight] = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetNominalArea();
    Aps[pgsTypes::Harped]   = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetNominalArea();
    Aps[pgsTypes::Temporary]= pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetNominalArea();
 

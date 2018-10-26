@@ -496,6 +496,9 @@ public:
 
 // IUserDefinedLoadData
 public:
+   virtual bool HasUserDC(const CGirderKey& girderKey);
+   virtual bool HasUserDW(const CGirderKey& girderKey);
+   virtual bool HasUserLLIM(const CGirderKey& girderKey);
    virtual CollectionIndexType GetPointLoadCount() const;
    virtual CollectionIndexType AddPointLoad(const CPointLoadData& pld);
    virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const;
@@ -886,6 +889,10 @@ private:
 
    CPrecastSegmentData* GetSegment(const CSegmentKey& segmentKey);
    const CPrecastSegmentData* GetSegment(const CSegmentKey& segmentKey) const;
+
+   // returns true of there are user loads of the specified type defined for
+   // the specified girder
+   bool HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType);
 };
 
 #endif //__PROJECTAGENT_H_

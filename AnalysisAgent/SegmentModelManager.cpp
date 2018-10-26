@@ -1536,14 +1536,28 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    return vRz;
 }
 
-Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType)
+void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright)
 {
-   CSegmentKey segmentKey = GetSegmentKey(girderKey,pierIdx);
    CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
+
+   CComQIPtr<IFem2dModelResults> results(pModelData->Model);
+   JointIDType leftJntID, rightJntID;
+   leftJntID = 0;
+
+   CComPtr<IFem2dJointCollection> joints;
+   pModelData->Model->get_Joints(&joints);
+   CollectionIndexType nJoints;
+   joints->get_Count(&nJoints);
+   rightJntID = nJoints-1;
 
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
-   return GetReaction(intervalIdx,lcid,pierIdx,girderKey,resultsType);
+   Float64 fx,mz;
+   HRESULT hr = results->ComputeReactions(lcid,leftJntID,&fx,pRleft,&mz);
+   ATLASSERT(SUCCEEDED(hr));
+
+   hr = results->ComputeReactions(lcid,leftJntID,&fx,pRright,&mz);
+   ATLASSERT(SUCCEEDED(hr));
 }
 
 void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
@@ -1656,11 +1670,10 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
 
 void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz)
 {
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IIntervals, pIntervals);
 
    CSegmentModelData* pModelData = NULL;
-   CSegmentKey lastSegmentKey;
+   CSegmentKey prevSegmentKey;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
    for ( ; poiIter != poiIterEnd; poiIter++ )
@@ -1669,16 +1682,19 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
-
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-      if ( releaseIntervalIdx <= intervalIdx && !segmentKey.IsEqual(lastSegmentKey) )
+      if ( releaseIntervalIdx <= intervalIdx && !segmentKey.IsEqual(prevSegmentKey) )
       {
-         lastSegmentKey = segmentKey;
+         // segment key changed... get the model for the current segment key
          pModelData = GetSegmentModel(segmentKey,intervalIdx);
 
-         if ( pModelData->Loads.find(lcid) == pModelData->Loads.end() && (lcid == GetLoadCaseID(pgsTypes::Straight) || lcid == GetLoadCaseID(pgsTypes::Harped) || lcid == GetLoadCaseID(pgsTypes::Temporary) ) )
+         // apply pretension load to the segment model if it isn't already applied
+         if ( pModelData->Loads.find(lcid) == pModelData->Loads.end() && 
+             (lcid == GetLoadCaseID(pgsTypes::Straight) || 
+              lcid == GetLoadCaseID(pgsTypes::Harped)   || 
+              lcid == GetLoadCaseID(pgsTypes::Temporary) ) 
+           )
          {
             ApplyPretensionLoad(pModelData,segmentKey);
          }
@@ -1736,10 +1752,31 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          hr = results->ComputePOIDeflections(lcid,poi_id,lotGlobal,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
 
+         //// The fem model is for either release or storage intervals. The model
+         //// was build with Ec for that interval. Since Ec can change with time, we
+         //// need to adjust deflections with the ratio of EcModel/EcThisInterval
+         //// Delta = K/EI... want to multply by EcModel to remove it, then divide
+         //// by the Ec this interval so we end up with K/(EcThisInterval)(I)
+         //Float64 Ec;
+         //Float64 EcRatio;
+         //if ( !segmentKey.IsEqual(prevSegmentKey) )
+         //{
+         //   // segment key changed... update the modular ratio
+         //   GET_IFACE(IMaterials, pMaterial);
+         //   Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+         //   EcRatio = pModelData->Ec/Ec;
+         //}
+
+         //dx *= EcRatio;
+         //dy *= EcRatio;
+         //rz *= EcRatio;
+
          pvDx->push_back(dx);
          pvDy->push_back(dy);
          pvRz->push_back(rz);
       }
+
+      prevSegmentKey = segmentKey;
    }
 }
 
@@ -2135,7 +2172,9 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
 
    // Build the Model
    CSegmentModelData model_data;
-   model_data.Interval = intervalIdx;
+   model_data.SegmentKey = segmentKey;
+   model_data.IntervalIdx = intervalIdx;
+   model_data.Ec = Ec;
    LoadCaseIDType lcid = GetLoadCaseID(pgsTypes::pftGirder);
    model_data.Loads.insert(lcid);
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ec,lcid,true,vPOI,&model_data.Model,&model_data.PoiMap);

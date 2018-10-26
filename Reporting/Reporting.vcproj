@@ -833,6 +833,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InternalForceChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\IntervalChapterBuilder.cpp"
 				>
 			</File>
@@ -1253,6 +1257,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TimeStepDetailsDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeStepDetailsReportSpecification.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeStepDetailsReportSpecificationBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TimeStepParametersChapterBuilder.cpp"
 				>
 			</File>
@@ -1609,6 +1625,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\InternalForceChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\IntervalChapterBuilder.h"
 				>
 			</File>
@@ -1938,6 +1958,18 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TimeStepDetailsChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeStepDetailsDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TimeStepDetailsReportSpecification.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TimeStepDetailsReportSpecificationBuilder.h"
 				>
 			</File>
 			<File

@@ -108,7 +108,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       *pParagraph << Sub2(_T("M"),_T("gm")) << _T(" = ") << moment.SetValue( pDetails->pLosses->GetGdrMoment()) << rptNewLine;
       *pParagraph << Sub2(_T("e"),_T("m")) << _T(" = ") <<ecc.SetValue( pDetails->pLosses->GetEccPermanentRelease()) << rptNewLine;
 
-      Float64 Fpu = lrfdPsStrand::GetUltimateStrength( pDetails->pLosses->GetStrandGrade() );
+      Float64 Fpu = lrfdPsStrand::GetUltimateStrength( pDetails->pLosses->GetPermanentStrandGrade() );
       Float64 Aps = pDetails->pLosses->GetApsPermanent();
       Float64 P   = pDetails->pLosses->ElasticShortening().P();
 

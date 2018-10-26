@@ -242,26 +242,10 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       *pPara << pProductLoads->GetProductLoadName(pfType) << rptNewLine;
 
       dP = tsDetails.Girder.dPi[pfType];
-      if ( pfType == pgsTypes::pftCreep )
-      {
-         dP -= tsDetails.Girder.PrCreep;
-      }
-      else if ( pfType == pgsTypes::pftShrinkage )
-      {
-         dP -= tsDetails.Girder.PrShrinkage;
-      }
       sum_dP += dP;
       *pPara << _T("Girder dP = ") << force.SetValue(dP) << rptNewLine;
 
       dP = tsDetails.Deck.dPi[pfType];
-      if ( pfType == pgsTypes::pftCreep )
-      {
-         dP -= tsDetails.Deck.PrCreep;
-      }
-      else if ( pfType == pgsTypes::pftShrinkage )
-      {
-         dP -= tsDetails.Deck.PrShrinkage;
-      }
       sum_dP += dP;
       *pPara << _T("Deck dP = ") << force.SetValue(dP) << rptNewLine;
 
@@ -290,26 +274,14 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       }
 
       dP = tsDetails.Strands[pgsTypes::Straight].dPi[pfType];
-      if ( pfType == pgsTypes::pftRelaxation )
-      {
-         dP -= tsDetails.Strands[pgsTypes::Straight].PrRelaxation;
-      }
       sum_dP += dP;
       *pPara << _T("Straight Strand dP = ") << force.SetValue(dP) << rptNewLine;
 
       dP = tsDetails.Strands[pgsTypes::Harped].dPi[pfType];
-      if ( pfType == pgsTypes::pftRelaxation )
-      {
-         dP -= tsDetails.Strands[pgsTypes::Harped].PrRelaxation;
-      }
       sum_dP += dP;
       *pPara << _T("Harped Strand dP = ") << force.SetValue(dP) << rptNewLine;
 
       dP = tsDetails.Strands[pgsTypes::Temporary].dPi[pfType];
-      if ( pfType == pgsTypes::pftRelaxation )
-      {
-         dP -= tsDetails.Strands[pgsTypes::Temporary].PrRelaxation;
-      }
       sum_dP += dP;
       *pPara << _T("Temporary Strand dP = ") << force.SetValue(dP) << rptNewLine;
 
@@ -317,10 +289,6 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       BOOST_FOREACH(const TIME_STEP_STRAND& tendon,tsDetails.Tendons)
       {
          dP = tendon.dPi[pfType];
-         if ( pfType == pgsTypes::pftRelaxation )
-         {
-            dP -= tendon.PrRelaxation;
-         }
          sum_dP += dP;
          *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dP = ") << force.SetValue(dP) << rptNewLine;
 
@@ -328,10 +296,6 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       }
 
       dP = tsDetails.dPi[pfType];
-      if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
-      {
-         dP -= tsDetails.Pr[pfType - pgsTypes::pftCreep];
-      }
       *pPara << _T("Sum Individual dP = ") << force.SetValue(sum_dP) << rptNewLine;
       *pPara << _T("Total Internal dP = ") << force.SetValue(dP) << rptNewLine;
       *pPara << _T("Total External dP = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pfType,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
@@ -351,29 +315,11 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
 
       dP = tsDetails.Girder.dPi[pfType];
       dM = tsDetails.Girder.dMi[pfType] + dP*(tsDetails.Ytr - tsDetails.Girder.Yn);
-      if ( pfType == pgsTypes::pftCreep )
-      {
-         dM -= tsDetails.Girder.PrCreep*(tsDetails.Ytr - tsDetails.Girder.Yn) + tsDetails.Girder.MrCreep;
-      }
-      else if ( pfType == pgsTypes::pftShrinkage )
-      {
-         dM -= tsDetails.Girder.PrShrinkage*(tsDetails.Ytr - tsDetails.Girder.Yn);
-         *pPara << _T("Girder dM = ") << moment.SetValue(dM) << rptNewLine;
-      }
       sum_dM += dM;
       *pPara << _T("Girder dM = ") << moment.SetValue(dM) << rptNewLine;
 
       dP = tsDetails.Deck.dPi[pfType];
       dM = tsDetails.Deck.dMi[pfType] + dP*(tsDetails.Ytr - tsDetails.Deck.Yn);
-      if ( pfType == pgsTypes::pftCreep )
-      {
-         dM -= tsDetails.Deck.PrCreep*(tsDetails.Ytr - tsDetails.Deck.Yn) + tsDetails.Deck.MrCreep;
-      }
-      else if ( pfType == pgsTypes::pftShrinkage )
-      {
-         dM -= tsDetails.Deck.PrShrinkage*(tsDetails.Ytr - tsDetails.Deck.Yn);
-         *pPara << _T("Deck dM = ") << moment.SetValue(dM) << rptNewLine;
-      }
       sum_dM += dM;
       *pPara << _T("Deck dM = ") << moment.SetValue(dM) << rptNewLine;
 
@@ -408,28 +354,16 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
 
       dP = tsDetails.Strands[pgsTypes::Straight].dPi[pfType];
       dM = dP*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Straight].Ys);
-      if ( pfType == pgsTypes::pftRelaxation )
-      {
-         dM -= tsDetails.Strands[pgsTypes::Straight].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Straight].Ys);
-      }
       sum_dM += dM;
       *pPara << _T("Straight Strand dM = ") << moment.SetValue(dM) << rptNewLine;
 
       dP = tsDetails.Strands[pgsTypes::Harped].dPi[pfType];
       dM = dP*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Harped].Ys);
-      if ( pfType == pgsTypes::pftRelaxation )
-      {
-         dM -= tsDetails.Strands[pgsTypes::Harped].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Harped].Ys);
-      }
       sum_dM += dM;
       *pPara << _T("Harped Strand dM = ") << moment.SetValue(dM) << rptNewLine;
 
       dP = tsDetails.Strands[pgsTypes::Temporary].dPi[pfType];
       dM = dP*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Temporary].Ys);
-      if ( pfType == pgsTypes::pftRelaxation )
-      {
-         dM -= tsDetails.Strands[pgsTypes::Temporary].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Temporary].Ys);
-      }
       sum_dM += dM;
       *pPara << _T("Temporary Strand dM = ") << moment.SetValue(dM) << rptNewLine;
 
@@ -438,10 +372,6 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       {
          dP = tendon.dPi[pfType];
          dM = dP*(tsDetails.Ytr - tendon.Ys);
-         if ( pfType == pgsTypes::pftRelaxation )
-         {
-            dM -= tendon.PrRelaxation*(tsDetails.Ytr - tendon.Ys);
-         }
          sum_dM += dM;
          *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dM = ") << moment.SetValue(dM) << rptNewLine;
          ductIdx++;
@@ -449,10 +379,6 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
 
 
       dM = tsDetails.dMi[pfType];
-      if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
-      {
-         dM -= tsDetails.Mr[pfType - pgsTypes::pftCreep];
-      }
       *pPara << _T("Sum Individual dM = ") << moment.SetValue(sum_dM) << rptNewLine;
       *pPara << _T("Total Internal dM = ") << moment.SetValue(dM) << rptNewLine;
       *pPara << _T("Total External dM = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pfType,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;

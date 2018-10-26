@@ -77,6 +77,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICEAPPPLUGINIMPL)
 
    virtual CString GetAppName() const { return CString("PGSplice"); }
    virtual CString GetTemplateFileExtension();
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass();
 
 private:
    HMENU m_hMenuShared;

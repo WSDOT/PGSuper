@@ -144,7 +144,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    pStrSave->put_Property(_T("StrandFillType"),         CComVariant(m_StrandFillType));
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type,m_Size);
+   const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
    Int32 key=0;
    if (pStrand!=NULL)
    {
@@ -280,6 +280,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
          m_Grade = pStrand->GetGrade();
          m_Type = pStrand->GetType();
          m_Size = pStrand->GetSize();
+         m_Coating = pStrand->GetCoating();
       }
       else
       {
@@ -491,12 +492,14 @@ CTxDOTOptionalDesignGirderData::StrandFillType CTxDOTOptionalDesignGirderData::G
 
 void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
                    matPsStrand::Type type,
+                   matPsStrand::Coating coating,
                    matPsStrand::Size size)
 {
-   if (m_Grade!=grade || m_Type!=type || m_Size!=size)
+   if (m_Grade!=grade || m_Type!=type || m_Coating != coating || m_Size!=size)
    {
       m_Grade = grade;
       m_Type  = type;
+      m_Coating = coating;
       m_Size  = size;
 
       FireChanged(ITxDataObserver::ctGirder);
@@ -505,10 +508,12 @@ void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
 
 void CTxDOTOptionalDesignGirderData::GetStrandData(matPsStrand::Grade* pgrade,
                    matPsStrand::Type* ptype,
+                   matPsStrand::Coating* pcoating,
                    matPsStrand::Size* psize)
 {
    *pgrade = m_Grade;
    *ptype  = m_Type;
+   *pcoating = m_Coating;
    *psize  = m_Size;
 }
 
@@ -1332,6 +1337,7 @@ void CTxDOTOptionalDesignGirderData::MakeCopy(const CTxDOTOptionalDesignGirderDa
    m_StrandFillType = rOther.m_StrandFillType;
    m_Grade = rOther.m_Grade;
    m_Type = rOther.m_Type;
+   m_Coating = rOther.m_Coating;
    m_Size = rOther.m_Size;
 
    m_Fci = rOther.m_Fci;

@@ -173,6 +173,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -189,7 +190,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   table2 = pgsReportStyleHolder::CreateDefaultTable(10 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(10 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -242,7 +243,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    }
@@ -355,7 +356,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       (*table2)(row2,col++) << deflection.SetValue( Dbarrier );
 
-      if ( !pBridge->IsFutureOverlay() )
+      if ( bOverlay )
       {
          (*table2)(row2,col++) << deflection.SetValue(Doverlay);
       }
@@ -375,7 +376,15 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D6 = D5 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D6 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D6 += Doverlay;
+      }
 
       (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
@@ -453,6 +462,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -469,7 +479,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0)+ (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -520,7 +530,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    }
@@ -620,7 +630,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       (*table2)(row2,col++) << deflection.SetValue( Dbarrier);
 
-      if ( !pBridge->IsFutureOverlay() )
+      if ( bOverlay )
       {
          (*table2)(row2,col++) << deflection.SetValue(Doverlay);
       }
@@ -638,7 +648,15 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
-      Float64 D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
+      Float64 D4 = D3 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D4 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D4 += Doverlay;
+      }
 
       (*table3)(row3,col++) << location.SetValue(POI_ERECTED_SEGMENT, erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
@@ -716,6 +734,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1a;
@@ -730,7 +749,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   table2 = pgsReportStyleHolder::CreateDefaultTable(11 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(11 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -784,7 +803,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    }
@@ -893,7 +912,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       (*table2)(row2,col++) << deflection.SetValue( Dbarrier );
    
-      if (!pBridge->IsFutureOverlay() )
+      if ( bOverlay )
       {
          (*table2)(row2,col++) << deflection.SetValue(Doverlay);
       }
@@ -913,7 +932,15 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Dpanel;
       Float64 D4 = D3 + Dcreep2;
       Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D6 = D5 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D6 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D6 += Doverlay;
+      }
 
       (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
@@ -993,6 +1020,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1a;
@@ -1007,7 +1035,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   table2 = pgsReportStyleHolder::CreateDefaultTable(9 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(9 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -1059,7 +1087,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    }
@@ -1158,7 +1186,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       (*table2)(row2,col++) << deflection.SetValue( Dbarrier );
 
-      if (!pBridge->IsFutureOverlay() )
+      if ( bOverlay )
       {
          (*table2)(row2,col++) << deflection.SetValue(Doverlay);
       }
@@ -1176,7 +1204,15 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 D1 = DgdrStorage + DpsStorage;
       Float64 D2 = D1 + Dcreep;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
-      Float64 D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D4 = D3 + Ddeck + Duser1 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D4 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D4 += Doverlay;
+      }
 
       (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT, erectedPoi );
       (*table3)(row3,col++) << deflection.SetValue( D1 );
@@ -1253,6 +1289,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    // create the tables
@@ -1268,7 +1305,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   table2 = pgsReportStyleHolder::CreateDefaultTable(10 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(10 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -1321,7 +1358,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    }
@@ -1423,7 +1460,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
 
       (*table2)(row2,col++) << deflection.SetValue( Dbarrier );
 
-      if (!pBridge->IsFutureOverlay())
+      if (bOverlay)
       {
          (*table2)(row2,col++) << deflection.SetValue(Doverlay);
       }
@@ -1443,7 +1480,15 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
       Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D5 = D4 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D5 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D5 += Doverlay;
+      }
       Float64 D6 = D5 + Dcreep3;
 
       (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi );
@@ -1521,6 +1566,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
    // create the tables
    rptRcTable* table1a;
@@ -1535,7 +1581,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   table2 = pgsReportStyleHolder::CreateDefaultTable(9 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
+   table2 = pgsReportStyleHolder::CreateDefaultTable(9 + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0),_T("Camber - Part 2 (upwards is positive)"));
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,_T("Camber - Part 3 (upwards is positive)"));
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -1586,7 +1632,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
    (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("barrier")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( !pBridge->IsFutureOverlay() )
+   if ( bOverlay )
    {
       (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("overlay")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    }
@@ -1683,7 +1729,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
 
       (*table2)(row2,col++) << deflection.SetValue( Dbarrier );
 
-      if (!pBridge->IsFutureOverlay() )
+      if ( bOverlay )
       {
          (*table2)(row2,col++) << deflection.SetValue(Doverlay);
       }
@@ -1703,7 +1749,15 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
       Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      Float64 D5 = D4 + Dbarrier + Duser2;
+      if ( bSidewalk )
+      {
+         D5 += Dsidewalk;
+      }
+      if ( bOverlay )
+      {
+         D5 += Doverlay;
+      }
       Float64 D6 = D5 + Dcreep3;
 
       (*table3)(row3,col++) << location.SetValue( POI_ERECTED_SEGMENT,erectedPoi );

@@ -71,6 +71,12 @@ CString CPGSpliceAppPlugin::GetTemplateFileExtension()
    return strTemplateSuffix;
 }
 
+const CRuntimeClass* CPGSpliceAppPlugin::GetDocTemplateRuntimeClass()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return RUNTIME_CLASS(CPGSpliceDocTemplate);
+}
+
 HRESULT CPGSpliceAppPlugin::FinalConstruct()
 {
    return OnFinalConstruct(); // CPGSuperBaseAppPlugin

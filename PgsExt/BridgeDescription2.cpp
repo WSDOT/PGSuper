@@ -2646,7 +2646,7 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
 
 
    // Copy Girder Groups
-   // This logically comes first, but it must be don't last. When a group is copied, it copies
+   // This logically comes first, but it must be last. When a group is copied, it copies
    // girders, segments, and closures.... it also resolves the references to temporary supports,
    // piers, and spans. In order to resolve these references, they must exist.
    std::vector<CGirderGroupData*>::const_iterator grpIter(rOther.m_GirderGroups.begin());
@@ -2658,6 +2658,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
       *pNewGroup = *pGroup;
       m_GirderGroups.push_back(pNewGroup);
    }
+
+   CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),m_SlabOffsetType == pgsTypes::sotBridge); 
 
    ASSERT_VALID;
 }

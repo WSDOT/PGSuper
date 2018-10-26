@@ -243,8 +243,8 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStra
    return Pjack;
 }
 
-Float64 pgsPsForceEng::GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
-{ 
+XFERLENGTHDETAILS pgsPsForceEng::GetXferLengthDetails(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+{
    // Make sure our computation type is valid before we try to use it
    if ( (pgsTypes::PrestressTransferComputationType)-1 == m_PrestressTransferComputationType)
    {
@@ -263,16 +263,35 @@ Float64 pgsPsForceEng::GetXferLength(const CSegmentKey& segmentKey,pgsTypes::Str
       // good designs and spec checks. This does not happen if the value is reduced to 0.0;
       // because pgsuper is not set up to deal with moment point loads.
       //
-      return ::ConvertToSysUnits(0.1,unitMeasure::Inch);
+      XFERLENGTHDETAILS details;
+      details.bMinuteValue = true;
+      details.lt = ::ConvertToSysUnits(0.1,unitMeasure::Inch);
+      return details;
    }
    else
    {
+      XFERLENGTHDETAILS details;
+      details.bMinuteValue = false;
+
       GET_IFACE(ISegmentData,pSegmentData);
       const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
       ATLASSERT(pStrand!=0);
 
-      return lrfdPsStrand::GetXferLength( *pStrand );
+      // for epoxy coated strand see PCI "Guidelines for the use of Epoxy-Coated Strand"
+      // PCI Journal, July-August 1993
+      // otherwise, LRFD 5.11.4.1
+      details.bEpoxy = (pStrand->GetCoating() == matPsStrand::None ? false : true);
+      details.db = pStrand->GetNominalDiameter();
+      details.ndb = (details.bEpoxy ? 50 : 60);
+      details.lt = details.ndb * details.db;
+      return details;
    }
+}
+
+Float64 pgsPsForceEng::GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+{
+   XFERLENGTHDETAILS details = GetXferLengthDetails(segmentKey,strandType);
+   return details.lt;
 }
 
 Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
@@ -554,7 +573,8 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = mcd.fps_avg;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(segmentKey,pgsTypes::Permanent);
+
+   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
 
    return details;
 }
@@ -575,7 +595,8 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = fps;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(segmentKey,pgsTypes::Permanent);
+
+   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
 
    return details;
 }
@@ -608,7 +629,8 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = mcd.fps_avg;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(segmentKey,pgsTypes::Permanent);
+
+   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
 
    return details;
 }
@@ -629,7 +651,8 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.fps = fps;
    details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
    details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
-   details.lt = GetXferLength(segmentKey,pgsTypes::Permanent);
+
+   details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
 
    return details;
 }
@@ -701,7 +724,7 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    else
    {
       STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,config,fps,fpe);
-      Float64 xfer_length = details.lt;
+      Float64 xfer_length = details.ltDetails.lt;
       Float64 dev_length  = details.ld;
 
       Float64 adjust = -999; // dummy value, helps with debugging

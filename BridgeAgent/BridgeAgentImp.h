@@ -68,6 +68,7 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public IConnectionPointContainerImpl<CBridgeAgentImp>,
    public IAgentEx,
    public IRoadway,
+   public IGeometry,
    public IBridge,
    public IMaterials,
    public IStrandGeometry,
@@ -108,6 +109,7 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IRoadway)
+   COM_INTERFACE_ENTRY(IGeometry)
    COM_INTERFACE_ENTRY(IBridge)
    COM_INTERFACE_ENTRY(IMaterials)
    COM_INTERFACE_ENTRY(IStrandGeometry)
@@ -175,8 +177,40 @@ public:
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
    virtual CollectionIndexType GetVertCurveCount();
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
-   virtual void GetRoadwaySurface(Float64 station,IPoint2dCollection** ppPoints);
+   virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints);
    virtual Float64 GetCrownPointOffset(Float64 station);
+
+// IGeometry
+public:
+   virtual HRESULT Angle(IPoint2d* from,IPoint2d* vertex,IPoint2d* to,IAngle** angle);
+   virtual HRESULT Area(IPoint2dCollection* points,Float64* area);
+   virtual HRESULT Distance(IPoint2d* from,IPoint2d* to,Float64* dist);
+   virtual HRESULT Direction(IPoint2d* from,IPoint2d* to,IDirection** dir);
+   virtual HRESULT Inverse(IPoint2d* from,IPoint2d* to,Float64* dist,IDirection** dir);
+   virtual HRESULT ByDistAngle(IPoint2d* from,IPoint2d* to,Float64 dist,VARIANT varAngle,Float64 offset,IPoint2d** point);
+   virtual HRESULT ByDistDefAngle(IPoint2d* from,IPoint2d* to,Float64 dist,VARIANT varDefAngle,Float64 offset,IPoint2d** point);
+   virtual HRESULT ByDistDir(IPoint2d* from,Float64 dist,VARIANT varDir,Float64 offset,IPoint2d** point);
+   virtual HRESULT PointOnLine(IPoint2d* from,IPoint2d* to,Float64 dist,Float64 offset,IPoint2d** point);
+   virtual HRESULT ParallelLineByPoints(IPoint2d* from,IPoint2d* to,Float64 offset,IPoint2d** p1,IPoint2d** p2);
+   virtual HRESULT ParallelLineSegment(ILineSegment2d* ls,Float64 offset,ILineSegment2d** linesegment);
+   virtual HRESULT Bearings(IPoint2d* p1,VARIANT varDir1,Float64 offset1,IPoint2d* p2,VARIANT varDir2,Float64 offset2,IPoint2d** point);
+   virtual HRESULT BearingCircle(IPoint2d* p1,VARIANT varDir,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest,IPoint2d** point);
+   virtual HRESULT Circles(IPoint2d* p1,Float64 r1,IPoint2d* p2,Float64 r2,IPoint2d* nearest,IPoint2d** point);
+   virtual HRESULT LineByPointsCircle(IPoint2d* p1,IPoint2d* p2,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest,IPoint2d** point);
+   virtual HRESULT LinesByPoints(IPoint2d* p11,IPoint2d* p12,Float64 offset1,IPoint2d* p21,IPoint2d* p22,Float64 offset2,IPoint2d** point);
+   virtual HRESULT Lines(ILineSegment2d* l1,Float64 offset1,ILineSegment2d* l2,Float64 offset2,IPoint2d** point);
+   virtual HRESULT LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point);
+   virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point);
+   virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point);
+   virtual HRESULT PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point);
+   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points);
+   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points);
+   virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points);
+	virtual HRESULT HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points);
+   virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points);
+   virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2);
+   virtual HRESULT Cross(IPoint2d* center1, Float64 radius1,IPoint2d* center2, Float64 radius2, TangentSignType sign, IPoint2d** t1,IPoint2d** t2);
+   virtual HRESULT Point(IPoint2d* center, Float64 radius,IPoint2d* point, TangentSignType sign, IPoint2d** tangent);
 
 // IBridge
 public:
@@ -191,6 +225,7 @@ public:
    virtual SupportIndexType GetTemporarySupportCount();
    virtual GroupIndexType GetGirderGroupCount();
    virtual GirderIndexType GetGirderCount(GroupIndexType grpIdx);
+   virtual GirderIndexType GetGirderlineCount();
    virtual GirderIndexType GetGirderCountBySpan(SpanIndexType spanIdx);
    virtual SegmentIndexType GetSegmentCount(const CGirderKey& girderKey);
    virtual SegmentIndexType GetSegmentCount(GroupIndexType grpIdx,GirderIndexType gdrIdx);
@@ -635,16 +670,16 @@ public:
    virtual bool IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config,Float64* pStart,Float64* pEnd);
    virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType);
    virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
-   virtual RowIndexType GetNumRowsWithStrand(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType );
-   virtual StrandIndexType GetNumStrandInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType );
-   virtual std::vector<StrandIndexType> GetStrandsInRow(const CSegmentKey& segmentKey, RowIndexType rowIdx, pgsTypes::StrandType strandType );
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType );
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType );
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType );
    virtual StrandIndexType GetNumDebondedStrandsInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType );
    virtual bool IsExteriorStrandDebondedInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType);
    virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey);
 
-   virtual RowIndexType GetNumRowsWithStrand(const CSegmentKey& segmentKey,StrandIndexType nStrands,pgsTypes::StrandType strandType );
-   virtual StrandIndexType GetNumStrandInRow(const CSegmentKey& segmentKey,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType );
-   virtual std::vector<StrandIndexType> GetStrandsInRow(const CSegmentKey& segmentKey,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType );
+   virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,StrandIndexType nStrands,pgsTypes::StrandType strandType );
+   virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType );
+   virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType );
 
    virtual Float64 GetDebondSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType);
    virtual SectionIndexType GetNumDebondSections(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType);
@@ -805,9 +840,9 @@ public:
 // IShapes
 public:
    virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape);
-   virtual void GetSlabShape(Float64 station,IShape** ppShape);
-   virtual void GetLeftTrafficBarrierShape(Float64 station,IShape** ppShape);
-   virtual void GetRightTrafficBarrierShape(Float64 station,IShape** ppShape);
+   virtual void GetSlabShape(Float64 station,IDirection* pDirection,IShape** ppShape);
+   virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape);
+   virtual void GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape);
 
 
 // IBarriers
@@ -1040,7 +1075,29 @@ private:
    std::map<CSegmentKey,mathLinFunc2d> m_ElevationAdjustmentEquations;
 
    // containers to cache shapes cut at various stations
-   typedef std::map<Float64,CComPtr<IShape> > ShapeContainer;
+   struct SectionCutKey
+   {
+      Float64 station;
+      Float64 direction;
+      bool operator<(const SectionCutKey& other) const
+      {
+         if ( station < other.station )
+         {
+            return true;
+         }
+
+         if ( IsEqual(station,other.station) )
+         {
+            if ( direction < other.direction )
+            {
+               return true;
+            }
+         }
+
+         return false;
+      }
+   };
+   typedef std::map<SectionCutKey,CComPtr<IShape> > ShapeContainer;
    ShapeContainer m_DeckShapes;
    ShapeContainer m_LeftBarrierShapes;
    ShapeContainer m_RightBarrierShapes;

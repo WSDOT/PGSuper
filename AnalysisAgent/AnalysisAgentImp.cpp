@@ -409,6 +409,12 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, config, pgsTypes::Straight, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   config, pgsTypes::Straight, &nSsEffective);
       Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
+
+      StrandIndexType Ns = config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
+      if ( Ns != 0 )
+      {
+         Ps *= nSsEffective/Ns;
+      }
    }
    else
    {
@@ -416,6 +422,10 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Straight, &nSsEffective);
       Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
+      if ( Ns != 0 )
+      {
+         Ps *= nSsEffective/Ns;
+      }
    }
    Msl = Ps*ecc_straight_start;
    Msr = Ps*ecc_straight_end;
@@ -1573,7 +1583,6 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabModel(Float64 fcgdr,Float64 
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(IPointOfInterest,pPoi);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1636,6 +1645,8 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabModel(Float64 fcgdr,Float64 
          // Determine the slab overhang at this poi
          Float64 station,offset;
          pBridge->GetStationAndOffset(poi,&station,&offset);
+      
+         GET_IFACE(IPointOfInterest,pPoi);
          Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
 
          // slab overhang from CL of girder (normal to alignment)
@@ -1979,7 +1990,25 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
 
    if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
+      GET_IFACE(ILosses,pLosses);
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+      
+      if ( resultsType == rtCumulative )
+      {
+         results.resize(vPoi.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+            std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),fx.begin(),results.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+         results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+      }
+      return results;
    }
 
    try
@@ -2012,29 +2041,6 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
       throw;
    }
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
-      {
-         GET_IFACE(ILosses,pLosses);
-         std::vector<Float64>::iterator resultsIter = results.begin();
-         std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-         std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-         for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
-         {
-            const pgsPointOfInterest& poi(*poiIter);
-            const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intervalIdx);
-            const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intervalIdx];
-            Float64& result = *resultsIter;
-            
-            result -= tsDetails.Pr[pfType - pgsTypes::pftCreep];
-         }
-      }
-   }
-
    return results;
 }
 
@@ -2053,9 +2059,28 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
       return results;
    }
 
+
    if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
+      GET_IFACE(ILosses,pLosses);
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+      
+      if ( resultsType == rtCumulative )
+      {
+         results.resize(vPoi.size(),sysSectionValue(0,0));
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+            std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),fy.begin(),results.begin(),std::plus<sysSectionValue>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+         results = GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+      }
+      return results;
    }
 
    try
@@ -2139,7 +2164,25 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
    if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
+      GET_IFACE(ILosses,pLosses);
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+   
+      if ( resultsType == rtCumulative )
+      {
+         results.resize(vPoi.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+            std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),mz.begin(),results.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+         results = GetMoment(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+      }
+      return results;
    }
 
    try
@@ -2173,32 +2216,6 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       throw;
    }
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
-      {
-         GET_IFACE(ILosses,pLosses);
-         for ( IntervalIndexType intIdx = (resultsType == rtCumulative ? 0 : intervalIdx); intIdx <= intervalIdx; intIdx++ )
-         {
-            std::vector<Float64>::iterator resultsIter = results.begin();
-            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-            for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
-            {
-               const pgsPointOfInterest& poi(*poiIter);
-               const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
-               const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
-               Float64& result = *resultsIter;
-               
-               result -= tsDetails.Mr[pfType - pgsTypes::pftCreep];
-            }
-         }
-      }
-   }
-
    return results;
 }
 
@@ -2210,17 +2227,31 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
    ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
 #endif
 
-   if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
-   {
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
    std::vector<Float64> deflections;
-   deflections.reserve(vPoi.size());
-
    if ( pfType == pgsTypes::pftSecondaryEffects )
    {
       deflections.resize(vPoi.size(),0.0);
+   }
+   else if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
+   {
+      GET_IFACE(ILosses,pLosses);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+
+      if ( resultsType == rtCumulative )
+      {
+         deflections.resize(vPoi.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+            std::vector<Float64> dy = GetDeflection(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
+            std::transform(deflections.begin(),deflections.end(),dy.begin(),deflections.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+         deflections = GetDeflection(intervalIdx,strLoadingName,vPoi,bat,resultsType,false);
+      }
    }
    else
    {
@@ -2245,7 +2276,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
          }
          else
          {
-#pragma Reminder("UPDATE: this isn't the right deflection")
+   #pragma Reminder("UPDATE: this isn't the right deflection")
             // there is a problem with deflection like pgsTypes::pftGirder. The deflection computed from
             // the girder model manager is the deflection of the girder self weight using Ec. 
             // However the deflection is set based on Eci and then only changes because of
@@ -2286,17 +2317,32 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
    ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
 #endif
 
-   if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
-   {
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
    std::vector<Float64> rotations;
-   rotations.reserve(vPoi.size());
-
    if ( pfType == pgsTypes::pftSecondaryEffects )
    {
       rotations.resize(vPoi.size(),0.0);
+      return rotations;
+   }
+   else if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
+   {
+      GET_IFACE(ILosses,pLosses);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+      
+      if ( resultsType == rtCumulative )
+      {
+         rotations.resize(vPoi.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+            std::vector<Float64> rz = GetRotation(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
+            std::transform(rotations.begin(),rotations.end(),rz.begin(),rotations.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+         rotations = GetRotation(intervalIdx,strLoadingName,vPoi,bat,resultsType,false);
+      }
    }
    else
    {
@@ -2561,24 +2607,6 @@ void CAnalysisAgentImp::GetCombinedLiveLoadStress(IntervalIndexType intervalIdx,
 /////////////////////////////////////////////////////////////////////////////
 // ICombinedForces2
 //
-void CAnalysisAgentImp::ComputeTimeDependentEffects(const CGirderKey& girderKey,IntervalIndexType intervalIdx)
-{
-   // Getting the timestep loss results, causes the creep, shrinkage, and prestress forces
-   // to be added to the LBAM model...
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      GET_IFACE(ILosses,pLosses);
-      GET_IFACE(IPointOfInterest,pPoi);
-
-      pgsPointOfInterest poi( pPoi->GetPointOfInterest(CSegmentKey(girderKey,0),0.0) );
-      ATLASSERT(poi.GetID() != INVALID_ID);
-      pLosses->GetLossDetails(poi,intervalIdx);
-   }
-}
-
 std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    USES_CONVERSION;
@@ -2607,7 +2635,27 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
    //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
    if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
+      GET_IFACE(ILosses,pLosses);
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+
+      if ( resultsType == rtCumulative )
+      {
+         results.resize(vPoi.size(),0);
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+            std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),fx.begin(),results.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+         results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+      }
+      return results;
    }
 
    try
@@ -2637,32 +2685,6 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
       // reset all of our data.
       Invalidate(false);
       throw;
-   }
-
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-      {
-         GET_IFACE(ILosses,pLosses);
-         for ( IntervalIndexType intIdx = (resultsType == rtCumulative ? 0 : intervalIdx); intIdx <= intervalIdx; intIdx++ )
-         {
-            std::vector<Float64>::iterator resultsIter = results.begin();
-            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-            for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
-            {
-               const pgsPointOfInterest& poi(*poiIter);
-               const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
-               const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
-               Float64& result = *resultsIter;
-               
-               result -= tsDetails.Pr[comboType - lcCR];
-            }
-         }
-      }
    }
 
    return results;
@@ -2695,37 +2717,63 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          // add V to results and assign answer to results
          std::transform(V.begin(),V.end(),results.begin(),results.begin(),std::plus<sysSectionValue>());
       }
+
+      return results;
    }
-   else
+
+   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
-      try
+      GET_IFACE(ILosses,pLosses);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+      
+
+      if ( resultsType == rtCumulative )
       {
+         results.resize(vPoi.size(),sysSectionValue(0,0));
          GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
-         if ( intervalIdx < erectionIntervalIdx )
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
          {
-            results =  m_pSegmentModelManager->GetShear(intervalIdx,comboType,vPoi,resultsType);
-         }
-         else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
-         {
-            // the incremental result at the time of erection is being requested. this is when
-            // we switch between segment models and girder models. the incremental results
-            // is the cumulative result this interval minus the cumulative result in the previous interval
-            std::vector<sysSectionValue> Vprev = GetShear(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
-            std::vector<sysSectionValue> Vthis = GetShear(intervalIdx,  comboType,vPoi,bat,rtCumulative);
-            std::transform(Vthis.begin(),Vthis.end(),Vprev.begin(),std::back_inserter(results),std::minus<sysSectionValue>());
-         }
-         else
-         {
-            results = m_pGirderModelManager->GetShear(intervalIdx,comboType,vPoi,bat,resultsType);
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+            std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),fy.begin(),results.begin(),std::plus<sysSectionValue>());
          }
       }
-      catch(...)
+      else
       {
-         // reset all of our data.
-         Invalidate(false);
-         throw;
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+         results = GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType);
       }
+      return results;
+   }
+
+   try
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         results =  m_pSegmentModelManager->GetShear(intervalIdx,comboType,vPoi,resultsType);
+      }
+      else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+      {
+         // the incremental result at the time of erection is being requested. this is when
+         // we switch between segment models and girder models. the incremental results
+         // is the cumulative result this interval minus the cumulative result in the previous interval
+         std::vector<sysSectionValue> Vprev = GetShear(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
+         std::vector<sysSectionValue> Vthis = GetShear(intervalIdx,  comboType,vPoi,bat,rtCumulative);
+         std::transform(Vthis.begin(),Vthis.end(),Vprev.begin(),std::back_inserter(results),std::minus<sysSectionValue>());
+      }
+      else
+      {
+         results = m_pGirderModelManager->GetShear(intervalIdx,comboType,vPoi,bat,resultsType);
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
    }
 
    return results;
@@ -2759,7 +2807,27 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
    //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
    if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
+      GET_IFACE(ILosses,pLosses);
       ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+
+      if ( resultsType == rtCumulative )
+      {
+         results.resize(vPoi.size(),0);
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+            std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),mz.begin(),results.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+         results = GetMoment(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+      }
+      return results;
    }
 
    try
@@ -2791,42 +2859,11 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       throw;
    }
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-   {
-      if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-      {
-         GET_IFACE(ILosses,pLosses);
-         for ( IntervalIndexType intIdx = (resultsType == rtCumulative ? 0 : intervalIdx); intIdx <= intervalIdx; intIdx++ )
-         {
-            std::vector<Float64>::iterator resultsIter = results.begin();
-            std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-            std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-            for ( ; poiIter != poiIterEnd; poiIter++, resultsIter++ )
-            {
-               const pgsPointOfInterest& poi(*poiIter);
-               const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
-               const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
-               Float64& result = *resultsIter;
-               
-               result -= tsDetails.Mr[comboType - lcCR];
-            }
-         }
-      }
-   }
-
    return results;
 }
 
 std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment)
 {
-   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-   {
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
    std::vector<Float64> deflection;
    if ( comboType == lcPS )
    {
@@ -2838,6 +2875,27 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       {
          std::vector<Float64> delta = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType,false);
          std::transform(delta.begin(),delta.end(),deflection.begin(),deflection.begin(),std::plus<Float64>());
+      }
+   }
+   else if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
+   {
+      GET_IFACE(ILosses,pLosses);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+
+      if ( resultsType == rtCumulative )
+      {
+         deflection.resize(vPoi.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+            std::vector<Float64> dy = GetDeflection(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
+            std::transform(deflection.begin(),deflection.end(),dy.begin(),deflection.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+         deflection = GetDeflection(intervalIdx,strLoadingName,vPoi,bat,resultsType,false);
       }
    }
    else
@@ -2882,11 +2940,6 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
 
 std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment)
 {
-   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-   {
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
    std::vector<Float64> rotation;
    if ( comboType == lcPS )
    {
@@ -2898,6 +2951,27 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       {
          std::vector<Float64> delta = GetRotation(intervalIdx,pfType,vPoi,bat,resultsType,false);
          std::transform(delta.begin(),delta.end(),rotation.begin(),rotation.begin(),std::plus<Float64>());
+      }
+   }
+   else if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
+   {
+      GET_IFACE(ILosses,pLosses);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+      
+      if ( resultsType == rtCumulative )
+      {
+         rotation.resize(vPoi.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+            std::vector<Float64> rz = GetRotation(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
+            std::transform(rotation.begin(),rotation.end(),rz.begin(),rotation.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+         rotation = GetRotation(intervalIdx,strLoadingName,vPoi,bat,resultsType,false);
       }
    }
    else
@@ -3150,33 +3224,103 @@ void CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitSt
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
    {
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      Float64 gCRMax = pLoadFactors->CRmax[limitState];
-      Float64 gCRMin = pLoadFactors->CRmin[limitState];
-      Float64 gSHMax = pLoadFactors->SHmax[limitState];
-      Float64 gSHMin = pLoadFactors->SHmin[limitState];
-      Float64 gREMax = pLoadFactors->REmax[limitState];
-      Float64 gREMin = pLoadFactors->REmin[limitState];
-
-      GET_IFACE(ILosses,pLosses);
-      for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
+      Float64 gCRMax;
+      Float64 gCRMin;
+      Float64 gSHMax;
+      Float64 gSHMin;
+      Float64 gREMax;
+      Float64 gREMin;
+      if ( IsRatingLimitState(limitState) )
       {
-         std::vector<Float64>::iterator minResultsIter = pMin->begin();
-         std::vector<Float64>::iterator maxResultsIter = pMax->begin();
-         std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-         std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-         for ( ; poiIter != poiIterEnd; poiIter++, minResultsIter++, maxResultsIter++ )
-         {
-            const pgsPointOfInterest& poi(*poiIter);
-            const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
-            const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
-            Float64& Pmin = *minResultsIter;
-            Float64& Pmax = *maxResultsIter;
+         GET_IFACE(IRatingSpecification,pRatingSpec);
+         gCRMax = pRatingSpec->GetCreepFactor(limitState);
+         gSHMax = pRatingSpec->GetShrinkageFactor(limitState);
+         gREMax = pRatingSpec->GetRelaxationFactor(limitState);
+         
+         gCRMin = gCRMax;
+         gSHMin = gSHMax;
+         gREMin = gREMax;
+      }
+      else
+      {
+         GET_IFACE(ILoadFactors,pILoadFactors);
+         const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+         gCRMax = pLoadFactors->CRmax[limitState];
+         gCRMin = pLoadFactors->CRmin[limitState];
+         gSHMax = pLoadFactors->SHmax[limitState];
+         gSHMin = pLoadFactors->SHmin[limitState];
+         gREMax = pLoadFactors->REmax[limitState];
+         gREMin = pLoadFactors->REmin[limitState];
+      }
 
-            Pmin -= gCRMin*tsDetails.Pr[TIMESTEP_CR] + gSHMin*tsDetails.Pr[TIMESTEP_SH] + gREMin*tsDetails.Pr[TIMESTEP_RE];
-            Pmax -= gCRMax*tsDetails.Pr[TIMESTEP_CR] + gSHMax*tsDetails.Pr[TIMESTEP_SH] + gREMax*tsDetails.Pr[TIMESTEP_RE];
-         }
+      std::vector<Float64> vPcr = GetAxial(intervalIdx,lcCR,vPoi,bat,rtCumulative);
+      std::vector<Float64> vPsh = GetAxial(intervalIdx,lcSH,vPoi,bat,rtCumulative);
+      std::vector<Float64> vPre = GetAxial(intervalIdx,lcRE,vPoi,bat,rtCumulative);
+
+      if ( !IsEqual(gCRMin,1.0) )
+      {
+         std::vector<Float64> vPcrMin;
+         std::transform(vPcr.begin(),vPcr.end(),std::back_inserter(vPcrMin),std::bind1st(std::multiplies<Float64>(),gCRMin));
+         std::transform(pMin->begin(),pMin->end(),vPcrMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vPcr.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gCRMax,1.0) )
+      {
+         std::vector<Float64> vPcrMax;
+         std::transform(vPcr.begin(),vPcr.end(),std::back_inserter(vPcrMax),std::bind1st(std::multiplies<Float64>(),gCRMax));
+         std::transform(pMax->begin(),pMax->end(),vPcrMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vPcr.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMin,1.0) )
+      {
+         std::vector<Float64> vPshMin;
+         std::transform(vPsh.begin(),vPsh.end(),std::back_inserter(vPshMin),std::bind1st(std::multiplies<Float64>(),gSHMin));
+         std::transform(pMin->begin(),pMin->end(),vPshMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vPsh.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMax,1.0) )
+      {
+         std::vector<Float64> vPshMax;
+         std::transform(vPsh.begin(),vPsh.end(),std::back_inserter(vPshMax),std::bind1st(std::multiplies<Float64>(),gSHMax));
+         std::transform(pMax->begin(),pMax->end(),vPshMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vPsh.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMin,1.0) )
+      {
+         std::vector<Float64> vPreMin;
+         std::transform(vPre.begin(),vPre.end(),std::back_inserter(vPreMin),std::bind1st(std::multiplies<Float64>(),gREMin));
+         std::transform(pMin->begin(),pMin->end(),vPreMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vPre.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMax,1.0) )
+      {
+         std::vector<Float64> vPreMax;
+         std::transform(vPre.begin(),vPre.end(),std::back_inserter(vPreMax),std::bind1st(std::multiplies<Float64>(),gREMax));
+         std::transform(pMax->begin(),pMax->end(),vPreMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vPre.begin(),pMax->begin(),std::plus<Float64>());
       }
    }
 }
@@ -3211,6 +3355,111 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      Float64 gCRMax;
+      Float64 gCRMin;
+      Float64 gSHMax;
+      Float64 gSHMin;
+      Float64 gREMax;
+      Float64 gREMin;
+      if ( IsRatingLimitState(limitState) )
+      {
+         GET_IFACE(IRatingSpecification,pRatingSpec);
+         gCRMax = pRatingSpec->GetCreepFactor(limitState);
+         gSHMax = pRatingSpec->GetShrinkageFactor(limitState);
+         gREMax = pRatingSpec->GetRelaxationFactor(limitState);
+         
+         gCRMin = gCRMax;
+         gSHMin = gSHMax;
+         gREMin = gREMax;
+      }
+      else
+      {
+         GET_IFACE(ILoadFactors,pILoadFactors);
+         const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+         gCRMax = pLoadFactors->CRmax[limitState];
+         gCRMin = pLoadFactors->CRmin[limitState];
+         gSHMax = pLoadFactors->SHmax[limitState];
+         gSHMin = pLoadFactors->SHmin[limitState];
+         gREMax = pLoadFactors->REmax[limitState];
+         gREMin = pLoadFactors->REmin[limitState];
+      }
+
+      std::vector<sysSectionValue> vVcr = GetShear(intervalIdx,lcCR,vPoi,bat,rtCumulative);
+      std::vector<sysSectionValue> vVsh = GetShear(intervalIdx,lcSH,vPoi,bat,rtCumulative);
+      std::vector<sysSectionValue> vVre = GetShear(intervalIdx,lcRE,vPoi,bat,rtCumulative);
+
+      if ( !IsEqual(gCRMin,1.0) )
+      {
+         std::vector<sysSectionValue> vVcrMin;
+         std::transform(vVcr.begin(),vVcr.end(),std::back_inserter(vVcrMin),std::bind1st(std::multiplies<sysSectionValue>(),gCRMin));
+         std::transform(pMin->begin(),pMin->end(),vVcrMin.begin(),pMin->begin(),std::plus<sysSectionValue>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vVcr.begin(),pMin->begin(),std::plus<sysSectionValue>());
+      }
+
+      if ( !IsEqual(gCRMax,1.0) )
+      {
+         std::vector<sysSectionValue> vVcrMax;
+         std::transform(vVcr.begin(),vVcr.end(),std::back_inserter(vVcrMax),std::bind1st(std::multiplies<sysSectionValue>(),gCRMax));
+         std::transform(pMax->begin(),pMax->end(),vVcrMax.begin(),pMax->begin(),std::plus<sysSectionValue>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vVcr.begin(),pMax->begin(),std::plus<sysSectionValue>());
+      }
+
+      if ( !IsEqual(gSHMin,1.0) )
+      {
+         std::vector<sysSectionValue> vVshMin;
+         std::transform(vVsh.begin(),vVsh.end(),std::back_inserter(vVshMin),std::bind1st(std::multiplies<sysSectionValue>(),gSHMin));
+         std::transform(pMin->begin(),pMin->end(),vVshMin.begin(),pMin->begin(),std::plus<sysSectionValue>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vVsh.begin(),pMin->begin(),std::plus<sysSectionValue>());
+      }
+
+      if ( !IsEqual(gSHMax,1.0) )
+      {
+         std::vector<sysSectionValue> vVshMax;
+         std::transform(vVsh.begin(),vVsh.end(),std::back_inserter(vVshMax),std::bind1st(std::multiplies<sysSectionValue>(),gSHMax));
+         std::transform(pMax->begin(),pMax->end(),vVshMax.begin(),pMax->begin(),std::plus<sysSectionValue>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vVsh.begin(),pMax->begin(),std::plus<sysSectionValue>());
+      }
+
+      if ( !IsEqual(gREMin,1.0) )
+      {
+         std::vector<sysSectionValue> vVreMin;
+         std::transform(vVre.begin(),vVre.end(),std::back_inserter(vVreMin),std::bind1st(std::multiplies<sysSectionValue>(),gREMin));
+         std::transform(pMin->begin(),pMin->end(),vVreMin.begin(),pMin->begin(),std::plus<sysSectionValue>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vVre.begin(),pMin->begin(),std::plus<sysSectionValue>());
+      }
+
+      if ( !IsEqual(gREMax,1.0) )
+      {
+         std::vector<sysSectionValue> vVreMax;
+         std::transform(vVre.begin(),vVre.end(),std::back_inserter(vVreMax),std::bind1st(std::multiplies<sysSectionValue>(),gREMax));
+         std::transform(pMax->begin(),pMax->end(),vVreMax.begin(),pMax->begin(),std::plus<sysSectionValue>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vVre.begin(),pMax->begin(),std::plus<sysSectionValue>());
+      }
    }
 }
 
@@ -3251,33 +3500,103 @@ void CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitS
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
    {
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      Float64 gCRMax = pLoadFactors->CRmax[limitState];
-      Float64 gCRMin = pLoadFactors->CRmin[limitState];
-      Float64 gSHMax = pLoadFactors->SHmax[limitState];
-      Float64 gSHMin = pLoadFactors->SHmin[limitState];
-      Float64 gREMax = pLoadFactors->REmax[limitState];
-      Float64 gREMin = pLoadFactors->REmin[limitState];
-
-      GET_IFACE(ILosses,pLosses);
-      for ( IntervalIndexType intIdx = 0; intIdx <= intervalIdx; intIdx++ )
+      Float64 gCRMax;
+      Float64 gCRMin;
+      Float64 gSHMax;
+      Float64 gSHMin;
+      Float64 gREMax;
+      Float64 gREMin;
+      if ( IsRatingLimitState(limitState) )
       {
-         std::vector<Float64>::iterator minResultsIter = pMin->begin();
-         std::vector<Float64>::iterator maxResultsIter = pMax->begin();
-         std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-         std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-         for ( ; poiIter != poiIterEnd; poiIter++, minResultsIter++, maxResultsIter++ )
-         {
-            const pgsPointOfInterest& poi(*poiIter);
-            const LOSSDETAILS* pLossDetails = pLosses->GetLossDetails(poi,intIdx);
-            const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intIdx];
-            Float64& Mmin = *minResultsIter;
-            Float64& Mmax = *maxResultsIter;
+         GET_IFACE(IRatingSpecification,pRatingSpec);
+         gCRMax = pRatingSpec->GetCreepFactor(limitState);
+         gSHMax = pRatingSpec->GetShrinkageFactor(limitState);
+         gREMax = pRatingSpec->GetRelaxationFactor(limitState);
+         
+         gCRMin = gCRMax;
+         gSHMin = gSHMax;
+         gREMin = gREMax;
+      }
+      else
+      {
+         GET_IFACE(ILoadFactors,pILoadFactors);
+         const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+         gCRMax = pLoadFactors->CRmax[limitState];
+         gCRMin = pLoadFactors->CRmin[limitState];
+         gSHMax = pLoadFactors->SHmax[limitState];
+         gSHMin = pLoadFactors->SHmin[limitState];
+         gREMax = pLoadFactors->REmax[limitState];
+         gREMin = pLoadFactors->REmin[limitState];
+      }
 
-            Mmin -= gCRMin*tsDetails.Mr[TIMESTEP_CR] + gSHMin*tsDetails.Mr[TIMESTEP_SH] + gREMin*tsDetails.Mr[TIMESTEP_RE];
-            Mmax -= gCRMax*tsDetails.Mr[TIMESTEP_CR] + gSHMax*tsDetails.Mr[TIMESTEP_SH] + gREMax*tsDetails.Mr[TIMESTEP_RE];
-         }
+      std::vector<Float64> vMcr = GetMoment(intervalIdx,lcCR,vPoi,bat,rtCumulative);
+      std::vector<Float64> vMsh = GetMoment(intervalIdx,lcSH,vPoi,bat,rtCumulative);
+      std::vector<Float64> vMre = GetMoment(intervalIdx,lcRE,vPoi,bat,rtCumulative);
+
+      if ( !IsEqual(gCRMin,1.0) )
+      {
+         std::vector<Float64> vMcrMin;
+         std::transform(vMcr.begin(),vMcr.end(),std::back_inserter(vMcrMin),std::bind1st(std::multiplies<Float64>(),gCRMin));
+         std::transform(pMin->begin(),pMin->end(),vMcrMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vMcr.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gCRMax,1.0) )
+      {
+         std::vector<Float64> vMcrMax;
+         std::transform(vMcr.begin(),vMcr.end(),std::back_inserter(vMcrMax),std::bind1st(std::multiplies<Float64>(),gCRMax));
+         std::transform(pMax->begin(),pMax->end(),vMcrMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vMcr.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMin,1.0) )
+      {
+         std::vector<Float64> vMshMin;
+         std::transform(vMsh.begin(),vMsh.end(),std::back_inserter(vMshMin),std::bind1st(std::multiplies<Float64>(),gSHMin));
+         std::transform(pMin->begin(),pMin->end(),vMshMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vMsh.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMax,1.0) )
+      {
+         std::vector<Float64> vMshMax;
+         std::transform(vMsh.begin(),vMsh.end(),std::back_inserter(vMshMax),std::bind1st(std::multiplies<Float64>(),gSHMax));
+         std::transform(pMax->begin(),pMax->end(),vMshMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vMsh.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMin,1.0) )
+      {
+         std::vector<Float64> vMreMin;
+         std::transform(vMre.begin(),vMre.end(),std::back_inserter(vMreMin),std::bind1st(std::multiplies<Float64>(),gREMin));
+         std::transform(pMin->begin(),pMin->end(),vMreMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vMre.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMax,1.0) )
+      {
+         std::vector<Float64> vMreMax;
+         std::transform(vMre.begin(),vMre.end(),std::back_inserter(vMreMax),std::bind1st(std::multiplies<Float64>(),gREMax));
+         std::transform(pMax->begin(),pMax->end(),vMreMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vMre.begin(),pMax->begin(),std::plus<Float64>());
       }
    }
 }
@@ -3338,6 +3657,111 @@ void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::Li
       throw;
    }
 
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      Float64 gCRMax;
+      Float64 gCRMin;
+      Float64 gSHMax;
+      Float64 gSHMin;
+      Float64 gREMax;
+      Float64 gREMin;
+      if ( IsRatingLimitState(limitState) )
+      {
+         GET_IFACE(IRatingSpecification,pRatingSpec);
+         gCRMax = pRatingSpec->GetCreepFactor(limitState);
+         gSHMax = pRatingSpec->GetShrinkageFactor(limitState);
+         gREMax = pRatingSpec->GetRelaxationFactor(limitState);
+         
+         gCRMin = gCRMax;
+         gSHMin = gSHMax;
+         gREMin = gREMax;
+      }
+      else
+      {
+         GET_IFACE(ILoadFactors,pILoadFactors);
+         const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+         gCRMax = pLoadFactors->CRmax[limitState];
+         gCRMin = pLoadFactors->CRmin[limitState];
+         gSHMax = pLoadFactors->SHmax[limitState];
+         gSHMin = pLoadFactors->SHmin[limitState];
+         gREMax = pLoadFactors->REmax[limitState];
+         gREMin = pLoadFactors->REmin[limitState];
+      }
+
+      std::vector<Float64> vDcr = GetDeflection(intervalIdx,lcCR,vPoi,bat,rtCumulative,false);
+      std::vector<Float64> vDsh = GetDeflection(intervalIdx,lcSH,vPoi,bat,rtCumulative,false);
+      std::vector<Float64> vDre = GetDeflection(intervalIdx,lcRE,vPoi,bat,rtCumulative,false);
+
+      if ( !IsEqual(gCRMin,1.0) )
+      {
+         std::vector<Float64> vDcrMin;
+         std::transform(vDcr.begin(),vDcr.end(),std::back_inserter(vDcrMin),std::bind1st(std::multiplies<Float64>(),gCRMin));
+         std::transform(pMin->begin(),pMin->end(),vDcrMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vDcr.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gCRMax,1.0) )
+      {
+         std::vector<Float64> vDcrMax;
+         std::transform(vDcr.begin(),vDcr.end(),std::back_inserter(vDcrMax),std::bind1st(std::multiplies<Float64>(),gCRMax));
+         std::transform(pMax->begin(),pMax->end(),vDcrMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vDcr.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMin,1.0) )
+      {
+         std::vector<Float64> vDshMin;
+         std::transform(vDsh.begin(),vDsh.end(),std::back_inserter(vDshMin),std::bind1st(std::multiplies<Float64>(),gSHMin));
+         std::transform(pMin->begin(),pMin->end(),vDshMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vDsh.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMax,1.0) )
+      {
+         std::vector<Float64> vDshMax;
+         std::transform(vDsh.begin(),vDsh.end(),std::back_inserter(vDshMax),std::bind1st(std::multiplies<Float64>(),gSHMax));
+         std::transform(pMax->begin(),pMax->end(),vDshMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vDsh.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMin,1.0) )
+      {
+         std::vector<Float64> vDreMin;
+         std::transform(vDre.begin(),vDre.end(),std::back_inserter(vDreMin),std::bind1st(std::multiplies<Float64>(),gREMin));
+         std::transform(pMin->begin(),pMin->end(),vDreMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vDre.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMax,1.0) )
+      {
+         std::vector<Float64> vDreMax;
+         std::transform(vDre.begin(),vDre.end(),std::back_inserter(vDreMax),std::bind1st(std::multiplies<Float64>(),gREMax));
+         std::transform(pMax->begin(),pMax->end(),vDreMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vDre.begin(),pMax->begin(),std::plus<Float64>());
+      }
+   }
+
    if ( bIncludeElevationAdjustment )
    {
       ApplyElevationAdjustment(intervalIdx,vPoi,pMin,pMax);
@@ -3378,6 +3802,111 @@ void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Limi
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      Float64 gCRMax;
+      Float64 gCRMin;
+      Float64 gSHMax;
+      Float64 gSHMin;
+      Float64 gREMax;
+      Float64 gREMin;
+      if ( IsRatingLimitState(limitState) )
+      {
+         GET_IFACE(IRatingSpecification,pRatingSpec);
+         gCRMax = pRatingSpec->GetCreepFactor(limitState);
+         gSHMax = pRatingSpec->GetShrinkageFactor(limitState);
+         gREMax = pRatingSpec->GetRelaxationFactor(limitState);
+         
+         gCRMin = gCRMax;
+         gSHMin = gSHMax;
+         gREMin = gREMax;
+      }
+      else
+      {
+         GET_IFACE(ILoadFactors,pILoadFactors);
+         const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+         gCRMax = pLoadFactors->CRmax[limitState];
+         gCRMin = pLoadFactors->CRmin[limitState];
+         gSHMax = pLoadFactors->SHmax[limitState];
+         gSHMin = pLoadFactors->SHmin[limitState];
+         gREMax = pLoadFactors->REmax[limitState];
+         gREMin = pLoadFactors->REmin[limitState];
+      }
+
+      std::vector<Float64> vRcr = GetRotation(intervalIdx,lcCR,vPoi,bat,rtCumulative,false);
+      std::vector<Float64> vRsh = GetRotation(intervalIdx,lcSH,vPoi,bat,rtCumulative,false);
+      std::vector<Float64> vRre = GetRotation(intervalIdx,lcRE,vPoi,bat,rtCumulative,false);
+
+      if ( !IsEqual(gCRMin,1.0) )
+      {
+         std::vector<Float64> vRcrMin;
+         std::transform(vRcr.begin(),vRcr.end(),std::back_inserter(vRcrMin),std::bind1st(std::multiplies<Float64>(),gCRMin));
+         std::transform(pMin->begin(),pMin->end(),vRcrMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vRcr.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gCRMax,1.0) )
+      {
+         std::vector<Float64> vRcrMax;
+         std::transform(vRcr.begin(),vRcr.end(),std::back_inserter(vRcrMax),std::bind1st(std::multiplies<Float64>(),gCRMax));
+         std::transform(pMax->begin(),pMax->end(),vRcrMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vRcr.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMin,1.0) )
+      {
+         std::vector<Float64> vRshMin;
+         std::transform(vRsh.begin(),vRsh.end(),std::back_inserter(vRshMin),std::bind1st(std::multiplies<Float64>(),gSHMin));
+         std::transform(pMin->begin(),pMin->end(),vRshMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vRsh.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gSHMax,1.0) )
+      {
+         std::vector<Float64> vRshMax;
+         std::transform(vRsh.begin(),vRsh.end(),std::back_inserter(vRshMax),std::bind1st(std::multiplies<Float64>(),gSHMax));
+         std::transform(pMax->begin(),pMax->end(),vRshMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vRsh.begin(),pMax->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMin,1.0) )
+      {
+         std::vector<Float64> vRreMin;
+         std::transform(vRre.begin(),vRre.end(),std::back_inserter(vRreMin),std::bind1st(std::multiplies<Float64>(),gREMin));
+         std::transform(pMin->begin(),pMin->end(),vRreMin.begin(),pMin->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMin->begin(),pMin->end(),vRre.begin(),pMin->begin(),std::plus<Float64>());
+      }
+
+      if ( !IsEqual(gREMax,1.0) )
+      {
+         std::vector<Float64> vRreMax;
+         std::transform(vRre.begin(),vRre.end(),std::back_inserter(vRreMax),std::bind1st(std::multiplies<Float64>(),gREMax));
+         std::transform(pMax->begin(),pMax->end(),vRreMax.begin(),pMax->begin(),std::plus<Float64>());
+      }
+      else
+      {
+         std::transform(pMax->begin(),pMax->end(),vRre.begin(),pMax->begin(),std::plus<Float64>());
+      }
    }
 
    if ( bIncludeSlopeAdjustment )
@@ -3632,26 +4161,6 @@ Float64 CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LPCTSTR str
    return results[0];
 }
 
-Float64 CAnalysisAgentImp::GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-   if ( intervalIdx < erectionIntervalIdx )
-   {
-      return m_pSegmentModelManager->GetReaction(intervalIdx,strLoadingName,pierIdx,girderKey,resultsType);
-   }
-   else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
-   {
-      Float64 Rprev = GetReaction(intervalIdx-1,strLoadingName,pierIdx,girderKey,bat,resultsType);
-      Float64 Rthis = GetReaction(intervalIdx,  strLoadingName,pierIdx,girderKey,bat,resultsType);
-      return Rthis-Rprev;
-   }
-   else
-   {
-      return m_pGirderModelManager->GetReaction(intervalIdx,strLoadingName,pierIdx,girderKey,bat,resultsType);
-   }
-}
-
 void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot)
 {
    std::vector<pgsPointOfInterest> vPoi;
@@ -3891,6 +4400,77 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadi
       // reset all of our data.
       Invalidate(false);
       throw;
+   }
+}
+
+void CAnalysisAgentImp::GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright)
+{
+   std::vector<CSegmentKey> vSegmentKeys;
+   vSegmentKeys.push_back(segmentKey);
+   std::vector<Float64> vFyLeft, vFyRight;
+   GetSegmentReactions(vSegmentKeys,intervalIdx,strLoadingName,bat,resultsType,&vFyLeft,&vFyRight);
+   *pRleft = vFyLeft.front();
+   *pRright = vFyRight.front();
+}
+
+void CAnalysisAgentImp::GetSegmentReactions(const std::vector<CSegmentKey>& vSegmentKeys,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,std::vector<Float64>* pRleft,std::vector<Float64>* pRright)
+{
+   pRleft->reserve(vSegmentKeys.size());
+   pRright->reserve(vSegmentKeys.size());
+
+   GET_IFACE(IIntervals,pIntervals);
+   std::vector<CSegmentKey>::const_iterator segKeyIter(vSegmentKeys.begin());
+   std::vector<CSegmentKey>::const_iterator segKeyIterEnd(vSegmentKeys.end());
+   for ( ; segKeyIter != segKeyIterEnd; segKeyIter++ )
+   {
+      const CSegmentKey& segmentKey = *segKeyIter;
+
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      Float64 Rleft(0), Rright(0);
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         m_pSegmentModelManager->GetReaction(segmentKey,intervalIdx,strLoadingName,bat,resultsType,&Rleft,&Rright);
+      }
+      pRleft->push_back(Rleft);
+      pRright->push_back(Rright);
+   }
+}
+
+Float64 CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
+{
+   std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
+   vSupports.push_back(std::make_pair(supportIdx,supportType));
+   std::vector<Float64> vReactions = GetReaction(girderKey,vSupports,intervalIdx,strLoadingName,bat,resultsType);
+   return vReactions.front();
+}
+
+std::vector<Float64> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
+{
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+   if ( intervalIdx < erectionIntervalIdx )
+   {
+      std::vector<Float64> reactions;
+      reactions.resize(vSupports.size(),0);
+      return reactions;
+   }
+   else
+   {
+      if ( resultsType == rtCumulative )
+      {
+         std::vector<Float64> reactions;
+         reactions.resize(vSupports.size(),0);
+         for ( IntervalIndexType iIdx = erectionIntervalIdx; iIdx <= intervalIdx; iIdx++)
+         {
+            std::vector<Float64> Fy = m_pGirderModelManager->GetReaction(girderKey,vSupports,iIdx,strLoadingName,bat,rtIncremental);
+            std::transform(reactions.begin(),reactions.end(),Fy.begin(),reactions.begin(),std::plus<Float64>());
+         }
+         return reactions;
+      }
+      else
+      {
+         return m_pGirderModelManager->GetReaction(girderKey,vSupports,intervalIdx,strLoadingName,bat,rtIncremental);
+      }
    }
 }
 
@@ -6771,7 +7351,34 @@ Float64 CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,SupportIndexT
 
 std::vector<Float64> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
 {
-   return m_pGirderModelManager->GetReaction(girderKey,vSupports,intervalIdx,pfType,bat,resultsType);
+   if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
+   {
+      GET_IFACE(ILosses,pLosses);
+      ComputeTimeDependentEffects(girderKey,intervalIdx);
+      std::vector<Float64> results;
+      if ( resultsType == rtCumulative )
+      {
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+         results.resize(vSupports.size(),0);
+         for ( IntervalIndexType iIdx = erectionIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+            std::vector<Float64> vReactions = GetReaction(girderKey,vSupports,iIdx,strLoadingName,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),vReactions.begin(),results.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+         results = GetReaction(girderKey,vSupports,intervalIdx,strLoadingName,bat,rtIncremental);
+      }
+      return results;
+   }
+   else
+   {
+      return m_pGirderModelManager->GetReaction(girderKey,vSupports,intervalIdx,pfType,bat,resultsType);
+   }
 }
 
 Float64 CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType)
@@ -6790,7 +7397,25 @@ std::vector<Float64> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,
    //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
    if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
+      GET_IFACE(ILosses,pLosses);
       ComputeTimeDependentEffects(girderKey,intervalIdx);
+      std::vector<Float64> results;
+      if ( resultsType == rtCumulative )
+      {
+         results.resize(vSupports.size(),0);
+         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+            std::vector<Float64> vReactions = GetReaction(girderKey,vSupports,intervalIdx,strLoadingName,bat,rtIncremental);
+            std::transform(results.begin(),results.end(),vReactions.begin(),results.begin(),std::plus<Float64>());
+         }
+      }
+      else
+      {
+         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+         results = GetReaction(girderKey,vSupports,intervalIdx,strLoadingName,bat,rtIncremental);
+      }
+      return results;
    }
 
    if ( comboType == lcPS )
@@ -7151,6 +7776,24 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
    Float64 k = (IsZero(EI_adjusted) ? 0 : EI/EI_adjusted);
 
    return k;
+}
+
+void CAnalysisAgentImp::ComputeTimeDependentEffects(const CGirderKey& girderKey,IntervalIndexType intervalIdx)
+{
+   // Getting the timestep loss results, causes the creep, shrinkage, relaxation, and prestress forces
+   // to be added to the LBAM model...
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   {
+      GET_IFACE(ILosses,pLosses);
+      GET_IFACE(IPointOfInterest,pPoi);
+
+      pgsPointOfInterest poi( pPoi->GetPointOfInterest(CSegmentKey(girderKey,0),0.0) );
+      ATLASSERT(poi.GetID() != INVALID_ID);
+      pLosses->GetLossDetails(poi,intervalIdx);
+   }
 }
 
 bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation)

@@ -38,6 +38,7 @@ public:
 
    virtual CString GetAppName() const = 0;
    virtual CString GetTemplateFileExtension() = 0;
+   virtual const CRuntimeClass* GetDocTemplateRuntimeClass() = 0;
 
    virtual HRESULT OnFinalConstruct();
    virtual void OnFinalRelease();

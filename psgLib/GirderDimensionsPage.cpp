@@ -118,7 +118,7 @@ void CGirderDimensionsPage::DoDataExchange(CDataExchange* pDX)
    pDad->m_Entry.GetBeamFactory(&pFactory);
 
    // girder picture metafile
-	DDX_MetaFileStatic(pDX, IDC_GIRDER_MF, m_GirderPicture, pFactory->GetResourceInstance(), pFactory->GetImageResourceName(), _T("Metafile") );
+	DDX_MetaFileStatic(pDX, IDC_GIRDER_MF, m_GirderPicture, pFactory->GetResourceInstance(), pFactory->GetImageResourceName(), _T("Metafile"), EMF_FIT );
 }
 
 
@@ -343,7 +343,7 @@ void CGirderDimensionsPage::UpdateGirderImage(const CLSID& factoryCLSID)
       return;
    }
    CDataExchange dx(this,FALSE);
-	DDX_MetaFileStatic(&dx, IDC_GIRDER_MF, m_GirderPicture, pFactory->GetResourceInstance(), pFactory->GetImageResourceName(), _T("Metafile") );
+	DDX_MetaFileStatic(&dx, IDC_GIRDER_MF, m_GirderPicture, pFactory->GetResourceInstance(), pFactory->GetImageResourceName(), _T("Metafile"), EMF_FIT  );
 }
 
 void CGirderDimensionsPage::OnBnClickedVariableDepthCheck()

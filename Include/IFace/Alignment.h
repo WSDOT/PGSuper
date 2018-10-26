@@ -93,10 +93,66 @@ interface IRoadway : IUnknown
    virtual CollectionIndexType GetVertCurveCount() = 0;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
 
-   virtual void GetRoadwaySurface(Float64 station,IPoint2dCollection** ppPoints) = 0;
+   virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) = 0;
 
    virtual Float64 GetCrownPointOffset(Float64 station) = 0;
 };
 
-#endif // INCLUDED_IFACE_ALIGNMENT_H_
 
+/*****************************************************************************
+INTERFACE
+   IRoadway
+
+   Interface to get alignment information.
+
+DESCRIPTION
+   Interface to get alignment information.
+*****************************************************************************/
+// {F013DA5F-708F-461b-9905-8BA164A436FA}
+DEFINE_GUID(IID_IGeometry, 
+0xf013da5f, 0x708f, 0x461b, 0x99, 0x5, 0x8b, 0xa1, 0x64, 0xa4, 0x36, 0xfa);
+interface IGeometry : IUnknown
+{
+   // Measure
+   virtual HRESULT Angle(IPoint2d* from,IPoint2d* vertex,IPoint2d* to,IAngle** angle) = 0;
+   virtual HRESULT Area(IPoint2dCollection* points,Float64* area) = 0;
+   virtual HRESULT Distance(IPoint2d* from,IPoint2d* to,Float64* dist) = 0;
+   virtual HRESULT Direction(IPoint2d* from,IPoint2d* to,IDirection** dir) = 0;
+   virtual HRESULT Inverse(IPoint2d* from,IPoint2d* to,Float64* dist,IDirection** dir) = 0;
+
+   // Locate
+   virtual HRESULT ByDistAngle(IPoint2d* from,IPoint2d* to,Float64 dist,VARIANT varAngle,Float64 offset,IPoint2d** point) = 0;
+   virtual HRESULT ByDistDefAngle(IPoint2d* from,IPoint2d* to,Float64 dist,VARIANT varDefAngle,Float64 offset,IPoint2d** point) = 0;
+   virtual HRESULT ByDistDir(IPoint2d* from,Float64 dist,VARIANT varDir,Float64 offset,IPoint2d** point) = 0;
+   virtual HRESULT PointOnLine(IPoint2d* from,IPoint2d* to,Float64 dist,Float64 offset,IPoint2d** point) = 0;
+   virtual HRESULT ParallelLineByPoints(IPoint2d* from,IPoint2d* to,Float64 offset,IPoint2d** p1,IPoint2d** p2) = 0;
+   virtual HRESULT ParallelLineSegment(ILineSegment2d* ls,Float64 offset,ILineSegment2d** linesegment) = 0;
+
+   // Intersect
+   virtual HRESULT Bearings(IPoint2d* p1,VARIANT varDir1,Float64 offset1,IPoint2d* p2,VARIANT varDir2,Float64 offset2,IPoint2d** point) = 0;
+   virtual HRESULT BearingCircle(IPoint2d* p1,VARIANT varDir,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest,IPoint2d** point) = 0;
+   virtual HRESULT Circles(IPoint2d* p1,Float64 r1,IPoint2d* p2,Float64 r2,IPoint2d* nearest,IPoint2d** point) = 0;
+   virtual HRESULT LineByPointsCircle(IPoint2d* p1,IPoint2d* p2,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest,IPoint2d** point) = 0;
+   virtual HRESULT LinesByPoints(IPoint2d* p11,IPoint2d* p12,Float64 offset1,IPoint2d* p21,IPoint2d* p22,Float64 offset2,IPoint2d** point) = 0;
+   virtual HRESULT Lines(ILineSegment2d* l1,Float64 offset1,ILineSegment2d* l2,Float64 offset2,IPoint2d** point) = 0;
+   virtual HRESULT LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point) = 0;
+
+   // Project
+   virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) = 0;
+   virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) = 0;
+   virtual HRESULT PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point) = 0;
+
+   // Divide
+   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) = 0;
+   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) = 0;
+   virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) = 0;
+	virtual HRESULT HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) = 0;
+   virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) = 0;
+
+   // Tangent
+   virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2) = 0;
+   virtual HRESULT Cross(IPoint2d* center1, Float64 radius1,IPoint2d* center2, Float64 radius2, TangentSignType sign, IPoint2d** t1,IPoint2d** t2) = 0;
+   virtual HRESULT Point(IPoint2d* center, Float64 radius,IPoint2d* point, TangentSignType sign, IPoint2d** tangent) = 0;
+};
+
+#endif // INCLUDED_IFACE_ALIGNMENT_H_

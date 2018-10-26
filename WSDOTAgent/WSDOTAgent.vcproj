@@ -872,11 +872,19 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\res\Curvel.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\CurvelExporter.rgs"
 				>
 			</File>
 			<File
 				RelativePath=".\CurvelImporter.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\res\GenComp.bmp"
 				>
 			</File>
 			<File

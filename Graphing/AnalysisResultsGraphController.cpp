@@ -375,7 +375,7 @@ void CAnalysisResultsGraphController::FillActionTypeCtrl()
 
    if ( curSel == CB_ERR || pcbAction->GetCount() <= curSel)
    {
-      pcbAction->SetCurSel(2); // select moment by default
+      pcbAction->SetCurSel(bReportAxial ? 2 : 1); // select moment by default
    }
    else
    {
@@ -443,6 +443,8 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Loadings(bool bRetainSele
    CComboBox* pcbLoadings = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
 
    int curSel = pcbLoadings->GetCurSel();
+   CString strCurSel;
+   pcbLoadings->GetLBText(curSel,strCurSel);
 
    pcbLoadings->ResetContent();
 
@@ -462,6 +464,8 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Loadings(bool bRetainSele
 
    if ( bRetainSelection )
    {
+      curSel = pcbLoadings->FindStringExact(0,strCurSel);
+      curSel = (curSel == CB_ERR ? 0 : curSel);
       curSel = pcbLoadings->SetCurSel(curSel);
       if ( curSel == CB_ERR )
       {

@@ -122,7 +122,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
       SectionLossContainer::iterator iter = losses.SectionLosses.begin();
       LOSSDETAILS& details = iter->second;
       IntervalIndexType nIntervalsPreviouslyAnalyzed = details.TimeStepDetails.size();
-      ATLASSERT(0 < nIntervalsPreviouslyAnalyzed);
+      //ATLASSERT(0 < nIntervalsPreviouslyAnalyzed);
       if ( nIntervalsPreviouslyAnalyzed < nIntervalsToBeAnalyzed )
       {
          // Losses have not been computed all the way up to and including the requested interval.
@@ -204,7 +204,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
 
    ATLASSERT( poiFound != losses.end() );
    const LOSSDETAILS* pLossDetails = &(*poiFound).second;
-   ATLASSERT(intervalIdx < pLossDetails->TimeStepDetails.size());
+   //ATLASSERT(intervalIdx < pLossDetails->TimeStepDetails.size());
    return pLossDetails;
 }
 
@@ -410,6 +410,7 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    m_pBroker->GetInterface(IID_ICombinedForces,    (IUnknown**)&m_pCombinedForces);
    m_pBroker->GetInterface(IID_IExternalLoading,   (IUnknown**)&m_pExternalLoading);
    m_pBroker->GetInterface(IID_IEAFDisplayUnits,   (IUnknown**)&m_pDisplayUnits);
+   m_pBroker->GetInterface(IID_ILosses,            (IUnknown**)&m_pLosses);
 
    {
       // scope the use all the interface points accessed above and released below
@@ -459,6 +460,7 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    m_pCombinedForces.Release();
    m_pExternalLoading.Release();
    m_pDisplayUnits.Release();
+   m_pLosses.Release();
 }
 
 void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses)
@@ -470,7 +472,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    Float64 Dset, wobble, friction;
    m_pLossParams->GetTendonPostTensionParameters(&Dset,&wobble,&friction);
 
-   std::vector<pgsPointOfInterest> vPoi(m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
+   std::vector<pgsPointOfInterest> vPoi(GetAnalysisLocations(girderKey));
 
    WebIndexType nWebs = m_pGirder->GetWebCount(girderKey);
 
@@ -798,21 +800,15 @@ void CTimeStepLossEngineer::ComputeSectionLosses(GirderIndexType girderLineIdx,I
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
 
-   if ( startAnalysisIntervalIdx == 0 )
-   {
-      // only want to do this once...
-      // ASSERTS are going to fire in GirderModelManager::AddLoadGroup because this loading has a name
-      // that is already used... that's ok and it is exactly what we want.
-      m_pExternalLoading->CreateLoading(girderLineIdx,m_pProductLoads->GetProductLoadName(pgsTypes::pftCreep));
-      m_pExternalLoading->CreateLoading(girderLineIdx,m_pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage));
-      m_pExternalLoading->CreateLoading(girderLineIdx,m_pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation));
-   }
-
    for ( IntervalIndexType intervalIdx = startAnalysisIntervalIdx; intervalIdx <= endAnalysisIntervalIdx; intervalIdx++ )
    {
       CString strMsg;
       strMsg.Format(_T("Performing time-step analysis: Interval %d of %d"),LABEL_INTERVAL(intervalIdx),nIntervals);
       m_pProgress->UpdateMessage(strMsg);
+
+      m_pExternalLoading->CreateLoading(girderLineIdx,m_pLosses->GetRestrainingLoadName(intervalIdx,TIMESTEP_CR));
+      m_pExternalLoading->CreateLoading(girderLineIdx,m_pLosses->GetRestrainingLoadName(intervalIdx,TIMESTEP_SH));
+      m_pExternalLoading->CreateLoading(girderLineIdx,m_pLosses->GetRestrainingLoadName(intervalIdx,TIMESTEP_RE));
 
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
@@ -1123,10 +1119,11 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
 
          // apparent strain due to relacation
-         tsDetails.Strands[strandType].er = tsDetails.Strands[strandType].fr/EStrand[strandType]; // Tadros 1977, second term in Eqn 8
+         tsDetails.Strands[strandType].er = -tsDetails.Strands[strandType].fr/EStrand[strandType]; // Tadros 1977, second term in Eqn 8
 
          // force required to resist apparent relaxation strain
-         tsDetails.Strands[strandType].PrRelaxation = -tsDetails.Strands[strandType].fr*tsDetails.Strands[strandType].As; // Tadros 1977, Eqn 10
+         tsDetails.Strands[strandType].PrRelaxation = tsDetails.Strands[strandType].fr*tsDetails.Strands[strandType].As; // Tadros 1977, Eqn 10
+         tsDetails.Pr[TIMESTEP_RE] += tsDetails.Strands[strandType].PrRelaxation;
 #else
          Float64 Pjack = m_pStrandGeom->GetPjack(segmentKey,strandType);
          StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
@@ -1213,10 +1210,11 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                }
 
                // apparent strain due to relacation
-               strand.er = strand.fr/EStrand[strandType]; // Tadros 1977, second term in Eqn 8
+               strand.er = -strand.fr/EStrand[strandType]; // Tadros 1977, second term in Eqn 8
 
                // force required to resist apparent relaxation strain
-               strand.PrRelaxation = -strand.fr*strand.As; // Tadros 1977, Eqn 10
+               strand.PrRelaxation = strand.fr*strand.As; // Tadros 1977, Eqn 10
+               tsDetails.Pr[TIMESTEP_RE] += strand.PrRelaxation;
             } // if not closure
 
             tsDetails.Strands[strandType].push_back(strand);
@@ -1338,10 +1336,12 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
 
          // apparent strain due to relaxation
-         tsTendon.er = tsTendon.fr/ETendon;
+         tsTendon.er = -tsTendon.fr/ETendon;
 
          // force required to resist apparent relaxation strain
-         tsTendon.PrRelaxation = -tsTendon.fr*tsTendon.As;
+         tsTendon.PrRelaxation = tsTendon.fr*tsTendon.As;
+
+         tsDetails.Pr[TIMESTEP_RE] += tsTendon.PrRelaxation;
 
          tsDetails.Tendons.push_back(tsTendon);
       } // next duct
@@ -1653,10 +1653,10 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
 
          // create the loading as a product force load. This will directly yield the resultant
          // restraining force for the product force type
-         if ( !IsZero(e) && !IsZero(r) )
+         if ( !IsZero(Pr1) || !IsZero(Mr1) || !IsZero(Pr2) || !IsZero(Mr2) )
          {
-            pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)(pgsTypes::pftCreep + i);
-            m_pExternalLoading->CreateInitialStrainLoad(intervalIdx,pfType,poi1,poi2,e,r);
+            CString strLoadingName = m_pLosses->GetRestrainingLoadName(intervalIdx,i);
+            m_pExternalLoading->CreateInitialStrainLoad(intervalIdx,strLoadingName,poi1,poi2,e,r);
          }
       }
    }
@@ -1706,6 +1706,10 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             tsDetails.Strands[strandType].dfpei[pgsTypes::pftPretension] = -tsDetails.Strands[strandType].loss;
             tsDetails.Strands[strandType].dfpe += tsDetails.Strands[strandType].dfpei[pgsTypes::pftPretension];
 
+            tsDetails.Strands[strandType].dPi[pgsTypes::pftRelaxation] = -tsDetails.Strands[strandType].PrRelaxation;
+            tsDetails.dPi[pgsTypes::pftRelaxation] += tsDetails.Strands[strandType].dPi[pgsTypes::pftRelaxation];
+            tsDetails.Pi[pgsTypes::pftRelaxation] += tsDetails.dPi[pgsTypes::pftRelaxation];
+
             if ( intervalIdx == stressStrandsIntervalIdx )
             {
                // This is the interval when strands are stressed... 
@@ -1734,6 +1738,9 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                strand.loss = strand.fr;
 
                strand.dfpe = -strand.loss;
+
+               strand.dPi[pgsTypes::pftRelaxation] = -strand.PrRelaxation;
+               tsDetails.dPi[pgsTypes::pftRelaxation] += strand.dPi[pgsTypes::pftRelaxation];
 
                if ( intervalIdx == stressStrandsIntervalIdx )
                {
@@ -1964,7 +1971,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       //
       // Compute total change of force on the section during this interval
       //
-
       int n = GetProductForceCount();
       for ( int i = 0; i < n; i++ ) 
       {
@@ -1991,18 +1997,18 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
          else if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
          {
-            std::_tstring strLoading(m_pProductLoads->GetProductLoadName(pfType));
-
-            dP = m_pExternalLoading->GetAxial(intervalIdx,strLoading.c_str(),poi,m_Bat, rtIncremental);
-            dM = m_pExternalLoading->GetMoment(intervalIdx,strLoading.c_str(),poi,m_Bat, rtIncremental);
+            // get the section forces in the restrained system due to the artifical restraining load
+            CString strLoadName = m_pLosses->GetRestrainingLoadName(intervalIdx,pfType-pgsTypes::pftCreep);
+            dP = m_pExternalLoading->GetAxial(intervalIdx,strLoadName,poi,m_Bat, rtIncremental);
+            dM = m_pExternalLoading->GetMoment(intervalIdx,strLoadName,poi,m_Bat, rtIncremental);
 
             // change in force this interval
-            tsDetails.dMi[pfType] += dM;
             tsDetails.dPi[pfType] += dP;
+            tsDetails.dMi[pfType] += dM;
 
             // total change in force at the end of this interval
-            tsDetails.Pi[pfType] += prevTimeStepDetails.Pi[pfType] + tsDetails.dPi[pfType];
             tsDetails.Mi[pfType] += prevTimeStepDetails.Mi[pfType] + tsDetails.dMi[pfType];
+            tsDetails.Pi[pfType] += prevTimeStepDetails.Pi[pfType] + tsDetails.dPi[pfType];
          }
          else
          {
@@ -2017,6 +2023,9 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             tsDetails.Pi[pfType] += prevTimeStepDetails.Pi[pfType] + tsDetails.dPi[pfType];
             tsDetails.Mi[pfType] += prevTimeStepDetails.Mi[pfType] + tsDetails.dMi[pfType];
          }
+
+         tsDetails.dP += dP;
+         tsDetails.dM += dM;
 
          // Deformation of the composite section this interval
          tsDetails.der[pfType] = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr);
@@ -2528,6 +2537,9 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
       } // next product force
 
+      tsDetails.P = prevTimeStepDetails.P + tsDetails.dP;
+      tsDetails.M = prevTimeStepDetails.M + tsDetails.dM;
+
       //
       // Compute stress in the parts of the cross section due to live load
       //
@@ -2844,18 +2856,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       tsDetails.Mext = tsDetails.dMext;
       tsDetails.Pint = tsDetails.dPint;
       tsDetails.Mint = tsDetails.dMint;
-   }
-   else if ( intervalIdx == releaseIntervalIdx )
-   {
-      // prestressed is transfered to the concrete section in this interval
-      // internal forces need to be adjusted for stress in strand. generally internal
-      // forces due to the strands are incremental changes but this interval, we need to
-      // include the actual force transfered
-      TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
-      tsDetails.Pext = prevTimeStepDetails.Pext + tsDetails.dPext;
-      tsDetails.Mext = prevTimeStepDetails.Mext + tsDetails.dMext;
-      tsDetails.Pint = prevTimeStepDetails.Pint + tsDetails.dPint - details.TimeStepDetails[stressStrandsIntervalIdx].dPint;
-      tsDetails.Mint = prevTimeStepDetails.Mint + tsDetails.dMint - details.TimeStepDetails[stressStrandsIntervalIdx].dMint;
    }
    else
    {
@@ -3785,8 +3785,28 @@ const std::vector<pgsTypes::StrandType>& CTimeStepLossEngineer::GetStrandTypes(c
 int CTimeStepLossEngineer::GetProductForceCount()
 {
    // returns the number of product forces that we need to consider from the pgsTypes::ProductForceType enum.
-   // all off the product forces count except for the two special cases at the end of the enum.
+   // all of the product forces count except for the special case at the end of the enum.
    int n = (int)pgsTypes::pftProductForceTypeCount;
-   n -= 1; // remove pgsTypes::pftOverlayRating from the count as they are special cases and don't apply here
+   n -= 1; // remove pgsTypes::pftOverlayRating from the count as it is a special case and don't apply here
    return n;
+}
+
+std::vector<pgsPointOfInterest> CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey)
+{
+   // this does time-step analysis using every POI
+   return m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS));
+
+   // this does time-step analysis using span 10th points, segment start/end points, and closure joints
+   // this method is about 2x-6x faster. However, need to interpolate results for POIs that are not
+   // explicitly analyzed. This interpolation isn't done yet.
+   //std::vector<pgsPointOfInterest> vPoi = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN);
+   //std::vector<pgsPointOfInterest> vPoi2 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT);
+   //std::vector<pgsPointOfInterest> vPoi3 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT);
+   //std::vector<pgsPointOfInterest> vPoi4 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE);
+   //vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   //vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   //vPoi.insert(vPoi.end(),vPoi4.begin(),vPoi4.end());
+   //std::sort(vPoi.begin(),vPoi.end());
+   //vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   //return vPoi;
 }

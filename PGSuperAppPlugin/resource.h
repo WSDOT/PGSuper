@@ -848,6 +848,7 @@
 #define IDC_TIME_DEPENDENT_EFFECTS      1446
 #define IDC_START_CANTILEVER            1446
 #define IDC_DRAW_BRIDGE                 1446
+#define IDC_EPOXY                       1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_END_CANTILEVER              1447
 #define IDC_FUTURE_WS                   1448

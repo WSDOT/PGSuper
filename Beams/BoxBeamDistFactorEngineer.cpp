@@ -57,7 +57,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
 {
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILiveLoads,pLiveLoads);
 
    // Do some initial se
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
@@ -420,7 +419,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
 
 void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
-   GET_IFACE(IBridge,pBridge);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
@@ -662,7 +660,6 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
 void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
-   GET_IFACE(IBridge,pBridge);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -959,18 +956,18 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
    if (is_composite)
    {
       // We have a composite section. 
       Float64 eff_wid = pSectProp->GetEffectiveFlangeWidth(poi);
       if ( fcgdr < 0 )
       {
-         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,lastIntervalIdx,poi);
       }
       else
       {
-         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
+         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,lastIntervalIdx,poi,fcgdr);
       }
 
       Float64 t_top = top_flg_thk;

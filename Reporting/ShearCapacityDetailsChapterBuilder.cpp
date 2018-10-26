@@ -245,7 +245,6 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);

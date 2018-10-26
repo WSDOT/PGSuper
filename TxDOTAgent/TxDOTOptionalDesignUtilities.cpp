@@ -91,10 +91,10 @@ OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStra
    CComPtr<IPoint2dCollection> hs_points;
    pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
 
-   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSegmentKey(),pgsTypes::Harped);
+   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Harped);
    for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
    {
-      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSegmentKey(), rowIdx, pgsTypes::Harped);
+      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Harped);
       for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
       {
          StrandIndexType idx = *sit;
@@ -130,10 +130,10 @@ OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStra
    CComPtr<IPoint2dCollection> ss_points;
    pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Straight, &ss_points);
 
-   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSegmentKey(),pgsTypes::Straight);
+   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi,pgsTypes::Straight);
    for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
    {
-      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSegmentKey(), rowIdx, pgsTypes::Straight);
+      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi, rowIdx, pgsTypes::Straight);
       for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
       {
          StrandIndexType idx = *sit;

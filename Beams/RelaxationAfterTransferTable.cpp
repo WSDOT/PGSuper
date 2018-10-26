@@ -26,6 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <Reporting\ReportNotes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,6 +88,11 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
       {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR2_SR_US.png")) << rptNewLine;
       }
+   }
+
+   if ( pstrand->GetCoating() != matPsStrand::None )
+   {
+      *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
    }
 
    *pParagraph << table << rptNewLine;

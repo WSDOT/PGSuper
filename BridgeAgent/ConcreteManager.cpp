@@ -86,8 +86,6 @@ void CConcreteManager::ValidateConcrete()
       return;
    }
 
-   GET_IFACE(IIntervals,pIntervals);
-
    const CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
 
    //////////////////////////////////////////////////////////////////////////////
@@ -214,9 +212,8 @@ void CConcreteManager::ValidateConcrete()
 
             // Time dependent concrete
             // for the LRFD stepped f'c concrete model, assume the jump from f'ci to f'c occurs
-            // at hauling interval
-            IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-            Float64 stepTime = pIntervals->GetTime(intervalIdx,pgsTypes::Start);
+            // 28 days after the concrete is cast
+            Float64 stepTime = segment_casting_time + 28;
 
             matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime);
             m_pSegmentConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pSegmentConcrete)) );
