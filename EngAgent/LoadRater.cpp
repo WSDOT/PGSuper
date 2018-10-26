@@ -105,8 +105,9 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
+   std::vector<Float64> vPLmin,vPLmax;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
-   GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
+   GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex,vPLmin,vPLmax);
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(pgsTypes::BridgeSite3,vPOI,bPositiveMoment);
@@ -122,6 +123,7 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
+   bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
 
@@ -149,6 +151,8 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
       Float64 LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
+      Float64 PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
+
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
@@ -252,7 +256,7 @@ void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,
       momentArtifact.SetWearingSurfaceFactor(gDW);
       momentArtifact.SetWearingSurfaceMoment(DW);
       momentArtifact.SetLiveLoadFactor(gLL);
-      momentArtifact.SetLiveLoadMoment(LLIM);
+      momentArtifact.SetLiveLoadMoment(LLIM+PL);
 
       ratingArtifact.AddArtifact(poi,momentArtifact,bPositiveMoment);
    }
@@ -271,6 +275,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    std::vector<sysSectionValue> vLLIMmin,vLLIMmax;
    std::vector<sysSectionValue> vUnused;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex, vUnusedIndex;
+   std::vector<sysSectionValue> vPLmin, vPLmax;
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -293,6 +298,9 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
          pProductForces->GetVehicularLiveLoadShear( llType, vehicleIdx, pgsTypes::BridgeSite3, vPOI, MinSimpleContinuousEnvelope, true, true, &vLLIMmin, &vUnused, NULL,NULL,NULL,NULL);
          pProductForces->GetVehicularLiveLoadShear( llType, vehicleIdx, pgsTypes::BridgeSite3, vPOI, MaxSimpleContinuousEnvelope, true, true, &vUnused, &vLLIMmax, NULL,NULL,NULL,NULL);
       }
+
+      pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MaxSimpleContinuousEnvelope, false, &vUnused, &vPLmax );
+      pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MinSimpleContinuousEnvelope, false, &vPLmin, &vUnused );
    }
    else
    {
@@ -305,6 +313,8 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
          pProductForces->GetLiveLoadShear( llType, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &vLLIMmin, &vLLIMmax, &vMinTruckIndex, &vMaxTruckIndex );
       else
          pProductForces->GetVehicularLiveLoadShear( llType, vehicleIdx, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &vLLIMmin, &vLLIMmax, NULL, NULL, NULL, NULL);
+
+      pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, false, &vPLmin, &vPLmax );
    }
 
    pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
@@ -319,9 +329,11 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
+   ATLASSERT(vPLmin.size()   == vPLmax.size());
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 system_factor    = pRatingSpec->GetSystemFactorShear();
+   bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    Float64 gDC = pRatingSpec->GetDeadLoadFactor(ls);
    Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
@@ -346,10 +358,13 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
       Float64 DWmax   = max(vDWmax[i].Left(),  vDWmax[i].Right());
       Float64 LLIMmin = min(vLLIMmin[i].Left(),vLLIMmin[i].Right());
       Float64 LLIMmax = max(vLLIMmax[i].Left(),vLLIMmax[i].Right());
+      Float64 PLmin   = min(vPLmin[i].Left(),  vPLmin[i].Right());
+      Float64 PLmax   = max(vPLmax[i].Left(),  vPLmax[i].Right());
 
       Float64 DC   = max(fabs(DCmin),fabs(DCmax));
       Float64 DW   = max(fabs(DWmin),fabs(DWmax));
       Float64 LLIM = max(fabs(LLIMmin),fabs(LLIMmax));
+      Float64 PL   = (bIncludePL ? max(fabs(PLmin),fabs(PLmax)) : 0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (fabs(LLIMmin) < fabs(LLIMmax) ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
@@ -430,7 +445,6 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
          }
          else
          {
-
             GET_IFACE(ILibrary,pLibrary);
             const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
             CLiveLoadFactorModel model;
@@ -466,7 +480,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
       shearArtifact.SetWearingSurfaceFactor(gDW);
       shearArtifact.SetWearingSurfaceShear(DW);
       shearArtifact.SetLiveLoadFactor(gLL);
-      shearArtifact.SetLiveLoadShear(LLIM);
+      shearArtifact.SetLiveLoadShear(LLIM+PL);
 
       // longitudinal steel check
       pgsLongReinfShearArtifact l_artifact;
@@ -500,6 +514,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    std::vector<Float64> vUnused1,vUnused2;
    std::vector<VehicleIndexType> vTruckIndexTopMin, vTruckIndexTopMax, vTruckIndexBotMin, vTruckIndexBotMax;
    std::vector<VehicleIndexType> vUnusedIndex1, vUnusedIndex2;
+   std::vector<Float64> vPLTopMin, vPLBotMin, vPLTopMax, vPLBotMax;
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -522,6 +537,9 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
          pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,MinSimpleContinuousEnvelope,true,true,&vLLIMTopMin,&vUnused1,&vLLIMBotMin,&vUnused2,NULL,NULL,NULL,NULL);
          pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,MaxSimpleContinuousEnvelope,true,true,&vUnused1,&vLLIMTopMax,&vUnused2,&vLLIMBotMax,NULL,NULL,NULL,NULL);
       }
+
+      pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MaxSimpleContinuousEnvelope, &vUnused1,  &vPLTopMax, &vUnused2, &vPLBotMax );
+      pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MinSimpleContinuousEnvelope, &vPLTopMin, &vUnused2,  &vPLBotMin, &vUnused2 );
    }
    else
    {
@@ -537,6 +555,8 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
          pProductForces->GetLiveLoadStress(llType,pgsTypes::BridgeSite3,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,true,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,&vTruckIndexTopMin, &vTruckIndexTopMax, &vTruckIndexBotMin, &vTruckIndexBotMax);
       else
          pProductForces->GetVehicularLiveLoadStress(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,true,&vLLIMTopMin,&vLLIMTopMax,&vLLIMBotMin,&vLLIMBotMax,NULL,NULL,NULL,NULL);
+
+      pCombinedForces->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &vPLTopMin, &vPLTopMax,  &vPLBotMin, &vPLBotMax );
    }
 
    ATLASSERT(vPOI.size()     == vDCTopMin.size());
@@ -551,6 +571,10 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    ATLASSERT(vPOI.size()     == vLLIMTopMax.size());
    ATLASSERT(vPOI.size()     == vLLIMBotMin.size());
    ATLASSERT(vPOI.size()     == vLLIMBotMax.size());
+   ATLASSERT(vPOI.size()     == vPLTopMin.size());
+   ATLASSERT(vPOI.size()     == vPLTopMax.size());
+   ATLASSERT(vPOI.size()     == vPLBotMin.size());
+   ATLASSERT(vPOI.size()     == vPLBotMax.size());
 
    GET_IFACE(IPrestressStresses,pPrestress);
    std::vector<Float64> vPS = pPrestress->GetStress(pgsTypes::BridgeSite3,vPOI,pgsTypes::BottomGirder);
@@ -558,6 +582,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
    Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
+   bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
 
@@ -583,6 +608,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
       Float64 DC   = vDCBotMax[i];
       Float64 DW   = vDWBotMax[i];
       Float64 LLIM = vLLIMBotMax[i];
+      Float64 PL   = (bIncludePL ? vPLBotMax[i] : 0);
       Float64 PS   = vPS[i];
 
       VehicleIndexType truck_index = vehicleIdx;
@@ -660,7 +686,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
       stressArtifact.SetWearingSurfaceFactor(gDW);
       stressArtifact.SetWearingSurfaceStress(DW);
       stressArtifact.SetLiveLoadFactor(gLL);
-      stressArtifact.SetLiveLoadStress(LLIM);
+      stressArtifact.SetLiveLoadStress(LLIM+PL);
    
       ratingArtifact.AddArtifact(poi,stressArtifact);
    }
@@ -676,12 +702,14 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
    std::vector<Float64> vDWmin, vDWmax;
    std::vector<Float64> vLLIMmin,vLLIMmax;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
-   GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex);
+   std::vector<Float64> vPLmin,vPLmax;
+   GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
+   bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(pgsTypes::BridgeSite3,vPOI,bPositiveMoment);
@@ -699,6 +727,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
+   ATLASSERT(vPLmin.size()   == vPLmax.size());
 
 
    // Get load factors
@@ -778,6 +807,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
       Float64 LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
+      Float64 PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
          truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
@@ -877,7 +907,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
       stressRatioArtifact.SetWearingSurfaceFactor(gDW);
       stressRatioArtifact.SetWearingSurfaceMoment(DW);
       stressRatioArtifact.SetLiveLoadFactor(gLL);
-      stressRatioArtifact.SetLiveLoadMoment(LLIM);
+      stressRatioArtifact.SetLiveLoadMoment(LLIM+PL);
       stressRatioArtifact.SetCrackingMoment(Mcr);
       stressRatioArtifact.SetIcr(Icr);
       stressRatioArtifact.SetCrackDepth(c);
@@ -962,7 +992,7 @@ pgsTypes::LimitState pgsLoadRater::GetServiceLimitStateType(pgsTypes::LoadRating
    return ls;
 }
 
-void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex)
+void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex,std::vector<Float64>& vPLmin,std::vector<Float64>& vPLmax)
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1001,6 +1031,9 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
             pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,NULL,NULL);
             pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,NULL,NULL);
          }
+
+         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MaxSimpleContinuousEnvelope, &vUnused, &vPLmax );
+         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MinSimpleContinuousEnvelope, &vPLmin, &vUnused );
       }
       else
       {
@@ -1013,6 +1046,8 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
             pProductForces->GetLiveLoadMoment(llType,pgsTypes::BridgeSite3,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,&vMinTruckIndex,&vMaxTruckIndex);
          else
             pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,NULL,NULL);
+
+         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &vPLmin, &vPLmax );
       }
    }
    else
@@ -1098,6 +1133,9 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
             pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,MinSimpleContinuousEnvelope,true,true,&vLLIMmin,&vUnused,NULL,NULL);
             pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,MaxSimpleContinuousEnvelope,true,true,&vUnused,&vLLIMmax,NULL,NULL);
          }
+
+         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MaxSimpleContinuousEnvelope, &vUnused, &vPLmax );
+         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, MinSimpleContinuousEnvelope, &vPLmin, &vUnused );
       }
       else
       {
@@ -1148,6 +1186,8 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
             pProductForces->GetLiveLoadMoment(llType,pgsTypes::BridgeSite3,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,&vMinTruckIndex,&vMaxTruckIndex);
          else
             pProductForces->GetVehicularLiveLoadMoment(llType,vehicleIdx,pgsTypes::BridgeSite3,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,true,true,&vLLIMmin,&vLLIMmax,NULL,NULL);
+
+         pCombinedForces->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &vPLmin, &vPLmax );
       }
 
       // sum DC and DW

@@ -258,7 +258,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -361,7 +361,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -2164,11 +2164,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -2232,11 +2232,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuper.ico"
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\PGSuper.ico"
+				RelativePath=".\res\PGSuper.ico"
 				>
 			</File>
 			<File

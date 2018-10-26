@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -29,7 +28,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 // TEXTINCLUDE
 //
-
 
 2 TEXTINCLUDE 
 BEGIN
@@ -60,6 +58,11 @@ BEGIN
     "#endif\r\0"
 END
 
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
 #endif    // APSTUDIO_INVOKED
 
 
@@ -74,7 +77,6 @@ IDR_MAINFRAME           ICON                    "res\\PGSuper.ico"
 IDI_BSS                 ICON                    "res\\bss.ico"
 IDI_WSDOT               ICON                    "res\\Wsdot.ico"
 IDI_TXDOT               ICON                    "res\\txdot.ico"
-IDI_KDOT                ICON                    "res\\KDOT.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -82,6 +84,7 @@ IDI_KDOT                ICON                    "res\\KDOT.ico"
 //
 
 IDB_SPLASH              BITMAP                  "res\\Splash.bmp"
+IDB_KDOT                BITMAP                  "res\\KDOTLogo.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -172,12 +175,12 @@ BEGIN
     LTEXT           "Richard Brice, PE - WSDOT\n\tSoftware Architect and Lead Programmer",IDC_STATIC,214,46,171,17
     LTEXT           "Richard Pickings, PE - BridgeSight Software\n\tConsulting and Professional Programming Services",IDC_STATIC,214,66,214,18
     ICON            IDI_WSDOT,IDC_STATIC,11,46,20,20
-    ICON            IDI_BSS,IDC_STATIC,11,120,20,20
+    ICON            IDI_BSS,IDC_STATIC,11,121,21,20
     ICON            IDI_TXDOT,IDC_STATIC,11,70,20,20
     PUSHBUTTON      "Washington State Department of Transportation",IDC_WSDOT,34,49,164,14,BS_LEFT
     PUSHBUTTON      "Texas Department of Transportation",IDC_TXDOT,34,70,164,14,BS_LEFT
-    LTEXT           "Consulting services provided by",IDC_STATIC,11,112,100,8
-    PUSHBUTTON      "BridgeSight Software",IDC_BRIDGESIGHT,34,124,164,14,BS_LEFT
+    LTEXT           "Consulting services provided by",IDC_STATIC,11,115,100,8
+    PUSHBUTTON      "BridgeSight Software",IDC_BRIDGESIGHT,34,125,164,14,BS_LEFT
     LTEXT           "Installed Components",IDC_STATIC,7,145,68,8
     LISTBOX         IDC_APPLIST,7,156,359,65,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Component Description",IDC_STATIC,7,226,74,8
@@ -186,8 +189,8 @@ BEGIN
     PUSHBUTTON      "More Information",IDC_MOREINFO,374,237,58,14
     GROUPBOX        "Developed by",IDC_STATIC,7,32,191,110
     GROUPBOX        "Credits",IDC_STATIC,209,32,227,109
-    PUSHBUTTON      "Kansas Department of Transportation",IDC_KDOT,33,93,164,14,BS_LEFT
-    ICON            IDI_KDOT,IDC_STATIC,11,91,21,20
+    PUSHBUTTON      "Kansas Department of Transportation",IDC_KDOT,56,93,141,14,BS_LEFT
+    CONTROL         311,IDC_STATIC,"Static",SS_BITMAP,9,91,32,30
 END
 
 IDD_SCREEN_SIZE DIALOG  0, 0, 186, 90
@@ -213,8 +216,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,0,5
- PRODUCTVERSION 2,7,0,5
+ FILEVERSION 2,7,0,6
+ PRODUCTVERSION 2,7,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -231,12 +234,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.7.0.5"
+            VALUE "FileVersion", "2.7.0.6"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.0.5"
+            VALUE "ProductVersion", "2.7.0.6"
         END
     END
     BLOCK "VarFileInfo"
@@ -470,7 +473,6 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"
 #endif
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -8,13 +8,16 @@
 #define ID_INDICATOR_AUTOCALC_ON        4
 #define ID_INDICATOR_AUTOCALC_OFF       5
 #define IDS_E_ONLINERESOURCES           9
+#define EAF_TOOLBAR_MENU_COUNT          40
+#define EAF_REPORT_MENU_COUNT           50
 #define IDB_SPLASH                      102
 #define IDR_MAINFRAME                   128
 #define IDI_WSDOT                       190
 #define IDI_BSS                         191
 #define IDI_TXDOT                       239
 #define IDD_SCREEN_SIZE                 280
-#define IDI_KDOT                        310
+#define IDB_BITMAP1                     311
+#define IDB_KDOT                        311
 #define IDD_ABOUTBOX                    999
 #define IDC_VERSION                     1002
 #define IDC_COPYRIGHT                   1003
@@ -38,6 +41,11 @@
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_APPLIST                     3333
+#define EAF_RESERVED_COMMAND_BASE       0x8000
+#define ID_APP_LEGAL                    32771
+#define ID_TIPOFTHEDAY                  32775
+#define ID_MANAGE_APP_PLUGINS           32776
+#define EAF_FIRST_USER_COMMAND          0x80FF
 #define ID_HELP_INET_ARP                33025
 #define ID_HELP_INET_WSDOT              33026
 #define ID_HELP_INET_PGSUPER            33027
@@ -48,7 +56,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        311
+#define _APS_NEXT_RESOURCE_VALUE        312
 #define _APS_NEXT_COMMAND_VALUE         33029
 #define _APS_NEXT_CONTROL_VALUE         1601
 #define _APS_NEXT_SYMED_VALUE           111

@@ -633,9 +633,9 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row++,col) << Bold(_T("Straight"));
 
             if (bFirst)
-               (*p_table)(row,0) << _T("NO. (# of Debonded Strands)");
+               (*p_table)(row,0) << _T("NO. (# of Harped Strands)");
 
-            (*p_table)(row++,col) << 0; // never have debonds with straight-web strands
+            (*p_table)(row++,col) << 0; // by definition
          }
          else
          {

@@ -301,45 +301,71 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          row++;
       }
 
-      if (bFirst)
-         (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
-
-      double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
-      if ( D < 0 )
+      if (IsEqual(min_days, max_days))
       {
-         if (isSingleGirder)
-            (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+         // The usual case for TxDOT
+         if (bFirst)
+            (*pTable)(row,0) << _T("Design Camber");
 
-         (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+         if ( D < 0 )
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         }
+         else
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << disp.SetValue( D );
+
+            (*pTable)(row,col) << dispft.SetValue( D );
+         }
+         row++;
       }
       else
       {
-         if (isSingleGirder)
-            (*pTable)(row,1) << disp.SetValue( D );
+         if (bFirst)
+            (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
 
-         (*pTable)(row,col) << dispft.SetValue( D );
+         double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+         if ( D < 0 )
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         }
+         else
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << disp.SetValue( D );
+
+            (*pTable)(row,col) << dispft.SetValue( D );
+         }
+         row++;
+
+         if (bFirst)
+            (*pTable)(row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
+
+         D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
+         if ( D < 0 )
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         }
+         else
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << disp.SetValue( D );
+
+            (*pTable)(row,col) << dispft.SetValue( D );
+         }
+         row++;
       }
-      row++;
-
-      if (bFirst)
-         (*pTable)(row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
-
-      D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
-      if ( D < 0 )
-      {
-         if (isSingleGirder)
-            (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-         (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-      }
-      else
-      {
-         if (isSingleGirder)
-            (*pTable)(row,1) << disp.SetValue( D );
-
-         (*pTable)(row,col) << dispft.SetValue( D );
-      }
-      row++;
 
       if ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
       {
@@ -463,7 +489,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
+         (*pTable)(row,0) << _T("Excess Camber (Based on Design Camber)");
 
       double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
       if ( excess_camber < 0 )

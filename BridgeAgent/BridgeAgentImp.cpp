@@ -8644,7 +8644,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryShearZoneIndexAtPoi(const pgsPointOfInt
 
    ZoneIndexType nz = GetNumPrimaryZones(span, gdr);
    if (nz==0)
-      return -1;
+      return INVALID_INDEX;
 
    Float64 glen = GetGirderLength(span,gdr);
    Float64 location = poi.GetDistFromStart();

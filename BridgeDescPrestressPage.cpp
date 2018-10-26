@@ -1696,9 +1696,9 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          {
             // We have case where odd # harped strands is utilized - inform user that number of strands is being changed
             CString str;
-            str.Format(_T("The direct fill method does not support the allow odd number of harped strands library option. The current number of Harped strands is %d. It will be changed to %d. Is this Ok?"),num_harped, num_harped+1);
-            int st = ::AfxMessageBox(str, MB_OKCANCEL | MB_ICONINFORMATION );
-            if (st==IDCANCEL)
+            str.Format(_T("The direct selection method does not support the \"Allow odd number of harped strands\" library option. The current number of harped strands is %d. It will be changed to %d. Is this Ok?"),num_harped, num_harped+1);
+            int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONINFORMATION );
+            if (st == IDNO)
             {
                // Let user cancel operation
                box->SetCurSel(m_CurrNumPermStrandsType);
