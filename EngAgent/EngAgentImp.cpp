@@ -815,8 +815,8 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
    GET_IFACE(IPointOfInterest, pIPoi);
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_FACEOFSUPPORT);
    ATLASSERT(vPoi.size() == 2);
-   pgsPointOfInterest leftFaceOfSupport  = vPoi[0];
-   pgsPointOfInterest rightFaceOfSupport = vPoi[1];
+   pgsPointOfInterest leftFaceOfSupport(vPoi.front());
+   pgsPointOfInterest rightFaceOfSupport(vPoi.back());
 
    GET_IFACE(ILimitStateForces,pLSForces);
    Float64 leftRmin,leftRmax,rightRmin,rightRmax;
