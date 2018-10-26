@@ -9,5 +9,5 @@ regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\PGSuperTestAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\WSDOTAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\TxDOTAgent.dll
 
-cscript.exe runregression.js /DC: /VRELEASE
+cscript.exe runregression.js /VRELEASE
 call UpdateTestResults.bat

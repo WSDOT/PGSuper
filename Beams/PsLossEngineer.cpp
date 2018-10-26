@@ -405,7 +405,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(IBroker* pBroker,long ag
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the concrete strength is out of range per Articles 5.4.2.1 and 5.9.5.1";
+         msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,agentID,114,msg.c_str());
       }
       else
@@ -564,7 +564,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(IBroker* pBroker,long agentID,
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the concrete strength is out of range per Articles 5.4.2.1 and 5.9.5.1";
+         msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,agentID,114,msg.c_str());
       }
       else
@@ -790,7 +790,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(IBroker* pBroker,long agentID,BeamTy
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = "Prestress losses could not be computed because the concrete strength is out of range per Articles 5.4.2.1 and 5.9.5.1";
+         msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,agentID,114,msg.c_str());
       }
       else
