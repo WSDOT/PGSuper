@@ -90,8 +90,6 @@ public:
    afx_msg void OnBnClickedSelectGirders();
    afx_msg void OnBnClickedRadio();
    int m_DesignRadioNum;
-   BOOL m_StartWithCurrentStirrupLayout;
-   afx_msg void OnBnClickedDesignShear();
 };
 
 //{{AFX_INSERT_LOCATION}}

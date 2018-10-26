@@ -113,8 +113,8 @@ public:
 
    void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs);
    pgsTypes::SupportedBeamSpacing GetGirderSpacingType() const;
-   Float64 GetGirderSpacing() const;
-   void SetGirderSpacing(Float64 spacing);
+   double GetGirderSpacing() const;
+   void SetGirderSpacing(double spacing);
 
    void SetMeasurementType(pgsTypes::MeasurementType mt);
    pgsTypes::MeasurementType GetMeasurementType() const;
@@ -129,15 +129,15 @@ public:
 
    // offset to the reference girder, measured from either the CL bridge or alignment
    // as indicated by RegGirderOffsetDatum, MeasurementType, and LocationType
-   void SetRefGirderOffset(Float64 offset);
-   Float64 GetRefGirderOffset() const;
+   void SetRefGirderOffset(double offset);
+   double GetRefGirderOffset() const;
 
    // indicated what the reference girder offset is measured relative to
    void SetRefGirderOffsetType(pgsTypes::OffsetMeasurementType offsetDatum);
    pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const;
 
-   void SetAlignmentOffset(Float64 alignmentOffset);
-   Float64 GetAlignmentOffset() const;
+   void SetAlignmentOffset(double alignmentOffset);
+   double GetAlignmentOffset() const;
 
    // set/get the slab offset type
    void SetSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType);
@@ -151,8 +151,8 @@ public:
    // returns the greatest slab offset defined for the bridge
    Float64 GetMaxSlabOffset() const;
 
-   bool SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
-   bool MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);
+   bool SetSpanLength(SpanIndexType spanIdx,double newLength);
+   bool MovePier(PierIndexType pierIdx,double newStation,pgsTypes::MovePierOption moveOption);
 
    void SetDistributionFactorMethod(pgsTypes::DistributionFactorMethod method);
    pgsTypes::DistributionFactorMethod GetDistributionFactorMethod() const;
@@ -183,16 +183,16 @@ private:
    bool m_bSameNumberOfGirders;
    bool m_bSameGirderName;
 
-   Float64 m_AlignmentOffset; // offset from Alignment to CL Bridge (< 0 = right of alignment)
+   double m_AlignmentOffset; // offset from Alignment to CL Bridge (< 0 = right of alignment)
 
-   Float64 m_SlabOffset;
+   double m_SlabOffset;
    pgsTypes::SlabOffsetType m_SlabOffsetType;
 
    GirderIndexType m_nGirders;
-   Float64 m_GirderSpacing;
+   double m_GirderSpacing;
 
    GirderIndexType m_RefGirderIdx;
-   Float64 m_RefGirderOffset;
+   double m_RefGirderOffset;
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
 
    pgsTypes::MeasurementType m_MeasurementType;
@@ -208,10 +208,10 @@ private:
 
    pgsTypes::DistributionFactorMethod m_LLDFMethod;
 
-   bool MoveBridge(PierIndexType pierIdx,Float64 newStation);
-   bool MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation);
-   bool MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation);
-   bool MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Float64 newStation);
+   bool MoveBridge(PierIndexType pierIdx,double newStation);
+   bool MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation);
+   bool MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation);
+   bool MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,double newStation);
 
    void RenumberSpans();
    void AssertValid();

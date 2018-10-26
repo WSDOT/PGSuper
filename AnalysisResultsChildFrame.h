@@ -31,12 +31,6 @@
 #include "AnalysisResultsGraphDefinition.h"
 #include <vector>
 
-#if defined _EAF_USING_MFC_FEATURE_PACK
-#include <EAF\EAFPaneDialog.h>
-#else
-#define CEAFPaneDialog CDialogBar
-#endif
-
 class CAnalysisResultsView;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -126,7 +120,7 @@ private:
 
    int SelectedGraphIndexToGraphID(int graphIdx) const;
 
-   CEAFPaneDialog m_SettingsBar;
+   CDialogBar m_SettingsBar;
 
    // view variables
    SpanIndexType          m_SpanIdx;

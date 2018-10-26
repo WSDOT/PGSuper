@@ -31,8 +31,6 @@
 
 // PROJECT INCLUDES
 //
-#include <PGSuperTypes.h>
-
 #include "psgLibLib.h"
 
 #include <psgLib\ISupportIcon.h>
@@ -48,7 +46,6 @@
 
 #include <Material\Rebar.h>
 
-#include <psgLib\ShearData.h>
 // LOCAL INCLUDES
 //
 
@@ -166,6 +163,7 @@ public:
    friend CGirderMainSheet;
 
    enum psStrandType { stStraight, stHarped };
+   enum GirderFace {GirderTop, GirderBottom};
 
    // describes from where something is location is measured
    enum MeasurementLocation { mlEndOfGirder        = 0, 
@@ -183,10 +181,30 @@ public:
    typedef std::vector<Dimension> Dimensions;
 
    //------------------------------------------------------------------------
+   // information about shear zones
+   struct ShearZoneInfo
+   {
+      Float64     ZoneLength;
+      matRebar::Size VertBarSize, HorzBarSize;
+      Float64     StirrupSpacing;
+      CollectionIndexType      nVertBars, nHorzBars;
+      bool operator==(const ShearZoneInfo& rOther) const
+      {return ZoneLength     == rOther.ZoneLength     &&
+              VertBarSize    == rOther.VertBarSize    &&
+              HorzBarSize    == rOther.HorzBarSize    &&
+              StirrupSpacing == rOther.StirrupSpacing &&
+              nVertBars      == rOther.nVertBars      &&
+              nHorzBars      == rOther.nHorzBars;
+      } 
+   };
+
+   typedef std::vector<ShearZoneInfo> ShearZoneInfoVec;
+
+   //------------------------------------------------------------------------
    // information about rows of longitudinal steel
    struct LongSteelInfo
    {
-      pgsTypes::GirderFace  Face;
+      GirderFace  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
@@ -387,6 +405,9 @@ public:
    // Remove all strands
    void ClearAllStrands();
 
+   enum PermanentStrandType {ptNone, ptHarped, ptStraight};
+   std::vector<PermanentStrandType> GetPermanentStrands() const;
+
    //------------------------------------------------------------------------
    // Get number of Coordinates for Straight strands 
    // This sets the upper bound for GetStraightStrandCoordinates
@@ -484,11 +505,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set/get the harped strand adjustment limits at ends and harping points
-   void SetHPAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
-   void GetHPAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
+   void SetHPAdjustmentLimits(GirderFace  topFace, Float64  topLimit, GirderFace  bottomFace, Float64  bottomLimit);
+   void GetHPAdjustmentLimits(GirderFace* topFace, Float64* topLimit, GirderFace* bottomFace, Float64* bottomLimit) const;
 
-   void SetEndAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
-   void GetEndAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
+   void SetEndAdjustmentLimits(GirderFace  topFace, Float64  topLimit, GirderFace  bottomFace, Float64  bottomLimit);
+   void GetEndAdjustmentLimits(GirderFace* topFace, Float64* topLimit, GirderFace* bottomFace, Float64* bottomLimit) const;
 
    //------------------------------------------------------------------------
    // Set the max downward strand increment for design at girder end
@@ -507,9 +528,38 @@ public:
    Float64 GetHPStrandIncrement() const;
 
    //------------------------------------------------------------------------
-   // Set/Get shear data struct
-   void SetShearData(const CShearData& cdata);
-   const CShearData& GetShearData() const;
+   // Set material for shear steel, top flange, and confinement bars
+   void SetShearSteelMaterial(matRebar::Type type,matRebar::Grade grade);
+
+   //------------------------------------------------------------------------
+   // Get material name for shear steel
+   void GetShearSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const;
+
+   //------------------------------------------------------------------------
+   // Set vector of shear zone information. Note that zones are stored in
+   // order from end of girder toward center.
+   void SetShearZoneInfo(const ShearZoneInfoVec& vec);
+
+   //------------------------------------------------------------------------
+   // Get vector of shear zone information. Note that zones are stored in
+   // order from end of girder toward center.
+   ShearZoneInfoVec GetShearZoneInfo() const;
+
+   //------------------------------------------------------------------------
+   // Set bar size for confinement bars
+   void SetConfinementBarSize(matRebar::Size size);
+
+   //------------------------------------------------------------------------
+   // Get bar size for shear stirrups
+   matRebar::Size GetConfinementBarSize() const;
+
+   //------------------------------------------------------------------------
+   // Set last zone containing confinement steel
+   void SetLastConfinementZone(ZoneIndexType zone);
+   
+   //------------------------------------------------------------------------
+   // Get last zone containing confinement steel
+   ZoneIndexType GetNumConfinementZones() const;
 
    //------------------------------------------------------------------------
    // Set vector of longitidinal steel information.
@@ -548,11 +598,33 @@ public:
    Float64 GetBeamHeight(pgsTypes::MemberEndType endType) const;
    Float64 GetBeamWidth(pgsTypes::MemberEndType endType) const;
 
+   //------------------------------------------------------------------------
+   // If stirrups engage deck, assume they contribute to interface shear capacity
+   void DoStirrupsEngageDeck(bool bEngage);
+   bool DoStirrupsEngageDeck() const;
+
+   void IsRoughenedSurface(bool bIsRoughened);
+   bool IsRoughenedSurface() const;
+
+   //------------------------------------------------------------------------
+   // Set bar size for top flange interface shear stirrups
+   // zero means no bars
+   void SetTopFlangeShearBarSize(matRebar::Size size);
+
+   //------------------------------------------------------------------------
+   // Get size for top flange interface shear stirrups
+   matRebar::Size GetTopFlangeShearBarSize() const;
+
+   //------------------------------------------------------------------------
+   // Set bar Spacing for top flange interface shear stirrups
+   void SetTopFlangeShearBarSpacing(Float64 Spacing);
+
+   //------------------------------------------------------------------------
+   // Get Spacing for top flange interface shear stirrups
+   Float64 GetTopFlangeShearBarSpacing() const;
+
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
-
-   bool IsForceHarpedStrandsStraight() const;
-   void ForceHarpedStrandsStraight(bool bEnable);
 
    void ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
    void ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
@@ -597,49 +669,6 @@ public:
    // Returns true if this girder can be post-tensioned
    bool CanPostTension() const;
 
-   //------------------------------------------------------------------------
-   // Data for Shear Design Algorithm
-   //------------------------------------------------------------------------
-   // Available bars for design
-   IndexType GetNumStirrupSizeBarCombos() const;
-   void ClearStirrupSizeBarCombos();
-   void GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs) const;
-   void AddStirrupSizeBarCombo(matRebar::Size Size, Float64 NLegs);
-
-   // Available bar spacings for design
-   IndexType GetNumAvailableBarSpacings() const;
-   void ClearAvailableBarSpacings();
-   Float64 GetAvailableBarSpacing(IndexType index) const;
-   void AddAvailableBarSpacing(Float64 Spacing);
-
-   // Max change in spacing between zones
-   Float64 GetMaxSpacingChangeInZone() const;
-   void SetMaxSpacingChangeInZone(Float64 Change);
-
-   // Max change in shear capacity between zones (% fraction)
-   Float64 GetMaxShearCapacityChangeInZone() const;
-   void SetMaxShearCapacityChangeInZone(Float64 Change);
-
-   void GetMinZoneLength(Uint32* pSpacings, Float64* pLength) const;
-   void SetMinZoneLength(Uint32 Spacings, Float64 Length);
-
-   bool GetIsTopFlangeRoughened() const;
-   void SetIsTopFlangeRoughened(bool isRough);
-
-   bool GetExtendBarsIntoDeck() const;
-   void SetExtendBarsIntoDeck(bool isTrue);
-
-   bool GetBarsProvideSplittingCapacity() const;
-   void SetBarsProvideSplittingCapacity(bool isTrue);
-
-   bool GetBarsActAsConfinement() const;
-   void SetBarsActAsConfinement(bool isTrue);
-
-   enum LongShearCapacityIncreaseMethod { isAddingRebar, isAddingStrands };
-
-   LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
-   void SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method);
-
    // GROUP: INQUIRY
 
 protected:
@@ -661,16 +690,23 @@ private:
 
    bool m_bUseDifferentHarpedGridAtEnds;
 
-   // grade and type for extra top flange bars
+   // grade and type for all stirrups, confinement, and extra top flange bars
+   matRebar::Type m_StirrupBarType;
+   matRebar::Grade m_StirrupBarGrade;
+   matRebar::Size m_ConfinementBarSize; 
+   matRebar::Size m_TopFlangeShearBarSize;
+   ZoneIndexType m_LastConfinementZone;
+   bool m_bStirrupsEngageDeck;
+   bool m_bIsRoughenedSurface;
    matRebar::Type m_LongitudinalBarType;
    matRebar::Grade m_LongitudinalBarGrade;
+   Float64 m_TopFlangeShearBarSpacing;
    Float64 m_HarpingPointLocation;
    Float64 m_MinHarpingPointLocation;
    bool m_bMinHarpingPointLocation;
    MeasurementLocation m_HarpPointReference;
    MeasurementType   m_HarpPointMeasure;
    bool m_bOddNumberOfHarpedStrands;
-   bool m_bForceHarpedStrandsStraight;
 
    // version 13
    // debond limits
@@ -715,6 +751,7 @@ private:
    StraightStrandCollection m_StraightStrands;
    StraightStrandCollection m_TemporaryStrands;
 
+   ShearZoneInfoVec m_ShearZoneInfo;
    LongSteelInfoVec m_LongSteelInfo;
 
    // version 4.0 
@@ -781,14 +818,14 @@ private:
    {
       bool       m_AllowVertAdjustment;
       Float64    m_StrandIncrement;
-      pgsTypes::GirderFace m_TopFace;
+      GirderFace m_TopFace;
       Float64    m_TopLimit;
-      pgsTypes::GirderFace m_BottomFace;
+      GirderFace m_BottomFace;
       Float64    m_BottomLimit;
 
       HarpedStrandAdjustment() : m_AllowVertAdjustment(false), m_StrandIncrement(TwoInches),
-		                          m_TopFace(pgsTypes::GirderTop), m_TopLimit(TwoInches),
-		                          m_BottomFace(pgsTypes::GirderBottom), m_BottomLimit(TwoInches)
+		                          m_TopFace(GirderTop), m_TopLimit(TwoInches),
+		                          m_BottomFace(GirderBottom), m_BottomLimit(TwoInches)
       {;}
 
       bool operator==(const HarpedStrandAdjustment& rOther) const
@@ -816,94 +853,6 @@ private:
 
 	HarpedStrandAdjustment m_HPAdjustment;
 	HarpedStrandAdjustment m_EndAdjustment;
-
-   //------------------------------------------------------------------------
-   // Our main shear reinforcement data
-   CShearData m_ShearData;
-
-   //------------------------------------------------------------------------
-   // LegacyShearData
-   // This class contains shear data from prior to version 19.0
-   // CShearData is now used for all shear information and is used both in the 
-   // library classes and in PGSuper's GirderData struct.
-   class LegacyShearData
-   {
-   public:
-      LegacyShearData():
-         m_StirrupBarType(matRebar::A615),
-         m_StirrupBarGrade(matRebar::Grade60),
-         m_ConfinementBarSize(matRebar::bsNone),
-         m_LastConfinementZone(0),
-         m_TopFlangeShearBarSize(matRebar::bsNone),
-         m_TopFlangeShearBarSpacing(0.0),
-         m_bStirrupsEngageDeck(true),
-         m_bIsRoughenedSurface(true)
-         {;}
-
-      // Conversion function to ShearData
-      CShearData ConvertToShearData() const;
-
-      // grade and type for all stirrups, confinement, and extra top flange bars
-      matRebar::Type  m_StirrupBarType;
-      matRebar::Grade m_StirrupBarGrade;
-      matRebar::Size  m_ConfinementBarSize; 
-      matRebar::Size  m_TopFlangeShearBarSize;
-      Uint16          m_LastConfinementZone;
-      bool            m_bStirrupsEngageDeck;
-      bool            m_bIsRoughenedSurface;
-      Float64         m_TopFlangeShearBarSpacing;
-
-      // information about shear zones
-      struct ShearZoneInfo
-      {
-         Float64     ZoneLength;
-         matRebar::Size VertBarSize, HorzBarSize;
-         Float64     StirrupSpacing;
-         Uint32      nVertBars, nHorzBars;
-         bool operator==(const ShearZoneInfo& rOther) const
-         {return ZoneLength     == rOther.ZoneLength     &&
-                 VertBarSize    == rOther.VertBarSize    &&
-                 HorzBarSize    == rOther.HorzBarSize    &&
-                 StirrupSpacing == rOther.StirrupSpacing &&
-                 nVertBars      == rOther.nVertBars      &&
-                 nHorzBars      == rOther.nHorzBars;
-         } 
-      };
-
-      typedef std::vector<ShearZoneInfo> ShearZoneInfoVec;
-      ShearZoneInfoVec m_ShearZoneInfo;
-   };
-
-   // Data Members for Shear Design Algorithm
-   struct StirrupSizeBarCombo
-   {
-      matRebar::Size Size;
-      Float64 NLegs;
-
-      bool operator==(const StirrupSizeBarCombo& rOther) const
-      {
-         if (!::IsEqual(NLegs, rOther.NLegs))
-            return false;
-
-         return Size==rOther.Size;
-      }
-   };
-
-   typedef std::vector<StirrupSizeBarCombo> StirrupSizeBarComboColl;
-   typedef StirrupSizeBarComboColl::iterator StirrupSizeBarComboIter;
-
-   StirrupSizeBarComboColl m_StirrupSizeBarComboColl;
-   std::vector<Float64> m_AvailableBarSpacings;
-   Float64 m_MaxSpacingChangeInZone;
-   Float64 m_MaxShearCapacityChangeInZone;
-   Uint32 m_MinZoneLengthSpacings;
-   Float64 m_MinZoneLengthLength;
-   bool m_IsTopFlangeRoughened;
-   bool m_DoExtendBarsIntoDeck;
-   bool m_DoBarsProvideSplittingCapacity;
-   bool m_DoBarsActAsConfinement;
-   LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
-
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

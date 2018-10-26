@@ -50,10 +50,6 @@ LOG
 class REPORTINGCLASS CCombinedReactionTable
 {
 public:
-   // This class serves double duty. It can report pier reactions or girder bearing reactions.
-   // The two are identical except for the title and the interfaces they use to get responses
-   enum TableType { PierReactionsTable, BearingReactionsTable};
-
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
@@ -79,9 +75,9 @@ public:
    // Builds the combined results table
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
-                      SpanIndexType span,GirderIndexType girder, 
+                      SpanIndexType span,GirderIndexType girder,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, TableType tableType,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
    // GROUP: ACCESS

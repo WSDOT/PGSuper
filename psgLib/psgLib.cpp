@@ -34,7 +34,6 @@
 #include <WBFLGeometry_i.c>
 #include <WBFLCore_i.c>
 #include <IFace\BeamFamily.h>
-#include <IFace\Project.h>
 #include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
 
@@ -47,7 +46,6 @@
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

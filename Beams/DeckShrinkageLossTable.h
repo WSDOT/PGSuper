@@ -20,10 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ElasticGainDueToDeckShrinkageTable.h : Declaration of the CElasticGainDueToDeckShrinkageTable
+// DeckShrinkageLossTable.h : Declaration of the CDeckShrinkageLossTable
 
-#ifndef __ElasticGainDueToDeckShrinkageTABLE_H_
-#define __ElasticGainDueToDeckShrinkageTABLE_H_
+#ifndef __DECKSHRINKAGELOSSTABLE_H_
+#define __DECKSHRINKAGELOSSTABLE_H_
 
 #include "resource.h"       // main symbols
 #include <Details.h>
@@ -34,15 +34,15 @@ class lrfdLosses;
 class CGirderData;
 
 /////////////////////////////////////////////////////////////////////////////
-// CElasticGainDueToDeckShrinkageTable
-class CElasticGainDueToDeckShrinkageTable : public rptRcTable
+// CDeckShrinkageLossTable
+class CDeckShrinkageLossTable : public rptRcTable
 {
 public:
-   static CElasticGainDueToDeckShrinkageTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CDeckShrinkageLossTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
-   CElasticGainDueToDeckShrinkageTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CDeckShrinkageLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -62,4 +62,4 @@ private:
    Float64 m_Sign;
 };
 
-#endif //__ElasticGainDueToDeckShrinkageTABLE_H_
+#endif //__DECKSHRINKAGELOSSTABLE_H_

@@ -28,6 +28,7 @@
 #include <Reporting\FlexuralCapacityCheckTable.h>
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\InterfaceShearTable.h>
+#include <Reporting\ConfinementCheckTable.h>
 #include <Reporting\StrandSlopeCheck.h>
 #include <Reporting\HoldDownForceCheck.h>
 #include <Reporting\ConstructabilityCheckTable.h>
@@ -61,17 +62,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void write_splitting_zone_check(IBroker* pBroker,
-                                       IEAFDisplayUnits* pDisplayUnits,
-                                       SpanIndexType span,
-                                       GirderIndexType gdr,
-                                       rptChapter* pChapter);
-
-static void write_confinement_check(IBroker* pBroker,
-                                    IEAFDisplayUnits* pDisplayUnits,
-                                    SpanIndexType span,
-                                    GirderIndexType gdr,
-                                    rptChapter* pChapter);
+void write_splitting_zone_check(IBroker* pBroker,
+                               IEAFDisplayUnits* pDisplayUnits,
+                               SpanIndexType span,
+                               GirderIndexType gdr,
+                               rptChapter* pChapter);
 
 /****************************************************************************
 CLASS
@@ -310,16 +305,15 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Optional live load deflection
    COptionalDeflectionCheck().Build(pChapter,pArtifact,span,girder,pDisplayUnits);
 
-   if (pSpecEntry->IsSplittingCheckEnabled())
+   if (pSpecEntry->IsAnchorageCheckEnabled())
    {
       // Splitting Zone check
       write_splitting_zone_check(pBroker,pDisplayUnits,span,girder,pChapter);
-   }
 
-   if (pSpecEntry->IsConfinementCheckEnabled())
-   {
       // confinement check
-      write_confinement_check(pBroker,pDisplayUnits,span,girder,pChapter);
+      p = new rptParagraph;
+      *p << CConfinementCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3) << rptNewLine;
+      *pChapter << p;
    }
 
    // Longitudinal reinforcement for shear
@@ -500,7 +494,7 @@ void write_splitting_zone_check(IBroker* pBroker,
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,gdr);
-   const pgsSplittingZoneArtifact* pArtifact = gdrArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
+   const pgsSplittingZoneArtifact* pArtifact = gdrArtifact->GetSplittingZoneArtifact();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(), true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDisplayUnits->GetGeneralForceUnit(), true );
@@ -517,80 +511,12 @@ void write_splitting_zone_check(IBroker* pBroker,
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
-   (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetStartSplittingZoneLength()) << rptNewLine;
-   (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetStartSplittingForce()) << rptNewLine;
-   (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetStartSplittingResistance()) << rptNewLine;
+   (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetSplittingZoneLength()) << rptNewLine;
+   (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetSplittingForce()) << rptNewLine;
+   (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetSplittingResistance()) << rptNewLine;
    (*pPara) << _T("Status = ");
-   if ( pArtifact->StartPassed() )
+   if ( pArtifact->Passed() )
       (*pPara) << RPT_PASS;
    else
       (*pPara) << RPT_FAIL;
-
-   (*pPara) <<rptNewLine<<rptNewLine;
-
-   (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
-   (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetEndSplittingZoneLength()) << rptNewLine;
-   (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetEndSplittingForce()) << rptNewLine;
-   (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetEndSplittingResistance()) << rptNewLine;
-   (*pPara) << _T("Status = ");
-   if ( pArtifact->EndPassed() )
-      (*pPara) << RPT_PASS;
-   else
-      (*pPara) << RPT_FAIL;
-
-}
-
-void write_confinement_check(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
-                             SpanIndexType span,
-                             GirderIndexType gdr,
-                             rptChapter* pChapter)
-{
-   GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-
-   const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,gdr);
-   const pgsStirrupCheckArtifact *pStirrups = gdrArtifact->GetStirrupCheckArtifact();
-   const pgsConfinementArtifact& rConfine = pStirrups->GetConfinementArtifact();
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDisplayUnits->GetComponentDimUnit(), true );
-
-   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-   (*pPara) << _T("Confinement Stirrup Check [5.10.10.2]") << rptNewLine;
-
-   pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   (*pPara) << _T("  Minimum Required Bar Size in Confinement Zone: ")<< lrfdRebarPool::GetBarSize(rConfine.GetMinBar()->GetSize()) << rptNewLine;
-   (*pPara) << _T("  Maximum Required Bar Spacing in Confinement Zone = ")<< dim.SetValue(rConfine.GetSMax()) << rptNewLine << rptNewLine;
-
-   (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
-   (*pPara) << _T("  Required Confinement Zone Length = ") << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
-   (*pPara) << _T("  Provided Confinement Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
-   matRebar::Size size = rConfine.GetStartBar()==NULL ? matRebar::bsNone : rConfine.GetStartBar()->GetSize();
-   (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
-   (*pPara) << _T("  Bar Spacing in Zone ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
-   (*pPara) << _T("  Status = ");
-   if ( rConfine.StartPassed() )
-      (*pPara) << RPT_PASS;
-   else
-      (*pPara) << RPT_FAIL;
-
-   (*pPara) <<rptNewLine<<rptNewLine;
-
-   (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
-   (*pPara) << _T("  Required Confinement Zone Length = ") << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
-   (*pPara) << _T("  Provided Confinement Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
-   size = rConfine.GetEndBar()==NULL ? matRebar::bsNone : rConfine.GetEndBar()->GetSize();
-   (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
-   (*pPara) << _T("  Bar Spacing in Zone ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
-   (*pPara) << _T("  Status = ");
-   if ( rConfine.EndPassed() )
-      (*pPara) << RPT_PASS;
-   else
-      (*pPara) << RPT_FAIL;
-
 }

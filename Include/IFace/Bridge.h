@@ -208,17 +208,8 @@ interface IBridge : IUnknown
    virtual Float64 GetRightCurbOffset(SpanIndexType span,double distFromStartOfSpan) = 0;
    virtual Float64 GetLeftCurbOffset(PierIndexType pier) = 0;
    virtual Float64 GetRightCurbOffset(PierIndexType pier) = 0;
-   // Offset distances to curbline of interior barrier or sidewalk curb if present
-   virtual Float64 GetLeftInteriorCurbOffset(double distFromStartOfBridge) = 0;
-   virtual Float64 GetRightInteriorCurbOffset(double distFromStartOfBridge) = 0;
-   // this are the locations that the overlay butts up to
-   virtual Float64 GetLeftOverlayToeOffset(double distFromStartOfBridge) = 0;
-   virtual Float64 GetRightOverlayToeOffset(double distFromStartOfBridge) = 0;
-   virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi) = 0;
-   virtual void GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points) = 0;
-   virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points) = 0;
-   virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,IPoint2dCollection** points) = 0;
+   virtual void GetSlabPerimeter(Uint32 nPoints,IPoint2dCollection** points) = 0;
+   virtual void GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoint2dCollection** points) = 0;
 
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point) = 0;
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point) = 0;
@@ -385,7 +376,8 @@ INTERFACE
    Interface for getting the geometry of longitudinal rebars in a girder
 
 DESCRIPTION
-   Interface for getting the rebar geometry.  
+   Interface for getting the stirrup geometry.  The geometry is
+   the stirrup spacing and area
 
 *****************************************************************************/
 // {C2EE02C6-1785-11d3-AD6C-00105A9AF985}
@@ -429,51 +421,50 @@ DEFINE_GUID(IID_IStirrupGeometry,
 0x1ffe79be, 0x9545, 0x11d2, 0xac, 0x7b, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
 interface IStirrupGeometry : IUnknown
 {
-   // Primary bar zones
-   virtual bool AreStirrupZonesSymmetrical(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual matRebar::Size GetVertStirrupBarSize(const pgsPointOfInterest& poi) = 0;
+   virtual matRebar::Size GetHorzStirrupBarSize(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetVertStirrupBarArea(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetHorzStirrupBarArea(const pgsPointOfInterest& poi) = 0;
+   virtual CollectionIndexType GetVertStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of vertical stirrup bars crossing the shear plane
+   virtual CollectionIndexType GetHorzStirrupBarCount(const pgsPointOfInterest& poi)=0; // number of horizontal stirrup bars in the splitting plane
+   virtual Float64 GetS(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetAlpha(const pgsPointOfInterest& poi) = 0; // stirrup angle=90 for vertical
+   virtual matRebar::Size GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual Float64 GetLengthOfConfinementZone(SpanIndexType span,GirderIndexType gdr)=0;
 
-   // zone get is zero-based. 
-   // zones are sorted left->right across entire girder
-   // zones may, or may not, be symmetric about mid-girder
-   virtual ZoneIndexType GetNumPrimaryZones(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual void GetPrimaryZoneBounds(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone, Float64* start, Float64* end)=0;
-   virtual void GetPrimaryVertStirrupBarInfo(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing) = 0;
-   virtual Float64 GetPrimaryHorizInterfaceBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
-   virtual matRebar::Size GetPrimaryConfinementBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
+   virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr) = 0;
 
-   // Horizontal Interface additional bar zones
+   // Top flange stirrups for horizontal interface shear
+   // Assume two legs per stirrup - always (for top flange bars)
+   virtual matRebar::Size GetTopFlangeBarSize(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetTopFlangeBarArea(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetTopFlangeS(const pgsPointOfInterest& poi) = 0;
+
    // zone get is zero-based. 
    // zones are sorted left->right 
-   // zones may, or may not, be symmetric about mid-girder
-   virtual ZoneIndexType GetNumHorizInterfaceZones(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual void GetHorizInterfaceZoneBounds(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone, Float64* start, Float64* end)=0;
-   virtual void GetHorizInterfaceBarInfo(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing)=0;
+   // zones are symmetric about mid-girder
+   virtual ZoneIndexType GetNumZones(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual IDType GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0;
+   virtual Float64 GetZoneStart(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0; // dist from start of girder
+   virtual Float64 GetZoneEnd(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) =0; // dist from start of girder
+   virtual matRebar::Size GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
+   virtual matRebar::Size GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) = 0;
+   virtual CollectionIndexType GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
+   virtual CollectionIndexType GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
+   virtual Float64 GetS(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
 
-   // Additional splitting and confinement bars
-   virtual void GetAddSplittingBarInfo(SpanIndexType span,GirderIndexType gdr, matRebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing) = 0;
-   virtual void GetAddConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, matRebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing) = 0;
+   // bottom flange confinement bars - at same spacing as stirrups
+   // number of zones with confinement steel at one end of girder
+   virtual ZoneIndexType GetNumConfinementZones(SpanIndexType span,GirderIndexType gdr)=0;
+   // test a zone to see if if contains confinement bars
+   virtual bool IsConfinementZone(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)=0;
 
-   // Calculated bar values at poi's
-   // Vertical shear
-   virtual Float64 GetVertStirrupAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) = 0;
-   virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetAlpha(const pgsPointOfInterest& poi) = 0; // stirrup angle=90 for vertical
-
-   // Horizontal interface shear
-   virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual Float64 GetPrimaryHorizInterfaceS(const pgsPointOfInterest& poi)=0;
-   virtual Float64 GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing)=0;
-   virtual Float64 GetPrimaryHorizInterfaceBarCount(const pgsPointOfInterest& poi)=0;
-   virtual Float64 GetAdditionalHorizInterfaceS(const pgsPointOfInterest& poi)=0;
-   virtual Float64 GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing)=0;
-   virtual Float64 GetAdditionalHorizInterfaceBarCount(const pgsPointOfInterest& poi)=0;
-
-   // Total area of splitting shear steel between two points along the girder
-   virtual Float64 GetSplittingAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end) = 0;
-
-   // Processed confinement bar information - returns max bar size/min spacing in required zone length at both ends of girder
-   virtual void GetStartConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) = 0;
-   virtual void GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) = 0;
+   // returns the total area of shear steel between two points along the girder
+   virtual Float64 GetVertAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end) = 0;
+   virtual Float64 GetHorzAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end) = 0;
+   virtual void GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end,Float64* pAvVert,Float64* pAvHorz) = 0;
 };
 
 /*****************************************************************************
@@ -486,11 +477,6 @@ DESCRIPTION
    Interface for getting the prestressing strand geometry.  The geometry is
    the strand slope and eccentricities.
 *****************************************************************************/
-//
-// Options for development length computation. Approximate was added because the vertical shear design algoritm
-// was very slow using the accurate method, but it gave much better results. Hence, a speed/accuracy compromise.
-enum DevelopmentAdjustmentType {dlaNone, dlaApproximate, dlaAccurate};
-
 // {99B7A322-67A8-11d2-883A-006097C68A9C}
 DEFINE_GUID(IID_IStrandGeometry, 
 0x99b7a322, 0x67a8, 0x11d2, 0x88, 0x3a, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
@@ -513,17 +499,21 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift) = 0;
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift) = 0;
 
-   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
-   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
-   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
-   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
+   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
+   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
+   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
+   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
 
    virtual StrandIndexType GetMaxNumPermanentStrands(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual StrandIndexType GetMaxNumPermanentStrands(LPCTSTR strGirderName)=0;
    // get ratio of harped/straight strands if total permanent strands is used for input. returns false if total doesn't fit
    virtual bool ComputeNumPermanentStrands(StrandIndexType totalPermanent,SpanIndexType span,GirderIndexType gdr, StrandIndexType* numStraight, StrandIndexType* numHarped) =0;
+   virtual bool ComputeNumPermanentStrands(StrandIndexType totalPermanent,LPCTSTR strGirderName, StrandIndexType* numStraight, StrandIndexType* numHarped) =0;
    // get next and previous number of strands - return -1 if at end
    virtual StrandIndexType GetNextNumPermanentStrands(SpanIndexType span,GirderIndexType gdr,StrandIndexType curNum)=0;
+   virtual StrandIndexType GetNextNumPermanentStrands(LPCTSTR strGirderName,StrandIndexType curNum)=0;
    virtual StrandIndexType GetPreviousNumPermanentStrands(SpanIndexType span,GirderIndexType gdr,StrandIndexType curNum)=0;
+   virtual StrandIndexType GetPreviousNumPermanentStrands(LPCTSTR strGirderName,StrandIndexType curNum)=0;
 
    virtual StrandIndexType GetNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) = 0;
    virtual StrandIndexType GetMaxStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) = 0;
@@ -538,20 +528,22 @@ interface IStrandGeometry : IUnknown
    virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint) = 0;
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) = 0;
    virtual void GetStrandPositionsEx(const pgsPointOfInterest& poi,StrandIndexType Ns, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) = 0; 
-
-   // Harped strands can be forced to be straight along their length
-   virtual bool GetAreHarpedStrandsForcedStraight(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual void GetStrandPositionsEx(LPCTSTR strGirderName,StrandIndexType Ns,pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,IPoint2dCollection** ppPoints) = 0;
 
    // harped vertical offsets are measured from original strand locations in strand grid
    virtual Float64 GetGirderTopElevation(SpanIndexType span,GirderIndexType gdr) = 0;  // highest point on girder section based on strand coordinates (bottom at 0.0)
    virtual void GetHarpStrandOffsets(SpanIndexType span,GirderIndexType gdr,Float64* pOffsetEnd,Float64* pOffsetHp) = 0;
    virtual void GetHarpedEndOffsetBounds(SpanIndexType span,GirderIndexType gdr,Float64* DownwardOffset, Float64* UpwardOffset)=0;
    virtual void GetHarpedEndOffsetBoundsEx(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)=0;
+   virtual void GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)=0;
    virtual void GetHarpedHpOffsetBounds(SpanIndexType span,GirderIndexType gdr,Float64* DownwardOffset, Float64* UpwardOffset)=0;
    virtual void GetHarpedHpOffsetBoundsEx(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)=0;
+   virtual void GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)=0;
 
    virtual Float64 GetHarpedEndOffsetIncrement(SpanIndexType span,GirderIndexType gdr)=0;
    virtual Float64 GetHarpedHpOffsetIncrement(SpanIndexType span,GirderIndexType gdr)=0;
+   virtual Float64 GetHarpedEndOffsetIncrement(LPCTSTR strGirderName) = 0;
+   virtual Float64 GetHarpedHpOffsetIncrement(LPCTSTR strGirderName) = 0;
 
    virtual void GetHarpingPointLocations(SpanIndexType span,GirderIndexType gdr,Float64* lhp,Float64* rhp) = 0;
    virtual void GetHighestHarpedStrandLocation(SpanIndexType span,GirderIndexType gdr,Float64* pElevation) = 0;
@@ -560,7 +552,15 @@ interface IStrandGeometry : IUnknown
 
    virtual bool IsValidNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType curNum) = 0;
    virtual StrandIndexType GetNextNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType curNum) = 0;
+   virtual StrandIndexType GetNextNumStrands(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType curNum) = 0;
    virtual StrandIndexType GetPrevNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType curNum) = 0;
+   virtual StrandIndexType GetPrevNumStrands(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType curNum) = 0;
+
+   virtual StrandIndexType GetNumExtendedStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType endType,pgsTypes::StrandType standType) = 0;
+   virtual bool IsExtendedStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType end,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
+   virtual bool IsExtendedStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType end,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
+   virtual bool IsExtendedStrand(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
+   virtual bool IsExtendedStrand(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
 
    virtual bool IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64* pStart,Float64* pEnd) = 0;
    virtual bool IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config,Float64* pStart,Float64* pEnd) = 0;
@@ -585,20 +585,30 @@ interface IStrandGeometry : IUnknown
    virtual StrandIndexType GetNumBondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) = 0;
 
    virtual bool CanDebondStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)=0; // can debond any of the strands?
+   virtual bool CanDebondStrands(LPCTSTR strGirderName,pgsTypes::StrandType strandType)=0; // can debond any of the strands?
    // returns long array of the same length as GetStrandPositions. 0==not debondable
-   virtual void ListDebondableStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType, IIndexArray** list)=0; 
+   virtual void ListDebondableStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType, ILongArray** list)=0; 
+   virtual void ListDebondableStrands(LPCTSTR strGirderName,pgsTypes::StrandType strandType, ILongArray** list)=0; 
    virtual Float64 GetDefaultDebondLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 
    // Functions to compute harped strand offsets based on available measurement types
    // Absolute offset is distance that raw strand grid locations are to be moved.
    virtual Float64 ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)=0;
+   virtual Float64 ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)=0;
    virtual Float64 ComputeHarpedOffsetFromAbsoluteEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)=0;
+   virtual Float64 ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)=0;
    virtual Float64 ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)=0;
+   virtual Float64 ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)=0;
    virtual Float64 ComputeHarpedOffsetFromAbsoluteHp(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)=0;
+   virtual Float64 ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)=0;
    virtual void ComputeValidHarpedOffsetForMeasurementTypeEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)=0;
+   virtual void ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)=0;
    virtual void ComputeValidHarpedOffsetForMeasurementTypeHp(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)=0;
+   virtual void ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)=0;
    virtual Float64 ConvertHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)=0;
+   virtual Float64 ConvertHarpedOffsetEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)=0;
    virtual Float64 ConvertHarpedOffsetHp(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)=0;
+   virtual Float64 ConvertHarpedOffsetHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)=0;
 };
 
 /*****************************************************************************
@@ -686,7 +696,6 @@ interface ISectProp2 : IUnknown
 
    virtual Float64 GetEffectiveFlangeWidth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetTributaryFlangeWidth(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetTributaryFlangeWidthEx(const pgsPointOfInterest& poi, Float64* pLftFw, Float64* pRgtFw) = 0;
 
    virtual Float64 GetEffectiveDeckArea(const pgsPointOfInterest& poi) = 0; // deck area based on effective flange width
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi) = 0; // deck area based on tributary width
@@ -735,20 +744,12 @@ interface IBarriers : public IUnknown
    virtual Float64 GetAtb(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetItb(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetYbtb(pgsTypes::TrafficBarrierOrientation orientation) = 0;
+   virtual Float64 GetBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetInterfaceWidth(pgsTypes::TrafficBarrierOrientation orientation) = 0;
-   virtual Float64 GetExteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation) = 0;
-   virtual Float64 GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation) = 0;
-
-   virtual bool HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation) = 0;
-   virtual Float64 GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation) = 0;
-   virtual Float64 GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 
    virtual pgsTypes::TrafficBarrierOrientation GetNearestBarrier(SpanIndexType span,GirderIndexType gdr) = 0;
 
-   // Distance from nearest edge of deck to edges of sidewalk for Dead load and Pedestrian load
-   virtual void GetSidewalkDeadLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge) = 0;
-   virtual void GetSidewalkPedLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge) = 0;
-
+   virtual Float64 GetSidewalkWidth(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual bool HasSidewalk(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 };

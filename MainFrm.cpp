@@ -64,14 +64,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    if (CEAFMainFrame::OnCreate(lpCreateStruct) == -1)
       return -1;
 
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // we want to use a cool style
-   //CMFCVisualManagerOffice2007::SetStyle(CMFCVisualManagerOffice2007::Office2007_LunaBlue);
-   //CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOffice2007));
-
-   CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerOfficeXP));
-#endif
-
    return 0;
 }
 

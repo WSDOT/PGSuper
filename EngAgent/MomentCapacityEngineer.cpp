@@ -208,7 +208,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
    std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
-   BuildCapacityProblem(stage,poi,config,e_initial,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,bond_factors);
+   Float64 H; // overall height of section
+   BuildCapacityProblem(stage,poi,config,e_initial,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,&H,bond_factors);
 
 #if defined _DEBUG_SECTION_DUMP
    DumpSection(poi,section,bond_factors[0],bond_factors[1],bPositiveMoment);
@@ -325,25 +326,42 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
                                      // this will cause a small amount of off axis bending.
                                      // Only assert if the ratio of My/Mx is larger that the tolerance for zero
 
-   Float64 mn;
-   mn = -Mx;
+   Float64 Mn = -Mx;
 
-   pmcd->Mn  = mn;
+   pmcd->Mn  = Mn;
 
-   pmcd->PPR = (bPositiveMoment ? pLongRebarGeom->GetPPRBottomHalf(poi,config) : 0.0);
+   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
+   {
+      pmcd->PPR = (bPositiveMoment ? pLongRebarGeom->GetPPRBottomHalf(poi,config) : 0.0);
+   }
+   else
+   {
+      // PPR was removed from LRFD in 6th Edition, 2012. Use 1.0 for positive moments so
+      // Phi = PhiRC + (PhiPS-PhiRC)*PPR = PhiRc + PhiPS - PhiRc = PhiPS and use 0.0 for negative moment so
+      // Phi = PhiRC + (PhiPS-PhiRC)*0.0 = PhiRC
+      //
+      // See computation of Phi about 5 lines down
+      pmcd->PPR = (bPositiveMoment ? 1.0 : 0.0); // PPR was removed from LRFD in 6th Edition, 2012.. Use 0.0
+   }
 
    GET_IFACE(IBridgeMaterialEx,pMaterial);
    pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(poi.GetSpan(),poi.GetGirder());
+
+   matRebar::Type rebarType;
+   matRebar::Grade deckRebarGrade;
+   pMaterial->GetDeckRebarMaterial(rebarType,deckRebarGrade);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    Float64 PhiRC,PhiPS,PhiC;
    pResistanceFactors->GetFlexureResistanceFactors(concType,&PhiPS,&PhiRC,&PhiC);
    pmcd->Phi = PhiRC + (PhiPS-PhiRC)*pmcd->PPR; // generalized form of 5.5.4.2.1-3
+                                                // Removed in AASHTO LRFD 6th Edition 2012, however
+                                                // PPR has been computed above to take this into account
 
    Float64 C,T;
    solution->get_CompressionResultant(&C);
    solution->get_TensionResultant(&T);
-   ATLASSERT(IsZero(C+T,0.5));
+   ATLASSERT(IsZero(C+T,0.5)); // equilibrium within 0.5 Newtons
    
    pmcd->C = C;
    pmcd->T = T;
@@ -354,9 +372,9 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    Float64 fps_avg = 0;
 
-   if ( !IsZero(mn) )
+   if ( !IsZero(Mn) )
    {
-      pmcd->MomentArm = fabs(mn/T);
+      pmcd->MomentArm = fabs(Mn/T);
 
       Float64 x1,y1, x2,y2;
       pntCompression->get_X(&x1);
@@ -381,7 +399,15 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       szOffset->get_Dx(&dx);
       szOffset->get_Dy(&dy);
 
-      // determine average stress in strands
+      GET_IFACE(IBridgeMaterial,pMaterial);
+      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
+      Float64 aps = pStrand->GetNominalArea();
+
+      // determine average stress in strands and location of de
+      // de: see PCI BDM 8.4.1.2.
+      Float64 t = 0; // summ of the tension forces in the strands
+      Float64 tde = 0; // summ of location of strand time tension force in strand
+      // de = tde/t
       if ( 0 <  Ns + Nh )
       {
          CComPtr<IStressStrain> ssStrand;
@@ -389,7 +415,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
          GET_IFACE(IStrandGeometry,pStrandGeom);
          for ( int i = 0; i < 2; i++ ) // straight and harped strands
          {
-            pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
+            pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Straight : pgsTypes::Harped);
             CComPtr<IPoint2dCollection> points;
             pStrandGeom->GetStrandPositionsEx(poi, (i == 0 ? Ns : Nh), strandType, &points);
 
@@ -408,14 +434,36 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
                Float64 stress;
                ssStrand->ComputeStress(z+e_initial,&stress);
 
-               fps_avg += bond_factor*stress;
+               stress *= bond_factor;
+
+               // this is for de shear... tension side means strands below h/2
+               // if there is tensile stress in the strand,
+               // sum the force in the strand and the force in the strand times it y location
+               if ( y < H/2 )
+               {
+                  ATLASSERT( 0 <= stress );
+                  Float64 _t = aps*stress;
+                  t += _t;
+                  tde += (_t)*(y);
+               }
+
+               fps_avg += stress;
 
                point.Release();
             }
          }
 
          fps_avg /= (Ns+Nh);
-      }
+
+         if ( bPositiveMoment )
+         {
+            pmcd->de_shear = H - tde/t;
+         }
+         else
+         {
+            pmcd->de_shear = pmcd->de;
+         }
+      } // if ( Ns+Nh
    }
    else
    {
@@ -424,11 +472,12 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       pmcd->dc         = 0.0;
       pmcd->MomentArm  = 0.0;
       pmcd->de         = 0.0;
+      pmcd->de_shear   = 0.0;
       
-      fps_avg    = 0.0;
+      fps_avg          = 0.0;
    }
 
-   WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
+   WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(Mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
 
    pmcd->fps = fps_avg;
    pmcd->dt = dt;
@@ -518,10 +567,36 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    else
    {
       // WSDOT method 2005... LRFD 2006 and later
-      if ( IsZero(pmcd->c) ) 
-         pmcd->Phi = PhiRC; // there is no moment capacity, use PhiRC for phi instead of dividing by zero
+
+      // the method of compute phi based on strains was introduced in WSDOT 2005/LRFD 2006, however it only included
+      // prestressing strand and grade 60 rebar. PGSuper can model grade 40-80 rebar. Use the strain based method
+      // for computing Phi. This method is in WSDOT BDM 2012 and will be in LRFD 2013
+      Float64 ecl, etl;
+      if ( bPositiveMoment )
+      {
+         // the strain limits are the same for grade 60 rebar and strand
+         pResistanceFactors->GetFlexuralStrainLimits(matRebar::Grade60,&ecl,&etl);
+      }
       else
-         pmcd->Phi = (PhiRC + (PhiPS-PhiRC)*pmcd->PPR - PhiC)*(pmcd->dt/pmcd->c - 5./3.) + PhiC; // generalized form of transition between 5.5.4.2.1-1 and -2
+      {
+         pResistanceFactors->GetFlexuralStrainLimits(deckRebarGrade,&ecl,&etl);
+      }
+      pmcd->ecl = ecl;
+      pmcd->etl = etl;
+
+      if ( IsZero(pmcd->c) ) 
+      {
+         pmcd->Phi = (bPositiveMoment ? PhiPS : PhiRC); // there is no moment capacity, use PhiRC for phi instead of dividing by zero
+      }
+      else
+      {
+
+         pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
+         if ( bPositiveMoment )
+            pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+         else
+            pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+      }
 
       pmcd->Phi = ForceIntoRange(PhiC,pmcd->Phi,PhiRC + (PhiPS-PhiRC)*pmcd->PPR);
    }
@@ -651,7 +726,12 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(pgsTypes::Stage stage,c
       ls = pgsTypes::StrengthII;
    }
 
-   MrMin1 = 1.20*Mcr;
+   if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+      MrMin1 = Mcr;
+   else
+      MrMin1 = 1.20*Mcr;
+
+
    MrMin2 = 1.33*Mu;
    MrMin =  (bPositiveMoment ? min(MrMin1,MrMin2) : max(MrMin1,MrMin2));
 
@@ -727,6 +807,34 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
    ComputeCrackingMoment(stage,config,poi,fcpe,bPositiveMoment,pcmd);
 }
 
+void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3)
+{
+   if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+   {
+      *pG1 = 1.6; // all other concrete structures (not-segmental)
+      *pG2 = 1.1; // bonded strand/tendon
+
+      if ( bPositiveMoment )
+      {
+         *pG3 = 1.0; // prestressed concrete
+      }
+      else
+      {
+         GET_IFACE(IBridgeMaterial,pMaterials);
+         Float64 E,fy,fu;
+         pMaterials->GetDeckRebarProperties(&E,&fy,&fu);
+
+         *pG3 = fy/fu;
+      }
+   }
+   else
+   {
+      *pG1 = 1.0;
+      *pG2 = 1.0;
+      *pG3 = 1.0;
+   }
+}
+
 void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
 {
    Float64 Mdnc; // Dead load moment on non-composite girder
@@ -740,7 +848,10 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
 
    GetSectionProperties(stage,poi,config,bPositiveMoment,&Sb,&Sbc);
 
-   ComputeCrackingMoment(fr,fcpe,Mdnc,Sb,Sbc,pcmd);
+   Float64 g1,g2,g3;
+   GetCrackingMomentFactors(bPositiveMoment,&g1,&g2,&g3);
+
+   ComputeCrackingMoment(g1,g2,g3,fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }
 
 void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
@@ -756,7 +867,10 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
 
    GetSectionProperties(stage,poi,bPositiveMoment,&Sb,&Sbc);
 
-   ComputeCrackingMoment(fr,fcpe,Mdnc,Sb,Sbc,pcmd);
+   Float64 g1,g2,g3;
+   GetCrackingMomentFactors(bPositiveMoment,&g1,&g2,&g3);
+
+   ComputeCrackingMoment(g1,g2,g3,fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }
 
 Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
@@ -789,9 +903,6 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage
 
       // Slab moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,poi, SimpleSpan);
-
-      // Slab pad moment
-      Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,poi, SimpleSpan);
 
       // Diaphragm moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,poi, SimpleSpan);
@@ -887,9 +998,9 @@ void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const
    *pSbc = Sbc;
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd)
 {
-   Float64 Mcr = (fr + fcpe)*Sbc - Mdnc*(Sbc/Sb - 1);
+   Float64 Mcr = g3*((g1*fr + g2*fcpe)*Sbc - Mdnc*(Sbc/Sb - 1));
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -907,6 +1018,9 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 fr,Float64 fcpe,Fl
    pcmd->fcpe = fcpe;
    pcmd->Sb   = Sb;
    pcmd->Sbc  = Sbc;
+   pcmd->g1   = g1;
+   pcmd->g2   = g2;
+   pcmd->g3   = g3;
 }
 
 void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD)
@@ -925,7 +1039,8 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
    std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
-   BuildCapacityProblem(pgsTypes::BridgeSite3,poi,config,0,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,bond_factors);
+   Float64 H;
+   BuildCapacityProblem(pgsTypes::BridgeSite3,poi,config,0,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,bond_factors);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
@@ -1048,7 +1163,7 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(SpanIndexType span,GirderIn
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<StrandIndexType,Float64>* pBondFactors)
+void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,std::map<StrandIndexType,Float64>* pBondFactors)
 {
    ATLASSERT( stage == pgsTypes::BridgeSite3 );
 
@@ -1128,6 +1243,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    origin.CoCreateInstance(CLSID_Point2d);
    origin->Move(0,0);
    posBeam->put_LocatorPoint(lpBottomCenter,origin);
+
 
    // offset each shape so that the origin of the composite (if it is composite)
    // is located at the origin (this keeps the moment capacity solver happy)
@@ -1516,6 +1632,12 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          }
       }
    }
+
+
+   // measure from bottom of beam to top of deck to get height
+   CComPtr<IPoint2d> pntBottom;
+   posBeam->get_LocatorPoint(lpBottomCenter,&pntBottom);
+   pntBottom->DistanceEx(*pntCompression,pH);
 
    *pdt = dt;
 

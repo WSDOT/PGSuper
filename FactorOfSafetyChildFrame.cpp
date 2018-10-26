@@ -65,13 +65,6 @@ BOOL CFactorOfSafetyChildFrame::Create(LPCTSTR lpszClassName,
 				CMDIFrameWnd* pParentWnd,
 				CCreateContext* pContext)
 {
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
-   // the system menu or the minimize and maximize boxes
-   dwStyle &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-   dwStyle |= WS_MAXIMIZE;
-#endif
-
    BOOL bResult = CEAFOutputChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
    if ( bResult )
    {
@@ -138,23 +131,12 @@ int CFactorOfSafetyChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CEAFOutputChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-   {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-#if defined _EAF_USING_MFC_FEATURE_PACK
-	if ( !m_SettingsBar.Create( _T("Title"),this, FALSE, IDD_STABILITY_BAR, CBRS_TOP, IDD_STABILITY_BAR) )
-#else
 	if ( !m_SettingsBar.Create( this, IDD_STABILITY_BAR, CBRS_TOP, IDD_STABILITY_BAR) )
-#endif
 	{
 		TRACE0("Failed to create control bar\n");
 		return -1;      // fail to create
 	}
-   }
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   EnableDocking(CBRS_ALIGN_TOP);
-   m_SettingsBar.EnableDocking(CBRS_ALIGN_TOP);
-   m_SettingsBar.DockToFrameWindow(CBRS_ALIGN_TOP);
-#endif
 	
    // fill stage bar since it won't change
    CComboBox* pstg_ctrl = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_STAGE);
@@ -231,18 +213,13 @@ void CFactorOfSafetyChildFrame::UpdateBar()
       CString csv;
       for (SpanIndexType i=0; i<num_spans; i++)
       {
-         csv.Format(_T("Span %d"), LABEL_SPAN(i));
+         csv.Format(_T("Span %i"), i+1);
          pspan_ctrl->AddString(csv);
       }
-
       if (SpanIndexType(sel) < num_spans)
-      {
          pspan_ctrl->SetCurSel(sel);
-      }
       else
-      {
          pspan_ctrl->SetCurSel(0);
-      }
    }
 
    m_SpanIdx = pspan_ctrl->GetCurSel();
@@ -270,22 +247,15 @@ void CFactorOfSafetyChildFrame::UpdateBar()
       csv.Format(_T("Girder %s"), LABEL_GIRDER(i));
       pgirder_ctrl->AddString(csv);
    }
-
    if (GirderIndexType(sel) < num_girders)
-   {
       pgirder_ctrl->SetCurSel(sel);
-   }
    else
-   {
       pgirder_ctrl->SetCurSel(0);
-   }
 
    m_GirderIdx = GirderIndexType(pgirder_ctrl->GetCurSel());
    ASSERT(m_GirderIdx != ALL_GIRDERS);
    if (m_GirderIdx == ALL_GIRDERS)
-   {
       m_GirderIdx = 0;
-   }
 
 }
 

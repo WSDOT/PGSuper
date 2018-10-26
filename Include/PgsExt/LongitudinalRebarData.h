@@ -73,27 +73,22 @@ LOG
 class PGSEXTCLASS CLongitudinalRebarData
 {
 public:
+   enum GirderFace {GirderTop, GirderBottom};
    struct RebarRow 
    {
-      pgsTypes::GirderFace  Face;
+      GirderFace  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
 
-      RebarRow():
-      Face(pgsTypes::GirderTop), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0)
-      {;}
-
-      bool operator==(const RebarRow& other) const
+      bool operator==(const RebarRow& rOther) const
       {
-         if(Face != other.Face) return false;
-         if(BarSize != other.BarSize) return false;
-         if ( !IsEqual(Cover,  other.Cover) ) return false;
-         if ( !IsEqual(BarSpacing,  other.BarSpacing) ) return false;
-         if ( NumberOfBars != other.NumberOfBars ) return false;
-
-         return true;
+         return Face         == rOther.Face       &&
+                BarSize      == rOther.BarSize    &&
+                Cover        == rOther.Cover      &&
+                BarSpacing   == rOther.BarSpacing &&
+                NumberOfBars == rOther.NumberOfBars;
       };
    };
 

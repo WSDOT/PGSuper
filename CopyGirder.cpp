@@ -75,6 +75,8 @@ bool txnCopyGirder::Execute()
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
+   CString strWarningMsg;
+
    ASSERT(0 < m_To.size());
    m_DestinationGirderData.clear();
    for (std::vector<SpanGirderHashType>::iterator iter = m_To.begin(); iter != m_To.end(); iter++)
@@ -97,21 +99,39 @@ bool txnCopyGirder::Execute()
          pIBridgeDesc->SetGirderName( to_span,to_gdr, m_SourceGirderData.m_strGirderName.c_str());
       }
 
+      // Girder data-related stuff
+      CGirderData gd = copyData.m_GirderData;
+
+      bool did_gdr_type_change = m_SourceGirderData.m_strGirderName != copyData.m_strGirderName;
+
       if (m_bTransverse)
       {
-          bool worked = pShear->SetShearData(m_SourceGirderData.m_ShearData,to_span,to_gdr);
-          ASSERT(worked);
+          gd.CopyShearDataFrom(m_SourceGirderData.m_GirderData);
       }
 
-      if (m_bLongitudinalRebar)
+      // If girder type changes, we don't know if long rebar or prestressing will fit into the new section
+      // Be save and copy this data from source girder. Then tell user
+      if (m_bLongitudinalRebar || did_gdr_type_change)
       {
-         bool worked = pLongRebar->SetLongitudinalRebarData(m_SourceGirderData.m_LongitudinalRebarData,to_span,to_gdr);
-         ASSERT(worked);
+         if (did_gdr_type_change && !m_bLongitudinalRebar)
+         {
+            CString msg;
+            msg.Format(_T("- Longitudinal rebar data was copied to Span %d Girder %s because girder type was changed.\n"),LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
+            strWarningMsg = strWarningMsg + msg;
       }
 
-      CGirderData gd = copyData.m_GirderData;
-      if (m_bPrestress)
+         gd.CopyShearDataFrom(m_SourceGirderData.m_GirderData);
+      }
+
+      if (m_bPrestress || did_gdr_type_change)
       {
+         if (did_gdr_type_change && !m_bPrestress)
+         {
+            CString msg;
+            msg.Format(_T("- Prestressing data was copied to Span %d Girder %s because girder type was changed.\n"),LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
+            strWarningMsg = strWarningMsg + msg;
+         }
+
           gd.CopyPrestressingFrom(m_SourceGirderData.m_GirderData);
       }
 
@@ -119,14 +139,14 @@ bool txnCopyGirder::Execute()
       {
           gd.CopyMaterialFrom(m_SourceGirderData.m_GirderData);
       }
-      bool worked = pGirderData->SetGirderData(gd,to_span,to_gdr);
-      ASSERT(worked);
 
       if (m_bHandling)
       {
-         pGirderLifting->SetLiftingLoopLocations(to_span, to_gdr, m_SourceGirderData.m_LeftLiftPoint,m_SourceGirderData.m_RightLiftPoint);
-         pGirderHauling->SetTruckSupportLocations(to_span, to_gdr, m_SourceGirderData.m_TrailingOverhang, m_SourceGirderData.m_LeadingOverhang);
+          gd.CopyHandlingDataFrom(m_SourceGirderData.m_GirderData);
       }
+
+      bool worked = pGirderData->SetGirderData(gd,to_span,to_gdr);
+      ASSERT(worked);
 
       if (m_bSlabOffset)
       {
@@ -134,6 +154,12 @@ bool txnCopyGirder::Execute()
       }
 
       m_DestinationGirderData.push_back(copyData);
+   }
+
+   // Issue warning if some data not copied
+   if(!strWarningMsg.IsEmpty())
+   {
+      ::AfxMessageBox(strWarningMsg, MB_OK | MB_ICONWARNING);
    }
 
    pEvents->FirePendingEvents();
@@ -181,29 +207,9 @@ void txnCopyGirder::Undo()
          pIBridgeDesc->SetGirderName( to_span,to_gdr, copyData.m_strGirderName.c_str());
       }
 
-      if (m_bTransverse)
-      {
-          bool worked = pShear->SetShearData(copyData.m_ShearData,to_span,to_gdr);
-          ASSERT(worked);
-      }
-
-      if (m_bLongitudinalRebar)
-      {
-         bool worked = pLongRebar->SetLongitudinalRebarData(copyData.m_LongitudinalRebarData,to_span,to_gdr);
-         ASSERT(worked);
-      }
-
-      if ( m_bPrestress || m_bMaterial )
-      {
-         bool worked = pGirderData->SetGirderData(copyData.m_GirderData,to_span,to_gdr);
-         ASSERT(worked);
-      }
-
-      if (m_bHandling)
-      {
-         pGirderLifting->SetLiftingLoopLocations(to_span, to_gdr, copyData.m_LeftLiftPoint,copyData.m_RightLiftPoint);
-         pGirderHauling->SetTruckSupportLocations(to_span, to_gdr, copyData.m_TrailingOverhang, copyData.m_LeadingOverhang);
-      }
+      // All girderdata-related stuff can be done in one shot
+      bool worked = pGirderData->SetGirderData(copyData.m_GirderData,to_span,to_gdr);
+      ASSERT(worked);
 
       if (m_bSlabOffset)
       {

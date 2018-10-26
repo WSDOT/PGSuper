@@ -76,130 +76,71 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim_u, pDisplayUnits->GetComponentDimUnit(),  true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc_u, pDisplayUnits->GetSpanLengthUnit(), true );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   // Additional Splitting Bars
-   matRebar::Size size;
-   Float64 zoneLength, nBars, spacing;
-   pStirrupGeometry->GetAddSplittingBarInfo(span, girder, &size, &zoneLength, &nBars, &spacing);
-
+   // top flange horizontal interface stirrups
+   pgsPointOfInterest poi(span,girder,0.0);
+   matRebar::Size size = pStirrupGeometry->GetTopFlangeBarSize(poi);
+   Float64 tfs = pStirrupGeometry->GetTopFlangeS(poi);
    if (size != matRebar::bsNone)
-      *pPara <<_T("Additional Splitting stirrups are ")<<nBars<<_T("-")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" at ")<<dim_u.SetValue(spacing)<<_T(" spacing, for zone length = ")<<loc_u.SetValue(zoneLength)<<_T(" from girder ends.")<<rptNewLine;
+      *pPara <<_T("Top flange stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" at ")<<dim_u.SetValue(tfs)<<_T(" spacing.")<<rptNewLine;
    else
-      *pPara <<_T("Additional Splitting stirrups not present")<<rptNewLine;
+      *pPara <<_T("Top flange stirrups not present")<<rptNewLine;
 
    // bottom flange confinement steel
-   pStirrupGeometry->GetAddConfinementBarInfo(span, girder, &size, &zoneLength, &spacing);
-   if (size != matRebar::bsNone)
-      *pPara <<_T("Additional Bottom Flange Confinement stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" at ")<<dim_u.SetValue(spacing)<<_T(" spacing, for zone length =  ")<<loc_u.SetValue(zoneLength)<<_T(" from girder ends.")<<rptNewLine;
+   size = pStirrupGeometry->GetConfinementBarSize(span,girder);
+   ZoneIndexType lz = pStirrupGeometry->GetNumConfinementZones(span,girder);
+   if (lz != 0 && size != matRebar::bsNone)
+      *pPara <<_T("Bottom flange confinement stirrups are ")<<lrfdRebarPool::GetBarSize(size).c_str()<<_T(" ending in Zone ")<<lz<<rptNewLine;
    else
-      *pPara <<_T("Additional Bottom Flange Confinement stirrups not present")<<rptNewLine;
+      *pPara<<_T("Bottom flange confinement steel not present")<<rptNewLine;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T("Primary Bars"));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pPara << p_table;
 
    (*p_table)(0,0) << _T("Zone");
    (*p_table)(0,1) << COLHDR(_T("Zone Start"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*p_table)(0,2) << COLHDR(_T("Zone End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,3) << _T("Bar Size");
-   (*p_table)(0,4) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,5) << _T("# of")<< rptNewLine<<_T("Vertical Legs");
-   (*p_table)(0,6) << _T("# Legs")<<rptNewLine<<_T("Extended") << rptNewLine << _T("into Deck*");
-   (*p_table)(0,7) << _T("Confinement") << rptNewLine << _T("Bar Size");
+   (*p_table)(0,3) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,4) << _T("Vert Bar") << rptNewLine << _T("Size");
+   (*p_table)(0,5) << _T("# Vert") << rptNewLine << _T("Bars");
+   (*p_table)(0,6) << _T("Horz Bar") << rptNewLine << _T("Size");
+   (*p_table)(0,7) << _T("# Horz") << rptNewLine << _T("Bars");
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   ZoneIndexType nz = pStirrupGeometry->GetNumPrimaryZones(span,girder);
+   ZoneIndexType nz = pStirrupGeometry->GetNumZones(span,girder);
    for (ZoneIndexType iz=0; iz<nz; iz++)
    {
-      (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);
+      (*p_table)(row,0) << pStirrupGeometry->GetZoneId(span,girder,iz);
+      (*p_table)(row,1) << loc.SetValue(pStirrupGeometry->GetZoneStart(span,girder,iz));
+      (*p_table)(row,2) << loc.SetValue(pStirrupGeometry->GetZoneEnd(span,girder,iz));
+      (*p_table)(row,3) << dim.SetValue(pStirrupGeometry->GetS(span,girder,iz));
 
-      Float64 zoneStart, zoneEnd;
-      pStirrupGeometry->GetPrimaryZoneBounds(span , girder, iz, &zoneStart, &zoneEnd);
-
-      (*p_table)(row,1) << loc.SetValue(zoneStart);
-      (*p_table)(row,2) << loc.SetValue(zoneEnd);
-
-      matRebar::Size barSize;
-      Float64 spacing;
-      Float64 nStirrups;
-      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,girder,iz,&barSize,&nStirrups,&spacing);
-
-
+      matRebar::Size barSize = pStirrupGeometry->GetVertStirrupBarSize(span,girder,iz);
       if (barSize != matRebar::bsNone)
       {
-         (*p_table)(row,3) << lrfdRebarPool::GetBarSize(barSize).c_str();
-         (*p_table)(row,4) << dim.SetValue(spacing);
-         (*p_table)(row,5) << nStirrups;
-
-         Float64 num_legs = pStirrupGeometry->GetPrimaryHorizInterfaceBarCount(span,girder,iz);
-         (*p_table)(row,6) << num_legs;
-
+         (*p_table)(row,4) << lrfdRebarPool::GetBarSize(barSize).c_str();
+         (*p_table)(row,5) << pStirrupGeometry->GetVertStirrupBarCount(span,girder,iz);
       }
       else
       {
-         (*p_table)(row,3) << _T("(None)");
-         (*p_table)(row,4) << _T("(N/A)");
+         (*p_table)(row,4) << _T("(None)");
          (*p_table)(row,5) << _T("(None)");
+      }
+
+
+      barSize = pStirrupGeometry->GetHorzStirrupBarSize(span,girder,iz);
+      if (barSize != matRebar::bsNone)
+      {
+         (*p_table)(row,6) << lrfdRebarPool::GetBarSize(barSize).c_str();
+         (*p_table)(row,7) << pStirrupGeometry->GetHorzStirrupBarCount(span,girder,iz);
+      }
+      else
+      {
          (*p_table)(row,6) << _T("(None)");
-      }
-
-      barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(span,girder,iz);
-      if (barSize != matRebar::bsNone)
-      {
-         (*p_table)(row,7) << lrfdRebarPool::GetBarSize(barSize).c_str();
-      }
-      else
-      {
          (*p_table)(row,7) << _T("(None)");
-      }
-
-      row++;
-   }
-
-   *pPara <<_T("* Bars add to horizontal interface shear capacity")<<rptNewLine;
-
-   //
-   p_table = pgsReportStyleHolder::CreateDefaultTable(6,_T("Additional Bars for Horizontal Interface Shear Capacity"));
-   *pPara << p_table;
-
-   (*p_table)(0,0) << _T("Zone");
-   (*p_table)(0,1) << COLHDR(_T("Zone Start"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,2) << COLHDR(_T("Zone End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,3) << _T("Bar Size");
-   (*p_table)(0,4) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(0,5) << _T("# of")<< rptNewLine<<_T("Legs");
-
-   row = p_table->GetNumberOfHeaderRows();
-   nz = pStirrupGeometry->GetNumHorizInterfaceZones(span,girder);
-   for (ZoneIndexType iz=0; iz<nz; iz++)
-   {
-      (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);
-
-      Float64 zoneStart, zoneEnd;
-      pStirrupGeometry->GetHorizInterfaceZoneBounds(span , girder, iz, &zoneStart, &zoneEnd);
-
-      (*p_table)(row,1) << loc.SetValue(zoneStart);
-      (*p_table)(row,2) << loc.SetValue(zoneEnd);
-
-      matRebar::Size barSize;
-      Float64 spacing;
-      Float64 nStirrups;
-      pStirrupGeometry->GetHorizInterfaceBarInfo(span,girder,iz,&barSize,&nStirrups,&spacing);
-
-      if (barSize != matRebar::bsNone)
-      {
-         (*p_table)(row,3) << lrfdRebarPool::GetBarSize(barSize).c_str();
-         (*p_table)(row,4) << dim.SetValue(spacing);
-         (*p_table)(row,5) << nStirrups;
-      }
-      else
-      {
-         (*p_table)(row,3) << _T("(None)");
-         (*p_table)(row,4) << _T("(N/A)");
-         (*p_table)(row,5) << _T("(None)");
       }
 
       row++;

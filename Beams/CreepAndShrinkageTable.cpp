@@ -87,7 +87,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
    return table;
 }
 
-void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << stress.SetValue( details.RefinedLosses.ShrinkageLosses() );
    (*this)(row,2) << stress.SetValue( details.pLosses->ElasticShortening().PermanentStrand_Fcgp() );

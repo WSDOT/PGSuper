@@ -50,7 +50,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CGirderDescDebondPage)
 	enum { IDD = IDD_GIRDERDESC_DEBOND };
-	BOOL	m_bSymmetricDebond;
 	//}}AFX_DATA
 
 
@@ -64,16 +63,14 @@ public:
 public:
    std::vector<CString> GetStrandList();
    void OnChange();
-   void OnEnableDelete(bool canDelete);
 
    std::vector<CDebondInfo> GetDebondInfo() const;
 
 // Implementation
 protected:
-   CComPtr<IIndexArray> m_Debondables;
+   CComPtr<ILongArray> m_Debondables;
 
    CGirderDescDebondGrid m_Grid;
-   std::vector<CDebondInfo> m_GridData;
 
    StrandIndexType GetNumStrands();
    bool CanDebondMore();
@@ -86,8 +83,6 @@ protected:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnSetActive();
 	virtual BOOL OnKillActive();
-	afx_msg void OnAdd();
-	afx_msg void OnDelete();
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnSymmetricDebond();

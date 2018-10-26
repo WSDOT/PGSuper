@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  1     1     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.724   -3.662   8432  1.020  1.000 -0.17 -0.10 -0.01 -0.00 -0.11   0.00   0.00   4.00  10.00  10.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 42.00   4 12.00     1     1  BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.724   -3.662   8432  1.020  1.000 -0.17 -0.10 -0.01 -0.00 -0.11   0.00   0.00   4.00  10.00  10.00
 
 
 The Specification Check was Not Successful
@@ -15,9 +15,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  1     2     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.869   -3.762   8361  0.928  1.082 -0.17 -0.12 -0.01 -0.00 -0.13   0.00   0.00   4.00  10.00  10.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 42.00   4 12.00     1     2  BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.869   -3.762   8361  0.928  1.082 -0.17 -0.12 -0.01 -0.00 -0.13   0.00   0.00   4.00  10.00  10.00
 
 
 The Specification Check was Not Successful
@@ -25,7 +25,6 @@ Tensile stress check failed for Service I for the Casting Yard Stage (At Release
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
@@ -33,9 +32,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  2     1     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.990   -3.785   8224  1.000  1.000 -0.23 -0.14 -0.00 -0.00 -0.14   0.00   0.00   4.00  10.00  10.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 42.00   4 12.00     2     1  BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.990   -3.785   8224  1.000  1.000 -0.23 -0.14 -0.00 -0.00 -0.14   0.00   0.00   4.00  10.00  10.00
 
 
 The Specification Check was Not Successful
@@ -50,21 +49,20 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  2     2     BT72       44   1/2  270 30.79 16.06  12 70.0  5.500  7.000    3.180   -3.936   8256  0.908  1.082  0.36 -0.16 -0.00 -0.00 -0.16 132.18 345.56   3.00  10.00  10.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 42.00   4 12.00     2     2  BT72       44   1/2  270 30.79 16.06  12 70.0  5.500  7.000    3.180   -3.936   8256  0.908  1.082  0.36 -0.16 -0.00 -0.00 -0.16 132.18 345.56   3.00  10.00  10.00
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  3     1     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.724   -3.662   8432  1.020  1.000 -0.17 -0.10 -0.01 -0.00 -0.11   0.00   0.00   4.00  10.00  10.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 42.00   4 12.00     3     1  BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.724   -3.662   8432  1.020  1.000 -0.17 -0.10 -0.01 -0.00 -0.11   0.00   0.00   4.00  10.00  10.00
 
 
 The Specification Check was Not Successful
@@ -82,9 +80,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 42.00   4 12.00  3     2     BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.869   -3.762   8361  0.928  1.082 -0.17 -0.12 -0.01 -0.00 -0.13   0.00   0.00   4.00  10.00  10.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 42.00   4 12.00     3     2  BT72        0   1/2  270  0.00  0.00   0  0.0  5.500  7.000    2.869   -3.762   8361  0.928  1.082 -0.17 -0.12 -0.01 -0.00 -0.13   0.00   0.00   4.00  10.00  10.00
 
 
 The Specification Check was Not Successful
@@ -92,7 +90,6 @@ Tensile stress check failed for Service I for the Casting Yard Stage (At Release
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].

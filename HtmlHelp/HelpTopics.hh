@@ -127,7 +127,6 @@
 #define IDH_DEBONDING_TAB                                         3738
 #define IDH_EDIT_MOMENT_LOADS                                     3739
 #define IDH_GIRDER_DEBOND_CRITERIA                                3740
-#define IDH_SPEC_SHEAR_DESIGN                                     3741
 
 #define IDH_BRIDGE_VIEW                                           3750
 #define IDH_GIRDER_VIEW                                           3751

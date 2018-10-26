@@ -44,7 +44,7 @@
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\BridgeDescription.h>
-#include <PsgLib\ShearData.h>
+#include <PgsExt\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 
 #include "LibraryEntryObserver.h"
@@ -419,8 +419,8 @@ public:
 // ILiveLoads
 public:
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType);
-   virtual PedestrianLoadApplicationType GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType);
-   virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad);
+   virtual bool IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType);
+   virtual void EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable);
    virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType);
    virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names);
    virtual double GetTruckImpact(pgsTypes::LiveLoadType llType);
@@ -562,7 +562,6 @@ private:
    LiveLoadSelectionContainer m_SelectedLiveLoads[8];
    double m_TruckImpact[8];
    double m_LaneImpact[8];
-   PedestrianLoadApplicationType m_PedestrianLoadApplicationType[3]; // lltDesign, lltPermit, lltFatigue only
 
    std::vector<std::_tstring> m_ReservedLiveLoads; // reserved live load names (names not found in library)
    bool IsReservedLiveLoad(const std::_tstring& strName);
@@ -644,6 +643,8 @@ private:
    void DealWithGirderLibraryChanges(bool fromLibrary);  // behavior is different if problem is caused by a library change
    void DealWithConnectionLibraryChanges(bool fromLibrary);
    
+   bool CanHavePedestrianLoad() const;
+
    void MoveBridge(PierIndexType pierIdx,double newStation);
    void MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation);
    void MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation);

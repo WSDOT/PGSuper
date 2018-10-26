@@ -81,6 +81,9 @@ LRESULT CSpecMomentPage::OnCommandHelp(WPARAM, LPARAM lParam)
 
 BOOL CSpecMomentPage::OnInitDialog()
 {
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_NEG_MOMENT);
+   pCB->SetItemData(pCB->AddString(_T("Include noncomposite moments in Mu")),(DWORD_PTR)true);
+   pCB->SetItemData(pCB->AddString(_T("Exclude noncomposite moments from Mu")),(DWORD_PTR)false);
    CPropertyPage::OnInitDialog();
 
    return TRUE;  // return TRUE unless you set the focus to a control

@@ -121,7 +121,6 @@ protected:
    void HideControls(int key);
    void HideEndOffsetControls(BOOL hide);
    void HideHpOffsetControls(BOOL hide);
-   void DisappearHpOffsetControls();
    void ShowHideNumStrandControls(int numPermStrandsType);
    void UpdateStrandControls();
 
@@ -134,7 +133,8 @@ protected:
    bool m_AllowHpAdjustment;
    bool m_AllowEndAdjustment;
 
-   bool m_bAreHarpedStrandsForcedStraight;
+   int m_CurrStrandAdjustmentType; // use this to determine if value has changed
+
 
    void UpdateStrandList(UINT nIDC);
 

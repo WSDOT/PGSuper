@@ -116,15 +116,6 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    else
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
 
-
-   if ( details.RefinedLosses2005.AdjustShrinkageStrain() )
-   {
-      // LRFD 5.4.2.3.3
-      // If the concrete is exposed to drying before 5 days of curing have elapsed,
-      // the shrinkage as determined in Eq 5.4.2.3.3-1 should be increased by 20%
-      *pParagraph << _T("Girder is exposed to drying before 5 days of curing have elapsed, the shrinkage strain has been increased by 20% (LRFD 5.4.2.3.3)") << rptNewLine;
-   }
-
    // parameters for calculations (two tables to keep the width printable)
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -209,7 +200,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    return table;
 }
 
-void CShrinkageAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CShrinkageAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    Float64 Aps = details.pLosses->GetApsPermanent();
    if ( details.pLosses->GetTempStrandUsage() == lrfdLosses::tsPretensioned ||

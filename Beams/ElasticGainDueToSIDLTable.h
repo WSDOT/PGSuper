@@ -28,7 +28,6 @@
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <Reporting\ReportStyleHolder.h>
-#include <IFace\AnalysisResults.h>
 
 class lrfdLosses;
 
@@ -38,16 +37,10 @@ class CElasticGainDueToSIDLTable : public rptRcTable
 {
 public:
 	static CElasticGainDueToSIDLTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CElasticGainDueToSIDLTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
-
-   BridgeAnalysisType m_BAT;
-   bool m_bHasUserLoads;
-   bool m_bHasSidewalk;
-   bool m_bHasOverlay;
-   rptRcScalar scalar;
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );

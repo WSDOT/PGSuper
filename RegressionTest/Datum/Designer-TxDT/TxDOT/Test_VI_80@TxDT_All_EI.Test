@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1    TYPEV       18   1/2  270 33.73 33.73   0  0.0  4.000  5.000    1.126   -1.471   4681  0.746  0.814  0.07 -0.01 -0.00 -0.00 -0.02  23.28  78.03   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     1     1 TYPEV       18   1/2  270 33.73 33.73   4  4.0  4.000  5.000    1.126   -1.472   4685  0.746  0.814  0.07 -0.01 -0.00 -0.00 -0.02  23.28  78.03   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2    TYPEV       20   1/2  270 33.60 33.60   0  0.0  4.000  5.000    1.141   -1.508   4777  0.746  0.814  0.08 -0.02 -0.00 -0.00 -0.02  29.07  93.32   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     1     2 TYPEV       20   1/2  270 33.60 33.60   4  4.0  4.000  5.000    1.142   -1.509   4781  0.746  0.814  0.08 -0.02 -0.00 -0.00 -0.02  29.07  93.32   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4    TYPEV       20   1/2  270 33.60 33.60   0  0.0  4.000  5.000    1.141   -1.508   4777  0.746  0.814  0.08 -0.02 -0.00 -0.00 -0.02  29.07  93.32   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     1     4 TYPEV       20   1/2  270 33.60 33.60   4  4.0  4.000  5.000    1.142   -1.509   4781  0.746  0.814  0.08 -0.02 -0.00 -0.00 -0.02  29.07  93.32   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful

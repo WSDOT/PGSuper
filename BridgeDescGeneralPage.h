@@ -75,6 +75,7 @@ protected:
 	afx_msg void OnSameGirderName();
 	afx_msg void OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnGirderFamilyChanged();
+   afx_msg void OnBeforeChangeGirderName();
 	afx_msg void OnGirderNameChanged();
 	afx_msg void OnDeckTypeChanged();
 	afx_msg void OnGirderConnectivityChanged();
@@ -138,6 +139,8 @@ protected:
    std::vector<CDeckPoint> m_CacheDeckEdgePoints;
 
    CString m_strToolTipText; // buffer for storing tool tip text
+
+   GirderIndexType m_GirderNameIdx;
 
    bool m_bSetActive; // true if call come from OnSetActive
 

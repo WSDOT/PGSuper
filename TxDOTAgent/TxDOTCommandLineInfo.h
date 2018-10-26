@@ -42,8 +42,8 @@ CLASS
 class  CTxDOTCommandLineInfo : public CEAFCommandLineInfo
 {
 public:
-   // Different types of Analysis/Design and level of detail (Ext==extended) for TxDOT CAD reports
-   enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors, txrDesignShear};
+   // Different types of Analysis/Design and level of detail (Ext==exteneded) for TxDOT CAD reports
+   enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors};
    enum TxFType {txfNormal, txfExtended, txfTest};
 
 

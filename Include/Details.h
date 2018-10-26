@@ -64,7 +64,8 @@ struct MOMENTCAPACITYDETAILS
    Float64 MomentArm; // Distance between dc and de
    Float64 c;         // Distance from extreme compression fiber to the neutral axis
    Float64 dc;        // Distance from extreme compression fiber to the resultant compressive force
-   Float64 de;        // Distance from extreme compression fiber to the resultant tensile force
+   Float64 de;        // Distance from extreme compression fiber to the resultant tensile force (used to compute c/de)
+   Float64 de_shear;  // Distance from extreme compression fiber to the resultant tensile force for only those strands in tension (used for shear)
    Float64 C;         // Resultant compressive force
    Float64 T;         // Resultant tensile force
 
@@ -74,6 +75,9 @@ struct MOMENTCAPACITYDETAILS
 
    // WSDOT_METHOD
    Float64 dt;        // Depth from extreme compression fiber to cg of lowest piece of reinforcement
+   Float64 et;        // Net tensile strain
+   Float64 etl;       // Tension Control Strain Limit
+   Float64 ecl;       // Compression Control Strain Limit
 
    Float64 fps;       // Stress in strand an nominal resistance
 
@@ -105,6 +109,8 @@ struct CRACKINGMOMENTDETAILS
    Float64 Sb;   // Bottom section modulus of non-composite girder
    Float64 Sbc;  // Bottom section modulus of composite girder
    Float64 McrLimit; // Limiting cracking moment ... per 2nd Edition + 2003 interims (changed in 2005 interims)
+
+   Float64 g1,g2,g3; // gamma factors from LRFD 5.7.3.3.2 (LRFD 6th Edition, 2012)
 };
 
 struct MINMOMENTCAPDETAILS
@@ -154,8 +160,6 @@ struct SHEARCAPACITYDETAILS
    Float64 Alpha;
    Float64 de;
    Float64 h;
-   Float64 ag; // max aggregate size
-   Float64 sx; // spacing between layers of longitudinal cracking steel
    Float64 MomentArm;
    CRACKINGMOMENTDETAILS McrDetails;
    bool    bTensionBottom; // true if the flexural tension side is on the bottom of the girder
@@ -169,10 +173,6 @@ struct SHEARCAPACITYDETAILS
    Float64 ex;
    Float64 Fe;  // -1 if not applicable
    Float64 Beta;
-   Int16   BetaEqn; // Equation used to compute Beta (only applicable since LRFD 2009)
-   Int16   BetaThetaTable; // Table used to compute Beta and Theta
-   Float64 sxe; // [E5.8.3.4.2-5]
-   Float64 sxe_tbl;
    Float64 Theta;
    Float64 Vc;
    Float64 Vs;

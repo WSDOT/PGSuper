@@ -253,6 +253,25 @@ BOOL CGirderNameGrid::OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nD
    return FALSE;
 }
 
+BOOL CGirderNameGrid::OnStartEditing(ROWCOL nRow,ROWCOL nCol)
+{
+   m_strTempGirderName = GetValueRowCol(nRow,nCol);
+
+   return CGXGridWnd::OnStartEditing(nRow,nCol);
+}
+
+void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
+{
+   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
+   if ( result == IDNO )
+   {
+      SetStyleRange(CGXRange(nRow,nCol),CGXStyle().SetValue(m_strTempGirderName));
+      return;
+   }
+
+   CGXGridWnd::OnModifyCell(nRow,nCol);
+}
+
 void CGirderNameGrid::UseSameGirderName(bool bSame)
 {
    m_bSameGirderName = bSame;

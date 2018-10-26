@@ -113,25 +113,13 @@ void CPGSuperAppPlugin::Terminate()
 void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
-
-   // add our commands to the menu
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
 
    UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
-   if ( pFileMenu == NULL )
-   {
-      ATLASSERT(false);
-      return;
-   }
 
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
-   if ( pManageMenu == NULL )
-   {
-      ATLASSERT(false);
-      return;
-   }
 
    if ( bIntegrate )
    {

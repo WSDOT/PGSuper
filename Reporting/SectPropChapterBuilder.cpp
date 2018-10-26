@@ -123,38 +123,10 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-      const CRailingSystem* pLeftRailing = pBridgeDesc->GetLeftRailingSystem();
-
-      if ( pLeftRailing->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
-         (*pPara) << _T("Left Exterior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
+      if ( pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
+         (*pPara) << _T("Left Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
       else
-         (*pPara) << _T("Left Exterior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
-
-      (*pPara) << _T("Distance from CG of Left Exterior Traffic Barrier to Left Edge of Deck = ")<<dim.SetValue( pBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboLeft) ) << rptNewLine;
-
-      if ( pLeftRailing->bUseInteriorRailing)
-      {
-         if ( pLeftRailing->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
-            (*pPara) << _T("Left Interior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
-         else
-            (*pPara) << _T("Left Interior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
-
-         (*pPara) << _T("Distance from CG of Left Interior Traffic Barrier to Left Edge of Deck = ")<<dim.SetValue( pBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboLeft) ) << rptNewLine;
-      }
-
-      if ( pLeftRailing->bUseSidewalk)
-      {
-         (*pPara) << _T("Left Sidewalk Nominal Width = ")<<dim.SetValue( pLeftRailing->Width ) << rptNewLine;
-         Float64 intEdge, extEdge;
-         pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboLeft, &intEdge, &extEdge);
-         Float64 dist = fabs(intEdge+extEdge )/2.0;
-         (*pPara) << _T("Distance from Nominal Centerline of Left Sidewalk to Left Edge of Deck = ")<<dim.SetValue( dist ) << rptNewLine;
-         pBarriers->GetSidewalkDeadLoadEdges(pgsTypes::tboLeft, &intEdge, &extEdge);
-         (*pPara) << _T("Left Sidewalk Actual Width = ")<<dim.SetValue( fabs(intEdge-extEdge) ) << rptNewLine;
-         (*pPara) << _T("Left Sidewalk Face Depth = ")<<dim.SetValue( pLeftRailing->RightDepth ) << rptNewLine;
-         (*pPara) << _T("Left Sidewalk Back Depth = ")<<dim.SetValue( pLeftRailing->LeftDepth ) << rptNewLine;
-         (*pPara) << _T("Left Sidewalk Weight = ")<<fpl.SetValue( pBarriers->GetSidewalkWeight(pgsTypes::tboLeft) ) << rptNewLine;
-      }
+         (*pPara) << _T("Left Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboLeft) ) << rptNewLine;
 
       *pPara << rptNewLine;
 
@@ -165,38 +137,10 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       (*pPara) << _T("Right Traffic Barrier ") << Sub2(_T("I"),_T("yy")) << _T(" = ") << ui.SetValue( pBarriers->GetItb(pgsTypes::tboRight) ) << rptNewLine;
       (*pPara) << _T("Right Traffic Barrier ") << Sub2(_T("Y"),_T("b")) << _T(" = ") << dim.SetValue( pBarriers->GetYbtb(pgsTypes::tboRight) ) << rptNewLine;
 
-      const CRailingSystem* pRightRailing = pBridgeDesc->GetRightRailingSystem();
-
-      if ( pRightRailing->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
-         (*pPara) << _T("Right Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
+      if ( pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
+         (*pPara) << _T("Right Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
       else
-         (*pPara) << _T("Right Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
-
-      (*pPara) << _T("Distance from CG of Right Exterior Traffic Barrier to Right Edge of Deck = ")<<dim.SetValue( pBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
-
-      if ( pRightRailing->bUseInteriorRailing)
-      {
-         if ( pRightRailing->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
-            (*pPara) << _T("Right Interior Traffic Barrier Weight (computed from area) = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
-         else
-            (*pPara) << _T("Right Interior Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
-
-         (*pPara) << _T("Distance from CG of Right Interior Traffic Barrier to Right Edge of Deck = ")<<dim.SetValue( pBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboRight) ) << rptNewLine;
-      }
-
-      if ( pRightRailing->bUseSidewalk)
-      {
-         (*pPara) << _T("Right Sidewalk Nominal Width = ")<<dim.SetValue( pRightRailing->Width ) << rptNewLine;
-         Float64 intEdge, extEdge;
-         pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboRight, &intEdge, &extEdge);
-         Float64 dist = fabs(intEdge+extEdge )/2.0;
-         (*pPara) << _T("Distance from Nominal Centerline of Right Sidewalk to Right Edge of Deck = ")<<dim.SetValue( dist ) << rptNewLine;
-         pBarriers->GetSidewalkDeadLoadEdges(pgsTypes::tboRight, &intEdge, &extEdge);
-         (*pPara) << _T("Right Sidewalk Actual Width = ")<<dim.SetValue( fabs(intEdge-extEdge) ) << rptNewLine;
-         (*pPara) << _T("Right Sidewalk Face Depth = ")<<dim.SetValue( pRightRailing->RightDepth ) << rptNewLine;
-         (*pPara) << _T("Right Sidewalk Back Depth = ")<<dim.SetValue( pRightRailing->LeftDepth ) << rptNewLine;
-         (*pPara) << _T("Right Sidewalk Weight = ")<<fpl.SetValue( pBarriers->GetSidewalkWeight(pgsTypes::tboRight) ) << rptNewLine;
-      }
+         (*pPara) << _T("Right Traffic Barrier Weight = ")<<fpl.SetValue( pBarriers->GetBarrierWeight(pgsTypes::tboRight) ) << rptNewLine;
 
       *pPara << rptNewLine;
 

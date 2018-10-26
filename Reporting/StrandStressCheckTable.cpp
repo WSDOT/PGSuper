@@ -135,7 +135,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
          break;
 
       case pgsTypes::Harped:
-         (*p_table)(0,col1++) << LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(poi.GetSpan(),poi.GetGirder()));
+         (*p_table)(0,col1++) << _T("Harped");
          break;
 
       case pgsTypes::Permanent:
@@ -236,7 +236,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      pArtifact->GetCheckAfterLosses( strandType, &demand, &capacity, &bPassed );
          if ( strandType == strandTypes.front() )
          {
-   	      (*p_table)(row,col++) << _T("After All Losses and Elastic Gains") << rptNewLine << _T("including Live Load");
+   	      (*p_table)(row,col++) << _T("After All Losses");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );

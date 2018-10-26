@@ -121,7 +121,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    return table;
 }
 
-void CEffectOfPostTensionedTemporaryStrandsTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectOfPostTensionedTemporaryStrandsTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,2) << offset.SetValue( details.pLosses->GetLocation() );
    (*this)(row,3) << stress.SetValue( details.pLosses->GetFptMax() );

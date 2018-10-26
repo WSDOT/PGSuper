@@ -173,7 +173,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
    delta_dl = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi, bat )
-            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi, bat )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi, bat );
 
    delta_sk = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey, poi, bat );

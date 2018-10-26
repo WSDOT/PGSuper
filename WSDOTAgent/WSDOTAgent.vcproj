@@ -423,7 +423,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|Win32"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -508,7 +508,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -528,7 +528,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|x64"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -612,7 +612,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"

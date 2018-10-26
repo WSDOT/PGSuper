@@ -599,6 +599,8 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    Float64 bond_start, bond_end;
    bool bDebonded = pStrandGeom->IsStrandDebonded(span,gdr,strandIdx,strandType,config,&bond_start,&bond_end);
 
+   bool bExtendedStrand = pStrandGeom->IsExtendedStrand(poi,strandIdx,strandType,config);
+
    // determine minimum bonded length from poi
    Float64 left_bonded_length, right_bonded_length;
    if ( bDebonded )
@@ -606,6 +608,11 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
       // measure bonded length
       left_bonded_length = poi_loc - bond_start;
       right_bonded_length = bond_end - poi_loc;
+   }
+   else if ( bExtendedStrand )
+   {
+      // strand is extended into end diaphragm... the development lenght adjustment is 1.0
+      return 1.0;
    }
    else
    {
@@ -968,11 +975,6 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
 
    case pgsTypes::AfterLosses:
       loss = pLosses->GetFinal(poi,strandType,config);
-      // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
-      break;
-
-   case pgsTypes::AfterLossesWithLiveLoad:
-      loss = pLosses->GetFinalWithLiveLoad(poi,strandType,config);
       // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
       break;
 

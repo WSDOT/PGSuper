@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,2
- PRODUCTVERSION 2,6,0,2
+ FILEVERSION 2,6,0,3
+ PRODUCTVERSION 2,6,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.6.0.2"
+            VALUE "FileVersion", "2.6.0.3"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.6.0.2"
+            VALUE "ProductVersion", "2.6.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -606,7 +606,6 @@ BEGIN
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
     IDS_GDR_ERROR           "The girder: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\n\nIs PGSuper configured to use the TxDOT libraries and templates package?\nTOGA is a TxDOT-specific program and requires the TxDOT Master Library. If necessary, close this project and go to the Configure PGSuper menu to fix the problem."
     IDS_CONN_ERROR          "The connection: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\n\nIs PGSuper configured to use the TxDOT libraries and templates package?\nTOGA is a TxDOT-specific program and requires the TxDOT Master Library. If necessary, close project and go to the Configure PGSuper menu to fix the problem."
-    IDS_GDR_ERROR3          "The girder: ""%s"" has Straight-Web strands in the web. TOGA only allows Harped strands.\nAnalyis cannot continue."
 END
 
 STRINGTABLE 

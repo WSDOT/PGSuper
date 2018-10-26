@@ -38,7 +38,7 @@ class CShrinkageAtHaulingTable : public rptRcTable
 {
 public:
    static CShrinkageAtHaulingTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CShrinkageAtHaulingTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);

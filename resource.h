@@ -21,8 +21,6 @@
 #define IDC_DESCRIPTION                 1009
 #define IDC_MOREINFO                    1013
 #define IDC_WIDTH                       1270
-#define IDC_BUTTON1                     1601
-#define IDC_WSDOT_URL                   1601
 #define IDC_HEIGHT                      1629
 #define IDS_E_WRITE                     1650
 #define IDS_E_UNSAFESAVE                1652
@@ -56,7 +54,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        310
 #define _APS_NEXT_COMMAND_VALUE         33235
-#define _APS_NEXT_CONTROL_VALUE         1602
+#define _APS_NEXT_CONTROL_VALUE         1601
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

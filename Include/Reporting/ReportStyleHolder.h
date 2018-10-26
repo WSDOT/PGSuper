@@ -47,6 +47,7 @@ _um_.SetValue(fabs(_value_)) << (::Sign(_value_) < 0 ? _T(" L") : (::Sign(_value
 #define CB_THIN    0x0002
 #define CJ_LEFT    0x0004
 #define CJ_RIGHT   0x0008
+#define CJ_CENTER  0x0010
 
 /*****************************************************************************
 CLASS 
@@ -165,8 +166,8 @@ private:
    static std::_tstring ms_TableColumnHeadingStyle;
    static std::_tstring ms_FootnoteStyle;
    static std::_tstring ms_CopyrightStyle;
-   static std::_tstring ms_TableCellStyle[4];
-   static std::_tstring ms_TableStripeRowCellStyle[4];
+   static std::_tstring ms_TableCellStyle[6];
+   static std::_tstring ms_TableStripeRowCellStyle[6];
    static std::auto_ptr<std::_tstring> ms_pImagePath;
    static double ms_MaxTableWidth;
    static std::_tstring ms_ReportCoverImage;

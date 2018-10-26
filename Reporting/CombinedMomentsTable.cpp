@@ -91,6 +91,11 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+
    SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
    SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
  
@@ -921,7 +926,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
       }
    }
 
-   if ( stage == pgsTypes::BridgeSite3 )
+   if ( stage == pgsTypes::BridgeSite3 && bExcludeNoncompositeMoments)
    {
       p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << p;

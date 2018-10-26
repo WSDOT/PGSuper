@@ -27,7 +27,6 @@
 #include <psgLib\psgLib.h>
 #include "SectionViewDialog.h"
 #include <GraphicsLib\PointMapper.h>
-#include <PgsExt\GirderLabel.h>
 
 #include <GeomModel\IShape.h>
 #include <GeomModel\Circle.h>
@@ -53,15 +52,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define BORDER 7
-
-#define HARPED_COLOR      RGB(255,100,0)
-#define STRAIGHT_COLOR    RGB(80 ,80 ,250) // straight, fully bonded
-#define STRAIGHT_DB_COLOR RGB(30 ,180, 50 ) // straight and debondable
-#define TEMP_COLOR        RGB(220,0  ,0)
-#define SHAPE_COLOR       RGB(160,160,160)
-#define VOID_COLOR        RGB(255,255,255)
-#define BACKGROUND_COLOR  RGB(255,255,255)
-
 
 #define DUMMY_AGENT_ID INVALID_ID
 
@@ -118,6 +108,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
 	//}}AFX_DATA_INIT
 }
 
+
 void CSectionViewDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -132,7 +123,6 @@ BEGIN_MESSAGE_MAP(CSectionViewDialog, CDialog)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
 	ON_WM_CTLCOLOR()
-//   ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
 
    ON_BN_CLICKED(IDC_SHOWS,OnClickNumbers)
@@ -491,24 +481,23 @@ HBRUSH CSectionViewDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 	
     
-   COLORREF col(0);
-   if (pWnd->GetDlgCtrlID() == IDC_SS)
-   {
-       pDC->SetTextColor(STRAIGHT_COLOR);
-   }
-   else if (pWnd->GetDlgCtrlID() == IDC_DB)
-   {
-       pDC->SetTextColor(STRAIGHT_DB_COLOR);
-   }
-   else if (pWnd->GetDlgCtrlID() == IDC_HS)
-   {
-       pDC->SetTextColor(HARPED_COLOR);
-   }
-   else if (pWnd->GetDlgCtrlID() == IDC_TS)
-   {
-       pDC->SetTextColor(TEMP_COLOR);
-   }
-
+     if (pWnd->GetDlgCtrlID() == IDC_SS)
+     {
+          pDC->SetTextColor(STRAIGHT_COLOR);
+     }
+     else if (pWnd->GetDlgCtrlID() == IDC_DB)
+     {
+          pDC->SetTextColor(STRAIGHT_DB_COLOR);
+     }
+     else if (pWnd->GetDlgCtrlID() == IDC_HS)
+     {
+          pDC->SetTextColor(HARPED_COLOR);
+     }
+     else if (pWnd->GetDlgCtrlID() == IDC_TS)
+     {
+          pDC->SetTextColor(TEMP_COLOR);
+     }
+	
 	return hbr;
 }
 
@@ -521,12 +510,6 @@ BOOL CSectionViewDialog::OnInitDialog()
 	
    CButton* pBtn = (CButton*)GetDlgItem(IDC_SHOWS);
    pBtn->SetCheck(TRUE);
-
-   // label for harped or straight-web
-   CString hlbl;
-   hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->IsForceHarpedStrandsStraight()));
-   CWnd* pWnd = GetDlgItem(IDC_HS);
-   pWnd->SetWindowTextW(hlbl);
 
    CStatic* pShapeProps = (CStatic*)GetDlgItem(IDC_SECTION_PROPERTIES);
    CString strProps;
@@ -561,7 +544,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    Kb = ::ConvertFromSysUnits(Kb,pDisplayUnits->ComponentDim.UnitOfMeasure);
    strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
 
-   strProps.Format(_T("Area = %.0f %s\t\t\tYt = %0.f %s\t\t\tYb = %0.f %s\nIx = %0.f %s\t\t\tSt = %0.f %s\t\t\tSb = %0.f %s\nH = %0.f %s\t\t\tKt = %0.f %s\t\t\tKb = %0.f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
+   strProps.Format(_T("Area = %.0f %s\t\tYt = %0.f %s\t\tYb = %0.f %s\nIx = %0.f %s\t\tSt = %0.f %s\t\tSb = %0.f %s\nH = %0.f %s\t\tKt = %0.f %s\t\tKb = %0.f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
    pShapeProps->SetWindowText(strProps);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -572,15 +555,4 @@ void CSectionViewDialog::OnClickNumbers()
 {
    m_DrawNumbers = !m_DrawNumbers;
    Invalidate();
-}
-
-BOOL CSectionViewDialog::OnEraseBkgnd(CDC* pDC)
-{
-    CRect rect;
-    GetClientRect(&rect);
-    CBrush myBrush(BACKGROUND_COLOR);    // dialog background color
-    CBrush *pOld = pDC->SelectObject(&myBrush);
-    BOOL bRes  = pDC->PatBlt(0, 0, rect.Width(), rect.Height(), PATCOPY);
-    pDC->SelectObject(pOld);    // restore old brush
-    return bRes;                       // CDialog::OnEraseBkgnd(pDC);
 }

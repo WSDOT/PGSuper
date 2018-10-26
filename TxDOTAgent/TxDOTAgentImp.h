@@ -102,7 +102,7 @@ protected:
    void ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo);
    bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName);
    bool DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CTxDOTCommandLineInfo& txInfo);
-   void SaveDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact);
+   void SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions, const pgsDesignArtifact* pArtifact);
 
    void ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo);
    bool DoTOGAReport(const CString& outputFileName, const CTxDOTCommandLineInfo& txInfo);

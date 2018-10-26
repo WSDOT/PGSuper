@@ -95,6 +95,10 @@ private:
 
    virtual BOOL OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow,ROWCOL nDragCol,CPoint point,UINT nFlags,WORD nHitState);
 
+   CString m_strTempGirderName;
+   virtual BOOL OnStartEditing(ROWCOL nRow,ROWCOL nCol);
+   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+
    void UpdateGirderFamilyList(LPCTSTR strGirderFamily);
 };
 

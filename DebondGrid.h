@@ -67,8 +67,7 @@ protected:
    // virtual overrides for grid
    int GetColWidth(ROWCOL nCol);
 
-   void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
-   BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   void OnClickedButtonRowCol(ROWCOL nHitRow,ROWCOL nHitCol);
 
 public:
    // custom stuff for grid
@@ -76,27 +75,28 @@ public:
 
    // insert a row above the currently selected cell or at the top if no selection
    void InsertRow();
-   void DoRemoveRows();
 
-   void FillGrid(const std::vector<CDebondInfo>& debondInfo);
-   void GetData(std::vector<CDebondInfo>& debondInfo);
+   void FillGrid(const CGirderData& girderData);
+   void GetData(CGirderData& girderData);
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    StrandIndexType GetNumDebondedStrands();
+   StrandIndexType GetNumExtendedStrands();
 
    void SymmetricDebond(bool bSymmetricDebond);
+   void CanDebond(bool bCanDebond);
 
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
-   void UpdateStrandLists();
-   CString GetStrandList(ROWCOL nRow);
 
    Float64 GetLeftDebondLength(ROWCOL row);
    Float64 GetRightDebondLength(ROWCOL row);
    Float64 GetDebondLength(ROWCOL row,ROWCOL col);
+
+   ROWCOL GetRow(StrandIndexType strandIdx);
 
    bool m_bSymmetricDebond;
 };

@@ -502,12 +502,12 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
          Float64 height = pGdrEntry->GetBeamHeight(pgsTypes::metStart);
 
          // Adjustment limits for strand locations at ends
-         pgsTypes::GirderFace  topFace, bottomFace;
+         GirderLibraryEntry::GirderFace  topFace, bottomFace;
          Float64  topLimit, bottomLimit;
          pGdrEntry->GetEndAdjustmentLimits(&topFace, &topLimit, &bottomFace, &bottomLimit);
 
          // To max is easy
-         *pToUpper = topFace==pgsTypes::GirderBottom ? topLimit : height-topLimit;
+         *pToUpper = topFace==GirderLibraryEntry::GirderBottom ? topLimit : height-topLimit;
 
          // To-min must take height of strand bundle into consideration
          // compute lower and upper bounds of numHarped strands at girder end
@@ -533,7 +533,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
 
          Float64 h_bundle = ymax-ymin;
 
-         Float64 bot_loc = bottomFace==pgsTypes::GirderTop ? height-bottomLimit : bottomLimit;
+         Float64 bot_loc = bottomFace==GirderLibraryEntry::GirderTop ? height-bottomLimit : bottomLimit;
 
          *pToLower = h_bundle + bot_loc;
       }

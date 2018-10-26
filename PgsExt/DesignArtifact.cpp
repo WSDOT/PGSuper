@@ -25,7 +25,6 @@
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <PgsExt\DesignArtifact.h>
-#include <DesignConfigUtil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,21 +84,6 @@ void pgsDesignArtifact::SetOutcome(pgsDesignArtifact::Outcome outcome)
 pgsDesignArtifact::Outcome pgsDesignArtifact::GetOutcome() const
 {
    return m_Outcome;
-}
-
-void pgsDesignArtifact::AddDesignNote(pgsDesignArtifact::DesignNote note)
-{
-   m_DesignNotes.push_back(note);
-}
-
-bool pgsDesignArtifact::DoDesignNotesExist() const
-{
-   return !m_DesignNotes.empty();
-}
-
-std::vector<pgsDesignArtifact::DesignNote> pgsDesignArtifact::GetDesignNotes() const
-{
-   return m_DesignNotes;
 }
 
 SpanIndexType pgsDesignArtifact::GetSpan() const
@@ -370,10 +354,6 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);
 
-   WriteShearDataToStirrupConfig(m_ShearData, config.StirrupConfig);
-
-//   WriteLongitudinalRebarDataToConfig(m_LongitudinalRebarData, config.LongitudinalRebarConfig);
-
    return config;
 }
 
@@ -382,46 +362,44 @@ ZoneIndexType pgsDesignArtifact::GetNumberOfStirrupZonesDesigned() const
    return m_NumShearZones;
 }
 
-const CShearData& pgsDesignArtifact::GetShearData() const
+CShearZoneData pgsDesignArtifact::GetShearZoneData(ZoneIndexType zoneNum) const
 {
-   return m_ShearData;
+   PRECONDITION(zoneNum<m_NumShearZones);
+   return m_ShearZoneData[zoneNum];
 }
 
 void pgsDesignArtifact::SetNumberOfStirrupZonesDesigned(ZoneIndexType num)
 {
+   PRECONDITION(num<=MAXSHEARZONES);
    m_NumShearZones = num;
 }
 
-void pgsDesignArtifact::SetShearData(const CShearData& rdata)
+void pgsDesignArtifact::SetShearZoneData(ZoneIndexType zoneNum, const CShearZoneData& rdata)
 {
-   m_ShearData = rdata;
+   PRECONDITION(zoneNum<=m_NumShearZones);
+   m_ShearZoneData[zoneNum] = rdata;
 }
 
-void pgsDesignArtifact::SetWasLongitudinalRebarForShearDesigned(bool isTrue)
+matRebar::Size pgsDesignArtifact::GetConfinementBarSize() const
 {
-   m_bWasLongitudinalRebarForShearDesigned = isTrue;
+   return m_ConfinementBarSize;
 }
 
-bool pgsDesignArtifact::GetWasLongitudinalRebarForShearDesigned() const
+void pgsDesignArtifact::SetConfinementBarSize(matRebar::Size barSize)
 {
-   return m_bWasLongitudinalRebarForShearDesigned;
+   m_ConfinementBarSize = barSize;
 }
 
-
-CLongitudinalRebarData& pgsDesignArtifact::GetLongitudinalRebarData() 
+ZoneIndexType pgsDesignArtifact::GetLastConfinementZone() const
 {
-   return m_LongitudinalRebarData;
+   return m_LastConfinementZone;
 }
 
-const CLongitudinalRebarData& pgsDesignArtifact::GetLongitudinalRebarData() const
+void pgsDesignArtifact::SetLastConfinementZone(ZoneIndexType zone)
 {
-   return m_LongitudinalRebarData;
+   m_LastConfinementZone = zone;
 }
 
-void pgsDesignArtifact::SetLongitudinalRebarData(const CLongitudinalRebarData& rdata)
-{
-   m_LongitudinalRebarData = rdata;
-}
 
 void pgsDesignArtifact::SetUserEc(Float64 Ec)
 {
@@ -636,8 +614,6 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
 {
    m_Outcome = rOther.m_Outcome;
 
-   m_DesignNotes = rOther.m_DesignNotes;
-
    m_Span = rOther.m_Span;
    m_Gdr = rOther.m_Gdr;
 
@@ -667,10 +643,13 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
    m_SlabOffset[pgsTypes::metEnd]   = rOther.m_SlabOffset[pgsTypes::metEnd];
 
    m_NumShearZones       = rOther.m_NumShearZones;
-   m_ShearData           = rOther.m_ShearData;
+   m_ShearZoneData[0]    = rOther.m_ShearZoneData[0];
+   m_ShearZoneData[1]    = rOther.m_ShearZoneData[1];
+   m_ShearZoneData[2]    = rOther.m_ShearZoneData[2];
+   m_ShearZoneData[3]    = rOther.m_ShearZoneData[3];
 
-   m_bWasLongitudinalRebarForShearDesigned = rOther.m_bWasLongitudinalRebarForShearDesigned;
-   m_LongitudinalRebarData = rOther.m_LongitudinalRebarData;
+   m_LastConfinementZone = rOther.m_LastConfinementZone;
+   m_ConfinementBarSize  = rOther.m_ConfinementBarSize;
 
    m_IsUserEc            = rOther.m_IsUserEc;
    m_UserEc              = rOther.m_UserEc;
@@ -698,8 +677,6 @@ void pgsDesignArtifact::Init()
 {
    m_Outcome = Success;
 
-   m_DesignNotes.clear();
-
    m_Span = 0;
    m_Gdr  = 0;
 
@@ -722,7 +699,8 @@ void pgsDesignArtifact::Init()
    m_SlabOffset[pgsTypes::metStart] = 0;
    m_SlabOffset[pgsTypes::metEnd] = 0;
    m_NumShearZones       = 0;
-   m_bWasLongitudinalRebarForShearDesigned = false;
+   m_LastConfinementZone = 0;
+   m_ConfinementBarSize  = matRebar::bsNone;
    m_LiftLocLeft         = 0.0;
    m_LiftLocRight        = 0.0;
    m_ShipLocLeft         = 0.0;

@@ -547,7 +547,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
 				EmbedManifest="true"
 			/>
 			<Tool
@@ -660,7 +660,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
 				EmbedManifest="true"
 			/>
 			<Tool
@@ -956,10 +956,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\BarrierSidewalkLoadDistributionTool.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\PGSuperLoadCombinationResponse.cpp"
 				>
 			</File>
@@ -1038,10 +1034,6 @@
 			</File>
 			<File
 				RelativePath="AnalysisAgentImp.h"
-				>
-			</File>
-			<File
-				RelativePath=".\BarrierSidewalkLoadDistributionTool.h"
 				>
 			</File>
 			<File

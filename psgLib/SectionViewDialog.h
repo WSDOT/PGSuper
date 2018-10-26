@@ -32,6 +32,13 @@
 #include <GeomModel\CompositeShape.h>
 
 
+#define HARPED_COLOR      RGB(80 ,200,80 )
+#define STRAIGHT_COLOR    RGB(80 ,80 ,250) // straight, fully bonded
+#define STRAIGHT_DB_COLOR RGB(10 ,200,200) // straight and debondable
+#define TEMP_COLOR        RGB(200,80 ,80 )
+#define SHAPE_COLOR       RGB(255,255,0  )
+#define VOID_COLOR        RGB(255,255,255)
+
 /////////////////////////////////////////////////////////////////////////////
 // CSectionViewDialog dialog
 
@@ -53,8 +60,7 @@ public:
 	//{{AFX_VIRTUAL(CSectionViewDialog)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-   virtual BOOL OnInitDialog();
-   //}}AFX_VIRTUAL
+	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
@@ -80,11 +86,11 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-    afx_msg void OnClickNumbers();
+   afx_msg void OnClickNumbers();
 };
 
 //{{AFX_INSERT_LOCATION}}

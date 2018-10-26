@@ -31,7 +31,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"
-#include <psgLib\RebarUIUtils.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -90,11 +89,11 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
+      pParent->GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
    }
    else
    {
-      int idx = GetStirrupMaterialIndex(m_RebarData.BarType,m_RebarData.BarGrade);
+      int idx = pParent->GetStirrupMaterialIndex(m_RebarData.BarType,m_RebarData.BarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
       CLongitudinalRebarData rebardata;
@@ -160,7 +159,7 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   pParent->FillMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

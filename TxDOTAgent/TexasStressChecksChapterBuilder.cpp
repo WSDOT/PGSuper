@@ -29,6 +29,7 @@
 #include <Reporting\FlexuralCapacityCheckTable.h>
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\InterfaceShearTable.h>
+#include <Reporting\ConfinementCheckTable.h>
 #include <Reporting\StrandSlopeCheck.h>
 #include <Reporting\HoldDownForceCheck.h>
 #include <Reporting\ConstructabilityCheckTable.h>

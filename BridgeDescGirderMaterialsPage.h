@@ -91,6 +91,7 @@ protected:
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnChangeGirderName();
+   afx_msg void OnBeforeChangeGirderName();
 	//}}AFX_MSG
    afx_msg LRESULT OnChangeSameGirderType(WPARAM wParam,LPARAM lParam);
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
@@ -115,6 +116,9 @@ protected:
 
    CString m_strUserEc;
    CString m_strUserEci;
+
+   int m_GirderNameIdx; // combo box index of current girder name just before it is changed
+                        // (needed to revert the combobox if user doesn't want to change)
 
 };
 

@@ -103,12 +103,6 @@ BOOL CGirderModelChildFrame::Create(LPCTSTR lpszClassName,
 				CMDIFrameWnd* pParentWnd,
 				CCreateContext* pContext)
 {
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
-   // the system menu or the minimize and maximize boxes
-   dwStyle &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-#endif
-
    BOOL bResult = CSplitChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
    if ( bResult )
    {
@@ -217,23 +211,15 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CSplitChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-   {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-#if defined _EAF_USING_MFC_FEATURE_PACK
-	if ( !m_SettingsBar.Create( _T("Tools"),this, FALSE, IDD_GIRDER_ELEVATION_BAR, CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_GIRDER_ELEVATION_BAR) )
-#else
-   if ( !m_SettingsBar.Create(this,IDD_GIRDER_ELEVATION_BAR,CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY, IDD_GIRDER_ELEVATION_BAR) )
-#endif
+	if ( !m_SettingsBar.Create( this, IDD_GIRDER_ELEVATION_BAR, CBRS_TOP, IDD_GIRDER_ELEVATION_BAR) )
 	{
 		TRACE0("Failed to create control bar\n");
 		return -1;      // fail to create
 	}
-   }
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   EnableDocking(CBRS_ALIGN_TOP);
-   m_SettingsBar.EnableDocking(CBRS_ALIGN_TOP);
-   m_SettingsBar.DockToFrameWindow(CBRS_ALIGN_TOP);
-#endif
+
+   m_SettingsBar.SetBarStyle(m_SettingsBar.GetBarStyle() |
+   CBRS_TOOLTIPS | CBRS_FLYBY);
 	
    // point load tool
    CComPtr<iTool> point_load_tool;
@@ -241,7 +227,6 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
    point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
    HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
    ATLASSERT(SUCCEEDED(hr));
@@ -288,11 +273,6 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
          m_CurrentGirderIdx   = selection.GirderIdx;
       }
    }
-
-   CComboBox* pStages = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELSTAGE);
-   pStages->AddString(_T("Bridge Site 1"));
-   pStages->AddString(_T("Bridge Site 2"));
-   pStages->AddString(_T("Bridge Site 3"));
 
    UpdateBar();
 

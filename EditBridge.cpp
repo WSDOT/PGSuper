@@ -32,7 +32,8 @@ static char THIS_FILE[] = __FILE__;
 
 txnEditBridge::txnEditBridge(const CBridgeDescription& oldBridgeDesc,const CBridgeDescription& newBridgeDesc,
                              enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
-                             double oldRelHumidity, double newRelHumidity)
+                             double oldRelHumidity, double newRelHumidity,
+                             bool bOldEnablePedLL, bool bNewEnablePedLL)
 {
    m_pBridgeDesc[0] = new CBridgeDescription(oldBridgeDesc);
    m_pBridgeDesc[1] = new CBridgeDescription(newBridgeDesc);
@@ -42,6 +43,9 @@ txnEditBridge::txnEditBridge(const CBridgeDescription& oldBridgeDesc,const CBrid
 
    m_RelHumidity[0] = oldRelHumidity;
    m_RelHumidity[1] = newRelHumidity;
+
+   m_bEnablePedLL[0] = bOldEnablePedLL;
+   m_bEnablePedLL[1] = bNewEnablePedLL;
 }
 
 txnEditBridge::~txnEditBridge()
@@ -66,14 +70,17 @@ void txnEditBridge::Execute(int i)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
+   GET_IFACE2(pBroker,IRoadwayData,pAlignment);
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    GET_IFACE2(pBroker,IEnvironment, pEnvironment );
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    GET_IFACE2(pBroker,IEvents, pEvents);
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
    pEnvironment->SetExposureCondition( m_ExposureCondition[i] );
    pEnvironment->SetRelHumidity( m_RelHumidity[i] );
+   pLiveLoads->EnablePedestianLoad(pgsTypes::lltDesign,m_bEnablePedLL[i]);
 
    // Reconcile edit before commiting - not on undo
    if (i==1)
@@ -94,7 +101,8 @@ txnTransaction* txnEditBridge::CreateClone() const
 {
    return new txnEditBridge(*m_pBridgeDesc[0],       *m_pBridgeDesc[1],
                             m_ExposureCondition[0], m_ExposureCondition[1],
-                            m_RelHumidity[0],       m_RelHumidity[1]);
+                            m_RelHumidity[0],       m_RelHumidity[1],
+                            m_bEnablePedLL[0],      m_bEnablePedLL[1]);
 }
 
 std::_tstring txnEditBridge::Name() const

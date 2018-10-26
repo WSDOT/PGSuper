@@ -85,8 +85,6 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableRefinedShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
       EnableApproximateShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 3 || method == 4) ? TRUE : FALSE);
       EnableGeneralLumpSum(FALSE);
-      
-      EnableElasticGains(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 3) ? TRUE : FALSE);
    }
    else
    {
@@ -94,7 +92,6 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableRefinedShippingTime(FALSE);
       EnableApproximateShippingTime(FALSE);
       EnableGeneralLumpSum(TRUE);
-      EnableElasticGains(FALSE);
    }
 }
 
@@ -165,55 +162,6 @@ void CSpecLossPage::EnableApproximateShippingTime(BOOL bEnable)
    ENABLE_WINDOW(IDC_APPROXIMATE_SHIPPING_TIME_NOTE);
 }
 
-void CSpecLossPage::EnableElasticGains(BOOL bEnable)
-{
-   CWnd* pWnd;
-   ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD_LABEL);
-   ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD);
-
-   ENABLE_WINDOW(IDC_EG_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_SLAB);
-   ENABLE_WINDOW(IDC_EG_SLAB_UNIT);
-   ENABLE_WINDOW(IDC_EG_SLAB_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_SLABPAD);
-   ENABLE_WINDOW(IDC_EG_SLABPAD_UNIT);
-   ENABLE_WINDOW(IDC_EG_SLABPAD_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_DIAPHRAGM);
-   ENABLE_WINDOW(IDC_EG_DIAPHRAGM_UNIT);
-   ENABLE_WINDOW(IDC_EG_DIAPHRAGM_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_DC_BS2);
-   ENABLE_WINDOW(IDC_EG_DC_BS2_UNIT);
-   ENABLE_WINDOW(IDC_EG_DC_BS2_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_DW_BS2);
-   ENABLE_WINDOW(IDC_EG_DW_BS2_UNIT);
-   ENABLE_WINDOW(IDC_EG_DW_BS2_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_DC_BS3);
-   ENABLE_WINDOW(IDC_EG_DC_BS3_UNIT);
-   ENABLE_WINDOW(IDC_EG_DC_BS3_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_DW_BS3);
-   ENABLE_WINDOW(IDC_EG_DW_BS3_UNIT);
-   ENABLE_WINDOW(IDC_EG_DW_BS3_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_RAILING);
-   ENABLE_WINDOW(IDC_EG_RAILING_UNIT);
-   ENABLE_WINDOW(IDC_EG_RAILING_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_OVERLAY);
-   ENABLE_WINDOW(IDC_EG_OVERLAY_UNIT);
-   ENABLE_WINDOW(IDC_EG_OVERLAY_LABEL);
-
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE);
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE_UNIT);
-   ENABLE_WINDOW(IDC_EG_SHRINKAGE_LABEL);
-}
-
 BOOL CSpecLossPage::OnInitDialog() 
 {
    // Fill up combo box for loss methods
@@ -230,11 +178,6 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->AddString(_T("Use a lump sum loss for shipping"));
    pBox->AddString(_T("Use a percentage of the final losses for shipping"));
    pBox->SetCurSel(0);
-
-   pBox = (CComboBox*)GetDlgItem(IDC_RELAXATION_LOSS_METHOD);
-   pBox->AddString(_T("LRFD Equation 5.9.5.4.2c-1"));  // simplified
-   pBox->AddString(_T("LRFD Equation C5.9.5.4.2c-1")); // refined
-   pBox->AddString(_T("1.2 KSI (LRFD 5.9.5.4.2c)"));   // lump sum
 
    CPropertyPage::OnInitDialog();
 

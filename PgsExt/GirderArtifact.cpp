@@ -224,6 +224,16 @@ pgsConstructabilityArtifact* pgsGirderArtifact::GetConstructabilityArtifact()
    return &m_ConstructabilityArtifact;
 }
 
+pgsSplittingZoneArtifact* pgsGirderArtifact::GetSplittingZoneArtifact()
+{
+   return &m_SplittingZoneArtifact;
+}
+
+const pgsSplittingZoneArtifact* pgsGirderArtifact::GetSplittingZoneArtifact() const
+{
+   return &m_SplittingZoneArtifact;
+}
+
 void pgsGirderArtifact::SetLiftingCheckArtifact(pgsLiftingCheckArtifact* artifact)
 {
    m_pLiftingCheckArtifact = std::auto_ptr<pgsLiftingCheckArtifact>(artifact);
@@ -317,6 +327,8 @@ bool pgsGirderArtifact::Passed() const
    bPassed &= m_StirrupCheckArtifact.Passed();
 
    bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
+
+   bPassed &= m_SplittingZoneArtifact.Passed();
 
    if (m_pLiftingCheckArtifact.get()!=NULL)
       bPassed &= m_pLiftingCheckArtifact->Passed();
@@ -470,6 +482,7 @@ void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
 
 
    m_DeflectionCheckArtifact         = rOther.m_DeflectionCheckArtifact;
+   m_SplittingZoneArtifact            = rOther.m_SplittingZoneArtifact;
    m_CastingYardAs                   = rOther.m_CastingYardAs;
    m_CastingYardAllowable            = rOther.m_CastingYardAllowable;
 

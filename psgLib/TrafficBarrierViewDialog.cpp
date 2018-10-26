@@ -32,7 +32,6 @@
 #include <GeomModel\IShape.h>
 #include <GeomModel\Circle.h>
 #include <BridgeModeling\GirderProfile.h>
-#include "PGSuperColors.h"
 
 #include <GeomModel\Polygon.h>
 #include <WBFLGeometry.h>
@@ -113,8 +112,6 @@ void CTrafficBarrierViewDialog::OnPaint()
    bbox->get_Top(&top);
    bbox->get_Bottom(&bottom);
 
-   bbox->BoundPoint(0.0, 0.0); // make sure origin is inside
-
    gpRect2d box(left,bottom,right,top);
    gpSize2d size = box.Size();
    gpPoint2d org = box.BottomCenter();
@@ -127,18 +124,7 @@ void CTrafficBarrierViewDialog::OnPaint()
    mapper.SetDeviceOrg(csize.cx/2 + BORDER,csize.cy + BORDER);
 
    DrawShape(&dc,mapper);
-
-   // Draw origin point
-   CBrush shape_brush(RED);
-   CBrush* pOldBrush = dc.SelectObject(&shape_brush);
-
-   LONG zx, zy;
-   mapper.WPtoDP(0.0, 0.0, &zx, &zy);
-   const LONG pts=5;
-   CRect rct(zx-pts, zy-pts, zx+pts, zy+pts);
-   dc.Ellipse(rct);
-
-   dc.SelectObject(pOldBrush);
+//   DrawStrands(&dc,mapper,m_IsEnd);
 }
 
 void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)

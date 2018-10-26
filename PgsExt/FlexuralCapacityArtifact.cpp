@@ -127,20 +127,26 @@ bool pgsFlexuralCapacityArtifact::IsUnderReinforced() const
 {
    int demand_sign   = BinarySign( m_Mu );
    int capacity_sign = BinarySign( m_Mr );
-   if ( demand_sign != capacity_sign )
+   if ( !IsZero(m_Mr) && (demand_sign != capacity_sign) )
       return false;
 
-   if ( 0 <= m_Mr )
+   if ( 0 < m_Mr && !IsZero(m_Mr) )
    {
       // positive moment
       if ( m_Mr < m_MrMin && !IsEqual(m_Mr,m_MrMin) )
          return true;
    }
-   else
+   else if ( m_Mr < 0 && !IsZero(m_Mr) )
    {
       // negative moment
       if ( m_MrMin < m_Mr && !IsEqual(m_Mr,m_MrMin) )
          return true;
+   }
+   else
+   {
+	   // Mr is zero... if MrMin is not zero, then the section is under reinforced
+	   if ( !IsZero(m_MrMin) )
+		   return true;
    }
 
    return false;
@@ -148,17 +154,23 @@ bool pgsFlexuralCapacityArtifact::IsUnderReinforced() const
 
 bool pgsFlexuralCapacityArtifact::CapacityPassed() const
 {
-   if ( 0 <= m_Mr )
+   if ( 0 < m_Mr && !IsZero(m_Mr) )
    {
       // positive moment
       if ( m_Mr < m_Mu )
          return false;
    }
-   else
+   else if ( m_Mr < 0 && !IsZero(m_Mr) )
    {
       // negative moment
       if ( m_Mu < m_Mr )
          return false;
+   }
+   else
+   {
+	   // m_Mr, capacity is zero...
+	   if ( !IsZero(m_Mu) )
+		   return false;
    }
 
    return true;

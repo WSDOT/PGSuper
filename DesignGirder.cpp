@@ -118,22 +118,9 @@ bool txnDesignGirder::IsRepeatable()
 
 void txnDesignGirder::Init()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-
    for (DesignDataIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
    {
       DesignData& rdata = *iter;
-
-      SpanIndexType   span  = rdata.m_DesignArtifact.GetSpan();
-      GirderIndexType gdr   = rdata.m_DesignArtifact.GetGirder();
-
-      // old (existing) girder data
-      rdata.m_GirderData[0] = pGirderData->GetGirderData(span, gdr);
-
-      // new girder data (start with the old and tweak it)
-      rdata.m_GirderData[1] = rdata.m_GirderData[0];
 
       if (rdata.m_DesignArtifact.GetDesignOptions().doDesignForFlexure != dtNoDesign)
       {
@@ -186,13 +173,6 @@ void txnDesignGirder::DoExecute(int i)
       {
          GET_IFACE2(pBroker,IShear,pShear);
          pShear->SetShearData(rdata.m_ShearData[i], span, gdr);
-
-         if (design_options.doDesignForFlexure==dtNoDesign &&
-             rdata.m_DesignArtifact.GetWasLongitudinalRebarForShearDesigned())
-         {
-            // Need to set girder data in order to pick up long reinf for shear design
-            pGirderData->SetGirderData(rdata.m_GirderData[i], span, gdr);
-         }
       }
    }
 
@@ -204,12 +184,23 @@ void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
+   GET_IFACE2(pBroker,IGirderData,pGirderData);
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
    SpanIndexType   span  = rdata.m_DesignArtifact.GetSpan();
    GirderIndexType gdr   = rdata.m_DesignArtifact.GetGirder();
 
    arDesignOptions design_options = rdata.m_DesignArtifact.GetDesignOptions();
+
+   // old (existing) girder data
+   rdata.m_GirderData[0] = pGirderData->GetGirderData(span, gdr);
+
+   // new girder data (start with the old and tweak it)
+   rdata.m_GirderData[1] = rdata.m_GirderData[0];
+
+   // don't copy strand extension data
+   rdata.m_GirderData[1].NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].clear();
+   rdata.m_GirderData[1].NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].clear();
 
    // Convert Harp offset data
    // offsets are absolute measure in the design artifact
@@ -375,7 +366,14 @@ void txnDesignGirder::CacheShearDesignResults(DesignData& rdata)
    ZoneIndexType nShearZones = rdata.m_DesignArtifact.GetNumberOfStirrupZonesDesigned();
    if (0 < nShearZones)
    {
-      rdata.m_ShearData[1] =  rdata.m_DesignArtifact.GetShearData();
+      for (ZoneIndexType i =0; i < nShearZones; i++)
+      {
+         rdata.m_ShearData[1].ShearZones.push_back( rdata.m_DesignArtifact.GetShearZoneData(i) );
+      }
+
+      rdata.m_ShearData[1].ConfinementBarSize  = rdata.m_DesignArtifact.GetConfinementBarSize();
+
+      rdata.m_ShearData[1].NumConfinementZones = rdata.m_DesignArtifact.GetLastConfinementZone()+1;
    }
    else
    {
@@ -383,11 +381,7 @@ void txnDesignGirder::CacheShearDesignResults(DesignData& rdata)
       // create a single zone with no stirrups in it.
       CShearZoneData dat;
       rdata.m_ShearData[1].ShearZones.push_back(dat);
-   }
-
-   if(rdata.m_DesignArtifact.GetWasLongitudinalRebarForShearDesigned())
-   {
-      // Rebar data was changed during shear design
-      rdata.m_GirderData[1].LongitudinalRebarData  = rdata.m_DesignArtifact.GetLongitudinalRebarData();
+      rdata.m_ShearData[1].ConfinementBarSize = matRebar::bsNone;
+      rdata.m_ShearData[1].NumConfinementZones = 0;
    }
 }

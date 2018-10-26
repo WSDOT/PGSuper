@@ -488,7 +488,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(pgsTypes::Sta
 const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
 {
    // if the stored config is not equal to the requesting config, flush all the cached results
-   if ( !config.IsFlexuralDataEqual(m_TempGirderConfig) )
+   if ( config != m_TempGirderConfig )
    {
       m_TempNonCompositeMomentCapacity[0].clear();
       m_TempNonCompositeMomentCapacity[1].clear();
@@ -1346,20 +1346,6 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
    return val;
 }
 
-Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
-{
-   LOSSDETAILS* pLossDetails = FindLosses(poi);
-   ATLASSERT(pLossDetails != 0);
-
-   Float64 val;
-   if ( strandType == pgsTypes::Temporary )
-      val = pLossDetails->pLosses->TemporaryStrand_Final();
-   else
-      val = pLossDetails->pLosses->PermanentStrand_FinalWithLiveLoad();
-
-   return val;
-}
-
 LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
 {
    LOSSDETAILS* pLosses = FindLosses(poi);
@@ -1521,19 +1507,6 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
    return loss;
 }
 
-Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config)
-{
-   LOSSDETAILS details = GetLossDetails(poi,config);
-
-   Float64 loss;
-   if ( strandType == pgsTypes::Temporary )
-      loss = details.pLosses->TemporaryStrand_Final();
-   else
-      loss = details.pLosses->PermanentStrand_FinalWithLiveLoad();
-   
-   return loss;
-}
-
 LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
    // first see if we have cached our losses
@@ -1591,11 +1564,6 @@ Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded)
 STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded)
 {
     return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded);
-}
-
-STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded)
-{
-    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,config);
 }
 
 //-----------------------------------------------------------------------------
@@ -2624,8 +2592,6 @@ std::vector<Float64> CEngAgentImp::GetMomentCapacity(pgsTypes::Stage stage,const
 
 void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
-   ATLASSERT(poi.GetID()!=INVALID_INDEX); // shouldn't be asking for temporary pois for no design case
-
    // Capacity is only computed in these stages
    ATLASSERT( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
 
@@ -2641,38 +2607,30 @@ void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPoint
 
 void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
-    if (poi.GetID()==INVALID_INDEX)
-    {
-        // Never store temporary pois
-       *pmcd = ComputeMomentCapacity(stage,poi,config,bPositiveMoment);
-    }
-    else
-    {
-       // Get the current configuration and compare it to the provided one
-       // If same, call GetMomentCapacityDetails w/o config.
-       GET_IFACE(IBridge,pBridge);
-       GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
+   // Get the current configuration and compare it to the provided one
+   // If same, call GetMomentCapacityDetails w/o config.
+   GET_IFACE(IBridge,pBridge);
+   GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
 
-       if ( curr_config.IsFlexuralDataEqual(config) )
-       {
-          GetMomentCapacityDetails(stage,poi,bPositiveMoment,pmcd);
-       }
-       else
-       {
-          // the capacity details for the requested girder configuration is not the same as for the
-          // current input... see if it is cached
-          const MOMENTCAPACITYDETAILS* pMCD = GetCachedMomentCapacity(stage,poi,config,bPositiveMoment);
-          if ( pMCD == NULL )
-          {
-             // the capacity has not yet been computed for this config, moment type, stage, and poi
-             pMCD = ValidateMomentCapacity(stage,poi,config,bPositiveMoment); // compute it
-          }
+   if ( curr_config == config )
+   {
+      GetMomentCapacityDetails(stage,poi,bPositiveMoment,pmcd);
+   }
+   else
+   {
+      // the capacity details for the requested girder configuration is not the same as for the
+      // current input... see if it is cached
+      const MOMENTCAPACITYDETAILS* pMCD = GetCachedMomentCapacity(stage,poi,config,bPositiveMoment);
+      if ( pMCD == NULL )
+      {
+         // the capacity has not yet been computed for this config, moment type, stage, and poi
+         pMCD = ValidateMomentCapacity(stage,poi,config,bPositiveMoment); // compute it
+      }
 
-          ATLASSERT( pMCD != NULL );
+      ATLASSERT( pMCD != NULL );
 
-          *pmcd = *pMCD;
-       }
-    }
+      *pmcd = *pMCD;
+   }
 }
 
 std::vector<Float64> CEngAgentImp::GetCrackingMoment(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
@@ -2728,7 +2686,7 @@ void CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const pgsPoint
    // If same, call GetMomentCapacityDetails w/o config.
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   if ( curr_config.IsFlexuralDataEqual(config) )
+   if ( curr_config == config )
       GetCrackingMomentDetails(stage,poi,bPositiveMoment,pcmd);
    else
       m_MomentCapEngineer.ComputeCrackingMoment(stage,poi,config,bPositiveMoment,pcmd);
@@ -2768,7 +2726,7 @@ void CEngAgentImp::GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPo
    // If same, call GetMomentCapacityDetails w/o config.
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   if ( curr_config.IsFlexuralDataEqual(config) )
+   if ( curr_config == config )
       GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,pmmcd);
    else
       m_MomentCapEngineer.ComputeMinMomentCapacity(stage,poi,config,bPositiveMoment,pmmcd);

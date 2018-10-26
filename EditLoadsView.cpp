@@ -157,7 +157,8 @@ void CEditLoadsView::OnInitialUpdate()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAFGetBroker(&m_pBroker);
+   CPGSuperDoc* pDoc = (CPGSuperDoc*) GetDocument();
+   pDoc->GetBroker(&m_pBroker);
 
    UpdateUnits();
 

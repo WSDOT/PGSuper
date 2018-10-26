@@ -20,8 +20,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1780>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=684>
+<meta name=layout-width content=947>
 
 
 <!--(Links)=========================================================-->
@@ -70,97 +70,6 @@
  materials and tolerances. This loading is applied to the entire bridge 
  deck and is distributed to each girder based on its tributary area. This 
  loading is applied to the DC load case.</p>
-
-<h3>Distribution of Exterior and Interior Barrier Loads</h3>
-
-<p>Barrier dead loads are distributed to the &quot;N nearest <span style="font-style: italic;">Girders, 
- Mating Surfaces, or Webs (GMSW’s) as defined on the <a href="../Appendix B - PGSuper Library Dialogs/Bridge_Site_2_Tab.htm">Bridge 
- Site 2 tab</a> in the Project Critieria library. </span><span style="font-style: italic;">An 
- exact definition is as follows:</span></p>
-
-<p style="text-align: center; font-style: italic;"
-	align=center>Distribute the weight of the barrier evenly to the N nearest 
- Girders, Mating Surfaces, or Webs (GMSW’s). Nearest distance is measured 
- from the C.G. of the barrier in a bridge cross section taken at mid-span. 
- For cases when the weight of a barrier can be distributed to either of 
- two GMSW’s that are equal distance left and right of the barrier C.G., 
- and these GMSW’s are furthest from the barrier, the load will be distributed 
- to the exterior-most GMSW. If the span contains 2N or fewer GMSW’s, the 
- railing load will be distributed evenly to all GMSW’s.</p>
-
-<h3>Distribution of Sidewalk Dead Load</h3>
-
-<p>Sidewalk loads are distributed to the &quot;N nearest <span style="font-style: italic;">Girders, 
- Mating Surfaces, or Webs (GMSW’s) as defined on the <a href="../Appendix B - PGSuper Library Dialogs/Bridge_Site_2_Tab.htm">Bridge 
- Site 2 tab</a> in the Project Critieria library. An exact definition is 
- as follows:</span></p>
-
-<p style="text-align: center; font-style: italic;"
-	align=center>Distribute the sidewalk weight and pedestrian live load 
- evenly to the greater of: all Girders, Mating Surfaces, or Webs (GMSW’s) 
- lying directly under the sidewalk; or the N nearest GMSW’s measured from 
- centerline sidewalk using a bridge cross section taken at mid-span. For 
- cases when the sidewalk weight can be distributed to either of two GMSW’s 
- that are equal distance left and right of C.L. sidewalk, and these GMSW’s 
- are furthest from the C.L. sidewalk, the load will be distributed to the 
- exterior-most GMSW. If the span contains 2N or fewer GMSW’s, the load 
- will be distributed evenly to all GMSW’s.</p>
-
-<p>The width of the sidewalk for dead load is dependent on whether barriers 
- are placed on top of the sidewalk. The figures below show the two possible 
- cases. In both cases, the sidewalk is extended to the toe(s) of the adjacent 
- barriers, or to the edge of sidewalk if no interior barrier exists.</p>
-
-<p><img src="../Bridge_Model_Editing/BarrierOnTopOfDeck.gif"
-		x-maintain-ratio=TRUE
-		style="border: none;
-				width: 625px;
-				height: 305px;
-				float: none;"
-		width=625
-		height=305
-		border=0></p>
-
-<p><img src="../Bridge_Model_Editing/BarrierOnTopOfSidewalk.gif"
-		x-maintain-ratio=TRUE
-		style="border: none;
-				width: 563px;
-				height: 308px;
-				float: none;"
-		width=563
-		height=308
-		border=0></p>
-
-<h3>Distribution of Pedestrian Live Load</h3>
-
-<p>The input sidewalk width is always used to compute pedestrian live load 
- magnitude. Pedestrian live load is distributed to nearby girders in the 
- same manner as sidewalk dead load. Pedestrian live load is computed in 
- accordance with LRFD 3.6.1.6.</p>
-
-<p>The magnitude of the uniform pedestrian live load is specified on the 
- <a href="../Appendix B - PGSuper Library Dialogs/Bridge_Site_2_Tab.htm">Bridge 
- Site 2</a> tab in the Project Criteria library.</p>
-
-<h3>Distribution of <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->Overlay 
- Loads</h3>
-
-<p>The exterior edge of the overlay terminates at the interior-most of:</p>
-
-<ol style="list-style: decimal;"
-	type=1>
-	
-	<li class=kadov-p><p>Interior toe of Exterior Barrier</p></li>
-	
-	<li class=kadov-p><p>Face of sidewalk (if no interior barrier)</p></li>
-	
-	<li class=kadov-p><p>Interior toe of Interior Barrier</p></li>
-</ol>
-
-<p>The magnitude of the overlay load is computed using the overlay width, 
- thickness, and density of the overlay material. Options to distribute 
- the overlay load are specified on the <a href="../Appendix B - PGSuper Library Dialogs/Bridge_Site_2_Tab.htm">Bridge 
- Site 2</a> tab in the Project Criteria library.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

@@ -38,7 +38,7 @@ class CEffectOfPostTensionedTemporaryStrandsTable : public rptRcTable
 {
 public:
 	static CEffectOfPostTensionedTemporaryStrandsTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CEffectOfPostTensionedTemporaryStrandsTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);

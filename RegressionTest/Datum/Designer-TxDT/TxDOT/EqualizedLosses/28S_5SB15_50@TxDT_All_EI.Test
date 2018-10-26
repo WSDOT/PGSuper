@@ -1,22 +1,22 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.08   6  0.04  1     1   5SB15       36   1/2  270  4.56  4.20  16  2.50  28  16 10  4  2  0  0  0  0  0  0  0  4.000  5.600    2.742   -3.165    1247 0.422  0.422  0.17 -0.04  0.00 -0.01 -0.04  76.08 228.85   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.08   6  0.04     1     1 5SB15       36   1/2  270  4.56  4.20  16  2.50  28  16 10  4  2  0  0  0  0  0  0  0  4.000  5.600    2.742   -3.165   1247  0.422  0.422  0.17 -0.04  0.00 -0.01 -0.04  76.08 228.85   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.08   6  0.04  1     2   5SB15       36   1/2  270  4.56  4.20  16  2.50  28  16 10  4  2  0  0  0  0  0  0  0  4.000  5.000    2.742   -3.166    1248 0.422  0.422  0.17 -0.04  0.00 -0.01 -0.04  76.08 228.81   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.08   6  0.04     1     2 5SB15       36   1/2  270  4.56  4.20  16  2.50  28  16 10  4  2  0  0  0  0  0  0  0  4.000  5.000    2.742   -3.166   1248  0.422  0.422  0.17 -0.04  0.00 -0.01 -0.04  76.08 228.81   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.08   6  0.04  1     4   5SB15       36   1/2  270  4.56  4.20  16  2.50  28  16 10  4  2  0  0  0  0  0  0  0  4.000  5.000    2.742   -3.166    1248 0.422  0.422  0.17 -0.04  0.00 -0.01 -0.04  76.08 228.81   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.08   6  0.04     1     4 5SB15       36   1/2  270  4.56  4.20  16  2.50  28  16 10  4  2  0  0  0  0  0  0  0  4.000  5.000    2.742   -3.166   1248  0.422  0.422  0.17 -0.04  0.00 -0.01 -0.04  76.08 228.81   1.00   1.00   1.00
 
 
 The Specification Check was Successful

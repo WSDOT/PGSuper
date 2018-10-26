@@ -35,9 +35,8 @@
 
 #include "LibEditorListView.h"
 #include "LibraryEditorView.h"
-#include <EAF\EAFChildFrame.h>
 
-class PSGLIBCLASS CLibraryEditorChildFrame : public CEAFChildFrame
+class PSGLIBCLASS CLibraryEditorChildFrame : public CMDIChildWnd
 {
 	DECLARE_DYNCREATE(CLibraryEditorChildFrame)
 public:

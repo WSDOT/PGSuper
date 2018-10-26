@@ -60,7 +60,7 @@ public:
 public:
    bool m_DoCheckStrandSlope;
    bool m_DoCheckHoldDown;
-   bool m_DoCheckSplitting;
+   bool m_DoCheckAnchorage;
 
 // Implementation
 protected:

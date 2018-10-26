@@ -96,7 +96,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    return table;
 }
 
-void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    if ( m_GirderData.TempStrandUsage == pgsTypes::ttsPretensioned )
       (*this)(row,1) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());

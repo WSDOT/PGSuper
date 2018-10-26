@@ -98,13 +98,11 @@ public:
    // capture event fired from grid that allows deletion of rows
    void OnEnableDelete(bool canDelete);
    bool DoUseHarpedGrid();
-   bool DoUseHarpedWebStrands();
    void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
 
 	void UpdateHpAdjust();
 	void UpdateEndAdjust();
 
-   afx_msg void OnCbnSelchangeWebStrandTypeCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

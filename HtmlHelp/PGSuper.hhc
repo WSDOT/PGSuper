@@ -399,7 +399,7 @@
         <param name="Local" value="User's Guide\Analysis_Results\Analysis_Results_View.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Report Views">
+        <param name="Name" value="Report View">
         <param name="Local" value="User's Guide\Analysis_Results\Report_View.htm">
       </object>
       <li><object type="text/sitemap">
@@ -689,7 +689,7 @@
           <param name="Local" value="Girder Editing Wizard\Prestressing.htm">
         </object>
         <li><object type="text/sitemap">
-          <param name="Name" value="Debonding">
+          <param name="Name" value="Debonding/Strand Extensions">
           <param name="Local" value="Girder Editing Wizard\Debonding.htm">
         </object>
         <li><object type="text/sitemap">
@@ -854,10 +854,6 @@
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm">
         </object>
         <li><object type="text/sitemap">
-          <param name="Name" value="Generate Strands Dialog">
-          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm">
-        </object>
-        <li><object type="text/sitemap">
           <param name="Name" value="Temporary Strands Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibStrands_Tab.htm">
         </object>
@@ -880,10 +876,6 @@
         <li><object type="text/sitemap">
           <param name="Name" value="Diaphragm Layout Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
-        </object>
-        <li><object type="text/sitemap">
-          <param name="Name" value="Shear Design Tab">
-          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Shear_Design_Tab.htm">
         </object>
         </ul>
       <li><object type="text/sitemap">

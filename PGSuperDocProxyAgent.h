@@ -313,10 +313,5 @@ private:
 
    void CreateStatusBar();
    void ResetStatusBar();
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   CMFCTasksPane m_wndTasks;
-   CDockablePaneAdapter m_wndLoadsViewAdapter;
-#endif
 };
 

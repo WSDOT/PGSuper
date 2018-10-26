@@ -102,7 +102,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    return table;
 }
 
-void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << stress.SetValue( details.pLosses->PermanentStrand_ElasticShorteningLosses() );
    (*this)(row,2) << stress.SetValue( details.RefinedLosses.ShrinkageLosses() );

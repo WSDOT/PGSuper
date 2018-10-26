@@ -74,12 +74,6 @@ static char THIS_FILE[] = __FILE__;
 #define RIGHT_SLAB_EDGE_SOCKET   400
 #define LEFT_OVERHANG_SOCKET     500
 #define RIGHT_OVERHANG_SOCKET    600
-#define LEFT_EXT_SW_SOCKET       700
-#define LEFT_INT_SW_SOCKET       701
-#define RIGHT_EXT_SW_SOCKET      702
-#define RIGHT_INT_SW_SOCKET      703
-#define LEFT_INT_OVERLAY_SOCKET     710
-#define RIGHT_INT_OVERLAY_SOCKET    711
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -560,33 +554,31 @@ void CBridgeSectionView::UpdateGirderTooltips()
       Nt = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Temporary);
       Nsd= pStrandGeom->GetNumDebondedStrands(spanIdx,gdrIdx,pgsTypes::Straight);
 
-      std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(spanIdx,gdrIdx)));
-
       CString strMsg3;
       if ( pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) != 0 )
       {
          if ( Nsd == 0 )
          {
-            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                            pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                            pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
          }
          else
          {
-            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                            pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                            pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
          }
       }
       else
       {
          if ( Nsd == 0 )
          {
-            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
-                            pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
+                            pStrand->GetName().c_str(),Ns,Nh);
          }
          else
          {
-            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
-                            pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
+            strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
+                            pStrand->GetName().c_str(),Ns,Nsd,Nh);
          }
       }
 
@@ -966,8 +958,8 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    double dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
    double left_offset, right_offset;
-   left_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
-   right_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
+   left_offset  = pBridge->GetLeftCurbOffset(dist_from_start_of_bridge);
+   right_offset = pBridge->GetRightCurbOffset(dist_from_start_of_bridge);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    double left_elev  = pRoadway->GetElevation(station,left_offset);
@@ -1052,7 +1044,6 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
-   GET_IFACE2(pBroker,IBarriers,pBarriers);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1066,14 +1057,10 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
    double cut_station = m_pFrame->GetCurrentCutLocation();
    double pier_1_station = pBridge->GetPierStation(0);
-   double cut_dist_from_start = cut_station - pier_1_station;
-   double left_curb_offset  = pBridge->GetLeftCurbOffset(cut_dist_from_start);
-   double right_curb_offset = pBridge->GetRightCurbOffset(cut_dist_from_start);
+   double left_curb_offset  = pBridge->GetLeftCurbOffset(cut_station - pier_1_station);
+   double right_curb_offset = pBridge->GetRightCurbOffset(cut_station - pier_1_station);
 
    double cpo = pAlignment->GetCrownPointOffset(cut_station);
-
-   CComPtr<IDirection> normal;
-   pAlignment->GetBearingNormal(cut_station,&normal);
 
    CComPtr<IShape> left_shape;
    pSectProp->GetLeftTrafficBarrierShape(cut_station,&left_shape);
@@ -1084,17 +1071,10 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
       // rotate the shape to match the crown slope
       double slope = ::BinarySign(cpo-left_curb_offset)*pAlignment->GetCrownSlope(cut_station,left_curb_offset);
       double angle = -atan(slope);
-
-      // Rotate shape around edge of deck - this is where barrier origin is placed
-      double left_offset = pBridge->GetLeftSlabEdgeOffset(cut_dist_from_start);
-      double left_elev   = pAlignment->GetElevation(cut_station,left_offset);
-
-      CComPtr<IPoint2d> de_point;
-      de_point.CoCreateInstance(CLSID_Point2d);
-      de_point->Move(left_offset,left_elev);
-
       CComQIPtr<IXYPosition> position(left_shape);
-      position->RotateEx(de_point,angle);
+      CComPtr<IPoint2d> hook_point;
+      position->get_LocatorPoint(lpHookPoint,&hook_point);
+      position->RotateEx(hook_point,angle);
 
       strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
 
@@ -1169,18 +1149,15 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    left_connectable->AddSocket(LEFT_CURB_SOCKET, p1,&socket1);
    right_connectable->AddSocket(RIGHT_CURB_SOCKET,p2,&socket2);
 
-   // Put sockets at slab edges
+   // Put sockets at the hook point
    socket1.Release();
    socket2.Release();
    CComPtr<IPoint2d> pl,pr;
-   pl.CoCreateInstance(CLSID_Point2d);
-   pr.CoCreateInstance(CLSID_Point2d);
-
-   left_offset = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
-   right_offset = pBridge->GetRightSlabEdgeOffset(dist_from_start_of_bridge);
 
    if ( left_shape )
    {  
+      pl.CoCreateInstance(CLSID_Point2d);
+      left_offset = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
       pl->put_X(left_offset);
       pl->put_Y(elev);
       left_connectable->AddSocket(LEFT_SLAB_EDGE_SOCKET, pl,&socket1);
@@ -1188,57 +1165,11 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
    if ( right_shape )
    {
+      pr.CoCreateInstance(CLSID_Point2d);
+      right_offset = pBridge->GetRightSlabEdgeOffset(dist_from_start_of_bridge);
       pr->put_X(right_offset);
       pr->put_Y(elev);
       right_connectable->AddSocket(RIGHT_SLAB_EDGE_SOCKET,pr,&socket2);
-   }
-
-   // Put sockets at edges of sidewalks
-   Float64 ext_edge, int_edge;
-   if (pBarriers->HasSidewalk(pgsTypes::tboLeft))
-   {
-      socket1.Release();
-      socket2.Release();
-      pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboLeft,&int_edge,&ext_edge);
-
-      pl->put_X(left_offset+ext_edge);
-      pl->put_Y(elev);
-      left_connectable->AddSocket(LEFT_EXT_SW_SOCKET, pl,&socket1);
-
-      pl->put_X(left_offset+int_edge);
-      left_connectable->AddSocket(LEFT_INT_SW_SOCKET, pl,&socket2);
-   }
-
-   if (pBarriers->HasSidewalk(pgsTypes::tboRight))
-   {
-      socket1.Release();
-      socket2.Release();
-      pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboRight,&int_edge,&ext_edge);
-
-      pl->put_X(right_offset-ext_edge);
-      pl->put_Y(elev);
-      right_connectable->AddSocket(RIGHT_EXT_SW_SOCKET, pl,&socket1);
-
-      pl->put_X(right_offset-int_edge);
-      right_connectable->AddSocket(RIGHT_INT_SW_SOCKET, pl,&socket2);
-   }
-
-   // interior overlay sockets
-   if (pBridge->HasOverlay())
-   {
-      socket1.Release();
-      socket2.Release();
-
-      double left_icb_offset, right_icb_offset;
-      left_icb_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
-      right_icb_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
-
-      pl->put_X(left_icb_offset);
-      pl->put_Y(elev);
-      left_connectable->AddSocket(LEFT_INT_OVERLAY_SOCKET, pl,&socket1);
-
-      pl->put_X(right_icb_offset);
-      left_connectable->AddSocket(RIGHT_INT_OVERLAY_SOCKET, pl,&socket2);
    }
 }
 
@@ -1660,10 +1591,6 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       CString strCurb = FormatDimension(ccWidth,rlen);
       ccText->SetText(strCurb);
 
-      // increase witness line length
-      long witness_length = curbDimLine->GetWitnessLength();
-      curbDimLine->SetWitnessLength((long)(1.75*witness_length));
-
       curbDimLine->SetTextBlock(ccText);
 
       display_list->AddDisplayObject(curbDimLine);
@@ -1707,10 +1634,6 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
             tbDimLine->SetTextBlock(ccText);
 
-            // increase witness line length
-            long witness_length = tbDimLine->GetWitnessLength();
-            tbDimLine->SetWitnessLength((long)(1.75*witness_length));
-
             display_list->AddDisplayObject(tbDimLine);
          }
       }
@@ -1750,140 +1673,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
             tbDimLine->SetTextBlock(ccText);
 
-            // increase witness line length
-            long witness_length = tbDimLine->GetWitnessLength();
-            tbDimLine->SetWitnessLength((long)(1.75*witness_length));
-
             display_list->AddDisplayObject(tbDimLine);
-         }
-      }
-   }
-
-   // sidewalk dimension lines
-   if (doLeftTB && pBarriers->HasSidewalk(pgsTypes::tboLeft))
-   {
-      Float64 ext_edge, int_edge;
-      pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboLeft,&int_edge,&ext_edge);
-
-      Float64 width = int_edge-ext_edge;
-      if ( 0 < width )
-      {
-         CComPtr<iDimensionLine> swDimLine;
-         swDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
-         CComPtr<iConnector> connector;
-         swDimLine.QueryInterface(&connector);
-
-         CComQIPtr<iConnectable> swConnectable(doLeftTB);
-         CComPtr<iSocket> left_socket, right_socket;
-         swConnectable->GetSocket(LEFT_EXT_SW_SOCKET, atByID,&left_socket);
-         swConnectable->GetSocket(LEFT_INT_SW_SOCKET, atByID,&right_socket);
-
-         if ( left_socket && right_socket )
-         {
-            CComQIPtr<iConnector> swConnector(swDimLine);
-            CComPtr<iPlug> startPlug, endPlug;
-            swConnector->GetStartPlug(&startPlug);
-            swConnector->GetEndPlug(&endPlug);
-
-            DWORD dwCookie;
-            left_socket->Connect(startPlug,&dwCookie);
-            right_socket->Connect(endPlug,&dwCookie);
-
-            CComPtr<iTextBlock> ccText;
-            ccText.CoCreateInstance(CLSID_TextBlock);
-            ccText->SetBkMode(TRANSPARENT);
-            CString strCurb = FormatDimension(width,rlen);
-            ccText->SetText(strCurb);
-
-            swDimLine->SetTextBlock(ccText);
-
-            display_list->AddDisplayObject(swDimLine);
-         }
-      }
-   }
-
-   if (doRightTB && pBarriers->HasSidewalk(pgsTypes::tboRight))
-   {
-      Float64 ext_edge, int_edge;
-      pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboRight,&int_edge,&ext_edge);
-
-      Float64 width = int_edge-ext_edge;
-      if ( 0 < width )
-      {
-         CComPtr<iDimensionLine> swDimLine;
-         swDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
-         CComPtr<iConnector> connector;
-         swDimLine.QueryInterface(&connector);
-
-         CComQIPtr<iConnectable> swConnectable(doRightTB);
-         CComPtr<iSocket> Right_socket, right_socket;
-         swConnectable->GetSocket(RIGHT_INT_SW_SOCKET, atByID,&Right_socket);
-         swConnectable->GetSocket(RIGHT_EXT_SW_SOCKET, atByID,&right_socket);
-
-         if ( Right_socket && right_socket )
-         {
-            CComQIPtr<iConnector> swConnector(swDimLine);
-            CComPtr<iPlug> startPlug, endPlug;
-            swConnector->GetStartPlug(&startPlug);
-            swConnector->GetEndPlug(&endPlug);
-
-            DWORD dwCookie;
-            Right_socket->Connect(startPlug,&dwCookie);
-            right_socket->Connect(endPlug,&dwCookie);
-
-            CComPtr<iTextBlock> ccText;
-            ccText.CoCreateInstance(CLSID_TextBlock);
-            ccText->SetBkMode(TRANSPARENT);
-            CString strCurb = FormatDimension(width,rlen);
-            ccText->SetText(strCurb);
-
-            swDimLine->SetTextBlock(ccText);
-
-            display_list->AddDisplayObject(swDimLine);
-         }
-      }
-   }
-
-   // Interior overlay width
-   if (doLeftTB && pBridge->HasOverlay())
-   {
-      double left_icb_offset, right_icb_offset;
-      left_icb_offset  = pBridge->GetLeftOverlayToeOffset(distFromStartOfBridge);
-      right_icb_offset = pBridge->GetRightOverlayToeOffset(distFromStartOfBridge);
-
-      Float64 width = right_icb_offset-left_icb_offset;
-      if ( 0 < width )
-      {
-         CComPtr<iDimensionLine> icbDimLine;
-         icbDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
-         CComPtr<iConnector> connector;
-         icbDimLine.QueryInterface(&connector);
-
-         CComQIPtr<iConnectable> icbConnectable(doLeftTB);
-         CComPtr<iSocket> left_socket, right_socket;
-         icbConnectable->GetSocket(LEFT_INT_OVERLAY_SOCKET, atByID,&left_socket);
-         icbConnectable->GetSocket(RIGHT_INT_OVERLAY_SOCKET, atByID,&right_socket);
-
-         if ( left_socket && right_socket )
-         {
-            CComQIPtr<iConnector> icbConnector(icbDimLine);
-            CComPtr<iPlug> startPlug, endPlug;
-            icbConnector->GetStartPlug(&startPlug);
-            icbConnector->GetEndPlug(&endPlug);
-
-            DWORD dwCookie;
-            left_socket->Connect(startPlug,&dwCookie);
-            right_socket->Connect(endPlug,&dwCookie);
-
-            CComPtr<iTextBlock> ccText;
-            ccText.CoCreateInstance(CLSID_TextBlock);
-            ccText->SetBkMode(TRANSPARENT);
-            CString strCurb = FormatDimension(width,rlen);
-            ccText->SetText(strCurb);
-
-            icbDimLine->SetTextBlock(ccText);
-
-            display_list->AddDisplayObject(icbDimLine);
          }
       }
    }

@@ -51,10 +51,6 @@ LOG
 class REPORTINGCLASS CProductReactionTable
 {
 public:
-   // This class serves double duty. It can report pier reactions or girder bearing reactions.
-   // The two are identical except for the title and the interfaces they use to get responses
-   enum TableType { PierReactionsTable, BearingReactionsTable};
-
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
@@ -79,8 +75,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             TableType type, bool bIncludedImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,
-                             IEAFDisplayUnits* pDisplayUnits) const;
+                             bool bIncludedImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

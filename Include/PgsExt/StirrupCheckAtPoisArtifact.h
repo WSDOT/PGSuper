@@ -269,9 +269,6 @@ public:
    void SetAreStirrupsProvided(bool provd);
    bool GetAreStirrupsProvided() const;
 
-   void SetAvOverSReqd(Float64 reqd);
-   Float64 GetAvOverSReqd() const;
-
    void SetDemand(Float64 demand);
    Float64 GetDemand() const;
    void SetCapacity(Float64 cap);
@@ -340,8 +337,6 @@ private:
    bool m_AreStirrupsReqd;
    bool m_AreStirrupsProvided;
 
-   Float64 m_AvOverSReqd;
-
    Float64 m_Demand;
    Float64 m_Capacity;
 
@@ -406,11 +401,11 @@ public:
 
    // GROUP: OPERATIONS
 
-   // additional stirrups in top flange
-   Float64 GetAvfAdditional() const {return m_AvfAdditional;}
-   void SetAvfAdditional(Float64 avf) {m_AvfAdditional = avf;}
-   Float64 GetSAdditional() const;
-   void SetSAdditional(Float64 s);
+   // stirrups in top flange
+   Float64 GetAvfTopFlange() const {return m_AvfTopFlange;}
+   void SetAvfTopFlange(Float64 avf) {m_AvfTopFlange = avf;}
+   Float64 GetSTopFlange() const;
+   void SetSTopFlange(Float64 s);
 
    // stirrups in girder
    Float64 GetAvfGirder() const {return m_AvfGirder;}
@@ -457,10 +452,10 @@ public:
    bool Is5_8_4_1_4Applicable() const;
    Float64 GetAvOverSMin() const;
    void SetAvOverSMin(Float64 fmin);
-   Float64 GetNumLegs() const;
-   void SetNumLegs(Float64 legs);
-   Float64 GetNumLegsReqd() const;
-   void SetNumLegsReqd(Float64 legs);
+   CollectionIndexType GetNumLegs() const;
+   void SetNumLegs(CollectionIndexType legs);
+   CollectionIndexType GetNumLegsReqd() const;
+   void SetNumLegsReqd(CollectionIndexType legs);
    Float64 GetVsAvg() const;   // average shear strength
    void SetVsAvg(Float64 vsavg);
    Float64 GetVsLimit() const; // max shear strength at which 5.8.4.1-4 is not applicable
@@ -475,10 +470,6 @@ public:
    void SetI(double i);
    Float64 GetQ() const;
    void SetQ(double q);
-
-   // Data for design algorithm, if needed
-   Float64 GetAvOverSReqd() const;
-   void SetAvOverSReqd(const Float64& vu);
 
    bool SpacingPassed() const;
    int  MinReinforcementPassed() const;
@@ -516,8 +507,8 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   Float64 m_AvfAdditional;
-   Float64 m_SAdditional;
+   Float64 m_AvfTopFlange;
+   Float64 m_STopFlange;
    Float64 m_AvfGirder;
    Float64 m_SGirder;
    Float64 m_UltimateHorizontalShear;
@@ -536,8 +527,8 @@ private:
    Float64 m_Sall;
    Float64 m_Fy;
    Float64 m_AvOverSMin;
-   Float64 m_NumLegs;
-   Float64 m_NumLegsReqd;
+   CollectionIndexType  m_NumLegs;
+   CollectionIndexType  m_NumLegsReqd;
    Float64 m_VsAvg;   // average shear strength
    Float64 m_VsLimit; // max shear strength at which 5.8.4.1-4 is not applicable
 
@@ -546,9 +537,6 @@ private:
    Float64 m_I;
    Float64 m_Q;
    Float64 m_Vu; // vertical shear
-
-   Float64 m_AvsReqd;
-
 
 
    // GROUP: LIFECYCLE
@@ -788,7 +776,6 @@ public:
 
 // EXTERNAL REFERENCES
 //
-
 
 
 /*****************************************************************************

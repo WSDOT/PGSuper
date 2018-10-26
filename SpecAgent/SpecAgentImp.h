@@ -215,6 +215,7 @@ public:
 // IResistanceFactors
 public:
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
+   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 
 

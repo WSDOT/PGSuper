@@ -1271,6 +1271,35 @@ void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Floa
    pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiCompression);
 }
 
+void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl)
+{
+   switch (rebarGrade )
+   {
+   case matRebar::Grade40:
+      *pecl = 0.0014;
+      *petl = 0.005;
+      break;
+
+   case matRebar::Grade60:
+      *pecl = 0.002;
+      *petl = 0.005;
+      break;
+
+   case matRebar::Grade75:
+      *pecl = 0.0026;
+      *petl = 0.0054;
+      break;
+
+   case matRebar::Grade80:
+      *pecl = 0.0028;
+      *petl = 0.0056;
+      break;
+
+   default:
+      ATLASSERT(false); // new rebar grade?
+   }
+}
+
 Float64 CSpecAgentImp::GetShearResistanceFactor(pgsTypes::ConcreteType type)
 {
    const SpecLibraryEntry* pSpec = GetSpec();

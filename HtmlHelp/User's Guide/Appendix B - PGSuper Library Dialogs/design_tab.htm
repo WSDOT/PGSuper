@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1366>
-<meta name=layout-width content=618>
+<meta name=layout-height content=1079>
+<meta name=layout-width content=993>
 
 
 <!--(Links)=========================================================-->
@@ -42,13 +42,14 @@
 							x-format=default
 							x-value="Design Tab">}}-->Design Tab<!--kadov_tag{{</variable>}}--></h1>
 
-<h2>Options for Compliance Checking and Automated Design</h2>
+<h2 style="font-weight: normal;">Options for Compliance Checking and Automated 
+ Design</h2>
 
 <p>Use the check boxes to select whether PGSuper performs compliance checking 
- (spec-checking), and/or considers the listed categories in the automated 
+ (spec-checking) and/or considers the listed categories in the automated 
  design algorithm.</p>
 
-<h3>“A” Dimension / Slab Offset </h3>
+<h3 style="font-weight: normal;">“A” Dimension / Slab Offset </h3>
 
 <p>The “A” dimension is the vertical distance between the top of the slab 
  and the top of the girder at the bearing line. If checking is enabled, 
@@ -64,7 +65,7 @@
 
 <p>More information about the &quot;A&quot; Dimension can be found <a href="../../Theoretical Manual/ADimension.htm">here</a></p>
 
-<h3>Lifting</h3>
+<h3 style="font-weight: normal;">Lifting</h3>
 
 <p>The check for lifting will report whether the girder can be lifted in 
  the casting yard.</p>
@@ -74,7 +75,7 @@
  of temporary strands so the girder can be safely lifted in the casting 
  yard.</p>
 
-<h3>Hauling</h3>
+<h3 style="font-weight: normal;">Hauling</h3>
 
 <p>The check for hauling reports whether the girder can be trucked to the 
  construction site</p>
@@ -83,7 +84,7 @@
  locations, concrete strength, and number of temporary strands so the girder 
  can be safely trucked from the casting yard to the construction site.</p>
 
-<h3>Strand Slope</h3>
+<h3 style="font-weight: normal;">Strand Slope</h3>
 
 <p>Limiting max strand slope is a manufacturability requirement. If enabled, 
  the algorithm will check to make sure the slope of harped strands is below 
@@ -92,7 +93,7 @@
 
 <p>Note that this option is only applicable to harped girder design.</p>
 
-<h3>Hold Down Force </h3>
+<h3 style="font-weight: normal;">Hold Down Force </h3>
 
 <p>Limiting max harped strand hold down force is a manufacturability requirement. 
  If enabled, the algorithm will check to make sure the hold down force 
@@ -101,26 +102,18 @@
 
 <p>Note that this option is only applicable to harped girder design.</p>
 
-<h3>Anchorage Zone Splitting</h3>
+<h3 style="font-weight: normal;">Anchorage Splitting and Confinement </h3>
 
-<p>Use this option to enable/disable checks and design for splitting/bursting 
- (5.10.10.1) in the prestress anchorage zones.</p>
+<p>Use this option to enable/disable the checks for splitting/bursting 
+ (5.10.10.1) and confinement (5.10.10.2) in the prestress anchorage zones.</p>
 
-<h3>Confinement </h3>
-
-<p>Use this option to enable/disable checks and design for confinement 
- (5.10.10.2) in the prestress anchorage zones.</p>
-
-<h2>Fill Order for Harped and Straight Strand Design</h2>
+<h2 style="font-weight: normal;">Fill Order for Harped and Straight Strand 
+ Design</h2>
 
 <p>This option tells the automated design algorithm to either fill permanent 
  strands using the global strand order defined in the <a HREF="Harped Strands Tab.htm">Permanent 
  Strands Tab</a> of the girder library entry (TxDOT method), or to attempt 
  to minimize the total number of harped strands (WSDOT method).</p>
-
-<p class=Tip>Note: Parameters that control shear design are located on 
- the <!--kadov_tag{{<spaces>}}-->&nbsp;<a href="Shear_Design_Tab.htm"><!--kadov_tag{{</spaces>}}-->Shear 
- Design Tab</a> in the girder library.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

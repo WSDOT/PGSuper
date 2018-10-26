@@ -35,6 +35,8 @@
 #include "AnalysisAgent_i.c"
 
 #include <WBFLFem2d_i.c>
+#include <WBFLGeometry_i.c>
+#include <WBFLCogo_i.c>
 
 #include <WBFLLBAMAnalysisUtility_i.c>
 #include <WBFLLBAMAnalysis_i.c>
@@ -46,8 +48,6 @@
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <WBFLCore_i.c>
-#include <WBFLGeometry_i.c>
-#include <WBFLCogo_i.c>
 
 #include "AnalysisAgentImp.h"
 

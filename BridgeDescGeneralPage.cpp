@@ -179,6 +179,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescGeneralPage, CPropertyPage)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_NUMGDR_SPIN, OnNumGirdersChanged)
 	ON_CBN_SELCHANGE(IDC_BEAM_FAMILIES, OnGirderFamilyChanged)
 	ON_CBN_SELCHANGE(IDC_GDR_TYPE, OnGirderNameChanged)
+   ON_CBN_DROPDOWN(IDC_GDR_TYPE,OnBeforeChangeGirderName)
 	ON_CBN_SELCHANGE(IDC_DECK_TYPE, OnDeckTypeChanged)
 	ON_CBN_SELCHANGE(IDC_GIRDER_CONNECTIVITY, OnGirderConnectivityChanged)
    ON_CBN_SELCHANGE(IDC_GIRDER_SPACING_MEASURE,OnSpacingDatumChanged)
@@ -951,8 +952,22 @@ void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
       m_NumGdrSpinner.SetRange(short(m_MinGirderCount),MAX_GIRDERS_PER_SPAN);
 }
 
+void CBridgeDescGeneralPage::OnBeforeChangeGirderName()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
+   m_GirderNameIdx = pCB->GetCurSel();
+}
+
 void CBridgeDescGeneralPage::OnGirderNameChanged() 
 {
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
+   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
+   if ( result == IDNO )
+   {
+      pCB->SetCurSel(m_GirderNameIdx);
+      return;
+   }
+
    CComboBox* pCBGirders = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
    int sel = pCBGirders->GetCurSel();
    pCBGirders->GetLBText(sel,m_GirderName);

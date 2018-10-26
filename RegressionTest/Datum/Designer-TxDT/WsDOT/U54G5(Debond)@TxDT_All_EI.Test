@@ -1,22 +1,23 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00  1     1   (Debo       74  0.60  270 15.40 15.40   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  9.000    6.953   -4.593   12328 1.016  1.016  0.70 -0.17 -0.01 -0.01 -0.19 414.88 778.71   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- ---                               ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   4  8.00     1     1 (Debo  *    58   5/8  270 16.39 16.12  14  0.00   0   0                               15.000 15.000    6.180   -4.354  12555  1.016  1.016  0.17 -0.13 -0.01 -0.01 -0.15 155.07 213.74   0.00   0.00   0.00
+                                                                        4.00  25   4  0  0  0  0  0  0  0  0  0  2 
+Warning: The number of debonded sections exceeds ten for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Slab Offset ("A" Dimension) check failed
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Debond arrangement checks failed.
 Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00  1     2   (Debo       58  0.60  270 16.39 16.39   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000 14.900    6.472   -3.880   10888 0.557  0.773  0.53 -0.10 -0.01 -0.01 -0.12 261.14 552.02   1.75  17.00  17.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   4  8.00     1     2 (Debo  *    52   5/8  270 16.69 16.69   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000 14.900    5.314   -3.537  10192  0.557  0.773  0.45 -0.10 -0.01 -0.01 -0.12 209.11 450.84   1.75  17.00  17.00
 
 
 Girder design was Not Successful
@@ -24,7 +25,6 @@ The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed

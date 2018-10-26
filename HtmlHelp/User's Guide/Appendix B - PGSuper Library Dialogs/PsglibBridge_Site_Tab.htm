@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1540>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1384>
+<meta name=layout-width content=993>
 
 
 <!--(Links)=========================================================-->
@@ -48,16 +48,16 @@
 <p>Use this tab to define criteria pertinent at bridge site stage 3. This 
  is when the bridge is in service and open to traffic.</p>
 
-<h2>Allowable Concrete Compressive Stresses</h2>
+<h2 style="font-weight: normal;">Allowable Concrete Compressive Stresses</h2>
 
-<h3><span style="font-weight: bold;">Service I (Permanent Plus Live Loads)</span></h3>
+<h3 style="font-weight: normal;">Service I (Permanent Plus Live Loads)</h3>
 
 <p>Enter the multiplier for the maximum allowable concrete compressive 
  stress for the Service I limit state. Guidance for this value is given 
  in LRFD 5.9.4.2.1.</p>
 
-<h3><span style="font-weight: bold;">Service IA/Fatigue I (Live Load Plus 
- One-Half of Permanent Loads)</span></h3>
+<h3 style="font-weight: normal;">Service IA/Fatigue I (Live Load Plus One-Half 
+ of Permanent Loads)</h3>
 
 <p>Enter the multiplier for the maximum allowable concrete compressive 
  stress for a load combination comprised of live load plus one-half of 
@@ -67,35 +67,36 @@
  was introduced. The allowable stress for the Fatigue I limit state is 
  given in LRFD 5.5.3.1.</p>
 
-<h2>Allowable Concrete Tensile Stresses - Service III Limit State</h2>
+<h2 style="font-weight: normal;">Allowable Concrete Tensile Stresses - 
+ Service III Limit State</h2>
 
-<h3><span style="font-weight: bold;">Normal Exposure Conditions</span></h3>
+<h3 style="font-weight: normal;">Normal Exposure Conditions</h3>
 
 <p>Enter the multiplier for the maximum allowable concrete tensile stress 
  for normal environmental exposure conditions. You may also enter an absolute 
  maximum value if desired. Guidance for these values is given in LRFD 5.9.4.2.2.</p>
 
-<h3><span style="font-weight: bold;">Severe Corrosive Conditions</span></h3>
+<h3 style="font-weight: normal;">Severe Corrosive Conditions</h3>
 
 <p>Enter the multiplier for the maximum allowable concrete tensile stress 
  for severely corrosive environmental exposure conditions. You may also 
  enter an absolute maximum value if desired. Guidance for these values 
  is given in LRFD 5.9.4.2.2.</p>
 
-<h2>Live Load Distribution Factors</h2>
+<h2 style="font-weight: normal;">Live Load Distribution Factors</h2>
 
 <p>This option allows you to select the default method to compute distribution 
  factors, and some other parameters related to distribution factors</p>
 
-<h3><span>Method</span></h3>
+<h3 style="font-weight: normal;">Method</h3>
 
 <p>Select whether to calculate distribution factors in accordance with 
  the AASHTO LRFD Specifications, the <a HREF="..\..\Theoretical Manual\Live_Load_Distribution_Factors.htm">WSDOT 
  Bridge Design Manual.</a>, or The <a href="../../Theoretical Manual/Live_Load_Distribution_Factors_-_TxDOT_Method.htm">TxDOT 
  Bridge Design Manual</a>.</p>
 
-<h3>Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All 
- Distribution Factors</h3>
+<h3 style="font-weight: normal;">Use (Number of Lanes)/(Number of Beams) 
+ as the Lower Limit for All Distribution Factors</h3>
 
 <p>There are some cases where the equations in LRFD 4.6.2.2 generate &quot;suspicious&quot; 
  (even negative) values for distribution factors, even when parameters 
@@ -103,7 +104,7 @@
  PGSuper will override the equation if the result is less than the (Number 
  of Lanes)/(Number of Beams).</p>
 
-<h3>Maximum Angular Deviation Between Girders</h3>
+<h3 style="font-weight: normal;">Maximum Angular Deviation Between Girders</h3>
 
 <p>The equations in LRFD 4.6.2.2 may be used to compute distribution factors 
  as long as &quot;Beams are parallel and have approximately the same stiffness&quot;. 
@@ -111,14 +112,15 @@
  the maximum allowable angular deviation between girder where you consider 
  girders to be &quot;parallel&quot;. </p>
 
-<h3><span>Maximum Girder Stiffness Ratio</span></h3>
+<h3 style="font-weight: normal;">Maximum Girder Stiffness Ratio</h3>
 
 <p>The equations in LRFD 4.6.2.2 may be used to compute distribution factors 
  as long as &quot;Beams are parallel and have approximately the same stiffness&quot;. 
  However, no definition is given for &quot;approximately the same stiffness&quot;. 
  Enter the maximum percentage that Ix can vary between girders in a span.</p>
 
-<h3><span>Location to Measure Girder Spacing For Distribution Factors</span></h3>
+<h3 style="font-weight: normal;">Location to Measure Girder Spacing For 
+ Distribution Factors</h3>
 
 <p>Enter the fractional distance, measured from the ends of a girder's 
  span, for the location(s) where girder spacing is to be measured in order 
@@ -148,29 +150,6 @@
 <p>Note that PGSuper allows you to directly input, or override how distribution 
  factors are computed for a project. See the <a href="../../Dialogs/Live_Load_Distibution_Factors.htm">Live 
  Load Distribution Factors</a> dialog for more information.</p>
-
-<h3>Pedestrian Live Load [LRFD 3.6.1.6]</h3>
-
-<p>Enter the magnitude of the pedestrian patch loading. </p>
-
-<p>Enter the minimum width of sidewalks where pedestrian live loading is 
- to be applied. The load will not be applied to narrower sidewalks.</p>
-
-<p><span style="font-weight: bold;">Notes</span>: </p>
-
-<ul style="list-style: disc;"
-	type=disc>
-	
-	<li class=kadov-p><p>Pedestrian loading will be applied over the input 
- sidewalk width and is distributed between the same girders as sidewalk 
- dead loads. Refer to the <a href="Bridge_Site_2_Tab.htm">Bridge Site 2</a> 
- tab for sidewalk dead load distribution options.</p></li>
-	
-	<li class=kadov-p><p>Pedestrian live loads are automatically computed 
- based on input sidewalk width, but must be enabled for selected limit 
- states on the <a href="../../Dialogs/Specify_User-Defined_Live_Loads.htm">Edit 
- Live Loads</a> dialog.</p></li>
-</ul>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

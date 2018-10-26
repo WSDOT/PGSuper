@@ -29,7 +29,7 @@
 // GirderDescDlg.h : header file
 //
 #include "BridgeDescPrestressPage.h"
-#include "ShearSteelPage2.h"
+#include "BridgeDescShearPage.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
@@ -45,7 +45,7 @@ class CGirderDescDlg : public CPropertySheet
 
 // Construction
 public:
-	CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCTSTR strGirderName,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
 // Attributes
 public:
@@ -54,7 +54,7 @@ public:
 
    CGirderDescGeneralPage       m_General;
    CGirderDescPrestressPage     m_Prestress;
-   CShearSteelPage2             m_Shear;
+   CGirderDescShearPage         m_Shear;
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
    CGirderDescDebondPage        m_Debond;
@@ -78,14 +78,20 @@ public:
 	virtual ~CGirderDescDlg();
    void DoUpdate();
 
+   void FillMaterialComboBox(CComboBox* pCB);
+   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
+   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
+
 	// Generated message map functions
 protected:
    void Init();
    StrandIndexType GetStraightStrandCount();
+   void SetDebondTabName();
 
    friend CGirderDescGeneralPage;
    friend CGirderDescLiftingPage;
    friend CGirderDescPrestressPage;
+   friend CGirderDescShearPage;
    friend CGirderDescDebondPage;
    friend CGirderDescLongitudinalRebar;
    friend CGirderDescRatingPage;

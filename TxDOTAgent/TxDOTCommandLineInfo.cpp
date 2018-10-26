@@ -130,12 +130,6 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
                m_TxFType   = txfTest;
                m_DoAppendToFile = false;  // always delete test file
             }
-            else if (strParam.CompareNoCase(_T("TxDS")) == 0 )
-            {
-               m_TxRunType = txrDesignShear;
-               m_TxFType   = txfTest;
-               m_DoAppendToFile = false;  // always delete test file
-            }
             else
             {
                // invalid flag

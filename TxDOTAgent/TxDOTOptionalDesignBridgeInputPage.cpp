@@ -332,17 +332,6 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
       return false;
    }
 
-   if (pGdrEntry->IsForceHarpedStrandsStraight())
-   {
-      // Entry must have harped strands
-      ASSERT(0);
-      CString msg, stmp;
-      stmp.LoadString(IDS_GDR_ERROR3);
-      msg.Format(stmp,girderEntry);
-      ::AfxMessageBox(msg);
-      return false;
-   }
-
    ConnectionLibrary* pConnLib = m_pBrokerRetriever->GetConnectionLibrary();
 
    const ConnectionLibraryEntry* pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(leftConnEntry));

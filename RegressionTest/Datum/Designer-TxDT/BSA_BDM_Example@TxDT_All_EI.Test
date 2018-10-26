@@ -1,24 +1,25 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   6  6.50  1     1    WF74G  *    41  0.60  270 32.44 15.95  11 70.0  4.900  6.100    4.099   -3.925  11218  0.629  0.756  0.35 -0.14 -0.01 -0.01 -0.16 176.94 311.67   3.00   6.17   6.17
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   6  6.50     1     1 WF74G  *    38   5/8  270 32.50 16.18  10 70.0  4.600  5.600    3.406   -3.725  10660  0.629  0.756  0.32 -0.14 -0.01 -0.01 -0.17 154.02 275.36   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   6  6.50     1     2 WF74G  *    38   5/8  270 32.50 13.24  12 70.0  4.400  5.400    3.303   -3.598  10421  0.570  0.757  0.31 -0.14 -0.01 -0.01 -0.17 156.75 285.99   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   6  6.50  1     2    WF74G  *    40  0.60  270 32.46 16.96  10 70.0  4.800  6.000    3.961   -3.790  10983  0.573  0.756  0.34 -0.13 -0.01 -0.01 -0.16 169.20 303.41   3.00   6.17   6.17
-
-
-The Specification Check was Not Successful
-Confinement zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   6  6.50  1     4    WF74G  *    40  0.60  270 32.46 16.96  10 70.0  4.800  6.000    3.961   -3.790  10983  0.573  0.756  0.34 -0.13 -0.01 -0.01 -0.16 169.20 303.41   3.00   6.17   6.17
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   6  6.50     1     4 WF74G  *    38   5/8  270 32.50 13.24  12 70.0  4.400  5.400    3.303   -3.598  10421  0.570  0.757  0.31 -0.14 -0.01 -0.01 -0.17 156.75 285.99   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful

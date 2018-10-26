@@ -80,46 +80,40 @@ const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtP
    return &(*found).second;
 }
 
-void pgsStirrupCheckArtifact::SetConfinementArtifact(const pgsConfinementArtifact& artifact)
+void pgsStirrupCheckArtifact::AddStirrupCheckAtZonesArtifact(const pgsStirrupCheckAtZonesArtifactKey& key,
+                                                  const pgsStirrupCheckAtZonesArtifact& artifact)
 {
-   m_ConfinementArtifact = artifact;
+   m_StirrupCheckAtZonesArtifacts.insert(std::make_pair(key,artifact));
 }
 
-const pgsConfinementArtifact& pgsStirrupCheckArtifact::GetConfinementArtifact() const
+const pgsStirrupCheckAtZonesArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtZonesArtifact(const pgsStirrupCheckAtZonesArtifactKey& key) const
 {
-   return m_ConfinementArtifact;
+   std::map<pgsStirrupCheckAtZonesArtifactKey,pgsStirrupCheckAtZonesArtifact>::const_iterator found;
+   found = m_StirrupCheckAtZonesArtifacts.find( key );
+   if ( found == m_StirrupCheckAtZonesArtifacts.end() )
+      return 0;
+
+   return &(*found).second;
 }
 
-pgsSplittingZoneArtifact* pgsStirrupCheckArtifact::GetSplittingZoneArtifact()
-{
-   return &m_SplittingZoneArtifact;
-}
-
-const pgsSplittingZoneArtifact* pgsStirrupCheckArtifact::GetSplittingZoneArtifact() const
-{
-   return &m_SplittingZoneArtifact;
-}
-
-void pgsStirrupCheckArtifact::Clear()
-{
-   m_StirrupCheckAtPoisArtifacts.clear();
-}
 
 bool pgsStirrupCheckArtifact::Passed() const
 {
+   bool bPassed = true;
+
    std::map<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact>::const_iterator i3;
    for ( i3 = m_StirrupCheckAtPoisArtifacts.begin(); i3 != m_StirrupCheckAtPoisArtifacts.end(); i3++ )
    {
       const std::pair<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact>& artifact = *i3;
-      if (!artifact.second.Passed())
-         return false;
+      bPassed &= artifact.second.Passed();
    }
 
-   bool bPassed = true;
-
-   bPassed &= m_SplittingZoneArtifact.Passed();
-
-   bPassed &= m_ConfinementArtifact.Passed();
+   std::map<pgsStirrupCheckAtZonesArtifactKey,pgsStirrupCheckAtZonesArtifact>::const_iterator i4;
+   for ( i4 = m_StirrupCheckAtZonesArtifacts.begin(); i4 != m_StirrupCheckAtZonesArtifacts.end(); i4++ )
+   {
+      const std::pair<pgsStirrupCheckAtZonesArtifactKey,pgsStirrupCheckAtZonesArtifact>& artifact = *i4;
+      bPassed &= artifact.second.Passed();
+   }
 
    return bPassed;
 }
@@ -134,10 +128,9 @@ bool pgsStirrupCheckArtifact::Passed() const
 void pgsStirrupCheckArtifact::MakeCopy(const pgsStirrupCheckArtifact& rOther)
 {
    m_StirrupCheckAtPoisArtifacts   = rOther.m_StirrupCheckAtPoisArtifacts;
+   m_StirrupCheckAtZonesArtifacts  = rOther.m_StirrupCheckAtZonesArtifacts;
    m_Fy                            = rOther.m_Fy;
    m_Fc                            = rOther.m_Fc;
-   m_ConfinementArtifact           = rOther.m_ConfinementArtifact;
-   m_SplittingZoneArtifact         = rOther.m_SplittingZoneArtifact;
 }
 
 void pgsStirrupCheckArtifact::MakeAssignment(const pgsStirrupCheckArtifact& rOther)

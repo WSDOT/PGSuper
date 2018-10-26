@@ -20,15 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BRIDGEDESCSHEARGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_)
-#define AFX_BRIDGEDESCSHEARGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_
+#if !defined(AFX_SHEARSTEELGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_)
+#define AFX_SHEARSTEELGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_
 
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
-// BridgeDescShearGrid.h : header file
+// ShearSteelGrid.h : header file
 //
-#include <psgLib\GirderLibraryEntry.h>
+
+#include <GeometricPrimitives\GeometricPrimitives.h>
+#include <PsgLib\GirderLibraryEntry.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelGrid window
@@ -69,28 +71,28 @@ protected:
    int GetColWidth(ROWCOL nCol);
    BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+
+   matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
+
 public:
    // custom stuff for grid
    void CustomInit();
    // insert a row above the currently selected cell or at the top if no selection
-   void InsertRow(bool append);
+   void DoInsertRow();
    void DoRemoveRows();
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    // get data for a row
-   bool GetRowData(ROWCOL nRow, CShearZoneData* pz);
-
+   bool GetRowData(ROWCOL nRow, GirderLibraryEntry::ShearZoneInfo* pz);
    // fill grid with data
-   void FillGrid(const CShearData::ShearZoneVec& rvec, bool isSymmetrical);
-
-   void SetSymmetry(bool isSymmetrical);
+   void FillGrid(const GirderLibraryEntry::ShearZoneInfoVec& rvec);
 
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
-   bool EnableItemDelete();
-   matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
-   bool m_IsSymmetrical;
+
+
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,4 +100,4 @@ private:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_BRIDGEDESCSHEARGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_)
+#endif // !defined(AFX_SHEARSTEELGRID_H__8D165F54_32B9_11D2_9D40_00609710E6CE__INCLUDED_)

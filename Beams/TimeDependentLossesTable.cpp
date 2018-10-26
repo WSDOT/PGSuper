@@ -90,7 +90,7 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    return table;
 }
 
-void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << stress.SetValue(details.pLosses->TimeDependentLossesBeforeDeck());
    (*this)(row,2) << stress.SetValue(details.pLosses->TimeDependentLossesAfterDeck());

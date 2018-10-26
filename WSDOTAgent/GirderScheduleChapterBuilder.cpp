@@ -82,19 +82,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
-
-   // WsDOT reports don't support Straight-Web strand option
-   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span, girder))
-   {
-      rptParagraph* p;
-      
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << color(Red) << Bold(_T("A WSDOT Girder Schedule could not be generated because this girder utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
-      return pChapter;
-   }
-
    if( pArtifact->Passed() )
    {
       rptParagraph* pPara = new rptParagraph;
@@ -281,6 +268,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << RPT_FCI << _T(" (at Release)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   
    StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
    (*p_table)(++row,0) << _T("Number of Harped Strands");
    (*p_table)(row  ,1) << nh;
@@ -344,6 +333,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << Sub2(_T("F"),_T("b"));
    if (0 < nh)
    {
+      GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
       CComPtr<IPoint2d> pnt0, pnt1;
       pStrandGeometry->GetStrandPosition(pmid[0],0,pgsTypes::Harped,&pnt0);
       pStrandGeometry->GetStrandPosition(pmid[0],nh-1,pgsTypes::Harped,&pnt1);

@@ -40,7 +40,6 @@
 #include <IFace\AnalysisResults.h>
 
 #include "StrandDesignTool.h"
-#include "ShearDesignTool.h"
 #include "DesignCodes.h"
 #include "LoadRater.h" // friend so it can access some private functions
 
@@ -85,7 +84,7 @@ LOG
    rab : 12.09.1998 : Created file 
 *****************************************************************************/
 
-class pgsDesigner2 : LongReinfShearChecker
+class pgsDesigner2
 {
 public:
    struct ALLOWSTRESSCHECKTASK
@@ -154,13 +153,12 @@ private:
    StatusCallbackIDType m_scidBridgeDescriptionError;
 
    pgsStrandDesignTool m_StrandDesignTool;
-   pgsShearDesignTool  m_ShearDesignTool;
    pgsDesignCodes      m_DesignerOutcome;
 
    bool m_bSkipShearCheckBeforeLeftCS;
    bool m_bSkipShearCheckAfterRightCS;
-   pgsPointOfInterest m_LeftCS;
-   pgsPointOfInterest m_RightCS;
+   double m_LeftCS;
+   double m_RightCS;
    bool m_bLeftCS_StrutAndTieRequired;
    bool m_bRightCS_StrutAndTieRequired;
 
@@ -174,8 +172,8 @@ private:
    void CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pgsStrandStressArtifact* pArtifact);
    void CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,ALLOWSTRESSCHECKTASK task,pgsGirderArtifact* pGdrArtifact);
    void CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsGirderArtifact* pGdrArtifact);
-   void CheckShear(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& rVPoi,pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
-   void CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
+   void CheckShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsGirderArtifact* pGdrArtifact);
+   void CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,pgsGirderArtifact* pGdrArtifact);
    void CheckGirderDetailing(SpanIndexType span,GirderIndexType gdr,pgsGirderArtifact* pGdrArtifact);
    void CheckStrandSlope(SpanIndexType span,GirderIndexType gdr,pgsStrandSlopeArtifact* pArtifact);
    void CheckHoldDownForce(SpanIndexType span,GirderIndexType gdr,pgsHoldDownForceArtifact* pArtifact);
@@ -194,14 +192,14 @@ private:
    void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress);
    void DesignSlabOffset(IProgress* pProgress);
    void DesignMidZoneFinalConcrete(IProgress* pProgress);
-   void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress);
+   void DesignMidZoneAtRelease(IProgress* pProgress);
    void DesignEndZone(bool firstTime, arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForShipping(IProgress* pProgress);
    std::vector<DebondLevelType> DesignForShippingDebondingFinal(IProgress* pProgress);
 
    void DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
-   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress);
-   void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress);
+   void DesignForLiftingHarping(bool bAdjustingAfterShipping,IProgress* pProgress);
+   void DesignEndZoneReleaseHarping(IProgress* pProgress);
 
    void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsDesignArtifact& artifact, IProgress* pProgress);
    std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);
@@ -214,11 +212,36 @@ private:
    void RefineDesignForAllowableStress(IProgress* pProgress);
    void RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IProgress* pProgress);
    void RefineDesignForUltimateMoment(pgsTypes::Stage stage,pgsTypes::LimitState ls,IProgress* pProgress);
+   void RefineDesignForStirrups(pgsTypes::Stage stage,
+                                  pgsTypes::LimitState ls,
+                                  pgsDesignArtifact* pArtifact);
+
    pgsPointOfInterest GetControllingFinalMidZonePoi(SpanIndexType span,GirderIndexType gdr);
 
-   // Shear design
-   void DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure);
 
+   void DesignForVerticalShear(SpanIndexType span,GirderIndexType gdr,Float64 vu, const SHEARCAPACITYDETAILS& scd, Float64* Avs);
+   void DesignForHorizontalShear(const pgsPointOfInterest& poi, Float64 vu, const SHEARCAPACITYDETAILS& scd, Float64* pAvs);
+   Float64 CalcAvsForSplittingZone(SpanIndexType span,GirderIndexType gdr, const pgsDesignArtifact& rArtifact);
+   Float64 CalcAvsForConfinement(SpanIndexType span,GirderIndexType gdr);
+   void CalcAvSAtPois(pgsTypes::Stage stage,
+                       pgsTypes::LimitState ls,
+                       SpanIndexType span,
+                       GirderIndexType gdr,
+                       pgsDesignArtifact* pArtifact,
+                       const pgsPointOfInterest& leftCs,
+                       const pgsPointOfInterest& rightCs,
+                       const std::vector<pgsPointOfInterest>& vPoi, 
+                       std::vector<ShearDesignAvs>* avsAtPois);
+   void DetailStirrupZones(pgsTypes::Stage stage,
+                             pgsTypes::LimitState ls,
+                             SpanIndexType span,
+                             GirderIndexType gdr,
+                             pgsDesignArtifact* pArtifact,
+                             const pgsPointOfInterest& leftCs,
+                             const pgsPointOfInterest& rightCs,
+                             const std::vector<pgsPointOfInterest>& vPoi, 
+                             const std::vector<ShearDesignAvs>& avsAtPois);
+   bool GetStirrupsForAvs(SpanIndexType span,GirderIndexType gdr, Float64 avs, Float64 sMax, matRebar::Type barType,matRebar::Grade grade,matRebar::Size* pBarSize, Float64 *pSpacing);
    Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd);
 
    Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi);
@@ -229,33 +252,29 @@ private:
 
    // poi based shear checks
    pgsStirrupCheckAtPoisArtifact CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage, pgsTypes::LimitState ls, Float64 vu,
-                                                                  Float64 fcSlab,Float64 fcGdr, Float64 fy, bool checkConfinement,const GDRCONFIG* pConfig);
+                                                                  Float64 fcSlab,Float64 fcGdr, Float64 fy);
 
-   void InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const GDRCONFIG* pConfig);
+   void InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
    bool IsDeepSection( const pgsPointOfInterest& poi);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
-   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact );
+   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, pgsVerticalShearArtifact* pArtifact );
    void CheckHorizontalShear( const pgsPointOfInterest& poi, Float64 vu,
                               Float64 fcSlab,Float64 fcGdr, Float64 fy,
-                              const GDRCONFIG* pConfig,
                               pgsHorizontalShearArtifact* pArtifact );
    void CheckFullStirrupDetailing( const pgsPointOfInterest& poi, const pgsVerticalShearArtifact& vertArtifact, 
                                    const SHEARCAPACITYDETAILS& scd, Float64 vu, 
                                    Float64 fcGdr, Float64 fy,
-                                   const STIRRUPCONFIG* pConfig,
                                    pgsStirrupDetailArtifact* pArtifact );
-public:
-   // This function is needed by shear design tool
-   void CheckLongReinfShear(const pgsPointOfInterest& poi, 
-                            pgsTypes::Stage stage,
-                            pgsTypes::LimitState ls,
-                            const SHEARCAPACITYDETAILS& scd,
-                            const GDRCONFIG* pConfig,
-                            pgsLongReinfShearArtifact* pArtifact );
-private:
+   void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi, 
+                                         pgsTypes::Stage stage,
+                                         pgsTypes::LimitState ls,
+                                         const SHEARCAPACITYDETAILS& scd,
+                                         pgsLongReinfShearArtifact* pArtifact );
 
+   // shear zone-based shear checks
+   pgsStirrupCheckAtZonesArtifact CreateStirrupCheckAtZonesArtifact(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zoneNum, bool checkConfinement);
 
-   void CheckConfinement(SpanIndexType span, GirderIndexType gdr, const GDRCONFIG* pConfig, pgsConfinementArtifact* pArtifact);
+   void CheckConfinement(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zoneNum, pgsConfinementArtifact* pArtifact );
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

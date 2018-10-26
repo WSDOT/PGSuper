@@ -243,6 +243,7 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeSameGirderType)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
+   ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -721,7 +722,7 @@ void CGirderDescGeneralPage::UpdateGirderTypeHyperLink()
    if ( m_bUseSameGirderType )
    {
       // girder name is shared with the entire bridge
-      m_GirderTypeHyperLink.SetWindowText(_T("This girder is used for the entire bridge"));
+      m_GirderTypeHyperLink.SetWindowText(_T("This girder type is used for the entire bridge"));
       m_GirderTypeHyperLink.SetURL(_T("Click to change the type of this girder"));
    }
    else
@@ -754,20 +755,36 @@ void CGirderDescGeneralPage::UpdateSlabOffsetHyperLink()
    }
 }
 
+void CGirderDescGeneralPage::OnBeforeChangeGirderName()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
+   m_GirderNameIdx = pCB->GetCurSel();
+}
+
 void CGirderDescGeneralPage::OnChangeGirderName()
 {
-   CString newName;
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
+   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
+   if ( result == IDNO )
+   {
+      pCB->SetCurSel(m_GirderNameIdx);
+      return;
+   }
+
+   CString newName;
    pCB->GetWindowText(newName);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_GirderData.ResetPrestressData();
 
+   pParent->m_strGirderName = newName;
+
    // reset stirrups to library
    pParent->m_Shear.m_CurGrdName = newName;
-   pParent->m_Shear.DoRestoreDefaults();
+   pParent->m_Shear.RestoreToLibraryDefaults();
 
    pParent->m_LongRebar.m_CurGrdName = newName;
    pParent->m_LongRebar.RestoreToLibraryDefaults();
 
+   pParent->SetDebondTabName();
 }

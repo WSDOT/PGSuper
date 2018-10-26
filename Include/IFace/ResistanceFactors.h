@@ -39,6 +39,7 @@ DEFINE_GUID(IID_IResistanceFactors,
 interface IResistanceFactors : IUnknown
 {
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression) = 0;
+   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) = 0;
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) = 0;
 };
 

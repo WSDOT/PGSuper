@@ -350,7 +350,8 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsVerticalShearArtifact::pgsVerticalShearArtifact() :
 m_bIsApplicable(true),
-m_AvOverSReqd(0.0)
+m_Capacity(0.0),
+m_Demand(0.0)
 {
    for ( int i = 0; i < 2; i++ )
    {
@@ -421,16 +422,6 @@ void pgsVerticalShearArtifact::SetAreStirrupsProvided(bool provd)
 bool pgsVerticalShearArtifact::GetAreStirrupsProvided() const
 {
    return m_AreStirrupsProvided;
-}
-
-void pgsVerticalShearArtifact::SetAvOverSReqd(Float64 reqd)
-{
-   m_AvOverSReqd = reqd;
-}
-
-Float64 pgsVerticalShearArtifact::GetAvOverSReqd() const
-{
-   return m_AvOverSReqd;
 }
 
 void pgsVerticalShearArtifact::SetDemand(Float64 demand)
@@ -523,8 +514,6 @@ void pgsVerticalShearArtifact::MakeCopy(const pgsVerticalShearArtifact& rOther)
    m_AreStirrupsReqd     = rOther.m_AreStirrupsReqd;
    m_AreStirrupsProvided = rOther.m_AreStirrupsProvided;
 
-   m_AvOverSReqd = rOther.m_AvOverSReqd;
-
    m_Demand   = rOther.m_Demand;
    m_Capacity = rOther.m_Capacity;
 }
@@ -552,8 +541,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 pgsHorizontalShearArtifact::pgsHorizontalShearArtifact():
-m_AvfAdditional(0),
-m_SAdditional(0),
+m_AvfTopFlange(0),
+m_STopFlange(0),
 m_AvfGirder(0),
 m_SGirder(0),
 m_NormalCompressionForce(0),
@@ -578,8 +567,7 @@ m_VsLimit(0),
 m_Dv(0),
 m_I(0),
 m_Q(0),
-m_UltimateHorizontalShear(0),
-m_AvsReqd(0.0)
+m_UltimateHorizontalShear(0)
 {
 }
 
@@ -649,10 +637,10 @@ Float64 pgsHorizontalShearArtifact::GetAvOverS() const
       avsg = m_AvfGirder/m_SGirder;
    }
 
-   if (m_AvfAdditional>0.0)
+   if (m_AvfTopFlange>0.0)
    {
-      CHECK(m_SAdditional>0.0);
-      avstf = m_AvfAdditional/m_SAdditional;
+      CHECK(m_STopFlange>0.0);
+      avstf = m_AvfTopFlange/m_STopFlange;
    }
 
    return avsg + avstf;
@@ -660,10 +648,10 @@ Float64 pgsHorizontalShearArtifact::GetAvOverS() const
 
 Float64 pgsHorizontalShearArtifact::GetSMax() const
 {
-   if (m_AvfGirder>0.0 && m_AvfAdditional>0.0)
-      return min(m_SGirder, m_SAdditional);
+   if (m_AvfGirder>0.0 && m_AvfTopFlange>0.0)
+      return min(m_SGirder, m_STopFlange);
    else
-      return max(m_SGirder, m_SAdditional);
+      return max(m_SGirder, m_STopFlange);
 }
 
 //======================== ACCESS     =======================================
@@ -704,14 +692,14 @@ void pgsHorizontalShearArtifact::SetBv(Float64 bv)
    m_Bv = bv;
 }
 
-Float64 pgsHorizontalShearArtifact::GetSAdditional() const
+Float64 pgsHorizontalShearArtifact::GetSTopFlange() const
 {
-   return m_SAdditional;
+   return m_STopFlange;
 }
 
-void pgsHorizontalShearArtifact::SetSAdditional(Float64 s)
+void pgsHorizontalShearArtifact::SetSTopFlange(Float64 s)
 {
-   m_SAdditional = s;
+   m_STopFlange = s;
 }
 
 Float64 pgsHorizontalShearArtifact::GetSGirder() const
@@ -759,22 +747,22 @@ void pgsHorizontalShearArtifact::SetAvOverSMin(Float64 fmin)
    m_AvOverSMin = fmin;
 }
 
-Float64 pgsHorizontalShearArtifact::GetNumLegs() const
+CollectionIndexType pgsHorizontalShearArtifact::GetNumLegs() const
 {
    return m_NumLegs;
 }
 
-void pgsHorizontalShearArtifact::SetNumLegs(Float64 legs)
+void pgsHorizontalShearArtifact::SetNumLegs(CollectionIndexType legs)
 {
    m_NumLegs = legs;
 }
 
-Float64 pgsHorizontalShearArtifact::GetNumLegsReqd() const
+CollectionIndexType pgsHorizontalShearArtifact::GetNumLegsReqd() const
 {
    return m_NumLegsReqd;
 }
 
-void pgsHorizontalShearArtifact::SetNumLegsReqd(Float64 legs)
+void pgsHorizontalShearArtifact::SetNumLegsReqd(CollectionIndexType legs)
 {
    m_NumLegsReqd = legs;
 }
@@ -859,16 +847,6 @@ void pgsHorizontalShearArtifact::SetK2(double k2)
    m_K2 = k2;
 }
 
-Float64 pgsHorizontalShearArtifact::GetAvOverSReqd() const
-{
-   return m_AvsReqd;
-}
-
-void pgsHorizontalShearArtifact::SetAvOverSReqd(const Float64& vu)
-{
-   m_AvsReqd = vu;
-}
-
 //======================== INQUIRY    =======================================
 //======================== DEBUG      =======================================
 #if defined _DEBUG
@@ -913,8 +891,8 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_Fc                      = rOther.m_Fc;
 
    m_Bv           = rOther.m_Bv;
-   m_AvfAdditional = rOther.m_AvfAdditional;
-   m_SAdditional   = rOther.m_SAdditional;
+   m_AvfTopFlange = rOther.m_AvfTopFlange;
+   m_STopFlange   = rOther.m_STopFlange;
    m_AvfGirder    = rOther.m_AvfGirder;
    m_SGirder      = rOther.m_SGirder;
    m_Sall         = rOther.m_Sall;
@@ -929,8 +907,6 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_I = rOther.m_I;
    m_Q = rOther.m_Q;
    m_Vu = rOther.m_Vu;
-
-   m_AvsReqd = rOther.m_AvsReqd;
 }
 
 void pgsHorizontalShearArtifact::MakeAssignment(const pgsHorizontalShearArtifact& rOther)

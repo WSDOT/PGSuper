@@ -27,7 +27,6 @@
 #include <psgLib\psglib.h>
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
-#include <psgLib\RebarUIUtils.h>
 #include "..\htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
@@ -69,7 +68,7 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       matRebar::Type type;
       matRebar::Grade grade;
-      GetStirrupMaterial(idx,type,grade);
+      pDad->GetStirrupMaterial(idx,type,grade);
       pDad->m_Entry.SetLongSteelMaterial(type,grade);
    }
    else
@@ -77,7 +76,7 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
       matRebar::Type type;
       matRebar::Grade grade;
       pDad->m_Entry.GetLongSteelMaterial(type,grade);
-      int idx = GetStirrupMaterialIndex(type,grade);
+      int idx = pDad->GetStirrupMaterialIndex(type,grade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
    }
 
@@ -112,7 +111,7 @@ BOOL CLongSteelPage::OnInitDialog()
    ASSERT(pDad);
 
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   pDad->FillMaterialComboBox(pc);
 
 	CPropertyPage::OnInitDialog();
 	

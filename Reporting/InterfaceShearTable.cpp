@@ -105,7 +105,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
    table->SetNumberOfHeaderRows(2);
    table->SetRowSpan(0,0,2);
-   table->SetRowSpan(1,0,-1);
+   table->SetRowSpan(1,0,SKIP_CELL);
    if ( stage == pgsTypes::CastingYard )
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
@@ -129,12 +129,12 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    (*table)(1,8)  << COLHDR(symbol(phi) << _T("v") << Sub(_T("ni")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(1,9) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("v"),_T("ni")) << _T("/") << _T("|") << Sub2(_T("v"),_T("ui")) << _T("|)");
 
-   table->SetColumnSpan(0,4,-1);
-   table->SetColumnSpan(0,5,-1);
-   table->SetColumnSpan(0,6,-1);
-   table->SetColumnSpan(0,7,-1);
-   table->SetColumnSpan(0,8,-1);
-   table->SetColumnSpan(0,9,-1);
+   table->SetColumnSpan(0,4,SKIP_CELL);
+   table->SetColumnSpan(0,5,SKIP_CELL);
+   table->SetColumnSpan(0,6,SKIP_CELL);
+   table->SetColumnSpan(0,7,SKIP_CELL);
+   table->SetColumnSpan(0,8,SKIP_CELL);
+   table->SetColumnSpan(0,9,SKIP_CELL);
 
    // Fill up the table
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
@@ -146,7 +146,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    CHECK(pstirrup_artifact);
 
    Float64 bvmax = lrfdConcreteUtil::UpperLimitForBv();
-   Float64 minlegs;
+   CollectionIndexType minlegs;
    bool do_note=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
@@ -216,14 +216,9 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if (do_note)
    {
-       rptRcScalar scalar;
-       scalar.SetFormat(pDisplayUnits->GetScalarFormat().Format);
-       scalar.SetWidth(pDisplayUnits->GetScalarFormat().Width);
-       scalar.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
-
-       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-       *pChapter << pPara;
-       *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: b")<<Sub(_T("v"))<<_T(" exceeds ")<<dimu.SetValue(bvmax)<<_T(" and number of legs < ")<< scalar.SetValue(minlegs)<<rptNewLine;
+      pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      *pChapter << pPara;
+      *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: b")<<Sub(_T("v"))<<_T(" exceeds ")<<dimu.SetValue(bvmax)<<_T(" and number of legs < ")<< minlegs<<rptNewLine;
    }
 }
 

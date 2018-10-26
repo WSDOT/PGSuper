@@ -45,6 +45,7 @@
 #define STRAND_BORDER_COLOR   BLACK
 #define STRAND_FILL_COLOR     BLACK
 #define DEBOND_FILL_COLOR     RED
+#define EXTENDED_FILL_COLOR   BLUE
 #define CUT_COLOR             MEDIUMBLUE
 #define REBAR_COLOR           CYAN4
 #define OVERLAY_COLOR         BLACK

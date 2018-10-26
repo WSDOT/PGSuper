@@ -626,51 +626,50 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,130,41,50,14
 END
 
-IDD_GIRDERDESC_PRESTRESS DIALOGEX 0, 0, 382, 267
+IDD_GIRDERDESC_PRESTRESS DIALOGEX 0, 0, 361, 243
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION
 CAPTION "Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Strand Details",IDC_STATIC,7,7,368,107
-    RTEXT           "Number of Straight Strands",IDC_SS_TITLE,28,41,95,8
-    EDITTEXT        IDC_NUM_SS,127,41,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
-    CONTROL         "Spin1",IDC_NUM_SS_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,167,41,11,14
-    CONTROL         "Calculate Jacking Force",IDC_SS_JACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,181,41,88,10
-    EDITTEXT        IDC_SS_JACK_FORCE,276,41,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_SS_JACK_FORCE_UNIT,320,41,25,8
-    RTEXT           "Number of Harped Strands",IDC_HS_TITLE,13,59,110,8
-    EDITTEXT        IDC_NUM_HS,127,59,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
-    CONTROL         "Spin2",IDC_NUM_HS_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,167,59,11,14
-    CONTROL         "Calculate Jacking Force",IDC_HS_JACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,181,59,88,10
-    EDITTEXT        IDC_HS_JACK_FORCE,276,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HS_JACK_FORCE_UNIT,320,59,27,8
-    RTEXT           "Number of Temporary Strands",IDC_TEMP_TITLE,28,76,95,8
-    EDITTEXT        IDC_NUM_TEMP,127,76,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
-    CONTROL         "Spin2",IDC_NUM_TEMP_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,167,76,11,14
-    CONTROL         "Calculate Jacking Force",IDC_TEMP_JACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,181,76,88,10
-    EDITTEXT        IDC_TEMP_JACK_FORCE,276,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TEMP_JACK_FORCE_UNIT,320,76,24,8
+    GROUPBOX        "Strand Details",IDC_STATIC,7,7,347,107
+    RTEXT           "Number of Straight Strands",IDC_SS_TITLE,15,41,95,8
+    EDITTEXT        IDC_NUM_SS,114,41,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    CONTROL         "Spin1",IDC_NUM_SS_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,41,11,14
+    CONTROL         "Calculate Jacking Force",IDC_SS_JACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,41,88,10
+    EDITTEXT        IDC_SS_JACK_FORCE,263,41,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SS_JACK_FORCE_UNIT,307,41,25,8
+    RTEXT           "Number of Harped Strands",IDC_HS_TITLE,15,59,95,8
+    EDITTEXT        IDC_NUM_HS,114,59,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    CONTROL         "Spin2",IDC_NUM_HS_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,59,11,14
+    CONTROL         "Calculate Jacking Force",IDC_HS_JACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,59,88,10
+    EDITTEXT        IDC_HS_JACK_FORCE,263,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HS_JACK_FORCE_UNIT,307,59,27,8
+    RTEXT           "Number of Temporary Strands",IDC_TEMP_TITLE,15,76,95,8
+    EDITTEXT        IDC_NUM_TEMP,114,76,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    CONTROL         "Spin2",IDC_NUM_TEMP_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,76,11,14
+    CONTROL         "Calculate Jacking Force",IDC_TEMP_JACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,76,88,10
+    EDITTEXT        IDC_TEMP_JACK_FORCE,263,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TEMP_JACK_FORCE_UNIT,307,76,24,8
     COMBOBOX        IDC_TTS_USE,21,96,305,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Girder Ends:",IDC_HPOFFSET_END_TITLE,12,133,50,8
-    EDITTEXT        IDC_HPOFFSET_END,309,132,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HPOFFSET_END_UNIT,351,135,18,8
+    EDITTEXT        IDC_HPOFFSET_END,287,132,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HPOFFSET_END_UNIT,329,135,18,8
     RTEXT           "Harping Points:",IDC_HPOFFSET_HP_TITLE,12,160,49,8
-    EDITTEXT        IDC_HPOFFSET_HP,309,159,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HPOFFSET_HP_UNIT,351,164,18,8
-    GROUPBOX        "Vertical Location of Harped Strands",IDC_VERT_GROUP,7,117,368,88
-    COMBOBOX        IDC_HP_COMBO_END,65,133,237,108,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_HP_COMBO_HP,65,160,237,108,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "",IDC_HPOFFSET_END_NOTE,166,148,178,8
+    EDITTEXT        IDC_HPOFFSET_HP,287,159,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HPOFFSET_HP_UNIT,329,164,18,8
+    GROUPBOX        "Vertical Location of Harped Strands",IDC_STATIC,7,117,347,72
+    COMBOBOX        IDC_HP_COMBO_END,65,133,218,108,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_HP_COMBO_HP,65,160,218,108,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "",IDC_HPOFFSET_END_NOTE,149,148,178,8
     RTEXT           "",IDC_HPOFFSET_HP_NOTE,149,177,178,8
     LTEXT           "Specify Number of Strands Using",IDC_STATIC,13,22,111,8
-    COMBOBOX        IDC_STRAND_INPUT_TYPE,125,17,207,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "#Harped, #Straight",IDC_HARP_STRAIGHT,40,41,211,8
-    GROUPBOX        "Prestressing Strand Type",IDC_STATIC,7,212,368,43
-    LTEXT           "Permanent",IDC_STATIC,29,224,97,8
-    COMBOBOX        IDC_STRAND_SIZE,29,235,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Temporary",IDC_TEMP_STRAND_SIZE_LABEL,198,224,97,8
-    COMBOBOX        IDC_TEMP_STRAND_SIZE,198,235,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Note: Hold the Ctrl key while selecting to convert to another location basis",IDC_STATIC,64,190,285,8
+    COMBOBOX        IDC_STRAND_INPUT_TYPE,125,17,161,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "#Harped, #Straight",IDC_HARP_STRAIGHT,27,41,111,8
+    GROUPBOX        "Prestressing Strand Type",IDC_STATIC,7,193,347,43
+    LTEXT           "Permanent",IDC_STATIC,13,206,97,8
+    COMBOBOX        IDC_STRAND_SIZE,13,217,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Temporary",IDC_TEMP_STRAND_SIZE_LABEL,182,206,97,8
+    COMBOBOX        IDC_TEMP_STRAND_SIZE,182,217,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPECIFICATION DIALOG  0, 0, 278, 65
@@ -685,10 +684,10 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,170,44,50,14
 END
 
-IDD_BRIDGE_EDITOR_PLAN_PAGE DIALOGEX 0, 0, 167, 76
+IDD_BRIDGE_EDITOR_PLAN_PAGE DIALOG  0, 0, 134, 70
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Plan"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Label Piers",IDC_LABEL_PIERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,51,10
     CONTROL         "Label Girders",IDC_LABEL_GIRDERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,20,57,10
@@ -770,9 +769,9 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,124,131,50,14
 END
 
-IDD_ANALYSIS_RESULTS_BAR DIALOGEX 0, 0, 150, 308
+IDD_ANALYSIS_RESULTS_BAR DIALOG  0, 0, 150, 308
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif"
 BEGIN
     COMBOBOX        IDC_SPAN,7,7,64,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,78,7,65,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -787,7 +786,37 @@ BEGIN
     CONTROL         "Simple/Continuous Envelope",IDC_SIMPLE3,"Button",BS_AUTORADIOBUTTON,13,285,107,10
 END
 
-IDD_DESIGN_GIRDER DIALOGEX 0, 0, 328, 249
+IDD_GIRDERDESC_SHEAR_STEEL DIALOGEX 0, 0, 362, 292
+STYLE DS_SETFONT | WS_CHILD | WS_CAPTION
+CAPTION "Trans. Reinforcement"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "Reinforcement Material",IDC_STATIC,10,10,74,8
+    COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Transverse Reinforcement Zones",IDC_STATIC,7,23,348,144,0,WS_EX_TRANSPARENT
+    CONTROL         "Custom1",IDC_SHEAR_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,34,330,69
+    PUSHBUTTON      "Insert Row",IDC_INSERTROW,113,109,63,14
+    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,185,109,63,14
+    CONTROL         "Transverse Reinforcement engages deck and is adequately developed for interface shear capacity",IDC_STIRRUPS_ENGAGE_DECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,133,327,10
+    CONTROL         "Top flange is intentionally roughened for interface shear capacity",IDC_ROUGHENED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,147,219,10
+    GROUPBOX        "Top Flange Horizontal Interface Shear Reinforcement",IDC_STATIC,7,174,348,43,0,WS_EX_TRANSPARENT
+    LTEXT           "Additional reinforcement engaging deck, but does not provide additional vertical shear capacity",IDC_STATIC,15,184,299,8
+    LTEXT           "Bar Size",IDC_STATIC,16,201,30,8
+    COMBOBOX        IDC_TF_BAR_SIZE,55,197,41,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Spacing (Uniform along entire girder):",IDC_STATIC,117,201,117,8
+    EDITTEXT        IDC_TF_SPACING,237,195,59,14,ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TF_SPACING_UNITS,303,201,18,8
+    GROUPBOX        "Bottom Flange Confinement Reinforcement",IDC_STATIC,7,222,348,35,0,WS_EX_TRANSPARENT
+    LTEXT           "Bar Size",IDC_STATIC,13,241,31,8
+    COMBOBOX        IDC_BAR_SIZE,55,236,41,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Last Zone Containing Confinement Reinforcement:",IDC_STATIC,117,241,160,8
+    COMBOBOX        IDC_LAST_ZONE,279,238,48,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,123,271,113,14
+END
+
+IDD_DESIGN_GIRDER DIALOGEX 0, 0, 328, 235
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Girder Designer"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -801,17 +830,15 @@ BEGIN
     CONTROL         "Don't Change Slab Offset (""A"" dimension)",IDC_DESIGN_A,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,169,145,10
     CONTROL         "Design For Shear",IDC_DESIGN_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,188,94,10
-    DEFPUSHBUTTON   "Run Design",IDOK,34,228,64,14
-    PUSHBUTTON      "Cancel",IDCANCEL,107,228,50,14
-    PUSHBUTTON      "Help",IDC_HELPME,235,228,50,14
+    DEFPUSHBUTTON   "Run Design",IDOK,34,214,64,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,214,50,14
+    PUSHBUTTON      "Help",IDC_HELPME,235,214,50,14
     GROUPBOX        "Select Girder(s) to be Designed",IDC_STATIC,7,40,180,93
-    GROUPBOX        "Design Options",IDC_STATIC,7,139,180,81
+    GROUPBOX        "Design Options",IDC_STATIC,7,139,180,64
     LTEXT           "The Girder Designer uses current bridge layout and project criteria information to determine an optimal design for the selected girder(s)",IDC_STATIC,8,10,179,30
     LTEXT           "Notes:\n- A successful design attempt does not guarantee compliance with all criteria.  Always run a Spec Check Report to review your final design.",IDC_STATIC,199,135,121,47
     CONTROL         309,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,212,13,97,116
     LTEXT           "- Design of ""A"" dimension Not Available when multiple girders are selected",IDC_ADIM_STATIC,199,181,121,28
-    CONTROL         "Start with Current Stirrup Layout",IDC_START_WITH_LAYOUT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,203,115,10
 END
 
 IDD_GIRDERDESC_LIFTING_PAGE DIALOG  0, 0, 390, 234
@@ -895,9 +922,9 @@ BEGIN
     LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,209,194,8
 END
 
-IDD_STABILITY_BAR DIALOGEX 0, 0, 240, 26
+IDD_STABILITY_BAR DIALOG  0, 0, 240, 26
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif"
 BEGIN
     COMBOBOX        IDC_SPAN,7,7,52,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,66,7,52,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1025,9 +1052,9 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,233,236,50,14
 END
 
-IDD_EDIT_LOADS DIALOGEX 0, 0, 538, 132
-STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+IDD_EDIT_LOADS DIALOG  0, 0, 538, 132
+STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD
+FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "List1",IDC_LOADS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,15,18,516,75
     PUSHBUTTON      "Edit Load",IDC_EDIT_LOAD,13,110,67,14
@@ -1035,24 +1062,23 @@ BEGIN
     PUSHBUTTON      "Add New Point Load...",IDC_ADD_POINTLOAD,157,110,100,14
     PUSHBUTTON      "Add New Distributed Load...",IDC_ADD_NEW_DISTRIBUTED,261,110,100,14
     PUSHBUTTON      "Help",ID_HELP,490,110,41,14
-    GROUPBOX        "Select Load to Be Edited or Add New Loads",IDC_LOAD_STATIC,7,7,524,117,BS_FLAT,WS_EX_TRANSPARENT
+    GROUPBOX        "Select Load to Be Edited or Add New Loads",IDC_LOAD_STATIC,7,7,524,117
     PUSHBUTTON      "Add New Moment Load...",IDC_ADD_MOMENTLOAD,365,110,100,14
 END
 
-IDD_GIRDERDESC_DEBOND DIALOG  0, 0, 427, 276
+IDD_GIRDERDESC_DEBOND DIALOGEX 0, 0, 427, 276
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Debonding"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Custom1",IDC_DEBOND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,148,222
-    PUSHBUTTON      "Add",IDC_ADD,16,237,50,14
-    PUSHBUTTON      "Delete",IDC_DELETE,92,237,50,14
-    LTEXT           "",IDC_PICTURE,171,8,249,203,WS_BORDER
-    CONTROL         "Symmetrical Debonding",IDC_SYMMETRIC_DEBOND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,257,90,10
-    LTEXT           "Note: Straight strands shown in light grey cannot be debonded",IDC_STATIC,218,261,202,8
-    LTEXT           "Number of straight strands = %%",IDC_NUMSTRAIGHT,171,216,168,8
-    LTEXT           "Number of deboned strands = %%",IDC_NUM_DEBONDED,171,229,193,8
-    LTEXT           "Percentage of straight strands debonded = ",IDC_PERCENT_DEBONDED,171,242,185,8
+    CONTROL         "Custom1",IDC_DEBOND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,178,250
+    LTEXT           "",IDC_PICTURE,196,8,224,203,WS_BORDER
+    CONTROL         "Symmetrical Debonding",IDC_SYMMETRIC_DEBOND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,260,90,10
+    LTEXT           "Note: Straight strands shown in light grey cannot be debonded",IDC_NOTE,218,261,202,8
+    LTEXT           "Number of straight strands = %%",IDC_NUMSTRAIGHT,197,216,168,8
+    LTEXT           "Number of deboned strands = %%",IDC_NUM_DEBONDED,197,227,193,8
+    LTEXT           "Percentage of straight strands debonded = ",IDC_PERCENT_DEBONDED,197,238,185,8
+    LTEXT           "Number of extended strands",IDC_NUM_EXTENDED,197,249,185,8
 END
 
 IDD_ALIGNMENT_HORIZONTAL DIALOG  0, 0, 274, 198
@@ -1262,8 +1288,8 @@ BEGIN
     LTEXT           "Engineer",IDC_STATIC,258,60,65,8
     LTEXT           "Company",IDC_STATIC,258,90,69,8
     LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,233,174,8
-    PUSHBUTTON      "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,48,216,155,14
-    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,20,20
+    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,49,220,155,10
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,21,20
 END
 
 IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 247
@@ -1391,22 +1417,22 @@ BEGIN
     LTEXT           "Path to Template Files",IDC_TEMPLATE_STATIC,7,116,71,8
 END
 
-IDD_SELECT_LIVE_LOAD DIALOGEX 0, 0, 489, 299
+IDD_SELECT_LIVE_LOAD DIALOGEX 0, 0, 489, 246
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Design Live Loads"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Design Limit States",IDC_STATIC,7,7,153,259
+    GROUPBOX        "Design Limit States",IDC_STATIC,7,7,153,212
     LTEXT           "Select the live loads to include in the Service and Strength I limit states envelopes",IDC_STATIC,13,19,143,20
     LISTBOX         IDC_DESIGN_LL_LIST,15,39,137,145,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,14,188,108,8
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,19,188,108,8
     LTEXT           "Truck",IDC_STATIC,22,202,20,8
     EDITTEXT        IDC_DESIGN_TRUCK_IMPACT,45,199,20,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,67,202,8,8
     LTEXT           "Lane",IDC_STATIC,89,202,17,8
     EDITTEXT        IDC_DESIGN_LANE_IMPACT,110,199,20,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,133,202,8,8
-    GROUPBOX        "Fatigue Limit States",IDC_STATIC,169,7,153,259
+    GROUPBOX        "Fatigue Limit States",IDC_STATIC,169,7,153,212
     LTEXT           "Select the live loads to include in the Fatigue I limit state envelope",IDC_STATIC,175,18,137,20
     LISTBOX         IDC_FATIGUE_LL_LIST,177,39,137,145,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,181,187,108,8
@@ -1416,7 +1442,7 @@ BEGIN
     LTEXT           "Lane",IDC_STATIC,251,201,17,8
     EDITTEXT        IDC_FATIGUE_LANE_IMPACT,272,198,20,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,295,201,8,8
-    GROUPBOX        "Permit Limit States",IDC_STATIC,329,7,153,259
+    GROUPBOX        "Permit Limit States",IDC_STATIC,329,7,153,212
     LTEXT           "Select the live loads to include in the Strength II limit state envelope",IDC_STATIC,335,18,143,20
     LISTBOX         IDC_STRENGTH_LL_LIST,337,39,137,145,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,341,187,108,8
@@ -1426,19 +1452,10 @@ BEGIN
     LTEXT           "Lane",IDC_STATIC,411,201,17,8
     EDITTEXT        IDC_PERMIT_LANE_IMPACT,432,198,20,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,455,201,8,8
-    DEFPUSHBUTTON   "OK",IDOK,325,278,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,379,278,50,14
-    PUSHBUTTON      "Help",IDC_HELPME,432,278,50,14
-    LTEXT           "Live loads for rating are defined in the Rating Criteria dialog",IDC_STATIC,7,284,186,8
-    LTEXT           "Application of pedestrian live load to girders carrying sidewalk loads. Apply:",IDC_DESIGN_PEDES_STATIC,14,223,141,19
-    COMBOBOX        IDC_DESIGN_PEDES_COMBO,16,244,139,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Design Limit States",IDC_STATIC,7,7,153,259
-    GROUPBOX        "Fatigue Limit States",IDC_STATIC,169,7,153,259
-    GROUPBOX        "Permit Limit States",IDC_STATIC,329,7,153,259
-    LTEXT           "Application of pedestrian live load to girders carrying sidewalk loads. Apply:",IDC_FATIGUE_PEDES_STATIC,174,222,141,19
-    COMBOBOX        IDC_FATIGUE_PEDES_COMBO,178,244,139,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Application of pedestrian live load to girders carrying sidewalk loads. Apply:",IDC_PERMIT_PEDES_STATIC,333,223,141,19
-    COMBOBOX        IDC_PERMIT_PEDES_COMBO,336,245,139,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,325,225,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,379,225,50,14
+    PUSHBUTTON      "Help",IDC_HELPME,432,225,50,14
+    LTEXT           "Live loads for rating are defined in the Rating Criteria dialog",IDC_STATIC,7,231,186,8
 END
 
 IDD_MOVEPIER DIALOG  0, 0, 312, 82
@@ -1857,8 +1874,8 @@ BEGIN
     LTEXT           "Average Daily Truck Traffic (ADTT) - One Direction",IDC_STATIC,7,74,162,8
     EDITTEXT        IDC_ADTT,171,72,40,14,ES_AUTOHSCROLL
     LTEXT           "(ADTT value or Unknown)",IDC_STATIC,213,74,83,8
-    CONTROL         "Apply pedestrian live load concurrently with vehicular live loads (MBE 6A.2.3.4)",IDC_PEDESTRIAN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,269,10
+    CONTROL         "Include pedestrian live load (MBE 6A.2.3.4)",IDC_PEDESTRIAN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,155,10
     LTEXT           "Rating Type",IDC_STATIC,7,108,40,8
     CONTROL         "Design",IDC_DESIGN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,120,37,10
     CONTROL         "Legal Loads",IDC_LEGAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,133,53,10
@@ -2096,18 +2113,6 @@ BEGIN
     LTEXT           "Note: This is a one-time operation that fills the user-input grid with computed values. Values will NOT be automatically updated if bridge data is later modified.",IDC_ROA_STATIC2,7,243,326,17
 END
 
-IDD_BRIDGEVIEW_SETTINGS DIALOGEX 0, 0, 500, 14
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    LTEXT           "View Spans",IDC_STATIC,7,3,39,8
-    EDITTEXT        IDC_START_SPAN_EDIT,48,1,32,12,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
-    CONTROL         "",IDC_START_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,69,1,10,12
-    LTEXT           "to",IDC_STATIC,83,3,8,8
-    EDITTEXT        IDC_END_SPAN_EDIT,90,1,32,12,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
-    CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,111,1,10,12
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2115,8 +2120,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,2
- PRODUCTVERSION 2,6,0,2
+ FILEVERSION 2,6,0,3
+ PRODUCTVERSION 2,6,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2133,12 +2138,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.6.0.2"
+            VALUE "FileVersion", "2.6.0.3"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.6.0.2"
+            VALUE "ProductVersion", "2.6.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -2175,10 +2180,10 @@ BEGIN
     IDD_GIRDERDESC_PRESTRESS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 375
+        RIGHTMARGIN, 354
         VERTGUIDE, 13
         TOPMARGIN, 7
-        BOTTOMMARGIN, 260
+        BOTTOMMARGIN, 236
     END
 
     IDD_SPECIFICATION, DIALOG
@@ -2192,9 +2197,9 @@ BEGIN
     IDD_BRIDGE_EDITOR_PLAN_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 160
+        RIGHTMARGIN, 127
         TOPMARGIN, 7
-        BOTTOMMARGIN, 69
+        BOTTOMMARGIN, 63
     END
 
     IDD_BRIDGE_EDITOR_SECTION_PAGE, DIALOG
@@ -2243,13 +2248,21 @@ BEGIN
         BOTTOMMARGIN, 301
     END
 
+    IDD_GIRDERDESC_SHEAR_STEEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 355
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 285
+    END
+
     IDD_DESIGN_GIRDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 321
         VERTGUIDE, 13
         TOPMARGIN, 7
-        BOTTOMMARGIN, 242
+        BOTTOMMARGIN, 228
     END
 
     IDD_GIRDERDESC_LIFTING_PAGE, DIALOG
@@ -2466,7 +2479,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 482
         TOPMARGIN, 7
-        BOTTOMMARGIN, 292
+        BOTTOMMARGIN, 239
     END
 
     IDD_MOVEPIER, DIALOG
@@ -2680,13 +2693,6 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 287
     END
-
-    IDD_BRIDGEVIEW_SETTINGS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 493
-        BOTTOMMARGIN, 12
-    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2702,6 +2708,29 @@ HAULINGOVERHANGS        METAFILE                "..\\res\\HaulingOverhangs.emf"
 //
 // Dialog Info
 //
+
+IDD_GIRDER_ELEVATION_BAR DLGINIT
+BEGIN
+    IDC_SELSTAGE, 0x403, 14, 0
+0x7242, 0x6469, 0x6567, 0x5320, 0x7469, 0x2065, 0x0031, 
+    IDC_SELSTAGE, 0x403, 14, 0
+0x7242, 0x6469, 0x6567, 0x5320, 0x7469, 0x2065, 0x0032, 
+    IDC_SELSTAGE, 0x403, 14, 0
+0x7242, 0x6469, 0x6567, 0x5320, 0x7469, 0x2065, 0x0033, 
+    0
+END
+
+IDD_GIRDERDESC_PRESTRESS DLGINIT
+BEGIN
+    IDC_STRAND_INPUT_TYPE, 0x403, 34, 0
+0x6f54, 0x6174, 0x206c, 0x754e, 0x626d, 0x7265, 0x6f20, 0x2066, 0x6550, 
+0x6d72, 0x6e61, 0x6e65, 0x2074, 0x7453, 0x6172, 0x646e, 0x0073, 
+    IDC_STRAND_INPUT_TYPE, 0x403, 40, 0
+0x754e, 0x626d, 0x7265, 0x6f20, 0x2066, 0x6148, 0x7072, 0x6465, 0x6120, 
+0x646e, 0x4e20, 0x6d75, 0x6562, 0x2072, 0x666f, 0x5320, 0x7274, 0x6961, 
+0x6867, 0x0074, 
+    0
+END
 
 IDD_EDIT_MOMENTLOAD DLGINIT
 BEGIN

@@ -83,53 +83,11 @@ BOOL CSpecDescrPage::OnInitDialog()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx;
-   idx = pSpec->AddString(_T("1st Edition, 1994"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FirstEdition1994);
-
-   idx = pSpec->AddString(_T("1st Edition, 1994 with 1996 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FirstEditionWith1996Interims);
-
-   idx = pSpec->AddString(_T("1st Edition, 1994 with 1996 and 1997 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FirstEditionWith1997Interims);
-
-   idx = pSpec->AddString(_T("2nd Edition, 1998"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::SecondEdition1998);
-
-   idx = pSpec->AddString(_T("2nd Edition, 1998 with 1999 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::SecondEditionWith1999Interims);
-
-   idx = pSpec->AddString(_T("2nd Edition, 1998 with 1999 - 2000 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::SecondEditionWith2000Interims);
-
-   idx = pSpec->AddString(_T("2nd Edition, 1998 with 1999 - 2001 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::SecondEditionWith2001Interims);
-
-   idx = pSpec->AddString(_T("2nd Edition, 1998 with 1999 - 2002 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::SecondEditionWith2002Interims);
-
-   idx = pSpec->AddString(_T("2nd Edition, 1998 with 1999 - 2003 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::SecondEditionWith2003Interims);
-
-   idx = pSpec->AddString(_T("3rd Edition, 2004"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::ThirdEdition2004);
-
-   idx = pSpec->AddString(_T("3rd Edition, 2004 with 2005 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::ThirdEditionWith2005Interims);
-
-   idx = pSpec->AddString(_T("3rd Edition, 2004 with 2005 - 2006 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims);
-
-   idx = pSpec->AddString(_T("4th Edition, 2007"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FourthEdition2007);
-
-   idx = pSpec->AddString(_T("4th Edition, 2007 with 2008 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FourthEditionWith2008Interims);
-
-   idx = pSpec->AddString(_T("4th Edition, 2007 with 2008 - 2009 interim provisions"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FourthEditionWith2009Interims);
-
-   idx = pSpec->AddString(_T("5th Edition, 2010"));
-   pSpec->SetItemData(idx,(DWORD)lrfdVersionMgr::FifthEdition2010);
+   for ( int i = 1; i < (int)lrfdVersionMgr::LastVersion; i++ )
+   {
+      idx = pSpec->AddString(lrfdVersionMgr::GetVersionString((lrfdVersionMgr::Version)(i)).c_str());
+      pSpec->SetItemData(idx,(DWORD)(i));
+   }
 
 
    CPropertyPage::OnInitDialog();

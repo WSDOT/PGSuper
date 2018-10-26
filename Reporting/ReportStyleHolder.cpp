@@ -44,8 +44,8 @@ std::_tstring pgsReportStyleHolder::ms_SubheadingStyle            = _T("Subheadi
 std::_tstring pgsReportStyleHolder::ms_TableColumnHeadingStyle    = _T("TableColumnHeadingStyle");
 std::_tstring pgsReportStyleHolder::ms_FootnoteStyle              = _T("Footnote");
 std::_tstring pgsReportStyleHolder::ms_CopyrightStyle             = _T("Copyright");
-std::_tstring pgsReportStyleHolder::ms_TableCellStyle[4]          = {   _T("NB-LJ"),   _T("TB-LJ"),   _T("NB-RJ"),   _T("TB-RJ")};
-std::_tstring pgsReportStyleHolder::ms_TableStripeRowCellStyle[4] = {_T("SR-NB-LJ"),_T("SR-TB-LJ"),_T("SR-NB-RJ"),_T("SR-TB-RJ")};
+std::_tstring pgsReportStyleHolder::ms_TableCellStyle[6]          = {   _T("NB-LJ"),   _T("TB-LJ"),   _T("NB-RJ"),   _T("TB-RJ"),   _T("NB-CJ"),   _T("TB-CJ")};
+std::_tstring pgsReportStyleHolder::ms_TableStripeRowCellStyle[6] = {_T("SR-NB-LJ"),_T("SR-TB-LJ"),_T("SR-NB-RJ"),_T("SR-TB-RJ"),_T("SR-NB-CJ"),_T("SR-TB-CJ")};
 std::_tstring pgsReportStyleHolder::ms_ReportCoverImage           = _T("");
 
 std::auto_ptr<std::_tstring> pgsReportStyleHolder::ms_pImagePath;
@@ -165,7 +165,22 @@ void pgsReportStyleHolder::InitStyles()
    cell.SetRightBorder(rptRiStyle::HAIR_THICK);
    psl->AddNamedStyle(ms_TableCellStyle[3],cell);
 
-   for ( int i = 0; i < 4; i++ )
+   // Style for No Border, Center Justified
+   cell.SetAlignment(rptRiStyle::CENTER);
+   cell.SetTopBorder(rptRiStyle::NOBORDER);
+   cell.SetBottomBorder(rptRiStyle::NOBORDER);
+   cell.SetLeftBorder(rptRiStyle::NOBORDER);
+   cell.SetRightBorder(rptRiStyle::NOBORDER);
+   psl->AddNamedStyle(ms_TableCellStyle[4],cell);
+
+   // Style for Thin Border, Right Justified
+   cell.SetTopBorder(rptRiStyle::HAIR_THICK);
+   cell.SetBottomBorder(rptRiStyle::HAIR_THICK);
+   cell.SetLeftBorder(rptRiStyle::HAIR_THICK);
+   cell.SetRightBorder(rptRiStyle::HAIR_THICK);
+   psl->AddNamedStyle(ms_TableCellStyle[5],cell);
+
+   for ( int i = 0; i < 6; i++ )
    {
       rptRiStyle stripe_row_cell = psl->GetNamedStyle(ms_TableCellStyle[i]);
       stripe_row_cell.SetBGColor( rptRiStyle::AliceBlue );
@@ -227,6 +242,8 @@ const std::_tstring& pgsReportStyleHolder::GetTableCellStyle(Uint32 style)
    // 1 = Thin Border, Left Justified
    // 2 = No Border, Right Justified
    // 3 = Thin Border, Right Justified
+   // 4 = No Border, Center Justified
+   // 5 = Thin Border, Center Justified
 
    Int16 index = 0;
 
@@ -239,8 +256,10 @@ const std::_tstring& pgsReportStyleHolder::GetTableCellStyle(Uint32 style)
       index |= 0x0000;
    else if ( style & CJ_RIGHT )
       index |= 0x0002;
+   else if ( style & CJ_CENTER )
+      index |= 0x0004;
 
-   CHECK( 0 <= index && index <= 3 );
+   CHECK( 0 <= index && index <= 5 );
 
    return ms_TableCellStyle[index];
 }
@@ -254,6 +273,8 @@ const std::_tstring& pgsReportStyleHolder::GetTableStripeRowCellStyle(Uint32 sty
    // 1 = Thin Border, Left Justified
    // 2 = No Border, Right Justified
    // 3 = Thin Border, Right Justified
+   // 4 = No Border, Center Justified
+   // 5 = Thin Border, Center Justified
 
    Int16 index = 0;
 
@@ -266,8 +287,10 @@ const std::_tstring& pgsReportStyleHolder::GetTableStripeRowCellStyle(Uint32 sty
       index |= 0x0000;
    else if ( style & CJ_RIGHT )
       index |= 0x0002;
+   else if ( style & CJ_CENTER )
+      index |= 0x0004;
 
-   CHECK( 0 <= index && index <= 3 );
+   CHECK( 0 <= index && index <= 5 );
 
    return ms_TableStripeRowCellStyle[index];
 }

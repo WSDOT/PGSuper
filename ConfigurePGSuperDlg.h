@@ -52,7 +52,7 @@ public:
 	CString	m_Publisher;
 	SharedResourceType m_SharedResourceType;
 	//}}AFX_DATA
-   CMFCLinkCtrl   m_PublisherHyperLink;
+   CHyperLink   m_PublisherHyperLink;
 
    CacheUpdateFrequency m_CacheUpdateFrequency;
 

@@ -23,8 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderData.h>
 #include <Units\SysUnits.h>
-#include <psgLib\StructuredSave.h>
-#include <psgLib\StructuredLoad.h>
 #include <StdIo.h>
 
 #include <Lrfd\StrandPool.h>
@@ -260,6 +258,15 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
          ct |= ctPrestress;
          break;
       }
+
+      for ( int j = 0; j < 2; j++ )
+      {
+         if ( NextendedStrands[i][j] != rOther.NextendedStrands[i][j] )
+         {
+            ct |= ctPrestress;
+            break;
+         }
+      }
    }
 
    if ( bSymmetricDebond != rOther.bSymmetricDebond )
@@ -371,16 +378,6 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
       ct |= ctCondition;
    }
 
-   if ( ShearData != rOther.ShearData)
-   {
-      ct |= ctShearData;
-   }
-
-   if ( LongitudinalRebarData != rOther.LongitudinalRebarData)
-   {
-      ct |= ctLongRebar;
-   }
-
    return ct;
 }
 
@@ -482,6 +479,90 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
       var.vt = VT_UI2;
       pStrLoad->get_Property(_T("NumPermanentStrands"), &var );
       Nstrands[pgsTypes::Permanent] = var.uiVal;
+   }
+
+   if ( 12 <= version )
+   {
+      // added in version 12
+      pStrLoad->BeginUnit(_T("ExtendedStrands"));
+      pStrLoad->BeginUnit(_T("Start"));
+
+      pStrLoad->BeginUnit(_T("Straight"));
+      var.vt = VT_UI8;
+      pStrLoad->get_Property(_T("Count"),&var);
+      StrandIndexType nStrands = var.ullVal;
+      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      {
+         pStrLoad->get_Property(_T("Strand"),&var);
+         StrandIndexType strandIdx = var.ullVal;
+         NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].push_back(strandIdx);
+      }
+      pStrLoad->EndUnit(); // Straight
+
+      pStrLoad->BeginUnit(_T("Harped"));
+      var.vt = VT_UI8;
+      pStrLoad->get_Property(_T("Count"),&var);
+      nStrands = var.ullVal;
+      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      {
+         pStrLoad->get_Property(_T("Strand"),&var);
+         StrandIndexType strandIdx = var.ullVal;
+         NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].push_back(strandIdx);
+      }
+      pStrLoad->EndUnit(); // Harped
+
+      pStrLoad->BeginUnit(_T("Temporary"));
+      var.vt = VT_UI8;
+      pStrLoad->get_Property(_T("Count"),&var);
+      nStrands = var.ullVal;
+      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      {
+         pStrLoad->get_Property(_T("Strand"),&var);
+         StrandIndexType strandIdx = var.ullVal;
+         NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].push_back(strandIdx);
+      }
+      pStrLoad->EndUnit(); // Temporary
+      pStrLoad->EndUnit(); // Start
+
+      pStrLoad->BeginUnit(_T("End"));
+      pStrLoad->BeginUnit(_T("Straight"));
+      var.vt = VT_UI8;
+      pStrLoad->get_Property(_T("Count"),&var);
+      nStrands = var.ullVal;
+      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      {
+         pStrLoad->get_Property(_T("Strand"),&var);
+         StrandIndexType strandIdx = var.ullVal;
+         NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].push_back(strandIdx);
+      }
+      pStrLoad->EndUnit(); // Straight
+
+      pStrLoad->BeginUnit(_T("Harped"));
+      var.vt = VT_UI8;
+      pStrLoad->get_Property(_T("Count"),&var);
+      nStrands = var.ullVal;
+      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      {
+         pStrLoad->get_Property(_T("Strand"),&var);
+         StrandIndexType strandIdx = var.ullVal;
+         NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].push_back(strandIdx);
+      }
+      pStrLoad->EndUnit(); // Harped
+
+      pStrLoad->BeginUnit(_T("Temporary"));
+      var.vt = VT_UI8;
+      pStrLoad->get_Property(_T("Count"),&var);
+      nStrands = var.ullVal;
+      for ( StrandIndexType idx = 0; idx < nStrands; idx++ )
+      {
+         pStrLoad->get_Property(_T("Strand"),&var);
+         StrandIndexType strandIdx = var.ullVal;
+         NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].push_back(strandIdx);
+      }
+      pStrLoad->EndUnit(); // Temporary
+      pStrLoad->EndUnit(); // End
+
+      pStrLoad->EndUnit(); // ExtendedStrands
    }
 
    var.Clear();
@@ -773,9 +854,7 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
         (bstrParentUnit == CComBSTR("GirderTypes") && 1.0 < version)
       ) // if parent version greater than 1, then load shear and long rebar data
    {
-      CStructuredLoad load( pStrLoad );
-      ShearData.Load(&load);
-
+      ShearData.Load(pStrLoad,pProgress);
       LongitudinalRebarData.Load(pStrLoad,pProgress);
       HandlingData.Load(pStrLoad,pProgress);
    }
@@ -800,7 +879,7 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PrestressData"),11.0);
+   pStrSave->BeginUnit(_T("PrestressData"),12.0);
 
    pStrSave->put_Property(_T("HsoEndMeasurement"), CComVariant(HsoEndMeasurement));
    pStrSave->put_Property(_T("HpOffsetAtEnd"), CComVariant(HpOffsetAtEnd));
@@ -813,6 +892,74 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("NumStraightStrands"), CComVariant(Nstrands[pgsTypes::Straight]));
    pStrSave->put_Property(_T("NumTempStrands"), CComVariant(Nstrands[pgsTypes::Temporary]));
    pStrSave->put_Property(_T("NumPermanentStrands"), CComVariant(Nstrands[pgsTypes::Permanent]));
+
+   // added in version 12
+   pStrSave->BeginUnit(_T("ExtendedStrands"),1.0);
+   pStrSave->BeginUnit(_T("Start"),1.0);
+   pStrSave->BeginUnit(_T("Straight"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].size()));
+   std::vector<StrandIndexType>::iterator iter(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].begin());
+   std::vector<StrandIndexType>::iterator end(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].end());
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Straight
+
+   pStrSave->BeginUnit(_T("Harped"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].size()));
+   iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].begin();
+   end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Harped
+
+   pStrSave->BeginUnit(_T("Temporary"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].size()));
+   iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].begin();
+   end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Temporary
+    pStrSave->EndUnit(); // Start
+
+   pStrSave->BeginUnit(_T("End"),1.0);
+   pStrSave->BeginUnit(_T("Straight"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].size()));
+   iter = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].begin();
+   end  = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Straight
+
+   pStrSave->BeginUnit(_T("Harped"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].size()));
+   iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].begin();
+   end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Harped
+
+   pStrSave->BeginUnit(_T("Temporary"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].size()));
+   iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].begin();
+   end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Temporary
+   pStrSave->EndUnit(); // End
+   pStrSave->EndUnit(); // ExtendedStrands
+
    pStrSave->put_Property(_T("PjHarped"), CComVariant(Pjack[pgsTypes::Harped]));
    pStrSave->put_Property(_T("PjStraight"), CComVariant(Pjack[pgsTypes::Straight]));
    pStrSave->put_Property(_T("PjTemp"), CComVariant(Pjack[pgsTypes::Temporary]));
@@ -832,10 +979,10 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
    CollectionIndexType nDebondInfo = Debond[pgsTypes::Straight].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   std::vector<CDebondInfo>::iterator iter;
-   for ( iter = Debond[pgsTypes::Straight].begin(); iter != Debond[pgsTypes::Straight].end(); iter++ )
+   std::vector<CDebondInfo>::iterator debond_iter;
+   for ( debond_iter = Debond[pgsTypes::Straight].begin(); debond_iter != Debond[pgsTypes::Straight].end(); debond_iter++ )
    {
-      CDebondInfo& debond_info = *iter;
+      CDebondInfo& debond_info = *debond_iter;
       debond_info.Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit(); // StraightStrandDebonding
@@ -844,9 +991,9 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("HarpedStrandDebonding"),1.0);
    nDebondInfo = Debond[pgsTypes::Harped].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   for ( iter = Debond[pgsTypes::Harped].begin(); iter != Debond[pgsTypes::Harped].end(); iter++ )
+   for ( debond_iter = Debond[pgsTypes::Harped].begin(); debond_iter != Debond[pgsTypes::Harped].end(); debond_iter++ )
    {
-      CDebondInfo& debond_info = *iter;
+      CDebondInfo& debond_info = *debond_iter;
       debond_info.Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit(); // HarpedStrandDebonding
@@ -855,9 +1002,9 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("TemporaryStrandDebonding"),1.0);
    nDebondInfo = Debond[pgsTypes::Temporary].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   for ( iter = Debond[pgsTypes::Temporary].begin(); iter != Debond[pgsTypes::Temporary].end(); iter++ )
+   for ( debond_iter = Debond[pgsTypes::Temporary].begin(); debond_iter != Debond[pgsTypes::Temporary].end(); debond_iter++ )
    {
-      CDebondInfo& debond_info = *iter;
+      CDebondInfo& debond_info = *debond_iter;
       debond_info.Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit(); // TemporaryStrandDebonding
@@ -890,9 +1037,7 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // Moved here with version 3 of parent data block
    Material.Save(pStrSave,pProgress);
 
-   CStructuredSave save( pStrSave );
-   ShearData.Save(&save);
-
+   ShearData.Save(pStrSave,pProgress);
    LongitudinalRebarData.Save(pStrSave,pProgress);
    HandlingData.Save(pStrSave,pProgress);
 
@@ -949,6 +1094,9 @@ void CGirderData::MakeCopy(const CGirderData& rOther)
 {
    CopyPrestressingFrom(rOther);
    CopyMaterialFrom(rOther);
+   CopyShearDataFrom(rOther);
+   CopyLongitudinalRebarFrom(rOther);
+   CopyHandlingDataFrom(rOther);
 
    Condition = rOther.Condition;
    ConditionFactor = rOther.ConditionFactor;
@@ -971,7 +1119,14 @@ void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)
       LastUserPjack[i]    = rOther.LastUserPjack[i];
 
       if (i<3)
+      {
          Debond[i]           = rOther.Debond[i];
+
+         for ( Uint16 j = 0; j < 2; j++ )
+         {
+            NextendedStrands[i][j] = rOther.NextendedStrands[i][j];
+         }
+      }
    }
 
    TempStrandUsage    = rOther.TempStrandUsage;
@@ -984,6 +1139,21 @@ void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)
    Material.pStrandMaterial[pgsTypes::Straight]  = rOther.Material.pStrandMaterial[pgsTypes::Straight];
    Material.pStrandMaterial[pgsTypes::Harped]    = rOther.Material.pStrandMaterial[pgsTypes::Harped];
    Material.pStrandMaterial[pgsTypes::Temporary] = rOther.Material.pStrandMaterial[pgsTypes::Temporary];
+}
+
+void CGirderData::CopyShearDataFrom(const CGirderData& rOther)
+{
+   ShearData = rOther.ShearData;
+}
+
+void CGirderData::CopyLongitudinalRebarFrom(const CGirderData& rOther)
+{
+   LongitudinalRebarData = rOther.LongitudinalRebarData;
+}
+
+void CGirderData::CopyHandlingDataFrom(const CGirderData& rOther)
+{
+   HandlingData = rOther.HandlingData;
 }
 
 void CGirderData::CopyMaterialFrom(const CGirderData& rOther)

@@ -101,7 +101,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -121,20 +121,14 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       std::vector<Float64> diaphragm = pForces2->GetDisplacement(pgsTypes::BridgeSite1,pftDiaphragm,vPoi,SimpleSpan);
 
       std::vector<Float64> minSlab, maxSlab;
-      std::vector<Float64> minSlabPad, maxSlabPad;
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {
          maxSlab = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, vPoi, MaxSimpleContinuousEnvelope );
          minSlab = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, vPoi, MinSimpleContinuousEnvelope );
-
-         maxSlabPad = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MaxSimpleContinuousEnvelope );
-         minSlabPad = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MinSimpleContinuousEnvelope );
       }
       else
       {
          maxSlab = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
-         
-         maxSlabPad = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
       }
 
       std::vector<Float64> minConstruction, maxConstruction;
@@ -218,8 +212,8 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          {
             if ( bPedLoading )
             {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
+               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPedestrian );
+               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPedestrian, &dummy );
             }
 
             pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
@@ -290,7 +284,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          {
             if ( bPedLoading )
             {
-               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
+               pForces2->GetLiveLoadDisplacement( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPedestrian, &maxPedestrian );
             }
 
             pForces2->GetLiveLoadDisplacement( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
@@ -381,15 +375,10 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          {
             (*p_table)(row,col++) << displacement.SetValue( maxSlab[index] );
             (*p_table)(row,col++) << displacement.SetValue( minSlab[index] );
-            
-            (*p_table)(row,col++) << displacement.SetValue( maxSlabPad[index] );
-            (*p_table)(row,col++) << displacement.SetValue( minSlabPad[index] );
          }
          else
          {
             (*p_table)(row,col++) << displacement.SetValue( maxSlab[index] );
-            
-            (*p_table)(row,col++) << displacement.SetValue( maxSlabPad[index] );
          }
 
          if ( bDeckPanels )

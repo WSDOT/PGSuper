@@ -96,9 +96,6 @@ public:
    bool IsDeckSelected();
    bool IsAlignmentSelected();
 
-   void GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
-   void SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx);
-
    virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
    virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
 
@@ -166,10 +163,6 @@ protected:
    std::_tstring GetConnectionString(const CPierData* pPier);
 
    CBridgeModelViewChildFrame* GetFrame();
-
-   // Range of spans that will be displayed
-   SpanIndexType m_StartSpanIdx;
-   SpanIndexType m_EndSpanIdx;
 };
 
 /////////////////////////////////////////////////////////////////////////////

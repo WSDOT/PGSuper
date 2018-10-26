@@ -197,7 +197,6 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
 {
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE( IEAFProjectLog, pLog );
 
@@ -376,14 +375,9 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
-#if defined _EAF_USING_MFC_FEATURE_PACK
-         m_pMyToolBar = pFrame->GetToolBarByID(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
-#else
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
          m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
-#endif
       }
 
       // use our status bar
@@ -398,7 +392,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       m_pMyToolBar = NULL;
 
       // put the status bar back the way it was
-      //EAFGetMainFrame()->ResetStatusBar();
+      EAFGetMainFrame()->SetStatusBar(NULL);
    }
 
    // then call base class, which handles UI integration for

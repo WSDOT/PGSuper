@@ -109,7 +109,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    p_table->SetRowSpan(1,col++,SKIP_CELL);
 
    (*p_table)(1,col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(1,col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder)),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR(_T("Harped"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {

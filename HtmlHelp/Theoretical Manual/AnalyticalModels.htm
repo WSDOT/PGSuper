@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=7967>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=7681>
+<meta name=layout-width content=1344>
 
 
 <!--(Links)=========================================================-->
@@ -700,20 +700,20 @@
 <ul style="list-style: disc;"
 	type=disc>
 	
-	<li class=kadov-p><p>The shear key will fill the gap between girders 
+	<li class=kadov-P><p>The shear key will fill the gap between girders 
  from the specified shear key depth to the tops of the beams and will have 
  the same unit weight as the slab concrete.</p></li>
 	
-	<li class=kadov-p><p>The load is applied in a load case called &quot;Shear 
+	<li class=kadov-P><p>The load is applied in a load case called &quot;Shear 
  Key&quot; applied in Bridge Site stage 1, and added to the DC combination.</p></li>
 	
-	<li class=kadov-p><p>Structural stiffness properties of the shear key 
+	<li class=kadov-P><p>Structural stiffness properties of the shear key 
  are not considered in any analyses.</p></li>
 	
-	<li class=kadov-p><p>The width of the shear key will be variable if 
+	<li class=kadov-P><p>The width of the shear key will be variable if 
  the joint spacing between girders is variable.</p></li>
 	
-	<li class=kadov-p><p>The shear key load is applied between bearings. 
+	<li class=kadov-P><p>The shear key load is applied between bearings. 
  No cantilever portion is applied.</p></li>
 	
 	<li class=kadov-p><p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->Results 
@@ -728,9 +728,9 @@
 <h4 style="text-indent: 0.0in; margin-left: 0.0in;">Railing System Loads</h4>
 
 <p>Railing system loads consist of dead loads from the traffic barrier, 
- sidewalk, and combination (interior) railing as well as pedestrian live 
- load on sidewalk. These loads are distributed to a maximum of <span style="font-style: italic;">n</span> 
- &quot;nearest&quot; girders, mating surfaces, or webs of the bridge section.</p>
+ sidewalk, and combination railing as well as pedestrian live load on sidewalk. 
+ These loads are distributed to a maximum of <span style="font-style: italic;">n</span> 
+ exterior girders, webs, or mating surfaces of the bridge section.</p>
 
 <p>A mating surface is the contact point between a girder and the bridge 
  deck. Examples are:</p>
@@ -1028,73 +1028,34 @@
 		height=232
 		border=0></p>
 
-<p>The cantilever portions of the load are:<br>
-<span style="vertical-align: sub; vertical-align: sub;"><img src="image044.gif"
-															style="margin-top: 0px;
-	margin-bottom: 0px;
-	margin-left: 0px;
-	margin-right: 0px;
-	width: 122px;
-	height: 24px;
-	border-style: none;"
-															width=122
-															height=24
-															border=0></span></p>
+<p>The basic railing system load is <img src="image040.gif"
+										style="width: 217px;
+												height: 24px;
+												border-style: none;
+												border-style: none;"
+										width=217
+										height=24
+										border=0>. The railing system load 
+ is distributed over <span style="font-style: italic;">n</span> exterior 
+ girders, webs, or mating surfaces. If there are less than 2<span style="font-style: italic;">n</span> 
+ girders, webs, or, mating surfaces the total railing system load (load 
+ for the left and right side of the section) are evenly distributed to 
+ all girders, webs, or mating surfaces. The weight per girders is <span 
+ style="vertical-align: sub;"><img src="image042.gif"
+									style="width: 107px;
+											height: 44px;
+											border-style: none;
+											border-style: none;"
+									width=107
+									height=44
+									border=0></span>, where <span style="font-style: italic;">N</span> 
+ is the total number of girders, webs, or mating surfaces in the section. 
+ </p>
 
-<p>&nbsp;</p>
-
-<p style="vertical-align: sub; vertical-align: sub;"><img src="image046.gif"
-															style="margin-top: 0px;
-	margin-bottom: 0px;
-	margin-left: 0px;
-	margin-right: 0px;
-	width: 102px;
-	height: 27px;
-	border-style: none;"
-															width=102
-															height=27
-															border=0> <span 
- style="font-style: italic;">when LOH is less than the depth of the girder, 
- otherwise M = 0</span></p>
-
-<h6>Exterior and Interior Traffic Barriers</h6>
-
-<p>Dead loads of exterior and interior barriers are distributed as follows: 
- <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}--></p>
-
-<p style="font-style: italic; margin-left: 40px;">Distribute the weight 
- of the barrier evenly to the N nearest girders, mating surfaces, or webs 
- (GMSW’s). Nearest distance is measured from the C.G. of the barrier in 
- a bridge cross section taken at mid-span. For cases when the weight of 
- a barrier can be distributed to either of two GMSW’s that are equal distance 
- left and right of the barrier C.G., and these GMSW’s are furthest from 
- the barrier, the load will be distributed to the exterior-most GMSW. If 
- the span contains 2N or fewer GMSW’s, the railing load will be distributed 
- evenly to all GMSW’s.</p>
-
-<h6>Sidewalk and Pedestrian Live Load</h6>
-
-<p>Sidewalk and Pedestrian loads are distributed using a similar method 
- and using the same N value as barriers. However, if the sidewalk is wider 
- than N GMSW’s; the load will be distributed to all GMSW’s lying directly 
- beneath the sidewalk. Hence, the definition is a follows:</p>
-
-<p style="font-style: italic; margin-left: 40px;">Distribute the sidewalk 
- weight and pedestrian live load evenly to the greater of: all girders, 
- mating surfaces, or webs (GMSW’s) lying directly under the sidewalk; or 
- the N nearest GMSW’s measured from centerline sidewalk using a bridge 
- cross section taken at mid-span. For cases when the sidewalk weight can 
- be distributed to either of two GMSW’s that are equal distance left and 
- right of C.L. sidewalk, and these GMSW’s are furthest from the C.L. sidewalk, 
- the load will be distributed to the exterior-most GMSW. If the span contains 
- 2N or fewer GMSW’s, the load will be distributed evenly to all GMSW’s.</p>
-
-<h6>Barrier Load Distribution Example</h6>
-
-<p>Consider for example a bridge section with three U-beams. If the railing 
- system loads are distributed over the 3 nearest girders, the exterior 
- barrier dead load per girder would be (W<span style="vertical-align: Sub;">left</span> 
- + W<span style="vertical-align: Sub;">right</span>)/3.</p>
+<p>Consider for example a bridge section with three U-beams. If the loads 
+ are distributed over the 3 exterior girders, the railing system dead load 
+ per girder would be (W<span style="vertical-align: Sub;">left</span> + 
+ W<span style="vertical-align: Sub;">right</span>)/3.</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -1217,8 +1178,8 @@
  0.33W<span style="vertical-align: Sub;">right</span></td></tr>
 </table>
 
-<p>However, if the loads are distributed over the 3 exterior webs or mating 
- surfaces, the exterior barrier dead load would be:</p>
+<p>If the loads are distributed over the 3 exterior webs or mating surfaces, 
+ the railing system dead load would be</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -1516,20 +1477,41 @@
 	align=center>0.33W<span style="vertical-align: Sub;">right</span></td></tr>
 </table>
 
+<p>&nbsp;</p>
+
+<p>The cantilever portions of the load are:</p>
+
+<p><span style="vertical-align: sub; vertical-align: sub;"><img src="image044.gif"
+	style="margin-top: 0px;
+			margin-bottom: 0px;
+			margin-left: 0px;
+			margin-right: 0px;
+			width: 122px;
+			height: 24px;
+			border-style: none;
+			border-style: none;"
+	width=122
+	height=24
+	border=0></span></p>
+
+<p>&nbsp;</p>
+
+<p style="vertical-align: sub; vertical-align: sub;"><img src="image046.gif"
+															style="margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	width: 102px;
+	height: 27px;
+	border-style: none;
+	border-style: none;"
+															width=102
+															height=27
+															border=0> <span 
+ style="font-style: italic;">when L<span style="vertical-align: sub;">OH</span> 
+ is less than the depth of the girder otherwise M = 0</span></p>
+
 <h4>Overlay Load</h4>
-
-<p>Layout of Overlay:<br>
-The exterior edge of the overlay terminates at the interior-most of:</p>
-
-<ol style="list-style: decimal;"
-	type=1>
-	
-	<li class=kadov-p><p>Interior toe of Exterior Barrier</p></li>
-	
-	<li class=kadov-p><p>Face of sidewalk (if no interior barrier)</p></li>
-	
-	<li class=kadov-p><p>Interior toe of Interior Barrier</p></li>
-</ol>
 
 <p><img src="image048.gif"
 		style="margin-top: 0px;
@@ -1711,11 +1693,9 @@ The exterior edge of the overlay terminates at the interior-most of:</p>
 <h4><span style="margin-bottom: 0;">Pedestrian L</span>ive Load</h4>
 
 <p>Pedestrian live load on sidewalks is computed based on LRFD 3.6.1.6. 
- Load magnitude is based on the input sidewalk width and the load density 
- input in the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibBridge_Site_Tab.htm">Bridge 
- Site 3</a> Project Criteria tab. The pedestrian live load is distributed 
- to girders using the same distribution as the sidewalk dead load. The 
- pedestrian live load is applied concurrently with the vehicular live loads.</p>
+ The pedestrian live load is distributed to the exterior girders using 
+ the same distribution as the sidewalk dead load. The pedestrian live load 
+ is applied concurrently with the vehicular live loads.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

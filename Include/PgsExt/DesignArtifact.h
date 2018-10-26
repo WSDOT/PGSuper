@@ -36,8 +36,8 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
-#if !defined INCLUDED_PGSLIB_SHEARZONEDATA_H_
-#include <PsgLib\ShearZoneData.h>
+#if !defined INCLUDED_PGSEXT_SHEARZONEDATA_H_
+#include <PgsExt\ShearZoneData.h>
 #endif
 
 #if !defined INCLUDED_PGSEXT_GIRDERDATA_H_
@@ -93,11 +93,6 @@ public:
       ExceededMaxHoldDownForce,
       ShearExceedsMaxConcreteStrength,
       TooManyStirrupsReqd,
-      TooManyStirrupsReqdForHorizontalInterfaceShear,
-      TooManyStirrupsReqdForSplitting,
-      ConflictWithLongReinforcementShearSpec,
-      TooMuchStrandsForLongReinfShear,
-      StrandsReqdForLongReinfShearAndFlexureTurnedOff,
       MaxIterExceeded,
       GirderLiftingConcreteStrength,
       GirderLiftingStability,
@@ -109,15 +104,6 @@ public:
       DesignCancelled,
       NoDesignRequested
    };
-
-   // Design outcome data that isn't neccessarily a failure
-   enum DesignNote
-   {
-      dnExistingShearDesignPassedSpecCheck,
-      dnShearRequiresStrutAndTie,
-      dnStrandsAddedForLongReinfShear
-   };
-
 
    // utility class to hold concrete strength design state information
    class PGSEXTCLASS ConcreteStrengthDesignState
@@ -176,10 +162,6 @@ public:
 
    void SetOutcome(Outcome outcome);
    Outcome GetOutcome() const;
-
-   void AddDesignNote(DesignNote note);
-   bool DoDesignNotesExist() const;
-   std::vector<DesignNote> GetDesignNotes() const;
 
    //------------------------------------------------------------------------
    SpanIndexType GetSpan() const;
@@ -272,17 +254,15 @@ public:
    // DoDesignShear - If this is false, all shear values are bogus.
    bool GetDoDesignShear() const;
 
+   matRebar::Size GetConfinementBarSize() const;
+   void SetConfinementBarSize(matRebar::Size barSize);
+   ZoneIndexType GetLastConfinementZone() const;
+   void SetLastConfinementZone(ZoneIndexType zone);
+
    ZoneIndexType GetNumberOfStirrupZonesDesigned() const;
    void SetNumberOfStirrupZonesDesigned(ZoneIndexType num);
-   const CShearData& GetShearData() const;
-   void SetShearData(const CShearData& rdata);
-
-   // Longitudinal rebar data is also used in shear design
-   void SetWasLongitudinalRebarForShearDesigned(bool isTrue);
-   bool GetWasLongitudinalRebarForShearDesigned() const;
-   CLongitudinalRebarData& GetLongitudinalRebarData();
-   const CLongitudinalRebarData& GetLongitudinalRebarData() const;
-   void SetLongitudinalRebarData(const CLongitudinalRebarData& rdata);
+   CShearZoneData GetShearZoneData(ZoneIndexType zoneNum) const;
+   void SetShearZoneData(ZoneIndexType zoneNum, const CShearZoneData& rdata);
 
    // GROUP: INQUIRY
 
@@ -303,8 +283,6 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    Outcome m_Outcome;
-
-   std::vector<DesignNote> m_DesignNotes; // may want to consider making this a set if things get complicated
 
    SpanIndexType m_Span;
    GirderIndexType m_Gdr;
@@ -342,11 +320,12 @@ private:
    ConcreteStrengthDesignState m_ConcreteReleaseDesignState;
    ConcreteStrengthDesignState m_ConcreteFinalDesignState;
 
-   CShearData m_ShearData;
+   enum sz {MAXSHEARZONES=4}; // enum hack
    ZoneIndexType  m_NumShearZones;
+   CShearZoneData m_ShearZoneData[MAXSHEARZONES];
 
-   bool m_bWasLongitudinalRebarForShearDesigned;
-   CLongitudinalRebarData m_LongitudinalRebarData;
+   ZoneIndexType m_LastConfinementZone;
+   matRebar::Size m_ConfinementBarSize;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

@@ -1,19 +1,6 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.29   8  6.00  1     1     III        22  0.60  270 18.81 10.62   6 36.0  5.000  6.400    3.255   -3.892   4245  0.674  0.674  0.27 -0.05  0.00 -0.02 -0.07  77.50 153.55   1.00   5.00   5.00
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Confinement zone checks failed.
-Slab Offset ("A" Dimension) check failed
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.29   8  6.00  1     2     III        20  0.60  270 19.08 11.28   4 43.0  4.600  5.900    2.882   -3.495   3791  0.556  0.671  0.26 -0.04  0.00 -0.02 -0.06  66.20 140.06   1.00   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 45.29   8  6.00     1     1   III       22   5/8  270 18.81 10.62   6 36.0  5.000  6.400    2.579   -4.005   4824  0.674  0.674  0.27 -0.05 -0.00 -0.03 -0.08  77.50 139.37   1.00   5.00   5.00
 
 
 Girder design was Not Successful
@@ -25,13 +12,26 @@ Confinement zone checks failed.
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.29   8  6.00  1     5     III        16  0.60  270 19.33  9.58   4 43.0  4.000  5.000    2.622   -2.927   3112  0.552  0.671  0.22 -0.05 -0.00 -0.01 -0.06  42.83 104.45   1.00   5.00   5.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 45.29   8  6.00     1     2   III       20   5/8  270 19.08 11.28   4 43.0  4.600  5.900    2.332   -3.682   4399  0.556  0.671  0.26 -0.04 -0.01 -0.03 -0.07  66.20 125.24   1.00   5.00   5.00
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 45.29   8  6.00     1     5   III       14   5/8  270 19.51  8.36   4 43.0  4.000  5.000    1.938   -2.558   2918  0.552  0.671  0.18 -0.05 -0.01  0.00 -0.05  31.31  82.04   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Confinement zone checks failed.
 
 

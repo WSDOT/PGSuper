@@ -1,24 +1,24 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     1     Tx62       10   1/2  270 25.78 25.78   0  0.0  4.000  5.000    0.396   -0.496   2004  0.923  0.849  0.02 -0.00  0.00 -0.00 -0.00  10.62  40.35   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   5  8.50     1     1  Tx62       10   1/2  270 25.78 25.78   2  2.5  4.000  5.000    0.396   -0.496   2004  0.923  0.849  0.02 -0.00  0.00 -0.00 -0.00  10.62  40.35   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     2     Tx62       10   1/2  270 25.78 25.78   0  0.0  4.000  5.000    0.399   -0.508   2042  0.923  0.849  0.02 -0.00  0.00 -0.00 -0.00  10.62  40.20   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   5  8.50     1     2  Tx62       10   1/2  270 25.78 25.78   2  2.5  4.000  5.000    0.399   -0.508   2042  0.923  0.849  0.02 -0.00  0.00 -0.00 -0.00  10.62  40.20   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     3     Tx62       10   1/2  270 25.78 25.78   0  0.0  4.000  5.000    0.399   -0.508   2042  0.923  0.849  0.02 -0.00  0.00 -0.00 -0.00  10.62  40.20   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 38.00   5  8.50     1     3  Tx62       10   1/2  270 25.78 25.78   2  2.5  4.000  5.000    0.399   -0.508   2042  0.923  0.849  0.02 -0.00  0.00 -0.00 -0.00  10.62  40.20   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

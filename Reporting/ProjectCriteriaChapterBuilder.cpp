@@ -388,7 +388,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       } // gdrIdx
    } // spanIdx
 
-   if (pSpecEntry->IsSplittingCheckEnabled())
+   if (pSpecEntry->IsAnchorageCheckEnabled())
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
          *pPara<<_T("Splitting zone length: h/") << pSpecEntry->GetSplittingZoneLengthFactor() << rptNewLine;
@@ -398,20 +398,10 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    else
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
-         *pPara<<_T("Splitting checks (5.10.10.1) are disabled.") << rptNewLine;
+         *pPara<<_T("Splitting and confinement checks (5.10.10) are disabled.") << rptNewLine;
       else
-         *pPara<<_T("Bursting checks (5.10.10.1) are disabled.") << rptNewLine;
+         *pPara<<_T("Bursting and confinement checks (5.10.10) are disabled.") << rptNewLine;
    }
-
-   if (pSpecEntry->IsConfinementCheckEnabled())
-   {
-      *pPara<<_T("Confinement checks (5.10.10.2) are enabled.") << rptNewLine;
-   }
-   else
-   {
-         *pPara<<_T("Confinement checks (5.10.10.2) are disabled.") << rptNewLine;
-   }
-
 }
 
 void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
@@ -633,15 +623,15 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    switch ( pSpecEntry->GetTrafficBarrierDistributionType() )
    {
    case pgsTypes::tbdGirder:
-      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" nearest girders") << rptNewLine;
+      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" girders") << rptNewLine;
       break;
 
    case pgsTypes::tbdMatingSurface:
-      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" nearest mating surfaces") << rptNewLine;
+      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" mating surfaces") << rptNewLine;
       break;
 
    case pgsTypes::tbdWebs:
-      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" nearest webs") << rptNewLine;
+      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" webs") << rptNewLine;
       break;
 
    default:
@@ -959,29 +949,18 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
    }
    else
    {
-      bool bReportElasticGainParameters = false;
-      std::_tstring relaxation_method[3] = {
-         _T("LRFD Equation 5.9.5.4.2c-1"),
-         _T("LRFD Equation C5.9.5.4.2c-1"),
-         _T("1.2 ksi per LRFD 5.9.5.4.2c")
-      };
       switch( method )
       {
       case LOSSES_AASHTO_REFINED:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4")<<rptNewLine;
-         *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
-         bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
          break;
       case LOSSES_WSDOT_REFINED:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and WSDOT Bridge Design")<<rptNewLine;
-         *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
-         bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
          break;
       case LOSSES_TXDOT_REFINED_2004:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and TxDOT Bridge Design")<<rptNewLine;
          break;
       case LOSSES_AASHTO_LUMPSUM:
-         bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
       case LOSSES_AASHTO_LUMPSUM_2005:
          *pPara<<_T("Losses calculated per Approximate Lump Sum Method in accordnace with AASHTO LRFD 5.9.5.3")<<rptNewLine;
          break;
@@ -1007,21 +986,6 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          {
             *pPara<<_T("- Shipping Losses = ")<< stress.SetValue(shipping) << _T(", but not to exceed final losses") << rptNewLine;
          }
-      }
-
-      if ( bReportElasticGainParameters )
-      {
-         *pPara << _T("Contribution to Elastic Gains") << rptNewLine;
-         *pPara << _T("Slab = ") << pSpecEntry->GetSlabElasticGain()*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Haunch = ") << pSpecEntry->GetSlabPadElasticGain()*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Diaphragms = ") << pSpecEntry->GetDiaphragmElasticGain()*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("User DC (Bridge Site 1) = ") << pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite1)*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("User DW (Bridge Site 1) = ") << pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite1)*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Railing System = ") << pSpecEntry->GetRailingSystemElasticGain()*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Overlay = ") << pSpecEntry->GetOverlayElasticGain()*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("User DC (Bridge Site 2) = ") << pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite2)*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("User DW (Bridge Site 2) = ") << pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite2)*100.0 << _T("%") << rptNewLine;
-         *pPara << _T("Deck Shrinkage = ") << pSpecEntry->GetDeckShrinkageElasticGain()*100.0 << _T("%") << rptNewLine;
       }
    }
 }

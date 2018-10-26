@@ -117,7 +117,7 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    return table;
 }
 
-void CPostTensionInteractionTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPostTensionInteractionTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,2) << offset.SetValue( details.pLosses->GetLocation() );
    (*this)(row,3) << stress.SetValue( details.pLosses->GetFptMax() );

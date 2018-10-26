@@ -53,12 +53,12 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-   virtual void UpdateChapterList();
-   virtual void UpdateGirderComboBox(SpanIndexType spanIdx);
+   void UpdateChapterList();
+   void UpdateGirderComboBox(SpanIndexType spanIdx);
 
-   virtual void ClearChapterCheckMarks();
-   virtual void InitChapterListFromSpec();
-   virtual void InitFromRptSpec();
+   void ClearChapterCheckMarks();
+   void InitChapterListFromSpec();
+   void InitFromRptSpec();
 
    CCheckListBox	m_ChList;
 

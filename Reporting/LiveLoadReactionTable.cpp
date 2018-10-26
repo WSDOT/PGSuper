@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <Reporting\LiveLoadReactionTable.h>
 #include <Reporting\ReportNotes.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -72,7 +71,7 @@ CLiveLoadReactionTable& CLiveLoadReactionTable::operator= (const CLiveLoadReacti
 //======================== OPERATIONS =======================================
 void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           SpanIndexType span,GirderIndexType girder,
-                                          IEAFDisplayUnits* pDisplayUnits, TableType tableType,
+                                          IEAFDisplayUnits* pDisplayUnits,
                                           pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const
 {
    // Build table
@@ -112,8 +111,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if ( bPedLoading )
       nCols += 2;
 
- 	p_table = pgsReportStyleHolder::CreateDefaultTable(nCols, tableType==PierReactionsTable ?_T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );
-
+ 	p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reactions without Impact"));
    p_table->SetNumberOfHeaderRows(2);
 
    p_table->SetRowSpan(0,0,2);
@@ -187,20 +185,8 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,ICombinedForces,pCmbForces);
+   GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-
-   std::auto_ptr<ICmbLsReactionAdapter> pForces;
-   if(  tableType==PierReactionsTable )
-   {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CombinedLsForcesReactionAdapter(pCmbForces,pLsForces));
-   }
-
-   else
-   {
-      pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, span) );
-   }
 
    (*p_table)(0,0) << _T("");
 
@@ -209,12 +195,6 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    RowIndexType row = 2;
    for ( PierIndexType pier = startPier; pier < endPier; pier++ )
    {
-      if (! pForces->DoReportAtPier(pier, girder) )
-      {
-         continue; // don't report piers that have no bearing information
-      }
-
-
       if (pier == 0 || pier == pBridge->GetPierCount()-1 )
          (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
       else
@@ -253,18 +233,18 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+        pLsForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
 
-        pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+        pLsForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
+           pLsForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MaxSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
 
-           pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
+           pLsForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, MinSimpleContinuousEnvelope, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
      }
@@ -292,13 +272,13 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
            (*p_table)(row,col++) << reaction.SetValue( min );
         }
 
-        pForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, bat, false, &min, &max );
+        pLsForces->GetReaction( pgsTypes::StrengthI, stage, pier, girder, bat, false, &min, &max );
         (*p_table)(row,col++) << reaction.SetValue( max );
         (*p_table)(row,col++) << reaction.SetValue( min );
 
         if ( bPermit )
         {
-           pForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, bat, false, &min, &max );
+           pLsForces->GetReaction( pgsTypes::StrengthII, stage, pier, girder, bat, false, &min, &max );
            (*p_table)(row,col++) << reaction.SetValue( max );
            (*p_table)(row,col++) << reaction.SetValue( min );
         }

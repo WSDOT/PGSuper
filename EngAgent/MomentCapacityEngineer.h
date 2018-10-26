@@ -176,10 +176,11 @@ private:
    Float64 GetModulusOfRupture(const GDRCONFIG& config,bool bPositiveMoment);
    void GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,Float64* pSb,Float64* pSbc);
    void GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,Float64* pSb,Float64* pSbc);
-   void ComputeCrackingMoment(Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd);
+   void ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd);
+   void GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3);
 
 
-   void BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<StrandIndexType,Float64>* pBondFactors);
+   void BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,std::map<StrandIndexType,Float64>* pBondFactors);
    // GROUP: INQUIRY
 
 public:

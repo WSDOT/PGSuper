@@ -138,9 +138,16 @@ void CStructuredSave::Property(LPCTSTR name, Int32 value)
 void CStructuredSave::Property(LPCTSTR name, Uint32 value)
 {
    VARIANT var;
-   var.vt = VT_UI4;
-   var.ulVal = value;
-   m_pStrSave->put_Property( name, var );
+   if ( value == INVALID_INDEX )
+   {
+      m_pStrSave->put_Property(name, CComVariant(-1));
+   }
+   else
+   {
+      var.vt = VT_UI4;
+      var.ulVal = value;
+      m_pStrSave->put_Property( name, var );
+   }
 }
 
 void CStructuredSave::Property(LPCTSTR name, Int64 value)
@@ -154,9 +161,16 @@ void CStructuredSave::Property(LPCTSTR name, Int64 value)
 void CStructuredSave::Property(LPCTSTR name, Uint64 value)
 {
    VARIANT var;
-   var.vt = VT_UI8;
-   var.ullVal = value;
-   m_pStrSave->put_Property( name, var );
+   if ( value == INVALID_INDEX )
+   {
+      m_pStrSave->put_Property(name, CComVariant(-1));
+   }
+   else
+   {
+      var.vt = VT_UI8;
+      var.ullVal = value;
+      m_pStrSave->put_Property( name, var );
+   }
 }
 
 void CStructuredSave::Property(LPCTSTR name, bool value)

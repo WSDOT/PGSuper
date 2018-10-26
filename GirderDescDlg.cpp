@@ -39,17 +39,17 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 
 IMPLEMENT_DYNAMIC(CGirderDescDlg, CPropertySheet)
 
-CGirderDescDlg::CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,CWnd* pParentWnd, UINT iSelectPage)
+CGirderDescDlg::CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCTSTR strGirderName,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    m_CurrentSpanIdx   = spanIdx;
    m_CurrentGirderIdx = gdrIdx;
+   m_strGirderName = strGirderName;
 
    CString strTitle;
    strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(m_CurrentSpanIdx),LABEL_GIRDER(m_CurrentGirderIdx));
@@ -74,14 +74,22 @@ void CGirderDescDlg::Init()
    m_Debond.m_psp.dwFlags    |= PSP_HASHELP;
    m_Rating.m_psp.dwFlags    |= PSP_HASHELP;
 
+
    AddPage( &m_General );
    AddPage( &m_Prestress );
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   if ( pStrandGeom->CanDebondStrands(m_CurrentSpanIdx,m_CurrentGirderIdx,pgsTypes::Straight) )
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   bool bCanDebond = pStrandGeometry->CanDebondStrands(m_strGirderName.c_str(),pgsTypes::Straight);
+
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   // show the debond/strand extension tab if we can have extensions or if we can debond
+   if ( pSpecEntry->AllowStraightStrandExtensions() || bCanDebond )
    {
       AddPage( &m_Debond );
    }
@@ -131,9 +139,6 @@ void CGirderDescDlg::DoUpdate()
 
    m_GirderData = pGirderData->GetGirderData(m_CurrentSpanIdx,m_CurrentGirderIdx);
 
-   m_Debond.m_GridData = m_GirderData.Debond[pgsTypes::Straight];
-   m_Debond.m_bSymmetricDebond = m_GirderData.bSymmetricDebond;
-
    // shear page
    m_Shear.m_CurGrdName = pBridgeDesc->GetSpan(m_CurrentSpanIdx)->GetGirderTypes()->GetGirderName(m_CurrentGirderIdx);
    m_Shear.m_ShearData = pShear->GetShearData(m_CurrentSpanIdx,m_CurrentGirderIdx);
@@ -163,7 +168,32 @@ BOOL CGirderDescDlg::OnInitDialog()
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_EDIT_GIRDER),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
 
+   SetDebondTabName();
+
    return bResult;
+}
+
+void CGirderDescDlg::SetDebondTabName()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   CTabCtrl* pTab = GetTabControl();
+   TC_ITEM ti;
+   ti.mask = TCIF_TEXT;
+
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   bool bCanDebond = pStrandGeometry->CanDebondStrands(m_strGirderName.c_str(),pgsTypes::Straight);
+   if ( bCanDebond )
+   {
+      ti.pszText = _T("Debonding");
+   }
+   else
+   {
+      ti.pszText = _T("Strand Extensions");
+   }
+   
+   pTab->SetItem(GetPageIndex(&m_Debond),&ti);
 }
 
 StrandIndexType CGirderDescDlg::GetStraightStrandCount()
@@ -171,3 +201,52 @@ StrandIndexType CGirderDescDlg::GetStraightStrandCount()
    return  m_GirderData.Nstrands[pgsTypes::Straight];
 }
 
+void CGirderDescDlg::FillMaterialComboBox(CComboBox* pCB)
+{
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
+   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
+}
+
+void CGirderDescDlg::GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
+{
+   switch(idx)
+   {
+   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
+   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
+   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
+   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
+   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
+   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
+   default:
+      ATLASSERT(false); // should never get here
+   }
+}
+
+int CGirderDescDlg::GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
+{
+   if ( type == matRebar::A615 )
+   {
+      if ( grade == matRebar::Grade40 )
+         return 0;
+      else if ( grade == matRebar::Grade60 )
+         return 1;
+      else if ( grade == matRebar::Grade75 )
+         return 2;
+      else if ( grade == matRebar::Grade80 )
+         return 3;
+   }
+   else
+   {
+      if ( grade == matRebar::Grade60 )
+         return 4;
+      else if ( grade == matRebar::Grade80 )
+         return 5;
+   }
+
+   ATLASSERT(false); // should never get here
+   return -1;
+}

@@ -175,12 +175,14 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
+   DDX_Check_Bool(pDX,IDC_STRAND_EXTENSIONS,m_Entry.m_bAllowStraightStrandExtensions);
+
 
    if (!pDX->m_bSaveAndValidate)
    {
       m_SpecCastingYardPage.m_DoCheckHoldDown    = m_Entry.m_DoCheckHoldDown;
       m_SpecCastingYardPage.m_DoCheckStrandSlope = m_Entry.m_DoCheckStrandSlope;
-      m_SpecCastingYardPage.m_DoCheckSplitting = m_Entry.m_DoCheckSplitting;
+      m_SpecCastingYardPage.m_DoCheckAnchorage = m_Entry.m_DoCheckAnchorage;
 
       // set statics for strand slope
       CString sl05, sl06, sl07;
@@ -467,11 +469,6 @@ void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX,m_Entry.m_LLDFGirderSpacingLocation,0.0,1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
-
-   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_PedestrianLoad, pDisplayUnits->SmallStress );
-   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD,m_Entry.m_PedestrianLoad, pDisplayUnits->SpanLength );
-   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
-   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH,m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
 }
 
 void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
@@ -480,11 +477,12 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_CBIndex(pDX, IDC_MOMENT, m_Entry.m_Bs3LRFDOverReinforcedMomentCapacity );
+   DDX_CBEnum(pDX, IDC_NEG_MOMENT, m_Entry.m_bIncludeForNegMoment);
 
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
 
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
@@ -562,7 +560,7 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
       CheckShearCapacityMethod();
 
-   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'ci (MPa) )") : _T("sqrt( f'ci (KSI) )"));
+   CString tag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt( f'c (MPa) )") : _T("sqrt( f'c (KSI) )"));
    DDX_UnitValueAndTag(pDX, IDC_FR,     IDC_FR_LABEL,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
@@ -635,20 +633,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_ANCHORSET,  IDC_ANCHORSET_TAG,  m_Entry.m_Dset, pDisplayUnits->ComponentDim);
    DDX_UnitValueAndTag(pDX, IDC_WOBBLE, IDC_WOBBLE_TAG,m_Entry.m_WobbleFriction, pDisplayUnits->PerLength);
    DDX_Text(pDX,IDC_FRICTION,m_Entry.m_FrictionCoefficient);
-
-   DDX_Percentage(pDX,IDC_EG_SLAB,m_Entry.m_SlabElasticGain);
-   DDX_Percentage(pDX,IDC_EG_SLABPAD,m_Entry.m_SlabPadElasticGain);
-   DDX_Percentage(pDX,IDC_EG_DIAPHRAGM,m_Entry.m_DiaphragmElasticGain);
-   DDX_Percentage(pDX,IDC_EG_DC_BS2,m_Entry.m_UserDCElasticGainBS1);
-   DDX_Percentage(pDX,IDC_EG_DW_BS2,m_Entry.m_UserDWElasticGainBS1);
-   DDX_Percentage(pDX,IDC_EG_DC_BS3,m_Entry.m_UserDCElasticGainBS2);
-   DDX_Percentage(pDX,IDC_EG_DW_BS3,m_Entry.m_UserDWElasticGainBS2);
-   DDX_Percentage(pDX,IDC_EG_RAILING,m_Entry.m_RailingSystemElasticGain);
-   DDX_Percentage(pDX,IDC_EG_OVERLAY,m_Entry.m_OverlayElasticGain);
-   DDX_Percentage(pDX,IDC_EG_SHRINKAGE,m_Entry.m_SlabShrinkageElasticGain);
-
-   DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_RelaxationLossMethod);
-
+   
    // have to map loss method to comb box ordering in dialog
    int map[6]={LOSSES_AASHTO_REFINED,
                LOSSES_WSDOT_REFINED,
@@ -729,8 +714,6 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
             Float64 value = m_Entry.m_ShippingLosses * -100.0;
             DDX_Text(pDX,IDC_SHIPPING,value);
 
-            DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_LiftingLosses, pDisplayUnits->Stress);
-
             CString strTag(_T("%"));
             DDX_Text(pDX,IDC_SHIPPING_TAG,strTag);
 
@@ -740,12 +723,12 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          else
          {
       	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING,  IDC_SHIPPING_TAG,  m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
-            DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
 
             idx = 0;
             DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
          }
 
+   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, dummy, pDisplayUnits->Stress);
       }
       else if ( m_Entry.m_LossMethod == LOSSES_GENERAL_LUMPSUM )
       {
@@ -934,18 +917,16 @@ void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)
    m_SpecDesignPage.m_CheckHoldDown = m_Entry.m_DoCheckHoldDown;
    m_SpecDesignPage.m_CheckLifting = m_Entry.m_EnableLiftingCheck;
    m_SpecDesignPage.m_CheckSlope = m_Entry.m_DoCheckStrandSlope;
-   m_SpecDesignPage.m_CheckSplitting = m_Entry.m_DoCheckSplitting;
-   m_SpecDesignPage.m_CheckConfinement = m_Entry.m_DoCheckConfinement;
+   m_SpecDesignPage.m_CheckAnchorage = m_Entry.m_DoCheckAnchorage;
 
    m_SpecDesignPage.m_DesignA = m_Entry.m_EnableSlabOffsetDesign;
    m_SpecDesignPage.m_DesignHauling = m_Entry.m_EnableHaulingDesign;
    m_SpecDesignPage.m_DesignHoldDown = m_Entry.m_DoDesignHoldDown;
    m_SpecDesignPage.m_DesignLifting = m_Entry.m_EnableLiftingDesign;
    m_SpecDesignPage.m_DesignSlope = m_Entry.m_DoDesignStrandSlope;
-   m_SpecDesignPage.m_DesignSplitting = m_Entry.m_DoDesignSplitting;
-   m_SpecDesignPage.m_DesignConfinement = m_Entry.m_DoDesignConfinement;
 
    m_SpecDesignPage.m_FillMethod = (int)m_Entry.m_DesignStrandFillType;
+
 }
 
 // mini function to convert BOOL to bool
@@ -959,19 +940,17 @@ void CSpecMainSheet::DownloadDesignData(CDataExchange* pDX)
    m_Entry.m_DoCheckHoldDown    = B2b( m_SpecDesignPage.m_CheckHoldDown);
    m_Entry.m_EnableLiftingCheck = B2b( m_SpecDesignPage.m_CheckLifting);
    m_Entry.m_DoCheckStrandSlope = B2b( m_SpecDesignPage.m_CheckSlope);
-   m_Entry.m_DoCheckSplitting = B2b( m_SpecDesignPage.m_CheckSplitting);
-   m_Entry.m_DoCheckConfinement = B2b( m_SpecDesignPage.m_CheckConfinement);
+   m_Entry.m_DoCheckAnchorage = B2b( m_SpecDesignPage.m_CheckAnchorage);
 
    m_Entry.m_EnableSlabOffsetDesign = B2b( m_SpecDesignPage.m_DesignA);
    m_Entry.m_EnableHaulingDesign = B2b( m_SpecDesignPage.m_DesignHauling);
    m_Entry.m_DoDesignHoldDown    = B2b( m_SpecDesignPage.m_DesignHoldDown);
    m_Entry.m_EnableLiftingDesign = B2b( m_SpecDesignPage.m_DesignLifting);
    m_Entry.m_DoDesignStrandSlope = B2b( m_SpecDesignPage.m_DesignSlope);
-   m_Entry.m_DoDesignSplitting = B2b( m_SpecDesignPage.m_DesignSplitting);
-   m_Entry.m_DoDesignConfinement = B2b( m_SpecDesignPage.m_DesignConfinement);
 
    m_Entry.m_DesignStrandFillType = m_SpecDesignPage.m_FillMethod==(int)ftGridOrder ?ftGridOrder : ftMinimizeHarping;
 }
+
 
 BOOL CSpecMainSheet::OnInitDialog() 
 {

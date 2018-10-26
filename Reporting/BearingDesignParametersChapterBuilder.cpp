@@ -70,8 +70,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   ATLASSERT(span!=ALL_SPANS); // This report is not capable if reporting girderline results
-
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -82,25 +80,16 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(span,girder);
 
-   GET_IFACE2(pBroker,IBearingDesign,pBearing);
-
-   // Don't create report if no simple span ends
-   bool doStartPier, doEndPier;
-   pBearing->AreBearingReactionsAvailable(span, girder, &doStartPier, &doEndPier);
-   if( !(doStartPier || doEndPier) )
-   {
-      rptParagraph* p = new rptParagraph;
-      *p << _T("Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
-      *pChapter << p;
-      return pChapter;
-   }
-
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
-   // Product Reactions
+
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),CProductReactionTable::BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
+
+   // Product Reactions
+   p = new rptParagraph;
+   *pChapter << p;
+   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,false,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
    *p << rptNewLine;
 
@@ -135,7 +124,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),pDisplayUnits) << rptNewLine;
    }
 
    // Product Rotations
@@ -198,8 +187,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
-   PierIndexType startPier = (span == ALL_SPANS ? 0 : span); // Make ALL_SPAN not crash. Assert above should stop this
-   PierIndexType endPier   = startPier+2;
+   PierIndexType startPier = (span == ALL_SPANS ? 0 : span);
+   PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
@@ -236,15 +225,18 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
 
    //////////////////////
+   GET_IFACE2(pBroker,IProductForces,pForces);
+
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(),    false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,    rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
+
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Corresponding Live Load Bearing Reactions and Rotations"));
+   pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Corresponding Live Load Reactions and Rotations"));
    *p << pTable << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
@@ -277,93 +269,65 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    (*pTable)(1,7) << COLHDR(Sub2(symbol(theta),_T("Min")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
    (*pTable)(1,8) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
-
-   // First get primary reaction with corresp rotations and primary rotations with corresp reactions
-   Float64 startRPmax,startRPmin,startTCmin,startTCmax;
-   Float64 startRCmax,startRCmin,startTPmin,startTPmax;
-   Float64 endRPmax,endRPmin,endTCmin,endTCmax;
-   Float64 endRCmax,endRCmin,endTPmin,endTPmax;
-   if ( analysisType == pgsTypes::Envelope )
-   {
-      Float64 fdummy;
-
-      // reactions and corresponding rotations
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MaxSimpleContinuousEnvelope, false, true,
-                                           &fdummy, &startRPmax, &fdummy, &startTCmax, &fdummy, &endRPmax, &fdummy, &endTCmax,
-                                           NULL, NULL, NULL, NULL);
-
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MinSimpleContinuousEnvelope, false, true,
-                                           &startRPmin, &fdummy, &startTCmin, &fdummy, &endRPmin, &fdummy, &endTCmin, &fdummy,
-                                           NULL, NULL, NULL, NULL);
-
-      // rotations and corresponding reactions
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MaxSimpleContinuousEnvelope, false, true,
-                                           &fdummy, &startTPmax, &fdummy, &startRCmax, &fdummy, &endTPmax, &fdummy, &endRCmax,
-                                           NULL, NULL, NULL, NULL);
-
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, MinSimpleContinuousEnvelope, false, true,
-                                           &startTPmin, &fdummy, &startRCmin, &fdummy, &endTPmin, &fdummy, &endRCmin, &fdummy,
-                                           NULL, NULL, NULL, NULL);
-   }
-   else
-   {
-      BridgeAnalysisType batype = analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan;
-
-      pBearing->GetBearingLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, batype, false, true,
-                                           &startRPmin, &startRPmax, &startTCmin, &startTCmax, &endRPmin, &endRPmax, &endTCmin, &endTCmax,
-                                           NULL, NULL, NULL, NULL);
-
-      pBearing->GetBearingLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, span, girder, batype, false, true,
-                                           &startTPmin, &startTPmax, &startRCmin, &startRCmax, &endTPmin, &endTPmax, &endRCmin, &endRCmax,
-                                           NULL, NULL, NULL, NULL);
-   }
-
-   // Write table values
    row = pTable->GetNumberOfHeaderRows();
-   ColumnIndexType col = 0;
 
-   if(doStartPier)
+   for ( pier = startPier; pier < endPier; pier++ )
    {
-      if ( startPier == 0 || startPier == nPiers-1 )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(startPier);
+      ColumnIndexType col = 0;
+
+      pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
+
+      if ( pier == 0 || pier == nPiers-1 )
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(startPier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
 
-      (*pTable)(row,col++) << reaction.SetValue( startRPmax );
-      (*pTable)(row,col++) << rotation.SetValue( startTCmax );
+      pgsPointOfInterest poi(startPier,girder,pBridge->GetGirderStartConnectionLength(span,girder));
+      if ( pier != startPier )
+         poi.SetDistFromStart( poi.GetDistFromStart() + pBridge->GetSpanLength(span,girder) );
+   
+      double Rmax,Rmin,Tmin,Tmax;
+      VehicleIndexType minConfig, maxConfig;
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         // reactions and corresponding rotations
+         pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, MaxSimpleContinuousEnvelope, false, true, &Rmin, &Rmax, &Tmin, &Tmax, &minConfig, &maxConfig );
+         (*pTable)(row,col++) << reaction.SetValue( Rmax );
+         (*pTable)(row,col++) << rotation.SetValue( Tmax );
 
-      (*pTable)(row,col++) << reaction.SetValue( startRPmin );
-      (*pTable)(row,col++) << rotation.SetValue( startTCmin );
+         pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, MinSimpleContinuousEnvelope, false, true, &Rmin, &Rmax, &Tmin, &Tmax, &minConfig, &maxConfig  );
+         (*pTable)(row,col++) << reaction.SetValue( Rmin );
+         (*pTable)(row,col++) << rotation.SetValue( Tmin );
 
-      (*pTable)(row,col++) << rotation.SetValue( startTPmax );
-      (*pTable)(row,col++) << reaction.SetValue( startRCmax );
+         // rotations and corresponding reaactions
+         pForces->GetLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, pierFace, MaxSimpleContinuousEnvelope, false, true, &Tmin, &Tmax, &Rmin, &Rmax, &minConfig, &maxConfig );
+         (*pTable)(row,col++) << rotation.SetValue( Tmax );
+         (*pTable)(row,col++) << reaction.SetValue( Rmax );
 
-      (*pTable)(row,col++) << rotation.SetValue( startTPmin );
-      (*pTable)(row,col++) << reaction.SetValue( startRCmin );
+         pForces->GetLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, pierFace, MinSimpleContinuousEnvelope, false, true, &Tmin, &Tmax, &Rmin, &Rmax, &minConfig, &maxConfig  );
+         (*pTable)(row,col++) << rotation.SetValue( Tmin );
+         (*pTable)(row,col++) << reaction.SetValue( Rmin );
+      }
+      else
+      {
+         // reactions and corresponding rotations
+         pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, false, true, &Rmin, &Rmax, &Tmin, &Tmax, &minConfig, &maxConfig );
+         (*pTable)(row,col++) << reaction.SetValue( Rmax );
+         (*pTable)(row,col++) << rotation.SetValue( Tmax );
+
+         (*pTable)(row,col++) << reaction.SetValue( Rmin );
+         (*pTable)(row,col++) << rotation.SetValue( Tmin );
+
+         // rotations and corresponding reactions
+         pForces->GetLiveLoadRotation( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, girder, pierFace, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, false, true, &Tmin, &Tmax, &Rmin, &Rmax, &minConfig, &maxConfig );
+         (*pTable)(row,col++) << rotation.SetValue( Tmax );
+         (*pTable)(row,col++) << reaction.SetValue( Rmax );
+
+         (*pTable)(row,col++) << rotation.SetValue( Tmin );
+         (*pTable)(row,col++) << reaction.SetValue( Rmin );
+      }
 
       row++;
-   }
-
-   if(doEndPier)
-   {
-      col = 0;
-
-      if ( endPier == 0 || endPier == nPiers )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPier-1);
-      else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPier-1);
-
-      (*pTable)(row,col++) << reaction.SetValue( endRPmax );
-      (*pTable)(row,col++) << rotation.SetValue( endTCmax );
-
-      (*pTable)(row,col++) << reaction.SetValue( endRPmin );
-      (*pTable)(row,col++) << rotation.SetValue( endTCmin );
-
-      (*pTable)(row,col++) << rotation.SetValue( endTPmax );
-      (*pTable)(row,col++) << reaction.SetValue( endRCmax );
-
-      (*pTable)(row,col++) << rotation.SetValue( endTPmin );
-      (*pTable)(row,col++) << reaction.SetValue( endRCmin );
    }
 
    ///////////////////////////////////////

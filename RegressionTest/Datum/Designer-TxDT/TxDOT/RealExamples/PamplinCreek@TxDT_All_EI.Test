@@ -1,15 +1,15 @@
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     IV         30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.391   -2.716   4883  0.678  0.889  0.23 -0.05 -0.01 -0.00 -0.06  72.86 198.73   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     1     1    IV       30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.392   -2.718   4888  0.678  0.889  0.23 -0.05 -0.01 -0.00 -0.06  72.86 198.73   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.511   -2.868   5095  0.677  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.71 219.31   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     1     2    IV       32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.512   -2.871   5099  0.677  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.71 219.31   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -17,9 +17,9 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.566   -2.926   5185  0.675  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.10 217.28   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     1     4    IV       32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.567   -2.928   5190  0.675  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.10 217.28   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -27,28 +27,18 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     1     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.225   4090  0.700  0.887  0.14 -0.03 -0.00 -0.00 -0.04  42.08 122.02   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     2     1    IV       22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.227   4093  0.700  0.887  0.14 -0.03 -0.00 -0.00 -0.04  42.08 122.02   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     2     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.011   -2.338   4250  0.698  0.887  0.16 -0.04 -0.00 -0.00 -0.05  50.26 140.74   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     4     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.054   -2.384   4324  0.696  0.887  0.16 -0.04 -0.00 -0.00 -0.05  49.87 139.48   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     2     2    IV       24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.012   -2.340   4253  0.698  0.887  0.16 -0.04 -0.00 -0.00 -0.05  50.26 140.74   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -56,18 +46,9 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  3     1     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.225   4090  0.700  0.887  0.14 -0.03 -0.00 -0.00 -0.04  42.08 122.02   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  3     2     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.011   -2.338   4250  0.698  0.887  0.16 -0.04 -0.00 -0.00 -0.05  50.26 140.74   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     2     4    IV       24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.055   -2.386   4328  0.696  0.887  0.16 -0.04 -0.00 -0.00 -0.05  49.87 139.48   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -75,9 +56,18 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  3     4     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.054   -2.384   4324  0.696  0.887  0.16 -0.04 -0.00 -0.00 -0.05  49.87 139.48   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     3     1    IV       22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.227   4093  0.700  0.887  0.14 -0.03 -0.00 -0.00 -0.04  42.08 122.02   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     3     2    IV       24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.012   -2.340   4253  0.698  0.887  0.16 -0.04 -0.00 -0.00 -0.05  50.26 140.74   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -85,18 +75,9 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     1     IV         30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.392   -2.717   4885  0.678  0.889  0.23 -0.06 -0.01 -0.00 -0.06  72.86 198.72   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     2     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.513   -2.870   5097  0.677  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.71 219.29   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     3     4    IV       24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.055   -2.386   4328  0.696  0.887  0.16 -0.04 -0.00 -0.00 -0.05  49.87 139.48   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -104,9 +85,28 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     4     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.567   -2.927   5187  0.675  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.09 217.26   0.00   0.00   0.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     4     1    IV       30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.393   -2.719   4890  0.678  0.889  0.23 -0.06 -0.01 -0.00 -0.06  72.86 198.72   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     4     2    IV       32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.513   -2.872   5101  0.677  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.71 219.29   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00     4     4    IV       32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.568   -2.929   5192  0.675  0.890  0.24 -0.07 -0.01 -0.00 -0.08  82.09 217.26   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful

@@ -141,18 +141,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,    pDisplayUnits->GetComponentDimUnit(),   false );
 
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
-   scalar.SetTolerance(1.0e-6);
-
    rptParagraph* pPara;
    rptRcTable* p_table;
 
    bool one_girder_has_shear_key = false;
 
-   GET_IFACE2(pBroker,IBarriers,pBarriers);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
@@ -246,101 +239,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                (*p_table)(row,2) << fpl.SetValue(-load.wStart);
                (*p_table)(row,3) << fpl.SetValue(-load.wEnd);
                row++;
-            }
-         }
-
-         // Details for sidewalks and barriers
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter << pPara;
-         *pPara << _T("Distribution of Uniform Barrier, Sidewalk, and Pedestrian Loads to Girder") << rptNewLine;
-
-         pPara = new rptParagraph;
-         *pChapter << pPara;
-
-         p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
-         *pPara << p_table << rptNewLine;
-
-         p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-         p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-         (*p_table)(0,0) << _T("Load Type");
-         (*p_table)(0,1) << COLHDR(_T("Total Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-         (*p_table)(0,2) << _T("Fraction")<<rptNewLine<<_T("to Girder");
-         (*p_table)(0,3) << COLHDR(_T("Girder Load"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-         row = p_table->GetNumberOfHeaderRows();
-
-         Float64 Wtb_per_girder, fraExtLeft, fraExtRight, fraIntLeft, fraIntRight;
-         pProdLoads->GetTrafficBarrierLoadFraction(spanIdx,gdrIdx,&Wtb_per_girder,&fraExtLeft,&fraIntLeft,&fraExtRight,&fraIntRight);
-         Float64 Wsw_per_girder, fraSwLeft, fraSwRight;
-         pProdLoads->GetSidewalkLoadFraction(spanIdx,gdrIdx,&Wsw_per_girder,&fraSwLeft,&fraSwRight);
-
-         Float64 barwt = pBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft);
-         (*p_table)(row,0) << _T("Left Ext. Barrier");
-         (*p_table)(row,1) <<  fpl.SetValue(barwt);
-         (*p_table)(row,2) << scalar.SetValue(fraExtLeft);
-         (*p_table)(row++,3) <<  fpl.SetValue(barwt*fraExtLeft);
-
-         Float64 swwt = pBarriers->GetSidewalkWeight(pgsTypes::tboLeft);
-         if (swwt>0.0)
-         {
-            (*p_table)(row,0) << _T("Left Sidewalk");
-            (*p_table)(row,1) <<  fpl.SetValue(swwt);
-            (*p_table)(row,2) << scalar.SetValue(fraSwLeft);
-            (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwLeft);
-         }
-
-         barwt = pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft);
-         if (barwt>0.0)
-         {
-            (*p_table)(row,0) << _T("Left Int. Barrier");
-            (*p_table)(row,1) <<  fpl.SetValue(barwt);
-            (*p_table)(row,2) << scalar.SetValue(fraIntLeft);
-            (*p_table)(row++,3) <<  fpl.SetValue(barwt*fraIntLeft);
-         }
-
-         barwt = pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight);
-         if (barwt>0.0)
-         {
-            (*p_table)(row,0) << _T("Right Int. Barrier");
-            (*p_table)(row,1) <<  fpl.SetValue(barwt);
-            (*p_table)(row,2) << scalar.SetValue(fraIntRight);
-            (*p_table)(row++,3) <<  fpl.SetValue(barwt*fraIntRight);
-         }
-
-         swwt = pBarriers->GetSidewalkWeight(pgsTypes::tboRight);
-         if (swwt>0.0)
-         {
-            (*p_table)(row,0) << _T("Right Sidewalk");
-            (*p_table)(row,1) <<  fpl.SetValue(swwt);
-            (*p_table)(row,2) << scalar.SetValue(fraSwRight);
-            (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwRight);
-         }
-
-         barwt = pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight);
-         (*p_table)(row,0) << _T("Right Ext. Barrier");
-         (*p_table)(row,1) <<  fpl.SetValue(barwt);
-         (*p_table)(row,2) << scalar.SetValue(fraExtRight);
-         (*p_table)(row++,3) <<  fpl.SetValue(barwt*fraExtRight);
-
-         if ( pProdLoads->HasPedestrianLoad() )
-         {
-            swwt = pProdLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft);
-            if (swwt>0.0)
-            {
-               (*p_table)(row,0) << _T("Left Pedestrian Live");
-               (*p_table)(row,1) <<  fpl.SetValue(swwt);
-               (*p_table)(row,2) << scalar.SetValue(fraSwLeft);
-               (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwLeft);
-            }
-
-            swwt = pProdLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboRight);
-            if (swwt>0.0)
-            {
-               (*p_table)(row,0) << _T("Right Pedestrian Live");
-               (*p_table)(row,1) <<  fpl.SetValue(swwt);
-               (*p_table)(row,2) << scalar.SetValue(fraSwRight);
-               (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwRight);
             }
          }
 
@@ -545,20 +443,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             {
                *pPara<<_T("Overlay load is uniform along entire girder length.")<<rptNewLine;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
                *pPara << p_table << rptNewLine;
                p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
                p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
                (*p_table)(0,0) << _T("Load Type");
-               (*p_table)(0,1) << COLHDR(Sub2(_T("W"),_T("trib")),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,2) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
                RowIndexType row = p_table->GetNumberOfHeaderRows();
 
                const OverlayLoad& ovl_load = *(overlay_loads.begin());
 
                (*p_table)(row,0) << _T("Overlay Weight");
-               (*p_table)(row,1) << loc.SetValue(ovl_load.StartWcc);
-               (*p_table)(row++,2) << fpl.SetValue(-ovl_load.StartLoad);
+               (*p_table)(row++,1) << fpl.SetValue(-ovl_load.StartLoad);
             }
             else
             {
@@ -1115,6 +1011,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
    }
+
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(2);
+   scalar.SetTolerance(1.0e-6);
 
    // LRFD Limit States
    GET_IFACE2(pBroker,ILoadFactors,pLF);

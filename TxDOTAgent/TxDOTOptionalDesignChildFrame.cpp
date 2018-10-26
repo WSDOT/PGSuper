@@ -38,9 +38,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignChildFrame
 
-IMPLEMENT_DYNCREATE(CTxDOTOptionalDesignChildFrame, CEAFChildFrame)
+IMPLEMENT_DYNCREATE(CTxDOTOptionalDesignChildFrame, CMDIChildWnd)
 
-BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignChildFrame, CEAFChildFrame)
+BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignChildFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CTxDOTOptionalDesignChildFrame)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
@@ -68,7 +68,7 @@ BOOL CTxDOTOptionalDesignChildFrame::PreCreateWindow(CREATESTRUCT& cs)
    // get rid of system menu and resizable frame
    cs.style = WS_CHILD;
 
-	if( !CEAFChildFrame::PreCreateWindow(cs) )
+	if( !CMDIChildWnd::PreCreateWindow(cs) )
 		return FALSE;
 
 	return TRUE;
@@ -80,12 +80,12 @@ BOOL CTxDOTOptionalDesignChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CTxDOTOptionalDesignChildFrame::AssertValid() const
 {
-	CEAFChildFrame::AssertValid();
+	CMDIChildWnd::AssertValid();
 }
 
 void CTxDOTOptionalDesignChildFrame::Dump(CDumpContext& dc) const
 {
-	CEAFChildFrame::Dump(dc);
+	CMDIChildWnd::Dump(dc);
 }
 
 #endif //_DEBUG
@@ -99,7 +99,7 @@ void CTxDOTOptionalDesignChildFrame::ActivateFrame(int nCmdShow)
    if (nCmdShow == -1)
       nCmdShow = SW_SHOWMAXIMIZED;
 
-   CEAFChildFrame::ActivateFrame(nCmdShow);
+   CMDIChildWnd::ActivateFrame(nCmdShow);
 }
 
 void CTxDOTOptionalDesignChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)

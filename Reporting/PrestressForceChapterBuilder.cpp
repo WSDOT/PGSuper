@@ -123,15 +123,12 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
          *pChapter << pPara;
          (*pPara) << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
-         bool harpedAreStraight = pStrandGeom->GetAreHarpedStrandsForcedStraight(spanIdx,gdrIdx);
-
          pPara = new rptParagraph;
          *pChapter << pPara;
          StrandIndexType Ns = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight);
-         StrandIndexType Nh = pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          *pPara << _T("Number of straight strands (N") << Sub(_T("s")) << _T(") = ") << Ns << _T(" ") 
             << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Straight)) << _T(")") << rptNewLine;
-         *pPara << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands (N") << Sub(_T("h")) << _T(") = ") << Nh << _T(" ") 
+         *pPara << _T("Number of harped strands (N") << Sub(_T("h")) << _T(") = ") << pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped) << _T(" ") 
             << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Harped)) << _T(")") << rptNewLine;
 
          if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary ) )
@@ -159,9 +156,6 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
                break;
             }
 
-            *pPara << _T("Total permanent strands (N) = ") << Ns+Nh << _T(" ") 
-               << _T("(P") << Sub(_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Straight)+pStrandGeom->GetPjack(spanIdx,gdrIdx,pgsTypes::Harped)) << _T(")") << rptNewLine;
-
             *pPara << _T("Permanent Strands: ") << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Permanent)) << rptNewLine;
             *pPara << _T("Temporary Strands: ") << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(spanIdx,gdrIdx,pgsTypes::Temporary)) << rptNewLine;
             *pPara << _T("Total Strand Area: ") << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(spanIdx,gdrIdx,true)) << rptNewLine;
@@ -179,10 +173,6 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
          pPara = new rptParagraph;
          *pChapter << pPara;
          *pPara << CPrestressLossTable().Build(pBroker,spanIdx,gdrIdx,pDisplayUnits) << rptNewLine;
-
-         pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-         *pChapter << pPara;
-         *pPara << _T("Eff. Loss: Effective prestress loss taken as the sum of the actual prestress loss and elastic gains/losses due to applied loads") << rptNewLine;
       } // gdrIdx
    } // spanIdx
 

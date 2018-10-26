@@ -18,15 +18,10 @@
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
-#ifndef _AFX_NO_OLE_SUPPORT
-#include <afxole.h>         // MFC OLE classes
-#include <afxodlgs.h>       // MFC OLE dialog classes
-#include <afxdisp.h>        // MFC OLE automation classes
-#endif // _AFX_NO_OLE_SUPPORT
-
 #include <afxwin.h>
-#include <afxMDIFrameWndEx.h>
-#include <afxMDIChildWndEx.h>
+#ifndef _AFX_NO_OLE_SUPPORT
+#include <afxdisp.h>        // MFC Automation classes
+#endif // _AFX_NO_OLE_SUPPORT
 
 #include "PGSuperAppPlugin\resource.h"
 #include <atlbase.h>

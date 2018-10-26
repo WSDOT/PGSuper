@@ -91,7 +91,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
    return table;
 }
 
-void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,2) << stress.SetValue(details.pLosses->FrictionLoss());
    (*this)(row,3) << stress.SetValue(details.pLosses->AnchorSetLoss());

@@ -181,9 +181,6 @@ public:
    bool IsDesignShearEnabled() const;
    void EnableDesignShear( bool bEnable );
 
-   bool IsDesignStirrupsFromScratchEnabled() const;
-   void EnableDesignStirrupsFromScratch( bool bEnable );
-
    bool ShowProjectPropertiesOnNewProject();
    void ShowProjectPropertiesOnNewProject(bool bShow);
 
@@ -223,7 +220,6 @@ protected:
    UINT m_UIHintSettings;
    bool m_bDesignFlexureEnabled;
    bool m_bDesignShearEnabled;
-   bool m_bDesignStirrupsFromScratchEnabled;
    bool m_bShowProjectProperties;
 
    CComPtr<IDocUnitSystem> m_DocUnitSystem;

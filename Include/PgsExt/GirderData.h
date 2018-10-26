@@ -38,7 +38,7 @@
 #endif
 
 #include <PgsExt\GirderMaterial.h>
-#include <PsgLib\ShearData.h>
+#include <PgsExt\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
 
@@ -58,7 +58,7 @@ class PGSEXTCLASS CDebondInfo
 {
 public:
    StrandIndexType idxStrand1;
-   StrandIndexType idxStrand2; // -1 if not used
+   StrandIndexType idxStrand2; // INVALID_INDEX if not used
    Float64 Length1; // debond length at left end of girder
    Float64 Length2; // debond length at right end of girder
 
@@ -103,7 +103,8 @@ public:
    // When this is the case, values must be divided proportionally to straight and harped strands into 
    // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
    // used internally by the analysis and engineering agents
-   StrandIndexType  Nstrands[4];
+   StrandIndexType Nstrands[4];
+   std::vector<StrandIndexType> NextendedStrands[3][2];
    Float64 Pjack[4];
    HarpedStrandOffsetType HsoEndMeasurement; // one of HarpedStrandOffsetType enums
    Float64 HpOffsetAtEnd;
@@ -161,9 +162,7 @@ public:
                     ctStrand       = 0x0004,
                     ctLifting      = 0x0008,
                     ctShipping     = 0x0010,
-                    ctCondition    = 0x0020,
-                    ctLongRebar    = 0x0040,
-                    ctShearData    = 0x0080
+                    ctCondition    = 0x0020
    };
 
    // return or'ed enums above 
@@ -174,6 +173,9 @@ public:
    // from another
    void CopyMaterialFrom(const CGirderData& rOther);
    void CopyPrestressingFrom(const CGirderData& rOther);
+   void CopyShearDataFrom(const CGirderData& rOther);
+   void CopyLongitudinalRebarFrom(const CGirderData& rOther);
+   void CopyHandlingDataFrom(const CGirderData& rOther);
 
    long GetDebondCount(pgsTypes::StrandType strandType) const;
    void ClearDebondData();

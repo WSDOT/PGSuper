@@ -34,7 +34,9 @@
 #include <PgsExt\PoiMgr.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderData.h>
+#include <PgsExt\ShearData.h>
 #include <PgsExt\HandlingData.h>
+#include <PgsExt\ShearZoneData.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>
 #include <PgsExt\GirderLabel.h>

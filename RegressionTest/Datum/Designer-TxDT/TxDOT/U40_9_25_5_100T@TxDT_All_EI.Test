@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 54.25   6  9.25  1     1    U40        64   1/2  270 12.73 12.25  16  2.17  27  16  4  6  2  2  2  0  0  0  0  0  5.200  6.700    4.312   -3.754    6529 0.619  0.852  0.39 -0.18 -0.01 -0.01 -0.20 176.02 472.72   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 54.25   6  9.25     1     1   U40       66   1/2  270 12.66 12.09  18  2.17  27  18  6  6  2  2  2  0  0  0  0  0  5.200  6.700    4.313   -3.755   6533  0.619  0.852  0.40 -0.18 -0.01 -0.01 -0.20 187.33 502.47   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 54.25   6  9.25  1     2    U40        64   1/2  270 12.73 12.25  16  2.17  27  16  4  6  2  2  2  0  0  0  0  0  5.100  6.500    4.248   -3.701    6448 0.614  0.852  0.39 -0.18 -0.01 -0.01 -0.20 177.38 476.05   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 54.25   6  9.25     1     2   U40       64   1/2  270 12.73 12.25  16  2.17  27  16  4  6  2  2  2  0  0  0  0  0  5.100  6.500    4.249   -3.702   6453  0.614  0.852  0.39 -0.18 -0.01 -0.01 -0.20 177.38 475.94   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 54.25   6  9.25  1     4    U40        64   1/2  270 12.73 12.25  16  2.17  27  16  4  6  2  2  2  0  0  0  0  0  5.100  6.500    4.248   -3.701    6448 0.614  0.852  0.39 -0.18 -0.01 -0.01 -0.20 177.38 476.05   1.00   1.00   1.00
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 54.25   6  9.25     1     4   U40       64   1/2  270 12.73 12.25  16  2.17  27  16  4  6  2  2  2  0  0  0  0  0  5.100  6.500    4.249   -3.702   6453  0.614  0.852  0.39 -0.18 -0.01 -0.01 -0.20 177.38 475.94   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

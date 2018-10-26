@@ -39,26 +39,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptParagraph* pPara)
-{
-   if (pedType==ILiveLoads::PedConcurrentWithVehiculuar)
-   {
-      (*pPara) << _T("Pedestrian live load was applied concurrently with vehicular live loads.")<<rptNewLine;
-   }
-   else if (pedType==ILiveLoads::PedEnvelopeWithVehicular)
-   {
-      (*pPara) << _T("Pedestrian live load response was enveloped with vehicular live loads.")<<rptNewLine;
-   }
-   else if (pedType==ILiveLoads::PedDontApply)
-   {
-      (*pPara) << _T("Pedestrian live load was not applied.")<<rptNewLine;
-   }
-   else
-   {
-      ATLASSERT(0);
-   }
-}
-
 /****************************************************************************
 CLASS
    CLiveLoadDetailsChapterBuilder
@@ -119,9 +99,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          bRating = false;
    }
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bPedestrian = pProductLoads->HasPedestrianLoad();
-
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
 
@@ -156,11 +133,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
       }
 
-      if(bPedestrian)
-      {
-         ReportPedestrian(pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign), pPara);
-      }
-
       // Fatigue live loads
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -193,11 +165,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          }
       }
 
-      if(bPedestrian)
-      {
-         ReportPedestrian(pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue), pPara);
-      }
-
       // Strength II live loads
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
@@ -226,18 +193,10 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
       }
-
-      if(bPedestrian)
-      {
-         ReportPedestrian(pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit), pPara);
-      }
    }
-
 
    if ( bRating )
    {
-       bool rate_pedestrian = pRatingSpec->IncludePedestrianLiveLoad();
-
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
          *pPara<< _T("Live Loads used for Design Load Rating")<<rptNewLine;
@@ -255,11 +214,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
             *pChapter << pPara;
 
             ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
-         }
-
-         if (bPedestrian)
-         {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
          }
       }
 
@@ -282,11 +236,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
             *pChapter << pPara;
 
             ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
-         }
-
-         if (bPedestrian)
-         {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
          }
       }
 
@@ -311,11 +260,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
             ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
          }
-
-         if (bPedestrian)
-         {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
-         }
       }
 
 
@@ -339,11 +283,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
             ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
          }
-
-         if (bPedestrian)
-         {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
-         }
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
@@ -365,11 +304,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
             *pChapter << pPara;
 
             ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
-         }
-
-         if (bPedestrian)
-         {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
          }
       }
    }

@@ -144,7 +144,6 @@
 #define IDS_GDR_ERROR                   1754
 #define IDS_GDR_ERROR2                  1755
 #define IDS_CONN_ERROR                  1755
-#define IDS_GDR_ERROR3                  1756
 #define IDC_GROUP                       3003
 #define IDS_E_NOGIRDERS                 3005
 #define ID_LEFTEND                      33174

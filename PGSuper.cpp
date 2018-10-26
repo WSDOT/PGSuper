@@ -460,9 +460,9 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CMFCLinkCtrl m_WSDOT;
-   CMFCLinkCtrl m_TxDOT;
-   CMFCLinkCtrl m_BridgeSight;
+   CHyperLink m_WSDOT;
+   CHyperLink m_TxDOT;
+   CHyperLink m_BridgeSight;
 };
 
 CAboutDlg::CAboutDlg() : CEAFAboutDlg(AfxGetApp()->LoadIcon(IDR_MAINFRAME),IDD_ABOUTBOX)
@@ -492,19 +492,12 @@ BOOL CAboutDlg::OnInitDialog()
 	CEAFAboutDlg::OnInitDialog();
 	
 
-   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov"));
-   m_WSDOT.SetTooltip(_T("http://www.wsdot.wa.gov"));
-   m_WSDOT.SizeToContent();
+   m_WSDOT.SetURL(_T("http://www.wsdot.wa.gov/"));
+   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us/"));
+   m_BridgeSight.SetURL(_T("http://www.bridgesight.com/"));
 
-   m_TxDOT.SetURL(_T("http://www.dot.state.tx.us"));
-   m_TxDOT.SetTooltip(_T("http://www.dot.state.tx.us"));
-   m_TxDOT.SizeToContent();
-
-   m_BridgeSight.SetURL(_T("http://www.bridgesight.com"));
-   m_BridgeSight.SetTooltip(_T("http://www.bridgesight.com"));
-   m_BridgeSight.SizeToContent();
-
-   return TRUE;  // return TRUE unless you set the focus to a control
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 

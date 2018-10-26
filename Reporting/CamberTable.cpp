@@ -247,7 +247,6 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
       Dshearkey  = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
       Duser1     = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
@@ -452,7 +451,6 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
       Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
       Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
@@ -654,7 +652,6 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
       Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
@@ -860,7 +857,6 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
       Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
       Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
@@ -1062,7 +1058,6 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
       Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-      Ddeck     += pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);

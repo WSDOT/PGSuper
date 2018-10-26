@@ -87,12 +87,6 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
    *pChapter << p;
    *p << color(Red) << _T("NOTE: Several details have been omitted from this report") << color(Black) << rptNewLine;
 
-   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
-   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(spanIdx, gdrIdx))
-   {
-      *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
-   }
-
    girder_line_geometry( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
    concrete( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
    prestressing( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
@@ -492,7 +486,6 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    // Populate the table
    Int16 row = 0;
    (*pTable)(row,0) << _T("Permanent Strands");
-   (*pTable)(row,1) << _T("");
    row++;
 
    (*pTable)(row,0) << _T("Nominal Strand Diameter");
@@ -529,13 +522,11 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    }
    row++;
 
-   bool are_harped_straight = pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder);
-
-   (*pTable)(row,0) << _T("Number of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands");
+   (*pTable)(row,0) << _T("Number of Harped Strands");
    (*pTable)(row,1) << pStrandGeom->GetNumStrands( span, girder, pgsTypes::Harped );
    row++;
 
-   (*pTable)(row,0) << LABEL_HARP_TYPE(are_harped_straight)<<_T(" Strand ") << Sub2(_T("P"),_T("jack"));
+   (*pTable)(row,0) << _T("Harped Strand ") << Sub2(_T("P"),_T("jack"));
    (*pTable)(row,1) << force.SetValue( pStrandGeom->GetPjack(span,girder,pgsTypes::Harped) );
    row++;
 
@@ -553,7 +544,6 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    if (0 <  pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) )
    {
       (*pTable)(row,0) << _T("Temporary Strands");
-      (*pTable)(row,1) << _T("");
       row++;
 
       (*pTable)(row,0) << _T("Nominal Strand Diameter");
@@ -584,26 +574,17 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
       row++;
    }
 
-   if (are_harped_straight)
-   {
-      (*pTable)(row,0) << _T("C.G. of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands from top");
-      (*pTable)(row,1) << component.SetValue( Fo );
-      row++;
-   }
-   else
-   {
-      (*pTable)(row,0) << _T("C.G. of Harped Strands at end, ") << Sub2(_T("F"),_T("o"));
-      (*pTable)(row,1) << component.SetValue( Fo );
-      row++;
+   (*pTable)(row,0) << _T("C.G. of Harped Strands at end, ") << Sub2(_T("F"),_T("o"));
+   (*pTable)(row,1) << component.SetValue( Fo );
+   row++;
 
-      (*pTable)(row,0) << _T("C.G. of Harped Strands at centerline, ") << Sub2(_T("F"),_T("cl"));
-      (*pTable)(row,1) << component.SetValue( Fcl );
-      row++;
+   (*pTable)(row,0) << _T("C.G. of Harped Strands at centerline, ") << Sub2(_T("F"),_T("cl"));
+   (*pTable)(row,1) << component.SetValue( Fcl );
+   row++;
 
-      (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle, ") << Sub2(_T("F"),_T("b"));
-      (*pTable)(row,1) << component.SetValue( Fb );
-      row++;
-   }
+   (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle, ") << Sub2(_T("F"),_T("b"));
+   (*pTable)(row,1) << component.SetValue( Fb );
+   row++;
    
    (*pTable)(row,0) << _T("C.G. of Straight Strands, E");
    (*pTable)(row,1) << component.SetValue( E );

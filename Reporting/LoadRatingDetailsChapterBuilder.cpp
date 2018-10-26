@@ -105,11 +105,13 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    *pPara << pPara->GetName() << rptNewLine;
 
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-   VehicleIndexType firstVehicleIdx = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? INVALID_INDEX : 0);
-   VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 0 : nVehicles);
+   VehicleIndexType firstVehicleIdx = 0;
+   VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 1 : nVehicles);
    for ( VehicleIndexType vehIdx = firstVehicleIdx; vehIdx < lastVehicleIdx; vehIdx++ )
    {
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,
+         (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehIdx);
+
       if ( pRatingArtifact )
       {
          std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,vehIdx);

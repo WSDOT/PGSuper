@@ -474,8 +474,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
       pShearCapacity->GetShearCapacityDetails(ls,pgsTypes::BridgeSite3,poi,&scd);
-      designer.InitShearCheck(spanIdx,gdrIdx,ls,NULL);
-      designer.CheckLongReinfShear(poi,pgsTypes::BridgeSite3,ls,scd,NULL,&l_artifact);
+      designer.CheckLongReinfShear(poi,pgsTypes::BridgeSite3,ls,scd,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
       ratingArtifact.AddArtifact(poi,shearArtifact);
@@ -964,8 +963,13 @@ pgsTypes::LimitState pgsLoadRater::GetServiceLimitStateType(pgsTypes::LoadRating
 
 void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex)
 {
+   GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bIncludeNoncompositeMoments = pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -974,7 +978,7 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
 
    GET_IFACE(ICombinedForces2,pCombinedForces);
    GET_IFACE(IProductForces2,pProductForces);
-   if ( bPositiveMoment )
+   if ( bPositiveMoment || (!bPositiveMoment && bIncludeNoncompositeMoments) )
    {
       if ( analysisType == pgsTypes::Envelope )
       {
@@ -1028,7 +1032,6 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
 
       std::vector<Float64> vConstructionMin, vConstructionMax;
       std::vector<Float64> vSlabMin, vSlabMax;
-      std::vector<Float64> vSlabPadMin, vSlabPadMax;
       std::vector<Float64> vSlabPanelMin, vSlabPanelMax;
       std::vector<Float64> vDiaphragmMin, vDiaphragmMax;
       std::vector<Float64> vShearKeyMin, vShearKeyMax;
@@ -1055,9 +1058,6 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
 
          vSlabMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,MinSimpleContinuousEnvelope);
          vSlabMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,MaxSimpleContinuousEnvelope);
-
-         vSlabPadMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,vPOI,MinSimpleContinuousEnvelope);
-         vSlabPadMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,vPOI,MaxSimpleContinuousEnvelope);
 
          vSlabPanelMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,vPOI,MinSimpleContinuousEnvelope);
          vSlabPanelMax = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,vPOI,MaxSimpleContinuousEnvelope);
@@ -1116,9 +1116,6 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
          vSlabMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          vSlabMax = vSlabMin;
 
-         vSlabPadMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
-         vSlabPadMax = vSlabPadMin;
-
          vSlabPanelMin = pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,vPOI,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          vSlabPanelMax = vSlabPanelMin;
 
@@ -1174,8 +1171,6 @@ void pgsLoadRater::GetMoments(GirderIndexType gdrLineIdx,bool bPositiveMoment,pg
       special_transform(pBridge,vPOI.begin(),vPOI.end(),vConstructionMax.begin(),vDCmax.begin(),vDCmax.begin());
       special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabMin.begin(),vDCmin.begin(),vDCmin.begin());
       special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabPadMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabPadMax.begin(),vDCmax.begin(),vDCmax.begin());
       special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabPanelMin.begin(),vDCmin.begin(),vDCmin.begin());
       special_transform(pBridge,vPOI.begin(),vPOI.end(),vSlabPanelMax.begin(),vDCmax.begin(),vDCmax.begin());
       special_transform(pBridge,vPOI.begin(),vPOI.end(),vDiaphragmMin.begin(),vDCmin.begin(),vDCmin.begin());

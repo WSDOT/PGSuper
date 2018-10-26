@@ -87,20 +87,17 @@ void txnEditLiveLoad::DoExecute(int i)
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
-   pLiveLoad->SetLiveLoadNames(            pgsTypes::lltDesign,m_Design[i].m_VehicleNames);
-   pLiveLoad->SetTruckImpact(              pgsTypes::lltDesign,m_Design[i].m_TruckImpact);
-   pLiveLoad->SetLaneImpact(               pgsTypes::lltDesign,m_Design[i].m_LaneImpact);
-   pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltDesign,m_Design[i].m_PedestrianLoadApplicationType);
+   pLiveLoad->SetLiveLoadNames(pgsTypes::lltDesign,m_Design[i].m_VehicleNames);
+   pLiveLoad->SetTruckImpact(  pgsTypes::lltDesign,m_Design[i].m_TruckImpact);
+   pLiveLoad->SetLaneImpact(   pgsTypes::lltDesign,m_Design[i].m_LaneImpact);
 
-   pLiveLoad->SetLiveLoadNames(            pgsTypes::lltFatigue,m_Fatigue[i].m_VehicleNames);
-   pLiveLoad->SetTruckImpact(              pgsTypes::lltFatigue,m_Fatigue[i].m_TruckImpact);
-   pLiveLoad->SetLaneImpact(               pgsTypes::lltFatigue,m_Fatigue[i].m_LaneImpact);
-   pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltFatigue,m_Fatigue[i].m_PedestrianLoadApplicationType);
+   pLiveLoad->SetLiveLoadNames(pgsTypes::lltFatigue,m_Fatigue[i].m_VehicleNames);
+   pLiveLoad->SetTruckImpact(  pgsTypes::lltFatigue,m_Fatigue[i].m_TruckImpact);
+   pLiveLoad->SetLaneImpact(   pgsTypes::lltFatigue,m_Fatigue[i].m_LaneImpact);
 
-   pLiveLoad->SetLiveLoadNames(            pgsTypes::lltPermit,m_Permit[i].m_VehicleNames);
-   pLiveLoad->SetTruckImpact(              pgsTypes::lltPermit,m_Permit[i].m_TruckImpact);
-   pLiveLoad->SetLaneImpact(               pgsTypes::lltPermit,m_Permit[i].m_LaneImpact);
-   pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltPermit,m_Permit[i].m_PedestrianLoadApplicationType);
+   pLiveLoad->SetLiveLoadNames(pgsTypes::lltPermit,m_Permit[i].m_VehicleNames);
+   pLiveLoad->SetTruckImpact(  pgsTypes::lltPermit,m_Permit[i].m_TruckImpact);
+   pLiveLoad->SetLaneImpact(   pgsTypes::lltPermit,m_Permit[i].m_LaneImpact);
 
    pEvents->FirePendingEvents();
 }

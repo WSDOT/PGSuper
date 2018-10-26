@@ -250,7 +250,7 @@ public:
 
    // ACCESS
    //////////
-   const GDRCONFIG& GetGirderConfiguration();
+   GDRCONFIG GetGirderConfiguration();
 
    arFlexuralDesignType GetFlexuralDesignType() const;
 
@@ -364,9 +364,6 @@ private:
    GirderIndexType m_Girder;
    SpanIndexType m_Span;
    arDesignOptions m_DesignOptions;
-
-   GDRCONFIG m_CachedConfig;
-   bool m_bConfigDirty;
 
    arDesignStrandFillType m_StrandFillType;
    Float64                m_HarpedRatio;

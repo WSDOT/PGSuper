@@ -36,7 +36,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadSelectDlg dialog
 
@@ -47,8 +46,7 @@ CLiveLoadSelectDlg::CLiveLoadSelectDlg(std::vector< std::_tstring>& allNames, st
      m_AllNames(allNames),
      m_DesignNames(dsgnNames),
      m_FatigueNames(fatigueNames),
-     m_PermitNames(str2Names),
-     m_bHasPedestrianLoad(false)
+     m_PermitNames(str2Names)
 {
 	//{{AFX_DATA_INIT(CLiveLoadSelectDlg)
 	//}}AFX_DATA_INIT
@@ -58,10 +56,6 @@ CLiveLoadSelectDlg::CLiveLoadSelectDlg(std::vector< std::_tstring>& allNames, st
    m_FatigueLaneImpact = 0;
    m_PermitTruckImpact = 0;
    m_PermitLaneImpact = 0;
-
-   m_DesignPedesType = ILiveLoads::PedDontApply;
-   m_FatiguePedesType = ILiveLoads::PedDontApply;
-   m_PermitPedesType = ILiveLoads::PedDontApply;
 }
 
 
@@ -80,10 +74,6 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Percentage(pDX,IDC_FATIGUE_LANE_IMPACT,  m_FatigueLaneImpact);
    DDX_Percentage(pDX,IDC_PERMIT_TRUCK_IMPACT,  m_PermitTruckImpact);
    DDX_Percentage(pDX,IDC_PERMIT_LANE_IMPACT,   m_PermitLaneImpact);
-
-   DDX_CBItemData(pDX, IDC_FATIGUE_PEDES_COMBO, m_FatiguePedesType);
-   DDX_CBItemData(pDX, IDC_PERMIT_PEDES_COMBO,  m_PermitPedesType);
-   DDX_CBItemData(pDX, IDC_DESIGN_PEDES_COMBO,  m_DesignPedesType);
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -148,11 +138,6 @@ void CLiveLoadSelectDlg::OnHelp()
 
 BOOL CLiveLoadSelectDlg::OnInitDialog() 
 {
-   // Strings for pedestrian load application
-   SetPedestrianComboText(IDC_DESIGN_PEDES_COMBO, IDC_DESIGN_PEDES_STATIC);
-   SetPedestrianComboText(IDC_FATIGUE_PEDES_COMBO,IDC_FATIGUE_PEDES_STATIC);
-   SetPedestrianComboText(IDC_PERMIT_PEDES_COMBO, IDC_PERMIT_PEDES_STATIC);
-
 	CDialog::OnInitDialog();
 	
    m_ctlDesignLL.SetCheckStyle( BS_AUTOCHECKBOX );
@@ -206,31 +191,10 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
       }
    }
 
-   // Set text for pedestrian load application
-
-
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_LIVELOAD),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CLiveLoadSelectDlg::SetPedestrianComboText(int iCombo, int iStatic)
-{
-   CComboBox* pCombo = (CComboBox*)GetDlgItem(iCombo);
-   CWnd* pStatic = GetDlgItem(iStatic);
-
-   int idx = pCombo->AddString(_T("No Ped. Load, vehicular live load only"));
-   pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedDontApply);
-
-   idx = pCombo->AddString(_T("Concurrently with vehicular live load"));
-   pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedConcurrentWithVehiculuar);
-
-   idx = pCombo->AddString(_T("Enveloped with vehicular live load"));
-   pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedEnvelopeWithVehicular);
-
-   pCombo->EnableWindow(m_bHasPedestrianLoad? TRUE:FALSE);
-   pStatic->EnableWindow(m_bHasPedestrianLoad? TRUE:FALSE);
 }
