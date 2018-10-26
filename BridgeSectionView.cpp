@@ -547,7 +547,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CString strMsg2;
       strMsg2.Format(_T("\r\n\r\nGirder: %s\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
                      pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx),
-                     matConcrete::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,gdrIdx),true).c_str(),
+                     lrfdConcreteUtil::GetTypeName((matConcrete::Type)pBridgeMaterial->GetGdrConcreteType(spanIdx,gdrIdx),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
@@ -901,7 +901,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
-                        matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
+                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
                         FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                         );
       }
@@ -910,7 +910,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
          strMsg2.Format(_T("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s"),
                         m_pFrame->GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                        matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
+                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
                         FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                         );
       }

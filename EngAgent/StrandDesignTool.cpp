@@ -1789,6 +1789,9 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
 ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc)
 {
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
+   GET_IFACE(IBridgeMaterial,pMaterial);
+   Float64 lambda = pMaterial->GetLambdaGdr(m_Span,m_Girder);
+
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    Float64 fc_reqd;
 
@@ -1812,7 +1815,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          if (0 < t)
          {
             LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
-            fc_reqd = pow(fControl/t,2);
+            fc_reqd = pow(fControl/(lambda*t),2);
 
             if ( bfMax && fmax < fControl) 
             {
@@ -1821,7 +1824,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
                {
                   // try getting the alternative allowable if rebar is used
                   Float64 talt = pAllowStress->GetCastingYardAllowableTensionStressCoefficientWithRebar();
-                  fc_reqd = pow(fControl/talt,2);
+                  fc_reqd = pow(fControl/(lambda*talt),2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
                }

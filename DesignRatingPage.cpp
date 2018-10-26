@@ -150,33 +150,53 @@ BOOL CDesignRatingPage::OnSetActive()
    GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
-   const CLiveLoadFactorModel& inventory = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
+   bool bAllowUserOverride;
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      const CLiveLoadFactorModel& inventory = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
+      bAllowUserOverride = inventory.AllowUserOverride();
+   }
+   else
+   {
+      const CLiveLoadFactorModel2& inventory = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Inventory);
+      bAllowUserOverride = inventory.AllowUserOverride();
+   }
 
    CDataExchange dx(this,false);
    Float64 gLL = -1;
-   if ( !inventory.AllowUserOverride() )
+   if ( bAllowUserOverride )
+   {
+      GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(TRUE);
+   }
+   else
    {
       DDX_Keyword(&dx,IDC_STRENGTH_I_LL_INVENTORY,_T("Compute"),gLL);
       DDX_Keyword(&dx,IDC_SERVICE_III_LL,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(FALSE);
    }
+
+
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      const CLiveLoadFactorModel& operating = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
+      bAllowUserOverride = operating.AllowUserOverride();
+   }
    else
    {
-      GetDlgItem(IDC_STRENGTH_I_LL_INVENTORY)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_III_LL)->EnableWindow(TRUE);
+      const CLiveLoadFactorModel2& operating = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Operating);
+      bAllowUserOverride = operating.AllowUserOverride();
    }
 
-
-   const CLiveLoadFactorModel& operating = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
-   if ( !operating.AllowUserOverride() )
+   if ( bAllowUserOverride )
+   {
+      GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(TRUE);
+   }
+   else
    {
       DDX_Keyword(&dx,IDC_STRENGTH_I_LL_OPERATING,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(FALSE);
-   }
-   else
-   {
-      GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(TRUE);
    }
 
    return TRUE;

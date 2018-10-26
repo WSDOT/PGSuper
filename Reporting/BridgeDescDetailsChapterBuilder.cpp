@@ -569,7 +569,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
 
    Int16 row = 0;
    (*pTable)(row,0) << _T("Type");
-   (*pTable)(row,1) << matConcrete::GetTypeName( (matConcrete::Type)pGirderMaterial->Type, true );
+   (*pTable)(row,1) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)pGirderMaterial->Type, true );
    row++;
 
    (*pTable)(row,0) << RPT_FC;
@@ -655,7 +655,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       *pPara << pTable << rptNewLine;
 
       (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << matConcrete::GetTypeName( (matConcrete::Type)pDeck->SlabConcreteType, true );
+      (*pTable)(row,1) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)pDeck->SlabConcreteType, true );
       row++;
 
       (*pTable)(row,0) << RPT_FC;

@@ -2001,7 +2001,7 @@ BEGIN
     EDITTEXT        IDC_STRENGTH_II_LL_PERMIT,153,172,43,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(LL+IM) - Routine/Annual Permit",IDC_STATIC,200,176,104,8
     LTEXT           "+ ",IDC_STATIC,145,192,8,8
-    EDITTEXT        IDC_STRENGTH_II_LL_PERMIT2,153,188,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_STRENGTH_II_LL_SPECIAL,153,188,43,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(LL+IM) - Special/Limited Crossing",IDC_STATIC,200,192,109,8
     LTEXT           "Service I =",IDC_STATIC,13,211,36,8
     EDITTEXT        IDC_SERVICE_I_DC,57,208,26,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -2011,7 +2011,7 @@ BEGIN
     EDITTEXT        IDC_SERVICE_I_LL_PERMIT,153,208,43,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(LL+IM) - Routine/Annual Permit",IDC_STATIC,200,211,104,8
     LTEXT           "+",IDC_STATIC,145,228,8,8
-    EDITTEXT        IDC_SERVICE_I_LL_PERMIT2,153,225,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SERVICE_I_LL_SPECIAL,153,225,43,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(LL+IM) - Special/Limited Crossing",IDC_STATIC,200,228,109,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,265,63,10
     CONTROL         "Check reinforcement yielding (6A.5.4.2.2b)",IDC_CHECK_YIELDING,
@@ -2225,8 +2225,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,1,1
- PRODUCTVERSION 2,9,1,1
+ FILEVERSION 2,9,1,2
+ PRODUCTVERSION 2,9,1,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2243,12 +2243,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.9.1.1"
+            VALUE "FileVersion", "2.9.1.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.1.1"
+            VALUE "ProductVersion", "2.9.1.2"
         END
     END
     BLOCK "VarFileInfo"

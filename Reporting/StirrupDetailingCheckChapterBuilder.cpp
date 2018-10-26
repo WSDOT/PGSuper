@@ -107,28 +107,35 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
    pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,girder);
    bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,girder);
-   switch( concType )
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
    {
-   case pgsTypes::Normal:
-      strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
-      break;
+      switch( concType )
+      {
+      case pgsTypes::Normal:
+         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
+         break;
 
-   case pgsTypes::AllLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
-      else
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
-      break;
+      case pgsTypes::AllLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+         else
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
+         break;
 
-   case pgsTypes::SandLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
-      else
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
-      break;
+      case pgsTypes::SandLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+         else
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
+         break;
 
-   default:
-      ATLASSERT(false);
+      default:
+         ATLASSERT(false);
+      }
+   }
+   else
+   {
+      strImage = _T("AvOverSMin_2016.png");
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;

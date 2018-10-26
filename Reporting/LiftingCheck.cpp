@@ -121,6 +121,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       *pTitle<<_T("Warning! - Girder is unstable - CG is higher than pick points")<<rptNewLine;
    }
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker, ILibrary,       pLib );
    std::_tstring specName = pSpec->GetSpecification();
@@ -139,16 +141,25 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    Float64 capCompression = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(span,girder);
 
-   *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FCI << _T(" = ") << 
+   *p <<_T("Maximum allowable concrete compressive stress = -") << c;
+   *p << RPT_FCI << _T(" = ") << 
       stress.SetValue(capCompression)<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
-   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FCI;
+
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t);
+   if ( bLambda )
+      *p << symbol(lambda);
+   *p << symbol(ROOT) << RPT_FCI;
+
    if ( b_t_max )
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
    *p << _T(" = ") << stress.SetValue(pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(span,girder))<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2);
+   if ( bLambda )
+      *p << symbol(lambda);
+   *p << symbol(ROOT) << RPT_FCI
       << _T(" = ") << stress.SetValue(pGirderLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(span,girder)) << _T(" ") << stress.GetUnitTag()
       << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 

@@ -6915,7 +6915,15 @@ void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,F
    Float64 P, M;
    details.pLosses->GetDeckShrinkageEffects(&P,&M);
 
+   // Eccentricity of deck changes with fc, so we need to recompute M
    GET_IFACE(ISectProp2,pProps);
+   GET_IFACE(IBridge,pBridge);
+   Float64 ed  = pProps->GetYtGirder( pgsTypes::BridgeSite2, poi, fcGdr ) 
+               + pBridge->GetStructuralSlabDepth(poi)/2;
+   ed *= -1;
+
+   M = P * ed;
+
    Float64 A  = pProps->GetAg(compositeStage,poi,fcGdr);
    Float64 St = pProps->GetStGirder(compositeStage,poi,fcGdr);
    Float64 Sb = pProps->GetSb(compositeStage,poi,fcGdr);
@@ -11186,7 +11194,7 @@ Float64 CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,const pgsPointOfInter
       break;
 
    case pgsTypes::BridgeSite2:
-      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterSIDL,pgsTypes::ServiceI);
+      P = pPsForce->GetStrandForce(poi,pgsTypes::Permanent,pgsTypes::AfterLosses,pgsTypes::ServiceI);
       bIncTempStrands = false;
       break;
 
@@ -11265,12 +11273,12 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(pgsTypes::Stage stage,const pgsPoi
       break;
 
    case pgsTypes::BridgeSite2:
-      lossStage = pgsTypes::AfterSIDL;
+      lossStage = pgsTypes::AfterLosses;
       limitState = pgsTypes::ServiceI;
       break;
 
    case pgsTypes::BridgeSite3:
-      lossStage = pgsTypes::AfterLosses;
+      lossStage = pgsTypes::AfterLossesWithLiveLoad;
       limitState = pgsTypes::ServiceIII;
       break;
    }

@@ -36,6 +36,8 @@
 
 #include <IFace\GirderHandlingPointOfInterest.h>
 
+#include <EAF\EAFUtilities.h>
+
 // LOCAL INCLUDES
 //
 
@@ -198,12 +200,18 @@ public:
                                                 Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                                 Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar);
 
-   static void ComputeReqdFcTens(Float64 ft, // stress demand
+   static void ComputeReqdFcTens(SpanIndexType span,GirderIndexType gdr,
+                          Float64 ft, // stress demand
                           Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
                           Float64* pFcNo,Float64* pFcWithRebar)
    {
       if ( 0 < ft )
       {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridgeMaterial,pMat);
+         Float64 lambda = pMat->GetLambdaGdr(span,gdr);
+
          // Without rebar
          if ( rcsBfmax &&  ft>rcsFmax)
          {
@@ -212,11 +220,11 @@ public:
          }
          else
          {
-            *pFcNo = pow(ft/rcsT,2);
+            *pFcNo = pow(ft/(rcsT*lambda),2);
          }
 
          // With rebar
-         *pFcWithRebar = pow(ft/rcsTalt,2);
+         *pFcWithRebar = pow(ft/(rcsTalt*lambda),2);
 
       }
       else

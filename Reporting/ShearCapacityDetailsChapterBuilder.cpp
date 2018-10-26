@@ -866,7 +866,12 @@ void write_fpce_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
-   *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
+   *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(span,gdr));
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+   {
+      *pParagraph << symbol(lambda);
+   }
+   *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fcpe.png")) << rptNewLine;
@@ -1749,28 +1754,35 @@ void write_Vc_table(IBroker* pBroker,
    std::_tstring strImage;
    pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
    bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
-   switch( concType )
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
    {
-   case pgsTypes::Normal:
-      strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
-      break;
+      switch( concType )
+      {
+      case pgsTypes::Normal:
+         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
+         break;
 
-   case pgsTypes::AllLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
-      else
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_ALWC_US.png") : _T("VcEquation_ALWC_SI.png"));
-      break;
+      case pgsTypes::AllLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
+         else
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_ALWC_US.png") : _T("VcEquation_ALWC_SI.png"));
+         break;
 
-   case pgsTypes::SandLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
-      else
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_SLWC_US.png") : _T("VcEquation_SLWC_SI.png"));
-      break;
+      case pgsTypes::SandLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
+         else
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_SLWC_US.png") : _T("VcEquation_SLWC_SI.png"));
+         break;
 
-   default:
-      ATLASSERT(false);
+      default:
+         ATLASSERT(false);
+      }
+   }
+   else
+   {
+      strImage = _T("VcEquation_2016.png");
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
@@ -1899,32 +1911,41 @@ void write_Vci_table(IBroker* pBroker,
    *pParagraph << OLE2T(pStageMap->GetLimitStateName(ls)) << _T(" - ");
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment") << rptNewLine;
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+
    std::_tstring strImage;
-   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
-   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
-   switch( concType )
+
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
    {
-   case pgsTypes::Normal:
-      strImage = _T("Vci_NWC.png");
-      break;
+      strImage = _T("Vci_2016.png");
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+      pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+      bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+      switch( concType )
+      {
+      case pgsTypes::Normal:
+         strImage = _T("Vci_NWC.png");
+         break;
 
-   case pgsTypes::AllLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = _T("Vci_LWC.png");
-      else
-         strImage = _T("Vci_ALWC.png");
-      break;
+      case pgsTypes::AllLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = _T("Vci_LWC.png");
+         else
+            strImage = _T("Vci_ALWC.png");
+         break;
 
-   case pgsTypes::SandLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = _T("Vci_LWC.png");
-      else
-         strImage = _T("Vci_SLWC.png");
-      break;
+      case pgsTypes::SandLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = _T("Vci_LWC.png");
+         else
+            strImage = _T("Vci_SLWC.png");
+         break;
 
-   default:
-      ATLASSERT(false);
+      default:
+         ATLASSERT(false);
+      }
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
@@ -2015,32 +2036,40 @@ void write_Vcw_table(IBroker* pBroker,
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web.") << rptNewLine;
 
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
    std::_tstring strImage;
-   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
-   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
-   switch( concType )
+
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
    {
-   case pgsTypes::Normal:
-      strImage = _T("Vcw_NWC.png");
-      break;
+      strImage = _T("Vcw_2016.png");
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+      pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+      bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+      switch( concType )
+      {
+      case pgsTypes::Normal:
+         strImage = _T("Vcw_NWC.png");
+         break;
 
-   case pgsTypes::AllLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = _T("Vcw_LWC.png");
-      else
-         strImage = _T("Vcw_ALWC.png");
-      break;
+      case pgsTypes::AllLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = _T("Vcw_LWC.png");
+         else
+            strImage = _T("Vcw_ALWC.png");
+         break;
 
-   case pgsTypes::SandLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = _T("Vcw_LWC.png");
-      else
-         strImage = _T("Vcw_SLWC.png");
-      break;
+      case pgsTypes::SandLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = _T("Vcw_LWC.png");
+         else
+            strImage = _T("Vcw_SLWC.png");
+         break;
 
-   default:
-      ATLASSERT(false);
+      default:
+         ATLASSERT(false);
+      }
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
@@ -2124,32 +2153,40 @@ void write_theta_table(IBroker* pBroker,
 
    *pParagraph << _T("Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]") << rptNewLine;
 
-   GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
    std::_tstring strImage;
-   pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
-   bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
-   switch( concType )
+
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
    {
-   case pgsTypes::Normal:
-      strImage = _T("cotan_theta_NWC.png");
-      break;
+      strImage = _T("cotan_theta_2016.png");
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
+      pgsTypes::ConcreteType concType = pMaterial->GetGdrConcreteType(span,gdr);
+      bool bHasAggSplittingStrength = pMaterial->DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
+      switch( concType )
+      {
+      case pgsTypes::Normal:
+         strImage = _T("cotan_theta_NWC.png");
+         break;
 
-   case pgsTypes::AllLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = _T("cotan_theta_LWC.png");
-      else
-         strImage = _T("cotan_theta_ALWC.png");
-      break;
+      case pgsTypes::AllLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = _T("cotan_theta_LWC.png");
+         else
+            strImage = _T("cotan_theta_ALWC.png");
+         break;
 
-   case pgsTypes::SandLightweight:
-      if ( bHasAggSplittingStrength )
-         strImage = _T("cotan_theta_LWC.png");
-      else
-         strImage = _T("cotan_theta_SLWC.png");
-      break;
+      case pgsTypes::SandLightweight:
+         if ( bHasAggSplittingStrength )
+            strImage = _T("cotan_theta_LWC.png");
+         else
+            strImage = _T("cotan_theta_SLWC.png");
+         break;
 
-   default:
-      ATLASSERT(false);
+      default:
+         ATLASSERT(false);
+      }
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;

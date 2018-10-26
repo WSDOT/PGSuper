@@ -2598,46 +2598,41 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    PrestressDesignStrategyConstIterator it = m_PrestressDesignStrategies.begin();
    while(it != m_PrestressDesignStrategies.end())
    {
-      bool did_remove(false);
-
       if ( cant_straight && (dtDesignFullyBonded==it->m_FlexuralDesignType || dtDesignFullyBondedRaised==it->m_FlexuralDesignType))
       {
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("An all straight bonded strand flexural design algorithm strategy is selected and adjustable strands can only be harped - The strategy has been removed.") ));
 
-         m_PrestressDesignStrategies.erase(it);
-         did_remove = true;
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
       }
-
-      if ( cant_harp && dtDesignForHarping==it->m_FlexuralDesignType )
+      else if ( cant_harp && dtDesignForHarping==it->m_FlexuralDesignType )
       {
-
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("A harped strand flexural design algorithm strategy is selected and harped strands are not allowed - The strategy has been removed.") ));
 
-         m_PrestressDesignStrategies.erase(it);
-         did_remove = true;
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
       }
+      else if ( dtDesignForHarping==it->m_FlexuralDesignType &&  GetNumHarpedStrandCoordinates()==0)
+      {
+         pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
+                         _T("A harped strand flexural design algorithm strategy is selected and no harped strands exist - The strategy has been removed.") ));
 
-      if ( cant_debond && (dtDesignForDebonding==it->m_FlexuralDesignType ||
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
+      }
+      else if ( cant_debond && (dtDesignForDebonding==it->m_FlexuralDesignType ||
                            dtDesignForDebondingRaised==it->m_FlexuralDesignType))
       {
-
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("A debonded strand flexural design algorithm strategy is selected and no debondable strands exist - The strategy has been removed.") ));
 
-         m_PrestressDesignStrategies.erase(it);
-         did_remove = true;
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
       }
 
-      if (did_remove)
-      {
-         it = m_PrestressDesignStrategies.begin();
-      }
-      else
-      {
-         it++;
-      }
+      it++;
    }
 
    if (m_PrestressDesignStrategies.size()==0)

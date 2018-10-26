@@ -346,7 +346,12 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       if ( stage == pgsTypes::BridgeSite3 )
           *p << _T(" in the precompressed tensile zone");
 
-      *p << _T(" = ") << tension_coeff.SetValue(t) << symbol(ROOT);
+      *p << _T(" = ") << tension_coeff.SetValue(t);
+      
+      if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+         *p << symbol(lambda);
+      
+      *p << symbol(ROOT);
 
       if ( stage == pgsTypes::CastingYard )
          *p << RPT_FCI;
@@ -361,6 +366,10 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       if ( stage == pgsTypes::CastingYard || stage == pgsTypes::TemporaryStrandRemoval )
       {
           *p << _T("Allowable tensile stress = ") << tension_coeff.SetValue(t_with_rebar);
+
+         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+            *p << symbol(lambda);
+
           if ( stage == pgsTypes::CastingYard )
              *p << symbol(ROOT) << RPT_FCI;
           else
@@ -376,10 +385,12 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Compression,vPoi.begin()->GetDistFromStart()) );
       allowable_compression = pArtifact->GetCapacity();
       *p << _T("Allowable compressive stress = -") << c;
+
       if (stage == pgsTypes::CastingYard)
          *p << RPT_FCI;
       else
          *p << RPT_FC;
+
       *p << _T(" = ") <<stress_u.SetValue(allowable_compression)<<rptNewLine;
    }
 

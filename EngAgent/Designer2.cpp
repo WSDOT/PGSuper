@@ -578,7 +578,7 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
       {
          if ( task.ls != pgsTypes::ServiceIII )
          {
-            fAllowable = pAllowable->GetAllowableStress(task.stage,task.ls,pgsTypes::Compression,fcgdr);
+            fAllowable = pAllowable->GetAllowableStress(span,gdr,task.stage,task.ls,pgsTypes::Compression,fcgdr);
          }
          else
             continue;
@@ -587,7 +587,7 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
       {
          if ( task.stage != pgsTypes::BridgeSite2 )
          {
-	         fAllowable = pAllowable->GetAllowableStress(task.stage,task.ls,pgsTypes::Tension,fcgdr);
+	         fAllowable = pAllowable->GetAllowableStress(span,gdr,task.stage,task.ls,pgsTypes::Tension,fcgdr);
          }
          else
             continue;
@@ -1392,6 +1392,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,co
 
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR) );
 
+      Float64 lambda = pMaterial->GetLambdaGdr(span,gdr);
+
       BridgeAnalysisType batTop, batBottom;
       GetBridgeAnalysisType(gdr,task,batTop,batBottom);
 
@@ -1489,7 +1491,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,co
                // if t is zero the allowable will be zero... demand "f" is > 0 so there
                // isn't a concrete strength that will work.... if t is not zero, compute
                // the required concrete strength
-               fc_reqd = (IsZero(t) ? -1 : BinarySign(f)*pow(f/t,2));
+               fc_reqd = (IsZero(t) ? -1 : BinarySign(f)*pow(f/(t*lambda),2));
             }
             else
             {
@@ -1499,7 +1501,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,co
 
             if ( bCheckMax &&                  // allowable stress is limited -AND-
                  (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                 (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+                 (pow(fmax/(lambda*t),2) < fc_reqd) )   // that strength will exceed the max limit on allowable
             {
                // then that concrete strength wont really work afterall
                // too bad... this isn't going to work
@@ -1548,6 +1550,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, 
       fc = (task.stage == pgsTypes::CastingYard ? pConfig->Fci : pConfig->Fc);
    }
 
+   Float64 lambda = pMaterial->GetLambdaGdr(span,gdr);
+
    Float64 fLowAllowable(0.0), fHighAllowable(0.0);
    Float64 c(0.0);
    Float64 t(0.0), talt(0.0);
@@ -1558,9 +1562,9 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, 
       c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
 
       if ( task.stage == pgsTypes::CastingYard )
-         fLowAllowable = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Compression, fc);
+         fLowAllowable = pAllowable->GetCastingYardAllowableStress(span,gdr,task.ls, pgsTypes::Compression, fc);
       else
-         fLowAllowable = pAllowable->GetBridgeSiteAllowableStress(task.stage,task.ls,pgsTypes::Compression,fc);
+         fLowAllowable = pAllowable->GetBridgeSiteAllowableStress(span,gdr,task.stage,task.ls,pgsTypes::Compression,fc);
 
       fHighAllowable = fLowAllowable;
    }
@@ -1575,21 +1579,20 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, 
 
       if ( task.stage == pgsTypes::CastingYard )
       {
-         fLowAllowable  = pAllowable->GetCastingYardAllowableStress(task.ls, pgsTypes::Tension, fc);
+         fLowAllowable  = pAllowable->GetCastingYardAllowableStress(span,gdr,task.ls, pgsTypes::Tension, fc);
       }
       else
       {
-         fLowAllowable  = pAllowable->GetBridgeSiteAllowableStress(task.stage,task.ls,task.type,fc);
+         fLowAllowable  = pAllowable->GetBridgeSiteAllowableStress(span,gdr,task.stage,task.ls,task.type,fc);
       }
 
-      fHighAllowable = talt*sqrt(fc);
+      fHighAllowable = talt*lambda*sqrt(fc);
 
       if ( task.stage == pgsTypes::CastingYard )
          pGdrArtifact->SetCastingYardCapacityWithMildRebar( fHighAllowable );
       else if ( task.stage == pgsTypes::TemporaryStrandRemoval )
          pGdrArtifact->SetTempStrandRemovalCapacityWithMildRebar( fHighAllowable );
    }
-
 
    // Use calculator object to deal with casting yard higher allowable stress
    pgsAlternativeTensileStressCalculator altCalc(span,gdr, pGirder, pSectProp2, pRebarGeom, pMaterial, pMaterialEx, bUnitsSI);
@@ -1668,10 +1671,10 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, 
             // Is adequate rebar available to use the higher limit?
             if (AsProvd < AsReqd)
             {
-               fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+               fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/(t*lambda),2));
                if ( bCheckMax &&                  // allowable stress is limited -AND-
                     (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                    (pow(ftmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+                    (pow(ftmax/(lambda*t),2) < fc_reqd) )   // that strength will exceed the max limit on allowable
                {
                   // too bad... this isn't going to work
                   fc_reqd = -1;
@@ -1680,7 +1683,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span, GirderIndexType gdr, 
             else
             {
                // We have additional rebar and can go to a higher limit
-               fc_reqd = pow(f/talt,2);
+               fc_reqd = pow(f/(lambda*talt),2);
             }
          }
          else
@@ -2491,6 +2494,9 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
 Float64 pgsDesigner2::GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd)
 {
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr  = poi.GetGirder();
+
    const unitLength* pLengthUnit;
    const unitStress* pStressUnit;
    const unitAreaPerLength* pAvsUnit;
@@ -2519,30 +2525,41 @@ Float64 pgsDesigner2::GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAP
    Float64 fct= ::ConvertFromSysUnits(scd.fct,*pStressUnit);
    Float64 avs = K*bv/fy;
 
-   switch( scd.ConcreteType )
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
+   avs *= lambda;
+
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
    {
-   case pgsTypes::Normal:
+      switch( scd.ConcreteType )
+      {
+      case pgsTypes::Normal:
+         avs *= sqrt(fc);
+         break;
+
+      case pgsTypes::AllLightweight:
+         if ( scd.bHasFct )
+            avs *= min(Kfct*fct,sqrt(fc));
+         else
+            avs *= 0.75*sqrt(fc);
+         break;
+
+      case pgsTypes::SandLightweight:
+         if ( scd.bHasFct )
+            avs *= min(Kfct*fct,sqrt(fc));
+         else
+            avs *= 0.85*sqrt(fc);
+         break;
+
+      default:
+         ATLASSERT(false); // is there a new concrete type?
+         avs *= sqrt(fc); 
+         break;
+      }
+   }
+   else
+   {
       avs *= sqrt(fc);
-      break;
-
-   case pgsTypes::AllLightweight:
-      if ( scd.bHasFct )
-         avs *= min(Kfct*fct,sqrt(fc));
-      else
-         avs *= 0.75*sqrt(fc);
-      break;
-
-   case pgsTypes::SandLightweight:
-      if ( scd.bHasFct )
-         avs *= min(Kfct*fct,sqrt(fc));
-      else
-         avs *= 0.85*sqrt(fc);
-      break;
-
-   default:
-      ATLASSERT(false); // is there a new concrete type?
-      avs *= sqrt(fc); 
-      break;
    }
 
    avs = ::ConvertToSysUnits(avs,*pAvsUnit);
@@ -4051,7 +4068,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    Int16 cIter = 0;
    Int16 nFutileAttempts=0;
    Int16 nIterMax = 40;
-   Int16 nIterEarlyStage = 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
+   Int16 nIterEarlyStage = options.doDesignSlabOffset ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
    StrandIndexType Ns, Nh, Nt;
    Float64 fc, fci, start_slab_offset, end_slab_offset;
 
@@ -4553,7 +4570,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
    // Now that we've passed bottom compression, look at top tension.
    // for this, we will try to adjust harped strands...
    GET_IFACE(IAllowableConcreteStress, pAllowable );
-   Float64 all_tens = pAllowable->GetInitialAllowableTensileStress(fci, release_result==ConcSuccessWithRebar );
+   Float64 all_tens = pAllowable->GetInitialAllowableTensileStress(span,gdr,fci, release_result==ConcSuccessWithRebar );
    LOG(_T("Allowable tensile stress after Release     = ") << ::ConvertFromSysUnits(all_tens,unitMeasure::KSI) << _T(" KSI") );
 
    Float64 ftop = -Float64_Max;
@@ -4971,7 +4988,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
 
 
       // Get allowable tensile stress 
-      designParams.fAllow = pAllowStress->GetAllowableStress(designParams.stage,designParams.limit_state,designParams.stress_type,m_StrandDesignTool.GetConcreteStrength());
+      designParams.fAllow = pAllowStress->GetAllowableStress(span,gdr,designParams.stage,designParams.limit_state,designParams.stress_type,m_StrandDesignTool.GetConcreteStrength());
       LOG(_T("Allowable stress (") << designParams.strLimitState << _T(") = ") << ::ConvertFromSysUnits(designParams.fAllow,unitMeasure::KSI)  << _T(" KSI"));
 
       // Compute required stress due to prestressing
@@ -5559,8 +5576,8 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(const arDesignOptions& options, I
    LOG(_T("current f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);
-   Float64 all_tens = pAllowable->GetInitialAllowableTensileStress(fci,conc_res==ConcSuccessWithRebar);
-   Float64 all_comp = pAllowable->GetInitialAllowableCompressiveStress(fci);
+   Float64 all_tens = pAllowable->GetInitialAllowableTensileStress(span,gdr,fci,conc_res==ConcSuccessWithRebar);
+   Float64 all_comp = pAllowable->GetInitialAllowableCompressiveStress(span,gdr,fci);
    LOG(_T("Allowable tensile stress after Release     = ") << ::ConvertFromSysUnits(all_tens,unitMeasure::KSI) << _T(" KSI") );
    LOG(_T("Allowable compressive stress after Release = ") << ::ConvertFromSysUnits(all_comp,unitMeasure::KSI) << _T(" KSI") );
 
@@ -5707,8 +5724,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
    LOG(_T("current f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);
-   Float64 all_tens = pAllowable->GetInitialAllowableTensileStress(fci,rebar_reqd==ConcSuccessWithRebar);
-   Float64 all_comp = pAllowable->GetInitialAllowableCompressiveStress(fci);
+   Float64 all_tens = pAllowable->GetInitialAllowableTensileStress(m_StrandDesignTool.GetSpan(),m_StrandDesignTool.GetGirder(),fci,rebar_reqd==ConcSuccessWithRebar);
+   Float64 all_comp = pAllowable->GetInitialAllowableCompressiveStress(m_StrandDesignTool.GetSpan(),m_StrandDesignTool.GetGirder(),fci);
    LOG(_T("Allowable tensile stress after Release     = ") << ::ConvertFromSysUnits(all_tens,unitMeasure::KSI) << _T(" KSI")<<(rebar_reqd==ConcSuccessWithRebar ? _T(" min rebar was required for this strength"):_T(""))  );
    LOG(_T("Allowable compressive stress after Release = ") << ::ConvertFromSysUnits(all_comp,unitMeasure::KSI) << _T(" KSI") );
 
@@ -5944,7 +5961,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       LOG(_T("Removing temporary strands for lifting analysis"));
       config.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
    }
-#if defined _DEBUG
+#if defined ENABLE_LOGGING
    else
    {
       LOG(_T("Phase 2 Lifting Design - Design for Lifting with Temporary Strands"));
@@ -5959,7 +5976,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
    IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
    pgsDesignCodes::OutcomeType result = checker.DesignLifting(span,gdr,config,pPoiLd,&artifact,LOGGER);
 
-#if defined _DEBUG
+#if defined ENABLE_LOGGING
    LOG(_T("-- Dump of Lifting Artifact After Design --"));
    artifact.Dump(LOGGER);
    LOG(_T("-- End Dump of Lifting Artifact --"));
@@ -6534,8 +6551,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       LOG(_T("current f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
 
       GET_IFACE(IGirderLiftingSpecCriteria,pLiftingCrit);
-      Float64 all_tens = pLiftingCrit->GetLiftingAllowableTensileConcreteStressEx(fci,true);
-      Float64 all_comp = pLiftingCrit->GetLiftingAllowableCompressiveConcreteStressEx(fci);
+      Float64 all_tens = pLiftingCrit->GetLiftingAllowableTensileConcreteStressEx(span,gdr,fci,true);
+      Float64 all_comp = pLiftingCrit->GetLiftingAllowableCompressiveConcreteStressEx(span,gdr,fci);
       LOG(_T("Allowable tensile stress after Release     = ") << ::ConvertFromSysUnits(all_tens,unitMeasure::KSI) << _T(" KSI - min rebar was required for this strength"));
       LOG(_T("Allowable compressive stress after Release = ") << ::ConvertFromSysUnits(all_comp,unitMeasure::KSI) << _T(" KSI") );
 
@@ -6963,7 +6980,7 @@ void pgsDesigner2::RefineDesignForAllowableStress(const ALLOWSTRESSCHECKTASK& ta
    }
    else
    {
-      fAllow = pAllowable->GetAllowableStress(task.stage,task.ls,task.type,fcgdr);
+      fAllow = pAllowable->GetAllowableStress(span,gdr,task.stage,task.ls,task.type,fcgdr);
    }
    LOG(_T("Allowable stress = ") << ::ConvertFromSysUnits(fAllow,unitMeasure::KSI) << _T(" KSI"));
 

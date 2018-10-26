@@ -243,6 +243,8 @@ Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi, pgsType
                                             ls == pgsTypes::ServiceIII_LegalRoutine ||
                                             ls == pgsTypes::ServiceIII_LegalSpecial ) )
    {
+      ATLASSERT(type == pgsTypes::Tension);
+
       GET_IFACE(IRatingSpecification,pRatingSpec);
       if ( ls == pgsTypes::ServiceIII_Inventory )
          return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Inventory,spanIdx,gdrIdx);
@@ -282,7 +284,7 @@ Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi, pgsType
          ATLASSERT(false);// should never get here
       }
 
-      return GetAllowableStress(stage,ls,type,fc);
+      return GetAllowableStress(spanIdx,gdrIdx,stage,ls,type,fc);
    }
 }
 
@@ -299,14 +301,14 @@ std::vector<Float64> CSpecAgentImp::GetAllowableStress(const std::vector<pgsPoin
    return vStress;
 }
 
-Float64 CSpecAgentImp::GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)
+Float64 CSpecAgentImp::GetAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)
 {
    Float64 fAllow;
 
    switch( stage )
    {
    case pgsTypes::CastingYard:
-      fAllow = GetCastingYardAllowableStress(ls,type,fc);
+      fAllow = GetCastingYardAllowableStress(span,gdr,ls,type,fc);
       break;
 
 //   case pgsTypes::GirderPlacement:
@@ -314,7 +316,7 @@ Float64 CSpecAgentImp::GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitS
    case pgsTypes::BridgeSite1:
    case pgsTypes::BridgeSite2:
    case pgsTypes::BridgeSite3:
-      fAllow = GetBridgeSiteAllowableStress(stage,ls,type,fc);
+      fAllow = GetBridgeSiteAllowableStress(span,gdr,stage,ls,type,fc);
       break;
 
    default:
@@ -324,7 +326,7 @@ Float64 CSpecAgentImp::GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitS
    return fAllow;
 }
 
-Float64 CSpecAgentImp::GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)
+Float64 CSpecAgentImp::GetCastingYardAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)
 {
    // limit state must be Service I
    PRECONDITION( ls == pgsTypes::ServiceI );
@@ -334,11 +336,11 @@ Float64 CSpecAgentImp::GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgs
    switch( type )
    {
    case pgsTypes::Tension:
-      fAllow = GetInitialAllowableTensileStress(fc,false);
+      fAllow = GetInitialAllowableTensileStress(span,gdr,fc,false);
       break;
 
    case pgsTypes::Compression:
-      fAllow = GetInitialAllowableCompressiveStress(fc);
+      fAllow = GetInitialAllowableCompressiveStress(span,gdr,fc);
       break;
    }
 
@@ -348,6 +350,7 @@ Float64 CSpecAgentImp::GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgs
 Float64 CSpecAgentImp::GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
 
    Float64 fci = pMat->GetFciGdr(span,gdr);
 
@@ -355,7 +358,7 @@ Float64 CSpecAgentImp::GetCastingYardWithMildRebarAllowableStress(SpanIndexType 
 
    Float64 x = pSpec->GetCyMaxConcreteTensWithRebar();
 
-   return x*sqrt(fci);
+   return x*lambda*sqrt(fci);
 }
 
 Float64 CSpecAgentImp::GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr)
@@ -363,12 +366,13 @@ Float64 CSpecAgentImp::GetTempStrandRemovalWithMildRebarAllowableStress(SpanInde
    GET_IFACE(IBridgeMaterial,pMat);
 
    Float64 fc = pMat->GetFcGdr(span,gdr);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
 
    const SpecLibraryEntry* pSpec = GetSpec();
 
    Float64 x = pSpec->GetTempStrandRemovalMaxConcreteTensWithRebar();
 
-   return x*sqrt(fc);
+   return x*lambda*sqrt(fc);
 }
 
 Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStressFactor()
@@ -383,10 +387,11 @@ Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(SpanIndexType span
    GET_IFACE(IBridgeMaterial,pMat);
 
    Float64 fci = pMat->GetFciGdr(span,gdr);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
 
    Float64 x = GetLiftingWithMildRebarAllowableStressFactor();
 
-   return x*sqrt(fci);
+   return x*lambda*sqrt(fci);
 }
 
 Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactor()
@@ -399,19 +404,13 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactor()
 Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
 
    Float64 fc = pMat->GetFcGdr(span,gdr);
 
    Float64 x = GetHaulingWithMildRebarAllowableStressFactor();
 
-   return x*sqrt(fc);
-}
-
-Float64 CSpecAgentImp::GetHaulingModulusOfRuptureCoefficient()
-{
-   ATLASSERT(false); // obsolete
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingModulusOfRuptureCoefficient(pgsTypes::Normal);
+   return x*lambda*sqrt(fc);
 }
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)
@@ -421,28 +420,21 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(SpanIndexType span,GirderIndex
    Float64 fc = pMat->GetFcGdr(span,gdr);
    pgsTypes::ConcreteType type = pMat->GetGdrConcreteType(span,gdr);
 
-   return GetHaulingModulusOfRupture(fc,type);
+   return GetHaulingModulusOfRupture(span,gdr,fc,type);
 }
 
-Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc)
-{
-   ATLASSERT(false); // obsolete
-   Float64 x = GetHaulingModulusOfRuptureCoefficient();
-   return x*sqrt(fc);
-}
-
-Float64 CSpecAgentImp::GetBridgeSiteAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)
+Float64 CSpecAgentImp::GetBridgeSiteAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)
 {
    Float64 fAllow;
 
    switch( type )
    {
    case pgsTypes::Tension:
-      fAllow = GetFinalAllowableTensileStress(stage, fc);
+      fAllow = GetFinalAllowableTensileStress(span, gdr, stage, fc);
       break;
 
    case pgsTypes::Compression:
-      fAllow = GetFinalAllowableCompressiveStress(stage,ls,fc);
+      fAllow = GetFinalAllowableCompressiveStress(span,gdr,stage,ls,fc);
       break;
    }
 
@@ -572,7 +564,7 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,p
    *pMaxValue = fmax;
 }
 
-Float64 CSpecAgentImp::GetInitialAllowableCompressiveStress(Float64 fci)
+Float64 CSpecAgentImp::GetInitialAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,Float64 fci)
 {
    Float64 x = GetAllowableCompressiveStressCoefficient(pgsTypes::CastingYard,pgsTypes::ServiceI);
 
@@ -580,13 +572,16 @@ Float64 CSpecAgentImp::GetInitialAllowableCompressiveStress(Float64 fci)
    return -x*fci;
 }
 
-Float64 CSpecAgentImp::GetInitialAllowableTensileStress(Float64 fci, bool withMinRebar)
+Float64 CSpecAgentImp::GetInitialAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,Float64 fci, bool withMinRebar)
 {
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
+
    if (withMinRebar)
    {
       Float64 x = GetCastingYardAllowableTensionStressCoefficientWithRebar();
 
-      Float64 f = x * sqrt( fci );
+      Float64 f = x * lambda * sqrt( fci );
       return f;
    }
    else
@@ -597,7 +592,7 @@ Float64 CSpecAgentImp::GetInitialAllowableTensileStress(Float64 fci, bool withMi
 
       GetAllowableTensionStressCoefficient(pgsTypes::CastingYard,pgsTypes::ServiceI,&x,&bCheckMax,&fmax);
 
-      Float64 f = x * sqrt( fci );
+      Float64 f = x * lambda* sqrt( fci );
 
       if ( bCheckMax )
          f = min(f,fmax);
@@ -606,16 +601,18 @@ Float64 CSpecAgentImp::GetInitialAllowableTensileStress(Float64 fci, bool withMi
    }
 }
 
-Float64 CSpecAgentImp::GetFinalAllowableCompressiveStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc)
+Float64 CSpecAgentImp::GetFinalAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc)
 {
    Float64 x = GetAllowableCompressiveStressCoefficient(stage,ls);
+
    // Add a minus sign because compression is negative
    return -x*fc;
 }
 
-Float64 CSpecAgentImp::GetFinalAllowableTensileStress(pgsTypes::Stage stage, Float64 fc)
+Float64 CSpecAgentImp::GetFinalAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage, Float64 fc)
 {
-   GET_IFACE(IEnvironment,pEnv);
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
 
    const SpecLibraryEntry* pSpec = GetSpec();
 
@@ -625,7 +622,7 @@ Float64 CSpecAgentImp::GetFinalAllowableTensileStress(pgsTypes::Stage stage, Flo
    pgsTypes::LimitState ls = (stage == pgsTypes::BridgeSite3 ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
    GetAllowableTensionStressCoefficient(stage,ls,&x,&bCheckMax,&fmax);
 
-   Float64 f = x * sqrt( fc );
+   Float64 f = x * lambda* sqrt( fc );
    if ( bCheckMax )
       f = min(f,fmax);
 
@@ -811,7 +808,9 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(SpanIndexType sp
    GET_IFACE(IBridgeMaterial,pMat);
    Float64 fci = pMat->GetFciGdr(span,gdr);
 
-   Float64 f = factor * sqrt( fci );
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
+
+   Float64 f = factor * lambda * sqrt( fci );
 
    bool is_max;
    Float64 maxval;
@@ -850,13 +849,15 @@ Float64 CSpecAgentImp::GetLiftingAllowableCompressionFactor()
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool withMinRebar)
+Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(SpanIndexType span,GirderIndexType gdr,Float64 fci, bool withMinRebar)
 {
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
    if (withMinRebar)
    {
       Float64 x = GetLiftingWithMildRebarAllowableStressFactor();
 
-      Float64 f = x * sqrt( fci );
+      Float64 f = x * lambda * sqrt( fci );
       return f;
    }
    else
@@ -867,7 +868,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, b
 
       GetLiftingAllowableTensileConcreteStressParameters(&x,&bCheckMax,&fmax);
 
-      Float64 f = x * sqrt( fci );
+      Float64 f = x * lambda * sqrt( fci );
 
       if ( bCheckMax )
          f = min(f,fmax);
@@ -876,10 +877,9 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, b
    }
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci)
+Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStressEx(SpanIndexType span,GirderIndexType gdr,Float64 fci)
 {
    Float64 x = GetLiftingAllowableCompressionFactor();
-
    return x*fci;
 }
 
@@ -911,13 +911,6 @@ Float64 CSpecAgentImp::GetLiftingSweepTolerance()const
    return pSpec->GetMaxGirderSweepLifting();
 }
 
-Float64 CSpecAgentImp::GetLiftingModulusOfRuptureCoefficient()
-{
-   ATLASSERT(false); // obsolete...
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingModulusOfRuptureCoefficient(pgsTypes::Normal);
-}
-
 Float64 CSpecAgentImp::GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE(IBridgeMaterialEx,pMat);
@@ -925,14 +918,7 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(SpanIndexType span,GirderIndex
    Float64 fci = pMat->GetFciGdr(span,gdr);
    pgsTypes::ConcreteType type = pMat->GetGdrConcreteType(span,gdr);
 
-   return GetLiftingModulusOfRupture(fci,type);
-}
-
-Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci)
-{
-   ATLASSERT(false); // obsolete...
-   Float64 x = GetLiftingModulusOfRuptureCoefficient();
-   return x*sqrt(fci);
+   return GetLiftingModulusOfRupture(span,gdr,fci,type);
 }
 
 Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const
@@ -970,10 +956,12 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteT
    return pSpec->GetLiftingModulusOfRuptureCoefficient(concType);
 }
 
-Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetLiftingModulusOfRupture(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci,pgsTypes::ConcreteType concType)
 {
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(spanIdx,gdrIdx);
    Float64 x = GetLiftingModulusOfRuptureCoefficient(concType);
-   return x*sqrt(fci);
+   return x*lambda*sqrt(fci);
 }
 
 // IGirderHaulingSpecCriteria
@@ -1021,8 +1009,9 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStress(SpanIndexType sp
    Float64 factor = GetHaulingAllowableTensionFactor();
    GET_IFACE(IBridgeMaterial,pMat);
    Float64 fc = pMat->GetFcGdr(span,gdr);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
 
-   Float64 allow = factor * sqrt( fc );
+   Float64 allow = factor * lambda * sqrt( fc );
 
    bool is_max;
    Float64 maxval;
@@ -1056,13 +1045,15 @@ Float64 CSpecAgentImp::GetHaulingAllowableCompressionFactor()
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc, bool includeRebar)
 {
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(spanIdx,gdrIdx);
    if (includeRebar)
    {
       Float64 x = GetHaulingWithMildRebarAllowableStressFactor();
 
-      Float64 f = x * sqrt( fc );
+      Float64 f = x * lambda * sqrt( fc );
       return f;
    }
    else
@@ -1073,7 +1064,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bo
 
       GetHaulingAllowableTensileConcreteStressParameters(&x,&bCheckMax,&fmax);
 
-      Float64 f = x * sqrt( fc );
+      Float64 f = x * lambda * sqrt( fc );
 
       if ( bCheckMax )
          f = min(f,fmax);
@@ -1082,10 +1073,9 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bo
    }
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)
+Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc)
 {
    Float64 x = GetHaulingAllowableCompressionFactor();
-
    return x*fc;
 }
 
@@ -1214,10 +1204,12 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteT
    return pSpec->GetHaulingModulusOfRuptureCoefficient(concType);
 }
 
-Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc,pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr,Float64 fc,pgsTypes::ConcreteType concType)
 {
+   GET_IFACE(IBridgeMaterial,pMat);
+   Float64 lambda = pMat->GetLambdaGdr(span,gdr);
    Float64 x = GetHaulingModulusOfRuptureCoefficient(concType);
-   return x*sqrt(fc);
+   return x*lambda*sqrt(fc);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1244,7 +1236,6 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor()
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr)
-
 {
    return GetHaulingWithMildRebarAllowableStress(span, gdr);
 }
@@ -1259,14 +1250,14 @@ void CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressParameters(Float
    GetHaulingAllowableTensileConcreteStressParameters(factor, pbMax, fmax);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc, bool includeRebar)
 {
-   return GetHaulingAllowableTensileConcreteStressEx(fc, includeRebar);
+   return GetHaulingAllowableTensileConcreteStressEx(spanIdx,gdrIdx,fc, includeRebar);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc)
 {
-   return GetHaulingAllowableCompressiveConcreteStressEx(fc);
+   return GetHaulingAllowableCompressiveConcreteStressEx(spanIdx,gdrIdx,fc);
 }
 
 void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const

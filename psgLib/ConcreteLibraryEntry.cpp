@@ -32,7 +32,7 @@
 #include <Units\sysUnits.h>
 
 #include <MathEx.h>
-#include <Material\Concrete.h>
+#include <LRFD\ConcreteUtil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -99,7 +99,7 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Name"),this->GetName().c_str());
    
    // added version 4
-   pSave->Property(_T("Type"),matConcrete::GetTypeName((matConcrete::Type)m_Type,false).c_str());
+   pSave->Property(_T("Type"),lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_Type,false).c_str());
    pSave->Property(_T("Dw"), m_Dw);
    pSave->Property(_T("Fc"), m_Fc);
    pSave->Property(_T("Ds"), m_Ds);
@@ -146,7 +146,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          std::_tstring strType;
          pLoad->Property(_T("Type"),&strType);
-         m_Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(strType.c_str());
+         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(strType.c_str());
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))

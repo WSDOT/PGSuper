@@ -98,13 +98,14 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
 
       DDX_Check_Bool(pDX, IDC_HAS_AGG_STRENGTH, m_bHasFct );
       DDX_UnitValueAndTag(pDX, IDC_AGG_STRENGTH, IDC_AGG_STRENGTH_T, m_Fct, pDisplayUnits->Stress );
-      if ( m_bHasFct || !pDX->m_bSaveAndValidate )
+      if ( pDX->m_bSaveAndValidate && m_bHasFct )
       {
-         if ( !pDX->m_bSaveAndValidate )
-         {
-            CWnd* pWnd = GetDlgItem(IDC_AGG_STRENGTH);
-            pWnd->GetWindowText(m_strFct);
-         }
+         DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_STRENGTH, m_Fct, pDisplayUnits->Stress );
+      }
+      if ( !pDX->m_bSaveAndValidate )
+      {
+         CWnd* pWnd = GetDlgItem(IDC_AGG_STRENGTH);
+         pWnd->GetWindowText(m_strFct);
       }
 
 

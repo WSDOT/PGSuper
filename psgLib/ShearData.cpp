@@ -61,12 +61,12 @@ ConfinementZoneLength(0)
 {
    // make sure we have at least one primary and horiz inter zone
    CShearZoneData tmp;
-   tmp.ZoneNum = 1;
+   tmp.ZoneNum = 0;
    tmp.ZoneLength = Float64_Max;
    ShearZones.push_back(tmp);
 
    CHorizontalInterfaceZoneData htmp;
-   htmp.ZoneNum = 1;
+   htmp.ZoneNum = 0;
    htmp.ZoneLength = Float64_Max;
    HorizontalInterfaceZones.push_back(htmp);
 }
@@ -255,6 +255,30 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
    
    std::sort( ShearZones.begin(), ShearZones.end(), ShearZoneDataLess() );
 
+   // there was a bug in the grid control that made the length of the last zone 0 when it should be Float64_Max
+   // to represent "to mid-span" or "to end girder")
+   if ( 0 < ShearZones.size() )
+   {
+      if ( IsEqual(ShearZones.back().ZoneLength,0.0) )
+      {
+         ShearZones.back().ZoneLength = Float64_Max;
+      }
+
+      // there was a bug that sometimes made the first zone begin at zone index 1
+      // make sure the zone indexes are correct
+      if ( ShearZones.front().ZoneNum != 0 )
+      {
+         Uint32 zoneIdx = 0;
+         std::vector<CShearZoneData>::iterator iter(ShearZones.begin());
+         std::vector<CShearZoneData>::iterator end(ShearZones.end());
+         for ( ; iter != end; iter++ )
+         {
+            CShearZoneData& sd(*iter);
+            sd.ZoneNum = zoneIdx++;
+         }
+      }
+   }
+
    if (bConvertToVersion9)
    {
       // Last thing is old "top flange" bars
@@ -287,6 +311,31 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
       }
       
       std::sort( HorizontalInterfaceZones.begin(), HorizontalInterfaceZones.end(), HorizontalInterfaceZoneDataLess() );
+      
+      // there was a bug in the grid control that made the length of the last zone 0 when it should be Float64_Max
+      // to represent "to mid-span" or "to end girder")
+      if ( 0 < HorizontalInterfaceZones.size() )
+      {
+         if ( IsEqual(HorizontalInterfaceZones.back().ZoneLength,0.0) )
+         {
+            HorizontalInterfaceZones.back().ZoneLength = Float64_Max;
+         }
+
+         // there was a bug that sometimes made the first zone begin at zone index 1
+         // make sure the zone indexes are correct
+         if ( HorizontalInterfaceZones.front().ZoneNum != 0 )
+         {
+            Uint32 zoneIdx = 0;
+            std::vector<CHorizontalInterfaceZoneData>::iterator iter(HorizontalInterfaceZones.begin());
+            std::vector<CHorizontalInterfaceZoneData>::iterator end(HorizontalInterfaceZones.end());
+            for ( ; iter != end; iter++ )
+            {
+               CHorizontalInterfaceZoneData& zd(*iter);
+               zd.ZoneNum = zoneIdx++;
+            }
+         }
+      }
+
 
       Int32 key;
       pStrLoad->Property(_T("SplittingBarSize"), &key );
@@ -325,10 +374,15 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
 
    pStrSave->Property(_T("ZoneCount"), (Int32)ShearZones.size() );
 
+#if defined _DEBUG
+   ZoneIndexType zoneIdx = 0;
+#endif
+
    ShearZoneIterator i;
    for ( i = ShearZones.begin(); i != ShearZones.end(); i++ )
    {
       CShearZoneData& pd = *i;
+      ATLASSERT(pd.ZoneNum == zoneIdx++);
       hr = pd.Save( pStrSave);
       if ( FAILED(hr) )
          return hr;
@@ -336,10 +390,14 @@ HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
 
    pStrSave->Property(_T("HorizZoneCount"), (Int32)HorizontalInterfaceZones.size() );
 
+#if defined _DEBUG
+   zoneIdx = 0;
+#endif
    HorizontalInterfaceZoneIterator ih;
    for ( ih = HorizontalInterfaceZones.begin(); ih != HorizontalInterfaceZones.end(); ih++ )
    {
       CHorizontalInterfaceZoneData& rd = *ih;
+      ATLASSERT(rd.ZoneNum == zoneIdx++);
       hr = rd.Save( pStrSave);
       if ( FAILED(hr) )
          return hr;

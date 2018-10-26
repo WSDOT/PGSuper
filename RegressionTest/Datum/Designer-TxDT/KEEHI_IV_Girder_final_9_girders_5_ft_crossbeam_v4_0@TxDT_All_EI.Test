@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      2      IV      *    45   0.6  270  25.43  15.34                                               9  56.0  6.0  6.800  8.700   4.323    -4.984     9502   0.585  1.000   5.109 -1.496 -0.135 -0.219 -1.850 189.26  305.97    1.75    5.00    5.00 
+ 66.67    9  10.50 KAPOLEI BRIDGE (  1      2      IV      *    45   0.6  270  25.43  15.34                                               9  56.0  6.0  6.800  8.800   4.329    -4.987     9505   0.585  1.000   5.108 -1.488 -0.134 -0.218 -1.840 189.26  306.74    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
@@ -41,7 +41,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  2      5      IV      *    42   0.6  270  25.70  13.80                                              10  56.0  6.0  6.300  8.000   4.164    -4.681     8888   0.585  1.000   5.048 -1.552 -0.142  0.000 -1.693 170.25  288.69    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (  2      5      IV      *    42   0.6  270  25.70  13.80                                              10  56.0  6.0  6.200  8.000   4.147    -4.662     8836   0.585  1.000   4.905 -1.531 -0.142  0.000 -1.673 170.31  299.97    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
@@ -65,10 +65,9 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  3      5      IV      *    40   0.6  270  25.78  15.58                                               8  56.0  5.0  6.100  7.700   3.896    -4.370     8505   0.600  1.000   4.620 -1.331 -0.122  0.000 -1.453 158.90  289.62    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (  3      5      IV      *    39   0.6  270  25.92  14.28                                               9  56.0  6.0  5.900  7.500   3.867    -4.348     8325   0.600  1.000   4.502 -1.330 -0.123  0.000 -1.454 153.35  282.91    1.75    5.00    5.00 
 
 
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+The Specification Check was Successful
 
 

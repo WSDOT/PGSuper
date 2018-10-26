@@ -697,7 +697,7 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteControls()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    const CDeckDescription* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
-   pWnd->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str() );
+   pWnd->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str() );
 }
 
 BOOL CBridgeDescDeckDetailsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
@@ -745,7 +745,7 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->SlabConcreteType,true).c_str(),
       _T("Unit Weight"),FormatDimension(pDeck->SlabStrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pDeck->SlabWeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pDeck->SlabMaxAggregateSize,aggsize)

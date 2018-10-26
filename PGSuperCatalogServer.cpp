@@ -1289,7 +1289,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
    // First step is to copy the pgzfile and its md5 to our cache folder
    CString pgzFolder(cacheFolder);
    CString pgzCachedFile = cacheFolder + GetPgzFilename();
-   CString strPgzFile = CleanFTPURL(pgzFileURL,true);
+   CString strPgzFile = CleanHTTPURL(pgzFileURL,true);
 
    if(pProgress!=NULL)
       pProgress->put_Message(0,CComBSTR("Downloading Compressed Library/Template file"));

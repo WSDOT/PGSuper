@@ -87,8 +87,8 @@ interface IGirderLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor() = 0;
    virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
 
-   virtual Float64 GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool includeRebar)=0;
-   virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci)=0;
+   virtual Float64 GetLiftingAllowableTensileConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci, bool includeRebar)=0;
+   virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci)=0;
 
    // loop placement above top of girder
    virtual Float64 GetHeightOfPickPointAboveGirderTop() const=0;
@@ -103,8 +103,6 @@ interface IGirderLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingSweepTolerance()const=0;
 
    virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual Float64 GetLiftingModulusOfRupture(Float64 fci)=0; // obsolete (only valid for NWC)
-   virtual Float64 GetLiftingModulusOfRuptureCoefficient()=0; // obsolete (only valid for NWC)
 
    virtual Float64 GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetLiftingPointLocationAccuracy() const = 0;
@@ -116,7 +114,7 @@ DEFINE_GUID(IID_IGirderLiftingSpecCriteriaEx,
 interface IGirderLiftingSpecCriteriaEx : IGirderLiftingSpecCriteria
 {
    virtual Float64 GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetLiftingModulusOfRupture(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci,pgsTypes::ConcreteType concType) = 0;
 };
 
 /*****************************************************************************
@@ -155,12 +153,10 @@ interface IGirderHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetHaulingWithMildRebarAllowableStressFactor() = 0;
    virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)=0;
-   virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)=0;
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc, bool includeRebar)=0;
+   virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc)=0;
 
    virtual Float64 GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr)=0;
-   virtual Float64 GetHaulingModulusOfRupture(Float64 fc)=0; // obsolete (only valid for NWC)
-   virtual Float64 GetHaulingModulusOfRuptureCoefficient()=0; // obsolete (only valud for NWC)
 
    // Truck parameters
    virtual RollStiffnessMethod GetRollStiffnessMethod() const = 0;
@@ -201,7 +197,7 @@ DEFINE_GUID(IID_IGirderHaulingSpecCriteriaEx,
 interface IGirderHaulingSpecCriteriaEx : IGirderHaulingSpecCriteria
 {
    virtual Float64 GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetHaulingModulusOfRupture(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fci,pgsTypes::ConcreteType concType) = 0;
 };
 
 // {CA374433-127A-4850-AEC1-AB250D323724}
@@ -218,8 +214,8 @@ interface IKdotGirderHaulingSpecCriteria : IUnknown
    virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() = 0;
    virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)=0;
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc)=0;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc, bool includeRebar)=0;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 fc)=0;
 
    virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const = 0;
    virtual Float64 GetHaulingDesignLocationAccuracy() const = 0;

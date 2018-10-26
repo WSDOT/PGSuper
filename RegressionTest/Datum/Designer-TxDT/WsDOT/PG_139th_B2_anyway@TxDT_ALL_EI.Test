@@ -1,18 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  1      1     WF74G    *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.200  8.900   5.949    -5.754    15744   0.719  0.814   6.590 -3.338  0.000 -0.250 -3.588 289.77  434.90    3.75   11.17   11.17 
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  1      2     WF74G    *    60   0.6  270  31.59  15.99                                              16  70.0  6.0  7.100  9.000   5.995    -5.736    15766   0.644  0.814   6.374 -3.521  0.000 -0.246 -3.766 291.92  430.94    3.75   11.17   11.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  1      1     WF74G    *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.200  8.900   5.949    -5.754    15929   0.719  0.814   6.710 -3.338  0.000 -0.250 -3.588 299.86  450.36    3.75   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -23,14 +11,24 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  1      7     WF74G    *    57   0.6  270  31.76  16.22                                              15  70.0  6.0  6.800  8.800   5.883    -5.514    15029   0.643  0.814   6.302 -3.561  0.000  0.000 -3.561 268.90  409.80    4.25   11.67   11.67 
+ 93.29   12   8.00 SR 5/205 NE 139t  1      2     WF74G    *    60   0.6  270  31.59  15.99                                              16  70.0  6.0  7.200  9.000   5.995    -5.736    15799   0.644  0.814   6.314 -3.521  0.000 -0.246 -3.766 290.31  426.13    3.75   11.17   11.17 
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 93.29   12   8.00 SR 5/205 NE 139t  1      7     WF74G    *    58   0.6  270  31.66  17.24                                              14  70.0  6.0  6.800  8.900   5.889    -5.516    15168   0.643  0.814   6.314 -3.541  0.000  0.000 -3.541 276.73  431.19    3.75   11.17   11.17 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Splitting zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -39,7 +37,6 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
@@ -58,11 +55,10 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  2      7     WF74G    *    56   0.6  270  31.80  15.09                                              16  70.0  6.0  6.700  8.600   5.773    -5.413    14790   0.644  0.814   6.056 -3.456  0.000  0.000 -3.456 263.05  405.10    3.75   10.17   10.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  2      7     WF74G    *    56   0.6  270  31.80  15.09                                              16  70.0  6.0  6.700  8.700   5.780    -5.415    14796   0.644  0.814   6.055 -3.436  0.000  0.000 -3.436 263.05  406.11    3.75   10.17   10.17 
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -91,11 +87,10 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t  3      7     WF74G    *    50   0.6  270  32.06  15.34                                              14  70.0  6.0  5.800  7.500   5.074    -4.759    13296   0.652  0.820   5.547 -2.777  0.000  0.000 -2.777 230.48  389.21    1.75    6.17    6.17 
+ 93.29   12   8.00 SR 5/205 NE 139t  3      7     WF74G    *    50   0.6  270  32.06  17.42                                              12  70.0  4.0  5.900  7.600   5.081    -4.762    13339   0.652  0.820   5.650 -2.758  0.000  0.000 -2.758 228.93  385.05    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 

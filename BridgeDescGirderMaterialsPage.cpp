@@ -178,7 +178,7 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 
    if ( !pDX->m_bSaveAndValidate )
    {
-      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str() );
+      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str() );
    }
 }
 
@@ -531,7 +531,7 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pParent->m_GirderData.Material.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pParent->m_GirderData.Material.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_GirderData.Material.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_GirderData.Material.MaxAggregateSize,aggsize)

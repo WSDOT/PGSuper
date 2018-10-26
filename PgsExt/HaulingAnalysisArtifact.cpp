@@ -1645,6 +1645,8 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(SpanIndexType spa
       return false;
    }
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker, ILibrary,       pLib );
    std::_tstring specName = pSpec->GetSpecification();
@@ -1663,16 +1665,25 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(SpanIndexType spa
 
    Float64 capCompression = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(span,girder);
 
-   *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
+   *p <<_T("Maximum allowable concrete compressive stress = -") << c;
+   *p << RPT_FC << _T(" = ") << 
       stress.SetValue(capCompression)<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
-   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
+
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t);
+   if ( bLambda )
+      *p << symbol(lambda);
+   *p << symbol(ROOT) << RPT_FC;
+
    if ( b_t_max )
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
    *p << _T(" = ") << stress.SetValue(pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(span,girder))<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2);
+   if ( bLambda )
+      *p << symbol(lambda);
+   *p << symbol(ROOT) << RPT_FC
       << _T(" = ") << stress.SetValue(pGirderHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(span,girder)) << _T(" ") << stress.GetUnitTag()
       << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
@@ -1863,6 +1874,8 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(SpanIndexType spa
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    Float64 c = pSpecEntry->GetHaulingCompStress(); // compression coefficient
 
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
@@ -1870,10 +1883,14 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(SpanIndexType spa
    Float64 mod_rupture = this->GetModRupture();
    Float64 mod_rupture_coeff = this->GetModRuptureCoefficient();
 
-   *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
+   *p <<_T("Maximum allowable concrete compressive stress = -") << c;
+   *p << RPT_FC << _T(" = ") << 
       stress.SetValue(all_comp)<< _T(" ") << stress.GetUnitTag()<< rptNewLine;
 
-   *p <<_T("Maximum allowable concrete tensile stress, inclined girder without impact = ") << RPT_STRESS(_T("r")) << _T(" = ") << tension_coeff.SetValue(mod_rupture_coeff) << symbol(ROOT) << RPT_FC;
+   *p <<_T("Maximum allowable concrete tensile stress, inclined girder without impact = ") << RPT_STRESS(_T("r")) << _T(" = ") << tension_coeff.SetValue(mod_rupture_coeff);
+   if ( bLambda )
+      *p << symbol(lambda);
+   *p << symbol(ROOT) << RPT_FC;
    *p << _T(" = ") << stress.SetValue(mod_rupture)<< _T(" ") << stress.GetUnitTag()<< rptNewLine;
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));

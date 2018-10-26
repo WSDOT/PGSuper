@@ -5706,7 +5706,8 @@ Float64 CProjectAgentImp::GetAllowableTension(pgsTypes::LoadRatingType ratingTyp
    GET_IFACE(IBridgeMaterial,pMaterial);
    Float64 fc = pMaterial->GetFcGdr(spanIdx,gdrIdx);
    Float64 t = GetAllowableTensionCoefficient(ratingType);
-   return t*sqrt(fc);
+   Float64 lambda = pMaterial->GetLambdaGdr(spanIdx,gdrIdx);
+   return lambda*t*sqrt(fc);
 }
 
 void CProjectAgentImp::RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress)
@@ -6296,6 +6297,11 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    // Starting with LRFD 2015, "default" modulus Ec is computed with a different equation
    // Recompute Ec based on the current spec...
 
+   bool bAfter2015 = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+   // starting with LRFD 2016, AllLightweight is not a valid concrete type. Concrete is either Normal weight or lightweight.
+   // We are using SandLightweight to mean lightweight so updated the concrete type if needed.
+
+
    // Get the lookup key for the strand material based on the current units
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
@@ -6357,6 +6363,11 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
          {
             girderData.Material.Ec = lrfdConcreteUtil::ModE(girderData.Material.Fc,girderData.Material.StrengthDensity,false);
          }
+
+         if ( bAfter2015 && girderData.Material.Type == pgsTypes::AllLightweight )
+         {
+            girderData.Material.Type = pgsTypes::SandLightweight;
+         }
       }
 
       pSpan->SetGirderTypes(girderTypes);
@@ -6366,6 +6377,12 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    if ( !m_BridgeDescription.GetDeckDescription()->SlabUserEc )
    {
       m_BridgeDescription.GetDeckDescription()->SlabEc = lrfdConcreteUtil::ModE(m_BridgeDescription.GetDeckDescription()->SlabFc,m_BridgeDescription.GetDeckDescription()->SlabStrengthDensity,false);
+
+
+      if ( bAfter2015 && m_BridgeDescription.GetDeckDescription()->SlabConcreteType == pgsTypes::AllLightweight )
+      {
+         m_BridgeDescription.GetDeckDescription()->SlabConcreteType = pgsTypes::SandLightweight;
+      }
    }
 
    m_bUpdateJackingForce = true;
@@ -7277,6 +7294,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
 
    return true;
 }
+
 
 void CProjectAgentImp::UpdateJackingForce() const
 {

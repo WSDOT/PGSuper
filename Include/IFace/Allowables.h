@@ -93,19 +93,19 @@ interface IAllowableConcreteStress : IUnknown
 {   
    virtual Float64 GetAllowableStress(const pgsPointOfInterest& poi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type) = 0;
    virtual std::vector<Float64> GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type) = 0;
-   virtual Float64 GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc) = 0;
+   virtual Float64 GetAllowableStress(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc) = 0;
    virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetTempStrandRemovalWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
 
    virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls) = 0;
    virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
 
-   virtual Float64 GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)=0;
-   virtual Float64 GetBridgeSiteAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)=0;
-   virtual Float64 GetInitialAllowableCompressiveStress(Float64 fci)=0;
-   virtual Float64 GetInitialAllowableTensileStress(Float64 fci, bool useMinRebar)=0;
-   virtual Float64 GetFinalAllowableCompressiveStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc)=0;
-   virtual Float64 GetFinalAllowableTensileStress(pgsTypes::Stage stage, Float64 fc)=0;
+   virtual Float64 GetCastingYardAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)=0;
+   virtual Float64 GetBridgeSiteAllowableStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc)=0;
+   virtual Float64 GetInitialAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,Float64 fci)=0;
+   virtual Float64 GetInitialAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,Float64 fci, bool useMinRebar)=0;
+   virtual Float64 GetFinalAllowableCompressiveStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc)=0;
+   virtual Float64 GetFinalAllowableTensileStress(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage, Float64 fc)=0;
 
    virtual Float64 GetCastingYardAllowableTensionStressCoefficientWithRebar() = 0;
    virtual Float64 GetTempStrandRemovalAllowableTensionStressCoefficientWithRebar() = 0;

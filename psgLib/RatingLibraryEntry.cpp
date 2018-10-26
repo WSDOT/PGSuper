@@ -1669,7 +1669,7 @@ CLASS
 ****************************************************************************/
 
 RatingLibraryEntry::RatingLibraryEntry() :
-m_SpecificationVersion(lrfrVersionMgr::FirstEditionWith2010Interims),
+m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims),
 m_bAlwaysRate(false)
 {
    // default for LRFR before 2013
@@ -1815,6 +1815,18 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    case lrfrVersionMgr::SecondEditionWith2013Interims:
       pSave->Property(_T("SpecificationVersion"), _T("LRFR2013"));
       break;
+      
+   case lrfrVersionMgr::SecondEditionWith2014Interims:
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2014"));
+      break;
+      
+   case lrfrVersionMgr::SecondEditionWith2015Interims:
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2015"));
+      break;
+      
+   case lrfrVersionMgr::SecondEditionWith2016Interims:
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2016"));
+      break;
 
    default:
       ASSERT(0);
@@ -1950,6 +1962,12 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2011Interims;
    else if (strSpecVersion == _T("LRFR2013"))
       m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2013Interims;
+   else if (strSpecVersion == _T("LRFR2014"))
+      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2014Interims;
+   else if (strSpecVersion == _T("LRFR2015"))
+      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2015Interims;
+   else if (strSpecVersion == _T("LRFR2016"))
+      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2016Interims;
    else
       THROW_LOAD(InvalidFileFormat,pLoad);
 

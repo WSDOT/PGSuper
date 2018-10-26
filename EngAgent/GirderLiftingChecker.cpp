@@ -386,7 +386,7 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span,
    pArtifact->SetLiftingDeviceTolerance(pGirderLiftingSpecCriteria->GetLiftingLoopPlacementTolerance());
 
    pArtifact->SetConcreteStrength(Fci);
-   pArtifact->SetModRupture( pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci,concType) );
+   pArtifact->SetModRupture( pGirderLiftingSpecCriteria->GetLiftingModulusOfRupture(span,gdr,Fci,concType) );
    pArtifact->SetModRuptureCoefficient( pGirderLiftingSpecCriteria->GetLiftingModulusOfRuptureCoefficient(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Eci);
@@ -490,9 +490,9 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(SpanIndexType span,GirderIn
    else
    {
       Float64 fci = liftConfig.GdrConfig.Fci;
-      fLowTensAllowable  = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressEx(fci, false);
-      fHighTensAllowable = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressEx(fci, true);
-      fCompAllowable     = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStressEx(fci);
+      fLowTensAllowable  = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressEx(span,gdr,fci, false);
+      fHighTensAllowable = pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressEx(span,gdr,fci, true);
+      fCompAllowable     = pGirderLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStressEx(span,gdr,fci);
    }
 
    // Parameters for computing required concrete strengths
@@ -643,7 +643,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(SpanIndexType span,GirderIn
       Float64 max_stress = lift_artifact.GetMaximumConcreteTensileStress();
 
       Float64 fc_tens_norebar, fc_tens_withrebar;
-      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
+      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(span,gdr,max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
 
       lift_artifact.SetRequiredConcreteStrength(fc_compression,fc_tens_norebar,fc_tens_withrebar);
 

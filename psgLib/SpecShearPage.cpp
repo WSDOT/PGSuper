@@ -90,7 +90,24 @@ BOOL CSpecShearPage::OnInitDialog()
 BOOL CSpecShearPage::OnSetActive() 
 {
    FillShearMethodList();
-	return CPropertyPage::OnSetActive();
+
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   {
+      GetDlgItem(IDC_SLWC_FR_LABEL)->SetWindowText(_T("Lightweight concrete"));
+      GetDlgItem(IDC_ALWC_FR_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      GetDlgItem(IDC_SLWC_FR_LABEL)->SetWindowText(_T("Sand lightweight concrete"));
+      GetDlgItem(IDC_ALWC_FR_LABEL)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_ALWC_FR)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_SHOW);
+   }
+
+   return CPropertyPage::OnSetActive();
 }
 
 void CSpecShearPage::FillShearMethodList()

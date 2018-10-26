@@ -274,7 +274,7 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             var.vt = VT_BSTR;
             hr = pStrLoad->get_Property(_T("Type"),&var);
-            ConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
+            ConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
 
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("fc"),&var);
@@ -372,7 +372,7 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    // added in version 3, updated version 4
    pStrSave->BeginUnit(_T("Concrete"),1.0);
-      pStrSave->put_Property(_T("Type"),CComVariant( matConcrete::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
       pStrSave->put_Property(_T("fc"),CComVariant(fc));
       pStrSave->put_Property(_T("UserEc"),CComVariant(bUserEc));
       if ( bUserEc )

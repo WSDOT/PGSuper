@@ -272,14 +272,17 @@ public:
    virtual Float64 GetMaxAggrSizeGdr(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetStrDensityGdr(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetWgtDensityGdr(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetLambdaGdr(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetK1Gdr(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetEcSlab();
    virtual Float64 GetFcSlab();
    virtual Float64 GetStrDensitySlab();
    virtual Float64 GetWgtDensitySlab();
    virtual Float64 GetMaxAggrSizeSlab();
+   virtual Float64 GetLambdaSlab();
    virtual Float64 GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetEcRailing(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual Float64 GetLambdaRailing(pgsTypes::TrafficBarrierOrientation orientation);
    virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
    virtual void GetLongitudinalRebarProperties(SpanIndexType span,GirderIndexType gdr,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetLongitudinalRebarName(SpanIndexType span,GirderIndexType gdr);
@@ -290,11 +293,6 @@ public:
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetDeckRebarName();
    virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade);
-   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1);
-   virtual Float64 GetFlexureModRupture(Float64 fc);
-   virtual Float64 GetShearModRupture(Float64 fc);
-   virtual Float64 GetFlexureFrCoefficient();
-   virtual Float64 GetShearFrCoefficient();
    virtual Float64 GetFlexureFrGdr(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetShearFrGdr(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetFriGdr(SpanIndexType span,GirderIndexType gdr);
@@ -346,7 +344,7 @@ public:
    virtual Float64 GetAsGirderTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
    virtual Float64 GetAsDeckTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
    virtual Float64 GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem);
-   virtual Float64 GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
+   virtual Float64 GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetCoverTopMat();
@@ -356,7 +354,7 @@ public:
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void CBridgeAgentImp::GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRebarLayout** rebarLayout);
-   virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
+   virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(SpanIndexType span,GirderIndexType gdr,IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
 
 // IStirrupGeometry
 public:
@@ -924,7 +922,7 @@ private:
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
    void CreateCompositeOverlayEdgePaths(IPath** ppLeftPath,IPath** ppRightPath);
 
-   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
+   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(SpanIndexType span,GirderIndexType gdr,const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
 
    void ComputeHpFill(const GirderLibraryEntry* pGdrEntry,IStrandGridFiller* pStrandGridFiller, IIndexArray* pFill, IIndexArray** ppHPfill);
 };

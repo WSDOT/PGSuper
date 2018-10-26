@@ -819,7 +819,7 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pRailingSystem->ConcreteType,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pRailingSystem->ConcreteType,true).c_str(),
       _T("Unit Weight"),FormatDimension(pRailingSystem->StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pRailingSystem->WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->MaxAggSize,aggsize)
@@ -882,7 +882,7 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
 void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::ConcreteType type)
 {
    CWnd* pWnd = GetDlgItem(nID);
-   pWnd->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)type,true).c_str() );
+   pWnd->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)type,true).c_str() );
 }
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)

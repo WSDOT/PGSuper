@@ -135,13 +135,14 @@ void CConcreteDetailsDlg::DoDataExchange(CDataExchange* pDX)
 
       DDX_Check_Bool(pDX, IDC_HAS_AGG_STRENGTH, m_bHasFct );
       DDX_UnitValueAndTag(pDX, IDC_AGG_STRENGTH, IDC_AGG_STRENGTH_T, m_Fct, pDisplayUnits->GetStressUnit() );
-      if ( m_bHasFct || !pDX->m_bSaveAndValidate )
+      if ( pDX->m_bSaveAndValidate && m_bHasFct )
       {
-         if ( !pDX->m_bSaveAndValidate )
-         {
-            CWnd* pWnd = GetDlgItem(IDC_AGG_STRENGTH);
-            pWnd->GetWindowText(m_strFct);
-         }
+         DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_STRENGTH, m_Fct, pDisplayUnits->GetStressUnit() );
+      }
+      if ( !pDX->m_bSaveAndValidate )
+      {
+         CWnd* pWnd = GetDlgItem(IDC_AGG_STRENGTH);
+         pWnd->GetWindowText(m_strFct);
       }
    }
    catch(...)
@@ -172,14 +173,25 @@ END_MESSAGE_MAP()
 BOOL CConcreteDetailsDlg::OnInitDialog() 
 {
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   int idx = pcbConcreteType->AddString(_T("Normal weight"));
-   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {  
+      int idx = pcbConcreteType->AddString(_T("Normal weight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
 
-   idx = pcbConcreteType->AddString(_T("All lightweight"));
-   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
+      idx = pcbConcreteType->AddString(_T("All lightweight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
 
-   idx = pcbConcreteType->AddString(_T("Sand lightweight"));
-   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+      idx = pcbConcreteType->AddString(_T("Sand lightweight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+   }
+   else
+   {
+      int idx = pcbConcreteType->AddString(_T("Normal weight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
+
+      idx = pcbConcreteType->AddString(_T("Lightweight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+   }
 
 	CDialog::OnInitDialog();
 	
@@ -362,6 +374,7 @@ void CConcreteDetailsDlg::OnConcreteType()
    pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
 
    BOOL bEnable = (type == pgsTypes::Normal ? FALSE : TRUE);
+
    GetDlgItem(IDC_HAS_AGG_STRENGTH)->EnableWindow(bEnable);
    GetDlgItem(IDC_AGG_STRENGTH)->EnableWindow(bEnable);
    GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bEnable);
@@ -390,11 +403,11 @@ HBRUSH CConcreteDetailsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
          // To work around this issue, we need to determine if the value in the field evaluates to
          // a number. If not, assume the density is not consistent with NWC and color the text red
          // otherwise, go on to normal processing.
-	      const int TEXT_BUFFER_SIZE = 400;
-	      TCHAR szBuffer[TEXT_BUFFER_SIZE];
+         const int TEXT_BUFFER_SIZE = 400;
+         TCHAR szBuffer[TEXT_BUFFER_SIZE];
          ::GetWindowText(GetDlgItem(IDC_DS)->GetSafeHwnd(), szBuffer, _countof(szBuffer));
-		   Float64 d;
-   		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
+	      Float64 d;
+		   if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
          {
             pDC->SetTextColor( RED );
          }

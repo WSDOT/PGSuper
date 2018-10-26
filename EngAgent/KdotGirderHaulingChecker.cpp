@@ -477,9 +477,9 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(SpanIndexType span,Gird
    {
       Float64 fc = haulConfig.GdrConfig.Fc;
 
-      fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(fc, false);
-      fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(fc, true);
-      fCompAllowable     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStressEx(fc);
+      fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(span,gdr,fc, false);
+      fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(span,gdr,fc, true);
+      fCompAllowable     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStressEx(span,gdr,fc);
    }
 
    // Parameters for computing required concrete strengths
@@ -617,7 +617,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(SpanIndexType span,Gird
       Float64 max_stress = haul_artifact.GetMaximumConcreteTensileStress();
 
       Float64 fc_tens_norebar, fc_tens_withrebar;
-      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
+      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(span,gdr,max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
 
       haul_artifact.SetRequiredConcreteStrength(fc_compression,fc_tens_norebar,fc_tens_withrebar);
 

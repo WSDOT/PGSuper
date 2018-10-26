@@ -859,6 +859,7 @@
 #define IDC_CHECK3                      1561
 #define IDC_PERMIT                      1561
 #define IDC_STRENGTH_II_LL_PERMIT2      1561
+#define IDC_STRENGTH_II_LL_SPECIAL      1561
 #define IDC_NEXT_SPAN_SPACING_GRID      1562
 #define IDC_CHECK2                      1562
 #define IDC_CHECK_YIELDING              1562
@@ -871,6 +872,7 @@
 #define IDC_FY                          1564
 #define IDC_LINK_TARGET_NOTE            1565
 #define IDC_SERVICE_I_LL_PERMIT2        1565
+#define IDC_SERVICE_I_LL_SPECIAL        1565
 #define IDC_NUMGDR_PREV_SPAN_LABEL      1566
 #define IDC_NUMGDR_NEXT_SPAN_LABEL      1567
 #define IDC_BACK_PIER_SPACING_LABEL     1568
@@ -1149,7 +1151,6 @@
 #define IDC_START_SLAB_OFFSET_LABEL     1787
 #define IDC_END_SLAB_OFFSET_LABEL       1788
 #define IDC_NWC_NOTE                    1789
-#define IDR_STDTOOLBAR                  12129
 #define IDC_TOP_COVER_LABEL             1862
 #define IDC_BOTTOM_COVER_LABEL          1863
 #define IDC_TOP_MAT_BAR_LABEL           1864
@@ -1162,6 +1163,7 @@
 #define IDC_SECONDARY_REBAR_GROUP       1871
 #define IDC_PRIMARY_REBAR_GROUP_LABEL   1872
 #define IDC_SECONDARY_REBAR_GROUP_LABEL 1873
+#define IDR_STDTOOLBAR                  12129
 #define IDR_LIBTOOLBAR                  12130
 #define IDR_HELPTOOLBAR                 12131
 #define IDS_BM_VIEW_SETTINGS            12779

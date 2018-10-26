@@ -160,8 +160,6 @@ inline Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length,
 
 
 
-// an arbitrary large length
-static const Float64 BIG_LENGTH = 1.0e12;
 // floating tolerance
 static const Float64 TOL=1.0e-04;
 
@@ -710,6 +708,8 @@ bool CBridgeAgentImp::ValidateConcrete()
       m_pSlabConc->SetType((matConcrete::Type)pDeck->SlabConcreteType);
       m_pSlabConc->HasAggSplittingStrength(pDeck->SlabHasFct);
       m_pSlabConc->SetAggSplittingStrength(pDeck->SlabFct);
+      Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)pDeck->SlabConcreteType,pDeck->SlabStrengthDensity,pDeck->SlabHasFct,pDeck->SlabFct,pDeck->SlabFc);
+      m_pSlabConc->SetLambda(lambda);
 
       m_SlabEcK1        = pDeck->SlabEcK1;
       m_SlabEcK2        = pDeck->SlabEcK2;
@@ -747,6 +747,9 @@ bool CBridgeAgentImp::ValidateConcrete()
    m_pRailingConc[pgsTypes::tboLeft]->HasAggSplittingStrength(pLeftRailingSystem->bHasFct);
    m_pRailingConc[pgsTypes::tboLeft]->SetAggSplittingStrength(pLeftRailingSystem->Fct);
 
+   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)pLeftRailingSystem->ConcreteType,pLeftRailingSystem->StrengthDensity,pLeftRailingSystem->bHasFct,pLeftRailingSystem->Fct,pLeftRailingSystem->fc);
+   m_pRailingConc[pgsTypes::tboLeft]->SetLambda(lambda);
+
    const CRailingSystem* pRightRailingSystem = pBridgeDesc->GetRightRailingSystem();
    if ( pRightRailingSystem->bUserEc )
    {
@@ -773,6 +776,9 @@ bool CBridgeAgentImp::ValidateConcrete()
    m_pRailingConc[pgsTypes::tboRight]->SetType((matConcrete::Type)pLeftRailingSystem->ConcreteType);
    m_pRailingConc[pgsTypes::tboRight]->HasAggSplittingStrength(pLeftRailingSystem->bHasFct);
    m_pRailingConc[pgsTypes::tboRight]->SetAggSplittingStrength(pLeftRailingSystem->Fct);
+
+   lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)pRightRailingSystem->ConcreteType,pRightRailingSystem->StrengthDensity,pRightRailingSystem->bHasFct,pRightRailingSystem->Fct,pRightRailingSystem->fc);
+   m_pRailingConc[pgsTypes::tboRight]->SetLambda(lambda);
 
    // Girder Concrete
    GET_IFACE(IGirderData,pGirderData);
@@ -817,6 +823,9 @@ bool CBridgeAgentImp::ValidateConcrete()
          pGdrReleaseConc->HasAggSplittingStrength(pGdrMaterial->bHasFct);
          pGdrReleaseConc->SetAggSplittingStrength(pGdrMaterial->Fct);
 
+         Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)pGdrMaterial->Type,pGdrMaterial->StrengthDensity,pGdrMaterial->bHasFct,pGdrMaterial->Fct,pGdrMaterial->Fci);
+         pGdrReleaseConc->SetLambda(lambda);
+
          m_pGdrReleaseConc.insert( std::make_pair(key,boost::shared_ptr<matConcreteEx>(pGdrReleaseConc)) );
 
          // 28 day strength
@@ -845,6 +854,9 @@ bool CBridgeAgentImp::ValidateConcrete()
          pGdrConc->SetType((matConcrete::Type)pGdrMaterial->Type);
          pGdrConc->HasAggSplittingStrength(pGdrMaterial->bHasFct);
          pGdrConc->SetAggSplittingStrength(pGdrMaterial->Fct);
+
+         lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)pGdrMaterial->Type,pGdrMaterial->StrengthDensity,pGdrMaterial->bHasFct,pGdrMaterial->Fct,pGdrMaterial->Fc);
+         pGdrConc->SetLambda(lambda);
 
          m_pGdrConc.insert( std::make_pair(key,boost::shared_ptr<matConcreteEx>(pGdrConc)) );
       }
@@ -4205,7 +4217,7 @@ void CBridgeAgentImp::LayoutPoiForGirderBarCutoffs(SpanIndexType span,GirderInde
          ATLASSERT(rebar);
 
          // Get development length and add poi only if dev length is shorter than 1/2 rebar length
-         REBARDEVLENGTHDETAILS devDetails = GetRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
+         REBARDEVLENGTHDETAILS devDetails = GetRebarDevelopmentLengthDetails(span, gdr, rebar, concType, fc, hasFct, Fct);
          Float64 ldb = devDetails.ldb;
          if (ldb < barLength/2.0)
          {
@@ -7372,6 +7384,13 @@ Float64 CBridgeAgentImp::GetMaxAggrSizeGdr(SpanIndexType span,GirderIndexType gd
    return m_pGdrConc[key]->GetMaxAggregateSize();
 }
 
+Float64 CBridgeAgentImp::GetLambdaGdr(SpanIndexType span,GirderIndexType gdr)
+{
+   VALIDATE( CONCRETE );
+   SpanGirderHashType key = HashSpanGirder(span,gdr);
+   return m_pGdrConc[key]->GetLambda();
+}
+
 Float64 CBridgeAgentImp::GetK1Gdr(SpanIndexType span,GirderIndexType gdr)
 {
    ATLASSERT(false); // use the new version on IBridgeMaterialEx
@@ -7457,6 +7476,15 @@ Float64 CBridgeAgentImp::GetMaxAggrSizeSlab()
       return 0.0;
 }
 
+Float64 CBridgeAgentImp::GetLambdaSlab()
+{
+   VALIDATE( CONCRETE );
+   if ( m_pSlabConc.get() != NULL )
+      return m_pSlabConc->GetLambda();
+   else
+      return 1.0;
+}
+
 Float64 CBridgeAgentImp::GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation)
 {
    VALIDATE( CONCRETE );
@@ -7469,53 +7497,16 @@ Float64 CBridgeAgentImp::GetEcRailing(pgsTypes::TrafficBarrierOrientation orient
    return m_pRailingConc[orientation]->GetE();
 }
 
+Float64 CBridgeAgentImp::GetLambdaRailing(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   VALIDATE( CONCRETE );
+   return m_pRailingConc[orientation]->GetLambda();
+}
+
 const matPsStrand* CBridgeAgentImp::GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType)
 {
    GET_IFACE(IGirderData,pGirderData);
    return pGirderData->GetStrandMaterial(span,gdr,strandType);
-}
-
-
-Float64 CBridgeAgentImp::GetEconc(Float64 fc,Float64 density,Float64 K1)
-{
-   ATLASSERT(false); // this method is obsolete 
-   return K1*lrfdConcreteUtil::ModE(fc,density, false ); // ignore LRFD limits
-}
-
-Float64 CBridgeAgentImp::GetFlexureModRupture(Float64 fc)
-{
-   ATLASSERT(false); // this method is obsolete because of LWC
-   // use IBridgeMaterialEx::GetFlexureModRupture(fc,concType);
-   return lrfdConcreteUtil::ModRupture( fc, lrfdConcreteUtil::NormalDensity, GetFlexureFrCoefficient() );
-}
-
-Float64 CBridgeAgentImp::GetShearModRupture(Float64 fc)
-{
-   ATLASSERT(false); // this method is obsolete because of LWC
-   // use IBridgeMaterialEx::GetShearModRupture(fc,concType);
-   return lrfdConcreteUtil::ModRupture( fc, lrfdConcreteUtil::NormalDensity, GetShearFrCoefficient() );
-}
-
-Float64 CBridgeAgentImp::GetFlexureFrCoefficient()
-{
-   ATLASSERT(false); // this method is obsolete
-   // use IBridgeMaterialEx::GetFlexureFrCoefficient(concType)
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->GetFlexureModulusOfRuptureCoefficient(pgsTypes::Normal);
-}
-
-Float64 CBridgeAgentImp::GetShearFrCoefficient()
-{
-   ATLASSERT(false); // this method is obsolete
-   // use IBridgeMaterialEx::GetShearFrCoefficient(concType)
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->GetShearModulusOfRuptureCoefficient(pgsTypes::Normal);
 }
 
 Float64 CBridgeAgentImp::GetFlexureFrGdr(SpanIndexType span,GirderIndexType gdr)
@@ -7523,7 +7514,8 @@ Float64 CBridgeAgentImp::GetFlexureFrGdr(SpanIndexType span,GirderIndexType gdr)
    VALIDATE( CONCRETE );
    Float64 fc = GetFcGdr(span,gdr);
    pgsTypes::ConcreteType type = GetGdrConcreteType(span,gdr);
-   return GetFlexureModRupture( fc, type );
+   Float64 lambda = GetLambdaGdr(span,gdr);
+   return lambda*GetFlexureModRupture( fc, type );
 }
 
 Float64 CBridgeAgentImp::GetShearFrGdr(SpanIndexType span,GirderIndexType gdr)
@@ -7531,7 +7523,8 @@ Float64 CBridgeAgentImp::GetShearFrGdr(SpanIndexType span,GirderIndexType gdr)
    VALIDATE( CONCRETE );
    Float64 fc = GetFcGdr(span,gdr);
    pgsTypes::ConcreteType type = GetGdrConcreteType(span,gdr);
-   return GetShearModRupture( fc, type );
+   Float64 lambda = GetLambdaGdr(span,gdr);
+   return lambda*GetShearModRupture( fc, type );
 }
 
 Float64 CBridgeAgentImp::GetFriGdr(SpanIndexType span,GirderIndexType gdr)
@@ -7540,7 +7533,8 @@ Float64 CBridgeAgentImp::GetFriGdr(SpanIndexType span,GirderIndexType gdr)
    Float64 fci;
    fci = GetFciGdr(span, gdr);
    pgsTypes::ConcreteType type = GetGdrConcreteType(span,gdr);
-   return GetFlexureModRupture( fci, type );
+   Float64 lambda = GetLambdaGdr(span,gdr);
+   return lambda*GetFlexureModRupture( fci, type );
 }
 
 Float64 CBridgeAgentImp::GetFlexureFrSlab()
@@ -7549,7 +7543,8 @@ Float64 CBridgeAgentImp::GetFlexureFrSlab()
    if ( m_pSlabConc.get() != NULL )
    {
       pgsTypes::ConcreteType type = GetSlabConcreteType();
-      return lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetFlexureFrCoefficient(type) );
+      Float64 lambda = GetLambdaSlab();
+      return lambda*lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetFlexureFrCoefficient(type) );
    }
    else
    {
@@ -7563,7 +7558,8 @@ Float64 CBridgeAgentImp::GetShearFrSlab()
    if ( m_pSlabConc.get() != NULL )
    {
       pgsTypes::ConcreteType type = GetSlabConcreteType();
-      return lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetShearFrCoefficient(type) );
+      Float64 lambda = GetLambdaSlab();
+      return lambda*lrfdConcreteUtil::ModRupture( m_pSlabConc->GetFc(), lrfdConcreteUtil::DensityType(type), GetShearFrCoefficient(type) );
    }
    else
    {
@@ -7659,10 +7655,17 @@ Float64 CBridgeAgentImp::GetNWCDensityLimit()
 Float64 CBridgeAgentImp::GetLWCDensityLimit()
 {
    Float64 limit;
-   if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
-      limit = ::ConvertToSysUnits(120.0,unitMeasure::LbfPerFeet3);
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {
+      if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+         limit = ::ConvertToSysUnits(120.0,unitMeasure::LbfPerFeet3);
+      else
+         limit = ::ConvertToSysUnits(1925.0,unitMeasure::KgPerMeter3);
+   }
    else
-      limit = ::ConvertToSysUnits(1925.0,unitMeasure::KgPerMeter3);
+   {
+      limit = GetNWCDensityLimit();
+   }
 
    return limit;
 }
@@ -8102,17 +8105,17 @@ Float64 CBridgeAgentImp::GetDevLengthFactor(SpanIndexType span,GirderIndexType g
    bool isFct = DoesGdrConcreteHaveAggSplittingStrength(span,gdr);
    Float64 fct = isFct ? GetGdrConcreteAggSplittingStrength(span,gdr) : 0.0;
 
-   return GetDevLengthFactor(rebarItem, type, fc, isFct, fct);
+   return GetDevLengthFactor(span, gdr, rebarItem, type, fc, isFct, fct);
 }
 
-Float64 CBridgeAgentImp::GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 fct)
+Float64 CBridgeAgentImp::GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 fct)
 {
    Float64 fra = 1.0;
 
    CComPtr<IRebar> rebar;
    rebarItem->get_Rebar(&rebar);
 
-   REBARDEVLENGTHDETAILS details = GetRebarDevelopmentLengthDetails(rebar, type, fc, isFct, fct);
+   REBARDEVLENGTHDETAILS details = GetRebarDevelopmentLengthDetails(span, gdr, rebar, type, fc, isFct, fct);
 
    // Get distances from section cut to ends of bar
    Float64 start,end;
@@ -8268,7 +8271,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
    return ppr;
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct)
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(SpanIndexType span,GirderIndexType gdr,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct)
 {
    CComBSTR name;
    rebar->get_Name(&name);
@@ -8278,10 +8281,10 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(IRebar* 
    rebar->get_NominalDiameter(&db);
    rebar->get_YieldStrength(&fy);
 
-   return GetRebarDevelopmentLengthDetails(name, Ab, db, fy, type, fc, isFct, Fct);
+   return GetRebarDevelopmentLengthDetails(span, gdr, name, Ab, db, fy, type, fc, isFct, Fct);
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct)
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(SpanIndexType span,GirderIndexType gdr,const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct)
 {
    REBARDEVLENGTHDETAILS details;
    details.Ab = Ab;
@@ -8321,21 +8324,39 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CC
       }
 
       // lightweight concrete factor
-      if (type==pgsTypes::Normal)
+      if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
       {
-         details.lambdaLw = 1.0;
-      }
-      else if (type==pgsTypes::AllLightweight || type==pgsTypes::SandLightweight)
-      {
-         details.lambdaLw = 1.3;
+          // Use INVALID_INDEX for span/gdr to get deck rebar development
+          if ( span == INVALID_INDEX && gdr == INVALID_INDEX )
+         {
+            details.lambdaLw = GetLambdaSlab();
+         }
+         else
+         {
+            details.lambdaLw = GetLambdaGdr(span,gdr);
+         }
+
+         details.factor = details.lambdaRl / details.lambdaLw; // Eqn 5.11.2.1.1-1 was modified in LRFD 2016... using lambdaLw for lambda in the equation
       }
       else
       {
-         ATLASSERT(0); // new type?
-         details.lambdaLw = 1.0;
+         if (type==pgsTypes::Normal)
+         {
+            details.lambdaLw = 1.0;
+         }
+         else if (type==pgsTypes::AllLightweight || type==pgsTypes::SandLightweight)
+         {
+            details.lambdaLw = 1.3;
+         }
+         else
+         {
+            ATLASSERT(0); // new type?
+            details.lambdaLw = 1.0;
+         }
+
+         details.factor = details.lambdaRl * details.lambdaLw;
       }
 
-      details.factor = details.lambdaRl * details.lambdaLw;
 
    }
    else
@@ -8566,7 +8587,7 @@ void CBridgeAgentImp::GetPrimaryZoneBounds(SpanIndexType span,GirderIndexType gd
       for (ZoneIndexType i=0; i<=idx; i++)
       {
          if (i==zsiz-1)
-            l_end+= BIG_LENGTH; // last zone in infinitely long
+            l_end = Float64_Max; // last zone in infinitely long
          else
             l_end+= shear_data.ShearZones[i].ZoneLength;
 
@@ -8719,7 +8740,7 @@ void CBridgeAgentImp::GetHorizInterfaceZoneBounds(SpanIndexType span,GirderIndex
       for (ZoneIndexType i=0; i<=idx; i++)
       {
          if (i==zsiz-1)
-            l_end+= BIG_LENGTH; // last zone in infinitely long
+            l_end = Float64_Max; // last zone in infinitely long
          else
             l_end+= shear_data.HorizontalInterfaceZones[i].ZoneLength;
 
@@ -17195,7 +17216,8 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
                      barst.erase(sit, barst.size()-1);
 
                   CComBSTR barname(barst.c_str());
-                  REBARDEVLENGTHDETAILS devdet = GetRebarDevelopmentLengthDetails(barname, pBar->GetNominalArea(), 
+                  // Use INVALID_INDEX for span/gdr to get deck rebar development
+                  REBARDEVLENGTHDETAILS devdet = GetRebarDevelopmentLengthDetails(INVALID_INDEX, INVALID_INDEX, barname, pBar->GetNominalArea(), 
                                                                                   pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
                                                                                   pDeck->SlabConcreteType, pDeck->SlabFc, 
                                                                                   pDeck->SlabHasFct, pDeck->SlabFct);

@@ -279,6 +279,7 @@ interface IBridgeMaterial : IUnknown
    virtual Float64 GetMaxAggrSizeGdr(SpanIndexType span, GirderIndexType gdr) = 0;
    virtual Float64 GetFlexureFrGdr(SpanIndexType span, GirderIndexType gdr) = 0;
    virtual Float64 GetShearFrGdr(SpanIndexType span, GirderIndexType gdr) = 0;
+   virtual Float64 GetLambdaGdr(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetK1Gdr(SpanIndexType span,GirderIndexType gdr) = 0; // obsolete
 
    // Girder Concrete at release
@@ -295,10 +296,12 @@ interface IBridgeMaterial : IUnknown
    virtual Float64 GetFlexureFrSlab() = 0;
    virtual Float64 GetShearFrSlab() = 0;
    virtual Float64 GetK1Slab() = 0; // obsolete
+   virtual Float64 GetLambdaSlab() = 0;
 
    // Traffic Barrier and Sidewalk Density
    virtual Float64 GetDensityRailing(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual Float64 GetEcRailing(pgsTypes::TrafficBarrierOrientation orientation) = 0;
+   virtual Float64 GetLambdaRailing(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 
    // Prestressing Strand
    virtual const matPsStrand* GetStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
@@ -317,13 +320,6 @@ interface IBridgeMaterial : IUnknown
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) = 0;
    virtual std::_tstring GetDeckRebarName() = 0;
    virtual void GetDeckRebarMaterial(matRebar::Type& type,matRebar::Grade& grade) = 0;
-
-   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1) = 0; /// obsolete
-
-   virtual Float64 GetFlexureModRupture(Float64 fc) = 0; // obsolete
-   virtual Float64 GetShearModRupture(Float64 fc) = 0; // obsolete
-   virtual Float64 GetFlexureFrCoefficient() = 0; // obsolete
-   virtual Float64 GetShearFrCoefficient() = 0; // obsolete
 
    virtual Float64 GetNWCDensityLimit() = 0; // returns the minimum density for normal weight concrete
 };
@@ -408,7 +404,7 @@ interface ILongRebarGeometry : IUnknown
    virtual Float64 GetAsGirderTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetAsDeckTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem) = 0;
-   virtual Float64 GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
+   virtual Float64 GetDevLengthFactor(SpanIndexType span,GirderIndexType gdr,IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi) = 0;
 
@@ -423,7 +419,7 @@ interface ILongRebarGeometry : IUnknown
 
    virtual void GetRebarLayout(SpanIndexType span,GirderIndexType gdr, IRebarLayout** rebarLayout) = 0;
 
-   virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
+   virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(SpanIndexType span,GirderIndexType gdr,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
 };
 
 /*****************************************************************************

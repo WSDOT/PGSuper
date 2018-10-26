@@ -989,7 +989,12 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
       break;
    }
 
-   *pPara << _T("Maximum spacing of interface shear connectors (LRFD 5.8.4.2): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing()) << rptNewLine;
+   *pPara << _T("Maximum spacing of interface shear connectors (LRFD 5.8.4.2): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing());
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      *pPara << _T(", or the depth of the member.");
+   }
+   *pPara << rptNewLine;
 }
 
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)

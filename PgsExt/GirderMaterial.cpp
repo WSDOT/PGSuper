@@ -215,7 +215,7 @@ void CGirderMaterial::MakeAssignment(const CGirderMaterial& rOther)
 HRESULT CGirderMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("Concrete"),1.0);
-   pStrSave->put_Property(_T("Type"),             CComVariant( matConcrete::GetTypeName((matConcrete::Type)Type,false).c_str() ));
+   pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fci"),              CComVariant(Fci ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
    pStrSave->put_Property(_T("WeightDensity"),    CComVariant(WeightDensity));
@@ -258,7 +258,7 @@ HRESULT CGirderMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Type"),&var);
-   Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
+   Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Fci"), &var);

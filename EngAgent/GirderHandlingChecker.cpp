@@ -377,7 +377,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
          Float64 as;
          rebar->get_NominalArea(&as);
 
-         Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
+         Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(span, gdr, item, conc_type, fci, isfct, fct);
 
          // Adjust effect of bars for development
          as *= dev_length_factor;

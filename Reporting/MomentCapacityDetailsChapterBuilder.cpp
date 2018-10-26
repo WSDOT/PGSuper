@@ -549,7 +549,12 @@ void write_crack_moment_data_table(IBroker* pBroker,
    }
 
    GET_IFACE2(pBroker,IBridgeMaterialEx,pMaterial);
-   *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr)) << symbol(ROOT) << RPT_FC << rptNewLine;
+   *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(span,gdr));
+   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+   {
+      *pParagraph << symbol(lambda);
+   }
+   *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("fcpe.png")) << rptNewLine;

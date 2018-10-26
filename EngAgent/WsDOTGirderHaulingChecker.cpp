@@ -460,7 +460,7 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType 
 
 
    pArtifact->SetConcreteStrength(Fc);
-   pArtifact->SetModRupture( pGirderHaulingSpecCriteria->GetHaulingModulusOfRupture(Fc,concType) );
+   pArtifact->SetModRupture( pGirderHaulingSpecCriteria->GetHaulingModulusOfRupture(span,gdr,Fc,concType) );
    pArtifact->SetModRuptureCoefficient( pGirderHaulingSpecCriteria->GetHaulingModulusOfRuptureCoefficient(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Ec);
@@ -526,9 +526,9 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(SpanIndexType span,Gir
    {
       Float64 fc = haulConfig.GdrConfig.Fc;
 
-      fLowTensAllowable  = pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressEx(fc, false);
-      fHighTensAllowable = pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressEx(fc, true);
-      fCompAllowable     = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStressEx(fc);
+      fLowTensAllowable  = pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressEx(span,gdr,fc, false);
+      fHighTensAllowable = pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressEx(span,gdr,fc, true);
+      fCompAllowable     = pGirderHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStressEx(span,gdr,fc);
    }
 
    // Inclined girder tension is limited to modulus of rupture
@@ -706,7 +706,7 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(SpanIndexType span,Gir
 
       // Impacted plumb girder stress is treated differently than inclined girder
       Float64 fc_tens_norebar, fc_tens_withrebar;
-      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
+      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(span,gdr,max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
 
       // For inclined girder, tension is limited by modulus of rupture. Rebar is not considered, so it must be treated differently.
       Float64 max_stress_inclined = haul_artifact.GetMaximumInclinedConcreteTensileStress();

@@ -78,7 +78,7 @@ public:
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    // get data for a row
-   bool GetRowData(ROWCOL nRow, CHorizontalInterfaceZoneData* pz);
+   bool GetRowData(ROWCOL nRow, ROWCOL numRows, CHorizontalInterfaceZoneData* pz);
 
    // fill grid with data
    void FillGrid(const CShearData::HorizontalInterfaceZoneVec& rvec, bool isSymmetrical);
